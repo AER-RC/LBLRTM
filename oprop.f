@@ -4306,10 +4306,11 @@ C                                                                         E00490
          READ (IRD,'(7A10)') (XSNAME(I),I=1,IXMOLS)                       E00540
       ENDIF                                                               E00550
 C                                                                         E00560
-C     LEFT-JUSTIFY ALL INPUTED NAMES                                      E00570
+C     Left-justify all inputed names                                      E00570
 C                                                                         E00580
       DO 15 I=1,IXMOLS                                                    E00582
-   15 CALL CLJUST (XSNAME,10)                                             E00590
+         CALL CLJUST (XSNAME(I),10)                                       E00590
+ 15   CONTINUE
 C                                                                         E00600
 CPRT  WRITE(IPR,'(/,''  THE FOLLOWING MOLECULES ARE REQUESTED:'',//,      E00610
 CPRT 1    (5X,I5,2X,A))') (I,XSNAME(I),I=1,IXMOLS)                        E00620
