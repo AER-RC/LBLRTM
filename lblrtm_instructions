@@ -1055,6 +1055,8 @@ C     presently: %H%  %T%
  
  
            CO2MX     mixing ratio for CO2 (ppm).  Default is 330 ppm.
+                        Note: if CO2MX > 0. the user input profile values for CO2 are 
+                              ignored in Record 3.6.N
 
 	 REF_LAT     latitude of location of calculation (degrees)
 		     defaults for REF_LAT = 0:
