@@ -2176,6 +2176,11 @@ C     presently: %H%  %T%
 							0   for x > 1/a
 							where (2 < p < 4)
 
+		    =  13	c1*sinc(u)+             NA                             variable	      160
+				c2*sinc(u-2*Pi*
+				v_offset/a)
+				(Kiruna, assymetric)	  
+
     _______________________________________________________________________________________________________________________
  
                   LEGEND:
@@ -2234,8 +2239,29 @@ C     presently: %H%  %T%
                      = 0 deconvolve the scanned spectrum with the boxcar
                      = nonzero, do not deconvolve with the boxcar
  
+  RECORD 10.2    (required if ABS(JFN) > 10; otherwise omit)
+
+
+   PARM1,   PARM2,   PARM3
  
- REPEAT RECORD 10.1
+    1-10,   11-20,   21-30
+ 
+   F10.4,   F10.4,   F10.4
+ 
+ 
+            PARM1      	For JFN = 11, value of p, where (0 < p < 1)
+			For JFN = 12, value of p, where (2 < p < 4)
+			For JFN = 13, value of v_offset
+
+            PARM2	For JFN = 13, value of c1
+ 
+            PARM3	For JFN = 13, value of c2
+
+ 
+
+
+ 
+ REPEAT RECORDS 10.1, 10.2
  
 		A '-1.' within columns 1-10 will terminate FFT scanning.
  
