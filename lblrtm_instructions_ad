@@ -388,7 +388,8 @@ C     presently: %H%  %T%
                                 from solar path (requires INFLAG = 2)
 
               JULDAT       Julian day associated with calculation (1-365/566 starting January 1). Used to calculate
-                               Earth distance from sun.
+                               Earth distance from sun. A value of 0 (default) indactes no scaling of solar source
+                               function using earth-sun distance.
 
 
  

@@ -166,15 +166,25 @@ C     Transfer", J. Lenoble, 1993.
 
 c     Test validity of JULDAT
 
-      if ((juldat.lt.1).or.(juldat.gt.366)) then
-         write(*,*) 'JULDAT = ',juldat,' is out of range 1-366.'
-         write(ipr,*) 'JULDAT = ',juldat,' is out of range 1-366.'
+      if ((juldat.lt.0).or.(juldat.gt.366)) then
+         write(*,*) 'JULDAT = ',juldat,' is out of range 0-366.'
+         write(ipr,*) 'JULDAT = ',juldat,' is out of range 0-366.'
          stop 'Stopped in SOLINT'
       endif
 
-      theta = 2*pi*(float(JULDAT)-1.)/365.
-      XJUL_SCALE = 1.00011 + 0.034221*cos(theta) + 1.28E-3*sin(theta)
-     *          + 7.19E-4*cos(2.*theta) + 7.7E-5*sin(2.*theta)
+c     If JULDAT = 0 , then set XJUL_SCALE to 1
+
+      if (juldat.eq.0) then
+         XJUL_SCALE = 1.0
+         write(ipr,*) 'JULDAT = 0, no scaling of solar source function'
+      else
+         theta = 2*pi*(float(JULDAT)-1.)/365.
+         XJUL_SCALE = 1.00011 + 0.034221*cos(theta) + 
+     *        1.28E-3*sin(theta) + 7.19E-4*cos(2.*theta) + 
+     *        7.7E-5*sin(2.*theta)
+         write(ipr,*) 'JULDAT = ',JULDAT,
+     *        ', scale factor for solar source function = ',XJUL_SCALE
+      endif
 
 
 C
