@@ -90,6 +90,7 @@ C                                                                        FA00730
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       CHARACTER*8 HMOLC                                                  FA00770
+      character*4 ht1,ht2
 C                                                                        FA00780
 C     ********************************************************           FA00790
 C                                                                        FA00800
@@ -634,8 +635,8 @@ C                                                                        FA05950
          IOUTMX = 1                                                      FA06000
          SECNTA(1) = 1.                                                  FA06010
          ALTZ(1) = ZH                                                    FA06020
-         READ (HT1HRZ,922) HT1                                           FA06030
-         READ (HT2HRZ,922) HT2                                           FA06040
+         ht1 = ht1hrz
+         ht2 = ht2hrz
 C                                                                        FA06050
 C        > Write atmosphere to TAPE7 (in E15.7 format) <                 FA06060
 C                                                                        FA06070
@@ -1123,8 +1124,8 @@ C
          ENDIF                                                           FA10250
 C                                                                        FA10260
          NLAYRS = LMAX                                                   FA10270   
-         READ (HT1SLT,922) HT1                                           FA10280
-         READ (HT2SLT,922) HT2                                           FA10290
+         HT1 = HT1SLT
+         HT2 = HT2SLT
 C                                                                        FA10300
       ENDIF                                                              FA10310
 C                                                                        FA10320
@@ -5083,10 +5084,14 @@ C                                                                        FA47210
      *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1 ,V2 ,TBOUND,
      *                EMISIV,FSCDID(17),NDUM,LAYER ,YI1,YID(10),LSTWDF
 C                                                                        FA47300
+      character*4 ht1,ht2
+
       I2 = IPMAX-1                                                       FA47310
       IOUT = 1                                                           FA47320
       PZ(0) = PP(1)                                                      FA47330
       TZ(0) = TP(1)                                                      FA47340
+
+
 C
 C     If entry in TAPE5 for TBOUND < 0, use TZ(O) as boundary
 C     temperature
@@ -5382,7 +5387,7 @@ C                                                                        FX00870
       CHARACTER*48 CFORM1,CFORM2                                         FX00880
       CHARACTER*10 HOTHER                                                FX00890
       CHARACTER*7 PAFORM(2)                                              FX00900
-      CHARACTER*4 PZFORM(5)                                              FX00910
+      CHARACTER*4 PZFORM(5),ht1,ht2                                      FX00910
       CHARACTER*3 CTYPE
 C                                                                        FX00920
       DATA HOTHER / ' OTHER    '/                                        FX00930
