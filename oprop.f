@@ -104,7 +104,7 @@ C                                                                         B00890
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS
 C                                                                         B00970
       REAL L4TIM,L4TMR,L4TMS
-      CHARACTER CFORM*11,KFILYR*6,CKFIL*4                                 B00980
+      CHARACTER CFORM*11,KFILYR*6,CKFIL*4,KDFLYR*6,KDFIL*4                B00980
       LOGICAL OP                                                          B00990
 C                                                                         B01000
       DIMENSION MEFDP(64),FILHDR(2),IWD(2)                                B01010
@@ -113,7 +113,7 @@ C                                                                         B01020
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),                B01030
      *            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),                B01040
      *            (JRAD,FSCDID(9)) , (IMRG,FSCDID(11)),                   B01050
-     *            (IATM,FSCDID(15)) , (YI1,IMS) , (XID(1),FILHDR(1)),     B01060
+     *            (IATM,FSCDID(15)) , (YI1,IOD) , (XID(1),FILHDR(1)),     B01060
      *            (V1P,IWD(1)) , (NPNLXP,LSTWDX)                          B01070
       EQUIVALENCE (R1(1),RR1(1025)),(R2(1),RR2(513)),(R3(1),RR3(65))
 C                                                                         B01080
@@ -123,7 +123,7 @@ C                                                                         B01080
 C                                                                         B01120
       DATA MEFDP / 64*0 /                                                 B01130
 C                                                                         B01140
-      DATA CKFIL / 'KFIL'/                                                B01150
+      DATA CKFIL / 'ODDV'/,KDFIL / 'ODKD'/                                B01150
 C                                                                         B01160
       CALL CPUTIM (TIMEH0)                                                B01170
 C                                                                         B01180
@@ -230,23 +230,37 @@ C                                                                         B01990
 C                                                                         B02190
       IF (IATM.GE.1.AND.IATM.LE.5) CALL YDIH1 (H1F,H2F,ANGLEF,YID)        B02200
 C                                                                         B02210
-      IF (IMS.EQ.1.AND.IMRG.EQ.1) THEN                                    B02220
+C     IF IOD = 1 AND IMERGE = 1 THEN CALCULATE OPTICAL DEPTHS
+C     FOR EACH LAYER WITH DV = DVSET AND MAINTAIN SEPARATELY
+C     
+      IF (IOD.EQ.1.AND.IMRG.EQ.1) THEN                                    B02220
          WRITE (KFILYR,'(A4,I2.2)') CKFIL,LAYER                           B02230
          INQUIRE (UNIT=KFILE,OPENED=OP)                                   B02240
          IF (OP) CLOSE (KFILE)                                            B02250
          OPEN (KFILE,FILE=KFILYR,FORM=CFORM,STATUS='UNKNOWN')             B02260
          REWIND KFILE                                                     B02270
          DVSAV = DV                                                       B02280
-         DVOUT = 0.003328                                                 B02290
+         DVOUT = DVSET                                                    B02290
          DV = DVOUT                                                       B02300
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02310
          DV = DVSAV                                                       B02320
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3                B02330
       ELSE                                                                B02340
-         DVOUT = 0.0                                                      B02350
-         CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02360
-         IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02370
-      ENDIF                                                               B02380
+         IF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
+            WRITE(KDFLYR,'(A4,I2.2)') KDFIL,LAYER
+            INQUIRE (UNIT=KFILE,OPENED=OP)
+            IF (OP) CLOSE (KFILE)
+            OPEN (KFILE,FILE=KDFLYR,FORM=CFORM,STATUS='UNKNOWN')
+            REWIND KFILE
+            DVOUT = DV
+            CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
+            IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3
+         ELSE
+            DVOUT = 0.0                                                   B02350
+            CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                          B02360
+            IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                B02370
+         ENDIF                                                            B02380
+      ENDIF
 C                                                                         B02390
       IF (IHIRAC.EQ.9) THEN                                               B02400
          DO 50 M = 1, NMOL                                                B02410
