@@ -5,7 +5,7 @@ C     presently: 03/18/96  18:32:37
       SUBROUTINE RRTATM
 C
 C     This routine has been modified from lblatm.f for use with RRTM,
-C      using the translation code, lbl2r.f, version 1.5
+C      using the translation code, lbl2r.f, version 1.6
 C
 C     path:      %P%
 C     revision:  $Revision$
@@ -165,7 +165,7 @@ C                                                                        FA01300
 C                                                                        FA01330
 C     FOR IXSECT = 1, CALL XAMNTS                                        FA01340
 C                                                                        FA01350
-      IXSECT = IXSCNT/10                                                 FA01360
+C     IXSECT = IXSCNT/10
       XV1 = V1-25.                                                       FA01370
       XV2 = V2+25.                                                       FA01380
       IF (IXSECT.EQ.1) CALL XAMNTS (XV1,XV2)                             FA01390
