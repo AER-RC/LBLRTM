@@ -863,7 +863,7 @@ C                                                                         H08430
             VINEW = VI+DVI*FLOAT(INTVLS)
             XVINEW = VINEW                                                H08580
 C                                                                         H08590
-            BBNEXT = RADCN1*(XVINEW**2)*XKT/(1.+0.5*XVINEW*XKT)           H08600
+            BBNEXT = RADCN1*(XVINEW**2)*XKT/(1.+0.5*XVINEW/XKT)           H08600
          ELSEIF (XVIOKT.LE.80.0) THEN                                     H08610
             FRONT  = XVIOKT/(1.-EXPNEG)
             BOX    = 3.- FRONT
