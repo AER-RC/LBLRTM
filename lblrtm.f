@@ -35,7 +35,6 @@ C                                                                         A00310
 C**********************************************************************   A00320
 C*                                                                        A00330
 C*                           LBLRTM                                       A00340
-C*                                                  3 JUNE 1991           A00350
 C*                                                                        A00360
 C*                FAST ATMOSPHERIC SIGNATURE CODE                         A00370
 C*                                                                        A00380
@@ -293,9 +292,11 @@ C-               CPU TIME, RANDOM NUMBER, ETC.).                          A02890
 C-                                                                        A02900
 C----------------------------------------------------------------------   A02910
 C                                                                         A02920
-      IMPLICIT DOUBLE PRECISION (V)                                     ! A02930
+      IMPLICIT REAL*8           (V)                                     ! A02930
 C
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & A03050
+      character*8      XID,       HMOLID,      YID,HDATE,HTIME         
+      real*8               SECANT,       XALTZ 
+c
       LOGICAL OP
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
       CHARACTER*55 PTHT3M,PTHODI,PTHODT,PTHRDR,CTAPE3
@@ -520,7 +521,7 @@ C
          ENDIF
          INFLAG = 0
          IOTFLG = 0
-         READ(IRD,1010) INFLAG,IOTFLG
+         READ(IRD,1010) INFLAG,IOTFLG,JULDAT
          IF (INFLAG.EQ.1) THEN
 c            IFILE = KFILE
             IFILE = MFILE
@@ -530,7 +531,7 @@ c            IFILE = KFILE
          INQUIRE (UNIT=13,OPENED=OP)
          IF (OP) CLOSE(13)
          OPEN(UNIT=13,FILE='TAPE13',FORM='UNFORMATTED')
-         CALL SOLINT(IFILE,13,NPTS,INFLAG,IOTFLG)
+         CALL SOLINT(IFILE,13,NPTS,INFLAG,IOTFLG,JULDAT)
          REWIND 13
          GOTO 60
       ENDIF
@@ -890,7 +891,7 @@ C                                                                         A07280
      *         'pltlbl.f: ',6X,A8,10X, '  testmm.f: ',6X,A8,/,5X,
      *         'xmerge.f: ',6X,A8,10X, 'util_xxx.f: ',6X,A8,/,5X,
      *         ' solar.f: ',6X,A8,10X, '            ',6X,8X,/)
- 1010 FORMAT (2I5)
+ 1010 FORMAT (2I5,2X,I3)
  1015 FORMAT (I5)
 C                                                                         A07580
       END                                                                 A07590
@@ -986,11 +987,12 @@ C     -------------------------------------------------------------
 C
       SUBROUTINE COPYFL (NPTS,KFILE,MFILE)                                A08980
 C                                                                         A08990
-      IMPLICIT DOUBLE PRECISION (V)                                     ! A09000
+      IMPLICIT REAL*8           (V)                                     ! A09000
 C                                                                         A09010
       COMMON TR(2410)                                                     A09020
 C                                                                         A09030
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & A09040
+      character*8      XID,       HMOLID,      YID         
+      real*8               SECANT,       XALTZ
 C                                                                         A09050
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A09060
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A09070
@@ -1078,7 +1080,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE PRLNHD                                                   A09430
 C                                                                         A09440
-      IMPLICIT DOUBLE PRECISION (V)                                     ! A09450
+      IMPLICIT REAL*8           (V)                                     ! A09450
 C                                                                         A09460
 C     PRLNHD PRINTS OUT LINE FILE HEADER                                  A09470
 C                                                                         A09480
@@ -1094,17 +1096,22 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NDFLE,IAFIL,IEXFIL,        A09500
      *              NLTEFL,LNFIL4,LNGTH4                                  A09510
 C                                                                         A09520
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & A09530
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         A09540
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A09550
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A09560
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    A09570
 C                                                                         A09580
-      DOUBLE PRECISION HLINID,BMOLID,HID1,HLINHD                        & A09590
+      CHARACTER*8      HLINID,BMOLID,HID1,HLINHD                        & A09590
 C                                                                         A09600
       COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A09610
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A09620
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL     A09630
+
+      real *4 sumstr,flinlo,flinhi
+      integer *4 lnfil,molcnt,mcntlc,mcntnl,linmol,
+     *     lincnt,ilinlc,ilinnl,irec,irectl
 C                                                                         A09640
 C     LSTWD (LAST WORD) IS DUMMY, DOES NOT NEED TO BE COUNTED             A09650
 C                                                                         A09660
@@ -1122,13 +1129,20 @@ C                                                                         A09700
      *            (FSCDID(16),LAYR1) , (FSCDID(17),NLAYHD)                A09770
 C                                                                         A09780
       DATA CHARI / 'I'/                                                   A09790
-C                                                                         A09800
-      LSTWDL = -654321
-      NFHDRL = NWDL(IWD,LSTWDL)                                           A09810
 C                                                                         A09820
       REWIND LINFIL                                                       A09830
-      CALL BUFIN (LINFIL,LEOF,HLINHD(1),NFHDRL)                           A09840
-      IF (LEOF.LE.0) STOP 'LAYER; TAPE3 DOES NOT EXIST'                   A09850
+
+      lnfil = linfil
+
+      read (lnfil,end=777)    HLINID,BMOLID,MOLCNT,MCNTLC,       
+     *                MCNTNL,SUMSTR,LINMOL,FLINLO,FLINHI,  
+     *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1
+C
+      go to 5
+C     
+ 777  STOP 'LAYER; TAPE3 DOES NOT EXIST'                   
+c
+ 5    continue
 C                                                                         A09860
       DO 10 M = 1, LINMOL                                                 A09870
          HMOLID(M) = BMOLID(M)                                            A09880
@@ -1212,7 +1226,7 @@ C     -------------------------------------------------------------
 C
       SUBROUTINE XLAYER (MPTS,NPTS,LFILE,MFILE,NFILE)                     A11210
 C                                                                         A11220
-      IMPLICIT DOUBLE PRECISION (V)                                     ! A11230
+      IMPLICIT REAL*8           (V)                                     ! A11230
 C                                                                         A11240
 C**********************************************************************
 C     XLAYER CONTROLS LAYER BY LAYER CALCULATION                          A11250
@@ -1264,13 +1278,15 @@ C     COMMON /MLTSCT/ TAUGAS(2410),FUPC(2410),RUPC(2410)                  A11450
 C                                                                         A11460
       COMMON /LASIV/ VLAS,ILAS                                            A11470
 C                                                                         A11480
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & A11490
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         A11500
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A11510
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A11520
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    A11530
 C                                                                         A11540
-      DOUBLE PRECISION XI1,SECAN1,HMOLI1,XALT1,Y1D                      & A11550
+      character*8      XI1,       HMOLI1,      Y1D         
+      real*8               SECAN1,       XALT1
 C                                                                         A11560
       COMMON /FILHD1/ XI1(10),SECAN1,PAV1,TAV1,HMOLI1(60),XALT1(4),       A11570
      *                W1(60),PDL,PDU,TDL,TDU,W12   ,D1 ,VD1,VD2,TBOUN1,   A11580
@@ -2247,7 +2263,7 @@ C     -------------------------------------------------------------
 C
       SUBROUTINE OPPATH                                                   A16870
 C                                                                         A16880
-      IMPLICIT DOUBLE PRECISION (V)                                     ! A16890
+      IMPLICIT REAL*8           (V)                                     ! A16890
 C                                                                         A16900
 C     OPPATH CALLS LBLATM AND CALLS PATH FIRST                            A16910
 C                                                                         A11260
@@ -2284,14 +2300,15 @@ C                                                                         A17110
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A17150
      *              EXTID(10)                                             A17160
 C                                                                         A17170
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & A17180
+      character*8      XID,       HMOLID,      YID         
+      real*8               SECANT,       XALTZ 
 C                                                                         A17190
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A17200
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A17210
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    A17220
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   A17230
 C                                                                         A17240
-      DOUBLE PRECISION  HLINID,BMOLID,HID1                              & A17250
+      CHARACTER*8       HLINID,BMOLID,HID1                              & A17250
 C                                                                         A17260
       COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A17270
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A17280
@@ -2319,6 +2336,8 @@ C                                                                         A17450
       EQUIVALENCE (YID(10),LTNSAV) , (YID(9),LH1SAV) , (YID(8),LH2SAV)    A17490
       EQUIVALENCE (XALTZ(1),ALTZL) , (XALTZ(2),ALTZU)                     A17500
 C                                                                         A17510
+      character*4 ht1,ht2
+c
       DATA XDV / 64. /                                                    A17520
       DATA HZ / 6.5 /                                                     A17530
 C                                                                         A17540
@@ -2409,16 +2428,17 @@ C  SAVE AIRMASS FACTORS FOR USE WITH MULTIPLE SCATTERING                  A18340
 C                                                                         A18350
             DO 10 IAIR = 1, 67                                            A18360
                AIRMAS(IAIR) = SECNTA(IAIR)                                A18370
-   10       CONTINUE                                                      A18380
+ 10         CONTINUE                                                      A18380
          ENDIF                                                            A18390
          LTNSAV = LTGNT                                                   A18400
          LH2SAV = LH2                                                     A18410
 C                                                                         A18420
          NMOLIN = NMOL+1                                                  A18430
          DO 20 MOL = NMOLIN, 35                                           A18440
-            DO 20 ILAYR = 1, NLAYRS                                       A18450
+            DO 19 ILAYR = 1, NLAYRS                                       A18450
                WKL(MOL,ILAYR) = 0.                                        A18460
-   20    CONTINUE                                                         A18470
+ 19         continue
+ 20      CONTINUE                                                         A18470
 C                                                                         A18480
          RETURN                                                           A18490
       ENDIF                                                               A18500
@@ -2452,7 +2472,7 @@ C                                                                         A18770
       DO 30 M = 1, NMOL                                                   A18780
          WK(M) = WKL(M,LAYER)                                             A18790
          WXM(M) = XAMNT(M,LAYER)                                          A18800
-   30 CONTINUE                                                            A18810
+ 30   CONTINUE                                                            A18810
 C                                                                         A18820
       H2OSLF = H2OSL(LAYER)                                               A18830
       WTOT = WTOTL(LAYER)                                                 A18840
@@ -2472,23 +2492,23 @@ C                                                                         A18820
 C                                                                         A18980
       RETURN                                                              A18990
 C                                                                         A19000
-  890 FORMAT (//,
+ 890  FORMAT (//,
      *        '0 SAMPLE   =',F13.4,/,
      *        '0 ALFAL0   =',F13.4,/,
      *        '0 AVMASS   =',F13.4,/)
-  900 FORMAT ('1 ERROR IATM = 0 IAERSL GT 0 ')                            A19010
-  905 FORMAT ('1')                                                        A19020
-  910 FORMAT ('0 V1(CM-1) = ',F12.4,/'0 V2(CM-1) = ',F12.4,/,             A19030
+ 900  FORMAT ('1 ERROR IATM = 0 IAERSL GT 0 ')                            A19010
+ 905  FORMAT ('1')                                                        A19020
+ 910  FORMAT ('0 V1(CM-1) = ',F12.4,/'0 V2(CM-1) = ',F12.4,/,             A19030
      *        '0 SAMPLE   =',F13.4,/'0 DVSET    =',F13.6,/,               A19040
      *        '0 ALFAL0   =',F13.4,/'0 AVMASS   =',F13.4,/,               A19050
      *        '0 DPTMIN   =',1P,E13.4,13X,'  DPTFAC   =',0P,F13.6)        A19060
-  915 FORMAT ('0 V2-V1 .GT. 2020. ')                                      A19070
-  920 FORMAT ('0',1X,7('*'),' LAST ',I5,' MOLECULES ON LINFIL NOT ',      A19080
+ 915  FORMAT ('0 V2-V1 .GT. 2020. ')                                      A19070
+ 920  FORMAT ('0',1X,7('*'),' LAST ',I5,' MOLECULES ON LINFIL NOT ',      A19080
      *        'SELECTED')                                                 A19090
-  925 FORMAT ('0',1X,53('*'),/,'0',1X,14('*'),I5,' MOLECULES ',           A19100
+ 925  FORMAT ('0',1X,53('*'),/,'0',1X,14('*'),I5,' MOLECULES ',           A19100
      *        'REQUESTED',2X,12('*'),/,2X,7('*'),2X,'ONLY ',I5,           A19110
      *        ' MOLECULES ON LINFIL',2X,11('*'),/,'0',1X,53('*'))         A19120
-  930 FORMAT (2(/),'  V1 RESET ',F10.3,'  V2 RESET ',F10.3)               A19130
+ 930  FORMAT (2(/),'  V1 RESET ',F10.3,'  V2 RESET ',F10.3)               A19130
 C                                                                         A19140
       END                                                                 A19150
 C
@@ -2496,7 +2516,7 @@ C     -------------------------------------------------------------
 C
       SUBROUTINE PATH                                                     A19160
 C                                                                         A19170
-      IMPLICIT DOUBLE PRECISION (V)                                     ! A19180
+      IMPLICIT REAL*8           (V)                                     ! A19180
 C                                                                         A19190
       PARAMETER (NTMOL=32,NSPECI=75)                                      A19200
 C                                                                         A19210
@@ -2526,7 +2546,8 @@ C
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A19330
 C                                                                         A19340
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & A19350
+      character*8      XID,       HMOLID,      YID         
+      real*8               SECANT,       XALTZ 
 C                                                                         A19360
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A19370
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A19380
@@ -2567,7 +2588,7 @@ C                                                                         A19630
       CHARACTER*6 HOLN2                                                   A19660
       CHARACTER*5 HEAD5
       CHARACTER*4 HEAD4
-      CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT                             A19670
+      CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,  ht1,ht2   
       CHARACTER*3 CINP,CINPX,CBLNK                                        A19680
       DIMENSION FILHDR(2),AMOUNT(2),AMTSTR(2)                             A19690
       DIMENSION HEDXS(15),WMT(35),SECL(64),WXT(35),WTOTX(67)              A19700
@@ -2646,6 +2667,7 @@ C
       ENDIF                                                               A20320
 C                                                                         A20330
       JTYPE = 0                                                           A20340
+
       DO 30 L = 1, NLAYRS                                                 A20350
 C                                                                         A20360
          IF (L.EQ.1) THEN                                                 A20370
@@ -3526,7 +3548,7 @@ C     -------------------------------------------------------------
 C
       SUBROUTINE OPDPTH (MPTS)                                            A24460
 C                                                                         A24470
-      IMPLICIT DOUBLE PRECISION (V)                                     ! A24480
+      IMPLICIT REAL*8           (V)                                     ! A24480
 C                                                                         A24490
 C     OPDPTH CALLS CONTNM,LINF4,HIRAC1,NONLTE                             A24500
 C                                                                         A24510
@@ -3536,7 +3558,8 @@ C                                                                         A24510
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A24550
      *              EXTID(10)                                             A24560
 C                                                                         A24570
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & A24580
+      character*8      XID,       HMOLID,      YID         
+      real*8               SECANT,       XALTZ 
 C                                                                         A24590
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A24600
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A24610
@@ -3656,7 +3679,7 @@ C
 C
 C     Reads in emission function values directly from file "EMISSION"
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
 C     ----------------------------------------------------------------
 C     Parameter and common blocks for direct input of emission
@@ -3690,7 +3713,7 @@ C
 C
 C     Reads in reflection function values directly from file "REFLECTION"
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
 C     ----------------------------------------------------------------
 C     Parameter and common blocks for direct input of reflection
