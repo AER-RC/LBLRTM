@@ -76,7 +76,7 @@ C                                                                         B00630
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
 C                                                                         B00650
-      COMMON /CVROPR/ HVROPR
+      COMMON /CVROPR/ HNAMOPR,HVROPR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
@@ -122,7 +122,7 @@ C                                                                         B00970
       CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR
       CHARACTER*10 HFMODL
       CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
-      CHARACTER*15 HVROPR
+      CHARACTER*18 HNAMOPR,HVROPR
       LOGICAL OP                                                          B00990
 C                                                                         B01000
       DIMENSION MEFDP(64),FILHDR(2),IWD(2)                                B01010
@@ -146,6 +146,8 @@ C
 C                                                                         B01120
       DATA MEFDP / 64*0 /                                                 B01130
 C                                                                         B01140
+      DATA I_10/10/
+C
       PTHODE = 'ODexact_'
       PTHODD = 'ODdeflt_'
       DATA KODLYR /
@@ -156,7 +158,7 @@ C                                                                         B01160
 C                                                                         B01180
 C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C
-      HVROPR = '$Revision$'
+      HVROPR  = '$Revision$'
 C
 C     Initialize timing for the group "OTHER" in the TAPE6 output
 C
@@ -169,7 +171,7 @@ C
 C
       LSTWDX = -654321
       NPNLXP = NWDL(IWD,LSTWDX)                                           B01190
-      ICNTNM = MOD(IXSCNT,10)                                             B01200
+      ICNTNM = MOD(IXSCNT,I_10)                                             B01200
       IXSECT = IXSCNT/10                                                  B01210
 C                                                                         B01220
 C     SET INPUT FLAG FOR USE BY X-SECTIONS                                B01230
@@ -848,6 +850,8 @@ C                                                                         B05260
       DATA HREJ /'0'/,HNOREJ /'1'/
       DATA NWDTH /0/
 C                                                                         B05280
+      DATA I_1/1/, I_100/100/, I_1000/1000/
+C
       NLNCR = NLNCR+1                                                     B05290
       IF (NLNCR.EQ.1) THEN                                                B05300
 C                                                                         B05310
@@ -885,11 +889,11 @@ C                                                                         B05560
          GAMMA2 = 0.                                                      B05610
          I = IOUT(J)                                                      B05620
          IFLAG = IFLG(I)                                                  B05630
-         M = MOD(MOL(I),100)                                              B05640
+         M = MOD(MOL(I),I_100)                                              B05640
 C                                                                         B05650
 C     ISO=(MOD(MOL(I),1000)-M)/100   IS PROGRAMMED AS:                    B05660
 C                                                                         B05670
-         ISO = MOD(MOL(I),1000)/100                                       B05680
+         ISO = MOD(MOL(I),I_1000)/100                                       B05680
          ILOC = ISOVEC(M)+ISO                                             B05690
 C
          IF ((M.GT.NMOL).OR.(M.LT.1)) GO TO 25
@@ -1002,7 +1006,7 @@ c     SPEAK is used for line rejection (no LCPL lines (sppsp ne 1) are rejected)
                   ENDIF
                ELSE                                                       B06680
                   JJ = (VNU(I)-V1R4)/DVR4+1.                              B06690
-                  JJ = MAX(JJ,1)                                          B06700
+                  JJ = MAX(JJ,I_1)                                          B06700
                   JJ = MIN(JJ,NPTR4)                                      B06710
                   IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ)) 
      &                .and. sppsp(i).eq.0.) THEN
@@ -2153,6 +2157,8 @@ C                                                                         B18820
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           B18830
       DATA FACT1 / 3.0E-03 /                                              B18840
 C                                                                         B18850
+      DATA I_1/1/
+C
 C     RADFNI IS COMPUTED AT VI AND AND CALCULATES THE                     B18860
 C     WAVENUMBER VALUE (VINEW) FOR NEXT RADFNI CALC.                      B18870
 C                                                                         B18880
@@ -2196,12 +2202,12 @@ C                                                                         B19240
             IF (VINEW.GE.0.0) THEN                                        B19260
                VINEW = VI+FACT1*0.5*XVI                                   B19270
                INTVLS = (VINEW-VI)/DVI                                    B19280
-               INTVLS = MAX(INTVLS,1)                                     B19290
+               INTVLS = MAX(INTVLS,I_1)                                     B19290
                VINEW = VI+DVI* REAL(INTVLS)                               B19300
             ELSE                                                          B19310
                VINEW = ABS(VINEW)                                         B19320
                INTVLS = (VINEW-VI)/DVI                                    B19330
-               INTVLS = MAX(INTVLS,1)                                     B19340
+               INTVLS = MAX(INTVLS,I_1)                                     B19340
             ENDIF                                                         B19350
             XVINEW = VINEW                                                B19360
 C                                                                         B19370
@@ -2215,12 +2221,12 @@ C                                                                         B19390
                CVIKT = XVIOKT*EXPVKT                                      B19450
                VINEW = VI+FACT1*XVI/(1.+(CVIKT/XMINUS+CVIKT/XPLUS))       B19460
                INTVLS = (VINEW-VI)/DVI                                    B19470
-               INTVLS = MAX(INTVLS,1)                                     B19480
+               INTVLS = MAX(INTVLS,I_1)                                     B19480
                VINEW = VI+DVI* REAL(INTVLS)                               B19490
             ELSE                                                          B19500
                VINEW = ABS(VINEW)                                         B19510
                INTVLS = (VINEW-VI)/DVI                                    B19520
-               INTVLS = MAX(INTVLS,1)                                     B19530
+               INTVLS = MAX(INTVLS,I_1)                                     B19530
             ENDIF                                                         B19540
             XVINEW = VINEW                                                B19550
 C                                                                         B19560
@@ -2230,12 +2236,12 @@ C                                                                         B19580
             IF (VINEW.GE.0.0) THEN                                        B19600
                VINEW = VI+(FACT1*XVI)                                     B19610
                INTVLS = (VINEW-VI)/DVI                                    B19620
-               INTVLS = MAX(INTVLS,1)                                     B19630
+               INTVLS = MAX(INTVLS,I_1)                                     B19630
                VINEW = VI+DVI* REAL(INTVLS)                               B19640
             ELSE                                                          B19650
                VINEW = ABS(VINEW)                                         B19660
                INTVLS = (VINEW-VI)/DVI                                    B19670
-               INTVLS = MAX(INTVLS,1)                                     B19680
+               INTVLS = MAX(INTVLS,I_1)                                     B19680
             ENDIF                                                         B19690
             XVINEW = VINEW                                                B19700
 C                                                                         B19710
@@ -2245,12 +2251,12 @@ C                                                                         B19710
          IF (VINEW.GE.0.0) THEN                                           B19750
             VINEW = VI+(FACT1*XVI)                                        B19760
             INTVLS = (VINEW-VI)/DVI                                       B19770
-            INTVLS = MAX(INTVLS,1)                                        B19780
+            INTVLS = MAX(INTVLS,I_1)                                        B19780
             VINEW = VI+DVI* REAL(INTVLS)                                  B19790
          ELSE                                                             B19800
             VINEW = ABS(VINEW)                                            B19810
             INTVLS = (VINEW-VI)/DVI                                       B19820
-            INTVLS = MAX(INTVLS,1)                                        B19830
+            INTVLS = MAX(INTVLS,I_1)                                        B19830
          ENDIF                                                            B19840
          XVINEW = VINEW                                                   B19850
 C                                                                         B19860
@@ -3745,6 +3751,8 @@ C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         D00570
 C                                                                         D00580
       DATA TEMPLC / 200.0,250.0,296.0,340.0 /                             D00590
 C                                                                         D00600
+      DATA I_100/100/, I_1000/1000/
+C
 C     Initialize timing for the group "OTHER" in the TAPE6 output
 C
       LOTHER = 0.0
@@ -3832,11 +3840,11 @@ C                                                                         D01300
          IFLAG = IFLG(I)                                                  D01370
          IF (I.LE.0) GO TO 50                                             D01380
 C                                                                         D01390
-         M = MOD(MOLB(I),100)                                             D01400
+         M = MOD(MOLB(I),I_100)                                             D01400
 C                                                                         D01410
-C     ISO=(MOD(MOLB(I),1000)-M)/100   IS PROGRAMMED AS:                   D01420
+C     ISO=(MOD(MOLB(I),I_1000)-M)/100   IS PROGRAMMED AS:                   D01420
 C                                                                         D01430
-         ISO = MOD(MOLB(I),1000)/100                                      D01440
+         ISO = MOD(MOLB(I),I_1000)/100                                      D01440
          ILOC = ISOVEC(M)+ISO                                             D01450
          IF ((M.GT.NMOL).OR.(M.LT.1)) GO TO 50                            D01460
          SUI = SB(I)*W(M)                                                 D01470
@@ -4477,6 +4485,8 @@ C                                                                         D06410
       DATA ASUBL / 0.623 /,BSUBL / 0.410 /                                D06430
       DATA HREJ /'0'/,HNOREJ /'1'/
 C                                                                         D06440
+      DATA I_1/1/, I_251/251/
+C
       VNULST = V2R4+BOUND4                                                D06450
 C                                                                         D06460
       IF (JCNVF4.NE.0) GO TO 20                                           D06470
@@ -4541,7 +4551,7 @@ C                                                                         D07010
          SPEAK = A3*(ABS(SIV))
 C                                                                         D07090
          JJ = (VNU(I)-V1R4)/DVR4+1.                                       D07100
-         JJ = MAX(JJ,1)                                                   D07110
+         JJ = MAX(JJ,I_1)                                                   D07110
          JJ = MIN(JJ,NPTR4)                                               D07120
 C
 C     SPEAK is used for line rejection
@@ -4567,7 +4577,7 @@ C                                                                         D07190
 C                                                                         D07220
          IF (VNUI.GE.VNULST) GO TO 70                                     D07230
          IF (JMIN.GT.NPTR4) GO TO 60                                      D07240
-         JMIN = MAX(JMIN,1)                                               D07250
+         JMIN = MAX(JMIN,I_1)                                               D07250
          JMAX = (XNUI+BOUND4)/DVR4+1.                                     D07260
          IF (JMAX.LT.JMIN) GO TO 50                                       D07270
          JMAX = MIN(JMAX,NPTR4)                                           D07280
@@ -4999,6 +5009,8 @@ C                                                                         E02930
 C                                                                         E02980
       DATA IFILE,JFILE / 91,92 /                                          E03020
 C                                                                         E03030
+      DATA I_0/0/
+C
 C**********************************************************************   E03040
 C     NUMXS IS THE NUMBER OF 'CROSS SECTION' MOLECULES TO BE USED         E03050
 C                                                                         E03060
@@ -5196,7 +5208,7 @@ C                                                                         E04720
 C                                                                         E04860
                NNSKIP = (V1X-V1FX(NS,NI))/DVFXX                           E04870
                NSKIP = (NNSKIP-3)/10                                      E04880
-               NSKIP = MAX(NSKIP,0)                                       E04890
+               NSKIP = MAX(NSKIP,I_0)                                       E04890
                NRSKIP = NSKIP*10                                          E04900
                NBSKIP = NSKIP                                             E04910
 C                                                                         E04920
@@ -5207,7 +5219,7 @@ C                                                                         E04940
                IF (IAFORM.GT.100) THEN                                    E04970
                   NBSKIP = NSKIP/51                                       E04980
                   NRSKIP = (NBSKIP-1)*510+500                             E04990
-                  NRSKIP = MAX(NRSKIP,0)                                  E05000
+                  NRSKIP = MAX(NRSKIP,I_0)                                  E05000
                ENDIF                                                      E05010
                V1FP = V1FX(NS,NI)+ REAL(NRSKIP)*DVFXX                     E05020
                V2FP = V2X+2.0*DVFXX                                       E05030
@@ -5220,7 +5232,7 @@ C                                                                         E04940
                   IF (NMAX.GT.500) NMAX = NMAX+10                         E05100
                ENDIF                                                      E05110
                N2RX = ((V1FP-4.*DVFXX-V1X)/DVX+0.999)-1.                  E05120
-               N2RX = MAX(N2RX,0)                                         E05130
+               N2RX = MAX(N2RX,I_0)                                         E05130
 C                                                                         E05140
 C     IMAX = -4 TO PLACE THE FIRST PANEL V1 AT ARRAY LOCATION 1           E05150
 C                                                                         E05160
@@ -5435,6 +5447,8 @@ C                                                                         E07110
       DATA IFILE,JFILE / 91,92 /                                          E07130
       DATA UNBFRM / '(10E10.3)'/,BLKFRM / '(510E10.3)'/                   E07140
       DATA CTORR / '      TORR'/
+C
+      DATA I_100/100/
 C                                                                         E07150
 C     DEFINE PRESSURE CONVERSIONS                                         E07160
 C                                                                         E07170
@@ -5453,7 +5467,7 @@ C                                                                         E07230
          NXMODE = 1                                                       E07300
       ENDIF                                                               E07310
       IAFORM = ABS(ISFORM)                                                E07320
-      IMFORM = MOD(IAFORM,100)                                            E07330
+      IMFORM = MOD(IAFORM,I_100)                                            E07330
 C                                                                         E07340
 C     IF NPANEL <= 0, OPEN FILE AND READ HEADER                           E07350
 C                                                                         E07360

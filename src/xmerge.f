@@ -25,7 +25,7 @@ C                                                                         H00160
       real*8               SECANT,       XALTZ 
       character*1 surf_refl
 C                                                                         H00180
-      COMMON /CVRXMR/ HVRXMR
+      COMMON /CVRXMR/ HNAMXMR,HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H00190
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H00200
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    H00210
@@ -43,7 +43,7 @@ C                                                                         H00260
      *            (FSCDID(11),IMRG) , (FSCDID(16),LAYR1),                 H00310
      *            (FSCDID(17),NLAYHD)                                     H00320
 C                                                                         H00330
-      CHARACTER*15 HVRXMR
+      CHARACTER*18 HNAMXMR,HVRXMR
 C
 C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C
@@ -970,6 +970,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H08090
 C                                                                         H08100
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
+C
+      DATA I_1/1/
 C                                                                         H08120
       DATA FACTOR / 0.003 /                                               H08130
 C                                                                         H08140
@@ -1012,12 +1014,12 @@ C                                                                         H08430
                DELTAV = SQRT(ABS(FACTOR*XDELT))
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
                INTVLS = (DELTAV)/DVI
-               INTVLS = MAX(INTVLS,1)
+               INTVLS = MAX(INTVLS,I_1)
                VINEW = VI+DVI* REAL(INTVLS)
             ELSE
                VINEW = ABS(VINEW)
                INTVLS = (VINEW-VI)/DVI
-               INTVLS = MAX(INTVLS,1)
+               INTVLS = MAX(INTVLS,I_1)
             ENDIF
             XVINEW = VINEW                                                H08580
 C                                                                         H08590
@@ -1030,7 +1032,7 @@ C                                                                         H08590
                DELTAV = SQRT(ABS(FACTOR/DELT2C))
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
                INTVLS = (DELTAV)/DVI
-               INTVLS = MAX(INTVLS,1)
+               INTVLS = MAX(INTVLS,I_1)
                VINEW = VI+DVI* REAL(INTVLS)
             ELSE
                VINEW = ABS(VINEW)
@@ -1047,7 +1049,7 @@ C
                    RETURN
                ENDIF
                INTVLS = (VINEW-VI)/DVI
-               INTVLS = MAX(INTVLS,1)
+               INTVLS = MAX(INTVLS,I_1)
             ENDIF
             XVINEW = VINEW                                                H08740
 C                                                                         H08750
@@ -1095,7 +1097,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
-C                                                                      
+C                                                                         H08120
+      DATA I_1/1/
+C                                                                   
       DATA FACTOR / 0.003 /                                            
 C                                                                      
       XVI = VI
@@ -1154,12 +1158,12 @@ C
                DELTAV = SQRT(ABS(FACTOR*XDELT))
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
                INTVLS = (DELTAV)/DVI
-               INTVLS = MAX(INTVLS,1)
+               INTVLS = MAX(INTVLS,I_1)
                VDNEW = VI+DVI* REAL(INTVLS)
             ELSE
                VDNEW = ABS(VDNEW)
                INTVLS = (VDNEW-VI)/DVI
-               INTVLS = MAX(INTVLS,1)
+               INTVLS = MAX(INTVLS,I_1)
             ENDIF
             XVDNEW = VDNEW
             BBAD = BBVAL/(-TKELV*(1.+0.5*XVDNEW/XKT))
@@ -1171,7 +1175,7 @@ C
                DELTAV = SQRT(ABS(FACTOR/DELT2C))
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
                INTVLS = (DELTAV)/DVI
-               INTVLS = MAX(INTVLS,1)
+               INTVLS = MAX(INTVLS,I_1)
                VDNEW = VI+DVI* REAL(INTVLS)
             ELSE
                VDNEW = ABS(VDNEW)
@@ -1189,7 +1193,7 @@ C
                    RETURN
                ENDIF
                INTVLS = (VDNEW-VI)/DVI
-               INTVLS = MAX(INTVLS,1)
+               INTVLS = MAX(INTVLS,I_1)
             ENDIF
             XVDNEW = VDNEW
             BBAD = BBVAL*(XVDNEW/XKT)/(TKELV*(1-EXP(-XVDNEW/XKT)))
@@ -1260,6 +1264,8 @@ C
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
      *    angle_path, secant_diffuse, secant_path, diffuse_fac
       EQUIVALENCE (BNDEMI(1),A) , (BNDEMI(2),B) , (BNDEMI(3),C)           H09310
+C                                                                         H08120
+      DATA I_1/1/
 C                                                                         H09320
       DATA FACTOR / 0.001 /                                               H09330
 C                                                                         H09340
@@ -1329,12 +1335,12 @@ C                                                                         H09560
          XVNEXT = XVI+FACTOR/ABS((B+2.*C*XVI))                            H09580
          XVNEXT = MIN(XVNEXT,(XVI+DVI*2400))
          INTVLS = (XVNEXT-XVI)/DVI                                        H09590
-         INTVLS = MAX(INTVLS,1)                                           H09600
+         INTVLS = MAX(INTVLS,I_1)                                           H09600
          XVNEXT = XVI+DVI* REAL(INTVLS)                                   H09610
       ELSE                                                                H09620
          XVNEXT = ABS(VINEM)                                              H09630
          INTVLS = (XVNEXT-XVI)/DVI                                        H09640
-         INTVLS = MAX(INTVLS,1)                                           H09650
+         INTVLS = MAX(INTVLS,I_1)                                           H09650
       ENDIF                                                               H09660
 C                                                                         H09670
       EMNEXT = A+B*XVNEXT+C*XVNEXT*XVNEXT                                 H09680
@@ -1467,12 +1473,12 @@ C                                                                         H10410
          XVNEXT = XVI+FACTOR/ABS((B+2.*C*XVI))                            H10430
          XVNEXT = MIN(XVNEXT,(XVI+DVI*2400))
          INTVLS = (XVNEXT-XVI)/DVI                                        H10440
-         INTVLS = MAX(INTVLS,1)                                           H10450
+         INTVLS = MAX(INTVLS,I_1)                                           H10450
          XVNEXT = XVI+DVI* REAL(INTVLS)                                   H10460
       ELSE                                                                H10470
          XVNEXT = ABS(VINRF)                                              H10480
          INTVLS = (XVNEXT-XVI)/DVI                                        H10490
-         INTVLS = MAX(INTVLS,1)                                           H10500
+         INTVLS = MAX(INTVLS,I_1)                                           H10500
       ENDIF                                                               H10510
 C                                                                         H10520
       RFNEXT = A+B*XVNEXT+C*XVNEXT*XVNEXT                                 H10530
@@ -2932,8 +2938,11 @@ C                                                                         H22310
                                                                           H22320
       DIMENSION RADLYR(NDIM),TRALYR(NDIM),RADO(0:ND2),TRAO(0:ND2),        H22330
      *          RADLYB(NDIM),A1(*),A2(*),A3(*),A4(*)                      H22340
+C
+      DATA I_1/1/
+C
       dimension tr_diffus(-100:1100), tr_diffus_dif(-100:1100)
-c
+c 
       save i_trdiffus, tr_diffus, tr_diffus_dif, xnpts
 c
       data i_trdiffus/-99/
@@ -2946,7 +2955,7 @@ c     from the layer to the surface at the diffusivity angle
 c     (backside) from the transmittance from the surface to the layer on the 
 c     'observer side' of the path.  The quantity 'diffuse_fac'
 c     is the appropriate factor to be used for this purpose.  Note that the
-c     optical depth for the downwelling radiance has already been been 
+c     optical depth for the downwelling radiance has already been  
 c     properly computed in subroutine emin.
 c     
 c     i_trdiffus       flag to establish if the table needs to be set up.
@@ -2965,7 +2974,7 @@ c
      *     (i_trdiffus, tr_diffus, tr_diffus_dif, xnpts, diffuse_fac)
 C                                                                         H22350
       LLM1 = LL-1                                                         H22360
-      LLM1 = MAX(LLM1,1)                                                  H22370
+      LLM1 = MAX(LLM1,I_1)                                                  H22370
 C                                                                         H22380
 C     LOOPING OVER POINTS WITH SAME WEIGHTS                               H22390
 C                                                                         H22400
@@ -6696,9 +6705,11 @@ C                                                                         H35690
                                                                           H35700
       DIMENSION RADLYR(NDIM),TRALYR(NDIM),RADO(0:ND2),TRAO(0:ND2),        H35710
      *          A1(*),A2(*),A3(*),A4(*)                                   H35720
+C
+      DATA I_1/1/
 C                                                                         H35730
       LLM1 = LL-1                                                         H35740
-      LLM1 = MAX(LLM1,1)                                                  H35750
+      LLM1 = MAX(LLM1,I_1)                                                  H35750
 C                                                                         H35760
 C     LOOPING OVER POINTS WITH SAME WEIGHTS                               H35770
 C                                                                         H35780

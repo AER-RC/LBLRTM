@@ -16,7 +16,7 @@ C                                                                         I00090
       character*8      XID,       HMOLID,      YID,SCANID        
       real*8               SECANT,       XALTZ 
 C                                                                         I00110
-      COMMON /CVRPST/ HVRPST
+      COMMON /CVRPST/HNAMPST, HVRPST
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       I00120
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,   I00130
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    I00140
@@ -39,7 +39,7 @@ C                                                                         I00280
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               I00290
       CHARACTER*11 CFORM                                                  I00300
       CHARACTER*8 HSCNID(0:6)                                             I00310
-      CHARACTER*15 HVRPST
+      CHARACTER*18 HNAMPST,HVRPST
       CHARACTER SCNOUT*7,SCNINF*7,CTAPE*4                                 I00320
       LOGICAL OP                                                          I00330
 C                                                                         I00340
@@ -52,6 +52,8 @@ C                                                                         I00380
      *            (FSCDID(13),XHWHM) , (FSCDID(14),IDABS),                I00410
      *            (FSCDID(16),LAYR1)                                      I00420
 C                                                                         I00430
+      DATA I_1/1/, I_1000/1000/
+C
       DATA HTRANS / 'TRANSMISSION'/,HABSRB / ' ABSORPTION '/,             I00440
      *     HRADIA / ' RADIANCE   '/                                       I00450
       DATA SCNOUT / '       '/,SCNINF / 'SCNINTF'/,CTAPE / 'TAPE'/        I00460
@@ -266,7 +268,7 @@ C                                                                         I02060
 C                                                                         I02110
       IF (IUNIT.LE.0) IUNIT = IFILE                                       I02120
       IFILE = IUNIT                                                       I02130
-      IFILST = MAX(IFILST,1)                                              I02140
+      IFILST = MAX(IFILST,I_1)                                              I02140
       IF (NIFILS.LE.0) NIFILS = 99                                        I02150
 C                                                                         I02160
 C     SKIP TO SELECTED 'FILE'                                             I02170
@@ -334,7 +336,7 @@ C                                                                         I02730
       IF ((IEMIT.EQ.0).AND.(JEMIT.EQ.0)) JTREM = 0                        I02790
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        I02800
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        I02810
-      ISCANT = MOD(ISCAN,1000)                                            I02820
+      ISCANT = MOD(ISCAN,I_1000)                                            I02820
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       I02830
       IF (JTREM.LT.0) THEN                                                I02840
          WRITE(IPR,*)   ' SCANF; JTREM LT 0'                              I02840
@@ -868,7 +870,7 @@ C                                                                         I07490
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        I07520
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.2)) JTREM = 2                        I07530
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        I07540
-      ISCANT = MOD(ISCAN,1000)                                            I07550
+      ISCANT = MOD(ISCAN,I_1000)                                            I07550
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       I07560
       WRITE (IPR,910) IFILE,IEMIT,JEMIT,JTREM,JABS                        I07580
       IF (JTREM.LT.0) THEN                                                I07570
@@ -1043,7 +1045,7 @@ C                                                                         I09120
       IF ((IEMIT.EQ.0).AND.(JEMIT.EQ.0)) JTREM = 0                        I09180
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        I09190
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        I09200
-      ISCANT = MOD(ISCAN,1000)                                            I09210
+      ISCANT = MOD(ISCAN,I_1000)                                            I09210
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 4 
 C
       WRITE (IPR,920) SCANID,IUNIT,IFILST,NIFILS,JEMIT,JFN,JVAR,JABS      I09240
@@ -1137,7 +1139,7 @@ C                                                                         I10000
       IF (JFN.EQ.0.OR.JFN.EQ.5.OR.JFN.EQ.6) THEN                          I10020
          CALL PNLRCT (R1,JUNIT,SUMR,NPTS)                                 I10030
       ELSE                                                                I10040
-         CALL PANLSC (R1,JUNIT,SUMR,NPTS)                                 I10050
+         CALL PANLSC (R1,JUNIT,SUMR,NPTS)                                  I10050
       ENDIF                                                               I10060
       IF ((ISTOP.NE.1).AND.(IEOFSC.GT.0)) GO TO 30                        I10070
       CALL CPUTIM (TIME)                                                  I10080
@@ -1204,6 +1206,8 @@ C                                                                         I10580
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I10660
      *              NLTEFL,LNFIL4,LNGTH4                                  I10670
       DIMENSION JRATIO(24)                                                I10680
+C
+      DATA I_1/1/
 C                                                                         I10690
       DATA JRATIO / 1,2,3,4,5,6,8,10,12,15,16,20,24,25,30,32,40,48,50,    I10700
      *             60,75,80,100,120 /                                     I10710
@@ -1258,7 +1262,7 @@ C                                                                         I11180
       NLIM = K                                                            I11200
       DVI = DVSC                                                          I11210
       ILO = ((VBOT-V1I)/DVI)+1.5                                          I11220
-      ILO = MAX(ILO,1)                                                    I11230
+      ILO = MAX(ILO,I_1)                                                    I11230
       IHI = ((VTOP-V1I)/DVI)+1.5                                          I11240
       IHI = MIN(IHI,NLIM)                                                 I11250
 C                                                                         I11260
@@ -1339,6 +1343,8 @@ C                                                                         I11840
       DIMENSION S(*)                                                      I11950
 C                                                                         I11960
       EQUIVALENCE (PNLHDR(1),VMIN)                                        I11970
+C
+      DATA I_1000/1000/
 C                                                                         I11980
 CPRT  WRITE(IPR,900) VBOT,VTOP                                            I11990
 C                                                                         I12000
@@ -1440,6 +1446,8 @@ C                                                                         I12770
      *              NLTEFL,LNFIL4,LNGTH4                                  I12880
       DIMENSION S(*),R1(*),XF(*)                                          I12890
 C                                                                         I12900
+      DATA I_1/1/
+C
       CALL CPUTIM (TIME0)                                                 I12910
       IF (ILO.GT.IHI) GO TO 60                                            I12920
       RATIO = DVI/DVO                                                     I12930
@@ -1472,7 +1480,7 @@ C                                                                         I13140
          GO TO 60                                                         I13200
 C                                                                         I13210
    30    JMIN = ZPEAK-ZBOUND+1.5                                          I13220
-         JMIN = MAX(JMIN,1)                                               I13230
+         JMIN = MAX(JMIN,I_1)                                               I13230
          SUMIN = SUMIN+S(I)                                               I13240
          SI = XNORM*S(I)                                                  I13250
          ZF = ( REAL(JMIN-1)-ZPEAK)*ZSLOPE                                I13260
@@ -2473,6 +2481,8 @@ C                                                                         J00470
       CHARACTER CFORM*11,SCNOUT*6,CTAPE*4                                 J00490
       LOGICAL OP                                                          J00500
 C                                                                         J00510
+      DATA I_1/1/, I_1000/1000/
+C
       DATA HTRANS / 'TRANSMISSION'/,HABSRB / ' ABSORPTION '/,             J00520
      *     HRADIA / ' RADIANCE   '/                                       J00530
       DATA SCNOUT / '      '/,CTAPE / 'TAPE'/                             J00540
@@ -2510,7 +2520,7 @@ C                                                                         J00810
          WRITE (SCNOUT,910) CTAPE,IFILE
          OPEN (IFILE,FILE=SCNOUT,STATUS='UNKNOWN',FORM=CFORM)
       ENDIF
-      IFILST = MAX(IFILST,1)                                              J00840
+      IFILST = MAX(IFILST,I_1)                                              J00840
       IF (NIFILS.LE.0) NIFILS = 99                                        J00850
       IF (JUNIT.LE.0) JUNIT = JFILE                                       J00860
       JFILE = JUNIT                                                       J00870
@@ -2562,7 +2572,7 @@ C                                                                         J01290
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        J01330
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.2)) JTREM = 2                        J01340
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        J01350
-      ISCANT = MOD(ISCAN,1000)                                            J01360
+      ISCANT = MOD(ISCAN,I_1000)                                            J01360
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       J01370
       WRITE (IPR,935) IEMIT,JEMIT,JTREM                                   J01390
       WRITE (IPR,940) IFILE,IFILST,NIFILS,JEMIT,JABS                      J01400
@@ -2680,13 +2690,15 @@ C                                                                         J02320
       DIMENSION S(*)                                                      J02450
 C                                                                         J02460
       EQUIVALENCE (PNLHDR(1),V1P)                                         J02470
+C
+      DATA I_1000/1000/
 C                                                                         J02480
 C----------------------------------------------------------------------   J02490
 C                                                                         J02500
       CALL CPUTIM (TIME1)                                                 J02510
       IDUM1 = 0                                                           J02520
       IDUM2 = 0                                                           J02530
-      ISCANT = MOD(ISCAN,1000)                                            J02540
+      ISCANT = MOD(ISCAN,I_1000)                                            J02540
       IF (JTREM.EQ.0.AND.ISCANT.GE.1) GO TO 70                            J02550
       IF (ISCAN.LT.1) THEN                                                J02560
          IF (JTREM.EQ.1) IDUM1 = 1                                        J02570
@@ -2863,15 +2875,17 @@ C                                                                         J04100
       DIMENSION C1(0:202),C2(0:202),C3(0:202),C4(0:202),RSTAT(3)          J04210
 C                                                                         J04220
       DATA NUMCOF / 201 /                                                 J04230
+      DATA I_2400/2400/
 C                                                                         J04240
       CALL CPUTIM (TIME1)                                                 J04250
 C                                                                         J04260
 C     SET UP FOUR POINT INTERPOLATION COEFICIENTS FOR P FOR 201           J04270
 C     POINTS BETWEEN 0 AND 1.0, with an extra point at each end           J04280
 C                                                                         J04290
+      I_0 = 0
       IF (I4PT.NE.0) THEN                                                 J04300
          XNUMCF =  REAL(NUMCOF)
-         DO 10 IP = 0, NUMCOF+1                                           J04310
+         DO 10 IP = I_0, NUMCOF+1                                           J04310
             P = ( REAL(IP)-1.0)/(XNUMCF-1.0)                              J04320
             PP = P**2                                                     J04330
             C1(IP) = -P/2.0*(1-P)**2                                      J04340
@@ -2918,7 +2932,7 @@ C     IF V1J .LT. V1I, THEN ZERO FILL UP TO V1I.                          J04740
 C                                                                         J04750
    20 IF (V1J.LT.V1I) THEN                                                J04760
          J1 = 1                                                           J04770
-         J2 = MIN(INT((V1I-V1J)/DVJ)+1,2400)                              J04780
+         J2 = MIN(INT((V1I-V1J)/DVJ)+1,I_2400)                              J04780
 C                                                                         J04790
 C     FILL IN                                                             J04800
 C                                                                         J04810
@@ -2955,7 +2969,8 @@ C                                                                         J05150
       P = (VJ-VI)/DVI                                                     J05160
 C                                                                         J05170
       J1 = INT((VJ-V1J)/DVJ+1.001)                                        J05180
-      J2 = MIN(INT((V2-V1J)/DVJ+1.001),INT((V2I-DVI-V1J)/DVJ+1.),2400)    J05190
+      J2 = 
+     *   MIN(INT((V2-V1J)/DVJ+1.001),INT((V2I-DVI-V1J)/DVJ+1.),I_2400)    J05190
 C                                                                         J05200
 C     LOOP OVER A SINGLE OUTPUT PANEL                                     J05210
 C                                                                         J05220
@@ -3072,7 +3087,7 @@ C                                                                         J06310
 C                                                                         J06330
    80 CONTINUE                                                            J06340
       J1 = J2+1                                                           J06350
-      J2 = MIN(INT((V2-V1J)/DVJ+1.0001),2400)                             J06360
+      J2 = MIN(INT((V2-V1J)/DVJ+1.0001),I_2400)                             J06360
 C                                                                         J06370
       DO 90 J = J1, J2                                                    J06380
          R(J) = 0.0                                                       J06390
@@ -3150,10 +3165,12 @@ C                                                                         L00250
      *            (FSCDID(8),IPATHL) , (FSCDID(9),JRAD),                  L00280
      *            (FSCDID(12),SCNID) , (FSCDID(13),HWHM),                 L00290
      *            (FSCDID(16),LAYR1)                                      L00300
-
-
+C
+      DATA i_2/2/, I_1000/1000/
+C
       DATA FLTINF / '       '/,FLTOUT / '       ' /,
      *     CTAPE / 'TAPE'/
+c
       data itest / 0 /, itest2 / 0 /
       save itest
       save itest2
@@ -3194,7 +3211,7 @@ c     save center frequency value, and reset V1F to endpoint value.
 
          dvf = abs(dvf)
 
-         if (mod((nptf-1),2).ne.0) then
+         if (mod((nptf-1),i_2).ne.0) then
             write(*,*) 'Use of V1F as center frequency requires odd
      *           number of points'
             write(ipr,*) 'Use of V1F as center frequency requires odd
@@ -3269,7 +3286,7 @@ C                                                                         L00760
       ISCHDR = ISCAN                                                      L00840
       IF (ISCAN.LE.0.OR.SCNID.EQ.-99.) ISCAN = 0                          L00850
       IF (ISCHDR.GE.1000.AND.ISCAN.EQ.0) ISCAN = ISCHDR                   L00860
-      IF (MOD(ISCAN,1000).EQ.0) GO TO 70                                  L00870
+      IF (MOD(ISCAN,I_1000).EQ.0) GO TO 70                                  L00870
       JEMSCN = SCNID/100.                                                 L00880
       IF (JEMIT.EQ.JEMSCN) GO TO 70                                       L00890
       WRITE (*,920)
@@ -3288,7 +3305,7 @@ C                                                                         L01000
       IF ((IEMIT.EQ.0).AND.(JEMIT.EQ.0)) JTREM = 0                        L01020
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        L01030
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        L01040
-      ISCANT = MOD(ISCAN,1000)                                            L01050
+      ISCANT = MOD(ISCAN,I_1000)                                            L01050
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       L01060
       IF (JTREM.LT.0) GO TO 10                                            L01070
       WRITE (IPR,925) XID,(YID(M),M=1,2)                                  L01080
@@ -3444,7 +3461,7 @@ c
       IF (NPTF.LE.0) GO TO 10                                             L02380
       NPTS = NPTF                                                         L02390
    10 V2F = V1F+DVF* REAL(NPTS-1)                                         L02400
-      WRITE (IPR,915) V1F,V2F,DVF,NPTF,NFILE,HEDDR    
+      WRITE (IPR,915) V1F,V2F,DVF,NPTF,JEMIT,JABS,NFILE,HEDDR    
       V1 = V1F                                                            L02430
       V2 = V2F                                                            L02440
       DV = DVF                                                            L02450
@@ -3519,6 +3536,8 @@ C                                                                         L02830
      *            (FSCDID(8),IPATHL) , (FSCDID(9),JRAD),                  L03070
      *            (FSCDID(12),SCNID) , (FSCDID(13),HWHM),                 L03080
      *            (FSCDID(16),LAYR1) , (PNLHDR(1),V1P)                    L03090
+C
+      DATA I_1000/1000/
 C                                                                         L03100
       NLIMF = 2401                                                        L03110
       NREN = 0                                                            L03120
@@ -3540,7 +3559,7 @@ C                                                                         L03260
       IF (ISCAN.LE.0.OR.SCNID.EQ.-99.) ISCAN = 0                          L03280
       IF (ISCNHD.GE.1000.AND.ISCAN.EQ.0) ISCAN = ISCNHD                   L03290
       ISCNHD = ISCAN+100                                                  L03300
-      IF (MOD(ISCAN,1000).EQ.0) GO TO 20                                  L03310
+      IF (MOD(ISCAN,I_1000).EQ.0) GO TO 20                                  L03310
       JEMSCN = SCNID/100.                                                 L03320
       IF (JEMIT.EQ.JEMSCN) GO TO 20                                       L03330
       WRITE (*,900)
@@ -3562,7 +3581,7 @@ C                                                                         L03470
       IF ((IEMIT.EQ.0).AND.(JEMIT.EQ.0)) JTREM = 0                        L03490
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        L03500
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        L03510
-      ISCANT = MOD(ISCAN,1000)                                            L03520
+      ISCANT = MOD(ISCAN,I_1000)                                            L03520
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       L03530
 C                                                                         L03540
       IF (JTREM.LT.0) RETURN                                              L03550

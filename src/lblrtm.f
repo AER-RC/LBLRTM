@@ -316,9 +316,15 @@ c%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat
       CHARACTER*55 PTHT3M,PTHODI,PTHODT,PTHRDR,CTAPE3
       CHARACTER*10 HFMODI,HFMODT,HFMRDR
       CHARACTER*9 CT6FIL
-      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
-      CHARACTER*15 HVRSOL
+      CHARACTER*18 HNAMLBL,HNAMCNT,HNAMFFT,HNAMATM,HNAMLOW,HNAMNCG,
+     *             HNAMOPR,HNAMPLT,HNAMPST,HNAMTST,HNAMUTL,HNAMXMR,
+     *             hnmnlte
+      CHARACTER*18 HNAMSOL
+      CHARACTER*18 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *             HVROPR,HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,
+     *             hvnlte
+      CHARACTER*18 HVRSOL
+C
       CHARACTER*1 CONE,CTWO,CTHREE,CFOUR,CA,CB,CC,CDOL,CPRCNT,CBLNK       A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
@@ -356,20 +362,20 @@ C
      *                ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    A03000
      *                EXTID(10)                                           A03010
 
-      COMMON /CVRLBL/ HVRLBL
-      COMMON /CVRCNT/ HVRCNT
-      COMMON /CVRFFT/ HVRFFT
-      COMMON /CVRATM/ HVRATM
-      COMMON /CVRLOW/ HVRLOW
-      COMMON /CVRNCG/ HVRNCG
-      COMMON /CVROPR/ HVROPR
-      COMMON /CVRPST/ HVRPST
-      COMMON /CVRPLT/ HVRPLT
-      COMMON /CVRTST/ HVRTST
-      COMMON /CVRUTL/ HVRUTL
-      COMMON /CVRXMR/ HVRXMR
-      COMMON /CVNLTE/ HVNLTE
-      COMMON /CVRSOL/ HVRSOL
+      COMMON /CVRLBL/ HNAMLBL,HVRLBL
+      COMMON /CVRCNT/ HNAMCNT,HVRCNT
+      COMMON /CVRFFT/ HNAMFFT,HVRFFT
+      COMMON /CVRATM/ HNAMATM,HVRATM
+      COMMON /CVRLOW/ HNAMLOW,HVRLOW
+      COMMON /CVRNCG/ HNAMNCG,HVRNCG
+      COMMON /CVROPR/ HNAMOPR,HVROPR
+      COMMON /CVRPST/ HNAMPST,HVRPST
+      COMMON /CVRPLT/ HNAMPLT,HVRPLT
+      COMMON /CVRTST/ HNAMTST,HVRTST
+      COMMON /CVRUTL/ HNAMUTL,HVRUTL
+      COMMON /CVRXMR/ HNAMXMR,HVRXMR
+      COMMON /CVNLTE/ HNMNLTE,HVNLTE
+      COMMON /CVRSOL/ HNAMSOL,HVRSOL
 
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A03070
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A03080
@@ -426,9 +432,11 @@ C                                                                         A03560
 C     DATA CFORM / 'BUFFERED   '/                                       # A03570
 C     DATA CFORM / 'UNFORMATTED'/                                         A03580
 C                                                                         A03590
+      DATA I_10/10/
+C
 c     set the cvs version number
 c
-      HVRLBL = '$Revision$'
+      HVRLBL  = '$Revision$'
 c
 C     Set ILNFLG to default (no line rejection files kept)
 C
@@ -726,7 +734,7 @@ C                                                                         A05430
          LOWFLG = 1                                                       A05480
       ENDIF                                                               A05490
       NFILE = 13                                                          A05500
-      MMRG = MOD(IMRG,10)                                                 A05510
+      MMRG = MOD(IMRG,I_10)                                                 A05510
       IF (MMRG.GE.3) THEN                                                 A05520
          OPEN (NFILE,FILE='TAPE13',STATUS='UNKNOWN',FORM=CFORM)           A05530
          REWIND NFILE                                                     A05540
@@ -991,8 +999,14 @@ C                                                                         A07120
       STOP ' LBLRTM EXIT; EOF ON TAPE 5 '                                 A07230
 C                                                                         A07240
    90 CONTINUE                                                            A07250
-      WRITE(IPR,1000) HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *                HVRPST,HVRPLT,HVRTST,HVRXMR,HVRUTL,HVRSOL,hvnlte
+      WRITE (IPR,915) XID,HDATE,HTIME                                     A04170
+      WRITE(IPR,1000) HNAMLBL,HVRLBL,HNAMCNT,HVRCNT,
+     *                HNAMFFT,HVRFFT,HNAMATM,HVRATM,
+     *                HNAMLOW,HVRLOW,HNAMNCG,HVRNCG,
+     *                HNAMOPR,HVROPR,HNAMPST,HVRPST,
+     *                HNAMPLT,HVRPLT,HNAMTST,HVRTST,
+     *                HNAMXMR,HVRXMR,HNAMUTL,HVRUTL,
+     *                HNAMSOL,HVRSOL,hnmnlte,hvnlte
       IF (IENDPL.EQ.1) CALL ENDPLT                                        A07260
       STOP ' LBLRTM EXIT '                                                A07270
 C                                                                         A07280
@@ -1019,15 +1033,9 @@ C                                                                         A07280
      *        3(1PE11.3),/,'0',29X,'BOUNDARY REFLECTIVITY = ',            A07540
      *        3(1PE11.3),/,'0',29X, 'SURFACE REFLECTIVITY = ', A1)
   990 FORMAT (F20.8)                                                      A07560
-  995 FORMAT ('0 TIME LEAVING LBLRTM ',F15.4,' TOTAL',F15.4)              A07570
- 1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,5X,
-     *         'lblrtm.f: ',4X,A15,10X, '  contnm.f: ',4X,A15,/,5X,
-     *         'fftscn.f: ',4X,A15,10X, '  lblatm.f: ',4X,A15,/,5X,
-     *         'lbllow.f: ',4X,A15,10X, ' ncargks.f: ',4X,A15,/,5X,
-     *         ' oprop.f: ',4X,A15,10X, ' postsub.f: ',4X,A15,/,5X,
-     *         'pltlbl.f: ',4X,A15,10X, '  testmm.f: ',4X,A15,/,5X,
-     *         'xmerge.f: ',4X,A15,10X, 'util_xxx.f: ',4X,A15,/,5X,
-     *         ' solar.f: ',4X,A15,10X, '  nonlte.f: ',4X,a15,/)
+  995 FORMAT ('0 TIME  LEAVING LBLRTM ',F15.4,' TOTAL',F15.4)              A07570
+ 1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,
+     *         7(5X,a18,2X,A18,10X, a18,2X,A18,/))
  1010 FORMAT (2I5,2X,I3)
  1015 FORMAT (I5)
  1020 FORMAT (/,'  The continuum scale factors are as follows: ',
@@ -1074,28 +1082,36 @@ c
      *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,          A07620
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                  A07630
 c
-      COMMON /CVRLBL/ HVRLBL
-      COMMON /CVRCNT/ HVRCNT
-      COMMON /CVRFFT/ HVRFFT
-      COMMON /CVRATM/ HVRATM
-      COMMON /CVRLOW/ HVRLOW
-      COMMON /CVRNCG/ HVRNCG
-      COMMON /CVROPR/ HVROPR
-      COMMON /CVRPST/ HVRPST
-      COMMON /CVRPLT/ HVRPLT
-      COMMON /CVRTST/ HVRTST
-      COMMON /CVRUTL/ HVRUTL
-      COMMON /CVRXMR/ HVRXMR
-      COMMON /CVNLTE/ HVNLTE
-      COMMON /CVRSOL/ HVRSOL
-c
+      COMMON /CVRLBL/ HNAMLBL,HVRLBL
+      COMMON /CVRCNT/ HNAMCNT,HVRCNT
+      COMMON /CVRFFT/ HNAMFFT,HVRFFT
+      COMMON /CVRATM/ HNAMATM,HVRATM
+      COMMON /CVRLOW/ HNAMLOW,HVRLOW
+      COMMON /CVRNCG/ HNAMNCG,HVRNCG
+      COMMON /CVROPR/ HNAMOPR,HVROPR
+      COMMON /CVRPST/ HNAMPST,HVRPST
+      COMMON /CVRPLT/ HNAMPLT,HVRPLT
+      COMMON /CVRTST/ HNAMTST,HVRTST
+      COMMON /CVRUTL/ HNAMUTL,HVRUTL
+      COMMON /CVRXMR/ HNAMXMR,HVRXMR
+      COMMON /CVNLTE/ HNMNLTE,HVNLTE
+      COMMON /CVRSOL/ HNAMSOL,HVRSOL
+
       COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODT,PTHRDR
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
 C                                                                         A07650
       CHARACTER CFORM*11                                                  A03430
-      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *             HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
-      CHARACTER*15 HVRSOL
+
+C
+      CHARACTER*18 HNAMLBL,HNAMCNT,HNAMFFT,HNAMATM,HNAMLOW,HNAMNCG,
+     *             HNAMOPR,HNAMPLT,HNAMPST,HNAMTST,HNAMUTL,HNAMXMR,
+     *             hnmnlte
+      CHARACTER*18 HNAMSOL
+
+      CHARACTER*18 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *             HVROPR,HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,
+     *             hvnlte
+      CHARACTER*18 HVRSOL
 C
       CHARACTER*55 PTHT3M,PTHODI,PTHODT,PTHRDR
 C
@@ -1113,22 +1129,39 @@ C
       DATA XSELF / 1 /,XFRGN / 1 /, XCO2C / 1 /, XO3CN / 1 /,
      *     XO2CN / 1 /,XN2CN / 1 /, XRAYL / 1 /
 C
-C     ASSIGN SCCS VERSION NUMBER TO MODULES
+C     ASSIGN DEFAULT MODULE NAMES
 C
-      DATA HVRLBL / 'NOT USED       ' /,
-     *     HVRCNT / 'NOT USED       ' /,
-     *     HVRFFT / 'NOT USED       ' /,
-     *     HVRATM / 'NOT USED       ' /,
-     *     HVRLOW / 'NOT USED       ' /,
-     *     HVRNCG / 'NOT USED       ' /,
-     *     HVROPR / 'NOT USED       ' /,
-     *     HVRPST / 'NOT USED       ' /,
-     *     HVRPLT / 'NOT USED       ' /,
-     *     HVRTST / 'NOT USED       ' /,
-     *     HVRUTL / 'NOT USED       ' /,
-     *     HVRXMR / 'NOT USED       ' /,
-     *     hvnlte / 'NOT USED       ' /
-      DATA HVRSOL / 'NOT USED       ' /
+      DATA HNAMLBL / '         lblrtm.f:' /,
+     *     HNAMCNT / '         contnm.f:' /,
+     *     HNAMFFT / '        fftnscn.f:' /,
+     *     HNAMATM / '         lblatm.f:' /,
+     *     HNAMLOW / '         lbllow.f:' /,
+     *     HNAMNCG / '        ncargks.f:' /,
+     *     HNAMOPR / '          oprop.f:' /,
+     *     HNAMPST / '        postsub.f:' /,
+     *     HNAMPLT / '         pltlbl.f:' /,
+     *     HNAMTST / '         testmm.f:' /,
+     *     HNAMUTL / '       util_xxx.f:' /,
+     *     HNAMXMR / '         xmerge.f:' /,
+     *     hnmnlte / '         nonlte.f:' /
+      DATA HNAMSOL / '          solar.f:' /
+C
+C     ASSIGN CVS VERSION NUMBER TO MODULES
+C
+      DATA HVRLBL / '   NOT USED       ' /,
+     *     HVRCNT / '   NOT USED       ' /,
+     *     HVRFFT / '   NOT USED       ' /,
+     *     HVRATM / '   NOT USED       ' /,
+     *     HVRLOW / '   NOT USED       ' /,
+     *     HVRNCG / '   NOT USED       ' /,
+     *     HVROPR / '   NOT USED       ' /,
+     *     HVRPST / '   NOT USED       ' /,
+     *     HVRPLT / '   NOT USED       ' /,
+     *     HVRTST / '   NOT USED       ' /,
+     *     HVRUTL / '   NOT USED       ' /,
+     *     HVRXMR / '   NOT USED       ' /,
+     *     hvnlte / '   NOT USED       ' /
+      DATA HVRSOL / '   NOT USED       ' /
 C                                                                         A07710
       END                                                                 A07720
       FUNCTION NWDL (IWD,ILAST)                                           A08590
@@ -1542,14 +1575,6 @@ C                                                                         A11560
      *                EMISI1,FSCDI1(17),NMO1,LAYHD1,YD1,Y1D(10),LSTWDD    A11590
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
-
-c****************
-
-      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
-
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
 C                                                                         A11610
       DIMENSION FILDUM(2),FILDU1(2)                                       A11620
       DIMENSION NTAN(160)                                                 A11630
@@ -1570,6 +1595,8 @@ C                                                                         A11680
      *            (FSCDID(17),NLAYHD) , (FSCDI1(8),IPTHD1),               A11780
      *            (FSCDI1(17),NLAYD1)                                     A11790
 C                                                                         A11800
+      DATA I_10/10/
+C
       DV = 0.                                                             A11810
 C                                                                         A11820
 C     IF  IANT.EQ. 1  THEN POSTERIOR MERGE                                A11830
@@ -2021,7 +2048,7 @@ C
 C
 C     ---------------------
 C
-      MMRG = MOD(IMRG,10)                                                 A12610
+      MMRG = MOD(IMRG,I_10)                                                 A12610
 C                                                                         A12620
 C      TESTS FOR PRESTORE                                                 A12630
 C                                                                         A12640
@@ -2932,10 +2959,12 @@ C                                                                         A19800
       DATA HT1HRZ / ' AT '/,HT2HRZ / ' KM '/,HT1SLT / ' TO '/,            A19820
      *     HT2SLT / ' KM '/                                               A19830
       DATA CBLNK / '   '/                                                 A19840
+C                                                                         A11800
+      DATA I_2/2/, I_10/10/
 C                                                                         A19850
       IF (IHIRAC.EQ.0) RETURN                                             A19860
 C                                                                         A19870
-      ICNTNM = MOD(IXSCNT,10)                                             A19880
+      ICNTNM = MOD(IXSCNT,I_10)                                             A19880
       IXSECT = IXSCNT/10                                                  A19890
 C                                                                         A19900
       ISET = 0                                                            A19910
@@ -3422,7 +3451,7 @@ C                                                                         A22340
 C                                                                         A22380
 C     SET IDV TO BE EVEN                                                  A22390
 C                                                                         A22400
-            IF (MOD(IDV,2).GT.0) IDV = IDV+1                              A22410
+            IF (MOD(IDV,I_2).GT.0) IDV = IDV+1                              A22410
             DV = SCAL* REAL(IDV)                                          A22420
 C                                                                         A22430
          ELSE                                                             A22440
@@ -3970,10 +3999,12 @@ C
      *            (FSCDID(11),IMRG)                                       A24780
 C                                                                         A24790
 C     DATA JCNVF4 / 0 /                                                   A24800
+C
+      DATA I_10/10/
 C                                                                         A24810
       CALL CPUTIM (TIME0)                                                 A24820
 C                                                                         A24830
-      ICNTNM = MOD(IXSCNT,10)                                             A24840
+      ICNTNM = MOD(IXSCNT,I_10)                                             A24840
       IXSECT = IXSCNT/10                                                  A24850
 C                                                                         A24860
       IEMST = IEMIT                                                       A24870

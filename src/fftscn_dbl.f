@@ -200,7 +200,7 @@ C*****Blank Common carries the spectral data
       COMMON S(2450),R1(2650),XF(251)
 
 C*****HVRFFT carries the module CVSversion numbers
-      COMMON /CVRFFT/ HVRFFT
+      COMMON /CVRFFT/ HNAMFFT,HVRFFT
 
 C*****SCNHRD carries the header information for the scanned file
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
@@ -231,7 +231,7 @@ C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
 
-      Character*15 HVRFFT
+      Character*18 HNAMFFT,HVRFFT
       Character*16 SFNAME,ANAMES(0:JFNMAX)
       Dimension C(0:JFNMAX),CRATIO(0:JFNMAX),CLIMIT(0:JFNMAX)
 
@@ -293,8 +293,9 @@ C*****will interpolate onto a fine grid but then boxcar back onto a
 C*****coarser grid
       Data MDVHW /12/
 
-C*****Assign CVS version number to module fftscn.f
+C*****Assign CVS name and version number to module fftscn_dbl.f
 
+      HNAMFFT=  '     fftscn_dbl.f:'
       HVRFFT =  '$Revision$'
 
       Write(IPR,'(''1FFTSCN: SPECTRAL SMOOTHING IN THE '',
@@ -2483,7 +2484,9 @@ C*****LAMCHN carries hardware specific parameters
 C*****IASYM flags asymetric scanning functions(=1)
       DIMENSION IASYM(13)
       DATA IASYM/12*0,1/
-
+C
+      DATA I_2/2/
+C
 C*****Set LPTS equal to the  number of records per block.  For
 C*****LREC = 1, this is LPTFFT which may be less than LPTSMX
       If(LREC .EQ. 1) Then
@@ -2544,7 +2547,7 @@ C*****            Start at -(VSAVE+DV)
 
 C*****    Calculate FUNCT for the middle block, if there is one (LREC
 C*****    is odd.) Includes LREC = 1.          
-          If(MOD(LREC,2) .EQ. 1) Then
+          If(MOD(LREC,I_2) .EQ. 1) Then
               VSAVE = V
 C*****        Calculate the positive frequencies.
 
@@ -2887,6 +2890,8 @@ C
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J04190
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J04200
 
+      DATA I_1000/1000/
+
       LOGICAL OP
 
 
@@ -2964,7 +2969,7 @@ C                                                                         I07490
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        I07520
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.2)) JTREM = 2                        I07530
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        I07540
-      ISCANT = MOD(ISCAN,1000)                                            I07550
+      ISCANT = MOD(ISCAN,I_1000)                                            I07550
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       I07560
       IF (JTREM.LT.0) THEN                                                I07570
          WRITE(IPR,*) ' JTREM.LT.0 AT I07570'                             I07572
@@ -3292,6 +3297,9 @@ C     ICSUBZ = SIZE OF SUB-BLOCKS (COMPLEX) WHICH IS ICOMSZ/NBLK AT STAR
 C     NPASS = NUMBER OF PASSES OVER THE DATA
 C     THIS SECTION OF CODE SORTS OUT EVER NBLK'TH POINT IN A BLOCK AND
 C     AND PUTS THE SUB-BLOCKS IN BIT INVERTED ORDER
+C 
+      DATA I_2/2/
+C
       ICOMSZ=IBLKSZ/2
       ICSUBZ=ICOMSZ/NBLK
       NPASS=LLOG2(NBLK)
@@ -3357,7 +3365,7 @@ C     use a SHIFT and OR function, but they are not standard FORTRAN 77.
       IVE=IVER
       INV=0
       DO 10 I=1,N
-          INV=2*INV+MOD(IVE,2)
+          INV=2*INV+MOD(IVE,I_2)
           IVE=IVE/2
   10  CONTINUE
       INVER=INV

@@ -348,7 +348,7 @@ C
       REAL*8           V1P,V2P                                           FL03260
       CHARACTER*8       XID,       HMOLID,      YID   
       Real*8                SECANT,       XALTZ
-      COMMON /CVRLOW/ HVRLOW
+      COMMON /CVRLOW/ HNAMLOW,HVRLOW
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      FL03280
      *     WK(60),PZL,PZU,TZL,TZU,WN2   ,DVP,V1P,V2P,TBOUNF,EMISIV,      FL03290
      *     FSCDID(17),NMOL,LAYER,YI1,YID(10) ,LSTWDF                     FL03300
@@ -362,7 +362,7 @@ C
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL03380
       CHARACTER*20 HHAZE,HSEASN,HVULCN,HMET,HMODEL,BLANK                 FL03390
       CHARACTER*24 HTRRAD                                                FL03400
-      CHARACTER*15 HVRLOW
+      CHARACTER*18 HNAMLOW,HVRLOW
       COMMON /TITL/ HHAZE(16),HSEASN(2),HVULCN(8),BLANK,                 FL03410
      * HMET(2),HMODEL(8),HTRRAD(4)                                       FL03420
       COMMON /VSBD/ VSB(10)                                              FL03430
@@ -373,6 +373,9 @@ C                                                                        FL03520
       EQUIVALENCE (FSCDID(5),IEMS),(FSCDID(4),IAERSL)                    FL03530
 C                                                                        FL03540
       DATA MAXATM,MAXGEO   /3020, 3014/                                  FL03550
+C
+      DATA I_1/1/, I_10/10/
+C
       IEMSCT = IEMS                                                      FL03560
 C
 C     ASSIGN CVS VERSION NUMBER TO MODULE 
@@ -522,8 +525,8 @@ C                                                                        FL04930
    30 IF (RAINRT.EQ.0) GO TO 40                                          FL04970
       WRITE (IPR,935) RAINRT                                             FL04980
    40 ICH(4) = 18                                                        FL04990
-      ICH(1) = MAX(ICH(1),1)                                             FL05000
-      ICH(3) = MAX(ICH(3),10)                                            FL05010
+      ICH(1) = MAX(ICH(1),I_1)                                             FL05000
+      ICH(3) = MAX(ICH(3),I_10)                                            FL05010
       IF (ICLD.GE.1.AND.ICLD.LE.11) THEN                                 FL05020
          ICH(4) = ICH(3)                                                 FL05030
          ICH(3) = ICH(2)                                                 FL05040
@@ -639,7 +642,7 @@ C                                                                        FL06030
 C                                                                        FL06140
       IF (JPRT.EQ.0) GO TO 90                                            FL06150
       IF (ISEASN.EQ.0) ISEASN = 1                                        FL06160
-      IVULCN = MAX(IVULCN,1)                                             FL06170
+      IVULCN = MAX(IVULCN,I_1)                                             FL06170
       IHVUL = IVULCN+10                                                  FL06180
       IF (IVULCN.EQ.6) IHVUL = 11                                        FL06190
       IF (IVULCN.EQ.7) IHVUL = 11                                        FL06200
@@ -837,6 +840,9 @@ C                                                                        FL07830
       CHARACTER*20 AHOL1,AHOL2,AHOL3,AHLVSA,AHUS                         FL07840
       CHARACTER*20 AHAHOL(NCASE),HHOL                                    FL07850
       DIMENSION  JCHAR(NCASE)                                            FL07860
+C
+      DATA I_1/1/, I_12/12/, I_32/32/, I_34/34/
+C
       DATA AHLVSA/'VSA DEFINED         '/                                FL07870
       DATA  AHUS /'USER DEFINED        '/                                FL07880
       DATA AHAHOL/                                                       FL07890
@@ -895,7 +901,7 @@ C                                                                        FL08410
          ICONV = 0                                                       FL08420
          ML = ML+10-JLOW                                                 FL08430
          IF (ML.GT.34) WRITE (IPR,905)                                   FL08440
-         ML = MIN(ML,34)                                                 FL08450
+         ML = MIN(ML,I_34)                                                 FL08450
          ZVSA(10) = ZVSA(9)+0.01                                         FL08460
          RHVSA(10) = 0.                                                  FL08470
          AHVSA(10) = 0.                                                  FL08480
@@ -934,8 +940,8 @@ C                                                                        FL08660
       IC1 = 1                                                            FL08810
       N = 7                                                              FL08820
       IF (ML.EQ.1) M = 0                                                 FL08830
-      IVULCN = MAX(IVULCN,1)                                             FL08840
-      ISEASN = MAX(ISEASN,1)                                             FL08850
+      IVULCN = MAX(IVULCN,I_1)                                             FL08840
+      ISEASN = MAX(ISEASN,I_1)                                             FL08850
       IF (JPRT.EQ.0) THEN                                                FL08860
          WRITE (IPR,950) MODEL,ICLD                                      FL08870
       ENDIF                                                              FL08880
@@ -1196,7 +1202,7 @@ C                                                                        FL11410
          IF (ZMDL(K).GE.25.0) J = (ZMDL(K)-25.0)/5.0+26.                 FL11430
          IF (ZMDL(K).GE.50.0) J = (ZMDL(K)-50.0)/20.0+31.                FL11440
          IF (ZMDL(K).GE.70.0) J = (ZMDL(K)-70.0)/30.0+32.                FL11450
-         J = MIN(J,32)                                                   FL11460
+         J = MIN(J,I_32)                                                   FL11460
          FAC = ZMDL(K)- REAL(J-1)                                        FL11470
          IF (J.LT.26) GO TO 150                                          FL11480
          FAC = (ZMDL(K)-5.0* REAL(J-26)-25.)/5.                          FL11490
@@ -1324,7 +1330,7 @@ C                                                                        FL12690
       IF (ML.GE.20) WRITE (IPR,930)                                      FL12710
       IHH = ICLD                                                         FL12720
       IF (IHH.LE.0) IHH = 12                                             FL12730
-      IHH = MIN(IHH,12)                                                  FL12740
+      IHH = MIN(IHH,I_12)                                                  FL12740
       IF (ICLD.EQ.18) IHH = 13                                           FL12750
       IF (ICLD.EQ.19) IHH = 14                                           FL12760
       IF (ICLD.EQ.20) IHH = 15                                           FL12770
@@ -1773,13 +1779,16 @@ C
       DIMENSION DESEXT(47),DESSCA(47),DESABS(47),DESG(47),WIND(4)        FL16400
       REAL      DESEXT    ,DESSCA    ,DESABS    ,DESG    ,WIND           FL16410
       INTEGER WAVEL                                                      FL16420
+C
+      DATA I_3/3/
+C
       DATA WIND/0., 10., 20., 30./                                       FL16430
       DATA RAYSCT / 0.01159 /                                            FL16440
       IF (WSPD.LT.0.) WSPD = 10.                                         FL16450
 C                                                                        FL16460
       NWSPD = INT(WSPD/10)+1                                             FL16470
       IF (NWSPD.GE.5) WRITE (IPR,905)                                    FL16480
-      NWSPD = MIN(NWSPD,3)                                               FL16490
+      NWSPD = MIN(NWSPD,I_3)                                               FL16490
 C                                                                        FL16500
 C     INTERPOLATE THE RADIATIVE PROPERTIES AT WIND SPEED WSPD            FL16510
 C                                                                        FL16520
@@ -3942,6 +3951,8 @@ C
      *     DENL(16,MXZ20),AMTL(16,MXZ20),LJ(MX2Z3)                       FL36300
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL36310
 C
+      DATA I_2/2/
+C
       IF (H1.GT.H2) GO TO 10                                             FL36340
       IORDER = 1                                                         FL36350
       HA = H1                                                            FL36360
@@ -4067,7 +4078,7 @@ C                                                                        FL37550
       J2 = JMAX-1                                                        FL37580
       IHLOW = 1                                                          FL37590
       IF (IORDER.EQ.-1) IHLOW = 2                                        FL37600
-      IHIGH = MOD(IHLOW,2)+1                                             FL37610
+      IHIGH = MOD(IHLOW,I_2)+1                                             FL37610
 C                                                                        FL37620
       DO 150 J = J1, J2                                                  FL37660
          CALL SCALHT (ZL(J),ZL(J+1),RFNDXL(J),RFNDXL(J+1),SH,GAMMA)      FL37670

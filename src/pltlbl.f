@@ -13,7 +13,7 @@ C                                                                         M00060
       character*8      XID,       HMOL  ,      YID,PROGID
       real*8               SEC   ,       XALTZ 
 C                                                                         M00080
-      COMMON /CVRPLT/ HVRPLT
+      COMMON /CVRPLT/ HNAMPLT,HVRPLT
       COMMON /PLTHDR/ XID(10),SEC,P0,T0,HMOL(60),XALTZ(4),                M00090
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVT,V1V,V2V,TBOUND,    M00100
      *                EMISIV,FSCDID(17),NMOL,NLAYER,YID1,YID(10),LSTWDF   M00110
@@ -33,7 +33,7 @@ C                                                                         M00080
 C                                                                         M00240
       CHARACTER*8 FSTAT,NSTAT,OSTAT                                       M00245
       CHARACTER*8 COPT,CDIF,CRAT                                          M00250
-      CHARACTER*15 HVRPLT
+      CHARACTER*18 HNAMPLT,HVRPLT
 
       CHARACTER*11 CFORM,BFORM,FFORM                                      M00253
       CHARACTER*25 TAPEJJ,TAPELL,TAPEMM,TAPE29,TAPEST(99),                M00256
@@ -239,7 +239,8 @@ C       ** REPEAT CARDS 2A & 3A, OR CARD 2B **                            M02140
 C                                                                         M02150
 C**********************************************************************   M02160
 C                                                                         M02170
-C
+      DATA I_0/0/, I_1/1/, I_3/3/, I_6/6/, I_10/10/, I_100/100/
+C                                                                         M06690
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
       HVRPLT =  '$Revision$'
@@ -445,7 +446,7 @@ C                                                                         M03230
       IEOF = LSKIPF                                                       M03260
       CALL BUFIN (LFILE,LEOF,PLTHDR(1),NFHDRF)                            M03270
 C                                                                         M03280
-      ICNTNM = MOD(IXSCNT,10)                                             M03290
+      ICNTNM = MOD(IXSCNT,I_10)                                             M03290
       IXSECT = IXSCNT/10                                                  M03300
 C                                                                         M03310
       WRITE (COPT,950) XID(10)                                            M03320
@@ -453,7 +454,7 @@ C                                                                         M03310
       IF (COPT.EQ.CDIF) IFUNCT = 1                                        M03340
       IF (COPT.EQ.CRAT) IFUNCT = 2                                        M03350
       IF (ISCAN.GE.1000) THEN                                             M03360
-         ISCANT = MOD(ISCAN,100)                                          M03370
+         ISCANT = MOD(ISCAN,I_100)                                          M03370
          IF (ISCANT.LE.0.OR.SCNID.EQ.-99.) ISCAN = ISCAN-ISCANT           M03380
       ELSE                                                                M03390
          IF (ISCAN.LE.0.OR.SCNID.EQ.-99.) ISCAN = 0                       M03400
@@ -538,7 +539,7 @@ C                                                                         M03780
       WRITE (IPR,970) IHIRAC,ILBLF4,ICNTNM,IXSECT,IAERSL,IEMIT,ISCAN,     M04190
      *                IPLOT,IPATHL,JRAD,SCNID,HWHM                        M04200
       WRITE (IPR,982)                                                     M04210
-      ISCANT = MOD(ISCAN,100)                                             M04220
+      ISCANT = MOD(ISCAN,I_100)                                             M04220
       IF (ISCANT.EQ.0) GO TO 30                                           M04230
       JEMSCN = SCNID/100.                                                 M04240
       IF (JEMIT.EQ.JEMSCN) GO TO 30                                       M04250
@@ -560,7 +561,7 @@ C                                                                         M04390
       IF (I4P.EQ.1) J = 2                                                 M04410
       TIMLOP = 0.                                                         M04420
       TIMLIN = 0.                                                         M04430
-      ISCANT = MOD(ISCAN,100)                                             M04440
+      ISCANT = MOD(ISCAN,I_100)                                             M04440
       IF (ISCANT.EQ.0) GO TO 40                                           M04450
       IF (IGO.EQ.7.OR.IGO.EQ.8) THEN                                      M04460
          WRITE (IPR,985)                                                  M04470
@@ -570,7 +571,7 @@ C                                                                         M04390
          WRITE (IPR,985)                                                  M04510
          GO TO 230                                                        M04520
       ENDIF                                                               M04530
-      IF (IGO.NE.12.AND.MOD(IGO,3).EQ.3) THEN                             M04540
+      IF (IGO.NE.12.AND.MOD(IGO,I_3).EQ.3) THEN                             M04540
          WRITE (IPR,985)                                                  M04550
          GO TO 230                                                        M04560
       ENDIF                                                               M04570
@@ -580,20 +581,20 @@ C                                                                         M04580
       IF (V2P.GE.V1) GO TO 50                                             M04610
       CALL BUFIN (LFILE,LEOF,DUM(1),2)                                    M04620
       IF (ISCAN.GE.1) GO TO 40                                            M04630
-      IF (MOD(IGO+1,3).NE.0) GO TO 40                                     M04640
+      IF (MOD(IGO+1,I_3).NE.0) GO TO 40                                     M04640
       CALL BUFIN (LFILE,LEOF,DUM(1),2)                                    M04650
       GO TO 40                                                            M04660
    50 NLO = J                                                             M04670
       NHI = NLIM+J-1                                                      M04680
       WRITE (IPR,987) V1P,V2P,DV,NLIM,NLO,NHI                             M04690
       IF (ISCAN.GE.1) GO TO 60                                            M04700
-      IF (MOD(IGO+1,3).NE.0) GO TO 60                                     M04710
-      IF (MOD(IGO+1,6).EQ.0) GO TO 60                                     M04720
+      IF (MOD(IGO+1,I_3).NE.0) GO TO 60                                     M04710
+      IF (MOD(IGO+1,I_6).EQ.0) GO TO 60                                     M04720
       CALL BUFIN (LFILE,LEOF,DUM(1),2)                                    M04730
    60 CALL BUFIN (LFILE,LEOF,Y(NLO),NLIM)                                 M04740
       IF (ISCAN.GE.1) GO TO 70                                            M04750
-      IF (MOD(IGO+1,3).NE.0) GO TO 70                                     M04760
-      IF (MOD(IGO+1,6).NE.0) GO TO 70                                     M04770
+      IF (MOD(IGO+1,I_3).NE.0) GO TO 70                                     M04760
+      IF (MOD(IGO+1,I_6).NE.0) GO TO 70                                     M04770
       CALL BUFIN (LFILE,LEOF,DUM(1),2)                                    M04780
 C                                                                         M04790
    70 JMIN = J                                                            M04800
@@ -615,7 +616,7 @@ C                                                                         M04930
    80 CONTINUE                                                            M04960
       J = JMIN                                                            M04970
 C                                                                         M04980
-      ISCANT = MOD(ISCAN,100)                                             M04990
+      ISCANT = MOD(ISCAN,I_100)                                             M04990
 C                                                                         M05000
       IF (ISCANT.EQ.0)                                                    M05010
      *    GO TO (100,90,210,210,90,210,90,110,210,210,120,90,160,170,     M05020
@@ -807,6 +808,8 @@ C                                                                         M06630
 C                                                                         M06660
       DATA COPT / 'DIFRENCE',' RATIO  '/                                  M06670
       DATA HOTHER / ' OTHER'/                                             M06680
+C
+      DATA I_0/0/, I_1/1/, I_3/3/, I_6/6/, I_10/10/, I_100/100/
 C                                                                         M06690
       REWIND JFILE                                                        M06700
       REWIND LFILE                                                        M06710
@@ -817,14 +820,14 @@ C                                                                         M06690
       WRITE (IPR,900) JFILE                                               M06760
       CALL BUFIN (JFILE,JEOF,PLTHDR(1),NFHDRF)                            M06770
 C                                                                         M06780
-      ICNTNM = MOD(IXSCNT,10)                                             M06790
+      ICNTNM = MOD(IXSCNT,I_10)                                             M06790
       IXSECT = IXSCNT/10                                                  M06800
 C                                                                         M06810
       WRITE (IPR,905) XID,(YID(M),M=1,2)                                  M06820
       WRITE (IPR,910) LAYR1,NLAYER                                        M06830
       WRITE (IPR,915) SEC,P0,T0,DVT,V1V,V2V                               M06840
       WRITE (IPR,920) HOTHER,WBROAD,(HMOL(I),W(I),I=1,NMOL)               M06850
-      ISCAN = MAX(ISCAN,0)                                                M06860
+      ISCAN = MAX(ISCAN,I_0)                                                M06860
       WRITE (IPR,925) IHIRAC,ILBLF4,ICNTNM,IXSECT,IAERSL,IEMIT,ISCAN,     M06870
      *                IPLOT,IPATHL,JRAD,SCNID,HWHM                        M06880
       WRITE (IPR,905)                                                     M06890
@@ -832,7 +835,7 @@ C                                                                         M06900
       WRITE (IPR,930) LFILE                                               M06910
       CALL BUFIN (LFILE,LEOF,PLTHDR(1),NFHDRF)                            M06920
 C                                                                         M06930
-      ICNTNM = MOD(IXSCNT,10)                                             M06940
+      ICNTNM = MOD(IXSCNT,I_10)                                             M06940
       IXSECT = IXSCNT/10                                                  M06950
 C                                                                         M06960
       READ (COPT(IOPT-1),935) XID(10)                                     M06970
@@ -841,7 +844,7 @@ C                                                                         M06960
       WRITE (IPR,910) LAYR1,NLAYER                                        M07000
       WRITE (IPR,915) SEC,P0,T0,DVT,V1V,V2V                               M07010
       WRITE (IPR,920) HOTHER,WBROAD,(HMOL(I),W(I),I=1,NMOL)               M07020
-      ISCAN = MAX(ISCAN,0)                                                M07030
+      ISCAN = MAX(ISCAN,I_0)                                                M07030
       WRITE (IPR,925) IHIRAC,ILBLF4,ICNTNM,IXSECT,IAERSL,IEMIT,ISCAN,     M07040
      *                IPLOT,IPATHL,JRAD,SCNID,HWHM                        M07050
       WRITE (IPR,905)                                                     M07060
@@ -1059,7 +1062,7 @@ C                                                                         M09050
      *     HLR / 'NLAYERS  = '/,             H4C / 'H4CXAEISRM'/,         M09170
      *     HAMNTS / 'AMOUNTS (MOL/CM**2)'/,  HOTHER / ' OTHER '/          M09180
 C                                                                         M09190
-      ICNTNM = MOD(IXSCNT,10)                                             M09200
+      ICNTNM = MOD(IXSCNT,I_10)                                             M09200
       IXSECT = IXSCNT/10                                                  M09210
 C                                                                         M09220
       WRITE (XID1,'( 9(A8   ))') (XID(I),I=1,9)                           M09230
@@ -1088,7 +1091,7 @@ C                                                                         M09220
       CALL SYMBOL (X1,YT,XP15,HV2,0.0,11)                                 M09460
       RV2V = V2V                                                          M09470
       CALL NUMBER (X26,YT,XP15,RV2V,0.0,2)                                M09480
-      ISCANT = MOD(ISCAN,100)                                             M09490
+      ISCANT = MOD(ISCAN,I_100)                                             M09490
       IF (ISCANT.EQ.0) GO TO 20                                           M09500
       JFNVAR = SCNID                                                      M09510
       JEMIT = JFNVAR/100                                                  M09520
@@ -1969,7 +1972,7 @@ C                                                                         M18120
 C                                                                         M18150
       RETURN                                                              M18160
 C                                                                         M18170
-  900 FORMAT (3X,F15.8,4X,G19.8)                                          M18180
+  900 FORMAT (3X,F15.8,4X,1P,G19.8)                                          M18180
 C                                                                         M18190
       END                                                                 M18200
       SUBROUTINE AXISL (X,Y,BCD,N,NUMDIV,DIVLEN,NUMSUB,BEGNUM,DELNUM,     M18210

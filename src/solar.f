@@ -103,7 +103,7 @@ C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
-      COMMON /CVRSOL/ HVRSOL
+      COMMON /CVRSOL/ HNAMSOL,HVRSOL
 C
 C     ----------------------------------------------------------------
 C     Parameter and common blocks for direct input of emission and
@@ -131,7 +131,7 @@ C
       DIMENSION SOLRAD(2410)
 C
       CHARACTER*40 CYID
-      CHARACTER*15 HVRSOL
+      CHARACTER*18 HNAMSOL,HVRSOL
       CHARACTER*1  surf_refl
 C
       EQUIVALENCE (XSOLHD(1),XIDS(1))

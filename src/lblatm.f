@@ -74,7 +74,7 @@ C                                                                        FA00630
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
 C                                                                        FA00650
-      COMMON /CVRATM/ HVRATM
+      COMMON /CVRATM/ HNAMATM,HVRATM
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      FA00660
      *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1 ,V2 ,TBOUND,  FA00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF   FA00680
@@ -86,7 +86,7 @@ C                                                                        FA00730
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA00740
      *               JUNITT                                              FA00750
       COMMON /HMOLC/ HMOLC(MXMOL)                                        FA00760
-      CHARACTER*15 HVRATM
+      CHARACTER*18 HNAMATM,HVRATM
       CHARACTER*8 HMOLC                                                  FA00770
       character*4 ht1,ht2
 C                                                                        FA00780
@@ -4724,6 +4724,7 @@ C                                                                        FA39060
 C                                                                        FA39110
       CHARACTER*2 HLOW(2)                                                FA39120
       DATA HLOW / 'H1','H2'/                                             FA39130
+      DATA I_2/2/
 C                                                                        FA39140
 C     REORDER H1 AND H2 TO HA AND HB (HA .LE. HB)                        FA39150
 C                                                                        FA39160
@@ -4793,7 +4794,7 @@ C                                                                        FA39690
           ELSE
               IHLOW = 1                                                  FA39790
           ENDIF
-          IHIGH = MOD(IHLOW,2)+1                                         FA39810
+          IHIGH = MOD(IHLOW,I_2)+1                                         FA39810
           IF (IAMT.EQ.1.AND.NOPRNT.NE.1)                                 FA39820
      *        WRITE (IPR,910) HLOW(IHLOW),HLOW(IHIGH)                    FA39830
       ENDIF                                                              FA39840
@@ -4838,7 +4839,7 @@ C                                                                        FA40120
                      ELSE
                          IHLOW = 1
                      ENDIF
-                     IHIGH = MOD(IHLOW,2)+1                              FA40210
+                     IHIGH = MOD(IHLOW,I_2)+1                              FA40210
                      IF (IAMT.EQ.1.AND.NOPRNT.NE.1)                      FA40220
      *                   WRITE (IPR,910) HLOW(IHLOW),HLOW(IHIGH)         FA40230
                  ENDIF
@@ -4913,6 +4914,8 @@ C                                                                        FA40780
 C                                                                        FA40850
       DATA TOL / 5.E-4 /                                                 FA40860
 C                                                                        FA40870
+      DATA I_2/2/
+C
 C     HMID .EQ. MINIMUM OF H1, H2                                        FA40880
 C                                                                        FA40890
       HMID =   MIN(H1,H2)                                                FA40900
@@ -5017,7 +5020,7 @@ C                                                                        FA41840
   130 CONTINUE                                                           FA41850
       ZPTH(IP) = ZOUT(IOUT)                                              FA41860
       JM = IM                                                            FA41870
-      JM = MAX(JM,2)                                                     FA41880
+      JM = MAX(JM,I_2)                                                     FA41880
       A = (ZOUT(IOUT)-ZMDL(JM-1))/(ZMDL(JM)-ZMDL(JM-1))                  FA41890
       CALL EXPINT (PP(IP),PM(JM-1),PM(JM),A)                             FA41900
       TP(IP) = TM(JM-1)+(TM(JM)-TM(JM-1))*A                              FA41910
@@ -5795,6 +5798,8 @@ C
      *                RADCN1,RADCN2 
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
 C
+      DATA I_2/2/
+C
       DV = 0.
 C
 C     Correct for water self broadening
@@ -5819,7 +5824,7 @@ C
 C
 C        Set IDV to be even
 C
-         IF (MOD(IDV,2).GT.0) IDV = IDV+1
+         IF (MOD(IDV,I_2).GT.0) IDV = IDV+1
          DV = SCAL* REAL(IDV)
       ELSE
          TYPE = OLDDV/DV
@@ -6485,9 +6490,9 @@ C                                                                           FX04
                WRITE (IPR,940) (DTMP(K,L),K=1,IXMOLS)                       FX04680
  60         CONTINUE
          ENDIF
-
+c
          IF (IZORP .EQ. 1) THEN
-
+c
 C INTERPOLATE PX GRID ONTO ZX GRID.
 
 C TO ENSURE THAT CALCULATED/INPUT ZMDL'S WILL MATCH CALCULATED USER-LEVEL
@@ -6501,83 +6506,88 @@ C F1(P) = INTERPOLATION IN LN(P), F2(P) = HYDROSTATIC CALCULATION
                TTMP(1) = 0.0
                WVTMP(1) = 0.0
                ZTMP(1) = 0.0
-
+               
                PTMP(2) = 0.0
                TTMP(2) = 0.0
                WVTMP(2) = 0.0
                ZTMP(2) = 0.0
-
+               
                DO 161 LIP=ISTART,IMMAX
                   IF (PX(IP) .GT. PM(LIP)) GO TO 162
- 161              CONTINUE
-                  LIP=IMMAX
- 162              CONTINUE
-
-                  IF (PX(IP) .EQ. PM(LIP-1)) THEN
-                     ZX(IP) = ZMDL(LIP-1)
-                  ELSE 
-                     IF(PX(IP) .EQ. PM(LIP)) THEN
-                        ZX(IP) = ZMDL(LIP)
-                     ELSE
-                    
-C PERFORM INTERPOLATION IN LN(PM)
-                        HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
-     &                        LOG(PM(LIP)/PM(LIP-1))
-                        ZINT = ZMDL(LIP-1)+
-     &                       HIP* LOG(PX(IP)/PM(LIP-1))
-
-C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
-                        PTMP(1) = PM(LIP-1)
-                        ZTMP(1) = ZMDL(LIP-1)
-                        TTMP(1) = TM(LIP-1)
-                        WVTMP(1) = DENW(LIP-1)
-
-                        PTMP(2) = PX(IP)
-
-                        TIP = (TM(LIP)-TM(LIP-1))/
-     &                        LOG(PM(LIP)/PM(LIP-1))
-                        TTMP(2) = TM(LIP-1)+
-     &                       TIP* LOG(PX(IP)/PM(LIP-1))
-
-                        WVIP =  (DENW(LIP)-DENW(LIP-1))/
-     &                        LOG(PM(LIP)/PM(LIP-1))
-                        WVTMP(2) =  DENW(LIP-1) +
-     &                       WVIP* LOG(PX(IP)/PM(LIP-1))                     
-
-                        CALL CMPALT(2,PTMP,TTMP,
-     &                       WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
-C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
-
-                        RATP =  LOG(PX(IP)/PM(LIP-1))/
-     &                        LOG(PM(LIP)/PM(LIP-1))
-                        
-                        A = RATP**3
-
-                        ZX(IP) = A*ZINT + (1-A)*ZTMP(2)
-                     ENDIF
+ 161           CONTINUE
+               LIP=IMMAX
+ 162           CONTINUE
+               
+               IF (PX(IP) .EQ. PM(LIP-1)) THEN
+                  ZX(IP) = ZMDL(LIP-1)
+               ELSE 
+                  IF(PX(IP) .EQ. PM(LIP)) THEN
+                     ZX(IP) = ZMDL(LIP)
+                  ELSE
+                     
+C     PERFORM INTERPOLATION IN LN(PM)
+                     HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
+     &                    LOG(PM(LIP)/PM(LIP-1))
+                     ZINT = ZMDL(LIP-1)+
+     &                    HIP* LOG(PX(IP)/PM(LIP-1))
+                     
+C     PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
+                     PTMP(1) = PM(LIP-1)
+                     ZTMP(1) = ZMDL(LIP-1)
+                     TTMP(1) = TM(LIP-1)
+                     WVTMP(1) = DENW(LIP-1)
+                     
+                     PTMP(2) = PX(IP)
+                     
+                     TIP = (TM(LIP)-TM(LIP-1))/
+     &                    LOG(PM(LIP)/PM(LIP-1))
+                     TTMP(2) = TM(LIP-1)+
+     &                    TIP* LOG(PX(IP)/PM(LIP-1))
+                     
+                     WVIP =  (DENW(LIP)-DENW(LIP-1))/
+     &                    LOG(PM(LIP)/PM(LIP-1))
+                     WVTMP(2) =  DENW(LIP-1) +
+     &                    WVIP* LOG(PX(IP)/PM(LIP-1))                     
+                     
+                     CALL CMPALT(2,PTMP,TTMP,
+     &                    WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
+C     COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
+                     
+                     RATP =  LOG(PX(IP)/PM(LIP-1))/
+     &                    LOG(PM(LIP)/PM(LIP-1))
+                     
+                     A = RATP**3
+                     
+                     ZX(IP) = A*ZINT + (1-A)*ZTMP(2)
                   ENDIF
-
-                  IF (IP .NE. 1) THEN
-                      IF (ZX(IP).LE.ZX(IP-1)) GO TO 300
-                  ENDIF
-
-                  ISTART = LIP
-                  CALL XTRACT (IP,DTMP,JCHAR,ZX(IP))
-                  DO 40 K = 1, IXMOLS                                         
-                     DENX(K,IP) = DTMP(K,IP)                                
- 40               CONTINUE            
-                  
- 160           CONTINUE
-
-        ELSE
-           DO 171 L=1,LAYX
-            CALL XTRACT (L,DTMP,JCHAR,ZX(L))
-            DO 41 K = 1, IXMOLS                                        
-               DENX(K,L) = DTMP(K,L)                               
-   41       CONTINUE                                                   
+               ENDIF
+               
+               IF (IP .NE. 1) THEN
+                  IF (ZX(IP).LE.ZX(IP-1)) GO TO 300
+               ENDIF
+               
+               ISTART = LIP
+               CALL XTRACT (IP,DTMP,JCHAR,ZX(IP))
+               DO 40 K = 1, IXMOLS                                         
+                  DENX(K,IP) = DTMP(K,IP)                                
+ 40            CONTINUE            
+               
+ 160        CONTINUE
+c
+         ELSE
+c            stop 'do 171'
+c
+c	   izorp is zero to get to this 
+c 
+            DO 171 L=1,LAYX
+               CALL XTRACT (L,DTMP,JCHAR,ZX(L))
+               DO 41 K = 1, IXMOLS                                        
+                  DENX(K,L) = DTMP(K,L)                               
+ 41            CONTINUE                                                   
  171        CONTINUE
-        ENDIF
-        ENDIF
+         ENDIF
+c 
+      ENDIF      
 C                                                                        FX04810
 C     INTERPOLATE THE DENSITY PROFILE DENX DEFINED ON ZX TO DENM         FX04820
 C     DEFINED ON ZMDL, THEN CONVERT MIXING RATIO TO NUMBER DENSITY.      FX04830

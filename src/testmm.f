@@ -15,7 +15,7 @@ c
 C                                                                         N00040
       COMMON VNU(250),STR(250),ALF(250),EPP(250),MOL(250),HWHMS(250),     N00050
      *       TMPALF(250),PSHIFT(250),IFLG(250),lstwdl
-      COMMON /CVRTST/ HVRTST
+      COMMON /CVRTST/ HNAMTST,HVRTST
 c      COMMON /LINES/ XLINC(5,1027),XLIND(6,1027)                          N00070
       COMMON /LINES/ XLINC(5,1068),XLIND(6,1068)                          N00070
 C                                                                         N00080
@@ -45,7 +45,7 @@ C                                                                         N00210
       EQUIVALENCE (VNULO,RCDHDR(1)) , (MOL(1),AMOL(1)),                   N00220
      *            (HLINHD(1),HID(1),IWD(1))                               N00230
 C                                                                         N00240
-      CHARACTER*15 HVRTST
+      CHARACTER*18 HNAMTST,HVRTST
 C
 C     LINCPL - IS THE FLAG FOR LINE COUPLING --- 0 = OFF; 1 = ON          N00250
 C                                                                         N00260
