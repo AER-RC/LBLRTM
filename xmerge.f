@@ -2949,6 +2949,28 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG)
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      
+C               LAST MODIFICATION:    3 April 1994                   
+C                                                                      
+C                  IMPLEMENTATION:    P.D. Brown
+C                                                                      
+C             ALGORITHM REVISIONS:    S.A. Clough
+C                                     P.D. Brown
+C                                                                      
+C                                                                      
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.      
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139       
+C                                                                      
+C----------------------------------------------------------------------
+C                                                                      
+C               WORK SUPPORTED BY:    THE ARM PROGRAM                  
+C                                     OFFICE OF ENERGY RESEARCH        
+C                                     DEPARTMENT OF ENERGY             
+C                                                                      
+C                                                                      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
       IMPLICIT DOUBLE PRECISION (V)
 C
 C     ------------------------------------------------------------
@@ -3298,6 +3320,28 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE SOLIN (V1P,V2P,DVP,NLIM,KFILE,SOLAR,KEOF)
 C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      
+C               LAST MODIFICATION:    3 April 1994                   
+C                                                                      
+C                  IMPLEMENTATION:    P.D. Brown
+C                                                                      
+C             ALGORITHM REVISIONS:    S.A. Clough
+C                                     P.D. Brown
+C                                                                      
+C                                                                      
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.      
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139       
+C                                                                      
+C----------------------------------------------------------------------
+C                                                                      
+C               WORK SUPPORTED BY:    THE ARM PROGRAM                  
+C                                     OFFICE OF ENERGY RESEARCH        
+C                                     DEPARTMENT OF ENERGY             
+C                                                                      
+C                                                                      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
       IMPLICIT DOUBLE PRECISION (V)
 C
 C     SUBROUTINE SOLIN inputs solar radiation from the file "SOLAR.RAD"
@@ -3333,6 +3377,28 @@ C
 C     ----------------------------------------------------------------
 C
       SUBROUTINE SOLOUT (V1P,V2P,DVP,NLIM,SOLRAD,LFILE,NPTS,NPANLS)
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      
+C               LAST MODIFICATION:    3 April 1994                   
+C                                                                      
+C                  IMPLEMENTATION:    P.D. Brown
+C                                                                      
+C             ALGORITHM REVISIONS:    S.A. Clough
+C                                     P.D. Brown
+C                                                                      
+C                                                                      
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.      
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139       
+C                                                                      
+C----------------------------------------------------------------------
+C                                                                      
+C               WORK SUPPORTED BY:    THE ARM PROGRAM                  
+C                                     OFFICE OF ENERGY RESEARCH        
+C                                     DEPARTMENT OF ENERGY             
+C                                                                      
+C                                                                      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
       IMPLICIT DOUBLE PRECISION (V)
 C
