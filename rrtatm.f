@@ -1,17 +1,16 @@
 C     path:      /home/rc1/aer_lblrtm/src/SCCS/s.lblatm.f                       
-C     revision:  3.11                                                           
-C     created:   25 Apr 1995  14:19:26                                          
-C     presently: 27 Apr 1995  13:02:39                                          
+C     revision:  3.13                                                           
+C     created:   03/18/96  17:45:44                                             
+C     presently: 03/18/96  18:32:37                                             
       SUBROUTINE RRTATM
 C
 C     This routine has been modified from lblatm.f for use with RRTM,
-C      using the translation code, lbl2r.f, version 1.4
+C      using the translation code, lbl2r.f, version 1.5
 C
 C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
-C
 C                                                                        FA00020
       IMPLICIT DOUBLE PRECISION (V)                                     !FA00030
 C                                                                        FA00040
@@ -23,6 +22,12 @@ C     LINE-BY-LINE TRANSMITTANCE/RADIANCE PROGRAM LBLRTM.                FA00090
 C                                                                        FA00100
 C     SEE THE COMMENTS IN SUBROUTINE ATMPTH FOR DETAILED INSTRUCTIONS O  FA00110
 C     THE USAGE OF THE ATMOSPHERIC INPUTS.                               FA00120
+C                                                                               
+C     The geometry was modified for LBLRTM to reflect changes                   
+C     implemented in MODTRAN to solve problems with inconsistent                
+C     path parameters.                                                          
+C     These changes include changing some variables and functions to            
+C     double precision.                                                         
 C                                                                        FA00130
 C**********************************************************************  FA00140
 C-                                                                       FA00150
@@ -128,7 +133,7 @@ C
 C                                                                               
 C     ASSIGN SCCS VERSION NUMBER TO MODULE                                      
 C                                                                               
-      HVRATM = '3.11'                                                           
+      HVRATM = '3.13'                                                           
 C                                                                        FA01050
 C     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM         FA01060
 C     IOUTDM IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                      FA01070
@@ -528,6 +533,7 @@ C     READ CONTROL CARD 3.1                                              FA04810
 C                                                                        FA04820
          READ (IRD,900) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,     FA04830
      *                  IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX              FA04840
+         XVBAR = 1.0
       ENDIF                                                              FA04850
 C                                                                        FA04860
       NOP = NOPRNT                                                       FA04870
@@ -700,6 +706,10 @@ C      >  READ IN CONTROL CARD 3.2 CONTAINING SLANT PATH PARAMETERS <    FA06880
 C                                                                        FA06890
          IF (IREAD.LE.0)                                                 FA06900
      *         READ (IRD,932) H1F,H2F,ANGLEF,RANGEF,BETAF,LENF           FA06910
+         IF (H1F.GE.H2F) THEN
+            STOP 'H2 MUST BE > H1'
+         ENDIF
+         ANGLEF = 0.
          H1 = H1F                                                        FA06920
          H2 = H2F                                                        FA06930
          ANGLE = ANGLEF                                                  FA06940
@@ -767,11 +777,23 @@ C        > COMPUTE THE REFRACTIVE INDEX PROFILE        <                 FA08340
 C        > RFNDXM IS 1.0-INDEX                         <                 FA08350
 C        > EQUATION FOR RFNDXM IS FROM LOWTRAN (REF 3) <                 FA08360
 C                                                                        FA08370
+         WRITE(IPR,*) '   - Using LOWTRAN6 refractive index -'                  
+C                                                                               
          DO 170 IM = 1, IMMAX                                            FA08380
             PPH2O = DENM(1,IM)*PZERO*TM(IM)/(TZERO*ALOSMT)               FA08390
-            RFNDXM(IM) = ((77.46+0.459E-8*XVBAR**2)*PM(IM)/TM(IM)-       FA08400
-     *                   (PPH2O/1013.0)*(43.49-0.347E-8*XVBAR**2))*      FA08410
-     *                   1.0E-6                                          FA08420
+C                                                                               
+C	    Approximation to refraction index (from LOWTRAN5)                         
+C                                                                               
+C           RFNDXM(IM) = ((77.46+0.459E-8*XVBAR**2)*PM(IM)/TM(IM)-       FA08400
+C    *                   (PPH2O/1013.0)*(43.49-0.347E-8*XVBAR**2))*      FA08410
+C    *                   1.0E-6                                          FA08420
+C                                                                               
+C	    Approximation to refraction index (from LOWTRAN6)                         
+C                                                                               
+            RFNDXM(IM)=((83.42+(185.08/(1.0-(XVBAR/1.14E+5)**2))+               
+     *     (4.11/(1.0-(XVBAR/6.24E+4)**2)))*(PM(IM)*288.15)/                    
+     *     (1013.25*TM(IM))-(43.49-(XVBAR/1.7E+4)**2)*(PPH2O/1013.25))          
+     *     *1.0E-06                                                             
   170    CONTINUE                                                        FA08430
 C                                                                        FA08440
 C        > PRINT ATMOSPHERIC PROFILE <                                   FA08450
@@ -3317,6 +3339,15 @@ C
       SUBROUTINE FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,      FA32150
      *                   IERROR)                                         FA32160
 C                                                                        FA32170
+C     -------------------------------------------------------------             
+C     This routine was modified for LBLRTM to reflect changes                   
+C     implemented in MODTRAN to solve problems with inconsistent                
+C     path parameters.                                                          
+C     It was also modified to eliminate GOTO statements in order to             
+C     make the program easier to understand.                                    
+C     These changes were obtained from H. Snell (March, 1996).                  
+C     -------------------------------------------------------------             
+C                                                                               
 C     *****************************************************************  FA32180
 C     FSCGEO INTERPRETS THE ALLOWABLE COMBINATIONS OF INPUT PATH         FA32190
 C     PARAMETERS INTO THE STANDARD SET H1,H2,ANGLE,PHI,HMIN, AND LEN.    FA32200
@@ -3341,140 +3372,175 @@ C                                                                        FA32330
      *                IPDIM,KDIM,KMXNOM,NMOL                             FA32390
 C                                                                        FA32400
       ITER = 0                                                           FA32410
-      IF (ITYPE.NE.3) GO TO 20                                           FA32420
+C                                                                               
+C     Check for error                                                           
+C                                                                               
+      IF ((ITYPE.NE.3).AND.(ITYPE.NE.2)) GOTO 90                                
 C                                                                        FA32430
-C     SLANT PATH TO SPACE                                                FA32440
-C     NOTE: IF BOTH HMIN AND ANGLE ARE ZERO, THEN ANGLE IS               FA32450
-C     ASSUMED SPECIFIED                                                  FA32460
+      IF (ITYPE.EQ.3) THEN                                                      
+C                                                                               
+C     Slant path to space                                                FA32440
+C     NOTE: If both HMIN and ANGLE are zero, then ANGLE is               FA32450
+C           assumed specified                                            FA32460
 C                                                                        FA32470
-      IF (H2.NE.0.0) GO TO 10                                            FA32480
+          IF (H2.EQ.0) THEN                                                     
 C                                                                        FA32490
-C     CASE 3A: H1,SPACE,ANGLE                                            FA32500
+C             Case 3A: H1,SPACE,ANGLE                                    FA32500
 C                                                                        FA32510
-      WRITE (IPR,900)                                                    FA32520
-      H2 = ZMAX                                                          FA32530
-      CALL FNDHMN (H1,ANGLE,H2,LEN,ITER,HMIN,PHI,IERROR)                 FA32540
-      GO TO 70                                                           FA32550
-   10 CONTINUE                                                           FA32560
+              WRITE (IPR,900)                                            FA32520
+              H2 = ZMAX                                                  FA32530
+              CALL FNDHMN (H1,ANGLE,H2,LEN,ITER,HMIN,PHI,IERROR)         FA32540
+                                                                                
+          ELSE                                                                  
 C                                                                        FA32570
-C     CASE 3B: H1,HMIN,SPACE                                             FA32580
+C             Case 3B: H1,HMIN,SPACE                                     FA32580
 C                                                                        FA32590
-      WRITE (IPR,905)                                                    FA32600
-      HMIN = H2                                                          FA32610
-      H2 = ZMAX                                                          FA32620
-      IF (H1.LT.HMIN) GO TO 80                                           FA32630
-      CALL FNDHMN (HMIN,90.0,H1,LEN,ITER,HMIN,ANGLE,IERROR)              FA32640
-      CALL FNDHMN (HMIN,90.0,H2,LEN,ITER,HMIN,PHI,IERROR)                FA32650
-      IF (HMIN.LT.H1) LEN = 1                                            FA32660
-      GO TO 70                                                           FA32670
-   20 CONTINUE                                                           FA32680
-      IF (ITYPE.NE.2) GO TO 90                                           FA32690
-      IF (RANGE.NE.0.0.OR.BETA.NE.0.0) GO TO 30                          FA32700
+              WRITE (IPR,905)                                            FA32600
+              HMIN = H2                                                  FA32610
+              H2 = ZMAX                                                  FA32620
+              IF (H1.LT.HMIN) GO TO 80                                   FA32630
+              CALL FNDHMN (HMIN,90.0,H1,LEN,ITER,HMIN,ANGLE,IERROR)      FA32640
+              CALL FNDHMN (HMIN,90.0,H2,LEN,ITER,HMIN,PHI,IERROR)        FA32650
+              IF (HMIN.LT.H1) LEN = 1                                    FA32660
+          ENDIF                                                                 
+      ENDIF                                                                     
+C                                                                               
+      IF (ITYPE.EQ.2) THEN                                                      
+C                                                                               
+C       Assign the variable ISELCT to the following cases                       
+C       (depending on input parameters):                                        
+C                                                                               
+C       -----------------------------------------------                         
+C       H1   H2   ANGLE  RANGE  BETA  =>   CASE  ISELCT                         
+C       -----------------------------------------------                         
+C       X    X      X                       2A     21                           
+C       X           X      X                2B     22                           
+C       X    X             X                2C     23                           
+C       X    X                   X          2D     24                           
+C       -----------------------------------------------                         
+C                                                                               
+         IF (RANGE.GT.0.0) THEN                                                 
+C                                                                               
+C           Must be Case 2B or Case 2C                                          
+C                                                                               
+            IF (H2.GT.0.0) THEN                                                 
+C                                                                               
+C              Case 2C                                                          
+C                                                                               
+               ISELCT=23                                                        
+            ELSEIF (ANGLE.EQ.0.0) THEN                                          
+               WRITE(IPR,1000)                                                  
+               WRITE(*,1000)                                                    
+               ISELCT=23                                                        
+            ELSE                                                                
+C                                                                               
+C              Case 2B                                                          
+C                                                                               
+               ISELCT=22                                                        
+            ENDIF                                                               
+         ELSEIF (BETA.GT.0.0) THEN                                              
+C                                                                               
+C           Case 2D (beta cannot be zero)                                       
+C                                                                               
+            ISELCT=24                                                           
+         ELSE                                                                   
+C                                                                               
+C           Case 2A, since RANGE and BETA are both zero                         
+C                                                                               
+            ISELCT=21                                                           
+         ENDIF                                                                  
+C                                                                               
+         IF (ISELCT.EQ.21) THEN                                                 
 C                                                                        FA32710
-C     CASE 2A: H1, H2, ANGLE                                             FA32720
+C           Case 2A: H1, H2, ANGLE                                       FA32720
 C                                                                        FA32730
-      WRITE (IPR,910)                                                    FA32740
-      IF (H1.GE.H2.AND.ANGLE.LE.90.0) GO TO 110                          FA32750
-      IF (H1.EQ.0.0.AND.ANGLE.GT.90.0) GO TO 120                         FA32760
-      IF (H2.LT.H1.AND.ANGLE.GT.90.0) WRITE (IPR,915) LEN                FA32770
-      H2ST = H2                                                          FA32780
-      CALL FNDHMN (H1,ANGLE,H2,LEN,ITER,HMIN,PHI,IERROR)                 FA32790
-      IF (H2.NE.H2ST) GO TO 120                                          FA32800
-      GO TO 70                                                           FA32810
-   30 CONTINUE                                                           FA32820
-      IF (BETA.NE.0.0) GO TO 60                                          FA32830
-      IF (ANGLE.EQ.0.0) GO TO 50                                         FA32840
+            WRITE (IPR,910)                                              FA32740
+            IF (H1.GE.H2.AND.ANGLE.LE.90.0) GO TO 110                    FA32750
+            IF (H1.EQ.0.0.AND.ANGLE.GT.90.0) GO TO 120                   FA32760
+            IF (H2.LT.H1.AND.ANGLE.GT.90.0) WRITE (IPR,915) LEN          FA32770
+            H2ST = H2                                                    FA32780
+            CALL FNDHMN (H1,ANGLE,H2,LEN,ITER,HMIN,PHI,IERROR)           FA32790
+            IF (H2.NE.H2ST) GO TO 120                                    FA32800
+         ENDIF                                                                  
+C                                                                               
+         IF (ISELCT.EQ.22) THEN                                                 
 C                                                                        FA32850
-C     CASE 2B: H1, ANGLE, RANGE                                          FA32860
-C     ASSUME NO REFRACTION                                               FA32870
+C           Case 2B: H1, ANGLE, RANGE                                    FA32860
+C           Assume refraction                                            FA32870
 C                                                                        FA32880
-      WRITE (IPR,920)                                                    FA32890
-      R1 = RE+H1                                                         FA32900
-      R2 = SQRT(R1**2+RANGE**2+2.0*R1*RANGE*COS(+ANGLE/DEG))             FA32910
-      H2 = R2-RE                                                         FA32920
-      IF (H2.GE.0.0) GO TO 40                                            FA32930
-      H2 = 0.0                                                           FA32940
-      R2 = RE+H2                                                         FA32950
-      RANGE = -R1*COS(ANGLE/DEG)-SQRT(R2**2-R1**2*(SIN(ANGLE/DEG))**2)   FA32960
-      WRITE (IPR,925) RANGE                                              FA32970
-   40 CONTINUE                                                           FA32980
-C                                                                        FA32990
-C     NOTE: GEOMETRIC PHI IS NEEDED TO DETERMINE LEN(0 OR 1).            FA33000
-C     PHI IS THEN RECOMPUTED IN FNDHMN                                   FA33010
-C                                                                        FA33020
-      PHI = 180.0-ACOS((R2**2+RANGE**2-R1**2)/(2.0*R2*RANGE))*DEG        FA33030
-      LEN = 0                                                            FA33040
-      IF (ANGLE.GT.90.0.AND.PHI.GT.90.0) LEN = 1                         FA33050
-      CALL FNDHMN (H1,ANGLE,H2,LEN,ITER,HMIN,PHI,IERROR)                 FA33060
-      GO TO 70                                                           FA33070
-   50 CONTINUE                                                           FA33080
+            WRITE (IPR,920)                                              FA32890
+            CALL NEWH2(H1,H2,ANGLE,RANGE,BETA,LEN,HMIN,PHI)                     
+         ENDIF                                                                  
+C                                                                               
+         IF (ISELCT.EQ.23) THEN                                                 
 C                                                                        FA33090
-C     CASE 2C: H1, H2, RANGE                                             FA33100
+C           Case 2C: H1, H2, RANGE                                       FA33100
 C                                                                        FA33110
-      WRITE (IPR,930)                                                    FA33120
-      IF (ABS(H1-H2).GT.RANGE) GO TO 100                                 FA33130
-      R1 = H1+RE                                                         FA33140
-      R2 = H2+RE                                                         FA33150
+            WRITE (IPR,930)                                              FA33120
+            IF (ABS(H1-H2).GT.RANGE) GO TO 100                           FA33130
+            R1 = H1+RE                                                   FA33140
+            R2 = H2+RE                                                   FA33150
 C                                                                        FA33160
-      ZARG2 = (R1**2+RANGE**2-R2**2)/(2.0*R1*RANGE)                      FA33170
-      ERARG2 = ABS(ZARG2)-1.0                                            FA33180
-      IF ((ERARG2.LE.1.0E-6).AND.(ERARG2.GE.0.0)) THEN                   FA33190
-         IF (ZARG2.LT.0.0) THEN                                          FA33200
-            ZARG2 = -1.0                                                 FA33210
-         ELSE                                                            FA33220
-            ZARG2 = 1.0                                                  FA33230
-         ENDIF                                                           FA33240
-      ENDIF                                                              FA33250
-      ANGLE = 180.0-ACOS(ZARG2)*DEG                                      FA33260
-      ZARG3 = (R2**2+RANGE**2-R1**2)/(2.0*R2*RANGE)                      FA33270
-      ERARG3 = ABS(ZARG3)-1.0                                            FA33280
-      IF ((ERARG3.LE.1.0E-6).AND.(ERARG3.GE.0.0)) THEN                   FA33290
-         IF (ZARG3.LT.0.0) THEN                                          FA33300
-            ZARG3 = -1.0                                                 FA33310
-         ELSE                                                            FA33320
-            ZARG3 = 1.0                                                  FA33330
-         ENDIF                                                           FA33340
-      ENDIF                                                              FA33350
-      PHI = 180.0-ACOS(ZARG3)*DEG                                        FA33360
-      BETA = PHI+ANGLE-180.                                              FA33370
+            ZARG2 = (H1**2-H2**2+RANGE**2+2.0*RE*(H1-H2))                       
+     *              /(2.0*R1*RANGE)                                      FA33170
+            ERARG2 = ABS(ZARG2)-1.0                                      FA33180
+            IF ((ERARG2.LE.1.0E-6).AND.(ERARG2.GE.0.0)) THEN             FA33190
+               IF (ZARG2.LT.0.0) THEN                                    FA33200
+                  ZARG2 = -1.0                                           FA33210
+               ELSE                                                      FA33220
+                  ZARG2 = 1.0                                            FA33230
+               ENDIF                                                     FA33240
+            ENDIF                                                        FA33250
+            ANGLE = 180.0-ACOS(ZARG2)*DEG                                FA33260
+            ZARG3 = (H2**2-H1**2+RANGE**2+2*RE*(H2-H1))/(2.0*R2*RANGE)   FA33270
+            ERARG3 = ABS(ZARG3)-1.0                                      FA33280
+            IF ((ERARG3.LE.1.0E-6).AND.(ERARG3.GE.0.0)) THEN             FA33290
+               IF (ZARG3.LT.0.0) THEN                                    FA33300
+                 ZARG3 = -1.0                                            FA33310
+               ELSE                                                      FA33320
+                 ZARG3 = 1.0                                             FA33330
+               ENDIF                                                     FA33340
+            ENDIF                                                        FA33350
+            PHI = 180.0-ACOS(ZARG3)*DEG                                  FA33360
+            BETA = PHI+ANGLE-180.                                        FA33370
 C                                                                        FA33380
-      IF (RANGE.GT.2.0.AND.BETA.GT.0) THEN                               FA33390
-         CALL FDBETA (H1,H2,BETA,ANGLE,PHI,LEN,HMIN,IERROR)              FA33400
-      ELSE                                                               FA33410
-         LEN = 0                                                         FA33420
-         IF (ANGLE.GT.90.0.AND.PHI.GT.90.0) LEN = 1                      FA33430
-         CALL FNDHMN (H1,ANGLE,H2,LEN,ITER,HMIN,PHI,IERROR)              FA33440
-      ENDIF                                                              FA33450
-      GO TO 70                                                           FA33460
+            IF (RANGE.GT.2.0.AND.BETA.GT.0) THEN                         FA33390
+               CALL FDBETA (H1,H2,BETA,ANGLE,PHI,LEN,HMIN,IERROR)        FA33400
+            ELSE                                                         FA33410
+               LEN = 0                                                   FA33420
+               IF (ANGLE.GT.90.0.AND.PHI.GT.90.0) LEN = 1                FA33430
+               CALL FNDHMN (H1,ANGLE,H2,LEN,ITER,HMIN,PHI,IERROR)        FA33440
+            ENDIF                                                        FA33450
+         ENDIF                                                                  
+C                                                                               
+         IF (ISELCT.EQ.24) THEN                                                 
 C                                                                        FA33470
-C     CASE 2D: H1, H2, BETA                                              FA33480
+C        Case 2D: H1, H2, BETA                                           FA33480
 C                                                                        FA33490
-   60 CONTINUE                                                           FA33500
-      CALL FDBETA (H1,H2,BETA,ANGLE,PHI,LEN,HMIN,IERROR)                 FA33510
-      GO TO 70                                                           FA33520
+            CALL FDBETA (H1,H2,BETA,ANGLE,PHI,LEN,HMIN,IERROR)           FA33510
+         ENDIF                                                                  
+      ENDIF                                                                     
 C                                                                        FA33530
-C     END OF ALLOWED CASES                                               FA33540
+C     End of allowed cases                                               FA33540
 C                                                                        FA33550
-   70 CONTINUE                                                           FA33560
-C                                                                        FA33570
-C     TEST IERROR AND RECHECK LEN                                        FA33580
+C     Test IERROR and recheck LEN                                        FA33580
 C                                                                        FA33590
       IF (IERROR.NE.0) RETURN                                            FA33600
       LEN = 0                                                            FA33610
       IF (HMIN.LT.AMIN1(H1,H2)) LEN = 1                                  FA33620
 C                                                                        FA33630
-C     REDUCE PATH ENDPOINTS ABOVE ZMAX TO ZMAX                           FA33640
+C     Reduce path endpoints above ZMAX to ZMAX                           FA33640
 C                                                                        FA33650
       IF (HMIN.GE.ZMAX) GO TO 130                                        FA33660
       IF (H1.GT.ZMAX.OR.H2.GT.ZMAX) CALL REDUCE (H1,H2,ANGLE,PHI,ITER)   FA33670
 C                                                                        FA33680
-C     AT THIS POINT THE FOLLOWING PARAMETERS ARE DEFINED-                FA33690
+C     At this point the following parameters are defined-                FA33690
 C         H1,H2,ANGLE,PHI,HMIN,LEN                                       FA33700
 C                                                                        FA33710
       WRITE (IPR,935) H1,H2,ANGLE,PHI,HMIN,LEN                           FA33720
       RETURN                                                             FA33730
 C                                                                        FA33740
-C     ERROR MESAGES                                                      FA33750
+C     Error messages                                                     FA33750
 C                                                                        FA33760
    80 CONTINUE                                                           FA33770
       WRITE (IPR,940) H1,HMIN                                            FA33780
@@ -3501,7 +3567,7 @@ C                                                                        FA33930
      *        I3)                                                        FA33990
   920 FORMAT (//,' CASE 2B:, GIVEN H1, ANGLE, RANGE',//,10X,             FA34000
      *        'NOTE: H2 IS COMPUTED FROM H1, ANGLE, AND RANGE ',         FA34010
-     *        'ASSUMING NO REFRACTION')                                  FA34020
+     *        'ASSUMING REFRACTION')                                     FA34020
   925 FORMAT (//,10X,'CALCULATED H2 IS LESS THAN ZERO:',/,10X,           FA34030
      *        'RESET H2 = 0.0 AND RANGE = ',F10.3)                       FA34040
   930 FORMAT (//,' CASE 2C: GIVEN H1, H2, RANGE',//,10X,                 FA34050
@@ -3529,6 +3595,10 @@ C                                                                        FA33930
      *        'OF THE ATMOSPHERIC PROFILE',//,10X,'ZMAX = ',G12.6,5X,    FA34270
      *        '  H1 = ',G12.6,5X,'  H2 = ',G12.6,'  HMIN = ',G12.6)      FA34280
 C                                                                        FA34290
+ 1000 FORMAT (/3X, 'Ambiguous Inputs:',/3X,'H1 and RANGE are both > 0',         
+     *    /3X,'but H2 and ANGLE = 0',//3X,'Path could be 2B or 2C',             
+     *    //5X,'will assume 2C',//3X,                                           
+     *    'change in FSCGEO if 2B is desired')                                  
       END                                                                FA34300
 C                                                                               
 C     ----------------------------------------------------------------          
@@ -3608,26 +3678,25 @@ C                                                                        FA34970
 C                                                                        FA35000
       BETA = BETAS                                                       FA35010
       IFLAG = 0                                                          FA35020
-      IF (H1.GT.H2) GO TO 10                                             FA35030
-      IORDER = 1                                                         FA35040
-      HA = H1                                                            FA35050
-      HB = H2                                                            FA35060
-      GO TO 20                                                           FA35070
-   10 CONTINUE                                                           FA35080
-      IORDER = -1                                                        FA35090
-      HA = H2                                                            FA35100
-      HB = H1                                                            FA35110
-   20 CONTINUE                                                           FA35120
+      IF (H1.LE.H2) THEN                                                        
+          IORDER = 1                                                     FA35040
+          HA = H1                                                        FA35050
+          HB = H2                                                        FA35060
+      ELSE                                                                      
+          IORDER = -1                                                    FA35090
+          HA = H2                                                        FA35100
+          HB = H1                                                        FA35110
+      ENDIF                                                                     
 C                                                                        FA35130
 C     IF AUTOLAYERING SELECTED(IBMAX = 0) THEN SET UP DUMMY              FA35140
 C     LBLRTM OUTPUT LAYERS                                               FA35150
 C                                                                        FA35160
       IBMSAV = IBMAX                                                     FA35170
-      IF (IBMAX.NE.0) GO TO 30                                           FA35180
-      IBMAX = 2                                                          FA35190
-      ZBND(1) = ZMIN                                                     FA35200
-      ZBND(2) = ZMAX                                                     FA35210
-   30 CONTINUE                                                           FA35220
+      IF (IBMAX.EQ.0) THEN                                                      
+          IBMAX = 2                                                      FA35190
+          ZBND(1) = ZMIN                                                 FA35200
+          ZBND(2) = ZMAX                                                 FA35210
+      ENDIF                                                                     
 C                                                                        FA35230
 C     SET PARAMETER TO SUPRESS CALCULATION OF AMOUNTS                    FA35240
 C                                                                        FA35250
@@ -3641,8 +3710,9 @@ C                                                                        FA35310
       ITER = 0                                                           FA35330
       RA = RE+HA                                                         FA35340
       RB = RE+HB                                                         FA35350
-      SG = SQRT(RA**2+RB**2-2.0*RA*RB*COS(BETA/DEG))                     FA35360
-      ANGLE1 = 180.0-ACOS((RA**2+SG**2-RB**2)/(2.0*RA*SG))*DEG           FA35370
+      SG = SQRT((HA-HB)**2+4.0*RA*RB*(SIN(BETA/(2.0*DEG)))**2)           FA35360
+      ANGLE1 = 180.0-ACOS((HA**2-HB**2+2.0*RE*(HA-HB)+SG**2)                    
+     *         /(2.0*RA*SG))*DEG                                         FA35370
       HMIN = HA                                                          FA35380
       IF (ANGLE1.GT.90.0) HMIN = RA*SIN(ANGLE1/DEG)-RE                   FA35390
       HMING = HMIN                                                       FA35400
@@ -3655,14 +3725,15 @@ C                                                                        FA35310
 C                                                                        FA35470
 C     OBTAIN DERIVATIVE                                                  FA35480
 C                                                                        FA35490
-      SG = SQRT(RA**2+RB**2-2.0*RA*RB*COS((BETA+BETD)/DEG))              FA35500
-      ANGLEP = 180.0-ACOS((RA**2+SG**2-RB**2)/(2.0*RA*SG))*DEG           FA35510
+      SG = SQRT((HA-HB)**2+4.0*RA*RB*(SIN((BETA+BETD)/(2.0*DEG)))**2)    FA35500
+      ANGLEP = 180.0-ACOS((HA**2-HB**2+2.0*RE*(HA-HB)+SG**2)                    
+     *         /(2.0*RA*SG))*DEG                                         FA35510
       DANG = ANGLE1-ANGLEP                                               FA35520
-      IF (HMIN.GE.0.0) GO TO 40                                          FA35530
-      IFLAG = 1                                                          FA35540
-      HMIN = 0.0                                                         FA35550
-      CALL FNDHMN (HMIN,90.0,HA,LEN,ITER,HMIN,ANGLS1,IERROR)             FA35560
-   40 CONTINUE                                                           FA35570
+      IF (HMIN.LT.0.0) THEN                                              FA35530
+          IFLAG = 1                                                      FA35540
+          HMIN = 0.0                                                     FA35550
+          CALL FNDHMN (HMIN,90.0,HA,LEN,ITER,HMIN,ANGLS1,IERROR)         FA35560
+      ENDIF                                                              FA35570
       ITER = 1                                                           FA35580
       LEN = 0                                                            FA35590
       IF (ANGLE1.GT.90.0) LEN = 1                                        FA35600
@@ -3715,11 +3786,11 @@ C                                                                        FA36040
 C                                                                        FA36070
 C     ASSIGN ANGLE AND PHI TO PROPER H1 AND H2                           FA36080
 C                                                                        FA36090
-      IF (IORDER.EQ.1) GO TO 80                                          FA36100
-      TEMP = PHI                                                         FA36110
-      PHI = ANGLE                                                        FA36120
-      ANGLE = TEMP                                                       FA36130
-   80 CONTINUE                                                           FA36140
+      IF (IORDER.NE.1) THEN                                                     
+          TEMP = PHI                                                     FA36110
+          PHI = ANGLE                                                    FA36120
+          ANGLE = TEMP                                                   FA36130
+      ENDIF                                                                     
       IBMAX = IBMSAV                                                     FA36150
       BETAS = BETA                                                       FA36160
 C                                                                        FA36170
@@ -3780,61 +3851,61 @@ C                                                                        FA36640
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA36690
      *                IPDIM,KDIM,KMXNOM,NMOL                             FA36700
 C                                                                        FA36710
+      DOUBLE PRECISION CPATH,CRFRCT,ANDEXD,SH,GAMMA,CT1,CTP,                    
+     *                 CH2,CMIN                                                 
+C                                                                               
       DATA DH / 0.2 /,ETA / 5.0E-7 /                                    >FA36720
 C                                                                        FA36730
 C>    ETA MAY BE TOO SMALL FOR SOME COMPUTERS. TRY 1.0E-7 FOR 32 BIT    >FA36740
 C>    WORD MACHINES                                                     >FA36750
 C                                                                        FA36760
-      CRFRCT(H) = (RE+H)*ANDEX(H,SH,GAMMA)                               FA36770
+      CRFRCT(H) = (RE+H)*ANDEXD(H,SH,GAMMA)                              FA36770
       N = 0                                                              FA36780
-      CALL FINDSH (H1,SH,GAMMA)                                          FA36790
+      CALL FNDSHD (H1,SH,GAMMA)                                          FA36790
       CPATH = CRFRCT(H1)*SIN(ANGLE/DEG)                                  FA36800
-      CALL FINDSH (H2,SH,GAMMA)                                          FA36810
+      CALL FNDSHD (H2,SH,GAMMA)                                          FA36810
       CH2 = CRFRCT(H2)                                                   FA36820
       IF (ABS(CPATH/CH2).GT.1.0) GO TO 70                                FA36830
-      IF (ANGLE.GT.90.0) GO TO 10                                        FA36840
-      LEN = 0                                                            FA36850
-      HMIN = H1                                                          FA36860
-      GO TO 60                                                           FA36870
-   10 CONTINUE                                                           FA36880
+      IF (ANGLE.LE.90.0) THEN                                            FA36840
+          LEN = 0                                                        FA36850
+          HMIN = H1                                                      FA36860
+          GO TO 60                                                       FA36870
+      ENDIF                                                              FA36880
       IF (H1.LE.H2) LEN = 1                                              FA36890
-      IF (LEN.EQ.1) GO TO 20                                             FA36900
-      LEN = 0                                                            FA36910
-      HMIN = H2                                                          FA36920
-      GO TO 60                                                           FA36930
-   20 CONTINUE                                                           FA36940
+      IF (LEN.NE.1) THEN                                                 FA36900
+          LEN = 0                                                        FA36910
+          HMIN = H2                                                      FA36920
+          GO TO 60                                                       FA36930
+      ENDIF                                                              FA36940
 C                                                                        FA36950
 C     LONG PATH THROUGH A TANGENT HEIGHT.                                FA36960
 C     SOLVE ITERATIVELY FOR THE TANGENT HEIGHT HT.                       FA36970
 C     HT IS THE HEIGHT FOR WHICH  INDEX(HT)*(RE+HT) = CPATH.             FA36980
 C                                                                        FA36990
-      CALL FINDSH (0.0,SH,GAMMA)                                         FA37000
+      CALL FNDSHD (0.0,SH,GAMMA)                                         FA37000
       CMIN = CRFRCT(0.0)                                                 FA37010
 C                                                                        FA37020
 C     FOR BETA CASES (ITER>0), ALLOW FOR HT < 0.0                        FA37030
 C                                                                        FA37040
       IF (ITER.EQ.0.AND.CPATH.LT.CMIN) GO TO 50                          FA37050
-      HT1 = (RE+H1)*SIN(ANGLE/DEG)-RE                                    FA37060
+      HT1 = H1*SIN(ANGLE/DEG)+(SIN(ANGLE/DEG)-1.0)*RE                    FA37060
 C                                                                        FA37070
 C     ITERATE TO FIND HT                                                 FA37080
 C                                                                        FA37090
    30 CONTINUE                                                           FA37100
       N = N+1                                                            FA37110
-      CALL FINDSH (HT1,SH,GAMMA)                                         FA37120
+      CALL FNDSHD (HT1,SH,GAMMA)                                         FA37120
       CT1 = CRFRCT(HT1)                                                  FA37130
       IF (ABS((CPATH-CT1)/CPATH).LT.ETA) GO TO 40                        FA37140
       IF (N.GT.15) GO TO 80                                              FA37150
       HTP = HT1-DH                                                       FA37160
-      CALL FINDSH (HTP,SH,GAMMA)                                         FA37170
+      CALL FNDSHD (HTP,SH,GAMMA)                                         FA37170
       CTP = CRFRCT(HTP)                                                  FA37180
-      DC = CTP-CT1                                                       FA37190
-      DERIV = -DC/DH                                                     FA37200
-      HT2 = HT1+(CPATH-CT1)/DERIV                                        FA37210
-      HT1 = HT2                                                          FA37220
+      DERIV=(CT1-CTP)/DH                                                        
+      HT1=HT1+(CPATH-CT1)/DERIV                                                 
       GO TO 30                                                           FA37230
    40 CONTINUE                                                           FA37240
-      HT = HT1                                                           FA37250
-      HMIN = HT                                                          FA37260
+      HMIN=HT1                                                                  
       GO TO 60                                                           FA37270
    50 CONTINUE                                                           FA37280
 C                                                                        FA37290
@@ -3996,6 +4067,15 @@ C     ----------------------------------------------------------------
 C                                                                               
       SUBROUTINE RFPATH (H1,H2,ANGLE,PHI,LEN,HMIN,IAMT,RANGE,BETA,       FA38770
      *                   BENDNG)                                         FA38780
+C                                                                               
+C     -------------------------------------------------------------             
+C     This routine was modified for LBLRTM to reflect changes                   
+C     implemented in MODTRAN to solve problems with inconsistent                
+C     path parameters.                                                          
+C     It was also modified to eliminate GOTO statements in order to             
+C     make the program easier to understand.                                    
+C     These changes were obtained from H. Snell (March, 1996).                  
+C     -------------------------------------------------------------             
 C                                                                        FA38790
 C     *****************************************************************  FA38800
 C     THIS SUBROUTINE TRACES THE REFRACTED RAY FROM H1 WITH AN           FA38810
@@ -4023,6 +4103,7 @@ C                                                                        FA38940
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA39030
 C                                                                        FA39040
       DOUBLE PRECISION HMOD                                             &FA39050
+      DOUBLE PRECISION DS,DBEND,S,SINAI,COSAI,CPATH,ANDEXD,SH,GAMMA             
 C                                                                        FA39060
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA39070
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA39080
@@ -4034,18 +4115,17 @@ C                                                                        FA39110
 C                                                                        FA39140
 C     REORDER H1 AND H2 TO HA AND HB (HA .LE. HB)                        FA39150
 C                                                                        FA39160
-      IF (H1.GT.H2) GO TO 10                                             FA39170
-      IORDER = 1                                                         FA39180
-      HA = H1                                                            FA39190
-      HB = H2                                                            FA39200
-      ANGLEA = ANGLE                                                     FA39210
-      GO TO 20                                                           FA39220
-   10 CONTINUE                                                           FA39230
-      IORDER = -1                                                        FA39240
-      HA = H2                                                            FA39250
-      HB = H1                                                            FA39260
-      ANGLEA = PHI                                                       FA39270
-   20 CONTINUE                                                           FA39280
+      IF (H1.LE.H2) THEN                                                        
+          IORDER = 1                                                     FA39180
+          HA = H1                                                        FA39190
+          HB = H2                                                        FA39200
+          ANGLEA = ANGLE                                                 FA39210
+      ELSE                                                                      
+          IORDER = -1                                                    FA39240
+          HA = H2                                                        FA39250
+          HB = H1                                                        FA39260
+          ANGLEA = PHI                                                   FA39270
+      ENDIF                                                                     
 C                                                                        FA39290
 C     MERGE THE ATMOSPHERIC PROFILE STORED IN ZMDL WITH H1,H2,(HMIN) AN  FA39300
 C     THE BOUNDARIES ZBND                                                FA39310
@@ -4055,59 +4135,62 @@ C                                                                        FA39320
 C                                                                        FA39350
 C     CALCULATE CPATH SEPERATELY FOR LEN = 0,1                           FA39360
 C                                                                        FA39370
-      IF (LEN.EQ.1) GO TO 30                                             FA39380
-      CALL FINDSH (HA,SH,GAMMA)                                          FA39390
-      CPATH = (RE+HA)*ANDEX(HA,SH,GAMMA)*SIN(ANGLEA/DEG)                 FA39400
-      GO TO 40                                                           FA39410
-   30 CONTINUE                                                           FA39420
-      CALL FINDSH (HMIN,SH,GAMMA)                                        FA39430
-      CPATH = (RE+HMIN)*ANDEX(HMIN,SH,GAMMA)                             FA39440
-   40 CONTINUE                                                           FA39450
+      IF (LEN.EQ.0) THEN                                                 FA39380
+          CALL FNDSHD (HA,SH,GAMMA)                                      FA39390
+          CPATH = (RE+HA)*ANDEXD(HA,SH,GAMMA)*SIN(ANGLEA/DEG)            FA39400
+      ELSE                                                               FA39410
+          CALL FNDSHD (HMIN,SH,GAMMA)                                    FA39420
+          CPATH = (RE+HMIN)*ANDEXD(HMIN,SH,GAMMA)                        FA39430
+      ENDIF                                                              FA39440
+C                                                                        FA39450
       BETA = 0.0                                                         FA39460
       S = 0.0                                                            FA39470
       BENDNG = 0.0                                                       FA39480
-      IF (LEN.EQ.0) GO TO 50                                             FA39490
+      IF (LEN.EQ.1) THEN                                                 FA39490
 C                                                                        FA39500
 C     TANGENT PATH                                                       FA39510
 C                                                                        FA39520
-      IHLOW = 1                                                          FA39530
-      IF (IORDER.EQ.-1) IHLOW = 2                                        FA39540
-      IF (IAMT.EQ.1.AND.NOPRNT.NE.1) WRITE (IPR,905) HLOW(IHLOW)         FA39550
-      SINAI = 1.0                                                        FA39560
-      COSAI = 0.0                                                        FA39570
-      THETA = 90.0                                                       FA39580
-      GO TO 80                                                           FA39590
+          IF (IORDER.EQ.-1) THEN                                                
+              IHLOW = 2                                                         
+          ELSE                                                                  
+              IHLOW = 1                                                  FA39530
+          ENDIF                                                          FA39540
+          IF (IAMT.EQ.1.AND.NOPRNT.NE.1) WRITE (IPR,905) HLOW(IHLOW)     FA39550
+          SINAI = 1.0                                                    FA39560
+          COSAI = 0.0                                                    FA39570
+          THETA = 90.0                                                   FA39580
+      ELSE                                                               FA39590
 C                                                                        FA39600
 C     SHORT PATH                                                         FA39610
 C                                                                        FA39620
-   50 CONTINUE                                                           FA39630
-C                                                                        FA39640
 C     ANGLEA IS THE ZENITH ANGLE AT HA IN DEG                            FA39650
 C     SINAI IS SIN OF THE INCIDENCE ANGLE                                FA39660
 C     COSAI IS CARRIED SEPERATELY TO AVOID A PRECISION PROBLEM           FA39670
 C     WHEN SINAI IS CLOSE TO 1.0                                         FA39680
 C                                                                        FA39690
-      THETA = ANGLEA                                                     FA39700
-      IF (ANGLEA.GT.45.0) GO TO 60                                       FA39710
-      SINAI = SIN(ANGLEA/DEG)                                            FA39720
-      COSAI = -COS(ANGLEA/DEG)                                           FA39730
-      GO TO 70                                                           FA39740
-   60 CONTINUE                                                           FA39750
-      SINAI = COS((90.0-ANGLEA)/DEG)                                     FA39760
-      COSAI = -SIN((90.0-ANGLEA)/DEG)                                    FA39770
-   70 CONTINUE                                                           FA39780
-      IHLOW = 1                                                          FA39790
-      IF (IORDER.EQ.-1) IHLOW = 2                                        FA39800
-      IHIGH = MOD(IHLOW,2)+1                                             FA39810
-      IF (IAMT.EQ.1.AND.NOPRNT.NE.1)                                     FA39820
-     *    WRITE (IPR,910) HLOW(IHLOW),HLOW(IHIGH)                        FA39830
-   80 CONTINUE                                                           FA39840
+          THETA = ANGLEA                                                 FA39700
+          IF (ANGLEA.LE.45.0) THEN                                       FA39710
+              SINAI = SIN(ANGLEA/DEG)                                    FA39720
+              COSAI = -COS(ANGLEA/DEG)                                   FA39730
+          ELSE                                                           FA39740
+              SINAI = COS((90.0-ANGLEA)/DEG)                             FA39760
+              COSAI = -SIN((90.0-ANGLEA)/DEG)                            FA39770
+          ENDIF                                                                 
+          IF (IORDER.EQ.-1) THEN                                         FA39780
+              IHLOW = 2                                                         
+          ELSE                                                                  
+              IHLOW = 1                                                  FA39790
+          ENDIF                                                                 
+          IHIGH = MOD(IHLOW,2)+1                                         FA39810
+          IF (IAMT.EQ.1.AND.NOPRNT.NE.1)                                 FA39820
+     *        WRITE (IPR,910) HLOW(IHLOW),HLOW(IHIGH)                    FA39830
+      ENDIF                                                              FA39840
 C                                                                        FA39850
 C     LOOP OVER THE LAYERS                                               FA39860
 C                                                                        FA39870
       J2 = IPMAX-1                                                       FA39880
       DO 100 J = 1, J2                                                   FA39890
-         CALL SCALHT (ZPTH(J),ZPTH(J+1),RFNDXP(J),RFNDXP(J+1),SH,GAMMA)  FA39900
+         CALL SCLHTD (ZPTH(J),ZPTH(J+1),RFNDXP(J),RFNDXP(J+1),SH,GAMMA)  FA39900
          CALL ALAYER (J,SINAI,COSAI,CPATH,SH,GAMMA,IAMT,DS,DBEND)        FA39910
          DBEND = DBEND*DEG                                               FA39920
          PHI = ASIN(SINAI)*DEG                                           FA39930
@@ -4116,31 +4199,39 @@ C                                                                        FA39870
          S = S+DS                                                        FA39960
          BENDNG = BENDNG+DBEND                                           FA39970
          BETA = BETA+DBETA                                               FA39980
-         IF (IAMT.NE.1) GO TO 90                                         FA39990
-         PBAR = PPSUM(J)/RHOPSM(J)                                       FA40000
-         TBAR = TPSUM(J)/RHOPSM(J)                                       FA40010
-         RHOBAR = RHOPSM(J)/DS                                           FA40020
-         IF (IAMT.EQ.1.AND.NOPRNT.NE.1)                                  FA40030
-     *       WRITE (IPR,915) J,ZPTH(J),ZPTH(J+1),THETA,DS,S,DBETA,BETA,  FA40040
-     *                       PHI,DBEND,BENDNG,PBAR,TBAR,RHOBAR           FA40050
-   90    CONTINUE                                                        FA40060
+         IF (IAMT.EQ.1) THEN                                                    
+             PBAR = PPSUM(J)/RHOPSM(J)                                   FA40000
+             TBAR = TPSUM(J)/RHOPSM(J)                                   FA40010
+             RHOBAR = RHOPSM(J)/DS                                       FA40020
+             IF (NOPRNT.NE.1) WRITE (IPR,915) J,ZPTH(J),ZPTH(J+1),       FA40030
+     *            THETA,DS,S,DBETA,BETA,PHI,DBEND,BENDNG,PBAR,           FA40040
+     *            TBAR,RHOBAR                                            FA40050
+         ENDIF                                                           FA40060
          THETA = 180.0-PHI                                               FA40070
-         IF (LEN.EQ.0) GO TO 100                                         FA40080
+C                                                                               
+         IF (LEN.EQ.1) THEN                                              FA40080
 C                                                                        FA40090
-C     FOR TANGENT PATHS, DOUBLE THE QUANTITIES BENDNG,BETA, AND S FOR    FA40100
-C     THE SYMETRIC PART OF THE PATH                                      FA40110
+C            For tangent paths, double the quantities BENDNG,BETA,       FA40100
+C            and S for the symmetric part of the path                    FA40110
 C                                                                        FA40120
-         IF ((J+1).NE.IPHMID) GO TO 100                                  FA40130
-         BENDNG = 2.0*BENDNG                                             FA40140
-         BETA = 2.0*BETA                                                 FA40150
-         S = 2.0*S                                                       FA40160
-         IF (IAMT.EQ.1.AND.NOPRNT.NE.1) WRITE (IPR,920) S,BETA,BENDNG    FA40170
-         IF (IPHMID.EQ.IPMAX) GO TO 100                                  FA40180
-         IHLOW = 1                                                       FA40190
-         IF (IORDER.EQ.-1) IHLOW = 2                                     FA40200
-         IHIGH = MOD(IHLOW,2)+1                                          FA40210
-         IF (IAMT.EQ.1.AND.NOPRNT.NE.1)                                  FA40220
-     *       WRITE (IPR,910) HLOW(IHLOW),HLOW(IHIGH)                     FA40230
+             IF ((J+1).EQ.IPHMID) THEN                                   FA40130
+                 BENDNG = 2.0*BENDNG                                     FA40140
+                 BETA = 2.0*BETA                                         FA40150
+                 S = 2.0*S                                               FA40160
+                 IF (IAMT.EQ.1.AND.NOPRNT.NE.1)                                 
+     *                         WRITE (IPR,920) S,BETA,BENDNG             FA40170
+                 IF (IPHMID.NE.IPMAX) THEN                               FA40180
+                     IF (IORDER.EQ.-1) THEN                              FA40190
+                         IHLOW = 2                                       FA40200
+                     ELSE                                                       
+                         IHLOW = 1                                              
+                     ENDIF                                                      
+                     IHIGH = MOD(IHLOW,2)+1                              FA40210
+                     IF (IAMT.EQ.1.AND.NOPRNT.NE.1)                      FA40220
+     *                   WRITE (IPR,910) HLOW(IHLOW),HLOW(IHIGH)         FA40230
+                 ENDIF                                                          
+             ENDIF                                                              
+         ENDIF                                                                  
   100 CONTINUE                                                           FA40240
       IF (IORDER.EQ.-1) PHI = ANGLEA                                     FA40250
       RANGE = S                                                          FA40260
@@ -4214,16 +4305,16 @@ C                                                                        FA40890
       HMAX = AMAX1(H1,H2)                                                FA40910
       IHMAX = 2                                                          FA40920
       ZH(1) = HMIN                                                       FA40930
-      IF (LEN.EQ.1) GO TO 10                                             FA40940
-      ZH(2) = HMAX                                                       FA40950
-      GO TO 20                                                           FA40960
-   10 CONTINUE                                                           FA40970
-      ZH(2) = HMID                                                       FA40980
-      IF (ABS(H1-H2).LT.TOL) H1 = H2                                     FA40990
-      IF (H1.EQ.H2) GO TO 20                                             FA41000
-      IHMAX = 3                                                          FA41010
-      ZH(3) = HMAX                                                       FA41020
-   20 CONTINUE                                                           FA41030
+      IF (LEN.EQ.0) THEN                                                 FA40940
+          ZH(2) = HMAX                                                   FA40950
+      ELSE                                                               FA49060
+          ZH(2) = HMID                                                   FA40980
+          IF (ABS(H1-H2).LT.TOL) H1 = H2                                 FA40990
+          IF (H1.NE.H2) THEN                                             FA41000
+              IHMAX = 3                                                  FA41010
+              ZH(3) = HMAX                                               FA41020
+          ENDIF                                                          FA41030
+      ENDIF                                                                     
 C                                                                        FA41040
 C     MERGE ZH AND ZBND BETWEEN ZH(1) AND ZH(IHMAX) TO CREAT ZOUT        FA41050
 C                                                                        FA41060
@@ -4274,14 +4365,18 @@ C                                                                        FA41500
       DO 90 IM = 1, IMMAX                                                FA41510
          IF (ZMDL(IM).GE.HMIN) GO TO 100                                 FA41520
    90 CONTINUE                                                           FA41530
-      GO TO 160                                                          FA41540
+      WRITE (IPR,900) HMIN                                               FA41540
+      STOP ' AMERGE - HMIN '                                                    
   100 CONTINUE                                                           FA41550
       IPHMID = 0                                                         FA41560
       IP = 0                                                             FA41570
       IOUT = 1                                                           FA41580
   110 CONTINUE                                                           FA41590
       IP = IP+1                                                          FA41600
-      IF (IP.GT.IPDIM) GO TO 170                                         FA41610
+      IF (IP.GT.IPDIM) THEN                                              FA41610
+          WRITE (IPR,905) IPDIM                                                 
+          STOP ' AMERGE - IPDIM '                                               
+      ENDIF                                                                     
       IF (IM.GT.IMMAX) GO TO 130                                         FA41620
       IF (ABS(ZOUT(IOUT)-ZMDL(IM)).LT.TOL) ZMDL(IM) = ZOUT(IOUT)         FA41630
       IF (ZOUT(IOUT).LT.ZMDL(IM)) GO TO 130                              FA41640
@@ -4327,14 +4422,6 @@ C                                                                        FA41840
 C                                                                        FA42040
       RETURN                                                             FA42050
 C                                                                        FA42060
-  160 WRITE (IPR,900) HMIN                                               FA42070
-C                                                                        FA42080
-      STOP ' AMERGE - HMIN '                                             FA42090
-C                                                                        FA42100
-  170 WRITE (IPR,905) IPDIM                                              FA42110
-C                                                                        FA42120
-      STOP ' AMERGE - IPDIM '                                            FA42130
-C                                                                        FA42140
   900 FORMAT ('0FROM AMERGE- ATMOSPHERIC PROFILE IN ZMDL DOES NOT',      FA42150
      *        ' EXTEND UP TO HMIN = ',E12.5)                             FA42160
   905 FORMAT ('0FROM AMERGE- MERGING THE ATMOSPHERIC PROFILE AND THE ',  FA42170
@@ -4347,6 +4434,15 @@ C     ----------------------------------------------------------------
 C                                                                               
       SUBROUTINE ALAYER (J,SINAI,COSAI,CPATH,SH,GAMMA,IAMT,S,BEND)       FA42220
 C                                                                        FA42230
+C     -------------------------------------------------------------             
+C     This routine was modified for LBLRTM to reflect changes                   
+C     implemented in MODTRAN to solve problems with inconsistent                
+C     path parameters.                                                          
+C     It was also modified to eliminate GOTO statements in order to             
+C     make the program easier to understand.                                    
+C     These changes were obtained from H. Snell (March, 1996).                  
+C     -------------------------------------------------------------             
+C                                                                               
 C     *****************************************************************  FA42240
 C     THIS SUBROUTINE TRACES THE OPTICAL RAY THROUGH ONE LAYER FROM      FA42250
 C     Z1 TO Z2 AND IF IAMT.NE.2 CALCULATES THE INTEGRATED ABSORBER       FA42260
@@ -4383,6 +4479,12 @@ C                                                                        FA42520
 C                                                                        FA42570
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA42580
       DIMENSION HDEN(MXMOL),DENA(MXMOL),DENB(MXMOL)                      FA42590
+C                                                                               
+      DOUBLE PRECISION S,BEND,DS,DBEND,W1,W2,W3,DSDX1,DSDX2,DSDX3,              
+     *       DBNDX1,DBNDX2,DBNDX3,R1,R2,R3,X1,X2,X3,RATIO1,RATIO2,              
+     *       RATIO3,SINAI1,SINAI2,SINAI3,COSAI1,COSAI2,COSAI3,Y1,Y3,            
+     *       CPATH,DX,DH,SINAI,COSAI,D31,D32,D21,DHMIN,                         
+     *       SH,GAMMA,ANDEXD,RADRFD                                             
 C                                                                        FA42600
       DATA EPSILN / 1.0E-5 /                                             FA42610
 C                                                                        FA42620
@@ -4400,49 +4502,50 @@ C                                                                        FA42640
      *     Y1 = COSAI1**2/2.0+COSAI1**4/8.0+COSAI1**6*3.0/48.0           FA42740
       Y3 = 0.0                                                           FA42750
       X1 = -R1*COSAI1                                                    FA42760
-      RATIO1 = R1/RADREF(H1,SH,GAMMA)                                    FA42770
+      RATIO1 = R1/RADRFD(H1,SH,GAMMA)                                    FA42770
       DSDX1 = 1.0/(1.0-RATIO1*SINAI1**2)                                 FA42780
       DBNDX1 = DSDX1*SINAI1*RATIO1/R1                                    FA42790
       S = 0.0                                                            FA42800
       BEND = 0.0                                                         FA42810
-      IF (IAMT.EQ.2) GO TO 50                                            FA42820
+      IF (IAMT.NE.2) THEN                                                       
 C                                                                        FA42830
-C     INITIALIZE THE VARIABLES FOR THE CALCULATION OF THE                FA42840
-C     ABSORBER AMOUNTS                                                   FA42850
+C         Initialize the variables for the calculation of the            FA42840
+C         absorber amounts                                               FA42850
 C                                                                        FA42860
-      PA = PP(J)                                                         FA42870
-      PB = PP(J+1)                                                       FA42880
-      IF (PB.EQ.PA) THEN                                                        
-         WRITE(*,*) PB                                                          
-         STOP 'LBLATM: PRESSURES IN ADJOINING LAYERS MUST DIFFER'               
-      ENDIF                                                                     
-      TA = TP(J)                                                         FA42890
-      TB = TP(J+1)                                                       FA42900
-      RHOA = PA/(GCAIR*TA)                                               FA42910
-      RHOB = PB/(GCAIR*TB)                                               FA42920
-      DZ = ZPTH(J+1)-ZPTH(J)                                             FA42930
-      HP = -DZ/ALOG(PB/PA)                                               FA42940
-      IF (ABS(RHOB/RHOA-1.0).LT.EPSILN) GO TO 10                         FA42950
-      HRHO = -DZ/ALOG(RHOB/RHOA)                                         FA42960
-      GO TO 20                                                           FA42970
-   10 HRHO = 1.0E30                                                      FA42980
-   20 CONTINUE                                                           FA42990
-      DO 40 K = 1, NMOL                                                  FA43000
-         DENA(K) = DENP(K,J)                                             FA43010
-         DENB(K) = DENP(K,J+1)                                           FA43020
-         IF (DENA(K).EQ.0.0.OR.DENB(K).EQ.0.0) GO TO 30                  FA43030
-         IF (ABS(1.0-DENA(K)/DENB(K)).LE.EPSILN) GO TO 30                FA43040
+          PA = PP(J)                                                     FA42870
+          PB = PP(J+1)                                                   FA42880
+          IF (PB.EQ.PA) THEN                                                    
+             WRITE(*,*) PB                                                      
+             STOP 'LBLATM: PRESSURES IN ADJOINING LAYERS MUST DIFFER'           
+          ENDIF                                                                 
+          TA = TP(J)                                                     FA42890
+          TB = TP(J+1)                                                   FA42900
+          RHOA = PA/(GCAIR*TA)                                           FA42910
+          RHOB = PB/(GCAIR*TB)                                           FA42920
+          DZ = ZPTH(J+1)-ZPTH(J)                                         FA42930
+          HP = -DZ/ALOG(PB/PA)                                           FA42940
+          IF (ABS(RHOB/RHOA-1.0).GE.EPSILN) THEN                         FA42950
+              HRHO = -DZ/ALOG(RHOB/RHOA)                                 FA42960
+          ELSE                                                           FA42970
+              HRHO = 1.0E30                                              FA42980
+          ENDIF                                                          FA42990
+          DO 40 K = 1, NMOL                                              FA43000
+              DENA(K) = DENP(K,J)                                        FA43010
+              DENB(K) = DENP(K,J+1)                                      FA43020
+              IF ((DENA(K).EQ.0.0.OR.DENB(K).EQ.0.0).OR.                 FA43030
+     *            (ABS(1.0-DENA(K)/DENB(K)).LE.EPSILN)) THEN             FA43040
+C                                                                               
+C                 Use linear interpolation                                      
+C                                                                               
+                  HDEN(K) = 0.0                                                 
+              ELSE                                                              
 C                                                                        FA43050
-C     USE EXPONENTIAL INTERPOLATION                                      FA43060
+C                 Use exponential interpolation                          FA43060
 C                                                                        FA43070
-         HDEN(K) = -DZ/ALOG(DENB(K)/DENA(K))                             FA43080
-         GO TO 40                                                        FA43090
-C                                                                        FA43100
-C     USE LINEAR INTERPOLATION                                           FA43110
-C                                                                        FA43120
-   30    HDEN(K) = 0.0                                                   FA43130
-   40 CONTINUE                                                           FA43140
-   50 CONTINUE                                                           FA43150
+                  HDEN(K) = -DZ/ALOG(DENB(K)/DENA(K))                    FA43080
+              ENDIF                                                             
+  40      CONTINUE                                                       FA43140
+      ENDIF                                                                     
 C                                                                        FA43160
 C     LOOP THROUGH PATH                                                  FA43170
 C     INTEGRATE PATH QUANTITIES USING QUADRATIC INTEGRATION WITH         FA43180
@@ -4458,47 +4561,44 @@ C                                                                        FA43200
       R3 = RE+H3                                                         FA43280
       H2 = H1+DH/2.0                                                     FA43290
       R2 = RE+H2                                                         FA43300
-      SINAI2 = CPATH/(ANDEX(H2,SH,GAMMA)*R2)                             FA43310
-      SINAI3 = CPATH/(ANDEX(H3,SH,GAMMA)*R3)                             FA43320
-      RATIO2 = R2/RADREF(H2,SH,GAMMA)                                    FA43330
-      RATIO3 = R3/RADREF(H3,SH,GAMMA)                                    FA43340
-      IF ((1.0-SINAI2).GT.EPSILN) GO TO 70                               FA43350
+      SINAI2 = CPATH/(ANDEXD(H2,SH,GAMMA)*R2)                            FA43310
+      SINAI3 = CPATH/(ANDEXD(H3,SH,GAMMA)*R3)                            FA43320
+      RATIO2 = R2/RADRFD(H2,SH,GAMMA)                                    FA43330
+      RATIO3 = R3/RADRFD(H3,SH,GAMMA)                                    FA43340
+      IF ((1.0-SINAI2).LE.EPSILN) THEN                                          
 C                                                                        FA43360
-C     NEAR A TANGENT HEIGHT, COSAI = -SQRT(1-SINAI**2) LOSES             FA43370
-C     PRECISION. USE THE FOLLOWING ALGORITHM TO GET COSAI.               FA43380
+C        Near a tangent height, COSAI = -SQRT(1-SINAI**2) loses          FA43370
+C        precision. use the following algorithm to get COSAI.            FA43380
 C                                                                        FA43390
-      Y3 = Y1+(SINAI1*(1.0-RATIO1)/R1+4.0*SINAI2*(1.0-RATIO2)/R2+        FA43400
-     *         SINAI3*(1.0-RATIO3)/R3)*DH/6.0                            FA43410
-      COSAI3 = -SQRT(2.0*Y3-Y3**2)                                       FA43420
-      X3 = -R3*COSAI3                                                    FA43430
-      DX = X3-X1                                                         FA43440
-      W1 = 0.5*DX                                                        FA43450
-      W2 = 0.0                                                           FA43460
-      W3 = 0.5*DX                                                        FA43470
-      GO TO 90                                                           FA43480
-C                                                                        FA43490
-   70 CONTINUE                                                           FA43500
-      COSAI2 = -SQRT(1.0-SINAI2**2)                                      FA43510
-      COSAI3 = -SQRT(1.0-SINAI3**2)                                      FA43520
-      X2 = -R2*COSAI2                                                    FA43530
-      X3 = -R3*COSAI3                                                    FA43540
+         Y3 = Y1+(SINAI1*(1.0-RATIO1)/R1+4.0*SINAI2*(1.0-RATIO2)/R2+     FA43400
+     *        SINAI3*(1.0-RATIO3)/R3)*DH/6.0                             FA43410
+         COSAI3 = -SQRT(2.0*Y3-Y3**2)                                    FA43420
+         X3 = -R3*COSAI3                                                 FA43430
+         DX = X3-X1                                                      FA43440
+         W1 = 0.5*DX                                                     FA43450
+         W2 = 0.0                                                        FA43460
+         W3 = 0.5*DX                                                     FA43470
+      ELSE                                                               FA43480
+         COSAI2 = -SQRT(1.0-SINAI2**2)                                   FA43510
+         COSAI3 = -SQRT(1.0-SINAI3**2)                                   FA43520
+         X2 = -R2*COSAI2                                                 FA43530
+         X3 = -R3*COSAI3                                                 FA43540
 C                                                                        FA43550
-C     CALCULATE WEIGHTS                                                  FA43560
+C        Calculate weights                                               FA43560
 C                                                                        FA43570
-      D31 = X3-X1                                                        FA43580
-      D32 = X3-X2                                                        FA43590
-      D21 = X2-X1                                                        FA43600
-      IF (D32.EQ.0.0.OR.D21.EQ.0.0) GO TO 80                             FA43610
-      W1 = (2.0-D32/D21)*D31/6.0                                         FA43620
-      W2 = D31**3/(D32*D21*6.0)                                          FA43630
-      W3 = (2.0-D21/D32)*D31/6.0                                         FA43640
-      GO TO 90                                                           FA43650
-   80 CONTINUE                                                           FA43660
-      W1 = 0.5*D31                                                       FA43670
-      W2 = 0.0                                                           FA43680
-      W3 = 0.5*D31                                                       FA43690
-C                                                                        FA43700
-   90 CONTINUE                                                           FA43710
+         D31 = X3-X1                                                     FA43580
+         D32 = X3-X2                                                     FA43590
+         D21 = X2-X1                                                     FA43600
+         IF (D32.EQ.0.0.OR.D21.EQ.0.0) THEN                              FA43610
+            W1 = 0.5*D31                                                 FA43620
+            W2 = 0.0                                                     FA43630
+            W3 = 0.5*D31                                                 FA43640
+         ELSE                                                            FA43650
+            W1 = (2.0-D32/D21)*D31/6.0                                   FA43660
+            W2 = D31**3/(D32*D21*6.0)                                    FA43670
+            W3 = (2.0-D21/D32)*D31/6.0                                   FA43680
+         ENDIF                                                           FA43700
+      ENDIF                                                              FA43710
       DSDX2 = 1.0/(1.0-RATIO2*SINAI2**2)                                 FA43720
       DSDX3 = 1.0/(1.0-RATIO3*SINAI3**2)                                 FA43730
       DBNDX2 = DSDX2*SINAI2*RATIO2/R2                                    FA43740
@@ -4510,66 +4610,67 @@ C                                                                        FA43780
       S = S+DS                                                           FA43800
       DBEND = W1*DBNDX1+W2*DBNDX2+W3*DBNDX3                              FA43810
       BEND = BEND+DBEND                                                  FA43820
-      IF (IAMT.EQ.2) GO TO 150                                           FA43830
+      IF (IAMT.NE.2) THEN                                                FA43830
 C                                                                        FA43840
-C     CALCULATE AMOUNTS                                                  FA43850
+C         Calculate amounts                                              FA43850
 C                                                                        FA43860
-      DSDZ = DS/DH                                                       FA43870
-      PB = PA*EXP(-DH/HP)                                                FA43880
-      RHOB = RHOA*EXP(-DH/HRHO)                                          FA43890
-      IF ((DH/HRHO).LT.EPSILN) GO TO 100                                 FA43900
-      PPSUM(J) = PPSUM(J)+DSDZ*(HP/(1.0+HP/HRHO))*(PA*RHOA-PB*RHOB)      FA43910
-      TPSUM(J) = TPSUM(J)+DSDZ*HP*(PA-PB)/GCAIR                          FA43920
-      RHOPSM(J) = RHOPSM(J)+DSDZ*HRHO*(RHOA-RHOB)                        FA43930
-      GO TO 110                                                          FA43940
-  100 CONTINUE                                                           FA43950
-      PPSUM(J) = PPSUM(J)+0.5*DS*(PA*RHOA+PB*RHOB)                       FA43960
-      TPSUM(J) = TPSUM(J)+0.5*DS*(PA+PB)/GCAIR                           FA43970
-      RHOPSM(J) = RHOPSM(J)+0.5*DS*(RHOA+RHOB)                           FA43980
-  110 CONTINUE                                                           FA43990
-      DO 130 K = 1, NMOL                                                 FA44000
-         IF (HDEN(K).EQ.0.0) GO TO 120                                   FA44010
-         IF (ABS(DH/HDEN(K)).LT.EPSILN) GO TO 120                        FA44020
-C                                                                        FA44030
-C     EXPONENTIAL INTERPOLATION                                          FA44040
-C                                                                        FA44050
-         DENB(K) = DENP(K,J)*EXP(-(H3-Z1)/HDEN(K))                       FA44060
-C                                                                        FA44070
-C     1.0E5 FACTOR CONVERTS FROM KM TO CM                                FA44080
-C                                                                        FA44090
-         AMTP(K,J) = AMTP(K,J)+DSDZ*HDEN(K)*(DENA(K)-DENB(K))*1.0E5      FA44100
-         GO TO 130                                                       FA44110
-  120    CONTINUE                                                        FA44120
+         DSDZ = DS/DH                                                    FA43870
+         PB = PA*EXP(-DH/HP)                                             FA43880
+         RHOB = RHOA*EXP(-DH/HRHO)                                       FA43890
+         IF ((DH/HRHO).GE.EPSILN) THEN                                          
+            PPSUM(J) = PPSUM(J)+DSDZ*(HP/(1.0+HP/HRHO))                  FA43900
+     *                 *(PA*RHOA-PB*RHOB)                                FA43910
+            TPSUM(J) = TPSUM(J)+DSDZ*HP*(PA-PB)/GCAIR                    FA43920
+            RHOPSM(J) = RHOPSM(J)+DSDZ*HRHO*(RHOA-RHOB)                  FA43930
+         ELSE                                                            FA43940
+            PPSUM(J) = PPSUM(J)+0.5*DS*(PA*RHOA+PB*RHOB)                 FA43960
+            TPSUM(J) = TPSUM(J)+0.5*DS*(PA+PB)/GCAIR                     FA43970
+            RHOPSM(J) = RHOPSM(J)+0.5*DS*(RHOA+RHOB)                     FA43980
+         ENDIF                                                           FA43990
+         DO 130 K = 1, NMOL                                              FA44000
+            IF ((HDEN(K).EQ.0.0).OR.                                     FA44010
+     *           (ABS(DH/HDEN(K)).LT.EPSILN)) THEN                       FA44020
 C                                                                        FA44130
-C     LINEAR INTERPOLATION                                               FA44140
+C                 Linear interpolation                                   FA44140
+C                 1.0E05 factor converts units km to cm                         
 C                                                                        FA44150
-         DENB(K) = DENP(K,J)+(DENP(K,J+1)-DENP(K,J))*(H3-Z1)/DZ          FA44160
-         AMTP(K,J) = AMTP(K,J)+0.5*(DENA(K)+DENB(K))*DS*1.0E5            FA44170
-  130 CONTINUE                                                           FA44180
-      PA = PB                                                            FA44190
-      RHOA = RHOB                                                        FA44200
-      DO 140 K = 1, NMOL                                                 FA44210
-         DENA(K) = DENB(K)                                               FA44220
-  140 CONTINUE                                                           FA44230
-  150 CONTINUE                                                           FA44240
-      IF (H3.GE.Z2) GO TO 160                                            FA44250
-      H1 = H3                                                            FA44260
-      R1 = R3                                                            FA44270
-      SINAI1 = SINAI3                                                    FA44280
-      RATIO1 = RATIO3                                                    FA44290
-      Y1 = Y3                                                            FA44300
-      COSAI1 = COSAI3                                                    FA44310
-      X1 = X3                                                            FA44320
-      DSDX1 = DSDX3                                                      FA44330
-      DBNDX1 = DBNDX3                                                    FA44340
+               DENB(K)=DENP(K,J)+(DENP(K,J+1)-DENP(K,J))*(H3-Z1)/DZ      FA44160
+               AMTP(K,J) = AMTP(K,J)+0.5*(DENA(K)+DENB(K))*DS*1.0E5      FA44170
+            ELSE                                                                
+C                                                                               
+C                 Exponential interpolation                                     
+C                                                                               
+               DENB(K) = DENP(K,J)*EXP(-(H3-Z1)/HDEN(K))                        
+               AMTP(K,J) = AMTP(K,J)+DSDZ*HDEN(K)                               
+     *              *(DENA(K)-DENB(K))*1.0E5                                    
+            ENDIF                                                               
+ 130     CONTINUE                                                        FA44180
+         PA = PB                                                         FA44190
+         RHOA = RHOB                                                     FA44200
+         DO 140 K = 1, NMOL                                              FA44210
+            DENA(K) = DENB(K)                                            FA44220
+ 140     CONTINUE                                                        FA44230
+      ENDIF                                                              FA44240
+C                                                                               
+      IF (H3.LT.Z2) THEN                                                 FA44250
+         H1 = H3                                                         FA44260
+         R1 = R3                                                         FA44270
+         SINAI1 = SINAI3                                                 FA44280
+         RATIO1 = RATIO3                                                 FA44290
+         Y1 = Y3                                                         FA44300
+         COSAI1 = COSAI3                                                 FA44310
+         X1 = X3                                                         FA44320
+         DSDX1 = DSDX3                                                   FA44330
+         DBNDX1 = DBNDX3                                                 FA44340
+      ELSE                                                                      
+         SINAI = SINAI3                                                  FA44370
+         COSAI = COSAI3                                                  FA44380
+         SP(J) = S                                                       FA44390
+         RETURN                                                          FA44410
+      ENDIF                                                                     
+C                                                                               
       GO TO 60                                                           FA44350
-  160 CONTINUE                                                           FA44360
-      SINAI = SINAI3                                                     FA44370
-      COSAI = COSAI3                                                     FA44380
-      SP(J) = S                                                          FA44390
 C                                                                        FA44400
-      RETURN                                                             FA44410
-C                                                                        FA44420
       END                                                                FA44430
 C                                                                               
 C     ----------------------------------------------------------------          
@@ -5320,10 +5421,23 @@ C                                                                        FX01980
 C                                                                        FX02140
 C        > CALCULATE THE REFRACTIVITY <                                  FX02150
 C                                                                        FX02160
+         WRITE(IPR,*) '   - Using LOWTRAN6 refractive index -'                  
+C                                                                               
          DO 80 IM = 1, IMMAX                                             FX02170
             PPH2O = AMOLS(IM,1)*PZERO*TM(IM)/(TZERO*ALOSMT)              FX02180
-            RFNDXM(IM) = ((77.46+0.459E-8*XVBAR**2)*PM(IM)/TM(IM)-       FX02190
-     *                   (PPH2O/PZERO)*(43.49-0.347E-8*XVBAR**2))*1.0E-6 FX02200
+C                                                                               
+C	    Approximation to refraction index (from LOWTRAN5)                         
+C                                                                               
+C           RFNDXM(IM) = ((77.46+0.459E-8*XVBAR**2)*PM(IM)/TM(IM)-              
+C    *                   (PPH2O/1013.0)*(43.49-0.347E-8*XVBAR**2))*             
+C    *                   1.0E-6                                                 
+C                                                                               
+C	    Approximation to refraction index (from LOWTRAN6)                         
+C                                                                               
+            RFNDXM(IM)=((83.42+(185.08/(1.0-(XVBAR/1.14E+5)**2))+        FX02190
+     *    (4.11/(1.0-(XVBAR/6.24E+4)**2)))*(PM(IM)*288.15)/              FX02200
+     *    (1013.25*TM(IM))-(43.49-(XVBAR/1.7E+4)**2)*(PPH2O/1013.25))           
+     *    *1.0E-06                                                              
    80    CONTINUE                                                        FX02210
          CALL RFPATH (H1F,H2F,ANGLEF,PHIF,LENF,HMINF,1,RANGE,BETA,       FX02220
      *                BENDNG)                                            FX02230
@@ -5370,8 +5484,8 @@ C           -------------------------------------
 C                                                                               
             IF (MUNITS.EQ.1) THEN                                               
                DRAIR = WN2L(1)                                                  
-               DO 105 M = 2,NMOL                                                
-                  DRAIR = DRAIR + XAMNT(M,1)                                    
+               DO 105 M = 2,NMOLSV                                              
+                  DRAIR = DRAIR + AMOUNT(M,1)                                   
  105           CONTINUE                                                         
 C                                                                               
 C              > If DRAIR is zero, then write out XAMNT only    <               
@@ -5447,8 +5561,8 @@ C           -------------------------------------
 C                                                                               
             IF (MUNITS.EQ.1) THEN                                               
                DRAIR = WN2L(L)                                                  
-               DO 125 M = 2,NMOL                                                
-                  DRAIR = DRAIR + XAMNT(M,L)                                    
+               DO 125 M = 2,NMOLSV                                              
+                  DRAIR = DRAIR + AMOUNT(M,L)                                   
  125           CONTINUE                                                         
 C                                                                               
 C              > If DRAIR is zero, then write out XAMNT only    <               
@@ -5475,8 +5589,8 @@ C
       WRITE(IPR,973)                                                            
       DO 135 L = 1, NLAYRS                                                      
          DRAIR = WN2L(L)                                                        
-         DO 133 M = 2,NMOL                                                      
-            DRAIR = DRAIR + XAMNT(M,L)                                          
+         DO 133 M = 2,NMOLSV                                                    
+            DRAIR = DRAIR + AMOUNT(M,L)                                         
  133     CONTINUE                                                               
 C                                                                               
 C        > If DRAIR is zero, then write out XAMNT only    <                     
@@ -5673,7 +5787,7 @@ C                                                                        FX04690
 C             IF JCHAR(K) = 1, THEN OBTAIN THE VOLUME MIXING RATIO FROM  FX04700
 C             THE STANDARD PROFILE FOR THAT MOLECULE                     FX04710
 C                                                                        FX04720
-            IF (JCHAR(K).EQ.'1') CALL XTRACT (DTMP,JCHAR,ZX(L))          FX04730
+            CALL XTRACT (DTMP,JCHAR,ZX(L))                               FX04730
 C                                                                        FX04740
             DO 40 K = 1, IXMOLS                                          FX04750
                DENX(K,L) = DTMP(K)                                       FX04760
@@ -5872,6 +5986,9 @@ C                                                                        FX06550
       RETURN                                                             FX06560
 C                                                                        FX06570
       END                                                                FX06580
+C                                                                               
+C -------------------------------------------------------------------           
+C                                                                               
       BLOCK DATA XMLATM                                                  FX06590
 C                                                                        FX06600
 C     *****************************************************************  FX06610
@@ -6225,4 +6342,427 @@ C                                                                        FX10060
      *  MXZ50*0.0/                                                       FX10090
 C                                                                        FX10100
       END                                                                FX10110
+C                                                                               
+C -------------------------------------------------------------------           
+C                                                                               
+      SUBROUTINE NEWH2(H1,H2,ANGLE,RANGE,BETA,LEN,HTAN,PHI)                     
+C                                                                               
+C     Changed for LBLRTM to correct geometry problems                           
+C                                                                               
+C     THIS ROUTINE DETERMINES H2,BETA, TANGENT HEIGHT AND LEN.                  
+C     ADOPTED FROM THE MODTRAN2 GEOMETRY PACKAGE                                
+C                                                                               
+C     INPUTS ARE: H1, ZENTIH ANGLE (ANGLE) AND RANGE.                           
+C     LEN = 1 IF THE PATH GOES THROUGH HTAN.                                    
+C                                                                               
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO FASE01                
+C     MXLAY IS THE MAXIMUM NUMBER OF OUTPUT LAYERS                              
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE              
+C         STORED IN ZMDL (INPUT)                                                
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH                
+C         OBTAINED BY MERGING ZMDL AND ZOUT                                     
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT           
+C                                                                               
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=3400,                            
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)            
+C                                                                               
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,               
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,              
+     *              NLTEFL,LNFIL4,LNGTH4                                        
+C                                                                               
+      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,            
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,             
+     *                IPDIM,KDIM,KMXNOM,NMOL                                    
+C                                                                               
+C     BLANK COMMON FOR ZMDL                                                     
+C                                                                               
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)             
+      COMMON WPATH(IM2,16),TBBY(IM2)                                            
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)                
+C                                                                               
+      DOUBLE PRECISION HMOD                                                     
+C                                                                               
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)              
+      COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),          
+     *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)                
+      COMMON AMTP(MXMOL,MXPDIM)                                                 
+C                                                                               
+      DOUBLE PRECISION CPATH,CPJ,CPJ1,SH,GAMMA,ANDEXD,CRFRCT,RE2                
+C                                                                               
+      CRFRCT(H)=(RE2+H)*ANDEXD(H,SH,GAMMA)                                      
+C                                                                               
+      RE2=RE                                                                    
+C     COMPUTE CPATH OR PATH CONSTANT                                            
+      CALL FNDSHD(H1,SH,GAMMA)                                                  
+      CPATH = CRFRCT(H1)*SIN(ANGLE/DEG)                                         
+C                                                                               
+C     ANGLE = 90 at H1 implies that H1 = tangent height                         
+C                                                                               
+      IF (ANGLE.EQ.90.0) THEN                                                   
+          HTAN=H1                                                               
+      ELSE                                                                      
+          DO 100 J=1,IMMAX                                                      
+              IF (H1.GE.ZMDL(J)) JMAX=J                                         
+  100     CONTINUE                                                              
+          JMAX=JMAX+1                                                           
+          ZJ1=ZMDL(JMAX)                                                        
+          CPJ1=CRFRCT(ZJ1)                                                      
+          HTAN=-1.0                                                             
+          DO 200 J=JMAX,1,-1                                                    
+              IF (HTAN.LT.0.0) THEN                                             
+                  IF (J.EQ.1) THEN                                              
+                      HTAN=0.0                                                  
+                  ELSE                                                          
+                      CPJ=CPJ1                                                  
+                      ZJ=ZJ1                                                    
+                      ZJ1=ZMDL(J-1)                                             
+                      CPJ1=CRFRCT(ZJ1)                                          
+                      IF ((CPATH.LE.CPJ).AND.(CPATH.GE.CPJ1)) THEN              
+                          HTAN=RTBIS(ZJ1,CPJ1,ZJ,CPJ,CPATH)                     
+                      ENDIF                                                     
+                  ENDIF                                                         
+              ENDIF                                                             
+  200     CONTINUE                                                              
+      ENDIF                                                                     
+C                                                                               
+C     Find H2, BETA AND LEN                                                     
+C                                                                               
+      CALL FNDPTH(CPATH,H1,HTAN,H2,RANGE,BETA,LEN,ANGLE,PHI)                    
+C                                                                               
+C     Ensure LEN is not reset in FSCGEO if direct path                          
+      IF (LEN.EQ.0) HTAN=H2                                                     
+C                                                                               
+C     IF (ANGLE .LE. 90.0) HTAN CARRIES HMIN NOT HTAN                           
+      IF (ANGLE .LE. 90.0) HTAN = MIN(H1,H2)                                    
+C                                                                               
+      RETURN                                                                    
+C                                                                               
+      END                                                                       
+C                                                                               
+C ----------------------------------------------------------------              
+C                                                                               
+      FUNCTION RTBIS(X1,CX1,X2,CX2,CPATH)                                       
+C                                                                               
+C     THIS FUNCTION FINDS THE ROOT OF                                           
+C            FUNC(X) = X*REFRACTIVE INDEX - CPA                                 
+C                                                                               
+C     THE ROOT IS ACTUALLY THE TANGENT HEIGHT, BETWEEN X1 AND X2.               
+C     THIS ROUTINE IS FROM "NUMERICAL RECIPES" BY PRESS, ET AL.                 
+C                                                                               
+      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,            
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,             
+     *                IPDIM,KDIM,KMXNOM,KMAX                                    
                                                                                 
+      DOUBLE PRECISION CX1,CX2,CPATH,F,FMID,SH,GAMMA,ANDEXD                     
+      DATA XACC/1E-5/                                                           
+      PARAMETER (JMAX=40)                                                       
+C                                                                               
+      FMID=CX2-CPATH                                                            
+      F=CX1-CPATH                                                               
+      IF(F*FMID.GE.0.) STOP 'ROOT MUST BE BRACKETED FOR BISECTION.'             
+      IF(F.LT.0.)THEN                                                           
+         RTBIS=X1                                                               
+         DX=X2-X1                                                               
+      ELSE                                                                      
+         RTBIS=X2                                                               
+         DX=X1-X2                                                               
+      ENDIF                                                                     
+      DO 11 J=1,JMAX                                                            
+         DX=DX*.5                                                               
+         XMID=RTBIS+DX                                                          
+         CALL FNDSHD(XMID,SH,GAMMA)                                             
+         FMID=ANDEXD(XMID,SH,GAMMA)*(XMID+RE)-CPATH                             
+         IF(FMID.LE.0.)RTBIS=XMID                                               
+         IF(ABS(DX).LT.XACC .OR. FMID.EQ.0.) RETURN                             
+ 11   CONTINUE                                                                  
+C                                                                               
+C     COMES HERE IF UNABLE TO SOLVE.                                            
+C                                                                               
+      IF (ABS(CX2) .LT. ABS(CX1)) THEN                                          
+         RTBIS = X2                                                             
+      ELSE                                                                      
+         RTBIS = X1                                                             
+      ENDIF                                                                     
+      RETURN                                                                    
+      END                                                                       
+C                                                                               
+C ----------------------------------------------------------------              
+C                                                                               
+      SUBROUTINE FNDPTH(CPATH,H1,HTAN,H2,RANGEI,BETA,LEN,ANGLE,PHI)             
+C                                                                               
+C     THIS ROUTINE DETERMINES H2, BETA AND LEN.                                 
+C     INPUTS ARE H1, HTAN (TANGENT HEIGHT), RANGE (RANGEI) AND                  
+C     THE PATH CONSTANT, CPATH.                                                 
+C     RANGEO IS THE OUTPUT RANGE WHICH SHOULD EQUAL THE INPUT RANGE.            
+C                                                                               
+      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,            
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,             
+     *                IPDIM,KDIM,KMXNOM,KMAX                                    
+C                                                                               
+      DOUBLE PRECISION SAVE,STHETA,CAPRJ,PNTGRN,CTHETA,CTHET1,DX,               
+     *     DRNG,DBETA,R,DIFF,CPATH,ANDEXD,SH,GAMMA,RX,RATIO,RPLDR               
+C                                                                               
+      DATA DR/0.005/                                                            
+C                                                                               
+      IF (RANGEI .LT. DR) STOP'STOPPED IN FNDPTH'                               
+C                                                                               
+C     (RANGEI .LT. DR) SHOULD NOT HAPPEN; SO THIS CHECK IS REDUNDANT.           
+C                                                                               
+      RANGEO = 0                                                                
+      BETA = 0                                                                  
+      DO 200 I = 1, 2                                                           
+C                                                                               
+         IF (ANGLE .LE. 90.0000 .AND. I .EQ. 1) GO TO 200                       
+C                                                                               
+C        IF (ANGLE .LE. 90.0000) THE PATH DOES NOT GO THROUGH HTAN.             
+C        IF (ANGLE .LE. 90.0000) THE I = 1 CALCULATION SHOULD NOT BE DONE       
+C        IF (ANGLE .LE. 90.0000) FOR I = 2, R1 = H1                             
+C                                                                               
+         IF (I .EQ. 1) THEN                                                     
+            R1 = H1                                                             
+            R2 = HTAN                                                           
+         ELSEIF (I .EQ. 2) THEN                                                 
+            IF (HTAN .LT. 0.001 .AND. ANGLE .GT. 90) GO TO 200                  
+C                                                                               
+C           IF (HTAN APPROXIMATELY 0) THEN YOU ARE ABOUT TO HIT THE EARTH       
+C                                                                               
+            R2 = ZMAX                                                           
+            IF (ANGLE .LE. 90.0000) THEN                                        
+               R1 = H1                                                          
+            ELSE                                                                
+               R1 =HTAN                                                         
+            ENDIF                                                               
+         ENDIF                                                                  
+         IF (R2 .LT. R1) THEN                                                   
+            DZ = -DR                                                            
+         ELSE                                                                   
+            DZ = DR                                                             
+         ENDIF                                                                  
+         DO 100 Z = R1, R2-DZ, DZ                                               
+            Z2=Z                                                                
+            R=Z+RE                                                              
+            CALL FNDSHD(Z2,SH,GAMMA)                                            
+            RX=ANDEXD(Z2,SH,GAMMA)                                              
+            STHETA = CPATH/(RX*R)                                               
+            IF (STHETA .GT. 1.0) STHETA = 1.                                    
+            IF (STHETA .LT.-1.0) STHETA =-1.                                    
+            SAVE = STHETA                                                       
+            CTHETA = SQRT(1.0-STHETA**2)                                        
+            IF (R1 .GT. R2) CTHETA = -CTHETA                                    
+C                                                                               
+C           IF (R1 .GT. R2) THEN CTHETA IS NEGATIVE BECAUSE THETA .GT. 90       
+C                                                                               
+            RATIO=-(RX*SH)/(RX-1.0)                                             
+            CAPRJ = -R/RATIO                                                    
+            PNTGRN = 1.0/(1.0-CAPRJ*STHETA*STHETA)                              
+            RPLDR = R+DZ                                                        
+            Z2 = Z+DZ                                                           
+            CALL FNDSHD(Z2,SH,GAMMA)                                            
+            RX=ANDEXD(Z2,SH,GAMMA)                                              
+            STHETA = CPATH/(RX*RPLDR)                                           
+            CTHET1 = CTHETA                                                     
+            CTHETA = SQRT(1.0-STHETA**2)                                        
+            IF (R1 .GT. R2) CTHETA = -CTHETA                                    
+            DX=CTHETA*DZ+(CTHETA-CTHET1)*R                                      
+            DRNG = PNTGRN*DX                                                    
+            RANGEO = RANGEO + DRNG                                              
+C                                                                               
+            DBETA = (((SAVE+STHETA)*0.5) * (PNTGRN*DX)) /                       
+     *              (Z-0.5*DZ+RE)                                               
+            BETA = BETA+DBETA                                                   
+            IF (RANGEO .GE. RANGEI) THEN                                        
+               DIFF = (RANGEI-(RANGEO-DRNG))                                    
+               H2 = Z + (DZ/DRNG)*DIFF                                          
+               BETA = BETA*DEG                                                  
+               IF (I .EQ. 2) THEN                                               
+                  LEN = 1                                                       
+                  IF (ANGLE .LE. 90.0000) LEN = 0                               
+                  IF (H2 .LT. HTAN) THEN                                        
+C                                                                               
+C                    THIS WILL BE THE CASE IF I = 2, AND YOU HAVE               
+C                    GONE THROUGH THE R-LOOP BARELY (ONLY) ONCE.                
+C                                                                               
+                     H2 = HTAN                                                  
+                     LEN = 0                                                    
+                  ENDIF                                                         
+               ELSE                                                             
+                  LEN = 0                                                       
+               ENDIF                                                            
+C                                                                               
+C              CORRECTION FOR VERY SHORT PATHS; HERE IT IS ABOUT 5 KM           
+C                                                                               
+               IF (RANGEI .LT. 5.0 .AND. RANGEO/RANGEI .GT. 1.05) THEN          
+C                                                                               
+C                 CALCULATE BETA BY STARIGHT LINE GEOMETRY.                     
+C                                                                               
+                  PERP  = SIN(ANGLE/DEG)*RANGEI                                 
+                  BASE = COS(ANGLE/DEG)*RANGEI + RE+H1                          
+                  BETA = ATAN(PERP/BASE)*DEG                                    
+                  RANGEO = RANGEI                                               
+C                                                                               
+C                 H2 = BASE - RE                                                
+C                                                                               
+                  H2 = COS(ANGLE/DEG)*RANGEI+H1                                 
+               ENDIF                                                            
+               PHI = 180.0 - ACOS(CTHETA)*DEG                                   
+               RETURN                                                           
+            ENDIF                                                               
+ 100     CONTINUE                                                               
+ 200  CONTINUE                                                                  
+C                                                                               
+C     COMES HERE IF YOU HAVE REACHED ZMAX, BUT YOUR RANGEI IS STILL             
+C     NOT EQUAL TO OUTPUT VALUE.                                                
+C     IN THIS CASE DO THE FOLLOWING.                                            
+C                                                                               
+      RANGEI = RANGEO                                                           
+      H2 = ZMAX                                                                 
+      IF (ANGLE .LE. 90) THEN                                                   
+         LEN = 0                                                                
+      ELSE                                                                      
+         LEN = 1                                                                
+      ENDIF                                                                     
+      IF (HTAN .LT. 0.001 .AND. ANGLE .GT. 90) THEN                             
+C                                                                               
+C        YOU HAVE HIT THE EARTH IF YOU ARE AT THIS POINT OF THE CODE            
+C                                                                               
+         LEN = 0                                                                
+         H2 = 0                                                                 
+      ENDIF                                                                     
+      BETA = BETA*DEG                                                           
+      PHI = 180.0 - ACOS(CTHETA)*DEG                                            
+C                                                                               
+      RETURN                                                                    
+      END                                                                       
+C                                                                               
+C     ----------------------------------------------------------------          
+C                                                                               
+      SUBROUTINE FNDSHD (H,SH,GAMMA)                                            
+C                                                                               
+C     Double precision version of FINDSH - needed for improved geometry         
+C                                                                               
+C     *****************************************************************         
+C     GIVEN AN ALTITUDE H, THIS SUBROUTINE FINDS THE LAYER BOUNDARIES           
+C     Z(I1) AND Z(I2) WHICH CONTAIN H,  THEN CALCULATES THE SCALE               
+C     HEIGHT (SH) AND THE VALUE AT THE GROUND (GAMMA+1) FOR THE                 
+C     REFRACTIVITY (INDEX OF REFRACTION -1)                                     
+C     *****************************************************************         
+C                                                                               
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=3400,                            
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)            
+C                                                                               
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,               
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,              
+     *              NLTEFL,LNFIL4,LNGTH4                                        
+      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,            
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,             
+     *                IPDIM,KDIM,KMXNOM,NMOL                                    
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)             
+      COMMON WPATH(IM2,16),TBBY(IM2)                                            
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)                
+C                                                                               
+      DOUBLE PRECISION HMOD,SH,GAMMA                                            
+C                                                                               
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)              
+      COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),          
+     *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)                
+      COMMON AMTP(MXMOL,MXPDIM)                                                 
+C                                                                               
+      DO 10 IM = 2, IMMAX                                                       
+         I2 = IM                                                                
+         IF (ZMDL(IM).GE.H) GO TO 20                                            
+   10 CONTINUE                                                                  
+      I2 = IMMAX                                                                
+   20 CONTINUE                                                                  
+      I1 = I2-1                                                                 
+      CALL SCLHTD (ZMDL(I1),ZMDL(I2),RFNDXM(I1),RFNDXM(I2),SH,GAMMA)            
+C                                                                               
+      RETURN                                                                    
+C                                                                               
+      END                                                                       
+C                                                                               
+C     ----------------------------------------------------------------          
+C                                                                               
+      SUBROUTINE SCLHTD (Z1,Z2,RFNDX1,RFNDX2,SH,GAMMA)                          
+C                                                                               
+C     Double precision version of SCALHT - needed for improved geometry         
+C                                                                               
+C     *****************************************************************         
+C     THIS SUBROUTINE CALCULATES THE SCALE HEIGHT SH OF THE (INDEX OF           
+C     REFRACTION-1.0) FROM THE VALUES OF THE INDEX AT THE ALTITUDES Z1          
+C     AND Z2 ( Z1 < Z2). IT ALSO CALCULATES THE EXTRAPOLATED VALUE              
+C     GAMMA OF THE (INDEX-1.0) AT Z = 0.0                                       
+C     *****************************************************************         
+C                                                                               
+      DOUBLE PRECISION SH,GAMMA                                                 
+C                                                                               
+      RF1 = RFNDX1+1.0E-20                                                      
+      RF2 = RFNDX2+1.0E-20                                                      
+      RATIO = RF1/RF2                                                           
+      IF (ABS(RATIO-1.0).LT.1.0E-05) GO TO 10                                   
+      SH = (Z2-Z1)/ALOG(RATIO)                                                  
+      GAMMA = RF1*(RF2/RF1)**(-Z1/(Z2-Z1))                                      
+      GO TO 20                                                                  
+   10 CONTINUE                                                                  
+C                                                                               
+C     THE VARIATION IN THE INDEX OF REFRACTION WITH HEIGHT IS                   
+C     INSIGNIFICANT OR ZERO                                                     
+C                                                                               
+      SH = 0.0                                                                  
+      GAMMA = RFNDX1                                                            
+   20 CONTINUE                                                                  
+C                                                                               
+      RETURN                                                                    
+C                                                                               
+      END                                                                       
+C                                                                               
+C ----------------------------------------------------------------              
+C                                                                               
+      DOUBLE PRECISION FUNCTION ANDEXD (H,SH,GAMMA)                             
+C                                                                               
+C     Double precision version of ANDEX - needed for improved geometry          
+C                                                                               
+C     *****************************************************************         
+C     COMPUTES THE INDEX OF REFRACTION AT HEIGHT H, SH IS THE                   
+C     SCALE HEIGHT, GAMMA IS THE VALUE AT H=0 OF THE REFRACTIVITY =             
+C     INDEX-1                                                                   
+C     *****************************************************************         
+C                                                                               
+      DOUBLE PRECISION SH,GAMMA                                                 
+C                                                                               
+      REAL H                                                                    
+      IF (SH.EQ.0.0) THEN                                                       
+         ANDEXD = 1.0+GAMMA                                                     
+      ELSE                                                                      
+         ANDEXD = 1.0+GAMMA*EXP(-H/SH)                                          
+      ENDIF                                                                     
+C                                                                               
+      RETURN                                                                    
+C                                                                               
+      END                                                                       
+C                                                                               
+C ----------------------------------------------------------------              
+C                                                                               
+      DOUBLE PRECISION FUNCTION RADRFD (H,SH,GAMMA)                             
+C                                                                               
+C     Double precision version of RADREF - needed for improved geometry         
+C                                                                               
+C     *****************************************************************         
+C     COMPUTES THE RADIUS OF CURVATURE OF THE REFRACTED RAY FOR                 
+C     A HORIZONTAL PATH.  RADREF = ANDEX/ D(ANDEX)/D(RADIUS)                    
+C     *****************************************************************         
+C                                                                               
+      DOUBLE PRECISION SH,GAMMA,BIGNUM                                          
+      REAL H                                                                    
+      DATA BIGNUM / 1.0D36 /                                                    
+C                                                                               
+      IF (SH.EQ.0.0) GO TO 10                                                   
+      RADRFD = SH*(1.0+EXP(H/SH)/GAMMA)                                         
+C                                                                               
+      RETURN                                                                    
+C                                                                               
+   10 RADRFD = BIGNUM                                                           
+C                                                                               
+      RETURN                                                                    
+C                                                                               
+      END                                                                       
+C                                                                               
