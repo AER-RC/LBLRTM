@@ -2,6 +2,9 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE CONTNM (JRAD)                                            F00010
 C                                                                         F00020
       IMPLICIT DOUBLE PRECISION (V)                                     ! F00030
@@ -223,6 +226,16 @@ C                                                                         F01490
 C                                                                         F01560
       ENDIF                                                               F01570
 C                                                                         F01580
+C     Skip to Herzberg if PAVE is greater than 350.0 K.  Values greater
+C     than 350 introduce large error into the Drayson derived O2
+C     coefficients, which are calculated using a temperature dependent
+C     quadratic.
+C
+      IF (TAVE.GT.350.) THEN
+         WRITE(IPR,900)
+         GOTO 85
+      ENDIF
+C
 C     ********    O2 DIFFUSE   ********                                   F01590
 C                                                                         F01600
 C    CONTINUUM COEFFICIENTS ARE IN UNITS OF PRESSURE:                     F01610
@@ -246,6 +259,9 @@ C                                                                         F01770
    80 CONTINUE                                                            F01790
       CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)            F01800
 C                                                                         F01810
+C     Skip to here for TAVE > 350. 
+C
+ 85   CONTINUE
       CALL O2HERZ (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                         F01820
       DO 90 J = 1, NPTC                                                   F01830
          C(J) = C0(J)*WK(7)                                               F01840
@@ -259,7 +275,15 @@ C                                                                         F01880
 C                                                                         F01920
       RETURN                                                              F01930
 C                                                                         F01940
+ 900  FORMAT (/,'0    *********************************************',/,
+     *          '     *      BYPASS O2 CONTINUUM TO HERZBERG      *',/,
+     *          '     *       AS A RESULT of TAVE > 350. K        *',/,
+     *          '     *********************************************',/)
+C
       END                                                                 F01950
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE PRCNTM                                                   A10270
 C                                                                         A10280
 C     THIS SUBROUTINE PRINTS THE CONTINUUM INFORMATION TO FILE IPR        A10290
@@ -313,6 +337,9 @@ C
 
 C                                                                         A10580
       END                                                                 A10590
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                               F02220
 C                                                                         F02230
       IMPLICIT DOUBLE PRECISION (V)                                     ! F02240
@@ -342,6 +369,9 @@ C                                                                         F02470
       RETURN                                                              F02480
 C                                                                         F02490
       END                                                                 F02500
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BS296                                                    F02510
 C                                                                         F02520
       IMPLICIT DOUBLE PRECISION (V)                                     ! F02530
@@ -808,6 +838,9 @@ C                                                                         F02700
      *     1.3503E-16/                                                    F07140
 C                                                                         F07150
       END                                                                 F07160
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE SL260 (V1C,V2C,DVC,NPTC,C)                               F07170
 C                                                                         F07180
       IMPLICIT DOUBLE PRECISION (V)                                     ! F07190
@@ -837,6 +870,9 @@ C                                                                         F07420
       RETURN                                                              F07430
 C                                                                         F07440
       END                                                                 F07450
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BS260                                                    F07460
 C                                                                         F07470
       IMPLICIT DOUBLE PRECISION (V)                                     ! F07480
@@ -1304,6 +1340,9 @@ C                                                                         F07660
      *     4.9596E-16/                                                    F12100
 C                                                                         F12110
       END                                                                 F12120
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE FRN296 (V1C,V2C,DVC,NPTC,C)                              F12130
 C                                                                         F12140
       IMPLICIT DOUBLE PRECISION (V)                                     ! F12150
@@ -1334,6 +1373,9 @@ C                                                                         F12390
       RETURN                                                              F12400
 C                                                                         F12410
       END                                                                 F12420
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BFH2O                                                    F12430
 C                                                                         F12440
       IMPLICIT DOUBLE PRECISION (V)                                     ! F12450
@@ -1800,6 +1842,9 @@ C                                                                         F12620
      *     0.        /                                                    F17060
 C                                                                         F17070
       END                                                                 F17080
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE FRNCO2 (V1C,V2C,DVC,NPTC,C)                              F17090
 C                                                                         F17100
       IMPLICIT DOUBLE PRECISION (V)                                     ! F17110
@@ -1830,6 +1875,9 @@ C                                                                         F17350
       RETURN                                                              F17360
 C                                                                         F17370
       END                                                                 F17380
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BFCO2                                                    F17390
 C                                                                         F17400
       IMPLICIT DOUBLE PRECISION (V)                                     ! F17410
@@ -2073,6 +2121,9 @@ C                                                                         F17550
      *     2.3331E-18/                                                    F19790
 C                                                                         F19800
       END                                                                 F19810
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE N2CONT (V1C,V2C,DVC,NPTC,C)                              F19820
 C                                                                         F19830
       IMPLICIT DOUBLE PRECISION (V)                                     ! F19840
@@ -2102,6 +2153,9 @@ C                                                                         F20070
       RETURN                                                              F20080
 C                                                                         F20090
       END                                                                 F20100
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BN2                                                      F20110
 C                                                                         F20120
       IMPLICIT DOUBLE PRECISION (V)                                     ! F20130
@@ -2143,6 +2197,9 @@ C                                                                         F20200
      + 9.086E-30, 4.543E-30, 2.271E-30, 1.136E-30, 5.679E-31, 0.       /  F20490
 C                                                                         F20500
       END                                                                 F20510
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE XO3CHP (V1C,V2C,DVC,NPTC,C)                              F20520
 C                                                                         F20530
       IMPLICIT DOUBLE PRECISION (V)                                     ! F20540
@@ -2176,6 +2233,9 @@ C                                                                         F20810
       RETURN                                                              F20820
 C                                                                         F20830
       END                                                                 F20840
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA O3CH                                                     F20850
 C                                                                         F20860
       IMPLICIT DOUBLE PRECISION (V)                                     ! F20870
@@ -2203,6 +2263,9 @@ C                                                                         F20990
      * 2.55E-03, 1.98E-03, 1.40E-03, 8.25E-04, 2.50E-04, 0.      /        F21090
 C                                                                         F21100
       END                                                                 F21110
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE O3HHT0 (V1C,V2C,DVC,NPTC,C)                              F21120
 C                                                                         F21130
       IMPLICIT DOUBLE PRECISION (V)                                     ! F21140
@@ -2236,6 +2299,9 @@ C                                                                         F21410
       RETURN                                                              F21420
 C                                                                         F21430
       END                                                                 F21440
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BO3HH0                                                   F21450
 C                                                                         F21460
       IMPLICIT DOUBLE PRECISION (V)                                     ! F21470
@@ -2874,6 +2940,9 @@ C                                                                         F22950
      * 9.99713E+02, 9.95921E+02, 9.94845E+02, 9.93286E+02, 9.91204E+02/   F27800
 C                                                                         F27810
       END                                                                 F27820
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE O3HHT1 (V1C,V2C,DVC,NPTC,C)                              F27830
 C                                                                         F27840
       IMPLICIT DOUBLE PRECISION (V)                                     ! F27850
@@ -2903,6 +2972,9 @@ C                                                                         F28080
       RETURN                                                              F28090
 C                                                                         F28100
       END                                                                 F28110
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BO3HH1                                                   F28120
 C                                                                         F28130
       IMPLICIT DOUBLE PRECISION (V)                                     ! F28140
@@ -3503,6 +3575,9 @@ C                                                                         F28520
      *-2.30905E-04,-2.11669E-04,-2.37680E-04,-2.38194E-04,-2.10955E-04/   F34090
 C                                                                         F34100
       END                                                                 F34110
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE O3HHT2 (V1C,V2C,DVC,NPTC,C)                              F34120
 C                                                                         F34130
       IMPLICIT DOUBLE PRECISION (V)                                     ! F34140
@@ -3532,6 +3607,9 @@ C                                                                         F34370
       RETURN                                                              F34380
 C                                                                         F34390
       END                                                                 F34400
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BO3HH2                                                   F34410
 C                                                                         F34420
       IMPLICIT DOUBLE PRECISION (V)                                     ! F34430
@@ -4132,6 +4210,9 @@ C                                                                         F34810
      *-1.51037E-06,-1.43610E-06,-2.11316E-06,-2.45184E-06,-2.42262E-06/   F40380
 C                                                                         F40390
       END                                                                 F40400
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE O3HHUV (V1C,V2C,DVC,NPTC,C)                              F40410
 C                                                                         F40420
       IMPLICIT DOUBLE PRECISION (V)                                     ! F40430
@@ -4165,6 +4246,9 @@ C                                                                         F40700
       RETURN                                                              F40710
 C                                                                         F40720
       END                                                                 F40730
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BO3HUV                                                   F40740
 C                                                                         F40750
       IMPLICIT DOUBLE PRECISION (V)                                     ! F40760
@@ -4209,6 +4293,9 @@ C                                                                         F40860
      * 6.24621E-19, 6.34160E-19, 6.43622E-19/                             F41150
 C                                                                         F41160
       END                                                                 F41170
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE O2CONT (V1C,V2C,DVC,NPTC,C,T)                            F41180
 C                                                                         F41190
       IMPLICIT DOUBLE PRECISION (V)                                     ! F41200
@@ -4262,6 +4349,9 @@ C                                                                         F41670
       RETURN                                                              F41680
 C                                                                         F41690
       END                                                                 F41700
+C
+C     --------------------------------------------------------------
+C
       BLOCK DATA BO2C                                                     F41710
 C                                                                         F41720
       IMPLICIT DOUBLE PRECISION (V)                                     ! F41730
@@ -4318,6 +4408,9 @@ C                                                                         F41790
      * 0./                                                                F42240
 C                                                                         F42250
       END                                                                 F42260
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE O2HERZ (V1C,V2C,DVC,NPTC,C,T,P)                          F42270
 C                                                                         F42280
       IMPLICIT DOUBLE PRECISION (V)                                     ! F42290
@@ -4352,6 +4445,9 @@ C                                                                         F42570
       RETURN                                                              F42580
 C                                                                         F42590
       END                                                                 F42600
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE HERTDA (HERZ,V)                                          F42610
 C                                                                         F42620
       IMPLICIT DOUBLE PRECISION (V)                                     ! F42630
@@ -4396,6 +4492,9 @@ C                                                                         F43010
       RETURN                                                              F43020
 C                                                                         F43030
       END                                                                 F43040
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE HERPRS (HERZ,T,P)                                        F43050
 C                                                                         F43060
 C     CORRECT THE HERZBERG CONTINUUM CROSS SECTION FOR PRESSURE           F43070
