@@ -12,7 +12,7 @@ PLATFORM = Sun
 
 FC = f77
 FCFLAG = -fast -O3 -dbl
-OUTPUT = lblrtm_v6.00_f77_dbl
+OUTPUT = lblrtm_v6.01_f77_dbl
 CPATH = src
 CDOTO = dbl.o
 
