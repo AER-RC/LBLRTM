@@ -270,7 +270,7 @@ C----------------------------------------------------------------------   NC2580
 C                                                                         NC2590
 C     SUBROUTINE NUMBER(X,Y,HGHT,FPN,THETA,N)  // AFGL //                 NC2600
 C                                                                         NC2610
-C     SUBROUTINE NUMBER WILL INTERPRET AND PLOT A REAL (FLOATING POINT)   NC2620
+C     SUBROUTINE NUMBER WILL INTERPRET AND PLOT A REAL ( REALING POINT)   NC2620
 C     OR INTEGER NUMBER                                                   NC2630
 C                                                                         NC2640
 C     X     = X COORDINATE OF LOWER LEFT HAND CORNER OF THE HIGH ORDER    NC2650
@@ -310,9 +310,9 @@ C                                                                         NC2930
       ELSE                                                                NC2990
          INUM = NINT(F*(10.**N))                                          NC3000
          IF (INUM.GE.0) THEN                                              NC3010
-            RNUM = (FLOAT(INUM)+0.001)/(10.**N)                           NC3020
+            RNUM = ( REAL(INUM)+0.001)/(10.**N)                           NC3020
          ELSE                                                             NC3030
-            RNUM = (FLOAT(INUM)-0.001)/(10.**N)                           NC3040
+            RNUM = ( REAL(INUM)-0.001)/(10.**N)                           NC3040
          ENDIF                                                            NC3050
          WRITE (CHAR30,'(F30.15)') RNUM                                   NC3060
       ENDIF                                                               NC3070

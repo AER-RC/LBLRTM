@@ -121,7 +121,8 @@ C                                                                        LN05240
 C                                                                        LN05260
 C>>   CALL DATE (GDATE)                                                  LN05270
       CALL IDATE(IARRAY)                                                >LN05280
-      IARRAY(3)=MOD(IARRAY(3),100)                                      >LN05290
+c      IARRAY(3)=MOD(IARRAY(3),100)                                      >LN05290
+      IARRAY(3)=iarray(3)-(int(iarray(3)/100))*100
       WRITE (GDATE,900) IARRAY(3),IARRAY(2),IARRAY(1)                   >LN05300
 C                                                                        LN05310
       READ (GDATE,901) HDATE                                             LN05320
@@ -136,7 +137,8 @@ C                                                                        LN05400
       RETURN                                                             LN05410
 C                                                                        LN05420
 C>900 FORMAT (1X,I2,2('/',I2.2))                                         LN05430
-  900 FORMAT (   I2,2('/',I2.2))                                         LN05430
+c  900 FORMAT (   I2,2('/',I2.2))                                         LN05430
+  900 FORMAT (   I2.2,2('/',I2.2))
 C>901 FORMAT (1X,A8)                                                    >LN05440
   901 FORMAT (A8)                                                        LN05450
 C                                                                        LN05460

@@ -274,7 +274,7 @@ C*****V2 (effectively, V2 wraps around to V1).  Like CRATIO, these
 C*****values are educated guesses (except for the triangle, where the
 C*****bound of the scanning function is exactly 2*HWHM.)
       Data CLIMIT/0., 2., 3., 40., 160., 20., 20., 20.,
-     1   40., 40., 20., 100., 10., 160/
+     1   40., 40., 20., 100., 10., 160./
 
 C*****Note: the values of C, CRATIO, and CLIMIT for JFN=11 (Brault) 
 C*****corespond to a value of PARM of about .9, in which case the 
@@ -471,13 +471,29 @@ C*****Adjust V1Z, V2Z to fall on current frequency grid
 
       If (V1Z .LT. V1C) Then
           V1Z = V1C
+          write(*,*) '****************************************'
+          write(*,*) ' Warning: Setting V1Z = V1C: ', V1Z, V1C
+          write(*,*) ' First data point used: beginning of spectrum',
+     1         ' may suffer from wraparound effects'
+          write(*,*) ' May want to decrease the input V1 value'
+          write(*,*) ' '
+          write(IPR,*) '****************************************'
+          Write(IPR,*) ' Setting V1Z = V1C'
           Write(IPR,*) ' First data point used: beginning of spectrum',
      1         ' may suffer from wraparound effects'
+          write(IPR,*) ' May want to decrease the input V1 value'
+          write(IPR,*) ' '
       Endif
       If (V2Z .GT. V2C) Then
           V2Z = V2C
+          write(*,*) ' Warning: Setting V2Z = V2C: ', V2Z, V2C
+          write(*,*) ' Last data point used: end of spectrum',
+     1         ' may suffer from wraparound effects'
+          write(*,*) ' May want to increase the input V2 value'
+          write(IPR,*) ' Warning Setting V2Z = V2C: ', V2Z, V2C
           Write(IPR,*) ' Last data point used: end of spectrum may', 
      1         ' suffer from wraparound effects'
+          write(IPR,*) ' May want to increase the input V2 value'
       Endif
 
       Write(IPR,'(/,A,F12.5,A,F12.5)')
@@ -617,7 +633,7 @@ C*****If the FFT can be performed in memory (LREC = 1), then find the
 C*****smallest sized FFT possible = LPTFFT = smallest power of 2 > LTOTAL 
 C*****and < LPTSMX
       If(LREC .eq. 1) Then
-          POWER =  LOG(FLOAT(LTOTAL))/ LOG(2.0)
+          POWER =  LOG( REAL(LTOTAL))/ LOG(2.0)
           If(POWER-INT(POWER) .EQ. 0) Then
               LPTFFT = 2**INT(POWER)
           Else
@@ -648,7 +664,7 @@ C*****on LFILE1
 C*****If the spectrum has been pre-scanned with a rectangle, remove the
 C*****effects of the rectangle by deconvolving, i.e. divide the 
 C*****transform of the scanned spectrum by the transform of the 
-C*****rectangle.  This later function is a very broad sinc.
+C*****rectangle.  This latter function is a very broad sinc.
       If(M .GE. 2 .AND. NOBOX.EQ.0 .AND. NOFIX .EQ. 0) Then
 
 C*****    Calculate transform of the boxcar which is a rectangle of
@@ -748,7 +764,6 @@ C*****Read next scan request
       Stop 'Stopped in FFTSCN'
 
   122 Continue
-   
       Write(IPR,*) ' FFTSCN: Error in reading scan fn parameters'
       Stop 'Stopped in FFTSCN'
 
@@ -829,14 +844,14 @@ C*****Calculate the number of points and records after smoothing
 C*****KRDATA is the number of output points (including partial 
 C*****records) which include real data (not just FILL).
       KTOTAL = LTOTAL/M
-      ARDATA = FLOAT(KTOTAL)/FLOAT(LPTSMX)
+      ARDATA =  REAL(KTOTAL)/ REAL(LPTSMX)
       If((ARDATA-INT(ARDATA)) .EQ. 0.0) Then
           KRDATA = INT(ARDATA)
       Else
           KRDATA = INT(ARDATA)+1
       Endif
 C*****Find KREC = smallest power of 2 .GE. KRDATA
-      POWER =  LOG(FLOAT(KRDATA))/ LOG(2.0)
+      POWER =  LOG( REAL(KRDATA))/ LOG(2.0)
       If((POWER-INT(POWER)) .EQ. 0) Then
           KREC = 2**INT(POWER)
       Else
@@ -873,7 +888,7 @@ C*****            Get another record from LFILE
   200     Continue
 
           J = J+1
-          BOX(J) = SUM/Float(M)
+          BOX(J) = SUM/ REAL(M)
 
           If(J .EQ. LPTSMX) Then
 C*****        Write out a record
@@ -997,7 +1012,7 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
       
-      Logical OP,EX
+      LOGICAL OP,EX
       Character FILNAM*60,CTAPE*4
 
 C*****CTAPEdefines the default prefix for LBLRTM FILENAMEs, e.g. TAPE12
@@ -1142,6 +1157,7 @@ C     EQUIVALENCE (SPECT,IWORK)
 C*****    Use FFT from Numerical Recipies.  REALFT(DATA,N,IDIR)  expects
 C*****    DATA to be dimensioned 2*N.
           If(LPTFFT .gt. LPTSMX) Goto 900              
+
           Call REALFT(SPECT,LPTFFT/2,IDIR)
       Else
 C*****    Use file based FFT from M. Esplin
@@ -1399,7 +1415,7 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
-      Logical OP
+      LOGICAL OP
 
       Do 100 I=61,99
           Inquire(UNIT=i,OPENED=OP)
@@ -1554,14 +1570,14 @@ C*****when n reaches 7 digits, the limit of single precision.
 C*****Recompute V2, in case of round off errors
       V2 = V1+DV*(LTOTAL-1)
 
-      ARDATA = FLOAT(LTOTAL)/FLOAT(LPTSMX)
+      ARDATA =  REAL(LTOTAL)/ REAL(LPTSMX)
       If((ARDATA-INT(ARDATA)) .EQ. 0.0) Then
           LRDATA = INT(ARDATA)
       Else
           LRDATA = INT(ARDATA+1)
       Endif
 
-      POWER =  LOG(FLOAT(LRDATA))/ LOG(2.0)
+      POWER =  LOG( REAL(LRDATA))/ LOG(2.0)
       If(POWER-INT(POWER) .EQ. 0) Then
           LREC = 2**INT(POWER)
       Else
@@ -2531,6 +2547,7 @@ C*****    is odd.) Includes LREC = 1.
           If(MOD(LREC,2) .EQ. 1) Then
               VSAVE = V
 C*****        Calculate the positive frequencies.
+
               Call Scnfnt(JFN,A,-1,V,DV,LPTS/2+1,FUNCT,
      1                    PARM1,PARM2,PARM3)
               
@@ -2870,7 +2887,7 @@ C
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J04190
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J04200
 
-      Logical OP
+      LOGICAL OP
 
 
       IERR = 0
@@ -2963,7 +2980,7 @@ C                                                                         I07630
 C                                                                         I07650
 C     VBOT IS LOWEST NEEDED WAVENUMBER, VTOP IS HIGHEST                   I07660
 C                                                                         I07670
-      BOUND = FLOAT(IBOUND)*DV                                            I07680
+      BOUND =  REAL(IBOUND)*DV                                            I07680
 
 C*****What if VBOT and VTOP are outside the limits of the data???
 
@@ -3011,7 +3028,6 @@ C                                                                         I07930
       SUBROUTINE REALFT(DATA,N,ISIGN)
       REAL*8           WR,WI,WPR,WPI,WTEMP,THETA
       PARAMETER (PI2=6.28318530717959D0)
-C*****PARAMETER (PI2=6.283185)
       DIMENSION DATA(*)
       
       THETA=PI2/(2.0*N)
@@ -3058,11 +3074,12 @@ C*****PARAMETER (PI2=6.283185)
           CALL FOUR1(DATA,N,-1)
 C*****Normalize
           DO 20 I=1,2*N
-              DATA(I) = DATA(I)/FLOAT(N)
+              DATA(I) = DATA(I)/ REAL(N)
   20      CONTINUE
       ENDIF
       RETURN
       END
+C********************************************************
       SUBROUTINE FOUR1(DATA,NN,ISIGN)
       REAL*8           WR,WI,WPR,WPI,WTEMP,THETA
       PARAMETER (PI2=6.28318530717959D0)
@@ -3350,7 +3367,7 @@ C
 C
       FUNCTION LLOG2(N)
 C     FINDS INTEGER LOG TO BASE TWO
-      LLOG2= LOG(FLOAT(N))/.69314718+.5
+      LLOG2= LOG( REAL(N))/.69314718+.5
       RETURN
       END
 C     

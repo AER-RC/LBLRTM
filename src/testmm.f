@@ -88,7 +88,7 @@ C                                                                         N00500
       DO 20 I = 1, IRECTL                                                 N00540
          IFLAG = XLIND(6,I)                                               N00550
          IF (IFLAG.GE.0) THEN                                             N00560
-            M = mod(sngl(XLIND(1,I)),100.)                                                N00570
+            M = mod(real(XLIND(1,I)),100.)                                                N00570
             IF (IFLAG.GT.0.AND.LINCPL.EQ.1) MCNTLC(M) = MCNTLC(M)+1       N00580
             MOLCNT(M) = MOLCNT(M)+1                                       N00590
             SUMSTR(M) = SUMSTR(M)+XLINC(3,I)                              N00600
@@ -125,13 +125,13 @@ C                                                                         N00700
          IF (IFLG(K).GE.0) THEN                                           N00870
             iso(k) = xlinc(1,i)/100.
 c            MOL(K) = XLINC(1,I)                                           N00880
-            MOL(K) = mod(sngl(XLINC(1,I)),100.)                                           N00880
+            MOL(K) = mod(real(XLINC(1,I)),100.)                                           N00880
 C                                                                         N00890
 C     ADD ISOTOPE TO MOLECULE FOR USE BY LBLRTM                           N00900
 C                                                                         N00910
             MOL(K) = MOL(K)+ISO(k)*100                                       N00920
          ELSE                                                             N00930
-            MOLK = mod(sngl(XLINC(1,I)),100.)
+            MOLK = mod(real(XLINC(1,I)),100.)
             AMOL(K) = XLIND(1,I)                                          N00940
 C**********************
 C     CORRECTIONS TO THE LINE COUPLING FOR OXYGEN  (21 AUG 92; SAC)

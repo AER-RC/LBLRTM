@@ -365,7 +365,7 @@ C
       DVO = HWHM/SAMPLE                                                   I02940
       IF (JFN.EQ.0) THEN                                                  I02950
          IRATIO = DVO/DVI+0.5                                             I02960
-         DVO = FLOAT(IRATIO)*DVI                                          I02970
+         DVO =  REAL(IRATIO)*DVI                                          I02970
          IF (IRATIO.LT.2) THEN                                            I02980
             WRITE (IPR,950)                                               I02990
             GO TO 10                                                      I03000
@@ -391,7 +391,7 @@ C     BY THE FULL SCANNING FUNCTION                                       I03190
 C                                                                         I03200
 C     RESET BOUND BASED ON NBOUND                                         I03210
 C                                                                         I03220
-      BOUND = FLOAT(NBOUND)*DVO/2.                                        I03230
+      BOUND =  REAL(NBOUND)*DVO/2.                                        I03230
       MAXF = NLIMF+2*NBOUND+NSHIFT                                        I03240
 C                                                                         I03250
       TIMRDF = 0.                                                         I03260
@@ -409,7 +409,7 @@ C                                                                         I03250
       IDATA = -1                                                          I03380
       IPANEL = -1
       JFLG = -1
-      VFT = V1-FLOAT(NSHIFT)*DV                                           I03390
+      VFT = V1- REAL(NSHIFT)*DV                                           I03390
       VBOT = V1-BOUND                                                     I03400
       VTOP = V2+BOUND                                                     I03410
 C                                                                         I03420
@@ -846,7 +846,7 @@ C                                                                         I07290
 C   V2 IS ONLY APPROXIMATE                                                I07300
 C                                                                         I07310
       NUM = (((V2-V1)/DVO)+0.5)                                           I07320
-      V2 = V1+FLOAT(NUM)*DVO                                              I07330
+      V2 = V1+ REAL(NUM)*DVO                                              I07330
       NUM = NUM+1                                                         I07340
       WRITE (IPR,905) V1,V2,DVO,NUM,JEMIT,I4PT,IFILE,JFILE,NPTS           I07350
 C                                                                         I07360
@@ -884,7 +884,7 @@ C                                                                         I07630
 C                                                                         I07650
 C     VBOT IS LOWEST NEEDED WAVENUMBER, VTOP IS HIGHEST                   I07660
 C                                                                         I07670
-      BOUND = FLOAT(IBOUND)*DV                                            I07680
+      BOUND =  REAL(IBOUND)*DV                                            I07680
       VBOT = V1-BOUND                                                     I07690
       VTOP = V2+BOUND                                                     I07700
 C                                                                         I07710
@@ -1078,7 +1078,7 @@ C                                                                         I09470
 C     BOUND AT THIS POINT IS THE WAVENUMBER VALUE OF THE                  I09480
 C     FULL SCANNING FUNCTION                                              I09490
 C                                                                         I09500
-      BOUND = FLOAT(NBOUND)*DVO/2.                                        I09510
+      BOUND =  REAL(NBOUND)*DVO/2.                                        I09510
       MAXF = NLIMF+2*NBOUND+NSHIFT                                        I09520
 C                                                                         I09530
       TIMRDF = 0.                                                         I09540
@@ -1095,7 +1095,7 @@ C                                                                         I09530
       IDATA = -1                                                          I09660
       IPANEL = -1                                                         I09663
       JFLG = -1                                                           I09667
-      VFT = V1-FLOAT(NSHIFT)*DV                                           I09670
+      VFT = V1- REAL(NSHIFT)*DV                                           I09670
       VBOT = V1-BOUND                                                     I09680
       VTOP = V2+BOUND                                                     I09690
 C                                                                         I09700
@@ -1227,8 +1227,8 @@ C                                                                         I10720
    20    CONTINUE                                                         I10890
    30    IF (IRATSH.GT.JRATIO(24)) IRATSH = JRATIO(24)                    I10900
          IF (IRATSH.LE.1) RETURN                                          I10910
-         DVSC = FLOAT(IRATSH)*DVI                                         I10920
-         V1SHFT = FLOAT(IRATSH-1)*DVI/2.                                  I10930
+         DVSC =  REAL(IRATSH)*DVI                                         I10920
+         V1SHFT =  REAL(IRATSH-1)*DVI/2.                                  I10930
          WRITE (IPR,900) IRATSH                                           I10940
          SRATIO = IRATSH                                                  I10950
          IRATM1 = IRATSH-1                                                I10960
@@ -1254,7 +1254,7 @@ C                                                                         I11070
          S(K) = SUMK/SRATIO                                               I11160
    50 CONTINUE                                                            I11170
 C                                                                         I11180
-      V2I = V1I+DVSC*FLOAT(K-1)                                           I11190
+      V2I = V1I+DVSC* REAL(K-1)                                           I11190
       NLIM = K                                                            I11200
       DVI = DVSC                                                          I11210
       ILO = ((VBOT-V1I)/DVI)+1.5                                          I11220
@@ -1302,7 +1302,7 @@ C                                                                         I11560
       XF(1) = 0.5                                                         I11610
       SUM = XF(1)                                                         I11620
       DO 20 I = 2, NF                                                     I11630
-         X = FLOAT(I-1)*DXF                                               I11640
+         X =  REAL(I-1)*DXF                                               I11640
          XF(I) = 0.5*XTRIAN(X)                                            I11650
          SUM = SUM+2.*XF(I)                                               I11660
    20 CONTINUE                                                            I11670
@@ -1454,9 +1454,9 @@ C                                                                         I12990
          IF (I.LT.ITST) GO TO 20                                          I13020
          ITST = 9999                                                      I13030
          IF (JVAR.EQ.0) GO TO 10                                          I13040
-         VI = FLOAT(I-1)*DVI+V1I                                          I13050
+         VI =  REAL(I-1)*DVI+V1I                                          I13050
          HWHM = HWHMV1*(VI/V1)**2                                         I13060
-         ITST = I+IFIX(1./DVI)                                            I13070
+         ITST = I+ INT(1./DVI)                                            I13070
    10    CONTINUE                                                         I13080
          ZSLOPE = DVODX/HWHM                                              I13090
          ZBOUND = HWBND*HWHM                                              I13100
@@ -1465,7 +1465,7 @@ C                                                                         I13120
 CPRT     WRITE(IPR,900) VI,HWHM                                           I13130
 C                                                                         I13140
    20    CONTINUE                                                         I13150
-         ZPEAK = FLOAT(I-1)*RATIO+ZINT                                    I13160
+         ZPEAK =  REAL(I-1)*RATIO+ZINT                                    I13160
          JMAX = ZPEAK+ZBOUND+1.5                                          I13170
          IF (JMAX.LE.MAXF) GO TO 30                                       I13180
          ILAST = I-1                                                      I13190
@@ -1475,7 +1475,7 @@ C                                                                         I13210
          JMIN = MAX(JMIN,1)                                               I13230
          SUMIN = SUMIN+S(I)                                               I13240
          SI = XNORM*S(I)                                                  I13250
-         ZF = (FLOAT(JMIN-1)-ZPEAK)*ZSLOPE                                I13260
+         ZF = ( REAL(JMIN-1)-ZPEAK)*ZSLOPE                                I13260
          DO 40 JF = JMIN, JMAX                                            I13270
             IT = ABS(ZF)+1.5                                              I13280
             R1(JF) = R1(JF)+SI*XF(IT)                                     I13290
@@ -1532,15 +1532,15 @@ C                                                                         I13700
       IF (NHI.GE.NNHI) ISTOP = 1                                          I13770
       IF (ISTOP.EQ.1) NHI = NNHI                                          I13780
       NLIM = NHI-NLO+1                                                    I13790
-      V1P = VFT+FLOAT(NLO-1)*DV                                           I13800
-      V2P = VFT+FLOAT(NHI-1)*DV                                           I13810
+      V1P = VFT+ REAL(NLO-1)*DV                                           I13800
+      V2P = VFT+ REAL(NHI-1)*DV                                           I13810
 C                                                                         I13820
 C     V1P IS FIRST FREQ OF PANEL                                          I13830
 C     V2P IS LAST  FREQ OF PANEL                                          I13840
 C                                                                         I13850
       CALL BUFOUT (JFILE,PNLHDR(1),NPHDRF)                                I13860
       CALL BUFOUT (JFILE,R1(NLO),NLIM)                                    I13870
-      VFT = VFT+FLOAT(NLIMF-1)*DV                                         I13880
+      VFT = VFT+ REAL(NLIMF-1)*DV                                         I13880
       IF (NPTS.GT.0) THEN                                                 I13890
          WRITE (IPR,900) V1P,V2P,DVO,NLIM                                 I13900
          WRITE (IPR,905)                                                  I13910
@@ -1549,8 +1549,8 @@ C                                                                         I13850
          IJLIM = NLIM-NNPTS+1                                             I13940
          DO 10 IJ = 1, NNPTS                                              I13950
             IK = IJ+IJLIM-1                                               I13960
-            VI = V1P+FLOAT(IJ-1)*DVO                                      I13970
-            VK = V1P+FLOAT(IK-1)*DVO                                      I13980
+            VI = V1P+ REAL(IJ-1)*DVO                                      I13970
+            VK = V1P+ REAL(IK-1)*DVO                                      I13980
             JJ = NLO+IJ-1                                                 I13990
             KK = NLO+IK-1                                                 I14000
             WRITE (IPR,910) IJ,VI,R1(JJ),IK,VK,R1(KK)                     I14010
@@ -1619,15 +1619,15 @@ C                                                                         I14550
       IF (ISTOP.EQ.1) NHI = NNHI                                          I14630
       NLIM = NHI-NLO+1                                                    I14640
 C                                                                         I14650
-      V1P = VFT+FLOAT(NLO-1)*DV                                           I14660
-      V2P = VFT+FLOAT(NHI-1)*DV                                           I14670
+      V1P = VFT+ REAL(NLO-1)*DV                                           I14660
+      V2P = VFT+ REAL(NHI-1)*DV                                           I14670
 C                                                                         I14680
 C     V1P IS FIRST FREQ OF PANEL                                          I14690
 C     V2P IS LAST  FREQ OF PANEL                                          I14700
 C                                                                         I14710
       CALL BUFOUT (JFILE,PNLHDR(1),NPHDRF)                                I14720
       CALL BUFOUT (JFILE,R1(NLO),NLIM)                                    I14730
-      VFT = VFT+FLOAT(NLIMF-1)*DV                                         I14740
+      VFT = VFT+ REAL(NLIMF-1)*DV                                         I14740
       IF (NPTS.GT.0) THEN                                                 I14750
          WRITE (IPR,900) V1P,V2P,DVO,NLIM                                 I14760
          WRITE (IPR,905)                                                  I14770
@@ -1636,8 +1636,8 @@ C                                                                         I14710
          IJLIM = NLIM-NNPTS+1                                             I14800
          DO 10 IJ = 1, NNPTS                                              I14810
             IK = IJ+IJLIM-1                                               I14820
-            VI = V1P+FLOAT(IJ-1)*DVO                                      I14830
-            VK = V1P+FLOAT(IK-1)*DVO                                      I14840
+            VI = V1P+ REAL(IJ-1)*DVO                                      I14830
+            VK = V1P+ REAL(IK-1)*DVO                                      I14840
             JJ = NLO+IJ-1                                                 I14850
             KK = NLO+IK-1                                                 I14860
             WRITE (IPR,910) IJ,VI,R1(JJ),IK,VK,R1(KK)                     I14870
@@ -2364,7 +2364,7 @@ C                                                                         I16400
       XF(1) = XNORM                                                       I16450
       SUM = XF(1)                                                         I16460
       DO 20 I = 2, NF                                                     I16470
-         X = FLOAT(I-1)*DXF                                               I16480
+         X =  REAL(I-1)*DXF                                               I16480
          XF(I) = XNORM*XSINC2(X*XSCALE)                                   I16490
          SUM = SUM+2.*XF(I)                                               I16500
    20 CONTINUE                                                            I16510
@@ -2405,7 +2405,7 @@ C                                                                         I16780
       XF(1) = XNORM                                                       I16830
       SUM = XF(1)                                                         I16840
       DO 20 I = 2, NF                                                     I16850
-         X = FLOAT(I-1)*DXF                                               I16860
+         X =  REAL(I-1)*DXF                                               I16860
          XF(I) = XNORM*XSINC(X*XSCALE)                                    I16870
          SUM = SUM+2.*XF(I)                                               I16880
    20 CONTINUE                                                            I16890
@@ -2497,7 +2497,7 @@ C                                                                         J00720
 C     V2 IS ONLY APPROXIMATE                                              J00730
 C                                                                         J00740
       NUM = (((V2-V1)/DVO)+0.5)                                           J00750
-      V2 = V1+FLOAT(NUM)*DVO                                              J00760
+      V2 = V1+ REAL(NUM)*DVO                                              J00760
       NUM = NUM+1                                                         J00770
       WRITE (IPR,905) V1,V2,DVO,NUM,JEMIT,I4PT,IUNIT,IFILST,JUNIT,NPTS    J00780
 C                                                                         J00790
@@ -2579,7 +2579,7 @@ C                                                                         J01450
 C                                                                         J01470
 C     VBOT IS LOWEST NEEDED WAVENUMBER, VTOP IS HIGHEST                   J01480
 C                                                                         J01490
-      BOUND = FLOAT(IBOUND)*DV                                            J01500
+      BOUND =  REAL(IBOUND)*DV                                            J01500
       VBOT = V1-BOUND                                                     J01510
       VTOP = V2+BOUND                                                     J01520
 C                                                                         J01530
@@ -2804,8 +2804,8 @@ C                                                                         J03600
          IJLIM = NLIM-NNPTS+1                                             J03660
          DO 10 IJ = 1, NNPTS                                              J03670
             IK = IJ+IJLIM-1                                               J03680
-            VIJ = V1P+FLOAT(IJ-1)*DVP                                     J03690
-            VIK = V1P+FLOAT(IK-1)*DVP                                     J03700
+            VIJ = V1P+ REAL(IJ-1)*DVP                                     J03690
+            VIK = V1P+ REAL(IK-1)*DVP                                     J03700
             WRITE (IPR,910) IJ,VIJ,R1(IJ),IK,VIK,R1(IK)                   J03710
    10    CONTINUE                                                         J03720
       ENDIF                                                               J03730
@@ -2870,9 +2870,9 @@ C     SET UP FOUR POINT INTERPOLATION COEFICIENTS FOR P FOR 201           J04270
 C     POINTS BETWEEN 0 AND 1.0, with an extra point at each end           J04280
 C                                                                         J04290
       IF (I4PT.NE.0) THEN                                                 J04300
-         XNUMCF = FLOAT(NUMCOF)
+         XNUMCF =  REAL(NUMCOF)
          DO 10 IP = 0, NUMCOF+1                                           J04310
-            P = (FLOAT(IP)-1.0)/(XNUMCF-1.0)                              J04320
+            P = ( REAL(IP)-1.0)/(XNUMCF-1.0)                              J04320
             PP = P**2                                                     J04330
             C1(IP) = -P/2.0*(1-P)**2                                      J04340
             C2(IP) = 1.0-PP*(3.0-2.0*P)+PP/2.0*(1.0-P)                    J04350
@@ -2946,7 +2946,7 @@ C                                                                         J05050
       IF (I.LT.1) THEN                                                    J05070
          WRITE (IPR,*) ' INTERP-ERROR: I SHOULD >= 1, IS ',I              J05080
       ENDIF                                                               J05090
-      VI = V1I+DVI*FLOAT(I-1)                                             J05100
+      VI = V1I+DVI* REAL(I-1)                                             J05100
 C                                                                         J05110
 C     P IS INCREMENTED BY ADDING DVJ/DVI BUT WILL BE REINITIALIZED        J05120
 C     HERE FOR EACH OUTPUT PANEL TO AVOID THE ACCUMULATION OF             J05130
@@ -2982,7 +2982,7 @@ C                                                                         J05420
             P = P+VRATIO                                                  J05430
             IF (P.GE.1.0) THEN                                            J05440
                I = I+P                                                    J05450
-               P = P-FLOAT(INT(P))                                        J05460
+               P = P- REAL(INT(P))                                        J05460
             ENDIF                                                         J05470
 C                                                                         J05480
    50    CONTINUE                                                         J05490
@@ -3008,7 +3008,7 @@ C                                                                         J05680
             P = P+VRATIO                                                  J05690
             IF (P.GE.1.0) THEN                                            J05700
                I = I+P                                                    J05710
-               P = P-FLOAT(INT(P))                                        J05720
+               P = P- REAL(INT(P))                                        J05720
             ENDIF                                                         J05730
    60    CONTINUE                                                         J05740
 C                                                                         J05750
@@ -3122,7 +3122,7 @@ C                                                                         L00060
       character*8      XID,       HMOLID,      YID        
       real*8               SECANT,       XALTZ 
 
-      logical op
+      LOGICAL OP
 C                                                                         L00080
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       L00090
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DVC,V1C,V2C,TBOUND,   L00100
@@ -3204,7 +3204,7 @@ c     save center frequency value, and reset V1F to endpoint value.
 
          V1F_center = V1F
          nptf_half = (abs(nptf)-1)/2
-         V1F = V1F_center - DVF*float(nptf_half)
+         V1F = V1F_center - DVF* REAL(nptf_half)
          write(ipr,*) ' ``````````````````````````````'
          write(ipr,*) ' Use of V1F as center frequency:'
          write(ipr,*) '   V center = ',V1F_center
@@ -3238,7 +3238,7 @@ c     save center frequency value, and reset V1F to endpoint value.
 C                                                                         L00530
       IF (NPTF.LE.0) GO TO 30                                             L00540
       NPTS = NPTF                                                         L00550
-   30 V2F = V1F+DVF*FLOAT(NPTS-1)                                         L00560
+   30 V2F = V1F+DVF* REAL(NPTS-1)                                         L00560
       WRITE (IPR,910) V1F,V2F,DVF,NPTF,JEMIT,JABS,IUNIT,IFILST,NIFILS,    L00570
      *                HEDDR                                               L00580
       V1 = V1F                                                            L00590
@@ -3443,7 +3443,7 @@ C                                                                         L02300
 c
       IF (NPTF.LE.0) GO TO 10                                             L02380
       NPTS = NPTF                                                         L02390
-   10 V2F = V1F+DVF*FLOAT(NPTS-1)                                         L02400
+   10 V2F = V1F+DVF* REAL(NPTS-1)                                         L02400
       WRITE (IPR,915) V1F,V2F,DVF,NPTF,NFILE,HEDDR    
       V1 = V1F                                                            L02430
       V2 = V2F                                                            L02440
@@ -3678,8 +3678,8 @@ c      IMAX = (V2F+V1F-V1I)/DVI+1.5                                        L0453
 c      XIF0 = (V1I-V1F)/DVF+1.5                                            L04550
       XDVIF = DVI/DVF                                                     L04560
       DO 10 I = IMIN, IMAX                                                L04570
-         IFL = XIF0+XDVIF*FLOAT(I)
-c         IFL = XIF0+XDVIF*FLOAT(I-1)                                      L04580
+         IFL = XIF0+XDVIF* REAL(I)
+c         IFL = XIF0+XDVIF* REAL(I-1)                                      L04580
 c
 c        Linearly interpolate filter function XF to avoid
 c        discontinuities in output spectrum
@@ -3691,7 +3691,7 @@ c
          p = (vxf2-v2s)/(vxf2-vxf1)
          RFILTR = RFILTR+S(I)*(p*XF(IFL)+(1.-p)*xf(IFL+1))                L04590
    10 CONTINUE                                                            L04600
-      IF (IMAX.LT.IHI) VFT = VFT+((FLOAT(IHI)-FLOAT(ILO))+1.0)*DVI        L04610
+      IF (IMAX.LT.IHI) VFT = VFT+(( REAL(IHI)- REAL(ILO))+1.0)*DVI        L04610
       CALL CPUTIM (TIME)                                                  L04620
       TIMCNV = TIMCNV+TIME-TIMEO                                          L04630
 C                                                                         L04640

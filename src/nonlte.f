@@ -807,7 +807,7 @@ C                                                                         B01970
 C     FOR CONSTANTS IN PROGRAM  MAX1=4018  MAX2=1029  MAX3=282            B01980
 C                                                                         B01990
       CALL CPUTIM(TPAT0)
-      BOUND = FLOAT(NBOUND)*DV/2.                                         B02000
+      BOUND =  REAL(NBOUND)*DV/2.                                         B02000
       BOUNF3 = BOUND/2.                                                   B02010
       ALFMAX = BOUND/HWF3                                                 B02020
       NLO = NSHIFT+1                                                      B02030
@@ -945,7 +945,7 @@ C                                                                         B02390
 C     
 C     ---------------------------------------------------------------
 C                                                                         B02450
-      VFT = V1-FLOAT(NSHIFT)*DV                                           B02460
+      VFT = V1- REAL(NSHIFT)*DV                                           B02460
       VBOT = V1-BOUND                                                     B02470
       VTOP = V2+BOUND                                                     B02480
 C CHECK TO SEE IF VBOT OR VTOP FALLS IN LINE COUPLING REGION
@@ -1051,7 +1051,7 @@ C                                                                         B03350
       IF (ISTOP.NE.1) THEN                                                B03360
          IF (ILBLF4.GE.1) THEN                                            B03370
             VF1 = VFT-2.*DVR4                                             B03380
-            VF2 = VFT+2.*DVR4+FLOAT(N2R3+4)*DVR3                          B03390
+            VF2 = VFT+2.*DVR4+ REAL(N2R3+4)*DVR3                          B03390
             IF (VF2.GT.V2R4.AND.V2R4.NE.V2R4ST) THEN                      B03400
                CALL LBLFQ (JRAD,VF1,V2R4ST)                               B03410
                IF (IXSECT.GE.1.AND.IR4.EQ.1) THEN                         B03420
@@ -1148,8 +1148,8 @@ c        Accumulate timing array
 
          WRITE(IPR,935)
          IF (LINCNT.GE.1) THEN                                            B03630
-            AVALF = SUMALF/FLOAT(LINCNT)                                  B03640
-            AVZETA = SUMZET/FLOAT(LINCNT)                                 B03650
+            AVALF = SUMALF/ REAL(LINCNT)                                  B03640
+            AVZETA = SUMZET/ REAL(LINCNT)                                 B03650
          ENDIF                                                            B03660
          WRITE (IPR,925) AVALF,AVZETA                                     B03670
 C                                                                         B03680
@@ -1353,7 +1353,7 @@ C                                                                         B06280
          FZETA = 100.*ZETA
          IZ = FZETA + ONEPL                                               B06320
          IZETA(I) = IZ                                                    B06330
-         ZETDIF = FZETA - FLOAT(IZ-1)
+         ZETDIF = FZETA -  REAL(IZ-1)
          ALFV = (AVRAT(IZ)+ZETDIF*(AVRAT(IZ+1)-AVRAT(IZ)))*(ALFL+ALFAD)   B06340
          IF (ALFV.LT.DV) THEN                                             B06350
             ALFV = DV                                                     B06360
@@ -1585,9 +1585,9 @@ C                                                                         B07520
 C                                                                         B07580
       CALL CPUTIM (TIME0)                                                 B07590
 C                                                                         B07600
-      CLC1 = 4./(FLOAT(NX1-1))                                            B07610
-      CLC2 = 16./(FLOAT(NX2-1))                                           B07620
-      CLC3 = 64./(FLOAT(NX3-1))                                           B07630
+      CLC1 = 4./( REAL(NX1-1))                                            B07610
+      CLC2 = 16./( REAL(NX2-1))                                           B07620
+      CLC3 = 64./( REAL(NX3-1))                                           B07630
       WAVDXF = DV/DXF1                                                    B07640
       HWDXF = HWF1/DXF1                                                   B07650
       CONF2 = DV/DVR2                                                     B07660
@@ -1601,7 +1601,7 @@ C                                                                         B07690
                DEPTHA = SABS(I)*RECALF(I)                                 B07740
                DEPTHR = SRAD(I)*RECALF(I)
                IZM = IZETA(I)                                             B07750
-               ZETDIF = 100.*ZETAI(I)-FLOAT(IZM-1)                        B07840
+               ZETDIF = 100.*ZETAI(I)- REAL(IZM-1)                        B07840
                STRFA1 = DEPTHA*(CF1(IZM)+ZETDIF*(CF1(IZM+1)-CF1(IZM)))    B07850
                STRFA2 = DEPTHA*(CF2(IZM)+ZETDIF*(CF2(IZM+1)-CF2(IZM)))    B07860
                STRFA3 = DEPTHA*(CF3(IZM)+ZETDIF*(CF3(IZM+1)-CF3(IZM)))    B07870
@@ -1632,9 +1632,9 @@ C                                                                         B07930
                J3SHFT = ZINT*(1.-CONF3)+RSHFT                             B08070
                JMIN2 = JMIN1-J2SHFT                                       B08080
                JMIN3 = JMIN1-J3SHFT                                       B08090
-               ZF1L = (FLOAT(JMIN1-2)-ZINT)*ZSLOPE                        B08100
-               ZF2L = (FLOAT(JMIN2-2)-ZINT*CONF2)*ZSLOPE                  B08110
-               ZF3L = (FLOAT(JMIN3-2)-ZINT*CONF3)*ZSLOPE                  B08120
+               ZF1L = ( REAL(JMIN1-2)-ZINT)*ZSLOPE                        B08100
+               ZF2L = ( REAL(JMIN2-2)-ZINT*CONF2)*ZSLOPE                  B08110
+               ZF3L = ( REAL(JMIN3-2)-ZINT*CONF3)*ZSLOPE                  B08120
                ZF1 = ZF1L                                                 B08130
                ZF2 = ZF2L                                                 B08140
                ZF3 = ZF3L                                                 B08150
@@ -1796,17 +1796,17 @@ C     every layer is the same)
 C
       IF ((VFT+(NHI-1)*DVP).GT.V2) THEN
          NHI = (V2-VFT)/DVP + 1.
-         V2P = VFT+FLOAT(NHI-1)*DVP
+         V2P = VFT+ REAL(NHI-1)*DVP
          IF (V2P.LT.V2) THEN
             V2P = V2P+DVP
             NHI = NHI+1
          ENDIF
          ISTOP = 1                                                        B10640
       ELSE
-         V2P = VFT+FLOAT(NHI-1)*DV
+         V2P = VFT+ REAL(NHI-1)*DV
       ENDIF
       NLIM = NHI-NLO+1
-      V1P = VFT+FLOAT(NLO-1)*DV
+      V1P = VFT+ REAL(NLO-1)*DV
 C
       LIMLO = N1R2                                                        B10670
       IF (N1R2.EQ.1) LIMLO = LIMLO+4                                      B10680
@@ -1861,7 +1861,7 @@ C                                                                         B11000
 C                                                                         B11070
    30    NPTSI1 = NPTSI2+1                                                B11080
 C                                                                         B11090
-         VI = VFT+FLOAT(NPTSI1-1)*DV                                      B11100
+         VI = VFT+ REAL(NPTSI1-1)*DV                                      B11100
          RADVI = RADFNI(VI,DV,XKT,VITST,RDEL,RDLAST)                      B11110
 C                                                                         B11130
          NPTSI2 = (VITST-VFT)/DV+1.001                                    B11140
@@ -1898,7 +1898,7 @@ C                                                                         B11330
          CALL PNLINT (RR1(NLO),IENTER)                                    B11360
       ENDIF                                                               B11370
 C                                                                         B11380
-      VFT = VFT+FLOAT(NLIM1-1)*DV                                         B11390
+      VFT = VFT+ REAL(NLIM1-1)*DV                                         B11390
       IF (ISTOP.NE.1) THEN                                                B11400
          DO 50 J = NLIM1, MAX1                                            B11420
             R1(J-NLIM1+1) = R1(J)                                         B11430
@@ -1987,7 +1987,7 @@ C                                                                         D04920
       V2R4 = V2                                                           D04940
       NPTR4 = (V2R4-V1R4)/DVR4+ONEPL                                      D04950
       NPTR4 = MIN(NPTR4,LIMOUT)                                           D04960
-      V2R4 = V1R4+DVR4*FLOAT(NPTR4-1)                                     D04970
+      V2R4 = V1R4+DVR4* REAL(NPTR4-1)                                     D04970
 C                                                                         D04980
       LIMP2 = LIMOUT+2                                                    D04990
       DO 10 I = 1, LIMP2                                                  D05000
@@ -2034,7 +2034,7 @@ C                                                                         D05340
 C                                                                         D05400
    40    NPTSI1 = NPTSI2+1                                                D05410
 C                                                                         D05420
-         VI = V1R4+DVR4*FLOAT(NPTSI1-1)                                   D05430
+         VI = V1R4+DVR4* REAL(NPTSI1-1)                                   D05430
          RADVI = RADFNI(VI,DVR4,XKT,VITST,RDEL,RDLAST)                    D05440
 C                                                                         D05460
          NPTSI2 = (VITST-V1R4)/DVR4+1.001                                 D05470
@@ -2171,7 +2171,7 @@ C                                                                         D06520
       RDVCHI = 1./DVCHI                                                   D06650
 C                                                                         D06660
       DO 10 ISUBL = 1, 251                                                D06670
-         FI = DVCHI*FLOAT(ISUBL-1)                                        D06680
+         FI = DVCHI* REAL(ISUBL-1)                                        D06680
          IF (FI.LT.X0) THEN                                               D06690
             CHI(ISUBL) = 1.+C2*FI**2+C4*FI**4+C6*FI**6                    D06700
          ELSE                                                             D06710
@@ -2202,7 +2202,7 @@ C                                                                         D06910
          ALFALI = ALFAL(I)                                                D06940
          ZETAI = ALFALI/(ALFALI+ALFADI)                                   D06950
          IZ = 100.*ZETAI + ONEPL                                          D06960
-         ZETDIF = 100.*ZETAI - FLOAT(IZ-1)
+         ZETDIF = 100.*ZETAI -  REAL(IZ-1)
          ALFAVI = ( AVRAT(IZ) + ZETDIF*(AVRAT(IZ+1)-AVRAT(IZ)) ) *        D06970
      x            (ALFALI+ALFADI)
          RALFVI = 1./ALFAVI                                               D06980
@@ -2248,7 +2248,7 @@ C                                                                         D07220
          JMAX = MIN(JMAX,NPTR4)                                           D07280
          ALFLI2 = ALFALI*ALFALI                                           D07290
          ALFVI2 = ALFAVI*ALFAVI                                           D07300
-         XJJ = FLOAT(JMIN-1)*DVR4                                         D07310
+         XJJ =  REAL(JMIN-1)*DVR4                                         D07310
          F4BND = SIL/(ALFLI2+BNDSQ)                                       D07320
          FRBND = SRL/(ALFLI2+BNDSQ)                                       D07320
 C                                                                         D07340
@@ -2262,8 +2262,18 @@ C                                                                         D07360
          siv_b3 = SIV*B3
          srv_a3 = srv*a3
          srv_b3 = srv*b3
-
-
+c
+c     Reduce the CO2 chi by a factor of 0.5 for the nu 2 region
+c
+         data chi_fac_sav / 0.5 /
+c
+         chi_fac = 1.
+      
+         if (vnui .gt .500. .and. vnui .lt. 900.) then
+            chi_fac = chi_fac_sav
+         endif
+c
+c
          DO 40 JJ = JMIN, JMAX                                            D07370
             XM = (XJJ-XNUI)                                               D07380
             XMSQ = XM*XM                                                  D07390
@@ -2292,8 +2302,10 @@ C                                                                         D07550
                ISUBL = RDVCHI*ABS(XM)+1.5                                 D07560
                ISUBL = MIN(ISUBL,251)                                     D07570
 C                                                                         D07580
-               R4(JJ) = R4(JJ)+F4FN*CHI(ISUBL)                            D07590
-               RR4(JJ) = RR4(JJ)+F4FR*CHI(ISUBL)                          D07590
+c               R4(JJ) = R4(JJ)+F4FN*CHI(ISUBL)                            D07590
+               R4(JJ) = R4(JJ)+F4FN*( 1.+chi_fac*(CHI(ISUBL)-1.) )
+c               RR4(JJ) = RR4(JJ)+F4FR*CHI(ISUBL)                          D07590
+               RR4(JJ) = RR4(JJ)+F4FR*( 1.+chi_fac*(CHI(ISUBL)-1.) )
             ELSE                                                          D07600
                R4(JJ) = R4(JJ)+F4FN                                       D07610
                RR4(JJ) = RR4(JJ)+F4FR                                     D07610
@@ -2308,6 +2320,8 @@ C                                                                         D07690
 C     THE CALCULATION FOR NEGATIVE VNU(I) IS FOR VAN VLECK WEISSKOPF      D07700
 C                                                                         D07710
             VNUI = -VNU(I)                                                D07720
+C
+            SPP(I) = -SPP(I)
 c
             GO TO 30                                                      D07750
 C                                                                         D07760

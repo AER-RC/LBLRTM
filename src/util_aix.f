@@ -190,13 +190,13 @@ C>>      CALL SECOND (TIME)                                              LN05860
 C>VAX    A1 = SECNDS(0.0)                                               >LN05870
 C        TIME = ETIME(TARRAY)                                           >LN05880
          CPU_TIME = MCLOCK()
-         TIME = FLOAT(CPU_TIME)/100
+         TIME =  REAL(CPU_TIME)/100
       ELSE                                                               LN05890
 C>>      CALL SECOND (TIME)                                              LN05900
 C>VAX    TIME = SECNDS(A1)                                              >LN05910
 C        TIME = ETIME(TARRAY)                                           >LN05920
          CPU_TIME = MCLOCK()
-         TIME = FLOAT(CPU_TIME)/100
+         TIME =  REAL(CPU_TIME)/100
       ENDIF                                                              LN05930
 C                                                                        LN05940
       RETURN                                                             LN05950

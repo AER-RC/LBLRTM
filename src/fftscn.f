@@ -616,7 +616,7 @@ C*****If the FFT can be performed in memory (LREC = 1), then find the
 C*****smallest sized FFT possible = LPTFFT = smallest power of 2 > LTOTAL 
 C*****and < LPTSMX
       If(LREC .eq. 1) Then
-          POWER =  LOG(FLOAT(LTOTAL))/ LOG(2.0)
+          POWER =  LOG( REAL(LTOTAL))/ LOG(2.0)
           If(POWER-INT(POWER) .EQ. 0) Then
               LPTFFT = 2**INT(POWER)
           Else
@@ -828,14 +828,14 @@ C*****Calculate the number of points and records after smoothing
 C*****KRDATA is the number of output points (including partial 
 C*****records) which include real data (not just FILL).
       KTOTAL = LTOTAL/M
-      ARDATA = FLOAT(KTOTAL)/FLOAT(LPTSMX)
+      ARDATA =  REAL(KTOTAL)/ REAL(LPTSMX)
       If((ARDATA-INT(ARDATA)) .EQ. 0.0) Then
           KRDATA = INT(ARDATA)
       Else
           KRDATA = INT(ARDATA)+1
       Endif
 C*****Find KREC = smallest power of 2 .GE. KRDATA
-      POWER =  LOG(FLOAT(KRDATA))/ LOG(2.0)
+      POWER =  LOG( REAL(KRDATA))/ LOG(2.0)
       If((POWER-INT(POWER)) .EQ. 0) Then
           KREC = 2**INT(POWER)
       Else
@@ -872,7 +872,7 @@ C*****            Get another record from LFILE
   200     Continue
 
           J = J+1
-          BOX(J) = SUM/Float(M)
+          BOX(J) = SUM/ REAL(M)
 
           If(J .EQ. LPTSMX) Then
 C*****        Write out a record
@@ -996,7 +996,7 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
       
-      Logical OP,EX
+      LOGICAL OP,EX
       Character FILNAM*60,CTAPE*4
 
 C*****CTAPEdefines the default prefix for LBLRTM FILENAMEs, e.g. TAPE12
@@ -1398,7 +1398,7 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
-      Logical OP
+      LOGICAL OP
 
       Do 100 I=61,99
           Inquire(UNIT=i,OPENED=OP)
@@ -1553,14 +1553,14 @@ C*****when n reaches 7 digits, the limit of single precision.
 C*****Recompute V2, in case of round off errors
       V2 = V1+DV*(LTOTAL-1)
 
-      ARDATA = FLOAT(LTOTAL)/FLOAT(LPTSMX)
+      ARDATA =  REAL(LTOTAL)/ REAL(LPTSMX)
       If((ARDATA-INT(ARDATA)) .EQ. 0.0) Then
           LRDATA = INT(ARDATA)
       Else
           LRDATA = INT(ARDATA+1)
       Endif
 
-      POWER =  LOG(FLOAT(LRDATA))/ LOG(2.0)
+      POWER =  LOG( REAL(LRDATA))/ LOG(2.0)
       If(POWER-INT(POWER) .EQ. 0) Then
           LREC = 2**INT(POWER)
       Else
@@ -2869,7 +2869,7 @@ C
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J04190
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J04200
 
-      Logical OP
+      LOGICAL OP
 
 
       IERR = 0
@@ -2962,7 +2962,7 @@ C                                                                         I07630
 C                                                                         I07650
 C     VBOT IS LOWEST NEEDED WAVENUMBER, VTOP IS HIGHEST                   I07660
 C                                                                         I07670
-      BOUND = FLOAT(IBOUND)*DV                                            I07680
+      BOUND =  REAL(IBOUND)*DV                                            I07680
 
 C*****What if VBOT and VTOP are outside the limits of the data???
 
@@ -3057,7 +3057,7 @@ C*****PARAMETER (PI2=6.283185)
           CALL FOUR1(DATA,N,-1)
 C*****Normalize
           DO 20 I=1,2*N
-              DATA(I) = DATA(I)/FLOAT(N)
+              DATA(I) = DATA(I)/ REAL(N)
   20      CONTINUE
       ENDIF
       RETURN
@@ -3349,7 +3349,7 @@ C
 C
       FUNCTION LLOG2(N)
 C     FINDS INTEGER LOG TO BASE TWO
-      LLOG2= LOG(FLOAT(N))/.69314718+.5
+      LLOG2= LOG( REAL(N))/.69314718+.5
       RETURN
       END
 C     

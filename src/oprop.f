@@ -1,4 +1,4 @@
-C     path: %P%
+C     path: %Source%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
@@ -28,10 +28,10 @@ C                                                                         B00250
 C             ALGORITHM REVISIONS:    S.A. CLOUGH                         B00260
 C                                     R.D. WORSHAM                        B00270
 C                                     J.L. MONCET                         B00280
-C                                                                         B00290
+C                                     M.W.SHEPHARD                        B00290
 C                                                                         B00300
 C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         B00310
-C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139          B00320
+C                     131 Hartwell Ave,  Lexington,  MA   02421           B00320
 C                                                                         B00330
 C----------------------------------------------------------------------   B00340
 C                                                                         B00350
@@ -256,7 +256,7 @@ C                                                                         B01970
 C     FOR CONSTANTS IN PROGRAM  MAX1=4018  MAX2=1029  MAX3=282            B01980
 C                                                                         B01990
       CALL CPUTIM(TPAT0)
-      BOUND = FLOAT(NBOUND)*DV/2.                                         B02000
+      BOUND =  REAL(NBOUND)*DV/2.                                         B02000
       BOUNF3 = BOUND/2.                                                   B02010
       ALFMAX = BOUND/HWF3                                                 B02020
       NLO = NSHIFT+1                                                      B02030
@@ -390,7 +390,7 @@ C                                                                         B02390
 C     
 C     ---------------------------------------------------------------
 C                                                                         B02450
-      VFT = V1-FLOAT(NSHIFT)*DV                                           B02460
+      VFT = V1- REAL(NSHIFT)*DV                                           B02460
       VBOT = V1-BOUND                                                     B02470
       VTOP = V2+BOUND                                                     B02480
 C                                                                         B02490
@@ -489,7 +489,7 @@ C                                                                         B03350
       IF (ISTOP.NE.1) THEN                                                B03360
          IF (ILBLF4.GE.1) THEN                                            B03370
             VF1 = VFT-2.*DVR4                                             B03380
-            VF2 = VFT+2.*DVR4+FLOAT(N2R3+4)*DVR3                          B03390
+            VF2 = VFT+2.*DVR4+ REAL(N2R3+4)*DVR3                          B03390
             IF (VF2.GT.V2R4.AND.V2R4.NE.V2R4ST) THEN                      B03400
                CALL LBLF4 (JRAD,VF1,V2R4ST)                               B03410
                IF (IXSECT.GE.1.AND.IR4.EQ.1) THEN                         B03420
@@ -587,8 +587,8 @@ c        Accumulate timing array
          
          WRITE(IPR,935)
          IF (LINCNT.GE.1) THEN                                            B03630
-            AVALF = SUMALF/FLOAT(LINCNT)                                  B03640
-            AVZETA = SUMZET/FLOAT(LINCNT)                                 B03650
+            AVALF = SUMALF/ REAL(LINCNT)                                  B03640
+            AVZETA = SUMZET/ REAL(LINCNT)                                 B03650
          ENDIF                                                            B03660
          WRITE (IPR,925) AVALF,AVZETA                                     B03670
 C                                                                         B03680
@@ -951,7 +951,7 @@ C                                                                         B06280
          FZETA = 100.*ZETA
          IZ = FZETA + ONEPL                                               B06320
          IZETA(I) = IZ                                                    B06330
-         ZETDIF = FZETA - FLOAT(IZ-1)
+         ZETDIF = FZETA -  REAL(IZ-1)
          ALFV = (AVRAT(IZ)+ZETDIF*(AVRAT(IZ+1)-AVRAT(IZ)))*(ALFL+ALFAD)   B06340
          IF (ALFV.LT.DV) THEN                                             B06350
             ALFV = DV                                                     B06360
@@ -1098,9 +1098,9 @@ C                                                                         B07520
 C                                                                         B07580
       CALL CPUTIM (TIME0)                                                 B07590
 C                                                                         B07600
-      CLC1 = 4./(FLOAT(NX1-1))                                            B07610
-      CLC2 = 16./(FLOAT(NX2-1))                                           B07620
-      CLC3 = 64./(FLOAT(NX3-1))                                           B07630
+      CLC1 = 4./( REAL(NX1-1))                                            B07610
+      CLC2 = 16./( REAL(NX2-1))                                           B07620
+      CLC3 = 64./( REAL(NX3-1))                                           B07630
       WAVDXF = DV/DXF1                                                    B07640
       HWDXF = HWF1/DXF1                                                   B07650
       CONF2 = DV/DVR2                                                     B07660
@@ -1113,7 +1113,7 @@ C                                                                         B07690
             IF (SP(I).NE.0.) THEN                                         B07730
                DEPTHI = SP(I)*RECALF(I)                                   B07740
                IZM = IZETA(I)                                             B07750
-               ZETDIF = 100.*ZETAI(I)-FLOAT(IZM-1)                        B07840
+               ZETDIF = 100.*ZETAI(I)- REAL(IZM-1)                        B07840
                STRF1 = DEPTHI*(CF1(IZM)+ZETDIF*(CF1(IZM+1)-CF1(IZM)))     B07850
                STRF2 = DEPTHI*(CF2(IZM)+ZETDIF*(CF2(IZM+1)-CF2(IZM)))     B07860
                STRF3 = DEPTHI*(CF3(IZM)+ZETDIF*(CF3(IZM+1)-CF3(IZM)))     B07870
@@ -1137,9 +1137,9 @@ C                                                                         B07930
                J3SHFT = ZINT*(1.-CONF3)+RSHFT                             B08070
                JMIN2 = JMIN1-J2SHFT                                       B08080
                JMIN3 = JMIN1-J3SHFT                                       B08090
-               ZF1L = (FLOAT(JMIN1-2)-ZINT)*ZSLOPE                        B08100
-               ZF2L = (FLOAT(JMIN2-2)-ZINT*CONF2)*ZSLOPE                  B08110
-               ZF3L = (FLOAT(JMIN3-2)-ZINT*CONF3)*ZSLOPE                  B08120
+               ZF1L = ( REAL(JMIN1-2)-ZINT)*ZSLOPE                        B08100
+               ZF2L = ( REAL(JMIN2-2)-ZINT*CONF2)*ZSLOPE                  B08110
+               ZF3L = ( REAL(JMIN3-2)-ZINT*CONF3)*ZSLOPE                  B08120
                ZF1 = ZF1L                                                 B08130
                ZF2 = ZF2L                                                 B08140
                ZF3 = ZF3L                                                 B08150
@@ -1281,17 +1281,17 @@ C     every layer is the same)
 C
       IF ((VFT+(NHI-1)*DVP).GT.V2) THEN
          NHI = (V2-VFT)/DVP + 1.
-         V2P = VFT+FLOAT(NHI-1)*DVP
+         V2P = VFT+ REAL(NHI-1)*DVP
          IF (V2P.LT.V2) THEN
             V2P = V2P+DVP
             NHI = NHI+1
          ENDIF
          ISTOP = 1                                                        B10640
       ELSE
-         V2P = VFT+FLOAT(NHI-1)*DV
+         V2P = VFT+ REAL(NHI-1)*DV
       ENDIF
       NLIM = NHI-NLO+1
-      V1P = VFT+FLOAT(NLO-1)*DV
+      V1P = VFT+ REAL(NLO-1)*DV
 C
       LIMLO = N1R2                                                        B10670
       IF (N1R2.EQ.1) LIMLO = LIMLO+4                                      B10680
@@ -1332,7 +1332,7 @@ C                                                                         B11000
 C                                                                         B11070
    30    NPTSI1 = NPTSI2+1                                                B11080
 C                                                                         B11090
-         VI = VFT+FLOAT(NPTSI1-1)*DV                                      B11100
+         VI = VFT+ REAL(NPTSI1-1)*DV                                      B11100
          RADVI = RADFNI(VI,DV,XKT,VITST,RDEL,RDLAST)                      B11110
 C                                                                         B11130
          NPTSI2 = (VITST-VFT)/DV+1.001                                    B11140
@@ -1365,7 +1365,7 @@ C                                                                         B11330
          CALL PNLINT (R1(NLO),IENTER)                                     B11360
       ENDIF                                                               B11370
 C                                                                         B11380
-      VFT = VFT+FLOAT(NLIM1-1)*DV                                         B11390
+      VFT = VFT+ REAL(NLIM1-1)*DV                                         B11390
       IF (ISTOP.NE.1) THEN                                                B11400
          DO 50 J = NLIM1, MAX1                                            B11420
             R1(J-NLIM1+1) = R1(J)                                         B11430
@@ -1520,7 +1520,7 @@ C
 C
 C     Determine potential last point for the outgoing panel (2400 pts.)
 C
-      V2PO = V1PO+FLOAT(LIMOUT)*DVOUT                                     B12860
+      V2PO = V1PO+ REAL(LIMOUT)*DVOUT                                     B12860
 C                                                                         B12870
       IF (V2P.LE.V2PO+DVP.AND.ILAST.EQ.0.AND.NPPANL.LE.0) GO TO 40        B12880
 C                                                                         B12890
@@ -1538,7 +1538,7 @@ C            fill panel.
 C
       IF ((V1PO+(LIMOUT-1)*DVOUT).GT.V2) THEN                             B12900
          NLIM2 = (V2-V1PO)/DVOUT + 1.                                     B12910
-         V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT                                 B12920
+         V2PO = V1PO+ REAL(NLIM2-1)*DVOUT                                 B12920
          IF (V2PO.LT.V2) THEN
             V2PO = V2PO+DVOUT
             NLIM2 = NLIM2+1
@@ -1546,7 +1546,7 @@ C
          ILAST = 1
          IF (V2PO.GT.V2P-DVP) THEN
             NLIM2 = ((V2P-DVP-V1PO)/DVOUT) + 1.
-            V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT
+            V2PO = V1PO+ REAL(NLIM2-1)*DVOUT
             IF (V2PO+DVOUT.LT.V2P-DVP) THEN
                NLIM2 = NLIM2+1
                V2PO = V2PO+DVOUT
@@ -1555,10 +1555,10 @@ C
          ENDIF
       ELSE
          NLIM2 = LIMOUT
-         V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT                                 B12930
+         V2PO = V1PO+ REAL(NLIM2-1)*DVOUT                                 B12930
          IF (V2PO.GT.V2P-DVP) THEN                                        B12940
             NLIM2 = ((V2P-DVP-V1PO)/DVOUT) + 1.                           B12950
-            V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT                              B12960
+            V2PO = V1PO+ REAL(NLIM2-1)*DVOUT                              B12960
             IF (V2PO+DVOUT.LT.V2P-DVP) THEN                               B12970
                NLIM2 = NLIM2+1                                            B12980
                V2PO = V2PO+DVOUT                                          B12990
@@ -1576,9 +1576,9 @@ C                                                                         B13090
 C     Interpolate R1 to DVOUT                                             B13100
 C                                                                         B13110
       DO 30 II = NLIM1, NLIM2                                             B13120
-         FJJ = FJ1DIF+RATDV*FLOAT(II-1)                                   B13130
-         JJ  = IFIX(FJJ)-2                                                B13140
-         JP  = (FJJ-FLOAT(JJ))*100.-199.5                                 B13150
+         FJJ = FJ1DIF+RATDV* REAL(II-1)                                   B13130
+         JJ  =  INT(FJJ)-2                                                B13140
+         JP  = (FJJ- REAL(JJ))*100.-199.5                                 B13150
          R1OUT(II) = A1(JP)*R1(JJ-1)+A2(JP)*R1(JJ)+A3(JP)*R1(JJ+1)+       B13160
      *               A4(JP)*R1(JJ+2)                                      B13170
    30 CONTINUE                                                            B13180
@@ -1599,7 +1599,7 @@ C
          NLIM1 = 1                                                        B13270
          NPPANL = 0                                                       B13280
          V1PO = V2PO+DVOUT                                                B13290
-         IF ((V1PO+FLOAT(LIMOUT)*DVOUT).GT.(V2P-DVP)) NPPANL = 1          B13300
+         IF ((V1PO+ REAL(LIMOUT)*DVOUT).GT.(V2P-DVP)) NPPANL = 1          B13300
       ELSE                                                                B13310
          NLIM1 = NLIM2+1                                                  B13320
          NPPANL = -1                                                      B13330
@@ -1674,7 +1674,7 @@ C                                                                         B14000
       F1(1) = RECPI*(XLORNZ(0.)-Q1FN(0.))                                 B14040
       SUM = F1(1)                                                         B14050
       DO 20 JJ = 2, NX1                                                   B14060
-         X = FLOAT(JJ-1)*DXF1                                             B14070
+         X =  REAL(JJ-1)*DXF1                                             B14070
          XSQ = X*X                                                        B14080
          F1(JJ) = RECPI*(XLORNZ(XSQ)-Q1FN(XSQ))                           B14090
          SUM = SUM+F1(JJ)*2.                                              B14100
@@ -1690,14 +1690,14 @@ C                                                                         B14150
       SUM = F2(1)                                                         B14200
       J1LIM = HWF1/DXF2+1.001                                             B14210
       DO 40 JJ = 2, J1LIM                                                 B14220
-         X = FLOAT(JJ-1)*DXF2                                             B14230
+         X =  REAL(JJ-1)*DXF2                                             B14230
          XSQ = X*X                                                        B14240
          F2(JJ) = RECPI*(Q1FN(XSQ)-Q2FN(XSQ))                             B14250
          SUM = SUM+F2(JJ)*2.                                              B14260
    40 CONTINUE                                                            B14270
       J1LIMP = J1LIM+1                                                    B14280
       DO 50 JJ = J1LIMP, NX2                                              B14290
-         X = FLOAT(JJ-1)*DXF2                                             B14300
+         X =  REAL(JJ-1)*DXF2                                             B14300
          XSQ = X*X                                                        B14310
          F2(JJ) = RECPI*(XLORNZ(XSQ)-Q2FN(XSQ))                           B14320
          SUM = SUM+F2(JJ)*2.                                              B14330
@@ -1713,14 +1713,14 @@ C                                                                         B14380
       SUM = F3(1)                                                         B14430
       J2LIM = HWF2/DXF3+1.001                                             B14440
       DO 70 JJ = 2, J2LIM                                                 B14450
-         X = FLOAT(JJ-1)*DXF3                                             B14460
+         X =  REAL(JJ-1)*DXF3                                             B14460
          XSQ = X*X                                                        B14470
          F3(JJ) = RECPI*(Q2FN(XSQ)-Q3FN(XSQ))                             B14480
          SUM = SUM+F3(JJ)*2.                                              B14490
    70 CONTINUE                                                            B14500
       J2LIMP = J2LIM+1                                                    B14510
       DO 80 JJ = J2LIMP, NX3                                              B14520
-         X = FLOAT(JJ-1)*DXF3                                             B14530
+         X =  REAL(JJ-1)*DXF3                                             B14530
          XSQ = X*X                                                        B14540
          F3(JJ) = RECPI*(XLORNZ(XSQ)-Q3FN(XSQ))                           B14550
          SUM = SUM+F3(JJ)*2.                                              B14560
@@ -1750,7 +1750,7 @@ C                                                                         B14710
       FG(1) = FGNORM*FGAUSS(0.)                                           B14800
       SUM = FG(1)                                                         B14810
       DO 20 JJ = 2, NX1                                                   B14820
-         X = FLOAT(JJ-1)*DXF1                                             B14830
+         X =  REAL(JJ-1)*DXF1                                             B14830
          XSQ = X*X                                                        B14840
          FG(JJ) = FGNORM*FGAUSS(XSQ)                                      B14850
          SUM = SUM+FG(JJ)*2.                                              B14860
@@ -1791,7 +1791,7 @@ C                                                                         B15180
    10 CONTINUE                                                            B15210
 C                                                                         B15220
       DO 20 I = 1, N1MAX                                                  B15230
-         Z = DXF1*FLOAT(I-1)                                              B15240
+         Z = DXF1* REAL(I-1)                                              B15240
          Z2 = Z*Z                                                         B15250
          XE0 = SE0*EXP(-CEXP*Z2)                                          B15260
          XE2 = AE2*Z2*XE0                                                 B15270
@@ -1971,7 +1971,7 @@ C                                                                         B16990
 C                                                                         B17010
       IP = (-VFT/DV)+1.-.000001                                           B17020
       IP = IP+1                                                           B17030
-      P = (FLOAT(IP-1)+VFT/DV)*2.                                         B17040
+      P = ( REAL(IP-1)+VFT/DV)*2.                                         B17040
       PST = P                                                             B17050
       IF (P.GT.1.) P = P-1.                                               B17060
 C                                                                         B17070
@@ -2038,9 +2038,9 @@ C                                                                         B17630
       IHI = MIN(IHI,N2R3)                                                 B17680
 C                                                                         B17690
       DO 10 I = ILO, IHI                                                  B17700
-         VI = VFT+DVR3*FLOAT(I-1)                                         B17710
+         VI = VFT+DVR3* REAL(I-1)                                         B17710
          J = (VI-V1A)*RECDVA+ONEPL                                        B17720
-         VJ = V1A+DVA*FLOAT(J-1)                                          B17730
+         VJ = V1A+DVA* REAL(J-1)                                          B17730
          P = RECDVA*(VI-VJ)                                               B17740
          C = (3.-2.*P)*P*P                                                B17750
          B = 0.5*P*(1.-P)                                                 B17760
@@ -2197,7 +2197,7 @@ C                                                                         B19240
                VINEW = VI+FACT1*0.5*XVI                                   B19270
                INTVLS = (VINEW-VI)/DVI                                    B19280
                INTVLS = MAX(INTVLS,1)                                     B19290
-               VINEW = VI+DVI*FLOAT(INTVLS)                               B19300
+               VINEW = VI+DVI* REAL(INTVLS)                               B19300
             ELSE                                                          B19310
                VINEW = ABS(VINEW)                                         B19320
                INTVLS = (VINEW-VI)/DVI                                    B19330
@@ -2216,7 +2216,7 @@ C                                                                         B19390
                VINEW = VI+FACT1*XVI/(1.+(CVIKT/XMINUS+CVIKT/XPLUS))       B19460
                INTVLS = (VINEW-VI)/DVI                                    B19470
                INTVLS = MAX(INTVLS,1)                                     B19480
-               VINEW = VI+DVI*FLOAT(INTVLS)                               B19490
+               VINEW = VI+DVI* REAL(INTVLS)                               B19490
             ELSE                                                          B19500
                VINEW = ABS(VINEW)                                         B19510
                INTVLS = (VINEW-VI)/DVI                                    B19520
@@ -2231,7 +2231,7 @@ C                                                                         B19580
                VINEW = VI+(FACT1*XVI)                                     B19610
                INTVLS = (VINEW-VI)/DVI                                    B19620
                INTVLS = MAX(INTVLS,1)                                     B19630
-               VINEW = VI+DVI*FLOAT(INTVLS)                               B19640
+               VINEW = VI+DVI* REAL(INTVLS)                               B19640
             ELSE                                                          B19650
                VINEW = ABS(VINEW)                                         B19660
                INTVLS = (VINEW-VI)/DVI                                    B19670
@@ -2246,7 +2246,7 @@ C                                                                         B19710
             VINEW = VI+(FACT1*XVI)                                        B19760
             INTVLS = (VINEW-VI)/DVI                                       B19770
             INTVLS = MAX(INTVLS,1)                                        B19780
-            VINEW = VI+DVI*FLOAT(INTVLS)                                  B19790
+            VINEW = VI+DVI* REAL(INTVLS)                                  B19790
          ELSE                                                             B19800
             VINEW = ABS(VINEW)                                            B19810
             INTVLS = (VINEW-VI)/DVI                                       B19820
@@ -2257,7 +2257,7 @@ C                                                                         B19860
          RDNEXT = XVI                                                     B19870
       ENDIF                                                               B19880
 C                                                                         B19890
-      RDEL = (RDNEXT-RADFNI)/FLOAT(INTVLS)                                B19900
+      RDEL = (RDNEXT-RADFNI)/ REAL(INTVLS)                                B19900
 C                                                                         B19910
       RDLAST = RDNEXT                                                     B19930
 C                                                                         B19940
@@ -3667,9 +3667,9 @@ C                                                                         C12670
       JHILIM = JHI-NNPTS+1                                                C12760
       DO 10 KK = 1, NNPTS                                                 C12770
          J = JLO+KK-1                                                     C12780
-         VJ = V1P+FLOAT(J-JLO)*DVP                                        C12790
+         VJ = V1P+ REAL(J-JLO)*DVP                                        C12790
          IK = JHILIM+KK-1                                                 C12800
-         VK = V1P+FLOAT(IK-JLO)*DVP                                       C12810
+         VK = V1P+ REAL(IK-JLO)*DVP                                       C12810
          WRITE (IPR,910) J,VJ,R1(J),IK,VK,R1(IK)                          C12820
    10 CONTINUE                                                            C12830
 C                                                                         C12840
@@ -4320,7 +4320,7 @@ C                                                                         D04920
       V2R4 = V2                                                           D04940
       NPTR4 = (V2R4-V1R4)/DVR4+ONEPL                                      D04950
       NPTR4 = MIN(NPTR4,LIMOUT)                                           D04960
-      V2R4 = V1R4+DVR4*FLOAT(NPTR4-1)                                     D04970
+      V2R4 = V1R4+DVR4* REAL(NPTR4-1)                                     D04970
 C                                                                         D04980
       LIMP2 = LIMOUT+2                                                    D04990
       DO 10 I = 1, LIMP2                                                  D05000
@@ -4366,7 +4366,7 @@ C                                                                         D05340
 C                                                                         D05400
    40    NPTSI1 = NPTSI2+1                                                D05410
 C                                                                         D05420
-         VI = V1R4+DVR4*FLOAT(NPTSI1-1)                                   D05430
+         VI = V1R4+DVR4* REAL(NPTSI1-1)                                   D05430
          RADVI = RADFNI(VI,DVR4,XKT,VITST,RDEL,RDLAST)                    D05440
 C                                                                         D05460
          NPTSI2 = (VITST-V1R4)/DVR4+1.001                                 D05470
@@ -4500,7 +4500,7 @@ C                                                                         D06520
       RDVCHI = 1./DVCHI                                                   D06650
 C                                                                         D06660
       DO 10 ISUBL = 1, 251                                                D06670
-         FI = DVCHI*FLOAT(ISUBL-1)                                        D06680
+         FI = DVCHI* REAL(ISUBL-1)                                        D06680
          IF (FI.LT.X0) THEN                                               D06690
             CHI(ISUBL) = 1.+C2*FI**2+C4*FI**4+C6*FI**6                    D06700
          ELSE                                                             D06710
@@ -4531,7 +4531,7 @@ C                                                                         D06910
          ALFALI = ALFAL(I)                                                D06940
          ZETAI = ALFALI/(ALFALI+ALFADI)                                   D06950
          IZ = 100.*ZETAI + ONEPL                                          D06960
-         ZETDIF = 100.*ZETAI - FLOAT(IZ-1)
+         ZETDIF = 100.*ZETAI -  REAL(IZ-1)
          ALFAVI = ( AVRAT(IZ) + ZETDIF*(AVRAT(IZ+1)-AVRAT(IZ)) ) *        D06970
      x            (ALFALI+ALFADI)
          RALFVI = 1./ALFAVI                                               D06980
@@ -4573,7 +4573,7 @@ C                                                                         D07220
          JMAX = MIN(JMAX,NPTR4)                                           D07280
          ALFLI2 = ALFALI*ALFALI                                           D07290
          ALFVI2 = ALFAVI*ALFAVI                                           D07300
-         XJJ = FLOAT(JMIN-1)*DVR4                                         D07310
+         XJJ =  REAL(JMIN-1)*DVR4                                         D07310
 
          F4BND = SIL/(ALFLI2+BNDSQ)                                       D07320
 C                                                                         D07340
@@ -4584,8 +4584,18 @@ C                                                                         D07360
          rec_alfvi2 = 1./ALFVI2
          siv_a3 = SIV*A3
          siv_b3 = SIV*B3
-
-
+c
+c     Reduce the CO2 chi by a factor of 0.5 for the nu 2 region
+c
+         data chi_fac_sav / 0.5 /
+c
+         chi_fac = 1.
+      
+         if (vnui .gt .500. .and. vnui .lt. 900.) then
+            chi_fac = chi_fac_sav
+         endif
+c
+c
         DO 40 JJ = JMIN, JMAX                                            D07370
             XM = (XJJ-XNUI)                                               D07380
             XMSQ = XM*XM                                                  D07390
@@ -4610,7 +4620,11 @@ C                                                                         D07550
                ISUBL = RDVCHI*ABS(XM)+1.5                                 D07560
                ISUBL = MIN(ISUBL,251)                                     D07570
 C                                                                         D07580
-               R4(JJ) = R4(JJ)+F4FN*CHI(ISUBL)                            D07590
+c               R4(JJ) = R4(JJ)+F4FN*CHI(ISUBL)                            D07590
+
+               R4(JJ) = R4(JJ)+F4FN*( 1.+chi_fac*(CHI(ISUBL)-1.) ) 
+
+
             ELSE                                                          D07600
                R4(JJ) = R4(JJ)+F4FN                                       D07610
             ENDIF                                                         D07620
@@ -4624,6 +4638,8 @@ C                                                                         D07690
 C     THE CALCULATION FOR NEGATIVE VNU(I) IS FOR VAN VLECK WEISSKOPF      D07700
 C                                                                         D07710
             VNUI = -VNU(I)                                                D07720
+C
+            SPP(I) = -SPP(I)
 c
             GO TO 30                                                      D07750
 C                                                                         D07760
@@ -4674,6 +4690,7 @@ C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         E00250
 C     FOR THE CROSS-SECTION MOLECULES.                                    E00260
 C     XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES          E00270
 C                                                                         E00280
+c%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat
       CHARACTER*10 XSFILE,XSNAME,ALIAS,XNAME,XFILS(6),BLANK               E00290
       COMMON /XSECTF/ XSFILE(6,5,35),XSNAME(35),ALIAS(4,35)               E00300
       COMMON /XSECTR/ V1FX(5,35),V2FX(5,35),DVFX(5,35),WXM(35),           E00310
@@ -4743,7 +4760,9 @@ C                                                                         E00870
 C     READ IN "CROSS SECTION" MASTER FILE FSCDXS                          E00880
 C                                                                         E00890
       IXFIL = 8                                                           E00900
-      OPEN (IXFIL,FILE='FSCDXS',STATUS='OLD',FORM='FORMATTED')            E00910
+      OPEN (IXFIL,FILE='FSCDXS',STATUS='OLD',FORM='FORMATTED',
+     *       IOSTAT=iostat)
+        if (IOSTAT.gt.0) stop 'FSCDXS does not exist - oprop.f'
       REWIND IXFIL                                                        E00920
       READ (IXFIL,905)                                                    E00930
 C                                                                         E00940
@@ -5031,7 +5050,7 @@ C                                                                         E03430
 C                                                                         E03510
 C     CHECK V1X FOR INPUT                                                 E03520
 C                                                                         E03530
-   20 VFX2 = VFT+2.*DVX+FLOAT(NHI)*DV                                     E03540
+   20 VFX2 = VFT+2.*DVX+ REAL(NHI)*DV                                     E03540
       IF (IR4.EQ.1) VFX2 = V2R4+2.*DVX                                    E03550
       IF (V1X.GT.VFX2) GO TO 140                                          E03560
 C                                                                         E03570
@@ -5047,8 +5066,8 @@ C                                                                         E03570
                V1X = VFT-2.*DVX                                           E03670
                IF (IR4.EQ.1) V1X = V1R4-2.*DVX                            E03680
             ENDIF                                                         E03690
-            V2X = V1X+FLOAT(LIMOUT-1)*DVX                                 E03700
-            IF (V2X.GT.V2) V2X = V1X+FLOAT(INT((V2-V1X)/DVX)+3)*DVX       E03710
+            V2X = V1X+ REAL(LIMOUT-1)*DVX                                 E03700
+            IF (V2X.GT.V2) V2X = V1X+ REAL(INT((V2-V1X)/DVX)+3)*DVX       E03710
             NPTSX = (V2X-V1X)/DVX+1                                       E03720
          ENDIF                                                            E03730
          IFL = 0                                                          E03740
@@ -5122,8 +5141,8 @@ C                                                                         E04293
             DVX = DVXMIN                                                  E04310
             V1X = MAX(VFT,V1XMIN)                                         E04320
             V1X = V1X-2.*DVX                                              E04330
-            V2X = V1X+FLOAT(LIMOUT-1)*DVX                                 E04340
-            IF (V2X.GT.V2) V2X = V1X+FLOAT(INT((V2-V1X)/DVX)+2)*DVX       E04350
+            V2X = V1X+ REAL(LIMOUT-1)*DVX                                 E04340
+            IF (V2X.GT.V2) V2X = V1X+ REAL(INT((V2-V1X)/DVX)+2)*DVX       E04350
             NPTSX = (V2X-V1X)/DVX+1                                       E04360
             V1XS = V1X                                                    E04370
             V2XS = V2X                                                    E04380
@@ -5190,7 +5209,7 @@ C                                                                         E04940
                   NRSKIP = (NBSKIP-1)*510+500                             E04990
                   NRSKIP = MAX(NRSKIP,0)                                  E05000
                ENDIF                                                      E05010
-               V1FP = V1FX(NS,NI)+FLOAT(NRSKIP)*DVFXX                     E05020
+               V1FP = V1FX(NS,NI)+ REAL(NRSKIP)*DVFXX                     E05020
                V2FP = V2X+2.0*DVFXX                                       E05030
                V2FP = MIN(V2FP,V2FX(NS,NI))                               E05040
                NMAX = (V2FP-V1FP)/DVFXX+1.                                E05050
@@ -5207,7 +5226,7 @@ C     IMAX = -4 TO PLACE THE FIRST PANEL V1 AT ARRAY LOCATION 1           E05150
 C                                                                         E05160
                IMAX = -4                                                  E05170
                DO 100 NP = 1, NPAN                                        E05180
-                  V1FP = V1FP+FLOAT(IMAX)*DVFXX                           E05190
+                  V1FP = V1FP+ REAL(IMAX)*DVFXX                           E05190
                   IMAX = NMAX-(NP-1)*NLIMX                                E05200
                   IF (IAFORM.GT.100.AND.NPANEL.LE.0.AND.                  E05210
      *                NBSKIP.EQ.0.AND.IMAX.GT.500) IMAX = 500             E05220
@@ -5216,7 +5235,7 @@ C                                                                         E05240
 C     FOR V2FP IMAX + 3 GIVES US ARRAY LOCATION 514                       E05250
 C             (504 FOR FIRST PANEL OF BLOCKED DATA)                       E05260
 C                                                                         E05270
-                  V2FP = V1FP+FLOAT(IMAX+3)*DVFXX                         E05280
+                  V2FP = V1FP+ REAL(IMAX+3)*DVFXX                         E05280
 C                                                                         E05290
                   IF (NP.GT.1) THEN                                       E05300
                      DO 70 JI = 1, 4                                      E05310
@@ -5303,7 +5322,7 @@ C                                                                         E06050
   120       NPTSI1 = NPTSI2+1                                             E06060
             NPTSX = (V2X-V1X)/DVX+1                                       E06062
 C                                                                         E06070
-            VI = V1X+FLOAT(NPTSI1-1)*DVX                                  E06080
+            VI = V1X+ REAL(NPTSI1-1)*DVX                                  E06080
             RADVI = RADFNI(VI,DVX,XKT,VITST,RDEL,RDLAST)                  E06090
 C                                                                         E06110
             NPTSI2 = (VITST-V1X)/DVX+1.001                                E06120
@@ -5404,6 +5423,7 @@ C                                                                         E06990
       CHARACTER XSFIL1*10,XSFIL2*10,XSTMP*4,XSNUM*3,CI*1                  E07020
       CHARACTER CFORM*11,BFRM*10,UNBFRM*10,BLKFRM*10,BFORM*9              E07030
       LOGICAL OP,OPCL                                                     E07040
+c%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat
       DIMENSION RDXX1(516),RDXX2(516),RDXA1(510),RDXA2(510),RDXH1(500),   E07050
      *          RDXH2(500),FILHDR(2),PNLHDR(2),DUM(2)                     E07060
 C                                                                         E07070
@@ -5450,9 +5470,13 @@ C                                                                         E07440
          IF (.NOT.OP.AND.OPCL) CLOSE (IFILE)                              E07470
          IF (.NOT.OP) THEN                                                E07480
             IF (ISFORM.GT.0) THEN                                         E07490
-               OPEN (IFILE,FILE=XSFIL1,STATUS='OLD',FORM=BFORM)           E07500
+               OPEN (IFILE,FILE=XSFIL1,STATUS='OLD',FORM=BFORM,
+     *          IOSTAT=iostat)
+               if (IOSTAT.gt.0) stop 'in oprop - No file XSFIL1' 
             ELSE                                                          E07510
-               OPEN (IFILE,FILE=XSFIL1,STATUS='OLD',FORM=CFORM)           E07520
+               OPEN (IFILE,FILE=XSFIL1,STATUS='OLD',FORM=CFORM,
+     *          IOSTAT=iostat)
+               if (IOSTAT.gt.0) stop 'in oprop - No file XSFIL1 ' 
             ENDIF                                                         E07530
          ENDIF                                                            E07540
          REWIND IFILE                                                     E07550
@@ -5464,9 +5488,13 @@ C                                                                         E07580
             IF (.NOT.OP.AND.OPCL) CLOSE (JFILE)                           E07610
             IF (.NOT.OP) THEN                                             E07620
                IF (ISFORM.GT.0) THEN                                      E07630
-                  OPEN (JFILE,FILE=XSFIL2,STATUS='OLD',FORM=BFORM)        E07640
+                  OPEN (JFILE,FILE=XSFIL2,STATUS='OLD',FORM=BFORM,
+     *          IOSTAT=iostat)
+                  if (IOSTAT.gt.0) stop 'in oprop - No file XSFIL2 ' 
                ELSE                                                       E07650
-                  OPEN (JFILE,FILE=XSFIL2,STATUS='OLD',FORM=CFORM)        E07660
+                  OPEN (JFILE,FILE=XSFIL2,STATUS='OLD',FORM=CFORM,
+     *          IOSTAT=iostat)
+                  if (IOSTAT.gt.0) stop 'in oprop - No file XSFIL2 ' 
                ENDIF                                                      E07670
             ENDIF                                                         E07680
             REWIND JFILE                                                  E07690
@@ -5490,7 +5518,7 @@ C                                                                         E07820
                READ (HEADER,905) AMOL,V1DX,V2DX,NPTSDX,BMOL,PRES,ICM,     E07870
      *                           ITEMP,SOURCE                             E07880
                IF (NPANEL.EQ.0) THEN                                      E07890
-                  XSTEMP(NT1,NS,NI) = FLOAT(ITEMP)+273.15                 E07900
+                  XSTEMP(NT1,NS,NI) =  REAL(ITEMP)+273.15                 E07900
                   XSMAX(NT1,NS,NI) = 0.0                                  E07910
                   PDX(NT1,NS,NI) = PRES*PTORMB                            E07920
                ENDIF                                                      E07930
@@ -5513,7 +5541,7 @@ C                                                                         E07820
                   READ (HEADER,905) AMOL,V1DX,V2DX,NPTSDX,BMOL,PRES,      E08060
      *                              ICM,ITEMP,SOURCE                      E08070
                   IF (NPANEL.EQ.0) THEN                                   E08080
-                     XSTEMP(NT2,NS,NI) = FLOAT(ITEMP)+273.15              E08090
+                     XSTEMP(NT2,NS,NI) =  REAL(ITEMP)+273.15              E08090
                      XSMAX(NT2,NS,NI) = 0.0                               E08100
                      PDX(NT2,NS,NI) = PRES*PTORMB                         E08110
                   ENDIF                                                   E08120
@@ -5550,7 +5578,7 @@ C                                                                         E08260
                READ (HEADER,905) AMOL,V1DX,V2DX,NPTSDX,BMOL,PRES,ICM,     E08390
      *                           ITEMP,SOURCE                             E08400
                IF (NPANEL.EQ.0) THEN                                      E08410
-                  XSTEMP(NT1,NS,NI) = FLOAT(ITEMP)+273.15                 E08420
+                  XSTEMP(NT1,NS,NI) =  REAL(ITEMP)+273.15                 E08420
                   XSMAX(NT1,NS,NI) = 0.0                                  E08430
                   PDX(NT1,NS,NI) = PRES*PTORMB                            E08440
                ENDIF                                                      E08450
@@ -5582,7 +5610,7 @@ C                                                                         E08260
                   READ (HEADER,905) AMOL,V1DX,V2DX,NPTSDX,BMOL,PRES,      E08670
      *                              ICM,ITEMP,SOURCE                      E08680
                   IF (NPANEL.EQ.0) THEN                                   E08690
-                     XSTEMP(NT2,NS,NI) = FLOAT(ITEMP)+273.15              E08700
+                     XSTEMP(NT2,NS,NI) =  REAL(ITEMP)+273.15              E08700
                      XSMAX(NT2,NS,NI) = 0.0                               E08710
                      PDX(NT2,NS,NI) = PRES*PTORMB                         E08720
                   ENDIF                                                   E08730
@@ -5601,7 +5629,7 @@ C                                                                         E08260
                ENDIF                                                      E08820
             ENDIF                                                         E08830
          ENDIF                                                            E08840
-         DVDX = (V2DX-V1DX)/FLOAT(NPTSDX-1)                               E08850
+         DVDX = (V2DX-V1DX)/ REAL(NPTSDX-1)                               E08850
 C                                                                         E08860
 C     FOR NPANEL = -1, SKIP REQUIRED NUMBER OF RECORDS                    E08870
 C                                                                         E08880
@@ -5904,7 +5932,7 @@ C                                                                         E11710
          IF (NP.NE.1) NPANEL = 1                                          E11730
          NMAX = 510                                                       E11740
          IF (NP.EQ.1) NMAX = 500                                          E11750
-         V2PX = V1PX+FLOAT(LPMAX+NMAX-1)*DVFX(NS,NI)                      E11760
+         V2PX = V1PX+ REAL(LPMAX+NMAX-1)*DVFX(NS,NI)                      E11760
          V2PX = MIN(V2PX,V2FX(NS,NI))                                     E11770
          NMAX = ((V2PX-V1PX)/DVFX(NS,NI)+ONEPL)-LPMAX                     E11780
 C                                                                         E11790
@@ -6083,7 +6111,7 @@ C                                                                         E13530
 C     BOUND AT THIS POINT IS THE WAVENUMBER VALUE                         E13540
 C     OF THE FULL SCANNING FUNCTION                                       E13550
 C                                                                         E13560
-      BOUND = FLOAT(NBOUND)*DVO/2.                                        E13570
+      BOUND =  REAL(NBOUND)*DVO/2.                                        E13570
 C                                                                         E13580
       NXPAN = 500                                                         E13590
       NLO = NBOUND+1                                                      E13600
@@ -6182,8 +6210,8 @@ C                                                                         E14440
          NHI = NNHI                                                       E14530
       ENDIF                                                               E14540
       NLIM = NHI-NLO+1                                                    E14550
-      V1P = VFT+FLOAT(NLO-1)*DV                                           E14560
-      V2P = VFT+FLOAT(NHI-1)*DV                                           E14570
+      V1P = VFT+ REAL(NLO-1)*DV                                           E14560
+      V2P = VFT+ REAL(NHI-1)*DV                                           E14570
 C                                                                         E14580
 C     V1P IS FIRST FREQ OF PANEL                                          E14590
 C     V2P IS LAST  FREQ OF PANEL                                          E14600
@@ -6191,7 +6219,7 @@ C                                                                         E14610
       CALL BUFOUT (JFILE,PNLHDR(1),NPHDRF)                                E14620
       CALL BUFOUT (JFILE,R1(NLO),NLIM)                                    E14630
 C                                                                         E14640
-      VFT = VFT+FLOAT(NLIMF-1)*DV                                         E14650
+      VFT = VFT+ REAL(NLIMF-1)*DV                                         E14650
       DVXPR(NS,NI) = DV                                                   E14660
       NLIMHI = NLIM+NLO-1                                                 E14670
       DO 10 I = NLO, NLIMHI                                               E14680
@@ -6241,7 +6269,7 @@ C                                                                         E15050
       XF(1) = XNORM                                                       E15110
       SUM = XF(1)                                                         E15120
       DO 20 I = 2, NF                                                     E15130
-         X = FLOAT(I-1)*DXF                                               E15140
+         X =  REAL(I-1)*DXF                                               E15140
          XF(I) = XNORM*(1./(1.+X**2))                                     E15150
          SUM = SUM+2.*XF(I)                                               E15160
    20 CONTINUE                                                            E15170

@@ -662,7 +662,7 @@ C                                                                        FL06350
       IF (V1.GT.0.) ALAM1 = 10000./V1                                    FL06370
       ALAM2 = 10000./V2                                                  FL06380
       DV = MAX(DV,5.)                                                    FL06390
-      DV = FLOAT(INT(DV/5+0.1))*5.0                                      FL06400
+      DV =  REAL(INT(DV/5+0.1))*5.0                                      FL06400
       IF (ALAM1.GT.999999.) ALAM1 = 999999.                              FL06410
       WRITE (IPR,1040) V1,ALAM1,V2,ALAM2,DV                              FL06420
 C                                                                        FL06430
@@ -1188,18 +1188,18 @@ C                                                                        FL11300
          DENSTY(15,K) = 0.                                               FL11350
 C                                                                        FL11360
 C        IF((GNDALT.GT.0.).AND.(ZMDL(K).LT.6.0)) THEN                    FL11370
-C        J=IFIX(ZSC+1.0E-6)+1                                            FL11380
-C        FAC=ZSC-FLOAT(J-1)                                              FL11390
+C        J= INT(ZSC+1.0E-6)+1                                            FL11380
+C        FAC=ZSC- REAL(J-1)                                              FL11390
 C        ELSE                                                            FL11400
 C                                                                        FL11410
-         J = IFIX(ZMDL(K)+1.0E-6)+1                                      FL11420
+         J =  INT(ZMDL(K)+1.0E-6)+1                                      FL11420
          IF (ZMDL(K).GE.25.0) J = (ZMDL(K)-25.0)/5.0+26.                 FL11430
          IF (ZMDL(K).GE.50.0) J = (ZMDL(K)-50.0)/20.0+31.                FL11440
          IF (ZMDL(K).GE.70.0) J = (ZMDL(K)-70.0)/30.0+32.                FL11450
          J = MIN(J,32)                                                   FL11460
-         FAC = ZMDL(K)-FLOAT(J-1)                                        FL11470
+         FAC = ZMDL(K)- REAL(J-1)                                        FL11470
          IF (J.LT.26) GO TO 150                                          FL11480
-         FAC = (ZMDL(K)-5.0*FLOAT(J-26)-25.)/5.                          FL11490
+         FAC = (ZMDL(K)-5.0* REAL(J-26)-25.)/5.                          FL11490
          IF (J.GE.31) FAC = (ZMDL(K)-50.0)/20.                           FL11500
          IF (J.GE.32) FAC = (ZMDL(K)-70.0)/30.                           FL11510
          FAC = MIN(FAC,1.0)                                              FL11520
@@ -1275,8 +1275,8 @@ C                                                                        FL12210
 C        CHECK IF GNDALT NOT ZERO                                        FL12220
 C                                                                        FL12230
          IF ((GNDALT.GT.0.).AND.(ZMDL(K).LT.6.0)) THEN                   FL12240
-            J = IFIX(ZSC+1.0E-6)+1                                       FL12250
-            FAC = ZSC-FLOAT(J-1)                                         FL12260
+            J =  INT(ZSC+1.0E-6)+1                                       FL12250
+            FAC = ZSC- REAL(J-1)                                         FL12260
             L = J+1                                                      FL12270
          ENDIF                                                           FL12280
          IF (ITYAER.EQ.3.AND.ICL.EQ.0) THEN                              FL12290
@@ -2038,7 +2038,7 @@ C                                                                        FL18990
       IF (DALT.LE.0.) GO TO 60                                           FL19020
 C                                                                        FL19030
       DO 50 I = 1, 6                                                     FL19040
-         ZMDL(I) = FLOAT(I-1)*DALT+GNDALT                                FL19050
+         ZMDL(I) =  REAL(I-1)*DALT+GNDALT                                FL19050
    50 CONTINUE                                                           FL19060
    60 IF (ICLD.EQ.18.OR.ICLD.EQ.19) THEN                                 FL19070
          CLDD = 0.1*CTHIK                                                FL19080
@@ -2255,8 +2255,8 @@ C     CC   CAN BE 0.1,0.2,0.5,1.0,2.0 OR 5.0                             FL20960
 C     CC                                                                 FL20970
 C                                                                        FL20980
       IF (V2.GT.300) THEN                                                FL20990
-         V1 = FLOAT(INT(V1/5.0+0.1))*5.0                                 FL21000
-         V2 = FLOAT(INT(V2/5.0+0.1))*5.0                                 FL21010
+         V1 =  REAL(INT(V1/5.0+0.1))*5.0                                 FL21000
+         V2 =  REAL(INT(V2/5.0+0.1))*5.0                                 FL21010
       ENDIF                                                              FL21020
       V2 = MAX(V2,V1)                                                    FL21030
       VDEL = V2-V1                                                       FL21040
@@ -2289,7 +2289,7 @@ C                                                                        FL20980
       V1P = V1                                                           FL21310
       V2P = V2                                                           FL21320
       WRITE (IPR,900) V1,V2,DVP                                          FL21330
-      RMAXDV = FLOAT(MAXDV)                                              FL21340
+      RMAXDV =  REAL(MAXDV)                                              FL21340
       IF ((V2-V1)/DV.GT.RMAXDV) STOP 'TRANS; (V2-V1)/DV GT MAXDV '       FL21350
       DO 80 I = 1, MAXDV                                                 FL21360
          ABST(I) = 0.                                                    FL21370
@@ -2953,12 +2953,27 @@ C                                                                        FL27890
 C     RADIATION FLD OUT                                                  FL27900
 C     **  MOLECULAR SCATTERING                                           FL27910
 C                                                                        FL27920
-      RAYSCT = 0.                                                        FL27930
-      IF (V.LE.3000.) RETURN                                             FL27940
-      RAYSCT = V**3/(9.26799E+18-1.07123E+09*V**2)                       FL27950
+
+      IF (V.LE.3000.) then
+         RAYSCT = 0.                                                       
+      else
+c
+c     The following statement previosly operative in lbllow.f has  been  ! sac 06/06/02
+c     replaced by the expression implemented in SUBROUTINE CONTNM in 
+c     module contnm.f.  
+c
+c***      RAYSCT = V**3/(9.26799E+18-1.07123E+09*V**2)  
+c
+c     This formulation, adopted from MODTRAN_3.5 (using approximation
+c     of Shettle et al., (Appl Opt, 2873-4, 1980) with depolarization
+c     = 0.0279, output in km-1 for T=273K & P=1 ATM) has been used.
+c
+         RAYSCT = V**3/(9.38076E18-1.08426E09*V**2)
 C                                                                        FL27960
 C     V**4 FOR RADIATION FLD IN                                          FL27970
 C                                                                        FL27980
+      endif
+c
       RETURN                                                             FL27990
       END                                                                FL28000
       FUNCTION TNRAIN(RR,V,TM,RADFLD)                                    FL28010
@@ -5366,7 +5381,7 @@ C     IF THE DISTANCE FROM THE GROUND TO THE CLOUD/FOG TOP IS LESS       FL49760
 C     THAN 2.0 KM, VSA WILL ONLY CALCULATE UP TO THE CLOUD TOP.          FL49770
 C                                                                        FL49780
       IF (ZT.LE.0.0) ZT = 200.                                           FL49790
-      HMAX = AMIN1(ZT+ZC,HMAX)                                           FL49800
+      HMAX =   MIN(ZT+ZC,HMAX)                                           FL49800
       GO TO 60                                                           FL49810
 C                                                                        FL49820
 C     CASE 2:  HAZY/LIGHTLY FOGGY; INCREASING EXTINCTION WITH HEIGHT     FL49830
@@ -5411,7 +5426,7 @@ C                                                                        FL50090
      *    ZINV                                                           FL50220
       IF (ZINV.EQ.0.0.AND.VIS.GT.2.0.AND.IHAZE.NE.9) ZINV = 2000         FL50230
       IF (ZINV.EQ.0.0.AND.(VIS.LE.2.0.OR.IHAZE.EQ.9)) ZINV = 200         FL50240
-      HMAX = AMIN1(ZINV,HMAX)                                            FL50250
+      HMAX =   MIN(ZINV,HMAX)                                            FL50250
       ZC = 0.0                                                           FL50260
 C                                                                        FL50270
 C     CASE 4:  NO CLOUD CEILING OR INVERSION LAYER;                      FL50280
@@ -5424,7 +5439,7 @@ C                                                                        FL50300
       ENDIF                                                              FL50350
       IF (IC.EQ.3) C(K) =  LOG( LOG(E/A(K))/B(K))/ZINV                   FL50360
       IF (ZC.LT.HMAX.AND.K.EQ.1.AND.IC.EQ.2) GO TO 20                    FL50370
-      IF (IC.EQ.2) HMAX = AMIN1(ZC,HMAX)                                 FL50380
+      IF (IC.EQ.2) HMAX =   MIN(ZC,HMAX)                                 FL50380
       ZALGO = HMAX                                                       FL50390
       IF (IC.LT.0) ZALGO = ZC                                            FL50400
       WRITE (IPR,925)                                                    FL50410
@@ -5435,7 +5450,7 @@ C                                                                        FL50430
          IF (IC.LT.0.AND.I.EQ.5) ZALGO = HMAX-ZC                         FL50460
          Z(I) = ZALGO*(1.0-FAC2(10-I))                                   FL50470
          IF (IC.EQ.1) Z(I) = ZALGO*FAC1(I)                               FL50480
-         IF (IC.EQ.4) Z(I) = ZALGO*FLOAT(I-1)/8.0                        FL50490
+         IF (IC.EQ.4) Z(I) = ZALGO* REAL(I-1)/8.0                        FL50490
          IF (IC.LT.0.AND.I.LT.5) Z(I) = ZALGO*(1.0-FAC2(11-2*I))         FL50500
          IF (IC.LT.0.AND.I.GE.5) Z(I) = ZALGO*FAC1(2*I-9)                FL50510
 C                                                                        FL50520
@@ -7029,9 +7044,9 @@ C     TO THE ATTENUATION COEFFICIENT.                                    FL65660
 C                                                                        FL65670
       F = ((2.-RH/100.)/(6.*(1.-RH/100.)))**0.33333                      FL65680
       A1 = 2000.0*ICSTL*ICSTL                                            FL65690
-      A2 = AMAX1(5.866*(WH-2.2),0.5)                                     FL65700
+      A2 =   MAX(5.866*(WH-2.2),0.5)                                     FL65700
 C                                                                        FL65710
-C     CC   A3 = AMAX1(0.01527*(WS-2.2), 1.14E-5)                         FL65720
+C     CC   A3 =   MAX(0.01527*(WS-2.2), 1.14E-5)                         FL65720
 C                                                                        FL65730
       A3 = 10**(0.06*WS-2.8)                                             FL65740
 C                                                                        FL65750

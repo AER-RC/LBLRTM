@@ -23,13 +23,14 @@ C                                                                         H00100
 C                                                                         H00160
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
+      character*1 surf_refl
 C                                                                         H00180
       COMMON /CVRXMR/ HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H00190
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H00200
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    H00210
 C                                                                         H00220
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H00230
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl 
       COMMON /XME/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(4996)                   H00240
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
@@ -178,7 +179,7 @@ C                                                                         H01050
       COMMON /XMI/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(4815)                   H01060
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H01080
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl 
 C                                                                         H01090
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),                H01100
      *            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),                H01110
@@ -812,8 +813,8 @@ C                                                                         H06580
 C                                                                         H06610
    70    CONTINUE                                                         H06620
 C                                                                         H06630
-         FJJ = FJ1DIF+RATDV*FLOAT(II-1)                                   H06640
-         JJ = IFIX(FJJ)-2                                                 H06650
+         FJJ = FJ1DIF+RATDV* REAL(II-1)                                   H06640
+         JJ =  INT(FJJ)-2                                                 H06650
 C                                                                         H06660
          IF (JJ+2.GT.NLIM) THEN                                           H06670
             ODLAY(-2) = ODLAY(NLIM-2)                                     H06680
@@ -840,9 +841,9 @@ C                                                                         H06870
             GO TO 70                                                      H06890
          ENDIF                                                            H06900
 C                                                                         H06910
-C     JP = (FJJ-FLOAT(JJ))*100. + 0.5 - 200.                              H06920
+C     JP = (FJJ- REAL(JJ))*100. + 0.5 - 200.                              H06920
 C                                                                         H06930
-         JP = (FJJ-FLOAT(JJ))*100.-199.5                                  H06940
+         JP = (FJJ- REAL(JJ))*100.-199.5                                  H06940
          IF (JP.GT.100) THEN                                              H06950
             WRITE (IPR,910) JP,JJ,NLIM                                    H06960
             STOP                                                          H06970
@@ -913,8 +914,8 @@ C                                                                         H07490
       DO 10 I = 1, NNPTS                                                  H07590
          J = JLO+I-1                                                      H07600
          K = JHILIM+I-1                                                   H07610
-         VJ = V1P+FLOAT(J-JLO)*DVP                                        H07620
-         VK = V1P+FLOAT(K-JLO)*DVP                                        H07630
+         VJ = V1P+ REAL(J-JLO)*DVP                                        H07620
+         VK = V1P+ REAL(K-JLO)*DVP                                        H07630
          WRITE (IPR,910) J,VJ,R1(J),K,VK,R1(K)                            H07640
    10 CONTINUE                                                            H07650
    20 CONTINUE                                                            H07660
@@ -1010,7 +1011,7 @@ C                                                                         H08430
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
                INTVLS = (DELTAV)/DVI
                INTVLS = MAX(INTVLS,1)
-               VINEW = VI+DVI*FLOAT(INTVLS)
+               VINEW = VI+DVI* REAL(INTVLS)
             ELSE
                VINEW = ABS(VINEW)
                INTVLS = (VINEW-VI)/DVI
@@ -1028,7 +1029,7 @@ C                                                                         H08590
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
                INTVLS = (DELTAV)/DVI
                INTVLS = MAX(INTVLS,1)
-               VINEW = VI+DVI*FLOAT(INTVLS)
+               VINEW = VI+DVI* REAL(INTVLS)
             ELSE
                VINEW = ABS(VINEW)
 C
@@ -1039,7 +1040,7 @@ C              the change over the XVIOKT = 80 boundary)
 C
                IF (VINEW.EQ.6.0E+05) THEN
                    BBNEXT=0.
-                   BBDEL = (BBNEXT-BBFN)/FLOAT(INTVLS)
+                   BBDEL = (BBNEXT-BBFN)/ REAL(INTVLS)
                    BBLAST = BBNEXT
                    RETURN
                ENDIF
@@ -1058,7 +1059,7 @@ C                                                                         H08750
          VINEW = 6.0E+5                                                   H08830
       ENDIF                                                               H08840
 C                                                                         H08850
-      BBDEL = (BBNEXT-BBFN)/FLOAT(INTVLS)                                 H08860
+      BBDEL = (BBNEXT-BBFN)/ REAL(INTVLS)                                 H08860
       BBLAST = BBNEXT                                                     H08890
 C                                                                         H08900
       RETURN                                                              H08910
@@ -1152,7 +1153,7 @@ C
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
                INTVLS = (DELTAV)/DVI
                INTVLS = MAX(INTVLS,1)
-               VDNEW = VI+DVI*FLOAT(INTVLS)
+               VDNEW = VI+DVI* REAL(INTVLS)
             ELSE
                VDNEW = ABS(VDNEW)
                INTVLS = (VDNEW-VI)/DVI
@@ -1169,7 +1170,7 @@ C
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
                INTVLS = (DELTAV)/DVI
                INTVLS = MAX(INTVLS,1)
-               VDNEW = VI+DVI*FLOAT(INTVLS)
+               VDNEW = VI+DVI* REAL(INTVLS)
             ELSE
                VDNEW = ABS(VDNEW)
 C
@@ -1181,7 +1182,7 @@ C
                IF (VDNEW.EQ.6.0E+05) THEN
                    BBAD=0.
                    VDNEW = VDNEW-DVI+0.00001
-                   BBADDL = (BBAD-BBADOL)/FLOAT(INTVLS)
+                   BBADDL = (BBAD-BBADOL)/ REAL(INTVLS)
                    BBADOL = BBAD
                    RETURN
                ENDIF
@@ -1199,7 +1200,7 @@ C
          VDNEW = 6.0E+5                                                
       ENDIF                                                            
 C                                                                      
-      BBADDL = (BBAD-BBADOL)/FLOAT(INTVLS)                              
+      BBADDL = (BBAD-BBADOL)/ REAL(INTVLS)                              
 C                                                                      
       VDNEW = VDNEW-DVI+0.00001                                        
       BBADOL = BBAD                                                  
@@ -1254,7 +1255,7 @@ C
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
 C     ----------------------------------------------------------------
 C
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H09300
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
       EQUIVALENCE (BNDEMI(1),A) , (BNDEMI(2),B) , (BNDEMI(3),C)           H09310
 C                                                                         H09320
       DATA FACTOR / 0.001 /                                               H09330
@@ -1273,7 +1274,7 @@ C
 C
 C        Test for bounds on EMISSION function
 C
-         IF ((NELMNT.LE.0).OR.(NELMNT.GE.NLIMEM)) THEN
+         IF ((NELMNT.LT.0).OR.(NELMNT.GE.NLIMEM-1)) THEN
             WRITE(*,*) 'Frequency range of calculation exceeded',
      *                 ' emissivity input.'
             WRITE(*,*) ' VI = ',VI,' V1EMIS = ',V1EMIS,' V2EMIS = ',
@@ -1285,7 +1286,7 @@ C        Interpolate to obtain appropriate EMISSION value
 C
          V1A = V1EMIS+DVEMIS*NELMNT
          V1B = V1EMIS+DVEMIS*(NELMNT+1)
-         CALL LINTCO(V1A,ZEMIS(NELMNT),V1B,ZEMIS(NELMNT+1),VI,ZINT,
+         CALL LINTCO(V1A,ZEMIS(NELMNT+1),V1B,ZEMIS(NELMNT+2),VI,ZINT,
      *               ZDEL)
          EMISFN = ZINT
          VINEM = V1B
@@ -1326,7 +1327,7 @@ C                                                                         H09560
          XVNEXT = MIN(XVNEXT,(XVI+DVI*2400))
          INTVLS = (XVNEXT-XVI)/DVI                                        H09590
          INTVLS = MAX(INTVLS,1)                                           H09600
-         XVNEXT = XVI+DVI*FLOAT(INTVLS)                                   H09610
+         XVNEXT = XVI+DVI* REAL(INTVLS)                                   H09610
       ELSE                                                                H09620
          XVNEXT = ABS(VINEM)                                              H09630
          INTVLS = (XVNEXT-XVI)/DVI                                        H09640
@@ -1335,7 +1336,7 @@ C                                                                         H09560
 C                                                                         H09670
       EMNEXT = A+B*XVNEXT+C*XVNEXT*XVNEXT                                 H09680
 C                                                                         H09690
-      EMDEL = (EMNEXT-EMISFN)/FLOAT(INTVLS)                               H09700
+      EMDEL = (EMNEXT-EMISFN)/ REAL(INTVLS)                               H09700
 C                                                                         H09710
       VINEM = XVNEXT                                                      H09720
       EMLAST = EMNEXT                                                     H09730
@@ -1391,7 +1392,7 @@ C
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
 C     ----------------------------------------------------------------
 C
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H10150
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl 
       EQUIVALENCE (BNDRFL(1),A) , (BNDRFL(2),B) , (BNDRFL(3),C)           H10160
 C                                                                         H10170
       DATA FACTOR / 0.001 /                                               H10180
@@ -1410,7 +1411,7 @@ C
 C
 C        Test for bounds on REFLECTION function
 C
-         IF ((NELMNT.LE.0).OR.(NELMNT.GE.NLIMRF)) THEN
+         IF ((NELMNT.LT.0).OR.(NELMNT.GE.NLIMRF-1)) THEN
             WRITE(*,*) 'Frequency range of calculation exceeded',
      *                 ' reflectivity input.'
             WRITE(*,*) ' VI = ',VI,' V1RFLT = ',V1RFLT,' V2RFLT = ',
@@ -1422,7 +1423,7 @@ C        Interpolate to obtain appropriate reflection value
 C
          V1A = V1RFLT+DVRFLT*NELMNT
          V1B = V1RFLT+DVRFLT*(NELMNT+1)
-         CALL LINTCO(V1A,ZRFLT(NELMNT),V1B,ZRFLT(NELMNT+1),VI,ZINT,
+         CALL LINTCO(V1A,ZRFLT(NELMNT+1),V1B,ZRFLT(NELMNT+2),VI,ZINT,
      *               ZDEL)
          REFLFN = ZINT
          VINRF = V1B
@@ -1463,7 +1464,7 @@ C                                                                         H10410
          XVNEXT = MIN(XVNEXT,(XVI+DVI*2400))
          INTVLS = (XVNEXT-XVI)/DVI                                        H10440
          INTVLS = MAX(INTVLS,1)                                           H10450
-         XVNEXT = XVI+DVI*FLOAT(INTVLS)                                   H10460
+         XVNEXT = XVI+DVI* REAL(INTVLS)                                   H10460
       ELSE                                                                H10470
          XVNEXT = ABS(VINRF)                                              H10480
          INTVLS = (XVNEXT-XVI)/DVI                                        H10490
@@ -1472,7 +1473,7 @@ C                                                                         H10410
 C                                                                         H10520
       RFNEXT = A+B*XVNEXT+C*XVNEXT*XVNEXT                                 H10530
 C                                                                         H10540
-      RFDEL = (RFNEXT-REFLFN)/FLOAT(INTVLS)                               H10550
+      RFDEL = (RFNEXT-REFLFN)/ REAL(INTVLS)                               H10550
 C                                                                         H10560
       VINRF = XVNEXT                                                      H10570
       RFLAST = RFNEXT                                                     H10580
@@ -1494,17 +1495,18 @@ C                                                                         H10700
 C                                                                         H10710
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10720
 C                                                                         H10730
-C               LAST MODIFICATION:    14 AUGUST 1991                      H10740
+C               LAST MODIFICATION:    23 MAY 2002                         H10740
 C                                                                         H10750
 C                  IMPLEMENTATION:    R.D. WORSHAM                        H10760
 C                                                                         H10770
 C             ALGORITHM REVISIONS:    S.A. CLOUGH                         H10780
 C                                     R.D. WORSHAM                        H10790
 C                                     J.L. MONCET                         H10800
+C                                     M.W. SHEPHARD
 C                                                                         H10810
 C                                                                         H10820
 C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         H10830
-C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139          H10840
+C                     131 Hartwell Ave., Lexington, MA. 02421
 C                                                                         H10850
 C----------------------------------------------------------------------   H10860
 C                                                                         H10870
@@ -1521,6 +1523,7 @@ C                                                                         H10970
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10980
 C                                                                         H10990
       character*8      XID,       HMOLID,      YID
+      character*1 surf_refl
       real*8               SECANT,       XALTZ 
 C                                                                         H11010
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H11020
@@ -1532,6 +1535,7 @@ C                                                                         H11010
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           H11080
       COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF                            H11090
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H11100
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
 C                                                                         H11110
       parameter (nn_tbl=10000)
 c
@@ -1546,6 +1550,7 @@ C                                                                         H11130
 C                                                                         H11170
       data xtrtot_min /1.e-04/, od_lo /0.06/,od_hi /12./
       data itbl_calc/-99/, aa /0.278/ 
+      data diffuse_fac /1.67/
 c
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H11180
       IF (KEOF.LE.0) RETURN                                               H11190
@@ -1590,6 +1595,7 @@ C                                                                         H11410
       NLIM2 = 0                                                           H11580
 C                                                                         H11590
       rec_6 = 1./6.
+C
 c
 c     **********************************************************
 c
@@ -1614,6 +1620,8 @@ C       TO THE RADIATIVE TRANSFER ONLY ONCE                               H11740
 C                                                                         H11750
 C     - WITH XKTA=0 THIS ALGORITHM REVERTS TO THE ORIGINAL                H11760
 C                                                                         H11770
+c_____+___________________________________________________________
+c
       IF (XKTB.LE.0.) THEN                                                H11780
 C                                                                         H11790
 C     - THIS SECTION TREATS THE LTE CASE                                  H11800
@@ -1622,7 +1630,7 @@ C                                                                         H11810
 C                                                                         H11830
    10       NLIM1 = NLIM2+1                                               H11840
 C                                                                         H11850
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H11860
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H11860
             IF (IAFBB.EQ.-1) THEN                                         H11870
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H11880
                IF (XKTA.GT.0.) THEN                                       H11890
@@ -1709,7 +1717,7 @@ C     - THIS SECTION TREATS THE NLTE CASE                                 H12710
 C                                                                         H12720
    30       NLIM1 = NLIM2+1                                               H12730
 C                                                                         H12740
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H12750
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H12750
             IF (IAFBB.EQ.-1) THEN                                         H12760
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H12770
                IF (XKTA.GT.0.) THEN                                       H12780
@@ -1806,6 +1814,8 @@ C                                                                         H13560
             IF (NLIM2.LT.NLIM) GO TO 30                                   H13570
 C                                                                         H13580
          ENDIF                                                            H13590
+c_____+___________________________________________________________
+c
       ELSE                                                                H13600
 C                                                                         H13610
 C     - THIS SECTION TREATS THE CASE WHERE THE LAYER CONTRIBUTES          H13620
@@ -1819,7 +1829,7 @@ C     - THIS SECTION TREATS THE LTE CASE                                  H13690
 C                                                                         H13700
    50       NLIM1 = NLIM2+1                                               H13710
 C                                                                         H13720
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H13730
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H13730
             IF (IAFBB.EQ.-1) THEN                                         H13740
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H13750
                IF (XKTA.GT.0.) THEN                                       H13760
@@ -1903,40 +1913,101 @@ C                                                                         H14720
             bb_dif_b = bbb-bb
             bb_dif_a_del = bbdla-bbdel
             bb_dif_b_del = bbdlb-bbdel
-c
-            DO 60 I = NLIM1, NLIM2                                        H14730
-c
-               ODVI = TR(I)+EXT*RADFN0                                    H14760
-c      
-               if (abs(odvi) .le. od_lo) then
-                  tr(i)  = 1. - odvi+0.5*odvi*odvi
-                  taufn  = rec_6*odvi
-                  emx = (1.-tr(i))
-                  em(i)  = emx * (bb+ bb_dif_a * taufn)
-                  emb(i) = emx * (bb+ bb_dif_b * taufn)
-               else   
-c****             tri = exp(-odvi)
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  tr(i) = exp_tbl(i_tbl)
-C               Obtain correct value for the tau function from look up table
-                  tau_fn = tau_tbl(i_tbl)
-                  emx = (1.-tr(i))
-                  em(i)  = emx * (bb+bb_dif_a * tau_fn)
-                  emb(i) = emx * (bb+bb_dif_b * tau_fn)
+cccc
+c     This calculation  is for specular reflection for the downwelling 
+cccc
 
-               end if
-C                                                                         H14870
-C              Increment interpolation values
+            if (surf_refl .eq. 's')  then      
+
+                DO 60 I = NLIM1, NLIM2                                    
+c     
+                    ODVI = TR(I)+EXT*RADFN0                                    
+c     
+                    if (abs(odvi) .le. od_lo) then
+                        tr(i)  = 1. - odvi+0.5*odvi*odvi
+                        taufn  = rec_6*odvi
+                        emx = (1.-tr(i))
+                        em(i)  = emx * (bb+ bb_dif_a * taufn)
+                        emb(i) = emx * (bb+ bb_dif_b * taufn)
+                    else   
+c***********************tri = exp(-odvi)
+                        tau_fn = odvi/(aa_inv+odvi)
+                        i_tbl = xnn * tau_fn + .5
+                        tr(i) = exp_tbl(i_tbl)
+C     Obtain correct value for the tau function from look up table
+                        tau_fn = tau_tbl(i_tbl)
+                        emx = (1.-tr(i))
+                        em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                        emb(i) = emx * (bb+bb_dif_b * tau_fn)
+                        
+                    end if
+C     
+C     Increment interpolation values
 C
-               EXT = EXT+ADEL                                             H14740
-               RADFN0 = RADFN0+RDEL                                       H14750
-               BB = BB+BBDEL                                              H14770
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
+                    EXT = EXT+ADEL  
+                    RADFN0 = RADFN0+RDEL 
+                    BB = BB+BBDEL             
+                    bb_dif_a = bb_dif_a + bb_dif_a_del
+                    bb_dif_b = bb_dif_b + bb_dif_b_del
 
-   60       CONTINUE                                                      H14880
-C                                                                         H14890
+  60            CONTINUE  
+C     
+
+            elseif (surf_refl .eq. 'l') then 
+cccc  
+c     The following calculation  is for an approximation to the
+c     downwelling flux-  uses the Lambertian or 'diffusivity' approximation
+c     assuming it scatters isotropically with a value obtained from the
+c     diffusivity angle corresponding to diffuse_fac = 1.67 (secant)
+cccc
+                DO 62 I = NLIM1, NLIM2
+c
+                    ODVI = TR(I)+EXT*RADFN0
+c      
+                    if (abs(odvi) .le. od_lo) then
+                        tr(i)  = 1. - odvi+0.5*odvi*odvi
+                        odvi_d = diffuse_fac * odvi
+                        tr_d   = 1. - odvi_d+0.5*odvi_d*odvi_d
+                        taufn  = rec_6*odvi
+                        taufn_d  = rec_6*odvi_d
+                        emx = (1.-tr(i))
+                        emx_d = (1.-tr_d)
+                        em(i)  = emx * (bb+ bb_dif_a * taufn)
+                        emb(i) = emx_d * (bb+ bb_dif_b * taufn_d)
+                    else   
+c**** tri = exp(-odvi)
+                        tau_fn = odvi/(aa_inv+odvi)
+                        i_tbl = xnn * tau_fn + .5
+C     Obtain correct value for the tau function from look up table
+                        tau_fn = tau_tbl(i_tbl)
+                        tr(i) = exp_tbl(i_tbl)
+c     
+                        odvi_d = diffuse_fac * odvi
+                        tau_fn_d = odvi_d/(aa_inv+odvi_d)
+                        i_tbl_d = xnn * tau_fn_d + .5
+C     Obtain correct value for the tau function from look up table
+                        tau_fn_d = tau_tbl(i_tbl_d)
+                        tr_d  = exp_tbl(i_tbl_d)
+                        em(i)  = (1.-tr(i)) * (bb+bb_dif_a * tau_fn)
+                        emb(i) = (1.-tr_d)  * (bb+bb_dif_b * tau_fn_d)
+                        
+                    end if
+C   
+C     Increment interpolation values
+C     
+                    EXT = EXT+ADEL                    
+                    RADFN0 = RADFN0+RDEL              
+                    BB = BB+BBDEL                     
+                    bb_dif_a = bb_dif_a + bb_dif_a_del
+                    bb_dif_b = bb_dif_b + bb_dif_b_del
+                    
+  62            CONTINUE                              
+C      
+            else
+                WRITE (IPR,906) surf_refl     
+                STOP 'INVALID SURFACE REFLECTIVITY FLAG'                 
+            endif
+C
             IF (NLIM2.LT.NLIM) GO TO 50                                   H14900
 C                                                                         H14910
          ELSE                                                             H14920
@@ -1945,7 +2016,7 @@ C     - THIS SECTION TREATS THE CASE OF NLTE                              H14940
 C                                                                         H14950
    70       NLIM1 = NLIM2+1                                               H14960
 C                                                                         H14970
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H14980
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H14980
             IF (IAFBB.EQ.-1) THEN                                         H14990
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H15000
                IF (XKTA.GT.0.) THEN                                       H15010
@@ -2030,57 +2101,138 @@ C                                                                         H15970
             bb_dif_a_del = bbdla-bbdel
             bb_dif_b_del = bbdlb-bbdel
 c
-            DO 80 I = NLIM1, NLIM2                                        H15980
+cccc
+c     This calculation  is for specular reflection for the downwelling 
+cccc
 
-c              tr(i) contains the layer optical depths at this stage
+            if (surf_refl .eq. 's') then           
 
-               ODVI = TR(I)+EXT*RADFN0                                    H16010
+                DO 80 I = NLIM1, NLIM2         
+
+c     tr(i) contains the layer optical depths at this stage
+                    
+                    ODVI = TR(I)+EXT*RADFN0       
+c     
+c     em(i) contains the ratio diffeernces from 
+c     lte of the state populations
+                    c_nlte = em(i)
+c     
+                    if (abs(odvi) .le. od_lo) then
+                        
+                        odvi_a = 0.5 * odvi
+                        absvi  = odvi - odvi_a * odvi
+                        tr(i)  = 1. - absvi
+                        tau_fn = rec_6*odvi
+                        emx    = (absvi - (c_nlte*(1.-odvi_a)))
+                        em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                        emb(i) = emx * (bb+bb_dif_b * tau_fn)
+                    else   
+c**** tri = exp(-odvi)
+                        tau_fn = odvi/(aa_inv+odvi)
+                        i_tbl = xnn * tau_fn + .5
+                        tr(i) = exp_tbl(i_tbl)
+C**** Obtain correct value for the tau function from look up table
+                        tau_fn = tau_tbl(i_tbl)
+                        emx = ( 1.0 - c_nlte/odvi ) * ( 1.-tr(i) )
+                        em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                        emb(i) = emx * (bb+bb_dif_b * tau_fn)
+                        
+                    end if
 c
-c              em(i) contains the ratio diffeernces from 
-c                                              lte of the state populations
-               c_nlte = em(i)
-c      
-               if (abs(odvi) .le. od_lo) then
+C     Increment interpolation values
+C     
+                    EXT = EXT+ADEL  
+                    RADFN0 = RADFN0+RDEL 
+                    BB = BB+BBDEL        
+                    bb_dif_a = bb_dif_a + bb_dif_a_del
+                    bb_dif_b = bb_dif_b + bb_dif_b_del
 
-                  odvi_a = 0.5 * odvi
-                  absvi  = odvi - odvi_a * odvi
-                  tr(i)  = 1. - absvi
-                  tau_fn = rec_6*odvi
-                  emx    = (absvi - (c_nlte*(1.-odvi_a)))
-                  em(i)  = emx * (bb+bb_dif_a * tau_fn)
-                  emb(i) = emx * (bb+bb_dif_b * tau_fn)
-               else   
-c****             tri = exp(-odvi)
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  tr(i) = exp_tbl(i_tbl)
-C****           Obtain correct value for the tau function from look up table
-                  tau_fn = tau_tbl(i_tbl)
-                  emx = ( 1.0 - c_nlte/odvi ) * ( 1.-tr(i) )
-                  em(i)  = emx * (bb+bb_dif_a * tau_fn)
-                  emb(i) = emx * (bb+bb_dif_b * tau_fn)
+  80            CONTINUE                               
 
-               end if
+            elseif (surf_refl .eq. 'l') then
+
+cccc  
+c     The following calculation  is for an approximation to the
+c     downwelling flux-  uses the Lambertian or 'diffusivity' approximation
+c     assuming it scatters isotropically with a value obtained from the
+c     diffusivity angle corresponding to diffuse_frac = 1.67 (secant)
+cccc
+                DO 82 I = NLIM1, NLIM2  
+
+c     tr(i) contains the layer optical depths at this stage
+                    
+                    ODVI = TR(I)+EXT*RADFN0  
 c
-C              Increment interpolation values
-C
-               EXT = EXT+ADEL                                             H15990
-               RADFN0 = RADFN0+RDEL                                       H16000
-               BB = BB+BBDEL                                              H16020
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
+c     em(i) contains the ratio differences from 
+c     lte of the state populations
+                    c_nlte = em(i)
+c     
+                    if (abs(odvi) .le. od_lo) then
+                        odvi_d = diffuse_fac * odvi
+                        odvi_a = 0.5 * odvi
+                        odvi_a_d = 0.5 * odvi_d
+                        absvi  = odvi - odvi_a * odvi
+                        absvi_d  = odvi_d - odvi_a_d * odvi_d
+                        tr(i)  = 1. - absvi
+                        tr_d   = 1. - absvi_d
+                        tau_fn = rec_6*odvi
+                        tau_fn_d = rec_6*odvi_d
+                        emx    = (absvi - (c_nlte*(1.-odvi_a)))
+                        emx_d  = (absvi_d - (c_nlte*(1.-odvi_a_d)))
+                        em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                        emb(i) = emx_d * (bb+bb_dif_b * tau_fn_d)
+                    else   
+c**** tri = exp(-odvi)
+                        tau_fn = odvi/(aa_inv+odvi)
+                        i_tbl = xnn * tau_fn + .5
+C**** Obtain correct value for the tau function from look up table
+                        tau_fn = tau_tbl(i_tbl)
+                        tr(i) = exp_tbl(i_tbl)
+c
+                        odvi_d = diffuse_fac * odvi
+                        tau_fn_d = odvi_d/(aa_inv+odvi_d)
+                        i_tbl_d = xnn * tau_fn_d + .5
+C**** Obtain correct value for the tau function from look up table
+                        tau_fn_d = tau_tbl(i_tbl_d)
+                        tr_d = exp_tbl(i_tbl_d)
+                        emx = (1.0 - c_nlte/odvi) * (1.-tr(i))
+                        emx_d = (1.0 - c_nlte/odvi_d) * (1.-tr_d)
+                        em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                        emb(i) = emx_d * (bb+bb_dif_b * tau_fn_d)
+                        
+                    end if
+c     
+C     Increment interpolation values
+C     
+                    EXT = EXT+ADEL                                
+                    RADFN0 = RADFN0+RDEL                          
+                    BB = BB+BBDEL                                 
+                    bb_dif_a = bb_dif_a + bb_dif_a_del
+                    bb_dif_b = bb_dif_b + bb_dif_b_del
+                    
+  82            CONTINUE                                         
 
-   80       CONTINUE                                                      H16130
+
+            else
+
+                WRITE (IPR,906) surf_refl     
+                STOP 'INVALID SURFACE REFLECTIVITY FLAG'                 
+
+            endif
 C                                                                         H16140
             IF (NLIM2.LT.NLIM) GO TO 70                                   H16150
 C                                                                         H16160
          ENDIF                                                            H16170
       ENDIF                                                               H16180
+c_____+___________________________________________________________
+c
 C                                                                         H16190
       RETURN                                                              H16200
 C                                                                         H16210
   900 FORMAT ('0EMISSION AND TRANSMISSION  (MOLECULAR) ')                 H16220
   905 FORMAT ('0EMISSION AND TRANSMISSION (AEROSOLS EFFECTS INCLUDED)')   H16230
+  906 FORMAT (' THE SURFACE REFLECTIVITY FLAG OF ', A1, 'IS NOT VALID')
+  907 FORMAT (' THE SURFACE REFLECTIVITY FLAG OF: ', A1)
 C                                                                         H16240
       END                                                                 H16250
 C
@@ -2106,14 +2258,12 @@ c
       jtbl_calc = 111
       aa_inv = 1./aa
       xnn=nn_tbl
-      
-c**      write (*,*) 'table created', nn_tbl
-      
+c      
       do 15 i=1,nn_tbl-1
          
 c     table is equally spaced in tau_fn
          
-         tau_fn = float(i)/xnn
+         tau_fn =  REAL(i)/xnn
          tau = tau_fn * aa_inv / (1.-tau_fn)
          trans = exp(-tau)
          exp_tbl(i) = trans
@@ -2185,7 +2335,7 @@ C                                                                         H16680
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H16690
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H16700
      *                EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF    H16710
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H16720
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H16730
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H16740
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        H16750
@@ -2320,7 +2470,7 @@ C                                                                         H17950
 C                                                                         H18040
    40    NLIM1 = NLIM2+1                                                  H18050
 C                                                                         H18060
-         VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18070
+         VI = V1PO+ REAL(NLIM1-1)*DVPO                                    H18070
          IF (IEMBB.EQ.0) THEN                                             H18080
             BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18090
             VIDVEM = -VIDV                                                H18110
@@ -2339,7 +2489,7 @@ C                                                                         H18210
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18230
 C                                                                         H18240
          DO 50 J = NLIM1, NLIM2                                           H18250
-            V=VI+FLOAT(J-1)*DVPO
+            V=V1PO+ REAL(J-1)*DVPO
             NEWEM(J) = EMLAYR(J)+TRLAYR(J)*BB*EMISIV                      H18260
 C
 C           Increment interpolation value
@@ -2361,12 +2511,12 @@ C                                                                         H18340
          REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFDUM)                      H18410
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)                H18420
          IEMBB = 0                                                        H18430
-         IF (VIDVEM.LT.VIDVRF.AND.VIDVEM.LT.VIDVBD) IEMBB = 1             H18440
-         IF (VIDVRF.LT.VIDVEM.AND.VIDVRF.LT.VIDVBD) IEMBB = 2             H18450
+         IF (VIDVEM.LE.VIDVRF.AND.VIDVEM.LE.VIDVBD) IEMBB = 1             H18440
+         IF (VIDVRF.LE.VIDVEM.AND.VIDVRF.LE.VIDVBD) IEMBB = 2             H18450
 C                                                                         H18460
    60    NLIM1 = NLIM2+1                                                  H18470
 C                                                                         H18480
-         VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18490
+         VI = V1PO+ REAL(NLIM1-1)*DVPO                                    H18490
          IF (IEMBB.EQ.0) THEN                                             H18500
             BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18510
             VIDVEM = -VIDV                                                H18530
@@ -2395,7 +2545,7 @@ C                                                                         H18780
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18800
 C                                                                         H18810
          DO 70 J = NLIM1, NLIM2                                           H18820
-            V=VI+FLOAT(J-1)*DVPO
+            V=V1PO+ REAL(J-1)*DVPO
             NEWEM(J) = EMLAYR(J)+EMLAYB(J)*REFLCT*TRLAYR(J)+              H18830
      *                 TRLAYR(J)*BB*EMISIV                                H18840
 C
@@ -2471,11 +2621,12 @@ C                                                                         H19400
 C                                                                         H19480
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
+      character*1 surf_refl
 C                                                                         H19500
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H19510
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H19520
      *               EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF     H19530
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H19540
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H19550
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTSS      H19560
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H19570
@@ -2682,8 +2833,14 @@ C                                                                         H21560
 C                                                                         H21580
 C     NPL IS LOCATION OF FIRST ELEMENT ON ARRAYS RADO AND TRAO            H21590
 C                                                                         H21600
+      ipath_flg = ipathl
+      if (ipathl .eq. -1) then
+         if (surf_refl .eq. 's') ipath_flg = -10 
+         if (surf_refl .eq. 'l') ipath_flg = -11
+      endif
+c
       CALL RADNN (RADN,TRAN,RADO,TRAO,RADLYB,NLIM,NDIM,ND2,V1P,DVP,       H21610
-     *           IPATHL,A1,A2,A3,A4,LL,NPL)                               H21620
+     *           IPATH_flg,A1,A2,A3,A4,LL,NPL)  
 C                                                                         H21630
       CALL CPUTIM (TIMEM1)                                                H21640
 C                                                                         H21650
@@ -2727,7 +2884,7 @@ C
 C     ----------------------------------------------------------------
 C
       SUBROUTINE RADNN (RADLYR,TRALYR,RADO,TRAO,RADLYB,NLIM,NDIM,ND2,     H22020
-     *                  V1P,DVP,IPATHL,A1,A2,A3,A4,LL,NPL)                H22030
+     *                  V1P,DVP,IPATH_flg,A1,A2,A3,A4,LL,NPL)                H22030
 C                                                                         H22040
       IMPLICIT REAL*8           (V)                                     ! H22050
 C                                                                         H22060
@@ -2759,6 +2916,30 @@ C                                                                         H22310
                                                                           H22320
       DIMENSION RADLYR(NDIM),TRALYR(NDIM),RADO(0:ND2),TRAO(0:ND2),        H22330
      *          RADLYB(NDIM),A1(*),A2(*),A3(*),A4(*)                      H22340
+      dimension tr_diffus(-100:1100), tr_diffus_dif(-100:1100)
+c
+      save i_trdiffus, tr_diffus, tr_diffus_dif, xnpts
+c
+      data i_trdiffus/-99/, diffuse_fac/ 1.67/
+c
+      if (ipath_flg .eq. -11 .and. i_trdiffus.eq.-99) then
+         i_trdiffus = +11
+         Npts  = 500
+         Nxtra = Npts/10
+         xNpts =  REAL(Npts)
+         trdiff = 1./xNpts
+
+          do 5 i=0,Npts+Nxtra
+            tri =  REAL(i)*trdiff
+            tr_diffus (i) = tri**diffuse_fac
+            tr_diffus_dif (i) = (tri+trdiff)**diffuse_fac-tr_diffus (i)
+ 5       continue
+c
+         do 6 i=-Nxtra,-1
+            tr_diffus (i) = 0.
+            tr_diffus_dif (i) = 0.
+ 6       continue
+      endif
 C                                                                         H22350
       LLM1 = LL-1                                                         H22360
       LLM1 = MAX(LLM1,1)                                                  H22370
@@ -2773,7 +2954,7 @@ C                                                                         H22440
 C                                                                         H22460
 C     EXACT FREQUENCY - NO INTERPOLATION                                  H22470
 C                                                                         H22480
-            IF (IPATHL.EQ.1) THEN                                         H22490
+            IF (IPATH_FLG.EQ.1) THEN                                         H22490
 C                                                                         H22500
                DO 10 I = NL, NLIM, LL                                     H22510
                   IPL = IPL+LLM1                                          H22520
@@ -2781,7 +2962,7 @@ C                                                                         H22500
                   TRALYR(I) = TRALYR(I)*TRAO(IPL)                         H22540
    10          CONTINUE                                                   H22550
 C                                                                         H22560
-            ELSEIF (IPATHL.EQ.2) THEN                                     H22570
+            ELSEIF (IPATH_FLG.EQ.2) THEN                                     H22570
 C                                                                         H22580
                DO 20 I = NL, NLIM, LL                                     H22590
                   IPL = IPL+LLM1                                          H22600
@@ -2791,7 +2972,7 @@ C                                                                         H22580
                   TRALYR(I) = TRALYR(I)*TRTEMP                            H22640
    20          CONTINUE                                                   H22650
 C                                                                         H22660
-            ELSEIF (IPATHL.EQ.3) THEN                                     H22670
+            ELSEIF (IPATH_FLG.EQ.3) THEN                                     H22670
 C                                                                         H22680
                DO 30 I = NL, NLIM, LL                                     H22690
                   IPL = IPL+LLM1                                          H22700
@@ -2799,10 +2980,10 @@ C                                                                         H22680
                   TRALYR(I) = TRALYR(I)*TRAO(IPL)                         H22720
    30          CONTINUE                                                   H22730
 C                                                                         H22740
-            ELSEIF (IPATHL.EQ.-1) THEN                                    H22750
+            ELSEIF (IPATH_FLG.EQ.-10 .or. IPATH_FLG.EQ.-11) THEN  
 C                                                                         H22760
                VI = V1P-DVP                                               H22770
-               DVI = DVP*FLOAT(LL)                                        H22780
+               DVI = DVP* REAL(LL)                                        H22780
                VIDVRF = VI                                                H22790
                RFLAST = -1.                                               H22800
                NLIM1 = 0                                                  H22810
@@ -2810,7 +2991,7 @@ C                                                                         H22760
 C                                                                         H22830
  40            NLIM1 = NLIM2+1                                            H22840
 C                                                                         H22850
-               VI = V1P+FLOAT(NLIM1-1)*DVP                                H22860
+               VI = V1P+ REAL(NLIM1-1)*DVP                                H22860
                REFLCT = REFLFN(VI,DVI,VIDVRF,RFDEL,RFLAST)                H22870
 C                                                                         H22890
                IF (VIDVRF.GE.9.E+4) THEN 
@@ -2827,18 +3008,50 @@ C
                   NLIM2 = NLIM2+(LL-NRMNDR)
                ENDIF
 C                                                                         H22920
-               DO 50 I = NLIM1, NLIM2, LL                                 H22930
-                  IPL = IPL+LLM1                                          H22940
-                  TRTEMP = TRALYR(I)*TRAO(IPL)                            H22950
-                  RADLYR(I) = TRALYR(I)*RADO(IPL)+RADLYR(I)+              H22960
-     *                        RADLYB(I)*TRAO(IPL)*TRTEMP*REFLCT           H22970
-                  TRALYR(I) = TRTEMP                                      H22980
+               IF (IPATH_FLG.EQ.-10) THEN  
+c
+c     specular
+c
+                  DO 50 I = NLIM1, NLIM2, LL                                 H22930
+                     IPL = IPL+LLM1                                          H22940
+                     TRTEMP = TRALYR(I)*TRAO(IPL)                            H22950
+                     RADLYR(I) = TRALYR(I)*RADO(IPL)+RADLYR(I)+              H22960
+     *                           RADLYB(I)*TRAO(IPL)*TRTEMP*REFLCT           H22970
+                     TRALYR(I) = TRTEMP                                      H22980
 C
 C           Increment interpolation values
 C
-                  REFLCT = REFLCT+RFDEL                                   H22990
-                  ILAST = I
-   50          CONTINUE                                                   H23000
+                     REFLCT = REFLCT+RFDEL                                   H22990
+                     ILAST = I
+ 50               CONTINUE                                                   H23000
+C                                                                         H22920
+               endif
+c
+               IF (IPATH_FLG.EQ.-11) THEN  
+c
+c     Lambertian
+c
+                  DO 52 I = NLIM1, NLIM2, LL                                 H22930
+                     IPL = IPL+LLM1                                          H22940
+
+                     trao_ipl = TRAO(IPL)
+                     TRTEMP = TRALYR(I)*trao_ipl   
+
+                     itd     = xNpts*trao_ipl
+                     diff    = xNpts*trao_ipl -  REAL(itd)
+                     diffus_tr = tr_diffus(itd)+diff*tr_diffus_dif(itd)                  
+c
+                     RADLYR(I) = TRALYR(I)*RADO(IPL)+RADLYR(I)+              H22960
+     *                    RADLYB(I)*diffus_tr*TRTEMP*REFLCT                  H22970
+
+                     TRALYR(I) = TRTEMP                                      H22980
+C
+C           Increment interpolation values
+C
+                     REFLCT = REFLCT+RFDEL                                   H22990
+                     ILAST = I
+ 52               CONTINUE                                                   H23000
+               endif
 C                                                                         H23010
                IF (NLIM2.LT.NLIM) THEN
                   NLIM2 = ILAST + LL-1
@@ -2856,7 +3069,7 @@ C                                                                         H23090
             A3N = A3(NL)                                                  H23120
             A4N = A4(NL)                                                  H23130
 C                                                                         H23140
-            IF (IPATHL.EQ.1) THEN                                         H23150
+            IF (IPATH_FLG.EQ.1) THEN                                         H23150
                DO 60 I = NL, NLIM, LL                                     H23160
                   IPL = IPL+LLM1                                          H23170
 C                                                                         H23180
@@ -2871,7 +3084,7 @@ C                                                                         H23250
      *                        A3N*TRAO(IPL+1)+A4N*TRAO(IPL+2))            H23270
    60          CONTINUE                                                   H23280
 C                                                                         H23290
-            ELSEIF (IPATHL.EQ.2) THEN                                     H23300
+            ELSEIF (IPATH_FLG.EQ.2) THEN                                     H23300
 C                                                                         H23310
                DO 70 I = NL, NLIM, LL                                     H23320
                   IPL = IPL+LLM1                                          H23330
@@ -2889,7 +3102,7 @@ C                                                                         H23410
                   TRALYR(I) = TRALYR(I)*TRTEMP                            H23450
    70          CONTINUE                                                   H23460
 C                                                                         H23470
-            ELSEIF (IPATHL.EQ.3) THEN                                     H23480
+            ELSEIF (IPATH_FLG.EQ.3) THEN                                     H23480
 C                                                                         H23490
                DO 80 I = NL, NLIM, LL                                     H23500
                   IPL = IPL+LLM1                                          H23510
@@ -2907,10 +3120,10 @@ C                                                                         H23590
                   TRALYR(I) = TRALYR(I)*TRAOI                             H23630
    80          CONTINUE                                                   H23640
 C                                                                         H23650
-            ELSEIF (IPATHL.EQ.-1) THEN                                    H23660
+            ELSEIF (IPATH_FLG.EQ.-10 .or. IPATH_FLG.EQ.-11) THEN  
 C                                                                         H23670
                VI = V1P-DVP                                               H23680
-               DVI = DVP*FLOAT(LL)                                        H23690
+               DVI = DVP* REAL(LL)                                        H23690
                VIDVRF = VI                                                H23700
                RFLAST = -1                                                H23710
                NLIM1 = 0                                                  H23720
@@ -2918,7 +3131,7 @@ C                                                                         H23670
 C                                                                         H23740
    90          NLIM1 = NLIM2+1                                            H23750
 C                                                                         H23760
-               VI = V1P+FLOAT(NLIM1-1)*DVP                                H23770
+               VI = V1P+ REAL(NLIM1-1)*DVP                                H23770
                REFLCT = REFLFN(VI,DVI,VIDVRF,RFDEL,RFLAST)                H23780
 C                                                                         H23800
                IF (VIDVRF.GE.9.E+4) THEN 
@@ -2934,28 +3147,71 @@ C
                IF ((NRMNDR.NE.0).AND.(NLIM2+(LL-NRMNDR).LT.2400)) THEN
                   NLIM2 = NLIM2+(LL-NRMNDR)
                ENDIF
-               DO 100 I = NLIM1, NLIM2, LL                                H23840
-                  IPL = IPL+LLM1                                          H23850
+c
+               IF (IPATH_FLG.EQ.-10) THEN  
+c
+c              specular
+c
+                  DO 100 I = NLIM1, NLIM2, LL                                H23840
+                     IPL = IPL+LLM1                                          H23850
 C                                                                         H23860
 C     INTERPOLATE THE OLD TRANSMISSION                                    H23870
 C                                                                         H23880
-                  TRAOI = A1N*TRAO(IPL-1)+A2N*TRAO(IPL)+                  H23890
-     *                    A3N*TRAO(IPL+1)+A4N*TRAO(IPL+2)                 H23900
+                     TRAOI = A1N*TRAO(IPL-1)+A2N*TRAO(IPL)+                  H23890
+     *                       A3N*TRAO(IPL+1)+A4N*TRAO(IPL+2)                 H23900
 C                                                                         H23910
-                  TRTEMP = TRALYR(I)*TRAOI                                H23920
+                     TRTEMP = TRALYR(I)*TRAOI                                H23920
 C                                                                         H23930
 C     INTERPOLATE THE OLD RADIANCE                                        H23940
 C                                                                         H23950
-                  RADLYR(I) = TRALYR(I)*(A1N*RADO(IPL-1)+A2N*RADO(IPL)+   H23960
-     *                        A3N*RADO(IPL+1)+A4N*RADO(IPL+2))+           H23970
-     *                        RADLYR(I)+RADLYB(I)*TRAOI*TRTEMP*REFLCT     H23980
-                  TRALYR(I) = TRTEMP                                      H23990
+                     RADLYR(I) = TRALYR(I)*
+     *                          (A1N*RADO(IPL-1)+A2N*RADO(IPL)+
+     *                           A3N*RADO(IPL+1)+A4N*RADO(IPL+2))+           H23970
+     *                           RADLYR(I)+RADLYB(I)*TRAOI*TRTEMP*REFLCT     H23980
+                     TRALYR(I) = TRTEMP                                      H23990
 C
 C           Increment interpolation values
 C
-                  REFLCT = REFLCT+RFDEL                                   H24000
-                  ILAST = I
-  100          CONTINUE                                                   H24010
+                     REFLCT = REFLCT+RFDEL                                   H24000
+                     ILAST = I
+ 100              CONTINUE                                                   H24010
+C                                                                         H24020
+               endif
+c
+               IF (IPATH_FLG.EQ.-11) THEN  
+c
+c              Lambertian
+c
+                  DO 102 I = NLIM1, NLIM2, LL                                H23840
+                     IPL = IPL+LLM1                                          H23850
+C                                                                         H23860
+C     INTERPOLATE THE OLD TRANSMISSION                                    H23870
+C                                                                         H23880
+                     TRAOI = A1N*TRAO(IPL-1)+A2N*TRAO(IPL)+                  H23890
+     *                       A3N*TRAO(IPL+1)+A4N*TRAO(IPL+2)                 H23900
+C                                                                         H23910
+c
+                     itd     = xNpts*traoi
+                     diff    = xNpts*traoi -  REAL(itd)
+                     diffus_tr = tr_diffus(itd)+diff*tr_diffus_dif(itd)                  
+c
+                     TRTEMP = TRALYR(I)*TRAOI                                H23920
+C                                                                         H23930
+C     INTERPOLATE THE OLD RADIANCE                                        H23940
+C                                                                         H23950
+                     RADLYR(I) = TRALYR(I)*
+     *                     (A1N*RADO(IPL-1)+A2N*RADO(IPL)+
+     *                      A3N*RADO(IPL+1)+A4N*RADO(IPL+2))+          
+     *                      RADLYR(I)+RADLYB(I)*diffus_tr*TRTEMP*REFLCT 
+                     TRALYR(I) = TRTEMP                                      H23990
+C
+C           Increment interpolation values
+C
+                     REFLCT = REFLCT+RFDEL                                   H24000
+                     ILAST = I
+ 102              CONTINUE                                                   H24010
+C                                                                         H24020
+               endif
 C                                                                         H24020
                IF (NLIM2.LT.NLIM) THEN
                   NLIM2 = ILAST + LL -1
@@ -2966,7 +3222,7 @@ C                                                                         H24040
 C                                                                         H24060
          ENDIF                                                            H24070
 C                                                                         H24080
-  110 CONTINUE                                                            H24090
+ 110  CONTINUE                                                            H24090
 C                                                                         H24100
       NPL = IPL                                                           H24110
 C                                                                         H24120
@@ -3192,7 +3448,7 @@ C                                                                         H26210
          CALL CPUTIM (TIMEM3)                                             H26260
          TIMEM = TIMEM+TIMEM3-TIMEM2                                      H26270
          IF (KEOF.LE.0) GO TO 80                                          H26280
-         V1P = V1P-FLOAT(NPE)*DVP                                         H26290
+         V1P = V1P- REAL(NPE)*DVP                                         H26290
          NPE = NLIM+NPE                                                   H26300
          IF (V2P.LE.V2PO+DVP) GO TO 70                                    H26310
       ENDIF                                                               H26320
@@ -3233,10 +3489,10 @@ C     ***** BEGINNING OF LOOP THAT DOES MERGE  *****                      H26660
 C                                                                         H26670
       DO 90 II = 1, NLIMO                                                 H26680
 C                                                                         H26690
-         FJJ = FJ1DIF+RATDV*FLOAT(II-1)                                   H26700
-         JJ = IFIX(FJJ)-2                                                 H26710
+         FJJ = FJ1DIF+RATDV* REAL(II-1)                                   H26700
+         JJ =  INT(FJJ)-2                                                 H26710
 C                                                                         H26720
-         JP = (FJJ-FLOAT(JJ))*100.-199.5                                  H26730
+         JP = (FJJ- REAL(JJ))*100.-199.5                                  H26730
 C                                                                         H26740
 C     INTERPOLATE THE OLD EMISSION                                        H26750
 C                                                                         H26760
@@ -3270,7 +3526,7 @@ C                                                                         H26980
          RADLYB(IPL) = RADLYB(NL)                                         H27040
   100 CONTINUE                                                            H27050
 C                                                                         H27060
-      V1P = V1P+FLOAT(NPL+1)*DVP                                          H27070
+      V1P = V1P+ REAL(NPL+1)*DVP                                          H27070
       NPE = IPL                                                           H27080
 C                                                                         H27090
       GO TO 60                                                            H27100
@@ -3351,7 +3607,7 @@ C                                                                         H27660
 C                                                                         H27810
    10 NLIM1 = NLIM2+1                                                     H27820
 C                                                                         H27830
-      VI = V1PO+FLOAT(NLIM1-1)*DVPO                                       H27840
+      VI = V1PO+ REAL(NLIM1-1)*DVPO                                       H27840
       IF (IEMBB.EQ.0) THEN                                                H27850
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)                 H27860
          VIDVEM = -VIDV                                                   H27880
@@ -3421,9 +3677,9 @@ C                                                                         H28400
          IF (NPTS.GT.(NLIMBF/2)+1) NNPTS = (NLIMBF/2)+1                   H28450
          JEND = NLIMBF-NNPTS+1                                            H28460
          DO 10 J = 1, NNPTS                                               H28470
-            VJ = V1PBF+FLOAT(J-1)*DVPBF                                   H28480
+            VJ = V1PBF+ REAL(J-1)*DVPBF                                   H28480
             K = J+JEND-1                                                  H28490
-            VK = V1PBF+FLOAT(K-1)*DVPBF                                   H28500
+            VK = V1PBF+ REAL(K-1)*DVPBF                                   H28500
             WRITE (IPR,910) J,VJ,NEWEM(J),NEWTR(J),                       H28510
      *                      K,VK,NEWEM(K),NEWTR(K)                        H28520
    10    CONTINUE                                                         H28530
@@ -3736,7 +3992,7 @@ C                                                                         H11810
 C                                                                         H11830
    10       NLIM1 = NLIM2+1                                               H11840
 C                                                                         H11850
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H11860
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H11860
             IF (IAFBB.EQ.-1) THEN                                         H11870
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H11880
                IF (XKTA.GT.0.) THEN                                       H11890
@@ -3818,7 +4074,7 @@ C     - THIS SECTION TREATS THE NLTE CASE                                 H12710
 C                                                                         H12720
    30       NLIM1 = NLIM2+1                                               H12730
 C                                                                         H12740
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H12750
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H12750
             IF (IAFBB.EQ.-1) THEN                                         H12760
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H12770
                IF (XKTA.GT.0.) THEN                                       H12780
@@ -3908,7 +4164,7 @@ C     - THIS SECTION TREATS THE LTE CASE                                  H13690
 C                                                                         H13700
    50       NLIM1 = NLIM2+1                                               H13710
 C                                                                         H13720
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H13730
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H13730
             IF (IAFBB.EQ.-1) THEN                                         H13740
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H13750
                IF (XKTA.GT.0.) THEN                                       H13760
@@ -4016,7 +4272,7 @@ C     - THIS SECTION TREATS THE CASE OF NLTE                              H14940
 C                                                                         H14950
    70       NLIM1 = NLIM2+1                                               H14960
 C                                                                         H14970
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H14980
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H14980
             IF (IAFBB.EQ.-1) THEN                                         H14990
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H15000
                IF (XKTA.GT.0.) THEN                                       H15010
@@ -4246,7 +4502,7 @@ C                                                                         H11810
 C                                                                         H11830
    10       NLIM1 = NLIM2+1                                               H11840
 C                                                                         H11850
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H11860
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H11860
             IF (IAFBB.EQ.-1) THEN                                         H11870
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H11880
                BBD = BBAD(BB,VI,DVP,V2P,XKT,VIDD,BBADDL,BBADOL)
@@ -4335,7 +4591,7 @@ C     - THIS SECTION TREATS THE NLTE CASE                                 H12710
 C                                                                         H12720
    30       NLIM1 = NLIM2+1                                               H12730
 C                                                                         H12740
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H12750
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H12750
             IF (IAFBB.EQ.-1) THEN                                         H12760
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H12770
                IF (XKTA.GT.0.) THEN                                       H12780
@@ -4426,7 +4682,7 @@ C     - THIS SECTION TREATS THE LTE CASE                                  H13690
 C                                                                         H13700
    50       NLIM1 = NLIM2+1                                               H13710
 C                                                                         H13720
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H13730
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H13730
             IF (IAFBB.EQ.-1) THEN                                         H13740
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H13750
                IF (XKTA.GT.0.) THEN                                       H13760
@@ -4534,7 +4790,7 @@ C     - THIS SECTION TREATS THE CASE OF NLTE                              H14940
 C                                                                         H14950
    70       NLIM1 = NLIM2+1                                               H14960
 C                                                                         H14970
-            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H14980
+            VI = V1P+ REAL(NLIM1-1)*DVP                                   H14980
             IF (IAFBB.EQ.-1) THEN                                         H14990
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H15000
                IF (XKTA.GT.0.) THEN                                       H15010
@@ -4686,7 +4942,7 @@ C                                                                         H16680
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H16690
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H16700
      *                EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF    H16710
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H16720
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H16730
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H16740
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        H16750
@@ -4846,7 +5102,7 @@ C                                                                         H17950
 C                                                                         H18040
    40    NLIM1 = NLIM2+1                                                  H18050
 C                                                                         H18060
-         VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18070
+         VI = V1PO+ REAL(NLIM1-1)*DVPO                                    H18070
          IF (IEMBB.EQ.0) THEN                                             H18080
             BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18090
             VIDVEM = -VIDV                                                H18110
@@ -4887,12 +5143,12 @@ C                                                                         H18340
          REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFDUM)                      H18410
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)                H18420
          IEMBB = 0                                                        H18430
-         IF (VIDVEM.LT.VIDVRF.AND.VIDVEM.LT.VIDVBD) IEMBB = 1             H18440
-         IF (VIDVRF.LT.VIDVEM.AND.VIDVRF.LT.VIDVBD) IEMBB = 2             H18450
+         IF (VIDVEM.LE.VIDVRF.AND.VIDVEM.LE.VIDVBD) IEMBB = 1             H18440
+         IF (VIDVRF.LE.VIDVEM.AND.VIDVRF.LE.VIDVBD) IEMBB = 2             H18450
 C                                                                         H18460
    60    NLIM1 = NLIM2+1                                                  H18470
 C                                                                         H18480
-         VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18490
+         VI = V1PO+ REAL(NLIM1-1)*DVPO                                    H18490
          IF (IEMBB.EQ.0) THEN                                             H18500
             BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18510
             VIDVEM = -VIDV                                                H18530
@@ -5016,11 +5272,12 @@ C                                                                         H19400
 C                                                                         H19480
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
+      character*1 surf_refl
 C                                                                         H19500
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H19510
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H19520
      *               EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF     H19530
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H19540
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H19550
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTSS      H19560
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H19570
@@ -5264,8 +5521,15 @@ C                                                                         H21580
 C     NPL IS LOCATION OF FIRST ELEMENT ON ARRAYS RADO AND TRAO            H21590
 C     Combine terms of layer radiative transfer
 C                                                                         H21600
+      ipath_flg = ipathl
+      if (ipathl .eq. -1) then
+         if (surf_refl .eq. 's') ipath_flg = -10 
+         if (surf_refl .eq. 'l') ipath_flg = -11
+      endif
+c
+
       CALL RADNN (RADN,TRAN,RADO,TRAO,RADLYB,NLIM,NDIM,ND2,V1P,DVP,       H21610
-     *           IPATHL,A1,A2,A3,A4,LL,NPL)                               H21620
+     *           IPATHL_flg,A1,A2,A3,A4,LL,NPL) 
 C                                                                         H21630
       CALL CPUTIM (TIMEM1)                                                H21640
 C                                                                         H21650
@@ -5432,9 +5696,9 @@ C     When calculating the derivative of the layer nearest the observer,
 C     omit the total accumulated transmittance, TRACCM
 C
  10   AA = 0.278
-c      write(*,*) 'ipathl = ',ipathl
+c
       IF (IPATHL.EQ.1.OR.IPATHL.EQ.3) THEN
-c         write(*,*) 'layer = ',layer,'  nlayer = ',nlayer
+c
          IF (LAYER.NE.NLAYER) THEN
             DO 20 I = 1, NLIM
                vtest = v1po + dvpo*(i-1)
@@ -5445,21 +5709,6 @@ c         write(*,*) 'layer = ',layer,'  nlayer = ',nlayer
      *                  (TRALYR(I)*(BBSAV(I)+BBASAV(I)*XXSAV(I)-YZ)+YZ)
                SRCNON = KSUBL(I)*TRALYR(I)*RADO(I)
                RPRIME(I) = TRACCM*(SOURCE - SRCNON)
-c               if ((i.le.10).and.(layer.eq.1)) then
-c                  write(*,*) '#1  i, gnu = ',i,vtest
-c                  write(*,*) '  y = ',y
-c                  write(*,*) '  yz = ',yz
-c                  write(*,*) '  traccm = ',traccm
-c                  write(*,*) '  source = ',source
-c                  write(*,*) '       ksubl = ',ksubl(i)
-c                  write(*,*) '       tralyr = ',tralyr(i)
-c                  write(*,*) '       xxsav = ',xxsav(i)
-c                  write(*,*) '  srcnon = ',srcnon
-c                  write(*,*) '       ksubl = ',ksubl(i)
-c                  write(*,*) '       tralyr = ',tralyr(i)
-c                  write(*,*) '       rado = ',rado(i)
-c                  write(*,*) '  rprime = ',rprime(i)
-c               endif
  20         CONTINUE
          ELSE
             DO 30 I = 1, NLIM
@@ -5470,23 +5719,9 @@ c               endif
      *                  (TRALYR(I)*(BBSAV(I)+BBASAV(I)*XXSAV(I)-YZ)+YZ)
                SRCNON = KSUBL(I)*TRALYR(I)*RADO(I)
                RPRIME(I) = SOURCE - SRCNON
-c               if ((i.le.10).and.(layer.eq.1)) then
-c                  write(*,*) '#2  i, gnu = ',i,vtest
-c                  write(*,*) '  y = ',y
-c                  write(*,*) '  yz = ',yz
-c                  write(*,*) '  source = ',source
-c                  write(*,*) '       ksubl = ',ksubl(i)
-c                  write(*,*) '       tralyr = ',tralyr(i)
-c                  write(*,*) '       xxsav = ',xxsav(i)
-c                  write(*,*) '  srcnon = ',srcnon
-c                  write(*,*) '       ksubl = ',ksubl(i)
-c                  write(*,*) '       tralyr = ',tralyr(i)
-c                  write(*,*) '       rado = ',rado(i)
-c                  write(*,*) '  rprime = ',rprime(i)
-c               endif
  30         CONTINUE
          ENDIF
-c        write(*,*) '**************************'
+c
       ELSEIF (IPATHL.EQ.2) THEN
          STOP 'ADERIV NOT SET FOR IPATHL = 2'
 c      ELSEIF (IPATHL.EQ.3) THEN
@@ -5770,7 +6005,7 @@ C                                                                         H29750
 C                                                                         H29770
    10 NLIM1 = NLIM2+1                                                     H29780
 C                                                                         H29790
-      VI = V1P+FLOAT(NLIM1-1)*DVP                                         H29800
+      VI = V1P+ REAL(NLIM1-1)*DVP                                         H29800
       IF (IAFBB.EQ.-1) THEN                                               H29810
          BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                      H29820
          IF (XKTA.GT.0.) THEN                                             H29830
@@ -5912,7 +6147,7 @@ C                                                                         H31130
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H31140
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H31150
      *                EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF    H31160
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H31170
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H31180
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H31190
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        H31200
@@ -6025,7 +6260,7 @@ C                                                                         H32180
 C                                                                         H32270
    30    NLIM1 = NLIM2+1                                                  H32280
 C                                                                         H32290
-         VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H32300
+         VI = V1PO+ REAL(NLIM1-1)*DVPO                                    H32300
          IF (IEMBB.EQ.0) THEN                                             H32310
             BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H32320
             VIDVEM = -VIDV                                                H32340
@@ -6124,7 +6359,7 @@ C                                                                         H33170
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H33180
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H33190
      *               EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF     H33200
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H33210
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H33220
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTSS      H33230
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H33240
@@ -6656,7 +6891,7 @@ C                                                                         H38360
          CALL CPUTIM (TIMEM3)                                             H38410
          TIMEM = TIMEM+TIMEM3-TIMEM2                                      H38420
          IF (KEOF.LE.0) GO TO 80                                          H38430
-         V1P = V1P-FLOAT(NPE)*DVP                                         H38440
+         V1P = V1P- REAL(NPE)*DVP                                         H38440
          NPE = NLIM+NPE                                                   H38450
          IF (V2P.LE.V2PO+DVP) GO TO 70                                    H38460
       ENDIF                                                               H38470
@@ -6693,10 +6928,10 @@ C     ***** BEGINNING OF LOOP THAT DOES MERGE  *****                      H38770
 C                                                                         H38780
       DO 90 II = 1, NLIMO                                                 H38790
 C                                                                         H38800
-         FJJ = FJ1DIF+RATDV*FLOAT(II-1)                                   H38810
-         JJ = IFIX(FJJ)-2                                                 H38820
+         FJJ = FJ1DIF+RATDV* REAL(II-1)                                   H38810
+         JJ =  INT(FJJ)-2                                                 H38820
 C                                                                         H38830
-         JP = (FJJ-FLOAT(JJ))*100.-199.5                                  H38840
+         JP = (FJJ- REAL(JJ))*100.-199.5                                  H38840
 C                                                                         H38850
 C     INTERPOLATE THE OLD TRANSMISSION                                    H38860
 C                                                                         H38870
@@ -6733,7 +6968,7 @@ C                                                                         H39130
          RADLYR(IPL) = RADLYR(NL)                                         H39180
   100 CONTINUE                                                            H39190
 C                                                                         H39200
-      V1P = V1P+FLOAT(NPL+1)*DVP                                          H39210
+      V1P = V1P+ REAL(NPL+1)*DVP                                          H39210
       NPE = IPL                                                           H39220
 C                                                                         H39230
       GO TO 60                                                            H39240
@@ -6923,7 +7158,7 @@ C                                                                         H40870
 C                                                                         H41060
    20 NLIM1 = NLIM2+1                                                     H41070
 C                                                                         H41080
-      VI = V1P+FLOAT(NLIM1-1)*DVP                                         H41090
+      VI = V1P+ REAL(NLIM1-1)*DVP                                         H41090
       IF (IAFRD.EQ.0) THEN                                                H41100
          RADFN0 = RADFNI(VI,DVP,XKT0,VIDV,RDEL,RDLAST)                    H41110
          VAER = -VIDV                                                     H41130
@@ -6991,7 +7226,7 @@ C                                                                         H41680
 C                                                                         H41710
       VDIF = VI-V1ABS                                                     H41740
       IAER = VDIF/DVABS+1.00001                                           H41750
-      VAER = V1ABS+DVABS*FLOAT(IAER-1)                                    H41760
+      VAER = V1ABS+DVABS* REAL(IAER-1)                                    H41760
       DERIVS = (SCTTR(IAER+1)-SCTTR(IAER))/DVABS                          H41770
       DERIVA = (ASYMT(IAER+1)-ASYMT(IAER))/DVABS                          H41780
       DERIV = DERIVS+(ABSRB(IAER+1)-ABSRB(IAER))/DVABS                    H41790

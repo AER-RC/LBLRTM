@@ -376,7 +376,6 @@ C                                                                        FA03360
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
-
 C                                                                        FA03530
 C     BLANK COMMON FOR ZMDL                                              FA03540
 C                                                                        FA03550
@@ -550,15 +549,15 @@ c
       IF (M.EQ.1) RE = 6378.39                                           FA05030
       IF (M.EQ.4.OR.M.EQ.5) RE = 6356.91                                 FA05040
       RO = RE                                                            FA05050
-
    60 CONTINUE                                                           FA05060
-
 C                                                                        FA05070
       IF (HSPACE.EQ.0.) HSPACE = 100.                                    FA05080
       IF (XVBAR.LE.0.) THEN                                              FA05090
          XVBAR = (V1+V2)/2.                                              FA05100
          IF (V2.LT.V1) XVBAR = V1                                        FA05110
       ENDIF                                                              FA05120
+      if (REF_LAT .eq.0) REF_LAT = 45.
+
 C                                                                        FA05130
       WRITE (IPR,906)    
       WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA05150
@@ -1075,7 +1074,7 @@ C                                                                        FA08670
 C                                                                        FA08690
 C        > AUTOMATIC LAYERING SELECTED <                                 FA08700
 C                                                                        FA08710
-         HMAX = AMAX1(H1,H2)                                             FA08720
+         HMAX =   MAX(H1,H2)                                             FA08720
          CALL AUTLAY (HMIN,HMAX,XVBAR,AVTRAT,TDIFF1,TDIFF2,ALTD1,ALTD2,  FA08730
      *                IERROR)                                            FA08740
          GO TO 220                                                       FA08750
@@ -1120,7 +1119,7 @@ C                                                                        FA09030
          DO 240 K = 1, NMOL                                              FA09070
             AMTTOT(K) = 0.0                                              FA09080
   240    CONTINUE                                                        FA09090
-         HMID = AMIN1(H1,H2)                                             FA09100
+         HMID =   MIN(H1,H2)                                             FA09100
          DO 260 I = 1, I2                                                FA09110
             FAC = 1.0                                                    FA09120
             IF (LEN.EQ.1.AND.ZPTH(I+1).LE.HMID) FAC = 2.0                FA09130
@@ -3819,7 +3818,6 @@ C                                                                        FA31320
 C                                                                        FA31340
       DENSAT(ATEMP) = ATEMP*B*EXP(C1+C2*ATEMP+C3*ATEMP**2)*1.0E-6        FA31350
 C                                                                        FA31360
-
       RHOAIR = ALOSMT*(P/PZERO)*(TZERO/T)                                FA31370
       A = TZERO/T                                                        FA31380
       B = AVOGAD/AMWT(1)                                                 FA31390
@@ -4100,7 +4098,7 @@ C     Test IERROR and recheck LEN                                        FA33580
 C                                                                        FA33590
       IF (IERROR.NE.0) RETURN                                            FA33600
       LEN = 0                                                            FA33610
-      IF (HMIN.LT.AMIN1(H1,H2)) LEN = 1                                  FA33620
+      IF (HMIN.LT.  MIN(H1,H2)) LEN = 1                                  FA33620
 C                                                                        FA33630
 C     Reduce path endpoints above ZMAX to ZMAX                           FA33640
 C                                                                        FA33650
@@ -4917,8 +4915,8 @@ C                                                                        FA40850
 C                                                                        FA40870
 C     HMID .EQ. MINIMUM OF H1, H2                                        FA40880
 C                                                                        FA40890
-      HMID = AMIN1(H1,H2)                                                FA40900
-      HMAX = AMAX1(H1,H2)                                                FA40910
+      HMID =   MIN(H1,H2)                                                FA40900
+      HMAX =   MAX(H1,H2)                                                FA40910
       IHMAX = 2                                                          FA40920
       ZH(1) = HMIN                                                       FA40930
       IF (LEN.EQ.0) THEN                                                 FA40940
@@ -5340,7 +5338,7 @@ C                                                                        FA44860
 C     FUNCTION ZROUND ROUNDS THE ALTITUDE Z DOWN TO THE                  FA44870
 C     NEAREST TENTH KM                                                   FA44880
 C                                                                        FA44890
-      ZROUND(ZX) = 0.1*FLOAT(IFIX(10.0*ZX))                              FA44900
+      ZROUND(ZX) = 0.1* REAL( INT(10.0*ZX))                              FA44900
       HMIN = MAX(HMIN,ZMDL(1))                                           FA44910
 C                                                                        FA44920
       DO 10 IM = 2, IMMAX                                                FA44930
@@ -5601,11 +5599,10 @@ C                                                                        FA46860
       RETURN                                                             FA46870
 C                                                                        FA46880
       END                                                                FA46890
-
 C
 C     ----------------------------------------------------------------
+C
       SUBROUTINE FPACK (H1,H2,HMID,LEN,IEMIT,NOZERO)                     FA46900
-
 C                                                                        FA46910
 C     *****************************************************************  FA46920
 C     FPACK TAKES THE AMOUNTS STORED IN THE LAYERS DEFINED BY ZPTH AND   FA46930
@@ -5662,8 +5659,6 @@ C                                                                        FA47300
       IOUT = 1                                                           FA47320
       PZ(0) = PP(1)                                                      FA47330
       TZ(0) = TP(1)                                                      FA47340
-
-
 C
 C     If entry in TAPE5 for TBOUND < 0, use TZ(O) as boundary
 C     temperature
@@ -5825,7 +5820,7 @@ C
 C        Set IDV to be even
 C
          IF (MOD(IDV,2).GT.0) IDV = IDV+1
-         DV = SCAL*FLOAT(IDV)
+         DV = SCAL* REAL(IDV)
       ELSE
          TYPE = OLDDV/DV
          TYPMAX = 2.5
@@ -5839,7 +5834,7 @@ C
             DV = OLDDV
             ITYPE = 1./(TYPE-1.)+0.5
             IF (ITYPE.EQ.3) ITYPE = 2
-            DV = OLDDV*FLOAT(ITYPE)/FLOAT(ITYPE+1)
+            DV = OLDDV* REAL(ITYPE)/ REAL(ITYPE+1)
          ELSEIF (TYPE.GE.0.8) THEN
 C
 C           TYPE is between 0.8 and 1.2 (set to 1.0)
@@ -5854,7 +5849,7 @@ C
             ITYPE = 0
             IF (IEMIT.NE.1) THEN
                ITYPE = TYPE/(1.-TYPE)+0.5
-               DV = DV*FLOAT(ITYPE+1)/FLOAT(ITYPE)
+               DV = DV* REAL(ITYPE+1)/ REAL(ITYPE)
                ITYPE = -ITYPE
             ENDIF
          ENDIF
@@ -6668,7 +6663,6 @@ C                                                                        FX05460
 C                                                                        FX05490
 C     INTERPOLATE MIXING RATIO FROM STANDARD PROFILE                     FX05500
 C                                                                        FX05510
-
             A = (Z-ALTX(L-1))/(ALTX(L)-ALTX(L-1))                        FX05520
             CALL EXPINT (DTMP(K,ILEV),AMOLX(L,IXINDX(K)),                FX05530
      *                           AMOLX(L-1,IXINDX(K)),A)                 FX05540

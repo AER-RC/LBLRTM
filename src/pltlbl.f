@@ -600,12 +600,12 @@ C                                                                         M04790
       JMAX = J                                                            M04810
       NEWPTS = 0                                                          M04820
       NST = NLO                                                           M04830
-      IF (V1P.LT.V1) NST = (V1-V1P)/DV+0.5+FLOAT(NLO)                     M04840
+      IF (V1P.LT.V1) NST = (V1-V1P)/DV+0.5+ REAL(NLO)                     M04840
       NND = NHI                                                           M04850
-      IF (V2P.GT.V2) NND = (V2-V1P)/DV+0.5+FLOAT(NLO)                     M04860
+      IF (V2P.GT.V2) NND = (V2-V1P)/DV+0.5+ REAL(NLO)                     M04860
       CALL CPUTIM (TIME0)                                                 M04870
       DO 80 I = NST, NND                                                  M04880
-         XXI = V1P+DV*FLOAT(I-NLO)                                        M04890
+         XXI = V1P+DV* REAL(I-NLO)                                        M04890
 C                                                                         M04900
 C     YI=Y(I)                                                             M04910
 C   J RANGES FROM NLO TO NLO-1+NEWPTS (=NPTS).                            M04920
@@ -888,7 +888,7 @@ C                                                                         M07460
 C     IF DV IS OKAY, CHECK STARTING POINTS FOR BEATING                    M07470
 C                                                                         M07480
             NTEST = (V1PJ-V1PL)/DVJ                                       M07490
-            V1NEW = V1PL+FLOAT(NTEST)*DVJ                                 M07500
+            V1NEW = V1PL+ REAL(NTEST)*DVJ                                 M07500
             V1DIF = V1NEW-V1PJ                                            M07510
             IF (ABS(V1DIF).GT.V1TST) THEN                                 M07520
                IDVTST = 1                                                 M07530
@@ -921,7 +921,7 @@ C                                                                         M07480
       GO TO 10                                                            M07800
 C                                                                         M07810
    30 NST = 0                                                             M07820
-      IF (V1PJ.LT.V1) NST = (V1-V1PJ)/DVJ+0.5+FLOAT(NLOW)                 M07830
+      IF (V1PJ.LT.V1) NST = (V1-V1PJ)/DVJ+0.5+ REAL(NLOW)                 M07830
       J = J+NST                                                           M07840
       L = L+NST                                                           M07850
    40 CONTINUE                                                            M07860
@@ -934,7 +934,7 @@ C                                                                         M07810
       ENDIF                                                               M07930
       M = M+1                                                             M07940
 C                                                                         M07950
-      XX(M) = V1PJ+DVJ*FLOAT(J-1)                                         M07960
+      XX(M) = V1PJ+DVJ* REAL(J-1)                                         M07960
 C                                                                         M07970
 C     FOR IOPT = 2 - DIFFERENCE VALUES                                    M07980
 C     FOR IOPT = 3 - RATIO VALUES                                         M07990
@@ -1276,7 +1276,7 @@ C                                                                         M11250
       NDP = - LOG10(STEP)+1.                                              M11330
       ISTEP = STEP*(10.**NDP)                                             M11340
       IF (ISTEP.GE.6) ISTEP = 10+10*((ISTEP-5)/10)                        M11350
-      STEP = FLOAT(ISTEP)/(10.**NDP)                                      M11360
+      STEP =  REAL(ISTEP)/(10.**NDP)                                      M11360
       IF (NDP.LE.0) NDP = -1                                              M11370
       TOP = TOP-AMOD(TOP,STEP)                                            M11380
    20 BOT = 10000./TOP                                                    M11390
@@ -1290,7 +1290,7 @@ C                                                                         M11460
       DIGITS = 0.                                                         M11470
       IF (TOP.GE.10.) DIGITS =  LOG10(TOP)                                M11480
       DIGITS = AINT(DIGITS+1.0E-12)                                       M11490
-      SIZNUM = HGT*(DIGITS+FLOAT(NDP)+1.7)                                M11500
+      SIZNUM = HGT*(DIGITS+ REAL(NDP)+1.7)                                M11500
       XPOS = XINCH-0.5*SIZNUM                                             M11510
       IF (XPOS.GT.XSIZE) GO TO 30                                         M11520
       CALL NUMBER (XPOS,YINCH,HGT,TOP,0.0,NDP)                            M11530
@@ -1306,7 +1306,7 @@ C                                                                         M11580
       HLFHGT = 0.5*HGT                                                    M11630
       YPOS = YSIZE+HGT+HLFHGT                                             M11640
       DO 50 I = 1, NUMDVX                                                 M11650
-         IG = (V1+FLOAT(I-1)*DELV)*CL                                     M11660
+         IG = (V1+ REAL(I-1)*DELV)*CL                                     M11660
          G = IG                                                           M11670
          IF (IG.NE.0) G = IG+1                                            M11680
          XG = ((G/CL)-V1)/DX                                              M11690
@@ -1637,7 +1637,7 @@ C                                                                         M14870
       IMAX = IHI-1                                                        M14920
       IP0 = 1                                                             M14930
       DO 30 I = ILO, IMAX                                                 M14940
-         XI = XXI+DV*FLOAT(I-NLO)                                         M14950
+         XI = XXI+DV* REAL(I-NLO)                                         M14950
          X(IP0) = XI                                                      M14960
          X(IP0+1) = XI+DV1                                                M14970
          X(IP0+2) = XI+DV2                                                M14980
@@ -1916,7 +1916,7 @@ C                                                                         M17630
          if (npts .eq. nlo) then
             dvp = dvp_save
          else 
-            DVP = (V2P-V1P)/FLOAT(NPTS-NLO)   
+            DVP = (V2P-V1P)/ REAL(NPTS-NLO)   
             dvp_save = dvp
          endif
          NLOW = NLO-1                                                     M17680
@@ -1926,7 +1926,7 @@ C                                                                         M17630
             CALL BUFOUT (JPLTFL,YY(NLO),NPTS)                             M17720
          ELSE                                                             M17730
             DO 10 II = NLO, NPTS                                          M17740
-               VOUT = V1P+FLOAT(II-NLO)*DVP                               M17750
+               VOUT = V1P+ REAL(II-NLO)*DVP                               M17750
                WRITE (JPLTFL,900) VOUT,YY(II)                             M17760
    10       CONTINUE                                                      M17770
          ENDIF                                                            M17780
@@ -2039,7 +2039,7 @@ C                                                                         M18820
       ANGLE = (PI/180.)*THETA                                             M18850
       SINANG = SIN(ANGLE)                                                 M18860
       COSANG = COS(ANGLE)                                                 M18870
-      SIGNAX = FLOAT(ISIGN(1,N))                                          M18880
+      SIGNAX =  REAL(ISIGN(1,N))                                          M18880
       SIZMAJ = 0.25*HEIGHT+0.05                                           M18890
       OFFST = HEIGHT*1.5                                                  M18900
       DXMAJ = -SIZMAJ*SINANG*SIGNAX                                       M18910
@@ -2048,12 +2048,12 @@ C                                                                         M18820
       DYMIN = 0.5*DYMAJ                                                   M18940
       NSUB = NUMSUB                                                       M18950
       IF (NUMSUB.LT.1) NSUB = 1                                           M18960
-      SUBDIV = DIVLEN/FLOAT(NSUB)                                         M18970
+      SUBDIV = DIVLEN/ REAL(NSUB)                                         M18970
       BCDSIZ = 1.25*HEIGHT                                                M18980
       YBIAS = (-0.50+SIGN(1.25,SIGNAX))*HEIGHT+DYMAJ                      M18990
       NABS = IABS(N)                                                      M19000
-      BCDLEN = (FLOAT(NABS)-0.4)*BCDSIZ                                   M19010
-      S = DIVLEN*FLOAT(NUMDIV)                                            M19020
+      BCDLEN = ( REAL(NABS)-0.4)*BCDSIZ                                   M19010
+      S = DIVLEN* REAL(NUMDIV)                                            M19020
       DIVCOS = DIVLEN*COSANG                                              M19030
       DIVSIN = DIVLEN*SINANG                                              M19040
       SIZMAX = HEIGHT                                                     M19050
@@ -2062,18 +2062,18 @@ C   DRAW DIVISION NUMBERS                                                 M19070
 C                                                                         M19080
       NDIV = 0                                                            M19090
    10 DIGITS = 0.0                                                        M19100
-      XTIC = X+DIVCOS*FLOAT(NDIV)                                         M19110
-      YTIC = Y+DIVSIN*FLOAT(NDIV)                                         M19120
+      XTIC = X+DIVCOS* REAL(NDIV)                                         M19110
+      YTIC = Y+DIVSIN* REAL(NDIV)                                         M19120
       IF (NRPT.EQ.0) GO TO 30                                             M19130
       NSUPR = NDIV-(NDIV/NRPT)*NRPT                                       M19140
       IF (NSUPR.NE.0) GO TO 30                                            M19150
       IF ((NOEND.EQ.1.OR.NOEND.EQ.2).AND.NDIV.EQ.0) GO TO 30              M19160
       IF ((NOEND.EQ.1.OR.NOEND.EQ.3).AND.NDIV.EQ.NUMDIV) GO TO 30         M19170
-      DIVNUM = BEGNUM+DELNUM*FLOAT(NDIV)                                  M19180
+      DIVNUM = BEGNUM+DELNUM* REAL(NDIV)                                  M19180
       IF (ABS(DIVNUM).GE.10.0) DIGITS =  LOG10(ABS(DIVNUM))               M19190
       DIGITS = AINT(DIGITS+1.0E-12)                                       M19200
       IF (DIVNUM.LT.0.0) DIGITS = DIGITS+1.0                              M19210
-      SIZNUM = (DIGITS+FLOAT(NUMDEC)+1.7)*HEIGHT                          M19220
+      SIZNUM = (DIGITS+ REAL(NUMDEC)+1.7)*HEIGHT                          M19220
       XBIAS = -0.5*SIZNUM                                                 M19230
       XBIAS1 = 0.                                                         M19240
       YBIAS1 = 0.                                                         M19250
@@ -2094,7 +2094,7 @@ C                                                                         M19370
       IF (NDIV.EQ.NUMDIV) GO TO 60                                        M19400
       IF (NUMSUB.LE.1) GO TO 50                                           M19410
       DO 40 J = 2, NUMSUB                                                 M19420
-         SUBLEN = SUBDIV*FLOAT(J-1)                                       M19430
+         SUBLEN = SUBDIV* REAL(J-1)                                       M19430
          XSTIC = XTIC+SUBLEN*COSANG                                       M19440
          YSTIC = YTIC+SUBLEN*SINANG                                       M19450
          CALL PLOT (XSTIC+DXMIN,YSTIC+DYMIN,3)                            M19460
@@ -2197,7 +2197,7 @@ C                                                                         M20400
       ANGLE = (PI/180.)*THETA                                             M20430
       SINANG = SIN(ANGLE)                                                 M20440
       COSANG = COS(ANGLE)                                                 M20450
-      SIGNAX = FLOAT(ISIGN(1,N))                                          M20460
+      SIGNAX =  REAL(ISIGN(1,N))                                          M20460
       SIZMAJ = 0.25*HEIGHT+0.05                                           M20470
       OFFST = HEIGHT*1.5                                                  M20480
       DXMAJ = -SIZMAJ*SINANG*SIGNAX                                       M20490
@@ -2208,10 +2208,10 @@ C                                                                         M20400
       ENLARG = 1.5                                                        M20540
       EXPSIZ = 0.60*HEIGHT*ENLARG                                         M20550
       NABS = IABS(N)                                                      M20560
-      BCDLEN = (FLOAT(NABS)-0.4)*BCDSIZ                                   M20570
-      S = CYCLEN*FLOAT(NUMCYC)                                            M20580
+      BCDLEN = ( REAL(NABS)-0.4)*BCDSIZ                                   M20570
+      S = CYCLEN* REAL(NUMCYC)                                            M20580
       NUMTIC = 1.
-      if (cyclen .lt.1.) NUMTIC = 2-ifix(cyclen)
+      if (cyclen .lt.1.) NUMTIC = 2- INT(cyclen)
       NUMLOG = 8/NUMTIC                                                   M20600
       XBIAS = 1.85*HEIGHT*ENLARG                                          M20610
       YBIAS = 0.70*HEIGHT*ENLARG                                          M20620
@@ -2251,8 +2251,8 @@ C                                                                         M20860
       IF (N.LT.0) YBIAS1 = YBIAS+OFFST                                    M20960
    40 TENBX = -YBIAS*SINANG+XBIAS*COSANG+YBIAS1*SINANG-XBIAS1*COSANG      M20970
       TENBY = YBIAS*COSANG+XBIAS*SINANG-YBIAS1*COSANG-XBIAS1*SINANG       M20980
-   50 XTIC = X+FLOAT(NCYCLE)*CYCLEN*COSANG                                M20990
-      YTIC = Y+FLOAT(NCYCLE)*CYCLEN*SINANG                                M21000
+   50 XTIC = X+ REAL(NCYCLE)*CYCLEN*COSANG                                M20990
+      YTIC = Y+ REAL(NCYCLE)*CYCLEN*SINANG                                M21000
       IF (NRPT.EQ.0) GO TO 60                                             M21010
       NSUPR = NCYCLE-(NCYCLE/NRPT)*NRPT                                   M21020
       IF (NSUPR.NE.0) GO TO 60                                            M21030

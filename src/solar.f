@@ -9,16 +9,17 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
-C               LAST MODIFICATION:    1 November 1995
+C               LAST MODIFICATION:    24 May 2002
 C                                                                      
 C                  IMPLEMENTATION:    P.D. Brown
 C                                                                      
 C             ALGORITHM REVISIONS:    S.A. Clough
 C                                     P.D. Brown
+C                                     M.W. Shephard
 C                                                                      
 C                                                                      
 C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.      
-C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139       
+C                     131 Hartwell Ave, Lexington MA 02421      
 C                                                                      
 C----------------------------------------------------------------------
 C                                                                      
@@ -111,7 +112,7 @@ C
       PARAMETER (NMAXCO=4040)
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
 C     ----------------------------------------------------------------
 C
       DIMENSION XFILHD(2),XSOLHD(2),PNLHDR(2),OPNLHD(2)
@@ -130,6 +131,7 @@ C
 C
       CHARACTER*40 CYID
       CHARACTER*15 HVRSOL
+      CHARACTER*1  surf_refl
 C
       EQUIVALENCE (XSOLHD(1),XIDS(1))
       EQUIVALENCE (XFILHD(1),XID(1)),(PNLHDR(1),V1P),
@@ -183,7 +185,7 @@ c     If JULDAT = 0 , then set XJUL_SCALE to 1
          XJUL_SCALE = 1.0
          write(ipr,*) 'JULDAT = 0, no scaling of solar source function'
       else
-         theta = 2*pi*(float(JULDAT)-1.)/365.
+         theta = 2*pi*( REAL(JULDAT)-1.)/365.
          XJUL_SCALE = 1.00011 + 0.034221*cos(theta) + 
      *        1.28E-3*sin(theta) + 7.19E-4*cos(2.*theta) + 
      *        7.7E-5*sin(2.*theta)
@@ -244,7 +246,7 @@ C
 C        Read Record 1.4 from TAPE5
 C
          READ (IRD,970,END=80) TMPBND,(BNDEMI(IBND),IBND=1,3),
-     *                         (BNDRFL(IBND),IBND=1,3)
+     *                         (BNDRFL(IBND),IBND=1,3), surf_refl
 C
          BNDTST = ABS(BNDRFL(1))+ABS(BNDRFL(2))+ABS(BNDRFL(3))
          IF (BNDTST.NE.0.) IBPROP = 1
@@ -300,7 +302,7 @@ C
          TBOUND = TMPBND
          XKTBND = TBOUND/RADCN2
          WRITE (IPR,985) V1,V2,TBOUND,(BNDEMI(IBND),IBND=1,3),
-     *                   (BNDRFL(IBND),IBND=1,3)
+     *                   (BNDRFL(IBND),IBND=1,3), surf_refl
 C
 C     **************************************************************
 C
@@ -539,7 +541,7 @@ C
             CALL CPUTIM(TIMSL3)
             TIMRD = TIMRD+TIMSL3-TIMSL2
             IF (LT2EOF.LE.0) GO TO 67
-            V1T2 = V1T2-FLOAT(NPT2)*DVT2
+            V1T2 = V1T2- REAL(NPT2)*DVT2
  1          NPT2 = NLIMT2+NPT2
             IF (V2T2.LE.V2PO+DVT2) GO TO 66
          ENDIF
@@ -568,7 +570,7 @@ C
             CALL CPUTIM(TIMSL3)
             TIMRD = TIMRD+TIMSL3-TIMSL2
             IF (LRFEOF.LE.0) GO TO 69
-            V1RF = V1RF-FLOAT(NPRF)*DVRF 
+            V1RF = V1RF- REAL(NPRF)*DVRF 
             NPRF = NLIMRF+NPRF
             IF (V2RF.LE.V2PO+DVRF) GO TO 68
          ENDIF
@@ -605,7 +607,7 @@ C
          CALL CPUTIM(TIMSL3)
          TIMRD = TIMRD+TIMSL3-TIMSL2
          IF (LSEOF.LE.0) GO TO 80
-         V1P = V1P-FLOAT(NPE)*DVP
+         V1P = V1P- REAL(NPE)*DVP
          NPE = NLIM+NPE
          IF (V2P.LE.V2PO+DVP) GO TO 70
       ENDIF
@@ -707,9 +709,9 @@ C
 
       IF (IOTFLG.EQ.0) THEN
          DO 90 II = 1, NLIMO
-            FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
-            JJ = IFIX(FJJ)-2
-            JP = (FJJ-FLOAT(JJ))*100.-199.5
+            FJJ = FJ1DIF+RATDVR* REAL(II-1)
+            JJ =  INT(FJJ)-2
+            JP = (FJJ- REAL(JJ))*100.-199.5
             SOLRAD(II) = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
      *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*SCAL_FAC*
      *           TRAN(II)
@@ -717,9 +719,9 @@ c
  90      CONTINUE
       ELSEIF (IOTFLG.EQ.1) THEN
          DO 91 II = 1, NLIMO
-            FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
-            JJ = IFIX(FJJ)-2
-            JP = (FJJ-FLOAT(JJ))*100.-199.5
+            FJJ = FJ1DIF+RATDVR* REAL(II-1)
+            JJ =  INT(FJJ)-2
+            JP = (FJJ- REAL(JJ))*100.-199.5
             SOLRAD(II) = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
      *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*SCAL_FAC*
      *           TRAN(II)+RADN(II)
@@ -727,15 +729,15 @@ c
       ELSEIF (IOTFLG.EQ.2) THEN
          IF (TBOUND.EQ.0.) THEN
             DO 92 II = 1, NLIMO
-               FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
-               FJJT2 = FJDFT2+RTDVT2*FLOAT(II-1)
-               FJJRF = FJDFRF+RTDVRF*FLOAT(II-1)
-               JJ = IFIX(FJJ)-2
-               JJT2 = IFIX(FJJT2)-2
-               JJRF = IFIX(FJJRF)-2
-               JP = (FJJ-FLOAT(JJ))*100.-199.5
-               JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
-               JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
+               FJJ = FJ1DIF+RATDVR* REAL(II-1)
+               FJJT2 = FJDFT2+RTDVT2* REAL(II-1)
+               FJJRF = FJDFRF+RTDVRF* REAL(II-1)
+               JJ =  INT(FJJ)-2
+               JJT2 =  INT(FJJT2)-2
+               JJRF =  INT(FJJRF)-2
+               JP = (FJJ- REAL(JJ))*100.-199.5
+               JPT2 = (FJJT2- REAL(JJT2))*100.-199.5
+               JPRF = (FJJRF- REAL(JJRF))*100.-199.5
                ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
      *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*SCAL_FAC
                ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
@@ -750,15 +752,15 @@ c
  92            CONTINUE
          ELSE
             DO 93 II = 1, NLIMO
-               FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
-               FJJT2 = FJDFT2+RTDVT2*FLOAT(II-1)
-               FJJRF = FJDFRF+RTDVRF*FLOAT(II-1)
-               JJ = IFIX(FJJ)-2
-               JJT2 = IFIX(FJJT2)-2
-               JJRF = IFIX(FJJRF)-2
-               JP = (FJJ-FLOAT(JJ))*100.-199.5
-               JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
-               JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
+               FJJ = FJ1DIF+RATDVR* REAL(II-1)
+               FJJT2 = FJDFT2+RTDVT2* REAL(II-1)
+               FJJRF = FJDFRF+RTDVRF* REAL(II-1)
+               JJ =  INT(FJJ)-2
+               JJT2 =  INT(FJJT2)-2
+               JJRF =  INT(FJJRF)-2
+               JP = (FJJ- REAL(JJ))*100.-199.5
+               JPT2 = (FJJT2- REAL(JJT2))*100.-199.5
+               JPRF = (FJJRF- REAL(JJRF))*100.-199.5
                ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
      *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*SCAL_FAC
                ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
@@ -808,7 +810,7 @@ C
          SOLAR(IPL) = SOLAR(NL)
   100 CONTINUE
 C
-      V1P = V1P+FLOAT(NPL+1)*DVP
+      V1P = V1P+ REAL(NPL+1)*DVP
       NPE = IPL
 C
       IF (IOTFLG.EQ.2) THEN
@@ -823,7 +825,7 @@ C
             TRAN2(IPL) = TRAN2(NL)
  102     CONTINUE
 C     
-         V1T2 = V1T2+FLOAT(NPLT2+1)*DVT2
+         V1T2 = V1T2+ REAL(NPLT2+1)*DVT2
          NPT2 = IPL
 C     
 C        -------------------------------------------------------------
@@ -836,7 +838,7 @@ C
             XRFLT(IPL) = XRFLT(NL)
  104     CONTINUE
 C     
-         V1RF = V1RF+FLOAT(NPLRF+1)*DVRF
+         V1RF = V1RF+ REAL(NPLRF+1)*DVRF
          NPRF = IPL
       ENDIF
 C     ============================================================
@@ -878,7 +880,7 @@ C
      *        '0       Reflection function spacing = ',E10.5)
  950  FORMAT ('0 No interpolation needed: using DV = ',E10.5,//)
  951  FORMAT ('0 Interpolating to spectral spacing = ',E10.5,//)
- 970  FORMAT (7E10.3)
+ 970  FORMAT (7E10.3,4X,A1)
  975  FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,
      *        ' AND IS NOT BOUNDED BY (0.,1.) ')
  980  FORMAT ('0 FOR VNU = ',F10.3,' THE REFLECTIVITY = ',E10.3,
@@ -887,7 +889,7 @@ C
      *        '0 V1(CM-1) = ',F12.4,/,'0 V2(CM-1) = ',F12.4,/,
      *        '0 TBOUND   = ',F12.4,5X,'BOUNDARY EMISSIVITY   = ',
      *        3(1PE11.3),/,'0',29X,'BOUNDARY REFLECTIVITY = ',
-     *        3(1PE11.3))
+     *        3(1PE11.3), ' SURFACE REFLECTIVITY = ',4X,1A)
 
 C
       END
@@ -1071,9 +1073,9 @@ C
          IF (NPTS.GT.(NLIMBF/2)+1) NNPTS = (NLIMBF/2)+1
          JEND = NLIMBF-NNPTS+1
          DO 10 J = 1, NNPTS
-            VJ = V1PBF+FLOAT(J-1)*DVPBF
+            VJ = V1PBF+ REAL(J-1)*DVPBF
             K = J+JEND-1
-            VK = V1PBF+FLOAT(K-1)*DVPBF
+            VK = V1PBF+ REAL(K-1)*DVPBF
             WRITE (IPR,910) J,VJ,SOLRAD(J),K,VK,SOLRAD(K)
    10    CONTINUE
       ENDIF

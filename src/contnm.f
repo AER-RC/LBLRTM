@@ -36,7 +36,9 @@ C
       REAL ABSBSV(5050)
 C                                                                         F00230
       CHARACTER*15 HVRCNT
-
+c
+      equivalence (fscdid(4), iaersl)
+c
       EQUIVALENCE (C0,SH2OT0,CN2T0,FCO2) , (C1,SH2OT1,CT1),               F00240
      *            (C2,FH2O,CT2)                                           F00250
 C                                                                         F00260
@@ -135,7 +137,7 @@ C
 c           Loop calculating self continuum optical depth
 
             DO 20 J = 1, NPTC                                             F00560
-               VJ = V1C+DVC*FLOAT(J-1)                                    F00570
+               VJ = V1C+DVC* REAL(J-1)                                    F00570
                SH2O = 0.                                                  F00580
                IF (SH2OT0(J).GT.0.) THEN                                  F00590
                   SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC            F00600
@@ -224,7 +226,7 @@ c
             CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O)         
 C                                                               
             DO 24 J = 1, NPTC                                         
-               VJ = V1C+DVC*FLOAT(J-1)                                    F00570
+               VJ = V1C+DVC* REAL(J-1)                                    F00570
 C
 C              CORRECTION TO FOREIGN CONTINUUM
 C
@@ -283,8 +285,20 @@ c
 C                                                                         F00830
             CALL FRNCO2 (V1C,V2C,DVC,NPTC,FCO2)                           F00840
             DO 30 J = 1, NPTC                                             F00850
-               VJ = V1C+DVC*FLOAT(J-1)                                    F00860
+               VJ = V1C+DVC* REAL(J-1)                                    F00860
                C(J) = FCO2(J)*WCO2*XCO2C                                  F00870
+
+c****2.4.+++  The co2 continuum has been increased by a factor of 7. in the 
+c                   nu2 band
+
+               if (vj.gt.500 .and. vj.lt.900)  then
+                  c(j) = 7.*c(j)
+               endif
+
+
+c****2.4.+++
+
+
 C                                                                         F00880
 C              Radiation field                                            F00890
 C                                                                         F00900
@@ -308,7 +322,7 @@ C                                                                         F01230
             DT=TAVE-273.15
             DO 50 J = 1, NPTO3                                            F01240
                CCH0(J)=(CCH0(J)+(CCH1(J)+CCH2(J)*DT)*DT)*WO3*XO3CN
-               VJ = V1C+DVC*FLOAT(J-1)                                    F01260
+               VJ = V1C+DVC* REAL(J-1)                                    F01260
                IF (JRAD.EQ.1) CCH0(J) = CCH0(J)*RADFN(VJ,XKT)             F01270
  50         CONTINUE                                                      F01280
             CALL XINT (V1C,V2C,DVC,CCH0,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)   F01290
@@ -324,7 +338,7 @@ C                                                                         F01370
             DO 60 J = 1, NPTO3                                            F01380
                C(J) = C0(J)*WO3*XO3CN                                     F01390
 C                                                                         F01400
-               VJ = V1C+DVC*FLOAT(J-1)                                    F01410
+               VJ = V1C+DVC* REAL(J-1)                                    F01410
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01420
                C(J) = C(J)*(1.+CT1(J)*TC+CT2(J)*TC*TC)                    F01430
  60         CONTINUE                                                      F01440
@@ -362,7 +376,7 @@ C
 C                                                                         F01490
             DO 70 J = 1, NPTO3                                            F01500
                C(J) = C0(J)*WO3*XO3CN                                     F01510
-               VJ = V1C+DVC*FLOAT(J-1)                                    F01520
+               VJ = V1C+DVC* REAL(J-1)                                    F01520
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01530
  70         CONTINUE                                                      F01540
 C
@@ -429,7 +443,7 @@ c              - for this case, an amagat is interpreted as one
 c                   loshmidt of air (273K)
 c
             DO 80 J = 1, NPTC
-               VJ = V1C+DVC*FLOAT(J-1)
+               VJ = V1C+DVC* REAL(J-1)
                C(J) = tau_fac * c0(J) * XO2CN
 C
 C              Radiation field
@@ -470,7 +484,7 @@ c
 c
             DO 92 J = 1, NPTC                                                
                C(J) = C0(J)*ADJWO2*XO2CN
-               VJ = V1C+DVC*FLOAT(J-1)                                       
+               VJ = V1C+DVC* REAL(J-1)                                       
 C                                                                      
 C              Radiation field
 C                                                                      
@@ -499,7 +513,7 @@ c
 c
             DO 93 J = 1, NPTC                                                
                C(J) = C0(J)*ADJWO2*XO2CN
-               VJ = V1C+DVC*FLOAT(J-1)                                       
+               VJ = V1C+DVC* REAL(J-1)                                       
 C                                                                      
 C              Radiation field
 C                                                                      
@@ -531,7 +545,7 @@ c
 c
             DO 94 J = 1, NPTC                                                
                C(J) = C0(J)*ADJWO2*XO2CN
-               VJ = V1C+DVC*FLOAT(J-1)                                       
+               VJ = V1C+DVC* REAL(J-1)                                       
 C                                                                      
 C              Radiation field
 C                                                                      
@@ -550,7 +564,7 @@ C        Only calculate if V2 > 36000. cm-1
             CALL O2HERZ (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                   F01820
             DO 90 J = 1, NPTC                                             F01830
                C(J) = C0(J)*WK(7)*XO2CN                                   F01840
-               VJ = V1C+DVC*FLOAT(J-1)                                    F01850
+               VJ = V1C+DVC* REAL(J-1)                                    F01850
 C                                                                         F01860
 C              Radiation field                                            F01870
 C                                                                         F01880
@@ -598,7 +612,7 @@ C
             CALL N2R220 (V1C,V2C,DVC,NPTC,C1)
 C
             DO 40 J = 1, NPTC                                             F01080
-               VJ = V1C+DVC*FLOAT(J-1)                                    F01090
+               VJ = V1C+DVC* REAL(J-1)                                    F01090
 C
                C(J) = 0.
                IF (C0(J).GT.0. .AND. C1(J).GT.0.)
@@ -648,7 +662,7 @@ c              - for this case, an amagat is interpreted as one
 c                   loshmidt of air (273K)
 c
             DO 45 J = 1, NPTC
-               VJ = V1C+DVC*FLOAT(J-1)
+               VJ = V1C+DVC* REAL(J-1)
                C(J) = tau_fac * c0(J) * XN2CN
 C
 C              Radiation field
@@ -662,14 +676,21 @@ c
 c
 C     ********** Rayleigh Scattering calculation **********
 c
+c     The effects of Rayleigh scattering are also included in module ! sac  06/06/02
+c     lbllow.f with the aerosol/cloud properties.  In the case that 
+c     that lbllow.f is selected (iaersl .ne. 0), the decision has been
+c     made to include this effect with the scattering processes,
+c     even though it is molecular in nature.  Otherwise the effects
+c     of Rayleigh scattering are included here.
+c
 c     The formulation, adopted from MODTRAN_3.5 (using approximation
 c     of Shettle et al., (Appl Opt, 2873-4, 1980) with depolarization
 c     = 0.0279, output in km-1 for T=273K & P=1 ATM) is as follows:
 C
-c     The rayleigh "absorption" coefficient (scattering in the direct
-c     beam) ray_abs can be defined as
+c     The rayleigh extinction coefficient (scattering out of the direct
+c     beam), ray_ext, can be defined as
 c
-c         ray_abs = (vrayleigh**4/(9.38076E18-1.08426E09*vrayleigh**2))
+c         ray_ext = (vrayleigh**4/(9.38076E18-1.08426E09*vrayleigh**2))
 c     *        *wmol_tot*conv_cm2mol
 c
 c     where vrayleigh is the wavenumber value, wmol_tot is the total
@@ -689,26 +710,26 @@ c
 c     Rayleigh scattering in the direct beam is only calculated for
 c     model runs > 3100 cm-1.
 c
-         If (v2.lt.3100.) goto 100
+         If (iaersl .eq.0 .and. v2.ge.3100.) then
 c
 c        Thus the current formulation is
 
-         conv_cm2mol = 1./(2.68675e-1*1.e5)
+            conv_cm2mol = 1./(2.68675e-1*1.e5)
          
-         do 95 i=1,nptabs
-            vrayleigh = v1abs+(i-1)*dvabs
-            xvrayleigh = vrayleigh/1.e4
-            ray_abs = (xvrayleigh**3/(9.38076E2-10.8426*xvrayleigh**2))
+            do 95 i=1,nptabs
+               vrayleigh = v1abs+(i-1)*dvabs
+               xvrayleigh = vrayleigh/1.e4
+          ray_ext = (xvrayleigh**3/(9.38076E2-10.8426*xvrayleigh**2))
      *           *wtot*conv_cm2mol*XRAYL
 
 C           Radiation field
 
-            IF (JRAD.EQ.1) ray_abs = ray_abs*xvrayleigh
+               IF (JRAD.EQ.1) ray_ext = ray_ext*xvrayleigh
 
-            absrb(i) = absrb(i)+ray_abs
+            absrb(i) = absrb(i)+ray_ext
  95      continue
-
-
+c
+      endif
 C                                                                         F01920
  100     continue
       RETURN                                                              F01930
@@ -727,16 +748,16 @@ C
 C                                                                         A10280
 C     THIS SUBROUTINE PRINTS THE CONTINUUM INFORMATION TO FILE IPR        A10290
 C                                                                         A10300
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,11)
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,12)
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A10310
      *              NLNGTH,KFILE,KPANEL,LINFIL,NDFLE,IAFIL,IEXFIL,        A10320
      *              NLTEFL,LNFIL4,LNGTH4                                  A10330
       COMMON /CNTPR/ CINFO1,CINFO2,CINFO3,CINFO4
 C                                                                         A10340
       WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,9)
-      WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,12)
+      WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11)
       WRITE (IPR,910) ((CINFO3(I,J),I=1,2),J=1,9)
-      WRITE (IPR,910) ((CINFO4(I,J),I=1,2),J=1,10)
+      WRITE (IPR,910) ((CINFO4(I,J),I=1,2),J=1,12)
 C                                                                         A10360
       RETURN                                                              A10370
 C                                                                         A10380
@@ -749,7 +770,7 @@ C     --------------------------------------------------------------
 C
 C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 C
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,11)
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,12)
       COMMON /CNTPR/ CINFO1,CINFO2,CINFO3,CINFO4
 C
       DATA CINFO1/
@@ -767,21 +788,21 @@ c           123456789-123456789-123456789-123456789-123456789-1
      1     '                           AIR   (T)      0 - 20000',
      2     ' CM-1    ckd_2.4                                   ',
      3     '                     CO2   AIR            0 - 20000',
-     4     ' CM-1                                              ',
+     4     ' CM-1    co2 nu2 increased * 7         (July 2002) ',
      5     '                     N2    SELF           0 -   350',
      6     ' CM-1    BORYSOW FROMMHOLD                         ',
      7     '                           AIR         2085 -  2670',
-     8     ' CM-1                        (March 1998)          ' /
+     8     ' CM-1                                 (March 1998) ' /
 C
       DATA CINFO2/
      *     '                     O2    AIR   (T)   1340 -  1850',
-     *     ' CM-1                        (March 1998)          ',
+     *     ' CM-1                                 (March 1998) ',
      *     '                           O2/N2       7550 -  8486',
-     *     ' CM-1                     (February 2000)          ',
+     *     ' CM-1                              (February 2000) ',
      *     '                           AIR         9100 - 11000',
-     *     ' CM-1                       (August 1999)          ',
+     *     ' CM-1                                (August 1999) ',
      *     '                           O2         15000 - 29870',
-     *     ' CM-1                         (May  2000)          ',
+     *     ' CM-1                                  (May  2000) ',
      *     '                           O2/N2      36000 -  >>>>',
      *     ' CM-1    HERZBERG                                  ',
      *     '                     O3    AIR         9170 - 24565',
@@ -833,10 +854,14 @@ C
      *     '- 8486 CM-1); MATE ET AL. 1999        (10 FEB 2000)',
      *     '  O2 COLLISION INDUCED BANDS HAVE BEEN ADDED (15000',
      *     ' - 29870 CM-1); GREENBLATT ET AL. 1990 (8 MAY 2000)',
+     *     '  The nu2 CO2 increased by a factor of 7: based on ',
+     *     'U  Wisc. AFWEX and AERI_xr at ARM NSA   (July 2002)',
      *     '  -------------------------------------------------',
      *     '------------------------------------------         '/
 C
       END
+C
+C
 C
 C
       SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                               F02220
@@ -854,11 +879,11 @@ C                                                                         F02330
       I1 = (V1C-V1S)/DVS                                                  F02340
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F02410
          I = I1+J                                                         F02420
@@ -1357,11 +1382,11 @@ C                                                                         F07280
       I1 = (V1C-V1S)/DVS                                                  F07290
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F07360
          I = I1+J                                                         F07370
@@ -1861,11 +1886,11 @@ C                                                                         F12240
       I1 = (V1C-V1S)/DVS                                                  F12250
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F12320
          I = I1+J                                                         F12330
@@ -2369,11 +2394,11 @@ C                                                                         F17200
       I1 = (V1C-V1S)/DVS                                                  F17210
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F17280
          I = I1+J                                                         F17290
@@ -2656,11 +2681,11 @@ C
       I1 = (V1C-V1S)/DVS
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
 c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2 
 c
@@ -2727,11 +2752,11 @@ C
       I1 = (V1C-V1S)/DVS
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
 c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2 
 c
@@ -2819,17 +2844,17 @@ C
       I1 = (V1C-V1S)/DVS    
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       do 10 j=1,nptc
          i = i1+j
          C(J) = 0.                                                        F41620
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F41630
-         VJ = V1C+DVC*FLOAT(J-1)                                          F41640
+         VJ = V1C+DVC* REAL(J-1)                                          F41640
 c     the radiation field is removed with 1/vj
 c
          c(j) = factor * xn2(i)* exp(xn2t(i)*xktfac) / vj
@@ -2926,11 +2951,11 @@ C                                                                         F20630
       I1 = (V1C-V1S)/DVS                                                  F20640
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F20710
          I = I1+J                                                         F20720
@@ -2942,7 +2967,7 @@ c
 C
 C            Remove radiation field from diffuse ozone
 C
-             VJ = V1C+DVC*FLOAT(J-1)
+             VJ = V1C+DVC* REAL(J-1)
              C0(J)=X(I)/VJ
              C1(J)=Y(I)/VJ
              C2(J)=Z(I)/VJ
@@ -5084,17 +5109,17 @@ C                                                                         F21230
       I1 = (V1C-V1S)/DVS                                                  F21240
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F21310
          I = I1+J                                                         F21320
          C(J) = 0.                                                        F21330
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F21340
-         VJ = V1C+DVC*FLOAT(J-1)                                          F21350
+         VJ = V1C+DVC* REAL(J-1)                                          F21350
          C(J) = S(I)/VJ                                                   F21360
 C                                                                         F21370
 C     RADIATION FLD REMOVED FROM DIFFUSE OZONE                            F21380
@@ -5766,11 +5791,11 @@ C                                                                         F27940
       I1 = (V1C-V1S)/DVS                                                  F27950
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F28020
          I = I1+J                                                         F28030
@@ -6406,11 +6431,11 @@ C                                                                         F34230
       I1 = (V1C-V1S)/DVS                                                  F34240
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F34310
          I = I1+J                                                         F34320
@@ -7046,17 +7071,17 @@ C                                                                         F40520
       I1 = (V1C-V1S)/DVS                                                  F40530
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F40600
          I = I1+J                                                         F40610
          C(J) = 0.                                                        F40620
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F40630
-         VJ = V1C+DVC*FLOAT(J-1)                                          F40640
+         VJ = V1C+DVC* REAL(J-1)                                          F40640
          C(J) = S(I)/VJ                                                   F40650
 C                                                                         F40660
 C     RADIATION FLD REMOVED FROM U.V.    OZONE                            F40670
@@ -7153,17 +7178,17 @@ C
       I1 = (V1C-V1S)/DVS        
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
-      V1C = V1S+DVS*FLOAT(I1)        
+      V1C = V1S+DVS* REAL(I1)        
       I2 = (V2C-V1S)/DVS             
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS*FLOAT(NPTC-1)       
+      V2C = V1C+DVS* REAL(NPTC-1)       
 c
       do 10 j=1,nptc
          i = i1+j
          C(J) = 0.                                                        F41620
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F41630
-         VJ = V1C+DVC*FLOAT(J-1)                                          F41640
+         VJ = V1C+DVC* REAL(J-1)                                          F41640
 c     the radiation field is removed with 1/vj
 c
          c(j) = factor * xo2(i)* exp(xo2t(i)*xktfac) / vj
@@ -7270,16 +7295,16 @@ C
       I1 = (V1C-V1S)/DVS                                                 
       IF (V1C.LT.V1S) I1 = I1-1                                          
 C                                                                        
-      V1C = V1S+DVS*FLOAT(I1)                                            
+      V1C = V1S+DVS* REAL(I1)                                            
       I2 = (V2C-V1S)/DVS                                                 
       NPTC = I2-I1+3                                                     
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                        
+      V2C = V1C+DVS* REAL(NPTC-1)                                        
 c
       DO 10 J = 1, NPTC                                                   F34310
          I = I1+J                                                         F34320
          C(J) = 0.                                                        F34330
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F34340
-         vj = v1c + dvc*float(j-1)
+         vj = v1c + dvc* REAL(j-1)
          C(J) = xo2inf1(I)/vj
    10 CONTINUE                                                            F34360
 C                                                                         F34370
@@ -7431,11 +7456,11 @@ C
       V2C = V2ABS+DVC                                                    
 C                                                                        
       NPTC = (v2c-v1c)/dvc + 3.
-      V2C = V1C+DVc*FLOAT(NPTC-1)                                        
+      V2C = V1C+DVc* REAL(NPTC-1)                                        
 c
       DO 10 J = 1, NPTC                                                  
          C(J) = 0.                                                       
-         VJ = V1C+DVC*FLOAT(J-1)                                         
+         VJ = V1C+DVC* REAL(J-1)                                         
          IF ((Vj.gt.v1s) .and. (Vj.lt.v2s)) then
             DV1 = Vj - V1_osc
             DV2 = Vj - V2_osc
@@ -7493,16 +7518,16 @@ C
       I1 = (V1C-V1S)/DVS                                                 
       IF (V1C.LT.V1S) I1 = I1-1                                          
 C                                                                        
-      V1C = V1S+DVS*FLOAT(I1)                                            
+      V1C = V1S+DVS* REAL(I1)                                            
       I2 = (V2C-V1S)/DVS                                                 
       NPTC = I2-I1+3                                                     
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                        
+      V2C = V1C+DVS* REAL(NPTC-1)                                        
 c
       DO 10 J = 1, NPTC                                                   F34310
          I = I1+J                                                         F34320
          C(J) = 0.                                                        F34330
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F34340
-         vj = v1c + dvc*float(j-1)
+         vj = v1c + dvc* REAL(j-1)
 c
          C(J) = factor*S(I)/vj  
 
@@ -7880,15 +7905,15 @@ C                                                                         F42400
       I1 = (V1C-V1S)/DVS                                                  F42410
       IF (V1C.LT.V1S) I1 = I1-1                                           F42420
 C                                                                         F42430
-      V1C = V1S+DVS*FLOAT(I1)                                             F42440
+      V1C = V1S+DVS* REAL(I1)                                             F42440
       I2 = (V2C-V1S)/DVS                                                  F42450
       NPTC = I2-I1+3                                                      F42460
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F42470
+      V2C = V1C+DVS* REAL(NPTC-1)                                         F42470
       DO 10 J = 1, NPTC                                                   F42480
          I = I1+J                                                         F42490
          C(J) = 0.                                                        F42500
          IF (I.LT.1) GO TO 10                                             F42510
-         VJ = V1C+DVC*FLOAT(J-1)                                          F42520
+         VJ = V1C+DVC* REAL(J-1)                                          F42520
          CALL HERTDA (HERZ,VJ)                                            F42530
          CALL HERPRS (HERZ,T,P)                                           F42540
          C(J) = HERZ/VJ                                                   F42550
