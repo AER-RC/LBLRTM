@@ -145,17 +145,9 @@ C                       ipathl=3 = uplooking (downwelling)
          IF (IEMIT.EQ.3) THEN
             IF (LAYER.EQ.1) THEN
                IF (IPATHL.EQ.1) TBND = TMPBND
-
-                write(*,*) 'layer = 1'
-                write(*,*) 'ipathl,jpathl,tbnd: ',ipathl,jpathl,tbnd
-
                CALL EMADL1 (NPTS,MFILE,JPATHL,TBND)
             ELSE
                IF (IPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND
-
-                write(*,*) 'layer <> 1'
-                write(*,*) 'ipathl,jpathl,tbnd: ',ipathl,jpathl,tbnd
-
                CALL EMADMG (NPTS,LFILE,MFILE,JPATHL,TBND)
             ENDIF
          ENDIF
@@ -165,8 +157,6 @@ C     --------------------------------------------------------------
 C
 c this is here for debugging purposes
 c 1234 continue      
-c      write(ipr,*) 'here'
-c      write(*,*) 'done with job'
 c      stop
 
       RETURN                                                              H00760
@@ -3995,15 +3985,20 @@ C
       LOGICAL OP
       CHARACTER*57 FILE1,FILE2,FILE3,FILE4
       CHARACTER*11 CFORM
-      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD
+      CHARACTER*11 PTHRDRU,PTHRDRD
+      CHARACTER*3  PTHDIR,AJID
+      CHARACTER*17 FULLPTH  ! change if PTHDIR//PTHRDRD//AJID changes size
+
       CHARACTER*10 HFMODI,HFMODTU,HFMODTD,HFMRDR
 C
 C     Common block for analytic derivatives
 C     -------------------------
-      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD
+      COMMON /ADRPTH/ PTHDIR,PTHRDRU,PTHRDRD,AJID
       COMMON /ADRFRM/ HFMODI,HFMODTU,HFMODTD,HFMRDR
       COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
-      COMMON /IADFLG/ IANDER,NSPCRT
+      COMMON /IADFLG/ IANDER,NSPCRT,imrgsav
 C     -------------------------
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
@@ -4037,10 +4032,10 @@ C           123456789-123456789-123456789-123456789-123456789-1234567
       DATA CFORM / 'UNFORMATTED' /
 C
  
-      write(*,*) '-----------------'
-      write(*,*) 'in opndrv'
-      write(*,*) 'ipathl: ',ipathl
-      write(*,*) 'nlayer,layer,laytot ',nlayer,layer,laytot
+c      write(*,*) '-----------------'
+c      write(*,*) 'in opndrv'
+c      write(*,*) 'ipathl: ',ipathl
+c      write(*,*) 'nlayer,layer,laytot ',nlayer,layer,laytot
 
       WRITE(IPR,910) LAYER,NLAYER
       INQUIRE (UNIT=KODFIL,OPENED=OP)
@@ -4055,7 +4050,7 @@ c----
 c downlooking/upwelling
 
           if (ipathl.eq.1) then
-              write(*,*) 'layer,nlayer',layer,nlayer
+c              write(*,*) 'layer,nlayer',layer,nlayer
               INQUIRE (UNIT=KODTOT,OPENED=OP)
               IF (OP) CLOSE (KODTOT)
               WRITE(FILE2,HFMODTD) PTHODTD,LAYTOT
@@ -4087,27 +4082,40 @@ c  (not necessary for surface terms)
 
 c downlooking/upwelling: ipathl = 1;  uplooking/downwelling: ipathl = 3
           if (ipathl.eq.1) then
-              WRITE(FILE3,HFMRDR) PTHRDRD,LAYER
+              FULLPTH=PTHDIR//PTHRDRD//AJID
+              WRITE(FILE3,HFMRDR) FULLPTH,LAYER
           else
-              WRITE(FILE3,HFMRDR) PTHRDRU,LAYER
+              FULLPTH=PTHDIR//PTHRDRU//AJID
+              WRITE(FILE3,HFMRDR) FULLPTH,LAYER
           endif
-          OPEN(UNIT=KFILAD,FILE=FILE3,FORM=CFORM,STATUS='UNKNOWN')
+          OPEN(UNIT=KFILAD,FILE=FILE3,FORM=CFORM,
+     &        STATUS='UNKNOWN',ERR=881)
 
 c if upwelling, open appropriate downwelling file for merge
 c also open temporary file for surface terms
           IF (IPATHL.EQ.1) THEN
               INQUIRE (UNIT=KFILAD2,OPENED=OP)
               IF (OP) CLOSE (KFILAD2)
-              WRITE(FILE4,HFMRDR) PTHRDRU,LAYER
-              OPEN(UNIT=KFILAD2,FILE=FILE4,FORM=CFORM,STATUS='UNKNOWN')
+              FULLPTH=PTHDIR//PTHRDRU//AJID
+              WRITE(FILE4,HFMRDR) FULLPTH,LAYER
+              OPEN(UNIT=KFILAD2,FILE=FILE4,FORM=CFORM,
+     &            STATUS='UNKNOWN',ERR=882)
 
 c buffer over header
               CALL BUFIN(KFILAD2,KEOF,FILHDRJ(1),NFHDRF)
               
               INQUIRE (UNIT=KSFCTMP,OPENED=OP)
-              IF (OP) CLOSE (KSFCTMP)
-              OPEN(UNIT=KSFCTMP,FILE='sfcterm.TMP',
-     &            FORM=CFORM,STATUS='UNKNOWN')
+c              IF (OP) CLOSE (KSFCTMP)
+c              OPEN(UNIT=KSFCTMP,FILE='sfcterm.TMP',
+c     &            FORM=CFORM,STATUS='SCRATCH')
+
+              IF (OP) then
+                 rewind (KSFCTMP)
+              else
+c                 OPEN(UNIT=KSFCTMP,FILE='sfcterm.TMP',
+                 OPEN(UNIT=KSFCTMP,
+     &                FORM=CFORM,STATUS='SCRATCH') !STATUS='UNKNOWN')
+              endif
 
           ENDIF
 
@@ -4119,6 +4127,36 @@ c write file info to TAPE6
       endif
 C
       RETURN
+
+c reach this if file error
+  881 continue
+      ierrmsg=881
+      goto 888
+
+  882 continue
+      ierrmsg=882
+      goto 888
+
+  888 continue
+
+      write(ipr,*) '**************************************'
+      write(ipr,*) '  '
+      write(ipr,*) 'error opening file - check to see that'
+      write(ipr,*) ' AJ/ directory exists'
+      write(ipr,*) '  '
+      write(ipr,*) '    see also xmerge.f error = ',ierrmsg
+      write(ipr,*) '**************************************'
+
+      write(*,*) '**************************************'
+      write(*,*) '  '
+      write(*,*) 'error opening file - check to see that'
+      write(*,*) ' AJ/ directory exists'
+      write(*,*) '  '
+      write(*,*) '    see also xmerge.f error = ',ierrmsg
+      write(*,*) '**************************************'
+
+      stop
+
 C
  900  FORMAT ('          Opened layer optical depth file:  ',A57,/,
      *        '    Opened accumulated optical depth file:  ',A57,/,
@@ -5905,7 +5943,7 @@ c
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H16770
 
       COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
-      COMMON /IADFLG/ IANDER,NSPCRT
+      COMMON /IADFLG/ IANDER,NSPCRT,imrgsav
       common /DNWTRMS/ EMTRM(2410),RFTRM(2410),raddnw(2410),tradnw(2410)
       common /pnldum/v1dnw,v2dnw,dvdnw,nlimdnw
       dimension xdnwin(2)
@@ -6056,10 +6094,7 @@ c write panel size to sfc file, initialize emisout,reflout
       inquire(unit=ksfctmp,opened=op)
       if (op) then
           write(ksfctmp) NLIMO
-
           call bufin(k12tmp,keof,xdnwin(1),nphdrf)
-          write(*,*) v1dnw,v2dnw,dvdnw,nlimdnw
-          write(*,*) 'ipathl: ',ipathl
           call bufin(k12tmp,keof,raddnw(1),nlimdnw)
           call bufin(k12tmp,keof,tradnw(1),nlimdnw)
       endif
@@ -6119,7 +6154,6 @@ C
             BB = BB+BBDEL                                                 H18270
 
    50    CONTINUE                                                         H18290
-         write(*,*) 'bb,emisiv,tradnw: ',bb,emisiv,tradnw(nlim2)
 C                                                                         H18300
          IF (NLIM2.LT.NLIMO) GO TO 40                                     H18310
 C                                                                         H18320
@@ -6186,8 +6220,6 @@ C
             REFLCT = REFLCT+RFDEL                                         H18840
    70    CONTINUE                                                         H18880
 C                                                                         H18890
-         
-         write(*,*) 'emadl1: emtrm,rftrm: ',emtrm(1),rftrm(1)
          IF (NLIM2.LT.NLIMO) GO TO 60                                     H18900
 C                                                                         H18910
       ENDIF                                                               H18920
@@ -6300,7 +6332,7 @@ c
 c
       COMMON /EMDMSV/ EMSV(2410),BBSAV(2410),BBASAV(2410),XXSAV(2410)
       COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
-      COMMON /IADFLG/ IANDER,NSPCRT
+      COMMON /IADFLG/ IANDER,NSPCRT,imrgsav
       common /DNWTRMS/ EMTRM(2410),RFTRM(2410),raddnw(2410),tradnw(2410)
       common /pnldum/v1dnw,v2dnw,dvdnw,nlimdnw
       dimension xdnwin(2)
@@ -6512,9 +6544,7 @@ C                                                                         H21490
           do j=1,nlimsfc
               read(ksfctmp) emtrm(j),rftrm(j)
           enddo
-          write(*,*) 'emadmg: emtrm,rftrm: ',emtrm(1),rftrm(1)
           call bufin(k12tmp,keof,xdnwin(1),nphdrf)
-          write(*,*) v1dnw,v2dnw,dvdnw,nlimdnw
           call bufin(k12tmp,keof,raddnw(1),nlimdnw)
           call bufin(k12tmp,keof,tradnw(1),nlimdnw)
       endif
@@ -6665,7 +6695,11 @@ c          ipts  = same dimension as ABSRB
 c          ipts2 = same dimension as C
       parameter (ipts=5050,ipts2=6000)
       common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
-     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,dTco2C(ipts)
+     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,
+     &    dqco2C(ipts),dTco2C(ipts),
+     &    dqo3C(ipts),dTo3C(ipts),
+     &    dqo2C(ipts),dTo2C(ipts),
+     &    dqn2C(ipts),dTn2C(ipts)
 c---------------------------------------------------------------------      
 C
 
@@ -6684,8 +6718,11 @@ c get downwelling term
           idwn=0
       endif
 
-c if water, ksubl modified to include all h2o terms
-      if (icflg.eq.1) then
+c ksubl modified to include continuum term (if present)
+c 1,2,3,7,22: H2O, CO2, O3, O2, N2
+
+      if ((icflg.eq.1).or.(icflg.eq.2).or.(icflg.eq.3).or.
+     &    (icflg.eq.7).or.(icflg.eq.22)) then
           CALL BUFIN(iuf,KEOF,PNLHDR(1),NPHDRF)
       else
           CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
@@ -6715,8 +6752,9 @@ C
 C     Read in absorptance coefficients
 C
 
-c if water, ksubl modified to include all h2o terms
-      if (icflg.eq.1) then
+c ksubl modified to include continuum term (if present)
+      if ((icflg.eq.1).or.(icflg.eq.2).or.(icflg.eq.3).or.
+     &    (icflg.eq.7).or.(icflg.eq.22)) then
           CALL BUFIN (iuf,KEOF,KSUBL(1),NLIMP)
       else
           CALL BUFIN (KFILE,KEOF,KSUBL(1),NLIMP)
@@ -6754,47 +6792,24 @@ C
 C                                                                        
 C     Calculate layer derivatives, 
 C
-C     dR/du = T{n-1}*[d{nonsource]/du + d{source}/du], where
-C
-C             d{nonsource}/du = -Km*exp{-tau}*Rn,
-C
-C             and
-C
-C             d{source}/du = (Km/(1+a*tau)) *
-C                            [exp{-tau} *
-C                            (Bbar + B*a*tau + a*(B-Bbar)/(1+a*tau)) +
-C                            a*(B-Bbar)/(1+a*tau)],
-C
-C             such that
-C                  Km is layer absorbtance coefficients
-C                  tau is layer optical depths
-C                  Rn is the radiance of the layer
-C                     previously done
-C
-C     Numerical substitutions:
-C
-C               Y = 1/(1+a*tau)
-C              YZ = a*(B-Bbar)/(1+a*tau)
-C              AA = a
-C           XXSAV = a*tau
-C           BBSAV = Bbar
-C          BBASAV = B
-C
-c for linear-in-tau
+C          TRACCM = (accumulated) total transmittance
+C          TRALYR = layer transmittance
 C           XXSAV = dF/dtau
 C           BBSAV = Bbar
 C          BBASAV = B
+C            EMSV = layer emission
+C            RADO = emission from layers above/below layer in question
+C                   (depending on geometry of problem)
+C           KSUBL = layer optical depth
 C
 C     When calculating the derivative of the layer nearest the observer,
 C     omit the total accumulated transmittance, TRACCM
 C
 
-c note:  comments above are out of date!
-
  10   CONTINUE
 
 c
-      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3.or.ipathl.eq.-1) THEN
+      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3.OR.IPATHL.EQ.-1) THEN
 c
          IF (LAYER.NE.NLAYER) THEN
             DO 20 I = 1, NLIM
@@ -6823,19 +6838,18 @@ c
          ENDIF
 
 c for upwelling, add contribution from 'backside' downwelling term
-c  rftrm = refl*T(0,L)
-c  addnw = dr/dlnq for downwelling
-c  emtrm = (emis*Bsfc + refl*Bdwn)*T(0,L)
-c  ksubl = tau(layer) as above (to convert to ln-mixing ratio)
-c T(0,L) = H1 to H2 transmission (e.g. surface to space)
+c  ADDNW = dr/dlnq for downwelling
+c  RFTRM = refl*T(0,L)
+c  EMTRM = (emis*Bsfc + refl*Bdwn)*T(0,L)
+c          where T(0,L) = H1 to H2 transmission (e.g. surface to space)
+c  KSUBL = tau(layer) as above (to convert to ln-mixing ratio)
 
-         if (idwn.eq.1) then
-             write(*,*) 'idwn=1'
-             do i=1,nlim
-                 rprime(i)=rprime(i)+(rftrm(i)*addnw(i)
-     &               -emtrm(i)*ksubl(i))
-             enddo
-         endif
+         IF (IDWN.EQ.1) THEN
+             DO I=1,NLIM
+                 RPRIME(I)=RPRIME(I)+(RFTRM(I)*ADDNW(I)
+     &               -EMTRM(I)*KSUBL(I))
+             ENDDO
+         ENDIF
 c
       ELSEIF (IPATHL.EQ.2) THEN
          STOP 'ADERIV NOT SET FOR IPATHL = 2'  ! limb case
@@ -6891,7 +6905,11 @@ c          ipts  = same dimension as ABSRB
 c          ipts2 = same dimension as C
       parameter (ipts=5050,ipts2=6000)
       common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
-     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,dTco2C(ipts)
+     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,
+     &    dqco2C(ipts),dTco2C(ipts),
+     &    dqo3C(ipts),dTo3C(ipts),
+     &    dqo2C(ipts),dTo2C(ipts),
+     &    dqn2C(ipts),dTn2C(ipts)
 
       real dtaudT(2400)
 
@@ -6929,12 +6947,6 @@ c set to zero if level information is unknown
           dtudtave=0.0
       endif
 
-c
-c      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
-c      IF (KEOF.LE.0) THEN
-c         WRITE(*,*) 'End of KFILE ',KFILE
-c         GOTO 10
-c      ENDIF
 C
 C     Set number of words to be input as 2400 or the number of
 C     points between the absolute end point V2 and the panel
@@ -6951,13 +6963,10 @@ C
          NLIMP = XLIMP
       ENDIF
 
-c read in dtaudT
+c
+c read in dtaudT - use iuf file as it contains continuum term
+c
       CALL BUFIN (iuf,KEOF,dtaudT(1),NLIMP)
-
-C
-C     Read in absorptance coefficients
-C
-c      CALL BUFIN (KFILE,KEOF,XKMOLC(1),NLIMP)
 C
 C     Read in total optical depths if LAYER < NLAYER
 C
@@ -6990,79 +6999,77 @@ C
 C                                                                        
 C     Calculate layer derivatives, 
 C
-C     dR/dt = Tt*[(1-T)*dB/dt], where
+C  drsat/dT = (drdtau)(dtaudT)+(drdb)(dbdT) = srcnon + source
 C
-C             dB/dt = (h*c*gnu)/(k*t*t) * 1/(1-exp{-beta*gnu})*B(gnu,t)
-C
-c bbdsav = dB/dt for layer temperature
+C          TRACCM = (accumulated) total transmittance
+C          TRALYR = layer transmittance
+C           XXSAV = dF/dtau
+C           BBSAV = Bbar
+C          BBASAV = B
+C            EMSV = layer emission
+C            RADO = emission from layers above/below layer in question
+C                   (depending on geometry of problem)
+C           KSUBL = layer optical depth
 C
 C     When calculating the derivative of the layer nearest the observer,
 C     omit the total accumulated transmittance, TRACCM
-C
-c  drsat/dT = (drdtau)(dtaudT)+(drdb)(dbdT) = srcnon + source
 
-c note:  comments above are out of date!
+ 10   CONTINUE
 
-
- 10   AA = 0.278
-
-      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3.or.ipathl.eq.-1) THEN
+      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3.OR.IPATHL.EQ.-1) THEN
          IF (LAYER.NE.NLAYER) THEN
             DO 20 I = 1, NLIM
-               vtest = v1po + dvpo*(i-1)
                TRACCM = EXP(-OPDT(I))
 
-               drdtau=((1.0-TRALYR(I))
+               DRDTAU=((1.0-TRALYR(I))
      &             *(BBASAV(I)-BBSAV(I))*XXSAV(I))
      &             +((EMSV(I)-RADO(I))*TRALYR(I))*TRACCM
 
-               srcnon=drdtau*dtaudT(i)
+               SRCNON=DRDTAU*DTAUDT(I)
 
-               drdb = (1.-TRALYR(I))*TRACCM
+               DRDB = (1.-TRALYR(I))*TRACCM
 
-               dbdT = bbdsav(i)+fsav(i)*
-     &             ((bbdLsav(i)*dtudtave)-bbdsav(i))
+               DBDT = BBDSAV(I)+FSAV(I)*
+     &             ((BBDLSAV(I)*DTUDTAVE)-BBDSAV(I))
 
-               source = drdb*dbdT
+               SOURCE = DRDB*DBDT
 
-               RPRIME(I) = srcnon + source
+               RPRIME(I) = SRCNON + SOURCE
 
  20         CONTINUE
          ELSE
             DO 30 I = 1, NLIM
-               vtest = v1po + dvpo*(i-1)
-
-               drdtau=((1.0-TRALYR(I))
+               DRDTAU=((1.0-TRALYR(I))
      &             *(BBASAV(I)-BBSAV(I))*XXSAV(I))
      &             +((EMSV(I)-RADO(I))*TRALYR(I))
 
-               srcnon=drdtau*dtaudT(i)
+               SRCNON=DRDTAU*DTAUDT(I)
 
-               drdb = (1.-TRALYR(I))
+               DRDB = (1.-TRALYR(I))
 
-               dbdT = bbdsav(i)+fsav(i)*
-     &             ((bbdLsav(i)*dtudtave)-bbdsav(i))
+               DBDT = BBDSAV(I)+FSAV(I)*
+     &             ((BBDLSAV(I)*DTUDTAVE)-BBDSAV(I))
 
-               source = drdb*dbdT
+               SOURCE = DRDB*DBDT
 
-               RPRIME(I) = srcnon + source
+               RPRIME(I) = SRCNON + SOURCE
 
  30         CONTINUE
          ENDIF
 
 c for upwelling, add contribution from 'backside' downwelling term
-c  rftrm = refl*T(0,L)
-c  addnw = dr/dtemp for downwelling
-c  emtrm = (emis*Bsfc + refl*Bdwn)*T(0,L)
-c dtaudT = dtau / dtemp
-c T(0,L) = H1 to H2 transmission (e.g. surface to space)
+c  ADDNW = dr/dlnq for downwelling
+c  RFTRM = refl*T(0,L)
+c  EMTRM = (emis*Bsfc + refl*Bdwn)*T(0,L)
+c          where T(0,L) = H1 to H2 transmission (e.g. surface to space)
+c  KSUBL = tau(layer) as above (to convert to ln-mixing ratio)
 
-         if (idwn.eq.1) then
-             do i=1,nlim
-                 rprime(i)=rprime(i)+(rftrm(i)*addnw(i)
-     &               -emtrm(i)*dtaudT(i))
-             enddo
-         endif
+         IF (IDWN.EQ.1) THEN
+             DO I=1,NLIM
+                 RPRIME(I)=RPRIME(I)+(RFTRM(I)*ADDNW(I)
+     &               -EMTRM(I)*DTAUDT(I))
+             ENDDO
+         ENDIF
 
       ELSEIF (IPATHL.EQ.2) THEN
          STOP 'TDERIV NOT SET FOR IPATHL = 2'  ! limb case

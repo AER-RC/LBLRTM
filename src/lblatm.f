@@ -1448,8 +1448,12 @@ c-----------------------------------------------------------
 c compute layer-to-level conversion for analytical jacobians
 c pbar,tbar
 c only go into this if imoldq was set in lblrtm
+c 
+c note that the dqdl and dqdu arrays are indexed by mol-id
+c number with the "0" index eserved for temperature
+c
       if (imoldq.eq.-99) then
-          write(*,*) 'lay2lev in lblatm: ',ipmax,nmol
+c          write(*,*) 'lay2lev in lblatm: ',ipmax,nmol
           ilevdq=ipmax-1
           imoldq=nmol
           do 500 i=1,ilevdq
@@ -1457,7 +1461,7 @@ c only go into this if imoldq was set in lblrtm
               rhoU=pbnd(i+1)/(tbnd(i+1)*1.3806503E-19)
               rhoL=pbnd(i)/(tbnd(i)*1.3806503E-19)
               alpha=rhoU/rhoL
-              alphaT=-(tbnd(i)-tbnd(i+1))/alog(alpha)
+              alphaT=-(tbnd(i+1)-tbnd(i))/alog(alpha)
 
 c molecules
               do 501 k=1,nmol
@@ -1473,11 +1477,11 @@ c molecules
                       dqdU(i,k)=((-alpha*ratU)/(ratL-alpha*ratU))
      &                    -1.0/alog(alpha*ratU/ratL)
 
-                      write(*,*) i,k,((dqdL(i,k)*ratL)
-     &                    +(dqdU(i,k)*ratU)),
-     &                    ratL,ratU
-                      write(*,*) '      ',denm(k,i+1),rhoU
-                      write(*,*) '      ',denm(k,i),rhoL
+c                      write(*,*) i,k,((dqdL(i,k)*ratL)
+c     &                    +(dqdU(i,k)*ratU)),
+c     &                    ratL,ratU
+c                      write(*,*) '      ',denm(k,i+1),rhoU
+c                      write(*,*) '      ',denm(k,i),rhoL
 
                   else
                       dqdL(i,k)=0.0
@@ -1487,24 +1491,15 @@ c molecules
   501         continue
 
 c temperature
+              dqdL(i,0)=((tbar(i)-alphaT)/tbnd(i))
+     &            *(rhoL/(rhoL-rhoU))
+     &            +(1.0-alphaT/tbnd(i))/alog(alpha)
 
-c from ATBD
-c              dqdL(i,0)=((tbar(i)+alphaT)/tbnd(i))
-c     &            *(rhoL/(rhoL-rhoU))
-c     &            +(1.0+alphaT/tbnd(i))/alog(alpha)
+              dqdU(i,0)=((tbar(i)-alphaT)/tbnd(i+1))
+     &                  *(-rhoU/(rhoL-rhoU))
+     &            -(1.0-alphaT/tbnd(i+1))/alog(alpha)
 
-c              dqdU(i,0)=((tbar(i)-alphaT)/tbnd(i+1))
-c     &                  *(rhoL/(rhoL-rhoU))
-c     &            +(1.0-alphaT/tbnd(i+1))/alog(alpha)
-
-c from TES DFM #217
-              dqdL(i,0)=(tbar(i)/tbnd(i))*
-     &            ( (1.0/alog(alpha))+(1.0/(1.0-alpha)))
-
-              dqdU(i,0)=(tbar(i)/tbnd(i+1))*
-     &            ( (-1.0/alog(alpha))-(alpha/(1.0-alpha)))
-
-              write(*,*) 'T: ',dqdl(i,0),dqdu(i,0)
+c              write(*,*) 'T: ',dqdl(i,0),dqdu(i,0)
               
   500     continue
       endif
@@ -1608,7 +1603,7 @@ C                                                                        FA10530
      *        '(KM)',T21,
      *        '(MB)',T33,'(K)',T42,'*1.0E6',T57,'AIR',(T64,8(6X,A9)))    FA11040
   952 FORMAT (/)                                                         FA11050
-  954 FORMAT (I4,F11.5,F11.5,F11.5,6PF11.5,1X,1PE15.7,(T64,1P8E15.7))  
+  954 FORMAT (I4,F11.5,F11.5,F11.5,6P,F11.5,1P,E15.7,(T64,1P,8E15.7))  
   956 FORMAT (///,' HALFWIDTH INFORMATION ON THE USER SUPPLIED ',        FA11070
      *        'LBLRTM BOUNDARIES',/,' THE FOLLOWING VALUES ARE ',        FA11080
      *        'ASSUMED:')                                                FA11090
@@ -1625,7 +1620,7 @@ C                                                                        FA10530
      *        'I  LAYER BOUNDARIES',T55,'INTEGRATED AMOUNTS ',           FA11200
      *        '(MOL CM-2)',/,T11,'FROM',T22,'TO',T29,'AIR',T36,          FA11210
      *        8(1X,A8,1X),/,T11,'(KM)',T21,'(KM)',(T37,8A10))            FA11220
-  964 FORMAT (I5,2F10.3,1PE10.3,(T35,1P8E10.3))
+  964 FORMAT (I5,2F10.3,1P,E10.3,(T36,1P,8E10.3))
   966 FORMAT ('0TOTAL',F9.3,F10.3,1PE10.3,(T35,1P8E10.3))
   968 FORMAT ('1 SUMMARY OF THE GEOMETRY CALCULATION',//,10X,            FA11250
      *        'MODEL   = ',4X,3A8,/10X,'H1      = ',F12.6,' KM',/,10X,   FA11260

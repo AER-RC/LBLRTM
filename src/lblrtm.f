@@ -74,7 +74,7 @@ C*                                                                        A00590
 C*    DOCUMENTATION AND INFORMATION ABOUT THE PROGRAM  MAY BE OBTAINED    A00600
 C*    FROM                                                                A00610
 C*                                                                        A00620
-C*    S.A. CLOUGH, AER Inc., 131 Hartwell Ave., Lexington,MA 02421 USA    A00630
+C*    S.A. CLOUGH, AER Inc., 131 Hartwell Ave., Lexington, MA 02421 USA   A00630
 C*                                                                        A00640
 C**********************************************************************   A00650
 C*                                                                        A00660
@@ -175,7 +175,7 @@ C*      T. C. DEGGES AND H. J. P. SMITH                 VISIDYNE,INC      A01600
 C*                                                                        A01610
 C**********************************************************************   A01620
 C*
-C*         Analytic Jacobians (IEMIT=3 and IMRG=40,41)
+C*         Analytic Jacobians (IEMIT=3 and IMRG=40-43)
 C*
 C*  May 2004:  This work was funded by Eumetsat (Stephen Tjemkes)
 C*             and is based upon work done for the NASA-EOS-TES project
@@ -331,7 +331,10 @@ c
       LOGICAL OP
 c%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
-      CHARACTER*55 PTHT3M,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD,CTAPE3
+      CHARACTER*55 PTHT3M,PTHODI,PTHODTU,PTHODTD,CTAPE3
+      CHARACTER*11 PTHRDRU,PTHRDRD
+      CHARACTER*3 PTHDIR,AJID
+      CHARACTER*17 FULLPTH  ! change if PTHDIR//PTHRDRD//AJID changes size
       CHARACTER*10 HFMODI,HFMODTU,HFMODTD,HFMRDR
       CHARACTER*9 CT6FIL
       CHARACTER*18 HNAMLBL,HNAMCNT,HNAMFFT,HNAMATM,HNAMLOW,HNAMNCG,
@@ -367,9 +370,10 @@ C     Common blocks for analytic derivative
 c note: comments may not be consistent - if doing a search, use both
 c  "derivative" and "jacobian"
 C     -------------------------
-      COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODTU,PTHODTD
+      COMMON /ADRPTH/ PTHDIR,PTHRDRU,PTHRDRD,AJID
       COMMON /ADRFRM/ HFMODI,HFMODTU,HFMODTD,HFMRDR
-      COMMON /IADFLG/ IANDER,NSPCRT
+      COMMON /IADFLG/ IANDER,NSPCRT,IMRGSAV
       COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
       COMMON /RETINF/ SPCRT
       common /dlaydlev/ilevdq,imoldq,iupdwn,
@@ -379,7 +383,11 @@ c          ipts  = same dimension as ABSRB
 c          ipts2 = same dimension as C
       parameter (ipts=5050,ipts2=6000)
       common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
-     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,dTco2C(ipts)
+     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,
+     &    dqco2C(ipts),dTco2C(ipts),
+     &    dqo3C(ipts),dTo3C(ipts),
+     &    dqo2C(ipts),dTo2C(ipts),
+     &    dqn2C(ipts),dTn2C(ipts)
 
 C     -------------------------
 C
@@ -503,9 +511,11 @@ C
       CALL QNTIFY(PTHODI,HFMODI)
       CALL QNTIFY(PTHODTU,HFMODTU)
       CALL QNTIFY(PTHODTD,HFMODTD)
-      CALL QNTIFY(PTHRDRU,HFMRDR)
+      fullpth=pthdir//pthrdru//ajid
+      CALL QNTIFY(fullpth,HFMRDR)
       CTAPE3 = PTHT3M
       IANDER = 2
+      IMRGSAV = 0
 
 c analytic jacobians:
 c   set flag for layer2level conversion
@@ -730,6 +740,13 @@ C
              write(ipr,*) 'value must be between ',(-mxspc),' and ',mxmol
              STOP
          ENDIF
+
+         if ((nspcrt.ge.0).and.(nspcrt.le.9)) then
+             write(ajid,'(a1,i1,a1)') '0',nspcrt,'_' ! need to change if ajid size changes
+         else
+             write(ajid,'(i2,a1)') nspcrt,'_' ! need to change if ajid size changes
+         endif
+
          icflg=nspcrt
          imoldq=-99  ! use to fill layer-to-level arrays
       ENDIF
@@ -994,9 +1011,12 @@ C     Analytic Derivative absorptance coefficient flag), then
 C     set DVOUT to DVSET as flag for interpolation in PNLINT,
 C     and preserve value of DVSET for use in SUBROUTINE PATH.
 C
+      if ((imrg.eq.10).and.(iod.eq.1))
+     &    STOP 'IOD MUST BE 3 FOR IMRG=10'
+
       IF (IOD.EQ.3) THEN
-         IF (DVSET.EQ.0.) STOP 'DVSET MUST BE NONZERO FOR IOD=3'
-         IF (DVOUT.NE.0.) STOP 'DVOUT MUST BE ZERO FOR IOD=3'
+c         IF (DVSET.EQ.0.) STOP 'DVSET MUST BE NONZERO FOR IOD=3'
+c         IF (DVOUT.NE.0.) STOP 'DVOUT MUST BE ZERO FOR IOD=3'
          DVOUT = ABS(DVSET)
       ENDIF
 C
@@ -1179,7 +1199,8 @@ c
       COMMON /CVNLTE/ HNMNLTE,HVNLTE
       COMMON /CVRSOL/ HNAMSOL,HVRSOL
 
-      COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODTU,PTHODTD
+      COMMON /ADRPTH/ PTHDIR,PTHRDRU,PTHRDRD,AJID
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
 C                                                                         A07650
       CHARACTER CFORM*11                                                  A03430
@@ -1195,13 +1216,18 @@ C
      *             hvnlte
       CHARACTER*18 HVRSOL
 C
-      CHARACTER*55 PTHT3M,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      CHARACTER*55 PTHT3M,PTHODI,PTHODTU,PTHODTD
+      CHARACTER*11 PTHRDRU,PTHRDRD
+      CHARACTER*3  PTHDIR,AJID
 C
       DATA PTHT3M /'TAPE3'/
 
-c note that PTHRDRU and PTHRDRD must have the same length string
+c *note that PTHRDRU and PTHRDRD must have the same length string
+c *also note that you must change the size declaration for PTHDIR if
+c you change the name of the path (in all routines that carry the common)
       DATA PTHODI/'ODint_'/,PTHODTU/'ODtodnw_'/,PTHODTD/'ODtoupw_'/,
-     *     PTHRDRU/'RDderivDNW_'/,PTHRDRD/'RDderivUPW_'/
+     *     PTHRDRU/'RDderivDNW_'/,PTHRDRD/'RDderivUPW_'/,
+     &     PTHDIR/'AJ/'/,AJID/'xx_'/
 
       DATA CFORM / 'UNFORMATTED'/                                         A03580
 c
@@ -1253,7 +1279,11 @@ c          ipts  = same dimension as ABSRB
 c          ipts2 = same dimension as C
       parameter (ipts=5050,ipts2=6000)
       common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
-     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,dTco2C(ipts)
+     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,
+     &    dqco2C(ipts),dTco2C(ipts),
+     &    dqo3C(ipts),dTo3C(ipts),
+     &    dqo2C(ipts),dTo2C(ipts),
+     &    dqn2C(ipts),dTn2C(ipts)
       data icflg,iuf/-999,81/
 c --- for analytic derivative ---
 
@@ -1426,7 +1456,7 @@ C                                                                         A09480
 C
 C     Common blocks for analytic derivative
 C     -------------------------
-      COMMON /IADFLG/ IANDER,NSPCRT
+      COMMON /IADFLG/ IANDER,NSPCRT,IMRGSAV
       COMMON /RETINF/ SPCRT
 C     -------------------------
 C
@@ -1613,12 +1643,16 @@ C                                                                         A11260
      *                MXMOL=38,MXTRAC=22)
 C
       CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD
-      CHARACTER*55 PTHRDRU,PTHRDRD,PTHRAD,PATH1,PATH2
+      CHARACTER*55 PTHRAD,PATH1,PATH2
+      CHARACTER*11 PTHRDRU,PTHRDRD
+      CHARACTER*3  PTHDIR,AJID
       CHARACTER*10 HFMODI,HFMODTU,HFMODTD,HFMRDR,HFMRAD,HFORM1,HFORM2
 C
 C     Common block for analytic derivative
 C     -------------------------
-      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      COMMON /IADFLG/ IANDER,NSPCRT,IMRGSAV
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD
+      COMMON /ADRPTH/ PTHDIR,PTHRDRU,PTHRDRD,AJID
       COMMON /ADRFRM/ HFMODI,HFMODTU,HFMODTD,HFMRDR
       COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
 c note: from continuum module
@@ -1626,7 +1660,11 @@ c          ipts  = same dimension as ABSRB
 c          ipts2 = same dimension as C
       parameter (ipts=5050,ipts2=6000)
       common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
-     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,dTco2C(ipts)
+     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,
+     &    dqco2C(ipts),dTco2C(ipts),
+     &    dqo3C(ipts),dTo3C(ipts),
+     &    dqo2C(ipts),dTo2C(ipts),
+     &    dqn2C(ipts),dTn2C(ipts)
       logical op
       common /dlaydlev/ilevdq,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
@@ -1805,13 +1843,17 @@ C                                                                         A12550
 C        ****  RADIANCE/DERIVATIVE CALCULATIONS  ****
 C
 C      IMRG=40 --- Downwelling radiance from prestored optical depths,
-C                  monochromatic (radiance & derivative calculations)
-C      IMRG=41 --- Upwelling radiance from prestored optical depths,
-C                  monochromatic (radiance & derivative calculations)
+C                  monochromatic
+C      IMRG=41 --- Downwelling & Upwelling radiance from prestored optical
+C                  depths,monochromatic
+C
 C      IMRG=42 --- Downwelling radiance from prestored optical depths,
-C                  scanned (derivative calculations only)
-C      IMRG=43 --- Upwelling radiance from prestored optical depths,
-C                  scanned (derivative calculations only)
+C                  scanned
+C      IMRG=43 --- Downwelling & Upwelling radiance from prestored optical
+C                  depths,scanned
+C
+C  Note for IMRG=40,41:  Monochromatic radiance & derivative calculations
+C  Note for IMRG=42,43:  Only the derivative calculations are scanned
 C
 C        ****  FLUX CALCULATIONS (Layer Radiance) -MONOCHROMATIC ****
 C
@@ -1988,26 +2030,31 @@ C
       ENDIF
 C
 C     ---------------------
+C                                     SPECIAL CASE -> IMRG=40-43, IEMIT=3
 c analytic derivatives/jacobians
 C
 C     If IMRG = 41/43 and IEMIT = 3, then precalculated optical depths
 C     on multiple files, precalculated cumulative optical depths on
-C     multiple files, and just-calculated layer absorptance
-C     coefficients are combined to produce analytic layer radiance
-C     derivatives (from ground to space) as well as total upwelling
-C     radiance, written to PTHRDR.  The results are monochromatic for
+C     multiple files, and just-calculated layer optical depths
+C     are combined to produce analytic layer radiance
+C     derivatives from both space-to-ground and ground-to-space
+C     (written to PTHRDRd and PTHRDRu) as well as total upwelling
+C     radiance (written to TAPE12).  The results are monochromatic for
 C     IMRG = 41, scanned for IMRG = 43.
 C
 C     If IMRG = 40/42 and IEMIT = 3, then precalculated optical depths
 C     on multiple files, precalculated cumulative optical depths on
-C     multiple files, and just-calculated layer absorptance
-C     coefficients are combined to produce analytic layer radiance
-C     derivatives (from space to ground) as well as total downwelling
-C     radiance, written to PTHRDR.  The results are monochromatic for
-C     IMRG = 40, scanned for IMRG = 42.
+C     multiple files, and just-calculated layer optical depths
+C     are combined to produce analytic layer radiance
+C     derivatives from space-to-ground (written to PTHRDRd) as well
+C     as total downwelling radiance (written to TAPE12).
+C     The results are monochromatic for IMRG = 40, scanned for IMRG = 42.
 C
-C                                     SPECIAL CASE -> IMRG=40-43, IEMIT=3
-C
+
+      IF ((IMRG.GE.40.AND.IMRG.LE.43).AND.(IEMIT.EQ.1)) THEN
+          STOP 'IEMIT must be 3 for 40 <= IMRG <= 43'
+      endif
+
       IF ((IMRG.GE.40.AND.IMRG.LE.43).AND.(IEMIT.EQ.3)) THEN
 
 c open TAPE81:  intermediate file containing continuum and molecular
@@ -2022,11 +2069,13 @@ C
 C
 C        Read card for scan for IMRG = 42,43
 C
-         IF (IMRG.GE.42) CALL SCANRD (DVINT,JEMIT)
+         IF (IMRG.GE.42) then
+            CALL SCANRD (DVINT,JEMIT)
+            IMRGSAV=IMRG
+         endif
 C
 C        Start loop over layers
 C
-
          ipass=0
          ipathlsav=0
 
@@ -2047,7 +2096,7 @@ c jump to this point if doing upwelling Jacobians (requires 2 passes)
          LAYHDR = LAYER
          CALL OPPATH
 
-c ignore imrg=42/43 options for now
+c ignore imrg=42/43 options for now (they are taken care of with IMRGSAV)
 c two passes for upwelling derivatives (ipathl=1)
 c first pass computes downwelling, second upwelling
          if ((ipathl.eq.1).and.(ipass.eq.1)) then
@@ -2113,26 +2162,11 @@ C
 C
          jpathl=ipathl  ! use to pass correct ipathl to emadl1 and emadmg
          CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
+
          REWIND MFILE
-C
-C        Scan if IMRG=42/43, copy derivatives if IMRG=40/41
-C        If scanning, reset values of HWF1,DXF1,NX1,N1MAX which may
-C        have been been changed in HIRAC1 after having been read in
-C        in SCANRD, but before being used in SCNMRG.
-C
-         IF (IMRG.GE.42) THEN
-            MMFILE = KTEMP
-            HWF1 = HWFS
-            DXF1 = DXFS
-            NX1 = NFS
-            N1MAX = NFMAXS
-            CALL SCNMRG (MMFILE,KFILAD)
-            CALL ENDFIL (KFILAD)
-         ELSEIF (IMRG.GE.40) THEN
-            MMFILE = KTEMP
-            REWIND MMFILE
-            CALL COPYFL (NPTS,MMFILE,KFILAD)  ! move from KTEMP to KFILAD
-         ENDIF
+         MMFILE = KTEMP
+         REWIND MMFILE
+         CALL COPYFL (NPTS,MMFILE,KFILAD) ! move from KTEMP to KFILAD
 
 c check to see if this is first of 2 passes (for upwelling derivatives)
 c and return to the appropriate location if this is the last layer
@@ -2145,8 +2179,9 @@ c upwelling jacobians
 
                  INQUIRE (UNIT=K12TMP,OPENED=OP)
                  IF (OP) CLOSE (K12TMP)
-                 OPEN(UNIT=K12TMP,FILE='TAPE12dnw.TMP',
-     &               FORM='unformatted',STATUS='UNKNOWN')
+c                 OPEN(UNIT=K12TMP,FILE='TAPE12dnw.TMP',
+                 OPEN(UNIT=K12TMP,
+     &               FORM='unformatted',STATUS='SCRATCH')
                  rewind(mfile)
                  CALL COPYFL (NPTS,MFILE,K12TMP)
 
@@ -2156,12 +2191,12 @@ c derivatives of surface terms
 
 c dL/demis and dL/dTskin
                      if (icflg.eq.-1) then
-                         write(*,*) 'emis/tsfc deriv'
+c                         write(*,*) 'emis/tsfc deriv'
                          call sfcderiv(1,k12tmp,tbound)
                      endif
 c dL/drefl
                      if (icflg.eq.-2) then
-                         write(*,*) 'refl deriv'
+c                         write(*,*) 'refl deriv'
                          call sfcderiv(2,k12tmp,tbound)
                      endif
 
@@ -2181,6 +2216,29 @@ c close temporary files if they were used
 
                  INQUIRE (UNIT=KSFCTMP,OPENED=OP)
                  IF (OP) CLOSE (KSFCTMP)
+
+C IMRGSAV=42,43 for scanning of jacobian files
+C   If scanning, reset values of HWF1,DXF1,NX1,N1MAX which may
+C   have been been changed in HIRAC1 after having been read in
+C   in SCANRD, but before being used in SCNMRG.
+C
+C   Scanning is done after all files are complete, since the
+C   downwelling term is needed in the calculation of the upwelling
+                 IF (IMRGSAV.GE.42) THEN
+c                    write(*,*) 'entering scnmrg section for aj'
+
+                    HWF1 = HWFS
+                    DXF1 = DXFS
+                    NX1 = NFS
+                    N1MAX = NFMAXS
+
+                    close(kfilad)  ! make sure last file is closed
+                    close(kfilad2) ! make sure last file is closed
+
+                    call scnmrg_aj(nlayer,iupdwn)
+
+c                    write(*,*) 'done with scnmrg'
+                 ENDIF
 
                  RETURN  ! all done
              endif
@@ -3017,14 +3075,12 @@ C                                                                         A18350
          LH2SAV = LH2                                                     A18410
 C                                                                         A18420
          NMOLIN = NMOL+1                                                  A18430
-         DO 20 MOL = NMOLIN, 38                                           A18440
+         DO 20 MOL = NMOLIN, MXMOL                                        A18440
             DO 19 ILAYR = 1, NLAYRS                                       A18450
                WKL(MOL,ILAYR) = 0.                                        A18460
  19         continue
  20      CONTINUE                                                         A18470
 C                                                                         A18480
-
-         write(*,*) 'dummy write for debugging'
          RETURN                                                           A18490
       ENDIF                                                               A18500
 C                                                                         A18510
@@ -3103,7 +3159,6 @@ C
 C                                                                         A19170
       IMPLICIT REAL*8           (V)                                     ! A19180
 C                                                                         A19190
-      PARAMETER (NTMOL=38)
 C                                                                         A19210
 C     SUBROUTINE PATH INITIALIZES LINFIL AND INPUTS LAYER PARAMETERS      A19220
 C     SUBROUTINE PATH INPUTS AND OUTPUTS HEADER FROM LINFIL AND           A19230
@@ -3118,7 +3173,7 @@ C
 C
 C     Common blocks for analytic derivative
 C     -------------------------
-      COMMON /IADFLG/ IANDER,NSPCRT
+      COMMON /IADFLG/ IANDER,NSPCRT,imrgsav
 C     -------------------------
 C
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A19280
@@ -3178,7 +3233,7 @@ C                                                                         A19580
 C                                                                         A19630
       CHARACTER*20 HEAD20
       CHARACTER*6 MOLID                                                   A19640
-      COMMON /MOLNAM/ MOLID(0:NTMOL)                                      A19650
+      COMMON /MOLNAM/ MOLID(0:MXMOL)                                      A19650
       CHARACTER*7 HEAD7
       CHARACTER*6 HOLN2                                                   A19660
       CHARACTER*5 HEAD5
@@ -3186,7 +3241,7 @@ C                                                                         A19630
       CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,  ht1,ht2
       CHARACTER*3 CINP,CINPX,CBLNK                                        A19680
       DIMENSION FILHDR(2),AMOUNT(2),AMTSTR(2)                             A19690
-      DIMENSION HEDXS(15),WMT(38),SECL(MXFSC),WXT(38),WTOTX(MXLAY)
+      DIMENSION HEDXS(15),WMT(mxmol),SECL(MXFSC),WXT(38),WTOTX(MXLAY)
       DIMENSION WDRAIR(MXLAY)
 C                                                                         A19710
       EQUIVALENCE (XID(1),FILHDR(1))                                      A19720
@@ -3218,11 +3273,15 @@ C                                                                         A19900
       ENDIF                                                               A19960
 C                                                                         A19970
       DO 10 M = 1, 38                                                     A19980
-         WMT(M) = 0.                                                      A19990
+c         WMT(M) = 0.                                                      A19990
          WK(M) = 0.                                                       A20000
          WXM(M) = 0.                                                      A20010
          WXT(M) = 0.                                                      A20020
    10 CONTINUE                                                            A20030
+
+      do m=1,mxmol
+          wmt(m) = 0.
+      enddo
 C                                                                         A20040
       SUMN2 = 0.                                                          A20050
       ISTOP = 0                                                           A20060
@@ -3786,11 +3845,32 @@ C     value of DVOUT), then test to be sure that DVOUT is finer than
 C     the monochromatic DV (and thus ensuring enough monochromatic points
 C     are available to reach the V2 endpoint for the interpolated
 C     spectrum).
+c
+c Special case:  if imrg=10,40-43, the user is doing analytic jacobians
+c    ---> set dvout to be slightly smaller than dv
+c    ---> negative dvset implies the user wants a specific value,
+c         (this is tested for above, and iset=1 for this case)
+c         so use that one rather than re-setting to dv
+c         (for this case at this point in the code, dvset>0 and
+c          dvout=dvset, so nothing needs to be done)
 C
       IF (IOD.eq.1 .or. IOD.ge.3) THEN
-         IF (DV.LT.DVOUT) THEN
-            WRITE (IPR,968) DVOUT,DV
-            STOP 'PATH; DVOUT ERROR, SEE TAPE6'
+          if ((imrg.eq.10).or.((imrg.ge.40).and.(imrg.le.43))) then
+              if (iset.eq.0) then
+                  write(ipr,*) 'Reset DVOUT to 0.999*DV for IMRG=',imrg
+                  write(ipr,*) 'and reset DVSET to DVOUT'
+
+                  idvout=1.0e8*(0.999*dv)
+                  dvout=idvout/1.0e8
+                  dvset=dvout
+                  write(ipr,*) 'new dvout, dvset, and dv: ',
+     &                dvout,dvset,dv
+              endif
+          else
+              IF (DV.LT.DVOUT) THEN
+                  WRITE (IPR,968) DVOUT,DV
+                  STOP 'PATH; DVOUT ERROR, SEE TAPE6'
+              endif
          ENDIF
       ENDIF
 C
@@ -3855,6 +3935,11 @@ C     (molecular amount being retrieved), then set the column amount
 C     of the species to be retrieved to 1.0E20, and if IANDER is 2,
 C     then zero all molecules not being retrieved.
 C
+C     Note that the code is not setup to compute the derivative of
+C     a cross-sectional (IXSECT=1) molecule.  (For future development,
+C     need to make a special flag for this to avoid conflict with
+C     the NSPCRT variable).
+C
       IF ((IEMIT.EQ.3).AND.
      &    ((NSPCRT.GT.0).and.(NSPCRT.LE.MXMOL))) THEN
 c
@@ -3863,18 +3948,33 @@ c     molecule to be retrieved
 c
          DO 148 L = 1, NLAYRS
             IF (IANDER.EQ.2) THEN
+
+c molecules (save one of interest)
                wklsav =  wkl(nspcrt,l)
                DO 147 M = 1,NMOL
                   WKL(M,L) = 0.0
  147           CONTINUE
+
+c cross-sectional molecules
+               IF (IXSECT.GE.1) THEN
+                   DO M=1,IXMOLS
+                       XAMNT(M,L)=0.0
+                   ENDDO
+               ENDIF
+
             ENDIF
+
 c if change these two lines for abs coef or o.d., change write 1020/1021
 c            WKL(NSPCRT,L) = 1.0E20  ! use for absorption coef scaling
             wkl(nspcrt,l) = wklsav  ! use if o.d. desired (dR/dlnx)
+
  148     CONTINUE
+
 c         WRITE(IPR,1020)
          WRITE(IPR,1021)
+         if (ixsect.ge.1) write(ipr,1022)
          WRITE(IPR,*) 'WKL, NSPCRT: ',NSPCRT
+         WRITE(IPR,*) '  Layer, Amount '
          DO L=1,NLAYRS
              WRITE(IPR,*) L,WKL(NSPCRT,L)
          ENDDO
@@ -4216,6 +4316,12 @@ C                                                                         A24050
      *        55X,'**   (See subroutine path in lblrtm.f)        **',/,
      *        55X,'**                                            **',/,
      *        55X,'************************************************',/)
+ 1022 FORMAT (55X,'************************************************',/,
+     *        55X,'**                                            **',/,
+     *        55X,'** Note that XS species were also zeroed...   **',/,
+     *        55X,'**                                            **',/,
+     *        55X,'************************************************',/)
+
 C                                                                         A24440
       END                                                                 A24450
       BLOCK DATA BOPDPT                                                   A07600
@@ -4499,6 +4605,96 @@ C
          end
 c-----------------------------------------------------------------------
 c
+      subroutine scnmrg_aj(nlayer,iupdwn)
+c
+c subroutine to call scnmrg for the layer jacobian files
+c
+c nlayer is number of layers
+c iupdwn is used to determine what files are needed
+c  0 = downwelling only
+c  1 = up and downwelling
+c
+      IMPLICIT REAL*8 (V)
+
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXMOL=38)
+
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+
+      COMMON /IADFLG/ IANDER,NSPCRT,imrgsav
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
+
+      CHARACTER*61 FILE1,FILE2
+      DATA FILE1 /
+     *     '                                                         '/,
+     *     FILE2 /'scnfile.TMP'/
+
+      data iu1,iu2,iu3/82,83,84/  ! i/o file unit numbers
+
+      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD
+      CHARACTER*11 PTHRDRU,PTHRDRD
+      CHARACTER*3  PTHDIR,AJID
+      CHARACTER*17 FULLPTH  ! change if PTHDIR//PTHRDRD//AJID changes size
+
+      COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODTU,PTHODTD
+      COMMON /ADRPTH/ PTHDIR,PTHRDRU,PTHRDRD,AJID
+
+      CHARACTER*10 HFMODI,HFMODTU,HFMODTD,HFMRDR
+      COMMON /ADRFRM/ HFMODI,HFMODTU,HFMODTD,HFMRDR
+
+c------
+
+c loop over layers
+      do 100 ilay=1,nlayer
+
+c loop over type
+c  iupdwn = 0 => downwelling only
+c  iupdwn = 1 => up and downwelling
+
+          do 30 jud=0,iupdwn
+
+c construct filenames
+             if (jud.eq.0) then
+                FULLPTH=PTHDIR//PTHRDRd//AJID
+                WRITE(FILE1,HFMRDR) FULLPTH,ILAY
+             else
+                FULLPTH=PTHDIR//PTHRDRu//AJID
+                WRITE(FILE1,HFMRDR) FULLPTH,ILAY
+             endif
+             write(ipr,*) ' '
+             write(ipr,*) 'scnmrg_aj Files ->'
+             write(ipr,'(a61)') file1
+             write(ipr,'(a61)') file2
+             write(ipr,*) '<- scnmrg_aj Files'
+
+             open(iu1,file=file1,form='unformatted')
+             open(iu2,form='unformatted',status='SCRATCH')
+
+             call scnmrg(iu1,iu2)  ! scan iu1 into iu2
+
+             close(iu1,status='delete')  ! file deleted on close
+             rewind(iu2) ! don't want this deleted yet
+
+             open(iu1,file=file1,form='unformatted',status='NEW')
+             npts=0 ! dummy number not needed
+             call copyfl(npts,iu2,iu1) ! copy iu2 into iu1
+             call endfil (iu1)  ! puts -99 in last line of file
+
+             close(iu1) ! file contains scanned derivative
+             close(iu2) ! file will be deleted on close
+
+
+c done with down or upwelling case
+ 30       continue              ! jud
+
+  100 continue  ! ilay loop over layers
+
+      return
+      end
+c-----------------------------------------------------------------------
+c-----------------------------------------------------------------------
+c
       subroutine layer2level
 c
 c subroutine to convert layer derivatives to level derivatives
@@ -4513,7 +4709,7 @@ c  1 = up and downwelling
       common /dlaydlev/ilevdq,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
-      COMMON /IADFLG/ IANDER,NSPCRT
+      COMMON /IADFLG/ IANDER,NSPCRT,imrgsav
       COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
 
       character*8      XID,       HMOLID,      YID
@@ -4540,24 +4736,38 @@ C
 
       data iu1,iu2,iu3/82,83,84/  ! i/o file unit numbers
 
-      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
-      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD
+      CHARACTER*11 PTHRDRU,PTHRDRD
+      CHARACTER*3  PTHDIR,AJID
+      CHARACTER*17 FULLPTH  ! change if PTHDIR//PTHRDRD//AJID changes size
+                            ! also need to change levrdru,levrdrd (below)
+
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD
+      COMMON /ADRPTH/ PTHDIR,PTHRDRU,PTHRDRD,AJID
 
       CHARACTER*10 HFMODI,HFMODTU,HFMODTD,HFMRDR
       COMMON /ADRFRM/ HFMODI,HFMODTU,HFMODTD,HFMRDR
 
       character*4 txtlev
       data txtlev/"LEV_"/
-      character*59 LEVRDRu,LEVRDRd
+c change the following if PTHDIR//txtlev//PTHRDRD//AJID changes size
+      character*21 LEVRDRu,LEVRDRd
       character*10 hfmrdru,hfmrdrd
 
       dimension RDL(2410),RDU(2410),RDLEV(2410)
       dimension DUMRD(2410)
 c------
 
+      do i=1,2410
+         rdl(i)=-999.
+         rdu(i)=-999.
+         dumrd(i)=-999.
+      enddo
+
 c check for surface term (easier to put here than in main routine)
       if (icflg.lt.0) then
           write(*,*) 'no layer2level for surface terms'
+          write(IPR,*) 'no layer2level for surface terms'
           return
       endif
 
@@ -4566,9 +4776,9 @@ c need to close last layer derivative files that were used
       close(KFILAD2)
 
 c form level derivative file prefix and get format statement
-      levrdru=txtlev//pthrdrU  ! upwelling
+      levrdru=pthdir//txtlev//pthrdrU//ajid  ! upwelling
       call qntify(levrdru,hfmrdru)
-      levrdrd=txtlev//pthrdrD  ! downwelling
+      levrdrd=pthdir//txtlev//pthrdrD//ajid  ! downwelling
       call qntify(levrdrd,hfmrdrd)
 
 c set derivative flag based on nspcrt
@@ -4592,12 +4802,16 @@ c  iupdwn = 1 => up and downwelling
 
 c construct filenames
               if (jud.eq.0) then
-                  WRITE(FILE1,HFMRDR) PTHRDRd,ILAY1
-                  WRITE(FILE2,HFMRDR) PTHRDRd,ILAY
+                  fullpth=pthdir//pthrdrd//ajid
+                  WRITE(FILE1,HFMRDR) fullpth,ILAY1
+                  fullpth=pthdir//pthrdrd//ajid
+                  WRITE(FILE2,HFMRDR) fullpth,ILAY
                   WRITE(FILE3,HFMRDRd) LEVRDRd,ilev
               else
-                  WRITE(FILE1,HFMRDR) PTHRDRu,ILAY1
-                  WRITE(FILE2,HFMRDR) PTHRDRu,ILAY
+                  fullpth=pthdir//pthrdru//ajid
+                  WRITE(FILE1,HFMRDR) fullpth,ILAY1
+                  fullpth=pthdir//pthrdru//ajid
+                  WRITE(FILE2,HFMRDR) fullpth,ILAY
                   WRITE(FILE3,HFMRDRu) LEVRDRu,ilev
               endif
               write(ipr,*) ' '
@@ -4635,14 +4849,14 @@ c begin loop over panels
                   CALL BUFIN (iu1,KEOF,PNLHD(1),NPHDRF)
                   IF (KEOF.LE.0) GO TO 20
                   CALL BUFIN (iu1,KEOF,RDL(1),NLIMO)
-                  CALL BUFIN (iu1,KEOF,DUMRD(1),NLIMO)
+                 IF (IMRGSAV.LT.42) CALL BUFIN(iu1,KEOF,DUMRD(1),NLIMO)
               endif
 
               if (ilay.ne.ilevdq+1) then
                   CALL BUFIN (iu2,KEOF,PNLHD(1),NPHDRF)
                   IF (KEOF.LE.0) GO TO 20
                   CALL BUFIN (iu2,KEOF,RDU(1),NLIMO)
-                  CALL BUFIN (iu2,KEOF,DUMRD(1),NLIMO)
+                  IF (IMRGSAV.LT.42) CALL BUFIN(iu2,KEOF,DUMRD(1),NLIMO)
               endif
 
 c if not upper or lower level, combine rdl and rdu
@@ -4669,7 +4883,8 @@ c dqdU is conversion of layer to upper level of layer
               endif
 
 c zero dummy read for output to file
-c  (want to have 2 panel file for scanning purposes)
+c  want to have 2 panel file for scanning purposes
+c  will not write dumrd if it is already a scanned file
               do j=1,nlimO
                   dumrd(j)=0.0
               enddo
@@ -4677,7 +4892,7 @@ c  (want to have 2 panel file for scanning purposes)
 c write panel and level derivative
               call bufout (iu3,pnlhd(1),nphdrf)
               call bufout (iu3,rdlev(1),nlimo)
-              call bufout (iu3,dumrd(1),nlimo)
+              IF (IMRGSAV.LT.42) call bufout(iu3,dumrd(1),nlimo)
 
 c end loop over panels
               goto 10
@@ -4685,13 +4900,14 @@ c end loop over panels
 c done with this set of panels
   20          continue
 
+c close files
+             call endfil (iu3)  ! puts -99 in last line of file
+             close(iu1)
+             close(iu2)
+             close(iu3)
+
 c done with down or upwelling case
   30      continue  ! jud
-
-c close files
-          close(iu1)
-          close(iu2)
-          close(iu3)
 
   100 continue  ! ilev loop over levels
 

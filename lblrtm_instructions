@@ -69,10 +69,25 @@ C     presently: %H%  %T%
                                                                                 
                                                                                 
       TAPE39      AFGL PLOT FILE                                                
+
+      OUTPUT JACOBIAN/DERIVATIVE FILES:
                                                                                 
+          RDderivDNW_xx_zzz        Layer downwelling Jacobian/derivative files  
+          RDderivUPW_xx_zzz        Layer upwelling Jacobian/derivative files 
+                                    (includes downwelling and surface components)
+          LEV_RDderivDNW_xx_zzz    Level downwelling Jacobian/derivative files  
+          LEV_RDderivUPW_xx_zzz    Level upwelling Jacobian/derivative files 
+                                    (includes downwelling and surface components)
+          Note: -> xx   signifies the parameter for which the radiance analytic Jacobian is calculated
+                -> zzz  is the layer number starting from the lowest altitude
+                -> Layer output Jacobian/derivative files:
+                        - are in the same TAPE12 two-panel binary format
+                        - first panel containing the Jacobian, and the second the total transmission
+                        - scanned layer files (IMRG=42,43) will only have a single panel (like TAPE10)
+                -> Level output Jacobian/derivative files:
+                        - are in single-panel binary format (like TAPE10) 
+   
   ---------------------------------------------------------------------         
-
-
  
 
  RECORD 1.1
@@ -150,10 +165,11 @@ C     presently: %H%  %T%
                      = 1  radiance and transmittance
                      = 2  solar radiance (requires previously calculated optical depths or transmittances and binary
                                solar radiation file SOLAR.RAD)
-                     = 3  radiance derivative
-                               - requires IMRG=40 or IMRG=41 	
-                               Note: - requires previously calculated optical depths files 
-                                       (created by setting IEMIT=0, IMRG=10, IOD=3)
+                     = 3  radiance analytic Jacobian/derivative
+                               - requires IMRG=40 or IMRG=41
+                               - requires a subdirectory named "AJ" to contain the analytic Jacobian/derivative files 	
+                                 Note: - requires previously calculated optical depths files 
+                                         (created by setting IEMIT=0, IMRG=10, IOD=3)
                                      
  
           ISCAN   (0,1,2,3) flag for SCANFN    1 = scanning function
@@ -190,9 +206,7 @@ C     presently: %H%  %T%
                    = 9  radiance merge with aerosols; precalculated KFILE
                           ** uses merge path as defined by precalculated KFILE **
                    = 10 optical depths only; results for each layer on different files
-                          layer optical depth file = "ODint_"
-                          upwelling total optical depth file = "ODtoupw_"
-                          downwelling total optical depth file = "ODtodnw_"
+                          ** requires IOD=3 **
 
                          ---------------------------------------------------------
                          |                                                       |
@@ -209,9 +223,11 @@ C     presently: %H%  %T%
                          |               ODtodnw_  for IMRG=10 and IOD=3         |
                          |               ODtoupw_  for IMRG=10 and IOD=3         |
                          |               ODexact_  for IMRG=1  and IOD=2         |
+                         |                                                       |
+                         |      layer optical depth file = "ODint_"              |
+                         |      upwelling total optical depth file = "ODtoupw_"  |
+                         |      downwelling total optical depth file = "ODtodnw_"|
                          ---------------------------------------------------------
-
-
 
 
            IMRG options are continued on next page.
@@ -248,7 +264,7 @@ C     presently: %H%  %T%
                                                             ---------------     ---------------     -------       -------
                            monochromatic (total merged)           40                  41                           MFILE
 
-                          For radiance derivatives (IMRG.eq.40 .or. IMRG.eq.41), a previous run with IMRG.eq.10 is required
+                          For radiance analytic Jacobians/derivatives (IMRG.eq.40 .or. IMRG.eq.41), a previous run with IMRG.eq.10 is required
                           to set the proper optical depth files.
 
 
@@ -449,12 +465,12 @@ C     presently: %H%  %T%
  
                  I5
 
-	Specices number for radiance derivative
+	     NSPCRT  (-2,-1,0,1,...N)    species number for radiance analytic Jacobian/derivative
 
-             -2 = surface reflectivity
-             -1 = surface emissivity and surface skin temperature
-              0 = atmospheric temperature profile
-         1 -> N = reference number in TABLE 1 for molecular species
+                      -2 = surface reflectivity
+                      -1 = surface emissivity and surface skin temperature
+                       0 = atmospheric temperature profile
+                  1 -> N = reference number in TABLE 1 for molecular species
 
 
 
@@ -1215,7 +1231,7 @@ C     presently: %H%  %T%
  
       JLONG        flag for reading long record for molecular information
 
-			  = J  read VMOL(K) in E15.8 format
+			  = L  read VMOL(K) in E15.8 format
 
       JCHAR(K)     flag for units and input options for
                    the K'th molecule (see Table I)
@@ -3075,13 +3091,6 @@ profile input in TAPE5
 REPEAT TAPE4(RECORDS 3.1, 3.2 and 3.3) for each molecule : H2O, CO2, O3, C0 and NO
 
  _________________________________________________________________________________________________________________________________
-
-Special LINUX note:
-
-When running LINUX on the PGI compile in DOUBLE precision we encountered a "bug" with the 
-compile.  Thus, one needs to run the script, src/linux_dbl_script, before using the makefile,
-makefiles/makelbl.pgi_linux_f90_dbl.
-
 
 
  

@@ -1,4 +1,12 @@
 
+LBLRTM_v9.0
+
+1) Implementation of analytic Jacobians/derivatives in LBLRTM. This effort was supported 
+   by EUMETSAT and designed to require a minimal amount of setup on the part of 
+   the user while exploiting pre-existing LBLRTM calculation options.  Refer to user
+   instructions and additional documentation for more details.   
+   (H. Snell, M.W. Shephard, S.A. Clough, and S. Tjemkes)  
+
 LBLRTM_v8.4
 
 1) Minor bug fixs to the LOWTRAN7 routin in LBLRTM (lbllow.f) that

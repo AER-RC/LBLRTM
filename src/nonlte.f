@@ -523,7 +523,8 @@ C                                                                         B00470
 C                                                                         B00480
 C     Common blocks from analytic derivatives
 C     -------------------------
-      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD
+      COMMON /ADRPTH/ PTHDIR,PTHRDRU,PTHRDRD,AJID
 C     -------------------------
       COMMON /RCNTRL/ ILNFLG
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    B00490
@@ -576,10 +577,10 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
 C                                                                         B00870
-      PARAMETER (NTMOL=38)   
+      PARAMETER (MXMOL=38)   
 C                                                                         B00890
-      COMMON /ISVECT/ ISO_MAX(NTMOL),SMASSI(ntmol,9)
-      COMMON /LNC1/ RHOSLF(ntmol),ALFD1(42,9),SCOR(42,9),ALFMAX,  
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
+      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,  
      *              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,      B00930
      *              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,       B00940
      *              PAVP2,RECTLC,TMPDIF,ILC                               B00950
@@ -591,7 +592,9 @@ c     Total timing array for layer line-by-line calculation
       common /timing_lay_nlte/ time_lay_lbl(20)
 C                                                                         B00970
       REAL L4TIM,L4TMR,L4TMS,LOTHER
-      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD
+      CHARACTER*11 PTHRDRU,PTHRDRD
+      CHARACTER*3  PTHDIR,AJID
       CHARACTER*10 HFMODL
       CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
       LOGICAL OP                                                          B00990
@@ -1154,10 +1157,10 @@ C                                                                         B05000
      &               NUMH2O,NUMCO2,NUMO3,NUMCO,NUMNO                      603430
 
 C                                                                         B05080
-      PARAMETER (NTMOL=38) 
+      PARAMETER (MXMOL=38) 
 C                                                                         B05100
-      COMMON /ISVECT/ ISO_MAX(NTMOL),SMASSI(ntmol,9)
-      COMMON /LNC1/ RHOSLF(ntmol),ALFD1(42,9),SCOR(42,9),ALFMAX, 
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
+      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX, 
      *              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,      B05140
      *              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,       B05150
      *              PAVP2,RECTLC,TMPDIF,ILC                               B05160
@@ -1228,7 +1231,7 @@ C                                                                         B05670
 C
 c     check if lines are within allowed molecular and isotopic limits
 c
-         if (m.gt.ntmol .or. m.lt. 1) then
+         if (m.gt.mxmol .or. m.lt. 1) then
             call line_exception (1,ipr,h_lncor1,m,nmol,iso,iso_max)
             go to 25
          else if (iso .gt. iso_max(m)) then
@@ -1892,9 +1895,9 @@ C                                                                         D00020
 C                                                                         D00040
 C     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4    D00050
 C                                                                         D00060
-      PARAMETER (NTMOL=38) 
+      PARAMETER (MXMOL=38) 
 C                                                                         D00080
-      COMMON /ISVECT/ ISO_MAX(NTMOL),SMASSI(ntmol,9)
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D00110
 C                                                                         D00120
       REAL*8            HID,HMOLIL,HID1,HLINHD,VMNCPL,VMXCPL,EXTSPC     & D00130
@@ -1936,7 +1939,7 @@ C                                                                         D00300
 C                                                                         D00440
       REAL L4TIM,L4TMR,L4TMS,LOTHER
       DIMENSION MEFDP(64)                                                 D00450
-      DIMENSION SCOR(42,9),RHOSLF(ntmol),ALFD1(42,9)
+      DIMENSION SCOR(42,9),RHOSLF(mxmol),ALFD1(42,9)
       DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4)               D00470
       DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2),AMOLB(250)             D00480
 C                                                                         D00490
@@ -2056,7 +2059,7 @@ C                                                                         D01430
 C
 c     check if lines are within allowed molecular and isotopic limits
 c
-         if (m.gt.ntmol .or. m.lt. 1) then
+         if (m.gt.mxmol .or. m.lt. 1) then
             call line_exception (1,ipr,h_linf4,m,nmol,iso,iso_max)
             go to 50
          else if (iso .gt. iso_max(m)) then
