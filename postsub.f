@@ -129,7 +129,7 @@ C  NLIMF IS ONE MORE THAN THE SIZE OF OUTPUT (CONVOLVED) ARRAY            I01240
 C                                                                         I01250
       NLIMF = 2401                                                        I01260
       NREN = 0                                                            I01270
-      NSHIFT = 0                                                          I01280
+      NSHIFT = 32                                                         I01280
       IFLSAV = 0                                                          I01290
       IPRT = 1                                                            I01300
 C                                                                         I01310
@@ -337,7 +337,7 @@ C                                                                         I03250
       TIMCNV = 0.                                                         I03270
       TIMPNL = 0.                                                         I03280
       IEOFSC = 1                                                          I03290
-      NLO = NBOUND+1                                                      I03300
+      NLO = NSHIFT+1                                                      I03300
       SUMIN = 0.                                                          I03310
       NHI = NLIMF+NSHIFT-1                                                I03320
       DO 30 I = 1, MAXF                                                   I03330
@@ -346,7 +346,7 @@ C                                                                         I03250
    30 CONTINUE                                                            I03360
       INIT = 0                                                            I03370
       IDATA = -1                                                          I03380
-      VFT = V1-2.*BOUND                                                   I03390
+      VFT = V1-FLOAT(NSHIFT)*DV                                           I03390
       VBOT = V1-BOUND                                                     I03400
       VTOP = V2+BOUND                                                     I03410
 C                                                                         I03420
@@ -528,7 +528,7 @@ C                                                                         I05170
       PI = 2.*ASIN(1.)                                                    I05180
 C                                                                         I05190
       NLIMF = 2401                                                        I05200
-      NSHIFT = 0                                                          I05210
+      NSHIFT = 32                                                         I05210
       READ (IRD,900,END=10) HWHM,V1,V2,JEMIT,JFN,JVAR,SAMPL,NNFILE,NPTS   I05220
 C                                                                         I05230
       IF (HWHM.LE.0.) THEN                                                I05240
@@ -990,7 +990,7 @@ C                                                                         I09530
       IDATA = -1                                                          I09660
       IPANEL = -1                                                         I09663
       JFLG = -1                                                           I09667
-      VFT = V1-2.*BOUND                                                   I09670
+      VFT = V1-FLOAT(NSHIFT)*DV                                           I09670
       VBOT = V1-BOUND                                                     I09680
       VTOP = V2+BOUND                                                     I09690
 C                                                                         I09700
