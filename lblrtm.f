@@ -546,13 +546,8 @@ C                                                                         A04720
          ENDIF                                                            A04840
       ENDIF                                                               A04850
 C
-C     Check values of IOD and IMRG and
-C     set IMULT equal to IOD, the flag for optical depth DV
+C     Set IMULT equal to IOD, the flag for optical depth DV
 C
-      IF (IOD.GE.1.AND.IMRG.NE.1) THEN
-         WRITE (IPR,955)
-         STOP ' IF IOD>=1 THEN IMRG MUST = 1'
-      ENDIF
       IMULT = IOD
 C
       IF (IAERSL.GE.1) LOWFLG = 1                                         A04870
@@ -811,12 +806,8 @@ C                                                                         A07280
   930 FORMAT (I1)                                                         A07350
   935 FORMAT (14(A6,3X))                                                  A07360
   940 FORMAT (1X,I4,13I9)                                                 A07370
-  945 FORMAT ('0 IOD=1 AND IEMIT=0 IS NOT IMPLEMENTED ',/,                A07380
-     *        '  CHANGE IEMIT TO 1 OR IOD TO 0 ')                         A07390
   950 FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,                 A07400
      *        '  CHANGE IEMIT TO 1 OR IHIRAC TO 1 ')                      A07410
-  955 FORMAT ('0 IMRG MUST BE ONE WHEN NOT MERGING ',
-     *        'OPTICAL DEPTHS (IOD>=1)')
   970 FORMAT (8E10.3,4X,I1)                                               A07460
   975 FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,            A07470
      *        ' AND IS NOT BOUNDED BY (0.,1.) ')                          A07480
@@ -2698,7 +2689,7 @@ C     TYPE IS LESS THAN 0.8                                               A22680
 C                                                                         A22690
                DV = OLDDV                                                 A22700
                ITYPE = 0                                                  A22710
-               IF (IEMIT.EQ.0) THEN                                       A22720
+               IF ((IEMIT.EQ.0).AND.(DVOUT.EQ.0.)) THEN                   A22720
                   ITYPE = TYPE/(1.-TYPE)+0.5                              A22730
                   DV = DV*FLOAT(ITYPE+1)/FLOAT(ITYPE)                     A22740
                   ITYPE = -ITYPE                                          A22750
@@ -2754,7 +2745,7 @@ C
       IF (ISTOP.EQ.1) WRITE (IPR,965)                                     A23110
       IF (ISTOP.EQ.1) STOP 'PATH; ISTOP EQ 1'                             A23120
 C
-C     If DVOUT is nonzero (IOD=1,IMRG=1 -> interpolate optical depths to
+C     If DVOUT is nonzero (IOD=1 -> interpolate optical depths to
 C     value of DVOUT), then test to be sure that DVOUT is finer than
 C     the monochromatic DV (and thus ensuring enough monochromatic points
 C     are available to reach the V2 endpoint for the interpolated
@@ -2770,10 +2761,6 @@ C
 C     If DVSET is nonzero (set the final layer DV to the value of
 C     DVSET), then test to be sure that DVSET is not more than
 C     20% different than the monochromatic DV.
-C
-C     First, test if, for IOD=1 (interpolation of monchromatic optical
-C     depths without forcing smallest DV to DVSET), the monochromatic
-C     DV is coarser than outgoing interpolation DV.
 C
       IF (DVSET.GT.0.) THEN                                               A23130
          RATIO = 1.                                                       A23140
