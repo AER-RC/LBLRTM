@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                    9 May 1997
+                                    13 July 1998
  
  
  
@@ -854,6 +854,8 @@ C     presently: %H%  %T%
 
            IFXTYP    = 0  leave ITYL(L) and ITYX(L) fields blank on TAPE7 (if IPUNCH = 1, default)
                      = 1  calculate and write ITYL(L) and ITYX(L) to TAPE7 (if IPUNCH = 1)
+                     = 2  calculate and write ITYL(L) and ITYX(L) to file "IFIXTYPE" (if IPUNCH = 1)
+                     = -2 use values of ITYL(L) and ITYX(L) from file "IFIXTYPE"
 
                           NOTE: See RECORD 2.1.1 and RECORD 2.2.3 for ITYL(L) and ITYX(L)
 
@@ -996,11 +998,11 @@ C     presently: %H%  %T%
  RECORD 3.5
  
  
-       ZM,    PM,    TM,    JCHARP, JCHART,   (JCHAR(K),K =1,28)
+       ZM,    PM,    TM,    JCHARP, JCHART,   JLONG,   (JCHAR(K),K =1,28)
  
-     1-10, 11-20, 21-30,        36,     37,     41  through  68
+     1-10, 11-20, 21-30,        36,     37,      39,     41  through  68
  
-    E10.3, E10.3, E10.3,   5x,  A1,     A1,    3X,    28A1
+    E10.3, E10.3, E10.3,   5x,  A1,     A1,  1x, A1,     1x,    28A1
  
  
           ZM       boundary altitude (km)
@@ -1013,6 +1015,10 @@ C     presently: %H%  %T%
  
       JCHART       flag for units and input options for temperature (see Table I)
  
+      JLONG        flag for reading long record for molecular information
+
+			  = J  read VMOL(K) in E15.8 format
+
       JCHAR(K)     flag for units and input options for
                    the K'th molecule (see Table I)
  
@@ -1024,6 +1030,8 @@ C     presently: %H%  %T%
           8E10.3
  
           VMOL(K) density of the K'th molecule in units set by JCHAR(K)
+
+          **NOTE** If JLONG=L, then VMOL(K) is in 8E15.8 format
  
  REPEAT records 3.5 and 3.6.1 to 3.6.N for each of the remaining IMMAX boundaries
  
@@ -1287,7 +1295,7 @@ C     presently: %H%  %T%
       JCHAR(K)     flag for units and input options for
                    the K'th cross-section
  
-                       JCHAR = 1-1           - default to value for specified model atmosphere
+                       JCHAR = 1-6           - default to value for specified model atmosphere
                              = " ",A         - volume mixing ratio (ppmv)
  
  
@@ -1934,7 +1942,7 @@ C     presently: %H%  %T%
  
                     =  1  HWHM(vi) = HWHM(v1) * (vi / v1)
  
-         SAMPL    number of sample points per half width
+         SAMPL    number of sample points output per half width
  
                     =  0  gives default value for each function
  
@@ -2038,7 +2046,7 @@ C     presently: %H%  %T%
                     negative value terminates FFTSCN option
  
                   Note: HWHM is the maximum optical path difference of an
-			equivalent interferomter for JFN < 0.
+			equivalent interferometer for JFN < 0.
  
             V1    beginning wavenumber value for performing FFTSCN
  
