@@ -362,18 +362,24 @@ C        If IOTFLG = 2, then calculate attenuated solar radiance
 C                       through the reflected atmosphere plus
 C                       atmospheric radiance
 C
+C        Solar irradiance is input from SOLAR.RAD (W/cm2 cm-1).
+C        Convert to radiance units (W/cm2 sr cm-1) by multiplying
+C        by 1/6.8e-5.
+
+         conv_ster = 1./6.8e-5
+C
          IF (IOTFLG.EQ.0) THEN
             DO 40 I = 1, NLIM
-               SOLRAD(I) = SOLAR(I)*TRAN(I)
+               SOLRAD(I) = SOLAR(I)*conv_ster*TRAN(I)
  40         CONTINUE
          ELSEIF (IOTFLG.EQ.1) THEN
             DO 41 I = 1, NLIM
-               SOLRAD(I) = SOLAR(I)*TRAN(I)+RADN(I)
+               SOLRAD(I) = SOLAR(I)*conv_ster*TRAN(I)+RADN(I)
  41         CONTINUE
          ELSEIF (IOTFLG.EQ.2) THEN
             IF (TBOUND.EQ.0) THEN
                DO 42 I = 1, NLIM
-                  SOLRAD(I) = SOLAR(I)*TRAN2(I)*XRFLT(I)*
+                  SOLRAD(I) = SOLAR(I)*conv_ster*TRAN2(I)*XRFLT(I)*
      *                 TRAN(I)+RADN(I)
  42            CONTINUE
             ELSE
@@ -383,8 +389,8 @@ C
                   VBND = V1PO+(I-1)*DVPO
                   ZEMSV = EMISFN(VBND,DVPO,VINEM,EMDEL,EMDUM)
                   BBND = BBFN(VBND,DVPO,VBND,XKTBND,VINEW,BBDEL,BBDUM)
-                  SOLRAD(I) = (SOLAR(I)*TRAN2(I)*XRFLT(I)+ZEMSV*BBND)*
-     *                 TRAN(I)+RADN(I)
+                  SOLRAD(I) = (SOLAR(I)*conv_ster*TRAN2(I)*XRFLT(I)
+     *                 +ZEMSV*BBND)*TRAN(I)+RADN(I)
  43            CONTINUE
             ENDIF
          ENDIF
@@ -634,13 +640,20 @@ C     If IOTFLG = 2, then calculate attenuated solar radiance
 C                    through the reflected atmosphere plus
 C                    atmospheric radiance
 C
+C     Solar irradiance is input from SOLAR.RAD (W/cm2 cm-1).
+C     Convert to radiance units (W/cm2 sr cm-1) by multiplying
+C     by 1/6.8e-5.
+
+      conv_ster = 1./6.8e-5
+
       IF (IOTFLG.EQ.0) THEN
          DO 90 II = 1, NLIMO
             FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
             JJ = IFIX(FJJ)-2
             JP = (FJJ-FLOAT(JJ))*100.-199.5
             SOLRAD(II) = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
-     *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*TRAN(II)
+     *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*conv_ster*
+     *           TRAN(II)
 c
  90      CONTINUE
       ELSEIF (IOTFLG.EQ.1) THEN
@@ -649,8 +662,8 @@ c
             JJ = IFIX(FJJ)-2
             JP = (FJJ-FLOAT(JJ))*100.-199.5
             SOLRAD(II) = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
-     *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*TRAN(II)+
-     *           RADN(II)
+     *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*conv_ster*
+     *           TRAN(II)+RADN(II)
  91      CONTINUE
       ELSEIF (IOTFLG.EQ.2) THEN
          IF (TBOUND.EQ.0.) THEN
@@ -665,7 +678,7 @@ c
                JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
                JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
                ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
-     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))
+     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*conv_ster
                ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
      *              A2T2(JPT2)*TRAN2(JJT2)+
      *              A3T2(JPT2)*TRAN2(JJT2+1)+
@@ -688,7 +701,7 @@ c
                JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
                JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
                ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
-     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))
+     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*conv_ster
                ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
      *              A2T2(JPT2)*TRAN2(JJT2)+
      *              A3T2(JPT2)*TRAN2(JJT2+1)+
