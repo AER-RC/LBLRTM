@@ -315,7 +315,7 @@ C       for each layer with DV = DVOUT (from DVSET in TAPE5, carried
 C       in by COMMON BLOCK /IODFLG/ (interpolation in PNLINT).
 C
       CALL CPUTIM(TPAT0)
-      IF (IOD.EQ.1.AND.IMRG.EQ.1) THEN                                    B02220
+      IF ((IOD.EQ.1.or.IOD.EQ.4).AND.IMRG.EQ.1) THEN                      B02220
          CALL QNTIFY(PTHODI,HFMODL)
          WRITE (KODLYR,HFMODL) PTHODI,LAYER                               B02230
          INQUIRE (UNIT=KFILE,OPENED=OP)                                   B02240

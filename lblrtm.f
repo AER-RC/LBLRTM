@@ -662,7 +662,7 @@ C                                                                         A05910
       IF ((IHIRAC+IAERSL+IEMIT+IATM+ILAS).GT.0) THEN                      A05930
 C                                                                         A05940
          READ (IRD,970,END=80) V1,V2,SAMPLE,DVSET,ALFAL0,AVMASS,DPTMIN,   A05950
-     *                         DPTFAC,ILNFLG                              A05960
+     *                         DPTFAC,ILNFLG,DVOUT                        A05960
 C                                                                         A05970
 C     OPEN LINE REJECTION FILES IF ILNFLG IS ONE OR TWO
 C
@@ -769,8 +769,11 @@ C     in PNLINT, and reset DVSET to zero to avoid ratio error message
 C     in SUBROUTINE PATH.
 C
       IF (IOD.EQ.1) THEN
-         DVOUT = ABS(DVSET)
-         DVSET = 0.0
+         IF (DVSET.NE.0.) STOP 'DVSET MUST BE ZERO FOR IOD=1'
+         IF (DVOUT.EQ.0.) STOP 'DVOUT MUST BE NONZERO FOR IOD=1'
+      ENDIF
+      IF (IOD.EQ.4) THEN
+         IF (DVOUT.EQ.0.) STOP 'DVOUT MUST BE NONZERO FOR IOD=4'
       ENDIF
 C
 C     If IOD = 3 (Analytic Derivative optical depth pass or
@@ -780,6 +783,7 @@ C     and preserve value of DVSET for use in SUBROUTINE PATH.
 C
       IF (IOD.EQ.3) THEN
          IF (DVSET.EQ.0.) STOP 'DVSET MUST BE NONZERO FOR IOD=3'
+         IF (DVOUT.NE.0.) STOP 'DVOUT MUST BE ZERO FOR IOD=3'
          DVOUT = ABS(DVSET)
       ENDIF
 C
@@ -866,7 +870,7 @@ C                                                                         A07280
   940 FORMAT (1X,I4,13I9)                                                 A07370
   950 FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,                 A07400
      *        '  CHANGE IEMIT TO 1 OR IHIRAC TO 1 ')                      A07410
-  970 FORMAT (8E10.3,4X,I1)                                               A07460
+  970 FORMAT (8E10.3,4X,I1,5x,e10.3)                                      A07460
   975 FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,            A07470
      *        ' AND IS NOT BOUNDED BY (0.,1.) ')                          A07480
   980 FORMAT ('0 FOR VNU = ',F10.3,' THE REFLECTIVITY = ',E10.3,          A07490
@@ -2990,8 +2994,7 @@ C     and IMRG = 1, or if IOD=1 and DVOUT nonzero (OPTICAL DEPTH FLAG
 C     FOR INTERPOLATED DV).  This bypasses ITYPE assignment from one
 C     layer to the next.
 C
-         IF ((IOD.EQ.2.AND.IMRG.EQ.1).OR.
-     *        ((IOD.EQ.1).AND.(DVOUT.NE.0.))) THEN
+         IF ( (IOD.EQ.2.AND.IMRG.EQ.1) .OR. (IOD.EQ.1.) ) THEN
             DVL(L) = DV
             TYPE = 0.
             ITYPE = -99
@@ -3116,13 +3119,13 @@ C
       IF (ISTOP.EQ.1) WRITE (IPR,965)                                     A23110
       IF (ISTOP.EQ.1) STOP 'PATH; ISTOP EQ 1'                             A23120
 C
-C     If DVOUT is nonzero (IOD=1 -> interpolate optical depths to
+C     If DVOUT is nonzero (IOD=1,3,4 -> interpolate optical depths to
 C     value of DVOUT), then test to be sure that DVOUT is finer than
 C     the monochromatic DV (and thus ensuring enough monochromatic points
 C     are available to reach the V2 endpoint for the interpolated
 C     spectrum).
 C
-      IF (DVOUT.GT.0.) THEN
+      IF (IOD.eq.1 .or. IOD.ge.3) THEN
          IF (DV.LT.DVOUT) THEN
             WRITE (IPR,968) DVOUT,DV
             STOP 'PATH; DVOUT ERROR, SEE TAPE6'
