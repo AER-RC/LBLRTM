@@ -3030,20 +3030,20 @@ C
 C                                                                        FA30360
       RHOAIR = ALOSMT*(P/PZERO)*(TZERO/T)                                FA30370
       A = TZERO/T                                                        FA30380
-      B = AVOGAD/AMWT(K)                                                 FA30390
-      R = AIRMWT/AMWT(K)                                                 FA30400
 C
-C     Get water vapor density                                            FA30410
-C
-      CALL WATVAP (P,T,JUNIT(1),WMOL(1),DENM(1,IM),NOPRNT)               FA30420
+C     Get water vapor density                                            FA30390
+C     
+      CALL WATVAP (P,T,JUNIT(1),WMOL(1),DENM(1,IM),NOPRNT)               FA30400
 C
 C     Determine density of dry air
 C
-      DRYAIR(IM) = RHOAIR - DENM(1,IM)                                   FA30430
+      DRYAIR(IM) = RHOAIR - DENM(1,IM)                                   FA30410
 C
 C     Loop through other molecules
 C
-      DO 70 K=2,NMOL
+      DO 70 K=2,NMOL                                                     FA30420
+         B = AVOGAD/AMWT(K)                                              FA30430
+         R = AIRMWT/AMWT(K)
          DENM(K,IM) = 0.0                                                FA30440
 
          IF (JUNIT(K).GT.10) GO TO 20                                    FA30450
@@ -3093,6 +3093,8 @@ C                                                                        FA30850
 C                                                                        FA30870
   900 FORMAT (/,'   **** ERROR IN CONVRT ****, JUNIT(',I5,') = ',I5)     FA30880
 C                                                                        FA30890
+      RETURN
+C
       END                                                                FA30900
       SUBROUTINE WATVAP (P,T,JUNIT,WMOL,DENNUM,NOPRNT)                   FA30910
 C                                                                        FA30920
