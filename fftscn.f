@@ -415,7 +415,7 @@ C*****    the scanned spectrum
 C*****3.  regridding: prescanning with the boxcar resamples onto a new
 C*****    frequency grid
 C*****4.  interpolation: V2S is adjusted to fall on the interpolated
-C*****    grid (interpolation not yet implimented)
+C*****    grid (interpolation not yet implemented)
 
       If(V1 .ge. V2) Then
           Write(IPR,*) ' FFTSCN - input error: Initial V >= final V:',
@@ -455,7 +455,7 @@ C*****Adjust V1Z, V2Z to fall on current frequency grid
       Endif
  
 C*****Decide whether to calculate the apodization function 
-C*****analyticly (IVX = 1) or as the fft of the scanning
+C*****analytically (IVX = 1) or as the fft of the scanning
 C*****function (IVX = -1). The input value of IVX (if not 0)
 C*****overides.
       If( IVX .LT. -1  .OR.  IVX .GT. 1) Then
@@ -474,7 +474,7 @@ C*****overides.
 
       If(IVX .EQ. 1) Then
           Write(IPR,'(/,A,A)') ' Apodization function will be ',
-     1         'calculated analyticly'
+     1         'calculated analytically'
       Elseif (IVX .EQ. -1) Then
           Write(IPR,'(/,A,A)') ' Apodization function will be ',
      1         'calculated as the fft of the scanning function'
@@ -599,7 +599,7 @@ C*****Adjust V1S and V2S to fit the current spectral grid
 C*****Actually, let V1S be one DV less than the largest VZ <= V1
 C*****and let V2S be one DV larger than the smallest VZ >= V2
 C*****This procedure gives two points beyond V1 and V2, as required for
-C*****4 point interpolation (note: interpolation not yet implimented.)
+C*****4 point interpolation (note: interpolation not yet implemented.)
       N1 = INT((V1-V1Z)/DV)
       V1S = V1Z+(N1-1)*DV
       If (V1S .LT. V1Z) Then
@@ -2013,7 +2013,7 @@ C     Spectroscopy", J. Opt. Soc. Am., #66, p259-264 (1976) (Corrected)
       If(IAPSC .EQ. -1) Then
 C****     Scanning function
           Write(IPR,*) ' Scnfnt - error: Norton-Beer apodization', 
-     c        '  net yet implimented in spectral domain'
+     c        '  net yet implemented in spectral domain'
           Stop ' Stopped in Scnfnt'
           Do 85 l=1,LPTS
               
@@ -2022,9 +2022,9 @@ C****     Scanning function
       Else
 C****     Apodization Function
           Do 89 L=1,LPTS-1,2
-              U = 1.0-(X/A)**2
-              If(U .LT. 1.) Then
-                  Goto (86,87,88) JFN
+              U = 1.0-(X*A)**2
+              If(X .LT. 1./A) Then
+                  Goto (86,87,88) JFN-7
   86              Continue
 C                 Weak Apodization
                   FUNCT(L) = 0.384093-0.087577*U+0.703484*U**2
@@ -2067,7 +2067,7 @@ C*****Note: a value of P = 0 gives cos**2 apodization.
       If(IAPSC .EQ. -1) Then
 C****     Scanning function
           Write(IPR,*) ' SCNFNT - Error: Brault Apodization', 
-     c        '  net yet implimented in spectral domain'
+     c        '  net yet implemented in spectral domain'
           Stop ' Stopped in SCNFNT'
 
           Do 95 l=1,LPTS
@@ -2109,7 +2109,7 @@ C*****The valid range of P is [2,4].
       If(IAPSC .EQ. -1) Then
 C****     Scanning function
           Write(IPR,*) ' Scnfnt - error: Kaiser-Bessel Apodization', 
-     c        '  net yet implimented in spectral domain'
+     c        '  net yet implemented in spectral domain'
           Stop ' Stopped in Scnfnt'
           Do 105 l=1,LPTS
               
