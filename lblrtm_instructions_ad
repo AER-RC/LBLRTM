@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                   5 January 1993
+                                    5 May 1993
  
  
  
@@ -220,14 +220,13 @@ C     presently: %H%  %T%
                           (first laser frequency is V1 on record 1.3;
                            subsequent laser frequencies are on records 5.1 ... 5.N)
  
-*******     IMS    (0,1) flag for multiple scattering of thermal radiation     ************ not currently available in LBLRTM
+            IOD    (0,1) flag for layering control in optical depth calculations
  
-                   = 0  no multiple scattering
-                   = 1  multiple scattering
-                           (following conditions must be set: IAERSL = 1 or 7
-                                                              IEMIT  = 1
-                                                              IATM   = 1
-                                                              IMRG   = 0      )
+                   = 0  normal calculation (default)
+                   = 1  interpolates each layer to the value of -DVSET
+                           (requires IMRG = 1)
+                   = 2  uses the calculated dv of each layer
+                           (requires IMRG = 1)
  
          IXSECT    (0,1) flag for cross-sections
  
@@ -247,24 +246,6 @@ C     presently: %H%  %T%
                          (for laser option ILAS > 1, NPTS should be set to 0)
  
  
- 
- RECORD 1.2.1  (required if IMS = 1; otherwise omit)
- 
-            TGRND, SEMIS(1), SEMIS(2), SEMIS(3),  RMINMS,  RMAXMS
- 
-             1-10,    11-20,    21-30,    31-40,   41-50,   51-60  71-80
- 
-            F10.3,    F10.3,    F10.3,    F10.3,   F10.3,   F10.3  F10.3
- 
- 
-                  TGRND       temperature of surface (K)
- 
-                  SEMIS(I)    surface emissivity coefficients (I = 1,2,3)
-                                 EMISSIVITY = SEMIS(1) + SEMIS(2)*V + SEMIS(3)*(V**2)
- 
-                  RMINMS      minimum altitude for multiple scattering (default =  0 km)
- 
-                  RMAXMS      maximum altitude for multiple scattering (default = 15 km)
  
 
  
@@ -359,16 +340,21 @@ C     presently: %H%  %T%
  
  RECORD 2.1
  
-          NLAYRS, NMOL, SECNTO, HEDDR
+          IFORM, NLAYRS, NMOL, SECNTO, HEDDR
  
-               5,   10,  11-20, 21-80
+            2     3-5,   6-10,  11-20, 21-80
  
-              I5,   I5,  F10.2,  15A4
+          1X,I1    I3,    I5,   F10.2,  15A4
  
  
-              NLAYRS      number of layers (maximum of 67)
+               IFORM      (0,1) line rejection flag
+
+			  = 0  read PAVE, WKL(M,L), WBROADL(L) in F10.4, E10.3, E10.3 formats (default)
+			  = 1  read PAVE, WKL(M,L), WBROADL(L) in E15.7 format
  
-                NMOL      number of molecules (default = 7; maximum of 28)
+              NLAYRS      number of layers (maximum of 200)
+ 
+                NMOL      number of molecules (default = 7; maximum of 35)
  
               SECNTO      user entered scale factor for the column amount for the layers defined by NLAYRS
                                  if positive, looking up
@@ -456,7 +442,7 @@ C     presently: %H%  %T%
  
                 NMOL is set from LINFIL (TAPE3)
  
-                     (NMOL limited to 28 in LBLRTM)
+                     (NMOL limited to 35 in LBLRTM)
  
  
  
@@ -498,14 +484,19 @@ C     presently: %H%  %T%
  
  RECORD 2.2.2
  
-          NLAYXS, IXMOL, SECNTX, HEDXS
+          IFRMX, NLAYXS, IXMOL, SECNTX, HEDXS
  
-               5,    10,  11-20, 21-80
+            2      3-5,   6-10,  11-20, 21-80
  
-              I5,    I5,  F10.2,  15A4
+          1X,I1    I5,     I5,   F10.2,  15A4
  
  
-              NLAYXS      number of layers (maximum of 67), should be the same as NLAYRS on Record 2.1
+               IFRMX      (0,1) line rejection flag
+
+			  = 0  read PAVX, XAMNT(M,L), WBROADX(L) in F10.4, E10.3, E10.3 formats (default)
+			  = 1  read PAVX, XAMNT(M,L), WBROADX(L) in E15.7 format
+ 
+              NLAYXS      number of layers (maximum of 200), should be the same as NLAYRS on Record 2.1
  
                IXMOL      number of cross-sections (maximum of 35), should be the same as IXMOLS on Record 2.2
  
@@ -636,9 +627,9 @@ C     presently: %H%  %T%
  
            ITYPE   selects type of path
  
-                     = 1  horizontal path (constant pressure, temperature)
-                     = 2  slant path from H1 to H2
-                     = 3  slant path from H1 to space (see HSPACE)
+                     = 1  horizontal path (constant pressure, temperature), use RECORD 3.2H
+                     = 2  slant path from H1 to H2, use RECORD 3.2
+                     = 3  slant path from H1 to space (see HSPACE), use RECORD 3.2
  
            IBMAX     selects layering for LBLRTM
  
@@ -652,7 +643,7 @@ C     presently: %H%  %T%
            NOPRNT    = 0  full printout
                      = 1  selects short printout
  
-           NMOL      number of molecular species (default = 7; maximum value is 28)
+           NMOL      number of molecular species (default = 7; maximum value is 35)
  
            IPUNCH    = 0  layer data not written (default)
                      = 1  layer data written to unit IPU (TAPE7)
@@ -847,17 +838,18 @@ C     presently: %H%  %T%
  
                     JCHART
  
-     TEMPERATURE      1-6         default to value for specified model atmospher)
+     TEMPERATURE      1-6         default to value for specified model atmosphere
         (JCHART)    " ",A         ambient temperature in deg (K)
                         B            "     "   "   "   "  "  (C)
  
  
                     JCHAR(M)
  
- (M):  AVAILABLE       ( 1)  H2O   ( 2)  CO2   ( 3)  O3  ( 4)  N2O  ( 5)  CO   ( 6)  CH4   ( 7)  O2
- MOLECULAR SPECIES     ( 8)   NO   ( 9)  SO2   (10) NO2  (11)  NH3  (12) HNO3  (13)   OH   (14)  HF
-                       (15)  HCL   (16)  HBR   (17)  HI  (18)  CLO  (19)  OCS  (20) H2CO   (21) HOCL
-                       (22)   N2   (23)  HCN   (24)CH3CL (25) H2O2  (26) C2H2  (27) C2H6   (28)  PH3
+ (M):  AVAILABLE       ( 1)  H2O  ( 2)  CO2  ( 3)    O3 ( 4)   N2O ( 5)    CO ( 6)   CH4 ( 7)    O2
+ MOLECULAR SPECIES     ( 8)   NO  ( 9)  SO2  (10)   NO2 (11)   NH3 (12)  HNO3 (13)    OH (14)    HF
+                       (15)  HCL  (16)  HBR  (17)    HI (18)   CLO (19)   OCS (20)  H2CO (21)  HOCL
+                       (22)   N2  (23)  HCN  (24) CH3CL (25)  H2O2 (26)  C2H2 (27)  C2H6 (28)   PH3
+                       (29) COF2  (30)  SF6  (31)   H2S (32) HCOOH (33) EMPTY (34) EMPTY (35) EMPTY
  
  
                            potential choice of units for above species: 
@@ -1562,7 +1554,7 @@ C     presently: %H%  %T%
           NPTS    number of values to be printed for the beginning and ending of each panel
                   for current scanned file
  
-         ***** Note: if the DV of the data to be scanned is larger than DVINT = HWHM/8.,  *****
+         ***** Note: if the DV of the data to be scanned is larger than DVINT = HWHM/12., *****
          *****       the data is first interpolated to DVINT before it is scanned.        *****
          *****       Four-point interpolation is used for this procedure.                 *****
 
@@ -1703,12 +1695,14 @@ C     presently: %H%  %T%
  
           NPTS    number of values to be printed for the beginning and ending of each panel for current scanned file
  
-         ***** Note: if the DV of the data to be scanned is larger than DVINT = HWHM/8.,  *****
+         ***** Note: if the DV of the data to be scanned is larger than DVINT = HWHM/12., *****
          *****       the data is first interpolated to DVINT before it is scanned.        *****
          *****       Interpolated data is written to named file 'SCNINTF'.                *****
          *****       Four-point interpolation is used for this procedure.                 *****
  
  REPEAT RECORD 8.1 
+
+		A '-1.' within columns 1-10 will terminate scanning.
 
 
 
@@ -1755,12 +1749,144 @@ C     presently: %H%  %T%
  
          JUNIT    file containing interpolated results (default is JUNIT, file 11)
  
-          NPTS    number of values to be printed forthe beginning and ending of each panel
+          NPTS    number of values to be printed for the beginning and ending of each panel
                   for current interpolated file
  
  
  REPEAT RECORD 9.1
+
+		A '-1.' within columns 1-10 will terminate interpolation.
+  
  
+
+
+      
+                                        FFTSCN
+ 
+                                      (ISCAN = 3)
+ 
+ RECORD 10.1 
+ 
+ 
+ HWHM,     V1,     V2,  JEMIT,    JFN,   MRAT,  DVOUT,  IUNIT,    FIL,   NFIL,  JUNIT,    IVX,  NOFIX
+ 
+ 1-10,  11-20,  21-30,  31-35,  36-40,  41-45,  46-55,  56-60,  61-65,  66-70,  71-75,  76-78,  79-80 
+ 
+ F10.3  F10.3,  F10.3,     I5,     I5,     I5,  F10.3,     I5,     I5,     I5,     I5,     I3,     I2
+ 
+ 
+          HWHM    (Half Width Half Maximum)
+ 
+                    negative value terminates FFTSCN option
+ 
+                  Note: HWHM is the maximum optical path difference of an
+			equivalent interferomter for JFN < 0.
+ 
+            V1    beginning wavenumber value for performing FFTSCN
+ 
+            V2    ending wavenumber value for performing FFTSCN
+ 
+         JEMIT      =  0  convolve with transmittance
+ 
+                    =  1  convolve with radiance
+ 
+ 
+
+                              FFTSCN (Continued)
+ RECORD 10.1  (Continued)
+
+
+           JFN    selects choice of scanning function
+
+
+ 
+                      JFN    Scanning Function          Apodization Function       a/HWHM    a/FZ     CR        
+                      ---    -----------------          --------------------       ------    ----     --
+                    =  0     boxcar
+ 
+                    =  1     1-v/a, |v|<a               (sin(pi*x*a)/pi*x*a))**2   2.0       1.0      40
+				 0, |v|>a                 (sinc squared)
+                               (triangle)
+ 
+                    =  2     exp(-0.5*(v/a)**2)         exp(-2*pi*(a*x)**2)        0.849322  (NA)     10
+                               (gauss)                    (gauss)
+ 
+                    =  3     (sin(pi*x*a)/pi*x*a))**2   1-x*a, |x|=<1/a            2.257609  1.0      40
+                               (sinc squared)               0, |x|>1/a
+                                                          (triangle)
+ 
+                    =  4     sin(u)/u                   1, |x|=<1/a                3.314800  2.0      160
+                               (sinc)                   0, |x|>1/a
+                                                          (rectangle)
+
+                    =  5     J(5/2,u)/(u**(5/2))        (1-(x*a)**2)**2            2.100669  0.91728  20
+                               (Beer)
+
+                    =  6     sinc(u)+c1*(sinc(u+pi)+    (1+2*c1*cos(pi*x*a))/      2.195676  1.0      20
+                               sinc(u-pi))                (1+2*c1)
+                               (Hamming)
+
+                    =  7     sinc(u)+0.5*(sinc(u+pi)+   (1+cos(pi*x*a))/2          2.0       1.0      20
+                               sinc(u-pi))
+                               (Hanning)
+
+    _______________________________________________________________________________________________________________________
+ 
+                  LEGEND:
+
+                         -  v  = frequency (cm-1)
+                         -  x  = optical path difference (cm)
+                         -  u  = (2*pi*v)/a
+                         -  a  = 1/L, where L is the maximum optical path difference of an equivalent interferometer.
+                                 "a" determines the resolution, or the width of the scanning function.
+                         -  FZ = distance from the center of the scanning function to the first zero.
+                         -  CR = critical value for the ratio of the extent of the spectrum (v2-v1) and the HWHM.
+                                 When the ratio is less than CR, the apodization function is calculated as the FFT
+                                 of the scanning function.  When the ratio is greater than CR, the apodization
+                                 function is calculated analytically.
+                         -  J(5/2,u)/(u**(5/2)) = ((3-u**2)*sin(u)-3*u*cos(u))/u**5, where J(n,u) is the Bessel
+                                 function of order n.
+                         -  c1 = 0.428752
+
+    _______________________________________________________________________________________________________________________
+
+                          Note: If JFN < 0, HWHM contains the value for the maximum optical path difference of an
+                                equivalent interferometer, apodized to give the scanning function given by |JFN|.
+ 
+
+                              FFTSCN (Continued)
+ RECORD 10.1  (Continued)
+ 
+ 
+ 
+          MRAT    ratio of HWHM of the scanning function to the halfwidth of the boxcar; for prescanning with a
+                    boxcar (default = 12.).  If MXRAT < 0., no boxcaring is performed.
+
+         DVOUT    output grid spacing (NOT USED, reserved for future use)
+  
+         IUNIT    unit designation of file to be scanned (default is 12)
+ 
+        IFILST    initial file from IUNIT to be scanned
+ 
+        NIFILS    number of files to be scanned starting at IFILST
+ 
+         JUNIT    file containing scanned results (default is 11)
+ 
+           IVX    (-1,0,1) flag for calculation of scanning function
+
+                     = -1 scanning function is calculated as the FFT of the apodization function
+                     =  0 program determines how to calculate the scanning function, using CR
+                     =  1 scanning function is calculated analytically
+
+         NOFIX    flag for deconvolution (used when prescanning with a boxcar)
+
+                     = 0 deconvolve the scanned spectrum with the boxcar
+                     = nonzero, do not deconvolve with the boxcar
+ 
+ 
+ REPEAT RECORD 10.1
+ 
+		A '-1.' within columns 1-10 will terminate FFT scanning.
  
  
 
@@ -1768,7 +1894,7 @@ C     presently: %H%  %T%
  
                                     (IFILTR = 1)
  
- RECORD 10.1
+ RECORD 11.1
  
  
      V1F,     DVF,    NPTS,   JEMIT,  IUNIT,  IFILST,  NIFILS,   HEDDR
@@ -1801,7 +1927,7 @@ C     presently: %H%  %T%
  
              HEDDR    35 characters of user identification
  
- RECORD 10.2
+ RECORD 11.2
  
              IVAR
  
@@ -1812,21 +1938,30 @@ C     presently: %H%  %T%
  
               IVAR is format specification for reading filter values, XF
  
- RECORD 10.3
-      . . .
-      . . .
-      . . .
-       10.N
  
-              XF      format specification given by record 10.2
+
+                                   FLTRFN (Continued)
+
+
+ 
+ RECORD 11.3
+      . . .
+      . . .
+      . . .
+       11.N
+ 
+              XF      format specification given by record 11.2
  
               XF      NPTS values of FILTRFN 
  
- REPEAT RECORD 10.1 
+ REPEAT RECORD 11.1 
+
+		A '-1.' within columns 1-10 will terminate FLTRFN.
+
                                     PLTFAS 
  
  
- RECORD 11.1
+ RECORD 12.1
  
            CPRGID,     CEX
  
@@ -1848,12 +1983,12 @@ C     presently: %H%  %T%
  
  ****************************************************************************************************
  ****************************************************************************************************
- ****************        Use Records 11.2A and 11.3A for PLOT (IOPT = 0,1)         ******************
- ****************   Use Record 11.2B for File Difference or Ratio (IOPT = 2,3)     ******************
+ ****************        Use Records 12.2A and 12.3A for PLOT (IOPT = 0,1)         ******************
+ ****************   Use Record 12.2B for File Difference or Ratio (IOPT = 2,3)     ******************
  ****************************************************************************************************
  ****************************************************************************************************
  
- RECORD 11.2A    (IOPT = 0,1)
+ RECORD 12.2A    (IOPT = 0,1)
  
  
             V1,    V2,  XSIZE,   DELV,NUMSBX,NOENDX, LFILE,LSKIPF, SCALE, IOPT, I4P, IXDEC
@@ -1899,7 +2034,7 @@ C     presently: %H%  %T%
  
 
                               PLTFAS (Continued)
- RECORD 11.2A  (Continued)
+ RECORD 12.2A  (Continued)
  
                 LFILE   tape number of file to be read from LBLRTM.
  
@@ -1909,13 +2044,13 @@ C     presently: %H%  %T%
  
                 SCALE   enables one to enlarge or reduce a plot.
  
-                IOPT    = 0  for plot, USE instructions for records 11.2A and 11.3A
-                        = 1  for overlay plot, USE instructions for records 11.2A and 11.3A
+                IOPT    = 0  for plot, USE instructions for records 12.2A and 12.3A
+                        = 1  for overlay plot, USE instructions for records 12.2A and 12.3A
                               *  will suppress the plotting of the header and axes,
                               *  and will overlay the line on the previous plot axes.
                               *  See also NUMSBX, NOENDX and YMIN.
-                        = 2  for file difference, USE instructions for record 11.2B instead of 11.2A
-                        = 3  for file ratio, USE instructions for record 11.2B instead of 11.2A
+                        = 2  for file difference, USE instructions for record 12.2B instead of 12.2A
+                        = 3  for file ratio, USE instructions for record 12.2B instead of 12.2A
  
                 I4P     = 0  for linear connection of points,
                         = 1  for four point interpolation
@@ -1924,7 +2059,7 @@ C     presently: %H%  %T%
  
  ---------------------------------------------------------------------------------------------------------
  
- RECORD 11.2.1A     (IOPT = 0,1; CEX = 'EX')
+ RECORD 12.2.1A     (IOPT = 0,1; CEX = 'EX')
  
             CFILEN(1)
  
@@ -1939,7 +2074,7 @@ C     presently: %H%  %T%
 
                               PLTFAS (Continued)
  
- RECORD 11.3A     (IOPT = 0,1)
+ RECORD 12.3A     (IOPT = 0,1)
  
  
             YMIN,   YMAX,  YSIZE,   DELY,NUMSBY,NOENDY, IDEC, JEMIT, JPLOT,LOGPLT, JHDR,  JOUT,JPLTFL
@@ -1992,7 +2127,7 @@ C     presently: %H%  %T%
  
                               PLTFAS (Continued)
  
- RECORD 11.3A (Continued)
+ RECORD 12.3A (Continued)
  
  
             JOUT    = 0  for plot to system plotfile/screen
@@ -2013,17 +2148,19 @@ C     presently: %H%  %T%
                          plot values are written out in SUBROUTINE FSCLIN
  
  
- REPEAT RECORD 11.2A or RECORD 11.2B 
+ REPEAT RECORD 12.2A or RECORD 12.2B 
  
+		A '-1.' within columns 1-10 will terminate plotting.
+
 
                               PLTFAS (Continued)
  
  ***************************************************************************************************
- ****************************** USE RECORD 11.2B FOR IOPT > 1 **************************************
+ ****************************** USE RECORD 12.2B FOR IOPT > 1 **************************************
  ***************************************************************************************************
  
  
- RECORD 11.2B   (IOPT = 2,3)
+ RECORD 12.2B   (IOPT = 2,3)
  
  
             V1,    V2,  JFILE,JSKIPF, LFILE,LSKIPF,   IOPT, MFILE
@@ -2049,8 +2186,8 @@ C     presently: %H%  %T%
                 LSKIPF  number of files to be skipped in tape LFILE
                         number of file to be used will be LSKIPF + 1
  
-                IOPT    = 0  for plot, USE Records 11.2A and 11.3A
-                        = 1  for overlay plot, USE Records 11.2A and 11.3A
+                IOPT    = 0  for plot, USE Records 12.2A and 12.3A
+                        = 1  for overlay plot, USE Records 12.2A and 12.3A
                         = 2  for file difference (JFILE-LFILE)
                         = 3  for file ratio (JFILE/LFILE)
  
@@ -2078,7 +2215,7 @@ C     presently: %H%  %T%
      (IOPT = 2,3; CEX = 'EX') 
  
  
- RECORD 11.2.1B 
+ RECORD 12.2.1B 
  
             CFILEN(1) 
  
@@ -2088,7 +2225,7 @@ C     presently: %H%  %T%
  
             CFILEN(1) is the external name for the data file associated with JFILE.
 
- RECORD 11.2.2B
+ RECORD 12.2.2B
  
             CFILEN(2) 
  
@@ -2098,7 +2235,7 @@ C     presently: %H%  %T%
  
             CFILEN(2) is the external name for the data file associated with LFILE.
 
- RECORD 11.2.3B
+ RECORD 12.2.3B
  
             CFILEN(3) 
  
@@ -2110,7 +2247,9 @@ C     presently: %H%  %T%
 
  ---------------------------------------------------------------------------------------------------------
 
- REPEAT RECORD 11.2A or RECORD 11.2B
+ REPEAT RECORD 12.2A or RECORD 12.2B
+
+		A '-1.' within columns 1-10 will terminate plotting.
 
 
  TABLE III. Structure of file JPLTFL (standard LBLRTM structure).
@@ -2149,7 +2288,8 @@ C     presently: %H%  %T%
                                   V1P,V2P
  
  
- 
+    NOTE: the character '%' signals the end of TAPE5 and terminates LBLRTM.
+
  
  _________________________________________________________________________________________________________________________________
 
