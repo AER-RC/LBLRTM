@@ -12,24 +12,24 @@ PLATFORM = LINUX
 
 FC = pgf90
 FCFLAG =  -fast -r8 -i8
-OUTPUT = lblrtm_v8.5_f90_linux_dbl
+OUTPUT = lblrtm_v8.5_f90_pgi_linux_dbl
 CPATH = src
-CDOTO = linux_dbl.o
+CDOTO = pgi_linux_dbl.o
 
-CLBL = lblrtm_linux
-COPR = oprop_linux
+CLBL = lblrtm
+COPR = oprop
 CCNT = contnm
-CXMG = xmerge_linux
+CXMG = xmerge
 CTST = testmm
-CATM = lblatm_linux
-CLOW = lbllow_linux
-CPST = postsub_linux
-CFFT = fftscn_dbl_linux
-CPLT = pltlbl_linux
+CATM = lblatm
+CLOW = lbllow
+CPST = postsub
+CFFT = fftscn_dbl
+CPLT = pltlbl
 CUTL = util_linux_pgi
 CDUM = lbldum
 CSOL = solar
-CNLT = nonlte_linux
+CNLT = nonlte
 
 
 OBJFIL = $(CLBL).o \

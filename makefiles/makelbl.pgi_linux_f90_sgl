@@ -12,9 +12,9 @@ PLATFORM = LINUX
 
 FC = pgf90
 FCFLAG =  -fast 
-OUTPUT = lblrtm_v8.5_f90_linux_sgl
+OUTPUT = lblrtm_v8.5_f90_pgi_linux_sgl
 CPATH = src
-CDOTO = linux_sgl.o
+CDOTO = pgi_linux_sgl.o
 
 CLBL = lblrtm
 COPR = oprop
