@@ -85,7 +85,7 @@ C
 C        IEMIT = 1  =>  Radiance and Transmittance calculated
 C
          IF (IEMIT.EQ.1) THEN
-            IF (IMRG.NE.36) THEN                                          H00580
+            IF (IMRG.NE.36.AND.IMRG.NE.46) THEN                           H00580
                IF (LAYER.EQ.1) THEN                                       H00590
                   IF (IPATHL.EQ.1) TBND = TMPBND                          H00600
                   CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                    H00610
@@ -174,7 +174,7 @@ C                                                                         H01290
 C                                                                         H01340
       TBND = 0.                                                           H01350
 C                                                                         H01360
-      IF (IMRG.NE.35) THEN                                                H01370
+      IF (IMRG.NE.35.AND.IMRG.NE.45) THEN                                 H01370
          IF (LAYER.EQ.LH1.AND.IANT.NE.-1) THEN                            H01380
             IF (JPATHL.EQ.1.AND.LAYER.EQ.1)   TBND = TMPBND               H01390
             CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                          H01400
@@ -2963,7 +2963,7 @@ C                                                                         H28630
 C
 C     ---------------------------------------------------------------
 C
-      SUBROUTINE OPNRAD(NLAYER,LAYER,PTHODL,HFMODL)
+      SUBROUTINE OPNODF(NLAYER,LAYER,PTHODL,HFMODL)
 C
 C     This subroutine opens file for calculating the radiance using
 C     precalculated optical depths
@@ -3002,6 +3002,49 @@ C
       END
 C
 C     ----------------------------------------------------------------
+C
+      SUBROUTINE OPNRAD(NLAYER,LAYER)
+C
+C     This subroutine opens file for calculating the layer radiances
+C     (IEMIT = 1; IMRG=45,46)
+C
+      LOGICAL OP
+      CHARACTER*57 FILE1
+      CHARACTER*11 CFORM
+      CHARACTER*55 PTHRAD
+      CHARACTER*10 HFMRAD
+C
+C     Common block for layer radiances
+C     -------------------------
+      COMMON /RADLAY/ PTHRAD,HFMRAD
+C     -------------------------
+C
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+C
+C           123456789-123456789-123456789-123456789-123456789-1234567
+      DATA FILE1 /
+     *     '                                                         '/
+      DATA CFORM / 'UNFORMATTED' /
+C
+      INQUIRE (UNIT=NFILE,OPENED=OP)
+      IF (OP) CLOSE (NFILE)
+      WRITE(FILE1,HFMRAD) PTHRAD,LAYER
+      OPEN(UNIT=NFILE,FILE=FILE1,FORM=CFORM,STATUS='UNKNOWN')
+C
+C     Write procedure
+C
+      WRITE(IPR,900) FILE1
+C
+      RETURN
+C
+ 900  FORMAT ('          Opened layer radiance file:  ',A57,/)
+ 910  FORMAT ('LAYER ',I5,' OF ',I5,':')
+C
+      END
+C
+C     ---------------------------------------------------------------
 C
       SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)         H28650
 C                                                                         H28660
