@@ -4839,7 +4839,7 @@ C                                                                         E06830
      *                IXSBN(5,35)                                         E06970
       COMMON /FLFORM/ CFORM                                               E06980
 C                                                                         E06990
-      CHARACTER*10 XSFILE,XSNAME,ALIAS,SOURCE(3)                          E07000
+      CHARACTER*10 XSFILE,XSNAME,ALIAS,SOURCE(3),CTORR                    E07000
       CHARACTER AMOL*8,BMOL*6,HEADER*100,HEADT1*100                       E07010
       CHARACTER XSFIL1*10,XSFIL2*10,XSTMP*4,XSNUM*3,CI*1                  E07020
       CHARACTER CFORM*11,BFRM*10,UNBFRM*10,BLKFRM*10,BFORM*9              E07030
@@ -4854,6 +4854,7 @@ C                                                                         E07110
       DATA XSTMP / 'TMPX'/,LIMXX / 516 /,BFORM / 'FORMATTED'/             E07120
       DATA IFILE,JFILE / 91,92 /                                          E07130
       DATA UNBFRM / '(10E10.3)'/,BLKFRM / '(510E10.3)'/                   E07140
+      DATA CTORR / '      TORR'/
 C                                                                         E07150
 C     DEFINE PRESSURE CONVERSIONS                                         E07160
 C                                                                         E07170
@@ -4939,7 +4940,11 @@ C                                                                         E07820
                IF (NPANEL.EQ.0) THEN                                      E07970
                   XSTEMP(NT1,NS,NI) = TEMP                                E07980
                   XSMAX(NT1,NS,NI) = SMAX                                 E07990
-                  PDX(NT1,NS,NI) = PRES*PTORMB                            E08000
+                  IF (SOURCE(3).EQ.CTORR) THEN
+                     PDX(NT1,NS,NI) = PRES*PTORMB                         E08000
+                  ELSE
+                     PDX(NT1,NS,NI) = PRES
+                  ENDIF
                ENDIF                                                      E08010
             ENDIF                                                         E08020
             IF (NXMODE.EQ.2) THEN                                         E08030
@@ -4958,7 +4963,11 @@ C                                                                         E07820
                   IF (NPANEL.EQ.0) THEN                                   E08160
                      XSTEMP(NT2,NS,NI) = TEMP                             E08170
                      XSMAX(NT2,NS,NI) = SMAX                              E08180
-                     PDX(NT2,NS,NI) = PRES*PTORMB                         E08190
+                     IF (SOURCE(3).EQ.CTORR) THEN
+                        PDX(NT1,NS,NI) = PRES*PTORMB                      E08190
+                     ELSE
+                        PDX(NT1,NS,NI) = PRES
+                     ENDIF
                   ENDIF                                                   E08200
                ENDIF                                                      E08210
             ENDIF                                                         E08220
@@ -4991,7 +5000,11 @@ C                                                                         E08260
                IF (NPANEL.EQ.0) THEN                                      E08490
                   XSTEMP(NT1,NS,NI) = TEMP                                E08500
                   XSMAX(NT1,NS,NI) = SMAX                                 E08510
-                  PDX(NT1,NS,NI) = PRES*PTORMB                            E08520
+                  IF (SOURCE(3).EQ.CTORR) THEN
+                     PDX(NT1,NS,NI) = PRES*PTORMB                         E08520
+                  ELSE
+                     PDX(NT1,NS,NI) = PRES
+                  ENDIF
                ENDIF                                                      E08530
             ENDIF                                                         E08540
             IF (NXMODE.EQ.2) THEN                                         E08550
@@ -5019,7 +5032,11 @@ C                                                                         E08260
                   IF (NPANEL.EQ.0) THEN                                   E08770
                      XSTEMP(NT2,NS,NI) = TEMP                             E08780
                      XSMAX(NT2,NS,NI) = SMAX                              E08790
-                     PDX(NT2,NS,NI) = PRES*PTORMB                         E08800
+                     IF (SOURCE(3).EQ.CTORR) THEN
+                        PDX(NT1,NS,NI) = PRES*PTORMB                      E08800
+                     ELSE
+                        PDX(NT1,NS,NI) = PRES
+                     ENDIF
                   ENDIF                                                   E08810
                ENDIF                                                      E08820
             ENDIF                                                         E08830
@@ -5251,7 +5268,7 @@ C                                                                         E11000
 C                                                                         E11030
 C     STANDARD PRESSURE AND TEMPERATURE                                   E11040
 C                                                                         E11050
-      DATA P0 / 1000. /,T0 / 273.15 /                                     E11060
+      DATA P0 / 1013. /,T0 / 273.15 /                                     E11060
 C                                                                         E11070
 C     ASSUMED MEAN HALFWIDTH AT P0 IS 0.10                                E11080
 C     DOPPLER VALUES ARE INITIALIZED AT T296.                             E11085
