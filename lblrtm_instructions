@@ -1127,7 +1127,7 @@ C     presently: %H%  %T%
  RECORD 3.5
  
  
-       ZM,    PM,    TM,    JCHARP, JCHART,   JLONG,   (JCHAR(K),K =1,28)
+       ZM,    PM,    TM,    JCHARP, JCHART,   JLONG,   (JCHAR(K),K =1,35)
  
      1-10, 11-20, 21-30,        36,     37,      39,     41  through  68
  
