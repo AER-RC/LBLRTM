@@ -7141,12 +7141,12 @@ C                                                                        FL71340
      * HF(50),HCL(50),HBR(50),HI(50),CLO(50),OCS(50),H2CO(50),           FL71360
      * HOCL(50),AN2(50),HCN(50),CH3CL(50),H2O2(50),C2H2(50),             FL71370
      * C2H6(50),PH3(50),TDUM(50)                                         FL71380
-      DATA CTMNA1  /'TROPICAL','        ','         '/                   FL71390
-      DATA CTMNA2  /'MIDLATIT','UDE SUMM','ER       '/                   FL71400
-      DATA CTMNA3  /'MIDLATIT','UDE WINT','ER       '/                   FL71410
-      DATA CTMNA4  /'SUBARCTI','C SUMMER ','        '/                   FL71420
-      DATA CTMNA5  /'SUBARCTI','C WINTER ','        '/                   FL71430
-      DATA CTMNA6  /'U. S. ST','ANDARD,  ','1976    '/                   FL71440
+      DATA CTMNA1  /'TROPICAL','        ','        '/                    FL71390
+      DATA CTMNA2  /'MIDLATIT','UDE SUMM','ER      '/                    FL71400
+      DATA CTMNA3  /'MIDLATIT','UDE WINT','ER      '/                    FL71410
+      DATA CTMNA4  /'SUBARCTI','C SUMMER','        '/                    FL71420
+      DATA CTMNA5  /'SUBARCTI','C WINTER','        '/                    FL71430
+      DATA CTMNA6  /'U. S. ST','ANDARD, ','1976    '/                    FL71440
 C                                                                        FL71450
 C     DATA ALT (KM)  /                                                   FL71460
 C                                                                        FL71470
