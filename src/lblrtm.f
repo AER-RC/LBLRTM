@@ -2070,7 +2070,7 @@ C
 C        Read card for scan for IMRG = 42,43
 C
          IF (IMRG.GE.42) then
-            CALL SCANRD (DVINT,JEMIT)
+            CALL SCANRD_aj
             IMRGSAV=IMRG
          endif
 C
@@ -2236,6 +2236,7 @@ c                    write(*,*) 'entering scnmrg section for aj'
                     close(kfilad)  ! make sure last file is closed
                     close(kfilad2) ! make sure last file is closed
 
+                    CALL SCANRD (DVINT,JEMIT,1)
                     call scnmrg_aj(nlayer,iupdwn)
 
 c                    write(*,*) 'done with scnmrg'
@@ -2474,7 +2475,7 @@ C       READ CARD FOR SCAN OF WEIGHTING FUNCTION                          A13700
 C       READ CARD FOR FILTER OF WEIGHTING FUNCTION                        A13710
 C                                                                         A13720
       IF (IMRG.EQ.14.OR.IMRG.EQ.16.OR.IMRG.EQ.36)                         A13730
-     *   CALL SCANRD (DVINT,JEMIT)                                        A13740
+     *   CALL SCANRD (DVINT,JEMIT,0)                                        A13740
       IF (IMRG.EQ.24.OR.IMRG.EQ.26) CALL FLTRRD                           A13750
 C                                                                         A13760
 C     START LOOP OVER LAYERS                                              A13770
@@ -2579,7 +2580,7 @@ C       READ CARD FOR SCAN OF WEIGHTING FUNCTION                          A14560
 C       READ CARD FOR FILTER OF WEIGHTING FUNCTION                        A14570
 C                                                                         A14580
       IF (IMRG.EQ.13.OR.IMRG.EQ.15.OR.IMRG.EQ.35)                         A14590
-     *   CALL SCANRD (DVINT,JEMIT)                                        A14600
+     *   CALL SCANRD (DVINT,JEMIT,0)                                        A14600
       IF (IMRG.EQ.23.OR.IMRG.EQ.25) CALL FLTRRD                           A14610
       NNTAN = 1                                                           A14620
       NTAN(NNTAN) = NLAYER                                                A14630
@@ -2667,7 +2668,7 @@ C                                                                         A15230
 C     READ CARD FOR SCAN OF WEIGHTING FUNCTION                            A15240
 C     READ CARD FOR FILTER OF WEIGHTING FUNCTION                          A15250
 C                                                                         A15260
-      IF (IMRG.EQ.17.OR.IMRG.EQ.18) CALL SCANRD (DVINT,JEMIT)             A15270
+      IF (IMRG.EQ.17.OR.IMRG.EQ.18) CALL SCANRD (DVINT,JEMIT,0)             A15270
       IF (IMRG.EQ.27.OR.IMRG.EQ.28) CALL FLTRRD                           A15280
 C                                                                         A15290
 C     **                 DOWN                                             A15300

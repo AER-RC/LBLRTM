@@ -545,7 +545,7 @@ C                                                                         I04510
 C
 C     --------------------------------------------------------------
 C
-      SUBROUTINE SCANRD (DVINT,IEMIT)                                     I04530
+      SUBROUTINE SCANRD (DVINT,IEMIT,iaj)                                     I04530
 C                                                                         I04540
       IMPLICIT REAL*8          (V)                                     ! I04550
 C                                                                         I04560
@@ -556,6 +556,11 @@ C                                                                         I04600
       character*8      XID,       HMOLID,      YID,SCANID
       real*8               SECANT,       XALTZ 
 C                                                                         I04620
+
+      common /scanaj/HWHMa,V1a,V2a,JEMITa,JFNa,JVARa,
+     &    SAMPLa,NNFILEa,NPTSa
+
+
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       I04630
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,   I04640
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    I04650
@@ -626,7 +631,24 @@ C
 C                                                                         I05190
       NLIMF = 2401                                                        I05200
       NSHIFT = 32                                                         I05210
-      READ (IRD,900,END=10) HWHM,V1,V2,JEMIT,JFN,JVAR,SAMPL,NNFILE,NPTS   I05220
+
+      if (iaj.eq.0) then
+          READ (IRD,900,END=10) HWHM,V1,V2,JEMIT,JFN,JVAR,
+     &        SAMPL,NNFILE,NPTS
+      else
+          HWHM=HWHMa
+          V1=V1a
+          V2=V2a
+          JEMIT=JEMITa
+          JFN=JFNa
+          JVAR=JVARa
+          SAMPL=SAMPLa
+          NNFILE=NNFILEa
+          NPTS=NPTSa
+      endif
+
+
+
 C                                                                         I05230
       IF (HWHM.LE.0.) THEN                                                I05240
          WRITE(IPR,*) ' SCANRD * HWHM NEGATIVE '                          I05242
@@ -753,6 +775,33 @@ C                                                                         I06160
   930 FORMAT (' END OF FILE TAPE5',/,' (NOTE TAPE10 ALREADY CREATED )')   I06280
 C                                                                         I06290
       END                                                                 I06300
+C
+C     --------------------------------------------------------------
+C
+      subroutine scanrd_aj
+
+c This subroutine is used with the analytic jacobian calculations
+c to store the TAPE5 scan information rather than reading it in for
+c each layer/level to be scanned.  It also fixes problems with the
+c duplicate use of common blocks for scanning the cross-sectional
+c molecules to the correct resolution.
+
+      implicit real*8 (v)
+
+      common /scanaj/HWHM,V1,V2,JEMIT,JFN,JVAR,SAMPL,NNFILE,NPTS
+
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+
+      READ (IRD,900,END=10) HWHM,V1,V2,JEMIT,JFN,JVAR,SAMPL,NNFILE,NPTS
+  900 FORMAT (3F10.3,3(3X,I2),F10.4,15X,2I5)
+
+      return
+
+  10  print 930
+  930 FORMAT (' END OF FILE TAPE5 in scanrd_aj')
+      end
 C
 C     --------------------------------------------------------------
 C
