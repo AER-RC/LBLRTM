@@ -262,19 +262,8 @@ C
  24         CONTINUE                                                  
 C
 C           ------------------------------------------------------------
-c           Interpolate to total optical depth grid
-
-c           If spectral range covers the CKD_2.3 1 cm-1 H2O continuum
-c           as well, then stop interpolation at 2200 cm-1.
-
-            npts_lo = 1
-            if (v1abs .lt. 2200.) then
-               npts_lo =  npts_hi + 1
-c              v1c = v1c+npts_hi
-            endif
 c
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,npts_lo,
-     *                 NPTABS)
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
 C           ------------------------------------------------------------
 C                                                                         F00780
 
@@ -489,10 +478,10 @@ C              Radiation field
 C                                                                      
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      
  92         CONTINUE                                                         
+c 
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
-
+c
          endif
-
 C
 C        O2 continuum formulated by Mlawer et al. over the spectral region
 C        9100-11000 cm-1. Refer to the paper "Observed  Atmospheric
@@ -501,15 +490,15 @@ C        Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
 C        Journal of Geophysical Research (1997).
 C
 C        Only calculate if V2 > 9100. cm-1 and V1 <  11000. cm-1
-
-         if (((V2.gt.9350.0).and.(V1.lt.9500.))) then
+c
+         if ((V2.gt.9100.0).and.(V1.lt.11000.)) then
 c
             CALL O2INF2 (V1C,V2C,DVC,NPTC,C0)                      
-            WO2 = RHOAVE*WK(7)
+            WO2 = RHOAVE*WK(7)*1.e-20
             CHIO2 = (WK(7)*1.E-20)/WTOT 
             ADJFAC = CHIO2/0.209
             ADJWO2 = ADJFAC * WO2
-
+c
             DO 93 J = 1, NPTC                                                
                C(J) = C0(J)*ADJWO2*XO2CN
                VJ = V1C+DVC*FLOAT(J-1)                                       
@@ -517,11 +506,12 @@ C
 C              Radiation field
 C                                                                      
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      
+c
  93         CONTINUE                                                         
+c
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
-
+c
          endif
-
 C
 C        Only calculate if V2 > 36000. cm-1
 
@@ -539,7 +529,7 @@ C                                                                         F01880
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01910
 
          endif
-
+c
 C     *********************  NITROGEN CONTINUA  ********************
 c
          IF (NMOL.GE.22) THEN                                             F01000
@@ -640,7 +630,6 @@ C
 c
          endif
 c
-
 C     ********** Rayleigh Scattering calculation **********
 c
 c     The formulation, adopted from MODTRAN_3.5 (using approximation
@@ -759,7 +748,7 @@ C
      *     ' CM-1                        (March 1998)          ',
      *     '                           O2/N2       7550 -  8486',
      *     ' CM-1                     (February 2000)          ',
-     *     '                           AIR         9350 -  9500',
+     *     '                           AIR         9100 - 11000',
      *     ' CM-1                      (August  1999)          ',
      *     '                           O2/N2      36000 -  >>>>',
      *     ' CM-1    HERZBERG                                  ',
@@ -806,8 +795,8 @@ C
      *     '                                                   ',
      *     '  H2O SELF HAS BEEN INCREASED IN THE 0-200 CM-1 REG',
      *     'ION                                   (04 JUN 1999)',
-     *     '  O2 COLLISION INDUCED BAND HAS BEEN ADDED   (9350 ',
-     *     '- 9500 CM-1); MLAWER ET AL. 1998      (16 AUG 1999)',
+     *     '  O2 COLLISION INDUCED BAND HAS BEEN ADDED  (9100 -',
+     *     ' 11000 CM-1); MLAWER ET AL. 1998      (16 AUG 1999)',
      *     '  O2 COLLISION INDUCED BAND HAS BEEN CHANGED (7555 ',
      *     '- 8486 CM-1); MATE ET AL. 1999        (10 FEB 2000)',
      *     '  -------------------------------------------------',
@@ -7399,31 +7388,26 @@ C
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)               
       DIMENSION C(*)                                                     
 C                                                                        
-      DATA V1 /9375./, HW1 /58.96/, V2 /9439./, HW2 /45.04/
+      DATA V1_osc /9375./, HW1 /58.96/, V2_osc /9439./, HW2 /45.04/
       DATA S1 /1.166E-04/, S2 /3.086E-05/
 C                                                                        
-      V1S = 9040.                                                        
-      DVS = 1.                                                          
+      V1S = 9100.                                                        
+      v2s = 11000.
+      DVS = 2.                                                          
       DVC = DVS                                                          
 C                                                                        
       V1C = V1ABS-DVC                                                    
       V2C = V2ABS+DVC                                                    
 C                                                                        
-      I1 = (V1C-V1S)/DVS                                                 
-      IF (V1C.LT.V1S) I1 = I1-1                                          
-C                                                                        
-      V1C = V1S+DVS*FLOAT(I1)                                            
-      I2 = (V2C-V1S)/DVS                                                 
-      NPTC = I2-I1+3                                                     
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                        
+      NPTC = (v2c-v1c)/dvc + 3.
+      V2C = V1C+DVc*FLOAT(NPTC-1)                                        
+c
       DO 10 J = 1, NPTC                                                  
-         I = I1+J                                                        
          C(J) = 0.                                                       
-         IF (I.LT.1) GO TO 10                                            
          VJ = V1C+DVC*FLOAT(J-1)                                         
-         IF ((Vj.gt.9100.00) .and. (Vj.lt.11000.00)) then
-            DV1 = Vj - V1
-            DV2 = Vj - V2
+         IF ((Vj.gt.v1s) .and. (Vj.lt.v2s)) then
+            DV1 = Vj - V1_osc
+            DV2 = Vj - V2_osc
             IF (DV1 .LT. 0.0) THEN
                DAMP1 = EXP (DV1 / 176.1)
             ELSE
@@ -7435,8 +7419,8 @@ C
                DAMP2 = 1.0
             ENDIF
             O2INF = 0.31831 * (((S1 * DAMP1 / HW1)/(1. + (DV1/HW1)**2))
-     &           + ((S2 * DAMP2 / HW2)/(1. + (DV2/HW2)**2))) * 1.054
-            C(J) = O2INF/VJ        
+     *           + ((S2 * DAMP2 / HW2)/(1. + (DV2/HW2)**2))) * 1.054
+            C(J) = O2INF/VJ  
          endif
    10 CONTINUE                                                           
 C                                                                        
