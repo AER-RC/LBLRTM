@@ -11,7 +11,7 @@ C     AN INTERFACE FROM THE CALCOMP PEN ROUTINES CURRENTLY                NC0060
 C     ON THE AFGL CYBER TO THE NCAR GKS PLOTTING PACKAGE.                 NC0070
 C                                                                         NC0080
 C     NOTE: THESE ROUTINES WERE WRITTEN TO INTERFACE THE                  NC0090
-C           CALCOMP CALLS USED BY FASCODE, AND DO NOT                     NC0100
+C           CALCOMP CALLS USED BY LBLRTM, AND DO NOT                      NC0100
 C           PROVIDE A COMPLETE CALCOMP TO NCAR INTERFACE.                 NC0110
 C                                                                         NC0120
 C           (COMPATIBLE WITH VERSION 2.00 OF NCAR GKS)                    NC0130

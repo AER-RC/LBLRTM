@@ -2,7 +2,7 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
-      SUBROUTINE FSCATM                                                  FA00010
+      SUBROUTINE LBLATM                                                  FA00010
 C                                                                        FA00020
       IMPLICIT DOUBLE PRECISION (V)                                     !FA00030
 C                                                                        FA00040
@@ -10,7 +10,7 @@ C**********************************************************************  FA00050
 C                                                                        FA00060
 C     FSCATM IS AN ATMOSPHERIC RAY TRACE PROGRAM.                        FA00070
 C     IT CREATES AND FORMATS THE ATMOSPHERIC INPUTS FOR THE AFGL         FA00080
-C     LINE-BY-LINE TRANSMITTANCE/RADIANCE PROGRAM FASCODE.               FA00090
+C     LINE-BY-LINE TRANSMITTANCE/RADIANCE PROGRAM LBLRTM.                FA00090
 C                                                                        FA00100
 C     SEE THE COMMENTS IN SUBROUTINE ATMPTH FOR DETAILED INSTRUCTIONS O  FA00110
 C     THE USAGE OF THE ATMOSPHERIC INPUTS.                               FA00120
@@ -43,7 +43,7 @@ C-               CPU TIME, RANDOM NUMBER, ETC.).                         FA00380
 C-                                                                       FA00390
 C----------------------------------------------------------------------  FA00400
 C                                                                        FA00410
-C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO FASCODE        FA00420
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM         FA00420
 C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                       FA00430
 C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE       FA00440
 C         STORED IN ZMDL (INPUT)                                         FA00450
@@ -107,7 +107,7 @@ C                                                                        FA00990
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FA01030
       COMMON /CNTRL/ I1,I2,I3,I4,NBNDL,I6,I7,NBNDF,I9                    FA01040
 C                                                                        FA01050
-C     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO FASCODE        FA01060
+C     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM         FA01060
 C     IOUTDM IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                      FA01070
 C     IMDIM IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE       FA01080
 C         STORED IN ZMDL (INPUT)                                         FA01090
@@ -188,7 +188,7 @@ C     PRESSURE AND THE INTEGRATED ABSORBER AMOUNTS (IN MOLECULES         FA01830
 C     CM-2) FOR EACH LAYER ALONG A PATH THROUGH A LAYERED                FA01840
 C     ATMOSPHERE, INCLUDING THE EFFECTS OF REFRACTION AND THE  EARTH'S   FA01850
 C     CURVATURE.  ATMPTH IS DESIGNED TO PREPARE THE ATMOSPHERIC INPUTS   FA01860
-C     TO THE PROGRAM FASCODE WHICH DOES A LINE-BY-LINE CALCULATION OF    FA01870
+C     TO THE PROGRAM LBLRTM WHICH DOES A LINE-BY-LINE CALCULATION OF     FA01870
 C     ATMOSPHERIC TRANSMITTANCE OR RADIANCE AND IS DESCRIBED IN          FA01880
 C     REFERENCE (1).  THE CONTROL CARDS REQUIRED TO RUN ATMPTH ARE       FA01890
 C     DESCRIBED LATER IN THESE COMMENTS.  A DETAILED DESCRIPTION         FA01900
@@ -233,7 +233,7 @@ C     SUBSEQUENT CALCULATIONS. THE USER SHOULD THEN EXPERIMENT WITH      FA02280
 C     DIFFERENT LAYERING UNTIL THE RESULTS ARE CONSISTENT WITH           FA02290
 C     HIS ACCURACY REQUIREMENTS.                                         FA02300
 C                                                                        FA02310
-C     TO SAVE COMPUTER TIME IN FASCODE, THE LAYER AMOUNTS ARE ZEROED     FA02320
+C     TO SAVE COMPUTER TIME IN LBLRTM, THE LAYER AMOUNTS ARE ZEROED      FA02320
 C     OUT WHEN                                                           FA02330
 C         1.  THE CUMULATIVE AMOUNT FOR THAT LAYER AND ABOVE IS LESS     FA02340
 C             THAN 0.1 PERCENT OF THE TOTAL,                             FA02350
@@ -257,14 +257,14 @@ C                                                                        FA02520
 C     THE PRINTED OUTPUT IS ON FILE IPR (DEFAULT=6). SELECTING           FA02530
 C     NOPRNT=1 SUPRESSES THE PRINTING OF THE ATMOSPHERIC PROFILES        FA02540
 C     AND THE LAYER-BY-LAYER RESULTS FOR THE REFRACTED PATH.             FA02550
-C     IF IPUNCH = 1, THEN THE FASCODE INPUT DATA IS ALSO PUT ON FILE     FA02560
+C     IF IPUNCH = 1, THEN THE LBLRTM INPUT DATA IS ALSO PUT ON FILE      FA02560
 C     IPU (DEFAULT=7) AND CONSISTS OF A SINGLE CARD IMAGE GIVING THE     FA02570
 C     NUMBER OF LAYERS LMAX AND A 70 CHARACTER FIELD DESCRIBING THE      FA02580
 C     PROFILE AND THE PATH, FOLLOWED BY TWO (OR MORE) CARD IMAGES FOR    FA02590
 C     EACH OF THE LMAX LAYERS                                            FA02600
 C                                                                        FA02610
 C        CARD 2.1    LMAX,NMOL,SECNT0,HMOD  (2I5,F10.6,3A8)              FA02620
-C             LMAX   = NUMBER OF FASCODE LAYERS, MAY DIFFER FROM         FA02630
+C             LMAX   = NUMBER OF LBLRTM LAYERS, MAY DIFFER FROM          FA02630
 C                      IBMAX DEPENDING ON THE PATH.                      FA02640
 C             NMOL   = NUMBER OF MOLECULES SELECTED                      FA02650
 C             SECNT0 = EFFECTIVE SECANT (SCALE FACTOR) FOR THE AMOUNTS   FA02660
@@ -276,7 +276,7 @@ C                    (3F10.4,A3,I2,1X,F7.2,F8.3,F7.2,F7.2,F8.3,F7.2)     FA02710
 C             PBAR   =  AVERAGE PRESSURE (MB)                            FA02720
 C             TBAR   =  AVERAGE TEMPERATURE (K)                          FA02730
 C             SECNTK = SCALE FACTOR FOR COLUMN AMOUNT (DEFAULT=0)        FA02740
-C             ITYL  : OVERRIDES THE FASCODE INTERNAL CALCULATION FOR     FA02750
+C             ITYL  : OVERRIDES THE LBLRTM INTERNAL CALCULATION FOR      FA02750
 C                     ITYPE, NORMALLY LEFT BLANK                         FA02760
 C             IPATH : IF THE PATH DOES NOT GO THROUGH A TANGENT HEIGHT,  FA02770
 C                         IF H1.LT.H2   IPATH = 3                        FA02780
@@ -311,7 +311,7 @@ C----------------------------------------------------------------------  FA03060
 C                                                                        FA03070
 C  REFERENCES:                                                           FA03080
 C                                                                        FA03090
-C (1) FASCODE - A USERS' GUIDE (AVAILABLE FROM S.A. CLOUGH AT            FA03100
+C (1) LBLRTM - A USERS' GUIDE (AVAILABLE FROM S.A. CLOUGH AT             FA03100
 C                    THE ABOVE ADDRESS)                                  FA03110
 C        SEE ALSO:                                                       FA03120
 C          FASCODE - FAST ATMOSPHERIC SIGNATURE CODE                     FA03130
@@ -701,7 +701,7 @@ C                                                                        FA06890
          LEN = LENF                                                      FA06970
          WRITE (IPR,934) H1,H2,ANGLE,RANGE,BETA,LEN                      FA06980
 C                                                                        FA06990
-C     GENERATE OR READ IN FASCODE BOUNDARY LAYERS                        FA07000
+C     GENERATE OR READ IN LBLRTM BOUNDARY LAYERS                         FA07000
 C                                                                        FA07010
          IF (IBMAX.EQ.0) THEN                                            FA07020
 C                                                                        FA07030
@@ -724,7 +724,7 @@ C                                                                        FA07050
 C                                                                        FA07200
          ENDIF                                                           FA07210
 C                                                                        FA07220
-C     READ IN FASCODE BOUNDARY LAYERS                                    FA07230
+C     READ IN LBLRTM BOUNDARY LAYERS                                     FA07230
 C                                                                        FA07240
          IF (IREAD.LE.0) THEN                                            FA07250
             READ (IRD,940) (ZBND(IB),IB=1,IBMAX)                         FA07260
@@ -867,7 +867,7 @@ C                                                                        FA08620
          CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,IERROR)  FA08630
          IF (IERROR.NE.0) GO TO 310                                      FA08640
 C                                                                        FA08650
-C     SET UP FASCODE LAYER BOUNDARIES                                    FA08660
+C     SET UP LBLRTM LAYER BOUNDARIES                                     FA08660
 C                                                                        FA08670
          IF (IBMAX.NE.0) GO TO 200                                       FA08680
 C                                                                        FA08690
@@ -941,7 +941,7 @@ C                                                                        FA09270
          LENF = LEN                                                      FA09370
          HMINF = HMIN                                                    FA09380
 C                                                                        FA09390
-C     CONDENSE THE AMOUNTS INTO THE FASCODE OUTPUT LAYERS ZOUT, WHICH    FA09400
+C     CONDENSE THE AMOUNTS INTO THE LBLRTM OUTPUT LAYERS ZOUT, WHICH     FA09400
 C     ARE DEFINED BY THE BOUNDARIES ZBND FROM HMIN TO HMAX               FA09410
 C     ALSO, ZERO OUT THE AMOUNT FOR A MOLECULE IF THE CUMULATIVE         FA09420
 C     AMOUNT FOR THAT LAYER AND ABOVE IN LESS THAN 0.1 PERCENT OF        FA09430
@@ -1074,7 +1074,7 @@ C                                                                        FA10530
      *        /,10X,'T     = ',F10.3,' K',//,10X,'DENSITIES :',T26,      FA10700
      *        'AIR',(T30,8A10))                                          FA10710
   916 FORMAT (T63,'(MOL CM-3)',//,T20,1PE10.3,(T30,8E10.3))              FA10720
-  918 FORMAT ('0SINGLE LAYER INPUT TO FASCODE',//,10X,'MODEL = ',3A8,/,  FA10730
+  918 FORMAT ('0SINGLE LAYER INPUT TO LBLRTM',//,10X,'MODEL = ',3A8,/,   FA10730
      *        10X,'Z     = ',F10.3,' KM',/,10X,'P     = ',F10.3,' MB',   FA10740
      *        /,10X,'T     = ',F10.3,' K',/,10X,'RANGE = ',F10.3,' KM',  FA10750
      *        //,10X,'AMOUNTS (MOL CM-2):',T36,'AIR',(T32,8A10))         FA10760
@@ -1096,7 +1096,7 @@ C                                                                        FA10530
      *        /,10X,'TDIFF1    = ',F8.2,/,10X,'TDIFF2    = ',F8.2,/,     FA10920
      *        10X,'ALTD1     = ',F8.2,/,10X,'ALTD2     = ',F8.2)         FA10930
   940 FORMAT (8F10.3)                                                    FA10940
-  942 FORMAT (///,' USER DEFINED BOUNDARIES FOR FASCODE LAYERS',/,10X,   FA10950
+  942 FORMAT (///,' USER DEFINED BOUNDARIES FOR LBLRTM LAYERS',/,10X,    FA10950
      *        'I',4X,'Z (KM)',//,(10X,I2,F10.4))                         FA10960
   944 FORMAT (' ERROR IN USER INPUT BOUNDARIES ')                        FA10970
   946 FORMAT (' BOUNDARIES ARE OUTSIDE THE RANGE OF THE ATMOSPHERE',/,   FA10980
@@ -1109,7 +1109,7 @@ C                                                                        FA10530
   952 FORMAT (/)                                                         FA11050
   954 FORMAT (I4,F9.3,F11.5,F8.2,6PF9.2,1X,1P9E10.3,/,(52X,1P8E10.3))    FA11060
   956 FORMAT (///,' HALFWIDTH INFORMATION ON THE USER SUPPLIED ',        FA11070
-     *        'FASCODE BOUNDARIES',/,' THE FOLLOWING VALUES ARE ',       FA11080
+     *        'LBLRTM BOUNDARIES',/,' THE FOLLOWING VALUES ARE ',        FA11080
      *        'ASSUMED:')                                                FA11090
   958 FORMAT (10X,'ALZERO    = ',F9.3,' CM-1 = AVERAGE LORENTZ WIDTH ',  FA11100
      *        'AT STP',/,10X,'AVMWT     = ',F8.2,                        FA11110
@@ -1134,7 +1134,7 @@ C                                                                        FA10530
      *        'HMIN    = ',F10.3,' KM',/,10X,'BENDING = ',F10.3,' DEG',  FA11300
      *        /,10X,'LEN     = ',I10,/,10X,'AIRMAS  = ',G10.3,           FA11310
      *        'RELATIVE TO A VERTICAL PATH , GROUND TO SPACE')           FA11320
-  970 FORMAT ('0FINAL SET OF LAYERS FOR INPUT TO FASCODE',/,             FA11330
+  970 FORMAT ('0FINAL SET OF LAYERS FOR INPUT TO LBLRTM',/,              FA11330
      *        ' A LAYER AMOUNT MAY BE SET TO ZERO IF THE CUMULATIVE ',   FA11340
      *        'AMOUNT FOR THAT LAYER AND ABOVE IS LESS THAN 0.1 ',       FA11350
      *        'PERCENT',/,' OF THE TOTAL AMOUNT. THIS IS DONE ONLY ',    FA11360
@@ -1162,7 +1162,7 @@ C                                                                        FA10530
      *        'PARAMETERS MODEL, ITYPE, NMOL IS OUT OF RANGE',//,10X,    FA11580
      *        'MODEL   = ',I5,/,10X,'ITYPE   = ',I5,/,10X,'NMOL    = ',  FA11590
      *        I5,10X,' IBMAX =',I5)                                      FA11600
-  988 FORMAT (///,' ERROR: BOUNDARY ALTITUDES FOR FASCODE LAYERS ',      FA11610
+  988 FORMAT (///,' ERROR: BOUNDARY ALTITUDES FOR LBLRTM LAYERS ',       FA11610
      *        'ARE NEGATIVE OR NOT IN ASCENDING ORDER',//,5X,' ZBND ',   FA11620
      *        /,(10F10.4))                                               FA11630
   990 FORMAT ('0ERROR FLAG RETURNED FROM FSCGEO:  AN ERROR OCCURED ',    FA11640
@@ -1197,7 +1197,7 @@ C                                                                        FA11900
       COMMON /HMOLC/ HMOLC(MXMOL)                                        FA11930
       CHARACTER*8 HMOLC                                                  FA11940
 C                                                                        FA11950
-C     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO FASCODE        FA11960
+C     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM         FA11960
 C     IOUTDM IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                      FA11970
 C     IMDIM IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE       FA11980
 C         STORED IN ZMDL (INPUT)                                         FA11990
@@ -1217,7 +1217,7 @@ C                                                                        FA12070
 C                                                                        FA12130
 C     ALZERO IS THE MEAN LORENTZ HALFWIDTH AT PZERO AND 296.0 K.         FA12140
 C     AVMWT IS THE MEAN MOLECULAR WEIGHT USED TO AUTOMATICALLY           FA12150
-C     GENERATE THE FASCODE BOUNDARIES IN AUTLAY                          FA12160
+C     GENERATE THE LBLRTM BOUNDARIES IN AUTLAY                           FA12160
 C                                                                        FA12170
       DATA ALZERO / 0.1 /,AVMWT / 36.0 /                                 FA12180
 C                                                                        FA12190
@@ -2394,11 +2394,11 @@ C                                                                        FA23840
       COMMON /TRAC/ TRAC(MXZMD,MXTRAC)                                   FA23900
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FA23910
 C                                                                        FA23920
-C     ZMDL BLANK COMMON ALTITUDES FOR FASCODE BOUNDRIES                  FA23930
-C     ZMAX /PARMTR/ HIGEST FASCODE ALT                                   FA23940
-C     ZMIN /PARMTR/ LOWEST FASCODE ALT                                   FA23950
+C     ZMDL BLANK COMMON ALTITUDES FOR LBLRTM BOUNDRIES                   FA23930
+C     ZMAX /PARMTR/ HIGHEST LBLRTM ALT                                   FA23940
+C     ZMIN /PARMTR/ LOWEST LBLRTM ALT                                    FA23950
 C     ZPTH BLANK COMMON                                                  FA23960
-C     ZST /MLATM/ ORIGINAL FASCODE ALTITUDES                             FA23970
+C     ZST /MLATM/ ORIGINAL LBLRTM ALTITUDES                              FA23970
 C                                                                        FA23980
       IF (MDL.EQ.0) GO TO 40                                             FA23990
       IF (MDL.GE.1) IMMAX = 50                                           FA24000
@@ -2521,7 +2521,7 @@ C                                                                        FA25150
          DO 10 K = 1, NMOL                                               FA25170
             DENM(K,IM) = 0.0                                             FA25180
 C                                                                        FA25190
-C     CONVERSION OF GENERIC UNITS TO DENSITIES FOR FASCODE RUNS          FA25200
+C     CONVERSION OF GENERIC UNITS TO DENSITIES FOR LBLRTM RUNS           FA25200
 C                                                                        FA25210
             CALL CONVRT (PM(IM),TM(IM),K,JUNIT(K),WMOL(K),DENM(K,IM),    FA25220
      *                   NOPRNT)                                         FA25230
@@ -3516,7 +3516,7 @@ C                                                                        FA35000
    20 CONTINUE                                                           FA35120
 C                                                                        FA35130
 C     IF AUTOLAYERING SELECTED(IBMAX = 0) THEN SET UP DUMMY              FA35140
-C     FASCODE OUTPUT LAYERS                                              FA35150
+C     LBLRTM OUTPUT LAYERS                                               FA35150
 C                                                                        FA35160
       IBMSAV = IBMAX                                                     FA35170
       IF (IBMAX.NE.0) GO TO 30                                           FA35180
@@ -4052,7 +4052,7 @@ C                                                                        FA40470
 C     *****************************************************************  FA40480
 C     AMERGE CREATES A SET OF LAYER BOUNDARIES ZOUT WHICH INCLUDES       FA40490
 C     HMIN, (HMID), HMAX AND ALL OF ZBND BETWEEN HMIN AND HAMX.          FA40500
-C     ZOUT DEFINES THE LAYERS FOR THE FASCODE CALCULATION.               FA40510
+C     ZOUT DEFINES THE LAYERS FOR THE LBLRTM CALCULATION.                FA40510
 C     ZOUT IS THEN MERGED WITH THE ATMOSPHERIC PROFILE IN ZMDL INTO ZPT  FA40520
 C     INTERPOLATING TO THE LEVELS ZOUT WHEN NECESSARY.  THE RAY          FA40530
 C     TRACE IS CALCULATED USING THE PROFILE IN ZPTH.                     FA40540
@@ -4219,7 +4219,7 @@ C                                                                        FA42140
   900 FORMAT ('0FROM AMERGE- ATMOSPHERIC PROFILE IN ZMDL DOES NOT',      FA42150
      *        ' EXTEND UP TO HMIN = ',E12.5)                             FA42160
   905 FORMAT ('0FROM AMERGE- MERGING THE ATMOSPHERIC PROFILE AND THE ',  FA42170
-     *        'FASCODE BOUNDARIES INTO ZPTH(IPDIM) EXCEEDS THE ',        FA42180
+     *        'LBLRTM BOUNDARIES INTO ZPTH(IPDIM) EXCEEDS THE ',         FA42180
      *        'DIMENSION IPDIM = ',I5)                                   FA42190
 C                                                                        FA42200
       END                                                                FA42210
@@ -4449,7 +4449,7 @@ C                                                                        FA44420
      *                   ALTD2,IERROR)                                   FA44450
 C                                                                        FA44460
 C     *****************************************************************  FA44470
-C     THIS SUBROUTINE AUTOMATICALLY SELECTS A SET OF FASCODE BOUNDARY    FA44480
+C     THIS SUBROUTINE AUTOMATICALLY SELECTS A SET OF LBLRTM BOUNDARY     FA44480
 C     LEVELS WHICH SATISFY THE FOLLOWING TWO TESTS:                      FA44490
 C          1. THE RATIO OF THE VOIGT HALFWIDTHS BETWEEN BOUNDARIES       FA44500
 C             IS LESS THAN OR EQUAL TO AVTRAT, AND                       FA44510
@@ -4619,7 +4619,7 @@ C                                                                        FA46140
       RETURN                                                             FA46150
 C                                                                        FA46160
   900 FORMAT (///,                                                       FA46170
-     *        ' FASCODE LAYER BOUNDARIES PRODUCED BY THE AUTOMATIC ',    FA46180
+     *        ' LBLRTM LAYER BOUNDARIES PRODUCED BY THE AUTOMATIC ',     FA46180
      *        'LAYERING ROUTINE AUTLAY',/,' THE USER SHOULD EXAMINE ',   FA46190
      *        'THESE BOUNDARIES AND MODIFY THEM IF APPROPRIATE',/,       FA46200
      *        ' THE FOLLOWING PARAMETERS ARE USED:',//,10X,              FA46210
