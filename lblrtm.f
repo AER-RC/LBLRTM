@@ -3614,7 +3614,7 @@ C                                                                         A25370
          V2R4 = V2+2.*DVR4                                                A25410
          V1L4 = V1R4-BOUND4-DVR4                                          A25420
          V2L4 = V2R4+BOUND4+2*DVR4                                        A25430
-         IF (IHIRAC.EQ.1) CALL LINF4 (V1L4,V2L4)                          A25440
+         IF ((IHIRAC.EQ.1).OR.(IHIRAC.EQ.9)) CALL LINF4 (V1L4,V2L4)       A25440
       ENDIF                                                               A25450
 C                                                                         A25460
       IF (IHIRAC.EQ.1) CALL HIRAC1 (MPTS)                                 A25470
