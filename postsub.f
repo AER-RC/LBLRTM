@@ -3232,9 +3232,9 @@ C                                                                         L00470
          OPEN (IFILE,FILE=FLTINF,STATUS='UNKNOWN',FORM=CFORM)
          REWIND IFILE
       ENDIF
+      JFILE = IFILE+1
       inquire(jfile,opened=op)
       IF (.NOT.OP) THEN
-         JFILE = IFILE+1
          WRITE (FLTOUT,970) COUT,IFILE
          OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
          rewind jfile
