@@ -1,12 +1,12 @@
 
 LBLRTM_v7.04
 
-1) The interface between LBLRTM and LOWTRAN has been updated to 
+1) The interface between LBLRTM and LOWTRAN7 has been updated to 
    run operationally (i.e. including aerosols and clouds).
    (S.A. Clough, M.W. Shephard, and S. Tjemkes)
 
 2) To function more efficiently as a stand alone program the common
-   blocks in LBLRTM were made more consistent.
+   blocks in LBLATM has been made more consistent.
    (S.A. Clough and D. Turner)
 
 
