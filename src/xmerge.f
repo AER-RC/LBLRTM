@@ -30,7 +30,8 @@ C                                                                         H00180
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H00200
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    H00210
 C                                                                         H00220
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl 
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac 
       COMMON /XME/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(4996)                   H00240
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
@@ -179,7 +180,8 @@ C                                                                         H01050
       COMMON /XMI/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(4815)                   H01060
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl 
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac 
 C                                                                         H01090
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),                H01100
      *            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),                H01110
@@ -1255,7 +1257,8 @@ C
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
 C     ----------------------------------------------------------------
 C
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac
       EQUIVALENCE (BNDEMI(1),A) , (BNDEMI(2),B) , (BNDEMI(3),C)           H09310
 C                                                                         H09320
       DATA FACTOR / 0.001 /                                               H09330
@@ -1392,7 +1395,8 @@ C
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
 C     ----------------------------------------------------------------
 C
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl 
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac 
       EQUIVALENCE (BNDRFL(1),A) , (BNDRFL(2),B) , (BNDRFL(3),C)           H10160
 C                                                                         H10170
       DATA FACTOR / 0.001 /                                               H10180
@@ -1535,7 +1539,8 @@ C                                                                         H11010
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           H11080
       COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF                            H11090
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H11100
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac
 C                                                                         H11110
       parameter (nn_tbl=10000)
 c
@@ -1550,7 +1555,6 @@ C                                                                         H11130
 C                                                                         H11170
       data xtrtot_min /1.e-04/, od_lo /0.06/,od_hi /12./
       data itbl_calc/-99/, aa /0.278/ 
-      data diffuse_fac /1.67/
 c
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H11180
       IF (KEOF.LE.0) RETURN                                               H11190
@@ -1955,10 +1959,14 @@ C
 
             elseif (surf_refl .eq. 'l') then 
 cccc  
-c     The following calculation  is for an approximation to the
-c     downwelling flux-  uses the Lambertian or 'diffusivity' approximation
-c     assuming it scatters isotropically with a value obtained from the
-c     diffusivity angle corresponding to diffuse_fac = 1.67 (secant)
+c     The following calculation is for an approximation to the
+c     downwelling flux for application to Lambertian surfaces. The 
+c     'diffusivity' approximation is used with the assumption that the 
+c     dowmwelling flux is isotropic and that the surface scatters 
+c     isotropically.  with a value obtained from the
+c     The value of the diffusivity angle corresponds to a secant of 1.67.
+c     diffuse_fac is the factor that is used to scale the optical depth
+c     on the 'observer side' of the path to that required for the 'back side'.
 cccc
                 DO 62 I = NLIM1, NLIM2
 c
@@ -2152,12 +2160,16 @@ C
             elseif (surf_refl .eq. 'l') then
 
 cccc  
-c     The following calculation  is for an approximation to the
-c     downwelling flux-  uses the Lambertian or 'diffusivity' approximation
-c     assuming it scatters isotropically with a value obtained from the
-c     diffusivity angle corresponding to diffuse_frac = 1.67 (secant)
+c     The following calculation is for an approximation to the
+c     downwelling flux for application to Lambertian surfaces. The 
+c     'diffusivity' approximation is used with the assumption that the 
+c     dowmwelling flux is isotropic and that the surface scatters 
+c     isotropically.  with a value obtained from the
+c     The value of the diffusivity angle corresponds to a secant of 1.67.
+c     diffuse_fac is the factor that is used to scale the optical depth
+c     on the 'observer side' of the path to that required for the 'back side'.
 cccc
-                DO 82 I = NLIM1, NLIM2  
+                 DO 82 I = NLIM1, NLIM2  
 
 c     tr(i) contains the layer optical depths at this stage
                     
@@ -2335,7 +2347,8 @@ C                                                                         H16680
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H16690
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H16700
      *                EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF    H16710
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H16730
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H16740
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        H16750
@@ -2626,7 +2639,8 @@ C                                                                         H19500
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H19510
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H19520
      *               EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF     H19530
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H19550
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTSS      H19560
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H19570
@@ -2913,6 +2927,8 @@ C                                                                         H22280
 C                                                                         H22290
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H22300
 C                                                                         H22310
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac
                                                                           H22320
       DIMENSION RADLYR(NDIM),TRALYR(NDIM),RADO(0:ND2),TRAO(0:ND2),        H22330
      *          RADLYB(NDIM),A1(*),A2(*),A3(*),A4(*)                      H22340
@@ -2920,26 +2936,33 @@ C                                                                         H22310
 c
       save i_trdiffus, tr_diffus, tr_diffus_dif, xnpts
 c
-      data i_trdiffus/-99/, diffuse_fac/ 1.67/
+      data i_trdiffus/-99/
 c
-      if (ipath_flg .eq. -11 .and. i_trdiffus.eq.-99) then
-         i_trdiffus = +11
-         Npts  = 500
-         Nxtra = Npts/10
-         xNpts =  REAL(Npts)
-         trdiff = 1./xNpts
+c     lambertian
 
-          do 5 i=0,Npts+Nxtra
-            tri =  REAL(i)*trdiff
-            tr_diffus (i) = tri**diffuse_fac
-            tr_diffus_dif (i) = (tri+trdiff)**diffuse_fac-tr_diffus (i)
- 5       continue
+cccc  
+c     The following call sets up a table to obtain the transmittance
+c     from the layer to the surface at the diffusivity angle 
+c     (backside) from the transmittance from the surface to the layer on the 
+c     'observer side' of the path.  The quantity 'diffuse_fac'
+c     is the appropriate factor to be used for this purpose.  Note that the
+c     optical depth for the downwelling radiance has already been been 
+c     properly computed in subroutine emin.
+c     
+c     i_trdiffus       flag to establish if the table needs to be set up.
+c     tr_diffus        table of diffuse transmittances given the 
+c                             'observer side' transmittance
+c     tr_diffus_dif    first differences in table tr_diffus for interpolation
+c     xnpoints         number of values in the table
+c     diffuse_fac      factor to obtainn oberver side' optical depth from
+c                              'backside' optical depth
 c
-         do 6 i=-Nxtra,-1
-            tr_diffus (i) = 0.
-            tr_diffus_dif (i) = 0.
- 6       continue
-      endif
+cccc
+ 
+      if (ipath_flg .eq. -11 .and. i_trdiffus.eq.-99)
+c
+     * call tr_diffus_tbl
+     *     (i_trdiffus, tr_diffus, tr_diffus_dif, xnpts, diffuse_fac)
 C                                                                         H22350
       LLM1 = LL-1                                                         H22360
       LLM1 = MAX(LLM1,1)                                                  H22370
@@ -3030,6 +3053,10 @@ c
                IF (IPATH_FLG.EQ.-11) THEN  
 c
 c     Lambertian
+c
+c     the effective flux transmittance, diffus_tr, is obtained by interpolation
+c     from the table tr_diffus.  The effective argument is TRAO(IPL).   See the 
+c     comments at the begiining of this subroutine for further information. 
 c
                   DO 52 I = NLIM1, NLIM2, LL                                 H22930
                      IPL = IPL+LLM1                                          H22940
@@ -3182,6 +3209,10 @@ c
 c
 c              Lambertian
 c
+c     the effective flux transmittance, diffus_tr, is obtained by interpolation
+c     from the table tr_diffus.  The effective argument is TRAOI.  See the 
+c     comments at the begiining of this subroutine for further information. 
+c
                   DO 102 I = NLIM1, NLIM2, LL                                H23840
                      IPL = IPL+LLM1                                          H23850
 C                                                                         H23860
@@ -3230,6 +3261,53 @@ C                                                                         H24120
 C                                                                         H24140
       END                                                                 H24150
 C
+C     ----------------------------------------------------------------
+C
+      SUBROUTINE tr_diffus_tbl
+     *     (i_trdiffus, tr_diffus, tr_diffus_dif, xnpts, diffuse_fac)
+c
+cccc  
+c     This subroutine sets up a table to obtain the transmittance
+c     from the layer to the surface at the diffusivity angle 
+c     (backside) from the transmittance from the surface to the layer on the 
+c     'observer side' of the path.  The quantity 'diffuse_fac'
+c     is the appropriate factor to be used for this purpose.  Note that the
+c     optical depth for the downwelling radiance has already been been 
+c     properly computed in subroutine emin.
+c     
+c     i_trdiffus       flag to establish if the table needs to be set up.
+c     tr_diffus        table of diffuse transmittances given the 
+c                             'observer side' transmittance
+c     tr_diffus_dif    first differences in table tr_diffus for interpolation
+c     xnpoints         number of values in the table
+c     diffuse_fac      factor to obtainn oberver side' optical depth from
+c                              'backside' optical depth
+c
+cccc
+c
+      dimension tr_diffus(-100:1100), tr_diffus_dif(-100:1100)
+c
+         i_trdiffus = +11
+         Npts  = 500
+         Nxtra = Npts/10
+         xNpts =  REAL(Npts)
+         trdiff = 1./xNpts
+
+          do 5 i=0,Npts+Nxtra
+            tri =  REAL(i)*trdiff
+            tr_diffus (i) = tri**diffuse_fac
+            tr_diffus_dif (i) = (tri+trdiff)**diffuse_fac-tr_diffus (i)
+ 5       continue
+c
+         do 6 i=-Nxtra,-1
+            tr_diffus (i) = 0.
+            tr_diffus_dif (i) = 0.
+ 6       continue
+      
+      return
+
+      end
+C                                                                         H22350
 C     ----------------------------------------------------------------
 C
       SUBROUTINE RADINT (NPTS,LFILE,MFILE,JPATHL,TBND)                    H24160
@@ -4942,7 +5020,8 @@ C                                                                         H16680
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H16690
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H16700
      *                EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF    H16710
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H16730
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H16740
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        H16750
@@ -5277,7 +5356,8 @@ C                                                                         H19500
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H19510
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H19520
      *               EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF     H19530
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H19550
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTSS      H19560
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H19570
@@ -6147,7 +6227,8 @@ C                                                                         H31130
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H31140
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H31150
      *                EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF    H31160
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H31180
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H31190
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        H31200
@@ -6359,7 +6440,8 @@ C                                                                         H33170
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H33180
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H33190
      *               EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF     H33200
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *    angle_path, secant_diffuse, secant_path, diffuse_fac
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H33220
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTSS      H33230
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H33240

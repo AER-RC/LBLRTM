@@ -551,11 +551,13 @@ C     presently: %H%  %T%
                              *** NOTE: Entering a value for SRREFL(1) < 0 allows for direct input of boundary reflectivities
                                         from file 'REFLECTIVITY'
 
-              surf_refl    is the surface reflectance used in computing the reflected downward radiance
+              surf_refl    specifies the surface type used in computing the reflected downward radiance
 
-                           's' or ' ' - is specular reflectance
-                           'l'        - is lambertian reflectance
-
+                           's' or ' ' - is for a specular surface
+                           'l'        - is for a lambertian surface
+                                         Note:  For the surf_refl = 'l' option
+                                                If IATM=0 the appropriate angle is specified on  Record 2.1;
+                                                Otherwise the angle is determined from the geometry in lblatm (IATM>0)
 
 
  RECORD 1.4 (Continued)
@@ -652,11 +654,10 @@ C     presently: %H%  %T%
 
                  ZH2      end point altitude
 
-              ZANGLE      zenith angle at H1 (degrees)
+              ZANGLE      mean zenith angle for path calculation (degrees)
 
-
-        NOTE:   Values of ZH1, ZH2, and ZANGLE only need to be entered when using the resulting radiances
-                for a CHARTS multiple scattering calculation.
+                          NOTE: With the surf_refl = 'l' option on Record 1.4
+                                ZANGLE must be set.  (ZANGLE .gt.90 and .le.180 )               
  
  RECORD 2.1.1
   

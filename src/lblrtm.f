@@ -374,7 +374,8 @@ C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A03070
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A03080
      *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF    A03090
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *                angle_path,secant_diffuse,secant_path,diffuse_fac
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A03110
      *                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      A03120
      *                NLTEFL,LNFIL4,LNGTH4                                A03130
@@ -864,18 +865,19 @@ c
             ENDIF                                                         A06380
 
          ENDIF
+
 C     **************************************************************
 C                                                                         A06390
 C     TBOUND IS THE BOUNDARY TEMPERATURE. TBOUND=0. FOR NO BOUNDARY       A06400
 C     EMISIV IS THE BOUNDARY EMISSIVITY                                   A06410
 C     SET DEFAULT FOR EMISIV and Surface Reflection
 C                                                                         A06430
-
          EMITST = ABS(BNDEMI(1))+ABS(BNDEMI(2))+ABS(BNDEMI(3))            A06440
          IF ((TMPBND.GT.0.).AND.(EMITST.EQ.0.)) BNDEMI(1) = 1.            A06450
          EMISIV = BNDEMI(1)                                               A06460
          TBOUND = TMPBND                                                  A06470
-c        set default reflection setting to specular
+c
+c        set default surface reflection settings
          IF (surf_refl .eq. ' ') surf_refl = 's'
 c
          WRITE (IPR,985) V1,V2,TBOUND,(BNDEMI(IBND),IBND=1,3),            A06480
@@ -1010,7 +1012,7 @@ C                                                                         A07280
      *        '0 V1(CM-1) = ',F12.4,/,'0 V2(CM-1) = ',F12.4,/,            A07520
      *        '0 TBOUND   = ',F12.4,5X,'BOUNDARY EMISSIVITY   = ',        A07530
      *        3(1PE11.3),/,'0',29X,'BOUNDARY REFLECTIVITY = ',            A07540
-     *        3(1PE11.3), ' SURFACE REFLECTIVITY = ', A1)
+     *        3(1PE11.3),/,'0',29X, 'SURFACE REFLECTIVITY = ', A1)
   990 FORMAT (F20.8)                                                      A07560
   995 FORMAT ('0 TIME LEAVING LBLRTM ',F15.4,' TOTAL',F15.4)              A07570
  1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,5X,
@@ -1533,7 +1535,8 @@ C                                                                         A11560
       COMMON /FILHD1/ XI1(10),SECAN1,PAV1,TAV1,HMOLI1(60),XALT1(4),       A11570
      *                W1(60),PDL,PDU,TDL,TDU,W12   ,D1 ,VD1,VD2,TBOUN1,   A11580
      *                EMISI1,FSCDI1(17),NMO1,LAYHD1,YD1,Y1D(10),LSTWDD    A11590
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *                angle_path,secant_diffuse,secant_path,diffuse_fac
 
 c****************
 
@@ -2555,16 +2558,23 @@ C                                                                         A17110
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A17140
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A17150
      *              EXTID(10)                                             A17160
+C
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2
 C                                                                         A17170
+      common /lbl_geo/ zh1,zh2,zangle
+c
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ
 C                                                                         A17190
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A17200
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A17210
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    A17220
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *                angle_path,secant_diffuse,secant_path,diffuse_fac
 C                                                                         A17240
       CHARACTER*8       HLINID,BMOLID,HID1                              & A17250
+      CHARACTER*1  surf_refl
 C                                                                         A17260
       integer *4 molcnt,mcntlc,
      *           mcntnl,linmol,
@@ -2685,6 +2695,46 @@ C                                                                         A18250
             ENDIF                                                         A18300
 C                                                                         A18310
             CALL PATH                                                     A18320
+C
+C     *************************************************************
+C     Compute the diffuse_fac for lambertian surface reflection
+c
+c     angle_path is the effective angle for the calculation from H2 to H1:
+c            For IATM.eq.0, this angle is read in on card 2.1 as zangle
+c            For IATM.ne.0, this angle is obtained from the lblatm ray trace
+c
+c     For a lambertian surface, the flux is obtained from a radiance calculation
+c     at the diffusivity angle (secant=1.67) using the information available
+c     from the calculation from H2 to H1 (at the effective angle, angle_path).
+c
+c     diffuse_fac is the ratio of this secant value (1.67) to the secant value
+c     associated with angle_path.  This factor is used to obtain the optical depths
+c     (subroutine EMIN) and the total ray transmittances (see module XMERGE)
+c     for the downwelling contribution at the diffusivity angle.
+c
+            if (surf_refl .ne. 's') then
+                IF (IATM.EQ.0) THEN
+                   angle_path = zangle
+
+                   if ((angle_path.gt.180.).or.(angle_path.le.90.)) then
+                       write(*,*) '     For lambertian, surf_refl = l'
+                       stop 'zangle must be between (90<zangle<=180deg)'
+                   endif
+                ELSE
+                   angle_path = angle
+
+                   if ((angle_path.gt.180.).or.(angle_path.le.90.)) then
+                       write(*,*) '     For lambertian, surf_refl = l'
+                       stop 'angle must be between (90<angle<=180 deg)'
+                   endif
+                ENDIF
+c
+                secant_diffuse = 1.67
+                secant_path = 1. / cos(abs(angle_path-180.)*PI/180.)
+                diffuse_fac = secant_diffuse / secant_path
+            endif
+C
+C     *************************************************************
 C                                                                         A18330
 C  SAVE AIRMASS FACTORS FOR USE WITH MULTIPLE SCATTERING                  A18340
 C                                                                         A18350
@@ -2803,6 +2853,13 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A19300
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A19310
      *              EXTID(10)                                             A19320
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *                angle_path,secant_diffuse,secant_path,diffuse_fac
+      character*1 surf_refl
+C                                                                         A17260
+      common /lbl_geo/ zh1,zh2,zangle
+      character*8 hol_angle,blank_angle
+c
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),
      *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE
@@ -2902,7 +2959,16 @@ C     Read in atmospheric definition information
 C
       IF (IATM.EQ.0) THEN                                                 A20130
          READ (IRD,901) IFORM,NLAYRS,NMOL,SECNT0,HEAD20,ZH1,HEAD4,ZH2,
-     *                  HEAD5,ZANGLE,HEAD7                                A20140
+     *                  HEAD5,hol_angle,HEAD7
+
+c       test if path angle was read in for lambertain surface reflection
+         data blank_angle /'        '/
+         if ((hol_angle.eq.blank_angle).and.(surf_refl.ne.'s')) then
+             stop 'must input value for zangle (Record 2.1)'
+         endif
+c
+         read (hol_angle,903) zangle
+c
          IF (NMOL.EQ.0) NMOL = 7                                          A20150
          IF (SECNT0.LT.0.) THEN                                           A20160
             IPATHL = 1                                                    A20170
@@ -2917,6 +2983,7 @@ C        Put H1, H2, and ANGLE into YID (ANGLE is needed for
 C        CHARTS multiple scattering calculation)
 C
          CALL YDIH1(ZH1,ZH2,ZANGLE,YID)
+c
          IF (IHIRAC.EQ.9) THEN                                            A20230
             CALL VECISO                                                   A20240
             DO 20 M = 1, NMOL                                             A20250
@@ -3749,9 +3816,10 @@ C
       RETURN                                                              A24040
 C                                                                         A24050
   900 FORMAT (1X,I1,I3,I5,F10.2,15A4)                                     A24060
-  901 FORMAT (1X,I1,I3,I5,F10.2,A20,F8.2,A4,F8.2,A5,F8.3,A7)
+  901 FORMAT (1X,I1,I3,I5,F10.2,A20,F8.2,A4,F8.2,A5,A8,A7)
   902 FORMAT ('0 SECANT   =',F13.4,/'0 NLAYRS=',I4,/'0 NMOL=',I4,/'0',    A24070
      *        A20,F8.2,A4,F8.2,A5,F8.3,A7)                                A24080
+  903 format (f8.3)
   905 FORMAT (A6)                                                         A24090
   907 FORMAT ('0 SECANT   =',F13.4)                                       A24100
   910 FORMAT (E15.7,F10.4,F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))

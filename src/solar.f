@@ -112,7 +112,8 @@ C
       PARAMETER (NMAXCO=4040)
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     *                angle_path,secant_diffuse,secant_path,diffuse_fac
 C     ----------------------------------------------------------------
 C
       DIMENSION XFILHD(2),XSOLHD(2),PNLHDR(2),OPNLHD(2)
