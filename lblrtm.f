@@ -968,6 +968,20 @@ C                                                                         A08820
 C
 C     -------------------------------------------------------------
 C
+      subroutine endfil_4 (ifile)
+c
+      integer*4 ifile
+      integer*4 idum(6)
+      data idum / 6*-99 /
+
+c
+      write(ifile) (idum(i),i=1,6)
+c
+      return
+C
+      end
+C     -------------------------------------------------------------
+
       SUBROUTINE SKIPFL (NUMFL,IFILE,IEOF)                                A08840
 C                                                                         A08850
       DIMENSION DUM(1)                                                    A08860
