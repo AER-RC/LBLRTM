@@ -654,7 +654,8 @@ C*****rectangle.  This later function is a very broad sinc.
 C*****    Calculate transform of the boxcar which is a rectangle of
 C*****    HWHM = DV/2, where DV is the new DV. The parameter A =< HWHM
           Write(IPR,*) ' Deconvolving'
-          Call Scntrn(-1,DV/2.0,1,DV,LREC,LPTFFT,LFILE2,FUNCT2,0.0,0.0)
+          Call Scntrn(-1,DV/2.0,1,DV,LREC,LPTFFT,LFILE2,FUNCT2,
+     *         0.0,0.0,0.0)
           Call Multrn(LREC,LFILE2,LFILE1,FUNCT2,FUNCT1)
       Endif
 
