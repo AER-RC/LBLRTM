@@ -522,7 +522,8 @@ C
          IOTFLG = 0
          READ(IRD,1010) INFLAG,IOTFLG
          IF (INFLAG.EQ.1) THEN
-            IFILE = KFILE
+c            IFILE = KFILE
+            IFILE = MFILE
          ELSE
             IFILE = MFILE
          ENDIF
