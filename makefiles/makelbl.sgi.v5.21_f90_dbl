@@ -29,6 +29,7 @@ CPLT = pltlbl
 CUTL = util_sgi
 CDUM = lbldum
 CSOL = solar
+CNLT = nonlte
 
 
 OBJFIL = $(CLBL).o \
@@ -43,7 +44,8 @@ OBJFIL = $(CLBL).o \
          $(CPLT).o \
          $(CUTL).o \
          $(CDUM).o \
-         $(CSOL).o
+         $(CSOL).o \
+         $(CNLT).o 
 
 OBPATH = $(CDOTO)/$(CLBL).o \
          $(CDOTO)/$(COPR).o \
@@ -57,7 +59,8 @@ OBPATH = $(CDOTO)/$(CLBL).o \
          $(CDOTO)/$(CPLT).o \
          $(CDOTO)/$(CUTL).o \
          $(CDOTO)/$(CDUM).o \
-         $(CDOTO)/$(CSOL).o
+         $(CDOTO)/$(CSOL).o \
+         $(CDOTO)/$(CNLT).o
 
 MODULE = $(CPATH)/$(CLBL).f \
          $(CPATH)/$(COPR).f \
@@ -71,7 +74,8 @@ MODULE = $(CPATH)/$(CLBL).f \
          $(CPATH)/$(CPLT).f \
          $(CPATH)/$(CUTL).f \
          $(CPATH)/$(CDUM).f \
-         $(CPATH)/$(CSOL).f
+         $(CPATH)/$(CSOL).f \
+         $(CPATH)/$(CNLT).f
 
 
 ###############################
@@ -139,6 +143,10 @@ $(CDOTO)/$(CDUM).o : $(CPATH)/$(CDUM).f
 $(CDOTO)/$(CSOL).o : $(CPATH)/$(CSOL).f
 	$(FC) $(FCFLAG) -c $(CPATH)/$(CSOL).f
 	\mv $(CSOL).o $(CDOTO)
+
+$(CDOTO)/$(CNLT).o : $(CPATH)/$(CNLT).f
+	$(FC) $(FCFLAG) -c $(CPATH)/$(CNLT).f
+	\mv $(CNLT).o $(CDOTO)
 
 
 ###############################
