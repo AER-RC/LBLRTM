@@ -1099,7 +1099,15 @@ c         time_lay_lbl(20) = tothhi
 
 c        Accumulate timing array
 
-         DATA time_lay_lbl/ 20*0./
+         DATA  i_time_lay/454545/
+         
+         if (i_time_lay .eq. 454545) then
+            i_time_lay = 676767
+            do ltime = 1,20
+               time_lay_lbl(ltime) = 0.0
+            enddo
+         endif
+
 
          time_lay_lbl(1) = time_lay_lbl(1) + l4tim
          time_lay_lbl(2) = time_lay_lbl(2) + l4tmr
