@@ -33,19 +33,20 @@ C                                                                         I00110
      *              NLTEFL,LNFIL4,LNGTH4                                  I00250
       COMMON /SCINF/ HWHM,JEMIT,JFN,SAMPLE,SCANID,NPTS,XF(6018)           I00260
       COMMON /FLFORM/ CFORM                                               I00270
-      COMMON /RCTSV/ JDUM,SDUM,JFLG,NJDUM
+      COMMON /RCTSV/ JDUM,SDUM,JFLG,RNJDM,NB,IPC,VLFT,VCNT,VRGT,
+     *               WGTL,WGTR
 C                                                                         I00280
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               I00290
       CHARACTER*11 CFORM                                                  I00300
-      CHARACTER*8 HSCNID(0:4)                                             I00310
+      CHARACTER*8 HSCNID(0:6)                                             I00310
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       CHARACTER SCNOUT*7,SCNINF*7,CTAPE*4                                 I00320
       LOGICAL OP                                                          I00330
 C                                                                         I00340
       DIMENSION FILHDR(2),SUMR(4)                                         I00350
-      DIMENSION HWJ(0:4),DXJ(0:4),NJ(0:4),NJMX(0:4),SMPLJ(0:4),           I00360
-     *          XSCAL(0:4)                                                I00370
+      DIMENSION HWJ(0:6),DXJ(0:6),NJ(0:6),NJMX(0:6),SMPLJ(0:6),           I00360
+     *          XSCAL(0:6)                                                I00370
 C                                                                         I00380
       EQUIVALENCE (FILHDR(1),XID(1)) , (FSCDID(5),IEMIT),                 I00390
      *            (FSCDID(6),ISCHDR) , (FSCDID(12),XSCID),                I00400
@@ -79,6 +80,12 @@ C                                                                         I00670
       DATA HSCNID(4) / 'SINC    '/,HWJ(4) / 119.332818 /,                 I00680
      *     DXJ(4) / 0.02 /,NJ(4) / 5968 /,NJMX(4) / 6018 /,               I00690
      *     SMPLJ(4) / 4. /,XSCAL(4) / 1.89549425  /                       I00700
+      DATA HSCNID(5) / 'VRCTCENT'/,HWJ(5) / 1.         /,                 I00680
+     *     DXJ(5) / 0.0  /,NJ(5) / 0    /,NJMX(5) / 0    /,               I00690
+     *     SMPLJ(5) / .5 /,XSCAL(5) / 0.          /                       I00700
+      DATA HSCNID(6) / 'VRCTLEFT'/,HWJ(6) / 1.         /,                 I00680
+     *     DXJ(6) / 0.0  /,NJ(6) / 0    /,NJMX(6) / 0    /,               I00690
+     *     SMPLJ(6) / .5 /,XSCAL(6) / 0.          /                       I00700
 C                                                                         I00710
 C----------------------------------------------------------------------   I00720
 C                                                                         I00730
@@ -135,7 +142,7 @@ C
 C                                                                         I01190
 C  SET THE MAXIMIM NUMBER OF AVAILABLE FUNCTIONS:                         I01200
 C                                                                         I01210
-      NFNMAX = 4                                                          I01220
+      NFNMAX = 6                                                          I01220
 C                                                                         I01230
 C  NLIMF IS ONE MORE THAN THE SIZE OF OUTPUT (CONVOLVED) ARRAY            I01240
 C                                                                         I01250
@@ -180,10 +187,6 @@ C                                                                         I01630
 C     JVAR=1 FOR A VARIABLE SLIT FUNCTION (NOT FOR JFN=0)                 I01640
 C     THE CODING IN CNVSCN  RESULTS IN HWHM=1./ (VI-V1)**2                I01650
 C     HWHM IS CONSTANT FOR EACH PANEL AS PROGRAMMED                       I01660
-C                                                                         I01670
-C     SET DVINT TO DETERMINE IF INTERPOLATION IS NECESSARY                I01680
-C                                                                         I01690
-      DVINT = HWHM/12.                                                    I01700
 C                                                                         I01710
       IFN = ABS(JFN)                                                      I01720
       IF (IFN.GT.NFNMAX) THEN                                             I01730
@@ -204,22 +207,56 @@ C     CHECK FOR NEGATIVE JFN OR NEGATIVE SAMPL                            I01840
 C                                                                         I01850
 C     FOR NEGATIVE JFN, USER IS SUPPLYING FIRST ZERO CROSSING FOR THE     I01860
 C     PERIODIC FUNCTION IN HWHM.  SET HWHM=(FIRST ZERO)/(PI/XSCALE)       I01870
-C                                                                         I01880
-C     FOR NEGATIVE SAMPL, USER IS SUPPLYING DESIRED DELVO.                I01890
-C     SAMPLE IS SET SUCH THAT SAMPLE=HWHM/DELVO.                          I01900
+C
+C     For JFN=5,6 user is supplying instrument field of view half angle
+C     in degrees in HWHM.  Trap if JFN=-5,-6.
 C                                                                         I01910
       IF (JFN.LT.0) THEN                                                  I01920
          JFN = ABS(JFN)                                                   I01930
-         IF (JFN.GE.3) THEN                                               I01940
+         IF ((JFN.EQ.3).OR.(JFN.EQ.4)) THEN                               I01940
             HWHM = HWHM/(PI/XSCALE)                                       I01950
          ELSE                                                             I01960
             WRITE (IPR,910) JFN                                           I01970
             STOP 'SCANFN; INVALID JFN'                                    I01980
          ENDIF                                                            I01990
       ENDIF                                                               I02000
-C                                                                         I02010
-      IF (SAMPL.LT.0.) SAMPLE = HWHM/(-SAMPL)                             I02020
-      IF (SAMPL.GT.0.) SAMPLE = SAMPL                                     I02030
+C
+C     SET DVINT TO DETERMINE IF INTERPOLATION IS NECESSARY
+C     - For JFN = 5,6, set DVINT to 1/12 the width of the first box.
+C       HWHM should carry the value of the field of view half angle 
+C       (in degrees).  This is converted to radians.  The box width
+C       formula is
+C
+C                  width = V1*(1/2 angle FOV)**2/2
+C     
+C       and the degrees-to-radians formula is
+C
+C                  rad = deg*3.141592654/180.
+C
+C     - For JFN not equal to 5 or 6, set DVINT to 1/12 the value of
+C       HWHM.  HWHM should carry the true value of the Half Width
+C       at Half Maximum of the scanning function at this point.
+C
+      IF ((JFN.EQ.5).OR.(JFN.EQ.6)) THEN
+         DVINT = V1*(HWHM*3.141592654/180.)**2/24
+      ELSE
+         DVINT = HWHM/12.                                                 I02010
+      ENDIF
+C
+C     - For positive SAMPL, set SAMPLE equal to SAMPL (the number
+C       of points per half width).
+C     - For negative SAMPL, user is supplying desired DELVO
+C       (outgoing spectral spacing).  SAMPLE (the number of sample
+C       points per half width) is set such that SAMPLE=HWHM/DELVO
+C       (Half Width at Half Max over user input outgoing spectral
+C       spacing), and the outgoing spectral spacing DVO will be
+C       recalculated using HWHM and SAMPLE below.
+C
+      IF (SAMPL.LT.0.) THEN
+         SAMPLE = HWHM/(-SAMPL)                                           I02020
+      ELSEIF (SAMPL.GT.0.) THEN
+         SAMPLE = SAMPL                                                   I02030
+      ENDIF
 C                                                                         I02040
 C     SET UP SELECTED SCANNING FUNCTION:                                  I02050
 C                                                                         I02060
@@ -313,6 +350,19 @@ C     JTREM=2   SCANFN CONVOLVED WITH TRANSMISSION                        I02900
 C                                                                         I02910
       DVI = DV                                                            I02920
       DVSAV = DVI                                                         I02930
+C
+C     Compute output spectral spacing.  For JFN not 5 or 6, at this
+C     point HWHM always contains the value of the Half Width at Half
+C     Maximum of the scanning function, and SAMPLE always contains
+C     the number of points per half width of the scanning function.
+C
+C     For JFN = 5,6 at this point, HWHM contains the value of the
+C     field of view half angle (in degrees), and SAMPLE contains
+C     the ratio of the field of view half angle to the specified
+C     output spectral spacing (the quotient of HWHM and SAMPLE
+C     results in the circuitous calculation of the previously input
+C     DVO).
+C
       DVO = HWHM/SAMPLE                                                   I02940
       IF (JFN.EQ.0) THEN                                                  I02950
          IRATIO = DVO/DVI+0.5                                             I02960
@@ -386,14 +436,20 @@ C                                                                         I03600
 C                                                                         I03620
 C     SHRKSC MAY SHRINK (COMPRESS) THE DATA; DVI IS MODIFIED ACCORDINGL   I03630
 C                                                                         I03640
-      IF (JFN.NE.0) CALL SHRKSC (INIT,HWHM)                               I03650
+      IF ((JFN.NE.0).AND.(JFN.NE.5).AND.(JFN.NE.6)) THEN
+         CALL SHRKSC (INIT,HWHM)                                          I03650
+      ENDIF
 C                                                                         I03660
    50 CONTINUE                                                            I03670
 C                                                                         I03680
 C     PERFORM THE CONVOLUTION OF XF ON S TO GIVE R1                       I03690
 C                                                                         I03700
       IF (JFN.EQ.0) THEN                                                  I03710
-         CALL CNVRCT (S,HWHM,R1,XF,N1)                                    I03720
+         CALL CNVRCT (S,HWHM,R1,XF)                                       I03720
+      ELSEIF (JFN.EQ.5) THEN
+         CALL CNVVRC (S,HWHM,R1,XF)                                       I03720
+      ELSEIF (JFN.EQ.6) THEN
+         CALL CNVVRL (S,HWHM,R1,XF)                                       I03720
       ELSE                                                                I03730
          CALL CONVSC (S,HWHM,R1,XF)                                       I03740
       ENDIF                                                               I03750
@@ -406,8 +462,8 @@ C                                                                         I03800
 C                                                                         I03820
 C     OUTPUT PANEL TO JFILE, NPTS VALUES OF R1                            I03830
 C                                                                         I03840
-      IF (JFN.EQ.0) THEN                                                  I03850
-         CALL PNLRCT (R1,JFILE,SUMR,NPTS,N1)                              I03860
+      IF (JFN.EQ.0.OR.JFN.EQ.5.OR.JFN.EQ.6) THEN                          I03850
+         CALL PNLRCT (R1,JFILE,SUMR,NPTS)                                 I03860
       ELSE                                                                I03870
          CALL PANLSC (R1,JFILE,SUMR,NPTS)                                 I03880
       ENDIF                                                               I03890
@@ -505,13 +561,13 @@ C                                                                         I04620
       COMMON /SCINF/ HWHM,JEMIT,JFN,SAMPLE,SCANID,NPTS,XF(6018)           I04770
       COMMON /FLFORM/ CFORM                                               I04780
 C                                                                         I04790
-      CHARACTER*8 HSCNID(0:4)                                             I04800
+      CHARACTER*8 HSCNID(0:6)                                             I04800
       CHARACTER CFORM*11,TAPE13*6,CTAPE*4                                 I04810
       LOGICAL OP                                                          I04820
 C                                                                         I04830
       DIMENSION FILHDR(2)                                                 I04840
-      DIMENSION HWJ(0:4),DXJ(0:4),NJ(0:4),NJMX(0:4),SMPLJ(0:4),           I04850
-     *          XSCAL(0:4)                                                I04860
+      DIMENSION HWJ(0:6),DXJ(0:6),NJ(0:6),NJMX(0:6),SMPLJ(0:6),           I04850
+     *          XSCAL(0:6)                                                I04860
 C                                                                         I04870
       EQUIVALENCE (FILHDR(1),XID(1)) , (FSCDID(6),ISCHDR),                I04880
      *            (FSCDID(12),XSCID) , (FSCDID(13),XHWHM),                I04890
@@ -540,10 +596,20 @@ C                                                                         I05110
       DATA HSCNID(4) / 'SINC    '/,HWJ(4) / 119.332818 /,                 I05120
      *     DXJ(4) / 0.02 /,NJ(4) / 5968 /,NJMX(4) / 6018 /,               I05130
      *     SMPLJ(4) / 4. /,XSCAL(4) / 1.89549425  /                       I05140
+      DATA HSCNID(5) / 'VRCTCENT'/,HWJ(5) / 1.         /,                 I05120
+     *     DXJ(5) / 0.0  /,NJ(5) / 0    /,NJMX(5) / 0    /,               I05130
+     *     SMPLJ(5) / .5 /,XSCAL(5) / 0.          /                       I05140
+      DATA HSCNID(6) / 'VRCTLEFT'/,HWJ(6) / 1.         /,                 I05120
+     *     DXJ(6) / 0.0  /,NJ(6) / 0    /,NJMX(6) / 0    /,               I05130
+     *     SMPLJ(6) / .5 /,XSCAL(6) / 0.          /                       I05140
 C                                                                         I05150
       DATA TAPE13 / '      '/,CTAPE / 'TAPE'/                             I05160
 C                                                                         I05170
       PI = 2.*ASIN(1.)                                                    I05180
+C
+C  SET THE MAXIMIM NUMBER OF AVAILABLE FUNCTIONS:
+C
+      NFNMAX = 6
 C                                                                         I05190
       NLIMF = 2401                                                        I05200
       NSHIFT = 32                                                         I05210
@@ -574,7 +640,7 @@ C     HWHM IS CONSTANT FOR EACH PANEL AS PROGRAMMED                       I05420
 C     FOLLOWING VALUES INITIALIZE FOR RECTANGLE                           I05430
 C                                                                         I05440
       IFN = ABS(JFN)                                                      I05450
-      IF (IFN.GT.4) THEN                                                  I05460
+      IF (IFN.GT.NFNMAX) THEN                                             I05460
          WRITE(IPR,*)' SCANF; JFN GT LIMIT'                               I05462
          STOP        ' SCANF; JFN GT LIMIT'
       ENDIF
@@ -606,13 +672,16 @@ C     CHECK FOR NEGATIVE JFN OR NEGATIVE SAMPL                            I05620
 C                                                                         I05630
 C     FOR NEGATIVE JFN, USER IS SUPPLYING FIRST ZERO CROSSING FOR THE     I05640
 C     PERIODIC FUNCTION IN HWHM.  SET HWHM=(FIRST ZERO)/(PI/XSCALE)       I05650
+C
+C     For JFN=5,6 user is supplying instrument field of view half angle
+C     in degrees in HWHM.
 C                                                                         I05660
 C     FOR NEGATIVE SAMPL, USER IS SUPPLYING DESIRED DELVO.                I05670
 C     SET SAMPLE=HWHM/DELVO.                                              I05680
 C                                                                         I05690
       IF (JFN.LT.0) THEN                                                  I05700
          JFN = ABS(JFN)                                                   I05710
-         IF (JFN.GE.3) THEN                                               I05720
+         IF ((JFN.EQ.3).OR.(JFN.EQ.4)) THEN                               I05720
             HWHM = HWHM/(PI/XSCALE)                                       I05730
          ELSE                                                             I05740
             WRITE (IPR,910) JFN                                           I05750
@@ -910,7 +979,7 @@ C                                                                         I08450
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I08580
      *              NLTEFL,LNFIL4,LNGTH4                                  I08590
       COMMON /SCINF/ HWHM,JEMIT,JFN,SAMPLE,SCANID,NPTS,XF(6018)           I08600
-      COMMON /RCTSV/ JJ,SUMJ,JFLG,NJ                                      I08602
+      COMMON /RCTSV/ JJ,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
 C                                                                         I08610
       DIMENSION FILHDR(2)                                                 I08620
       DIMENSION SUMR(4)                                                   I08630
@@ -1050,6 +1119,10 @@ C                                                                         I09890
    30 CONTINUE                                                            I09900
       IF (JFN.EQ.0) THEN                                                  I09910
          CALL CNVRCT (S,HWHM,R1,XF)                                       I09920
+      ELSEIF (JFN.EQ.5) THEN
+         CALL CNVVRC (S,HWHM,R1,XF)                                       I09920
+      ELSEIF (JFN.EQ.6) THEN
+         CALL CNVVRL (S,HWHM,R1,XF)                                       I09920
       ELSE                                                                I09930
          CALL CONVSC (S,HWHM,R1,XF)                                       I09940
       ENDIF                                                               I09950
@@ -1059,7 +1132,7 @@ C                                                                         I09980
       IF (IPANEL.EQ.0) GO TO 20                                           I09990
 C                                                                         I10000
    40 CONTINUE                                                            I10010
-      IF (JFN.EQ.0) THEN                                                  I10020
+      IF (JFN.EQ.0.OR.JFN.EQ.5.OR.JFN.EQ.6) THEN                          I10020
          CALL PNLRCT (R1,JUNIT,SUMR,NPTS)                                 I10030
       ELSE                                                                I10040
          CALL PANLSC (R1,JUNIT,SUMR,NPTS)                                 I10050
@@ -1605,8 +1678,14 @@ C
       IMPLICIT DOUBLE PRECISION (V)                                       I15140
 C                                                                         I15150
 C     SUBROUTINE CNVRCT PERFORMS THE CONVOLUTION WITH AN ALTERNATE        I15160
-C     RECTANGULAR SCANNING FUNCTION (ADJACENT BOXES OF ONE SIZE)          I15170
+C     RECTANGULAR SCANNING FUNCTION (ADJACENT BOXES OF ONE SIZE,          I15170
+C     EQUAL TO 2*HWHM)
 C                                                                         I15180
+C     THE CONVOLUTION IS A WEIGHTED SUM THAT PROPERLY WEIGHS THE INPUT 
+C     POINTS WITH THE FRACTION OF THAT POINT THAT COMPLETELY FALLS WITHIN 
+C     THE OUTPUT BOX.  OUTPUT RADIANCE IS THE SUMMED RADIANCE DIVIDED
+C     BY THE SUM OF THE WEIGHTS.
+C
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   I15190
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I15200
      *               DVSC,XDUM,V1SHFT                                     I15210
@@ -1616,13 +1695,13 @@ C                                                                         I15180
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I15250
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I15270
-      COMMON /RCTSV/ JJ,SUMJ,JFLG,NJ                                      I15280
+      COMMON /RCTSV/ JN,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
       DIMENSION S(*),R1(*),XF(*)                                          I15290
 C                                                                         I15300
 C     LBLRTM flags                                                        I15310
-C     JFLG = -1:  first time through; increment jj when box is full       I15320
-C     JFLG =  0:  subsequent calls:increment jj when box full             I15330
-C     JFLG =  1:  out of data, return for more; do not increment jj       I15340
+C     JFLG = -1:  first time through; increment NB when box is full       I15320
+C     JFLG =  0:  subsequent calls:increment NB when box full             I15330
+C     JFLG =  1:  out of data, return for more; do not increment NB       I15340
 C     IDATA =-1:  first time through; or, need more data                  I15350
 C     IDATA = 0:  data present                                            I15360
 C     IDATA = 1:  no data present                                         I15370
@@ -1634,49 +1713,128 @@ C                                                                         I15410
       RATIO = DVO/DVI                                                     I15430
 C                                                                         I15440
 C     During first call or if entering after writing a panel,             I15450
-C     initialize JJ and SUMJ                                              I15460
+C     initialize: SUMJ (radiance sum), and
+C                 RNJ (accumulator for number of input points in 
+C                      current box, i.e. the sum of the weights)
+C                 JN (box counter from 1 at VFT)
+C     During first call only,
+C     initialize: NB (box counter from 1 at V1), 
+C                 IPC (output panel counter).
 C                                                                         I15470
       IF (IPANEL.EQ.-1) THEN                                              I15480
-         JJ = NLO                                                         I15490
          SUMJ = 0.                                                        I15500
-         NJ = 0                                                           I15510
+         RNJ = 0.                                                         I15510
+         JN = NLO                                                         I15490
+         IF (JFLG.EQ.-1) THEN
+            NB = 1
+            IPC = 1
+         ENDIF
       ENDIF                                                               I15520
 C                                                                         I15530
-      NNIV2 = (V2+HWHM-V1I)/DVI+1.0001                                    I15540
+C     Check that number of points in current panel, NNI, is correct.
+C
+      NNIV2 = (V2I-V1I)/DVI+1.0001                                        I15540
       IF (NNI.GT.NNIV2) NNI = NNIV2                                       I15550
 C                                                                         I15560
-      FHM = (VFT-HWHM-V1I-DVO)/DVI                                        I15570
-      FHP = (VFT+HWHM-V1I-DVO)/DVI                                        I15580
-C                                                                         I15590
-C     Top of loop over JJ boxes                                           I15600
+C     Top of loop over NB boxes                                           I15600
 C                                                                         I15610
    10 IF (NLO.LE.NHI) THEN                                                I15620
-         IL = FHM+RATIO*JJ+1                                              I15630
-         ILPR = IL+1                                                      I15640
-         IF (ILPR.LT.1) ILPR = 1                                          I15650
-         IH = FHP+RATIO*JJ+1                                              I15660
+
+         VCNT = V1+(NB-1)*DVO
+         IF (VCNT.GT.V2) THEN
+            IPANEL = 1
+            RETURN
+         ENDIF
+C
+         VLFT = VCNT-HWHM
+         VRGT = VCNT+HWHM
+C
+C        Find lbl panel indices for points which fall within current
+C        box.
+C
+         RL = (VLFT-V1I)/DVI+1
+         RR = (VRGT-V1I)/DVI+1
+C
+         IL = INT(RL+0.5)
+         IH = INT(RR+0.5)
+C
+C        Calculate weight for each end point, inner points weighted
+C        as 1.  NEP is the number of endpoints in use.
+C
+         VLBLR = (V1I+(IL-1)*DVI)+DVI/2.
+         WGTL = (VLBLR-VLFT)/DVI
+         VLBLL = (V1I+(IH-1)*DVI)-DVI/2.
+         WGTR = (VRGT-VLBLL)/DVI
+         NEP = 2
 C                                                                         I15670
 C        Set flag if last data point on current input panel reached       I15680
 C                                                                         I15690
          IF (IH.GT.NNI) THEN                                              I15700
             IH = NNI                                                      I15710
             JFLG = 1                                                      I15720
+C
+C        If retrieving next panel while box sum is in progress, then
+C        use weight of 1. for temp. right endpoint at IH = NNI = 2400
+C        calculate partial sum below, then return.  If only one point
+C        is included in this sum (IL = IH = NNI), use weight of 0
+C        for right point, and add only left endpoint to sum.
+            VLBLL = (V1I+(IH-1)*DVI)-DVI/2.
+            WGTR = 1.
+            IF (IL.EQ.IH) THEN 
+               WGTR = 0.
+               NEP = 1
+            ENDIF
          ENDIF                                                            I15730
+C
+C        If returning with new panel to partially summed box, then set
+C        weight for temporary left endpoint to 1.  If it's the last
+C        point going into the box, then count it as final right endpoint,
+C        and use weight of 0 for left point (since IL = IH = 1).
+C          
+         IF (IL.LE.1) THEN
+            IL = 1
+            VLBLR = (V1I+(IL-1)*DVI)+DVI/2.
+            WGTL = 1.
+            IF (IL.GE.IH) THEN 
+               WGTL = 0.
+               NEP = 1
+            ENDIF
+         ENDIF
+C                                                                         I15740
+C        If retrieving next panel while box sum is not progress, then
+C        check that left edge of current output box is beyond last data on
+C        panel (IL.GT.NNI), if so, go back for new panel without summing
+C
+         IF (JFLG.EQ.1.AND.IDATA.EQ.0.AND.IL.GT.NNI) THEN
+            IPANEL = 0                                                    I15910
+            JFLG = 0                                                      I15920
+            RETURN                                                        I15930
+         ENDIF
 C                                                                         I15740
 C        If last point on current input panel is reached, and there is    I15750
 C        no more data to retrieve, then return                            I15760
 C                                                                         I15770
          IF (JFLG.EQ.1.AND.IDATA.EQ.1) RETURN                             I15780
 C                                                                         I15790
-C        Compute sum for current box number JJ                            I15800
+C        Compute sum for current box number NB, for all points but        I15800
+C        the end points
 C                                                                         I15810
-         DO 20 I = ILPR, IH                                               I15820
+         DO 20 I = IL+1, IH-1                                             I15820
             SUMJ = SUMJ+S(I)                                              I15830
    20    CONTINUE                                                         I15840
-         NJ = NJ+IH-ILPR+1                                                I15850
+C
+C        Add weighted end points to sum
+         SUMJ = SUMJ+S(IL)*WGTL
+         SUMJ = SUMJ+S(IH)*WGTR
+C
+C        Define sum of the weights, where all inner points are weighted
+C        as 1, and the end points are weighted with the fraction that
+C        occurs within the box.
+C
+         RNJ = RNJ+(IH-IL+1-NEP)+WGTL+WGTR                                I15850
 C                                                                         I15860
 C        If out of data on current input panel, go back for more;         I15870
-C        partial SUMJ, current JJ, and JFLG are saved in COMMON RCTSV     I15880
+C        partial SUMJ, current NB, and JFLG are saved in COMMON RCTSV     I15880
 C                                                                         I15890
          IF (JFLG.EQ.1.AND.IDATA.EQ.0) THEN                               I15900
             IPANEL = 0                                                    I15910
@@ -1687,26 +1845,491 @@ C                                                                         I15950
 C        IPANEL=IDATA                                                     I15960
 C                                                                         I15970
          SUMIN = SUMIN+SUMJ                                               I15980
-                                                                          I15990
 C                                                                         I16000
-C        Average radiance for completed box                               I16010
+C        Compute average radiance for completed box                       I16010
 C                                                                         I16020
-         R1(JJ) = SUMJ/FLOAT(NJ)                                          I16030
+         R1(JN) = SUMJ/RNJ                                                I16030
+C
          ILPR = IH+1                                                      I16040
-C                                                                         I16050
-C        Output panel                                                     I16060
+C
+C        Increment current box counters, initialize SUMJ and RNJ
+         JN = JN+1                                                        I16050
+         SUMJ = 0.                                                        I16050
+         RNJ = 0.                                                         I16050
+C
+C        Output panel when number of boxes, NB, reaches a multiple of     I16060
+C        2400, using then incrementing current output panel number, IPC.
 C                                                                         I16070
-         IF (JJ.EQ.NHI) THEN                                              I16080
+         IF (NB.EQ.IPC*(NHI-NLO+1)) THEN                                  I16080
             IPANEL = 1                                                    I16090
+            IPC = IPC+1
+            NB = NB+1
             RETURN                                                        I16100
          ENDIF                                                            I16110
-         JJ = JJ+1                                                        I16120
-         SUMJ = 0.                                                        I16130
-         NJ = 0                                                           I16140
 C                                                                         I16150
-C        Go back to top of loop over JJ boxes                             I16160
+C        Increment NB
+         NB = NB+1
+
+C        Go back to top of loop over NB boxes                             I16160
 C                                                                         I16170
          GO TO 10                                                         I16180
+      ENDIF                                                               I16190
+C                                                                         I16200
+      RETURN                                                              I16210
+      END                                                                 I16220
+C
+C     --------------------------------------------------------------
+C
+      SUBROUTINE CNVVRC (S,AFOV,R1,XF)                                    I15130
+      IMPLICIT DOUBLE PRECISION (V)                                       I15140
+C                                                                         I15150
+C     SUBROUTINE CNVVRC PERFORMS THE CONVOLUTION WITH A RECTANGULAR       I15160
+C     SCANNING FUNCTION OF VARIABLE SIZE, WHERE THE BOX SIZE IS           I15170
+C     WAVENUMBER DEPENDENT.  V1, V2, AND DVO ARE USED TO DEFINE THE
+C     CENTER OF THE OUTPUT BOXES.  BOXES OVERLAP WHERE NECESSARY TO
+C     INSURE A CONSTANT DVO.
+C
+C     BFOV is used to determine the resolution (box size), which is
+C     spectrally variable.
+C
+C     AFOV is passed in from calls to CNVVRC from SCANFN and SCNMRG
+C     as HWHM, since the value of HWHM on Record 8.1 on TAPE5 holds
+C     the place of the half angle of the instrument field of view in
+C     degrees.
+C    
+C     BOX WIDTH EQUALS V*B**2/2, AND THE SHIFT EQUALS HALF THE BOX WIDTH
+C     V*(1-B**2/4), WHERE B IS THE HALF ANGLE OF THE INSTRUMENT FIELD
+C     OF VIEW IN RADIANS.
+C                                                                         I15180
+C     THE CONVOLUTION IS A WEIGHTED SUM THAT PROPERLY WEIGHS THE INPUT 
+C     POINTS WITH THE FRACTION OF THAT POINT THAT COMPLETELY FALLS WITHIN 
+C     THE OUTPUT BOX.  OUTPUT RADIANCE IS THE SUMMED RADIANCE DIVIDED
+C     BY THE SUM OF THE WEIGHTS.
+C
+      COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   I15190
+     *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I15200
+     *               DVSC,XDUM,V1SHFT                                     I15210
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I15220
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I15230
+     *              NLTEFL,LBL4FL,LNGTH4                                  I15240
+      COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I15250
+      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
+      COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I15270
+      COMMON /RCTSV/ JN,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
+      DIMENSION S(*),R1(*),XF(*)                                          I15290
+C                                                                         I15300
+C     LBLRTM flags                                                        I15310
+C     JFLG = -1:  first time through; increment NB when box is full       I15320
+C     JFLG =  0:  subsequent calls:increment NB when box full             I15330
+C     JFLG =  1:  out of data, return for more; do not increment NB       I15340
+C     IDATA =-1:  first time through; or, need more data                  I15350
+C     IDATA = 0:  data present                                            I15360
+C     IDATA = 1:  no data present                                         I15370
+C     IPANEL=-1:  first time through; or, after panel written             I15380
+C     IPANEL= 0:  panel not full                                          I15390
+C     IPANEL= 1:  panel is full                                           I15400
+C                                                                         I15410
+      CALL CPUTIM (TIME0)                                                 I15420
+C
+C     Convert AFOV to BFOV, the half angle of the instrument field of
+C     view in radians. (For IRIS-D, AFOV equals 2.5 degrees)
+
+      BFOV = AFOV*3.141592654/180.
+C
+      RATIO = DVO/DVI                                                     I15430
+C                                                                         I15440
+C     During first call or if entering after writing a panel,             I15450
+C     initialize: SUMJ (radiance sum), and
+C                 RNJ (accumulator for number of input points in 
+C                      current box, i.e. the sum of the weights)
+C                 JN (box counter from 1 at VFT)
+C     During first call only,
+C     initialize: NB (box counter from 1 at V1), 
+C                 IPC (output panel counter).
+C                                                                         I15470
+      IF (IPANEL.EQ.-1) THEN                                              I15480
+         SUMJ = 0.                                                        I15500
+         RNJ = 0.                                                         I15510
+         JN = NLO                                                         I15490
+         IF (JFLG.EQ.-1) THEN
+            NB = 1
+            IPC = 1
+         ENDIF
+      ENDIF                                                               I15520
+C                                                                         I15530
+C     Check that number of points in current panel, NNI, is correct.
+C
+      NNIV2 = (V2I-V1I)/DVI+1.0001                                        I15540
+      IF (NNI.GT.NNIV2) NNI = NNIV2                                       I15550
+C
+C     Top of loop over NB boxes                                           I15600
+C                                                                         I15610
+   10 IF (NLO.LE.NHI) THEN                                                I15620
+
+C     For current box find wavenumber at center and left/right edges.
+C     For first box, VCNT equals V1.  When current box exceeds V2,
+C     then exit.
+
+         VCNT = V1+(NB-1)*DVO
+         IF (VCNT.GT.V2) THEN
+            IPANEL = 1
+            RETURN
+         ENDIF
+
+         VLFT = VCNT*(1-BFOV**2/4)
+         VRGT = VCNT*(1+BFOV**2/4)
+
+C     Find lbl panel indices for points which fall within current box.
+
+         RL = (VLFT-V1I)/DVI+1
+         RR = (VRGT-V1I)/DVI+1
+C
+         IL = INT(RL+0.5)
+         IH = INT(RR+0.5)
+C
+C     Calculate weight for each end point, inner points weighted as 1.
+C     NEP is the number of endpoints in use.
+C
+         VLBLR = (V1I+(IL-1)*DVI)+DVI/2.
+         WGTL = (VLBLR-VLFT)/DVI
+         VLBLL = (V1I+(IH-1)*DVI)-DVI/2.
+         WGTR = (VRGT-VLBLL)/DVI
+         NEP = 2
+C
+C        Set flag if last data point on current input panel reached       I15680
+C                                                                         I15690
+         IF (IH.GT.NNI) THEN                                              I15700
+            IH = NNI                                                      I15710
+            JFLG = 1                                                      I15720
+C
+C        If retrieving next panel while box sum is in progress, then
+C        use weight of 1. for temp. right endpoint at IH = NNI = 2400
+C        calculate partial sum below, then return.  If only one point
+C        is included in this sum (IL = IH = NNI), use weight of 0
+C        for right point, and add only left endpoint to sum.
+            VLBLL = (V1I+(IH-1)*DVI)-DVI/2.
+            WGTR = 1.
+            IF (IL.EQ.IH) THEN 
+               WGTR = 0.
+               NEP = 1
+            ENDIF
+         ENDIF                                                            I15730
+C
+C        If returning with new panel to partially summed box, then set
+C        weight for temporary left endpoint to 1.  If it's the last
+C        point going into the box, then count it as final right endpoint,
+C        and use weight of 0 for left point (since IL = IH = 1).
+C
+         IF (IL.LE.1) THEN
+            IL = 1
+            VLBLR = (V1I+(IL-1)*DVI)+DVI/2.
+            WGTL = 1.
+            IF (IL.GE.IH) THEN 
+               WGTL = 0.
+               NEP = 1
+            ENDIF
+         ENDIF
+C                                                                         I15740
+C        If retrieving next panel while box sum is not progress, then
+C        check that left edge of current output box is beyond last data on
+C        panel (IL.GT.NNI), if so, go back for new panel without summing
+C
+         IF (JFLG.EQ.1.AND.IDATA.EQ.0.AND.IL.GT.NNI) THEN
+            IPANEL = 0                                                    I15910
+            JFLG = 0                                                      I15920
+            RETURN                                                        I15930
+         ENDIF
+C
+C        If last point on current input panel is reached, and there is    I15750
+C        no more data to retrieve, then return                            I15760
+C                                                                         I15770
+         IF (JFLG.EQ.1.AND.IDATA.EQ.1) RETURN                             I15780
+C                                                                         I15790
+C        Compute sum for current box number NB, for all points but        I15800
+C        the end points
+C                                                                         I15810
+         DO 20 I = IL+1, IH-1                                             I15820
+            SUMJ = SUMJ+S(I)                                              I15830
+   20    CONTINUE                                                         I15840
+C
+C        Add weighted end points to sum
+         SUMJ = SUMJ+S(IL)*WGTL
+         SUMJ = SUMJ+S(IH)*WGTR
+C
+C        Define sum of the weights, where all inner points are weighted
+C        as 1, and the end points are weighted with the fraction that
+C        occurs within the box.
+C
+         RNJ = RNJ+(IH-IL+1-NEP)+WGTL+WGTR                                I15850
+C                                                                         I15860
+C        If out of data on current input panel, go back for more;         I15870
+C        partial SUMJ, current NB, and JFLG are saved in COMMON RCTSV     I15880
+C                                                                         I15890
+         IF (JFLG.EQ.1.AND.IDATA.EQ.0) THEN                               I15900
+            IPANEL = 0                                                    I15910
+            JFLG = 0                                                      I15920
+            RETURN                                                        I15930
+         ENDIF                                                            I15940
+C                                                                         I15950
+C        IPANEL=IDATA                                                     I15960
+C                                                                         I15970
+         SUMIN = SUMIN+SUMJ                                               I15980
+C                                                                         I15990
+C                                                                         I16000
+C        Compute average radiance for completed box                       I16010
+C                                                                         I16020
+         R1(JN) = SUMJ/RNJ                                                I16030
+C                                                                         I16050
+C        Increment current box counters, initialize SUMJ and RNJ
+         JN = JN+1                                                        I16050
+         SUMJ = 0.                                                        I16050
+         RNJ = 0.                                                         I16050
+C
+C        Output panel when number of boxes, NB, reaches a multiple of     I16060
+C        2400, using then incrementing current output panel number, IPC.
+C                                                                         I16070
+         IF (NB.EQ.IPC*(NHI-NLO+1)) THEN                                  I16080
+            IPANEL = 1                                                    I16090
+            IPC = IPC+1
+            NB = NB+1
+            RETURN                                                        I16100
+         ENDIF                                                            I16110
+
+C        Increment NB
+         NB = NB+1
+C                                                                         I16150
+C        Go back to top of loop over NB boxes                             I16160
+C                                                                         I16170
+         GO TO 10                                                         I16180
+
+      ENDIF                                                               I16190
+C                                                                         I16200
+      RETURN                                                              I16210
+      END                                                                 I16220
+C
+C     --------------------------------------------------------------
+C
+      SUBROUTINE CNVVRL (S,AFOV,R1,XF)                                    I15130
+      IMPLICIT DOUBLE PRECISION (V)                                       I15140
+C                                                                         I15150
+C     SUBROUTINE CNVVRL PERFORMS THE CONVOLUTION WITH A RECTANGULAR       I15160
+C     SCANNING FUNCTION OF VARIABLE SIZE, WHERE THE BOX SIZE IS           I15170
+C     WAVENUMBER DEPENDANT.  V1, V2, AND DVO ARE USED TO DEFINE THE
+C     LEFT EDGE OF THE OUTPUT BOXES.  BOXES OVERLAP WHERE NECESSARY
+C     TO INSURE A CONSTANT DVO.
+C
+C     BFOV is used to determine the resolution (box size), which is
+C     spectrally variable.
+C    
+C     AFOV is passed in from calls to CNVVRL from SCANFN and SCNMRG
+C     as HWHM, since the value of HWHM on Record 8.1 on TAPE5 holds
+C     the place of the half angle of the instrument field of view in
+C     degrees.
+C    
+C     BOX WIDTH EQUALS V*B**2/2, AND THE SHIFT EQUALS HALF THE BOX WIDTH
+C     V*(1-B**2/4), WHERE B IS THE HALF ANGLE OF THE INSTRUMENT FIELD
+C     OF VIEW IN RADIANS.
+C                                                                         I15180
+C     THE CONVOLUTION IS A WEIGHTED SUM THAT PROPERLY WEIGHS THE INPUT 
+C     POINTS WITH THE FRACTION OF THAT POINT THAT COMPLETELY FALLS WITHIN 
+C     THE OUTPUT BOX.  OUTPUT RADIANCE IS THE SUMMED RADIANCE DIVIDED
+C     BY THE SUM OF THE WEIGHTS.
+C
+      COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   I15190
+     *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I15200
+     *               DVSC,XDUM,V1SHFT                                     I15210
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I15220
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I15230
+     *              NLTEFL,LBL4FL,LNGTH4                                  I15240
+      COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I15250
+      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
+      COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I15270
+      COMMON /RCTSV/ JN,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
+      DIMENSION S(*),R1(*),XF(*)                                          I15290
+C                                                                         I15300
+C     LBLRTM flags                                                        I15310
+C     JFLG = -1:  first time through; increment NB when box is full       I15320
+C     JFLG =  0:  subsequent calls:increment NB when box full             I15330
+C     JFLG =  1:  out of data, return for more; do not increment NB       I15340
+C     IDATA =-1:  first time through; or, need more data                  I15350
+C     IDATA = 0:  data present                                            I15360
+C     IDATA = 1:  no data present                                         I15370
+C     IPANEL=-1:  first time through; or, after panel written             I15380
+C     IPANEL= 0:  panel not full                                          I15390
+C     IPANEL= 1:  panel is full                                           I15400
+C                                                                         I15410
+      CALL CPUTIM (TIME0)                                                 I15420
+C
+C     Convert AFOV to BFOV, the half angle of the instrument field of
+C     view in radians. (For IRIS-D, AFOV equals 2.5 degrees)
+
+      BFOV = AFOV*3.141592654/180.
+
+      RATIO = DVO/DVI                                                     I15430
+C                                                                         I15440
+C     During first call or if entering after writing a panel,             I15450
+C     initialize: SUMJ (radiance sum), and
+C                 RNJ (accumulator for number of input points in 
+C                      current box, i.e. the sum of the weights)
+C                 JN (box counter from 1 at VFT)
+C     During first call only,
+C     initialize: NB (box counter from 1 at V1), 
+C                 IPC (output panel counter).
+C                                                                         I15470
+      IF (IPANEL.EQ.-1) THEN                                              I15480
+         SUMJ = 0.                                                        I15500
+         RNJ = 0.                                                         I15510
+         JN = NLO                                                         I15490
+         IF (JFLG.EQ.-1) THEN
+            NB = 1
+            IPC = 1
+         ENDIF
+      ENDIF                                                               I15520
+C                                                                         I15530
+C     Check that number of points in current panel, NNI, is correct.
+C
+      NNIV2 = (V2I-V1I)/DVI+1.0001                                        I15540
+      IF (NNI.GT.NNIV2) NNI = NNIV2                                       I15550
+C                                                                         I15560
+C     Top of loop over NB boxes                                           I15600
+C                                                                         I15610
+   10 IF (NLO.LE.NHI) THEN                                                I15620
+C
+C     For current box find wavenumber at the left and right edges.
+C     For first box, VLFT equals V1.  When current box exceeds V2,
+C     then exit.
+C
+         VLFT = V1+(NB-1)*DVO
+         IF (VLFT.GT.V2) THEN
+            IPANEL = 1
+            RETURN
+         ENDIF
+C
+         VCNT = VLFT*(1+BFOV**2/4)
+         VRGT = VLFT*(1+BFOV**2/2)
+C
+C     Find lbl panel indices for points which fall within current box.
+C
+         RL = (VLFT-V1I)/DVI+1
+         RR = (VRGT-V1I)/DVI+1
+C
+         IL = INT(RL+0.5)
+         IH = INT(RR+0.5)
+C
+C     Calculate weight for each end point, inner points weighted as 1,
+C     NEP is the number of endpoints in use.
+C
+         VLBLR = (V1I+(IL-1)*DVI)+DVI/2.
+         WGTL = (VLBLR-VLFT)/DVI
+         VLBLL = (V1I+(IH-1)*DVI)-DVI/2.
+         WGTR = (VRGT-VLBLL)/DVI
+         NEP = 2
+C
+C        Set flag if last data point on current input panel reached       I15680
+C                                                                         I15690
+         IF (IH.GT.NNI) THEN                                              I15700
+            IH = NNI                                                      I15710
+            JFLG = 1                                                      I15720
+C
+C        If retrieving next panel while box sum is in progress, then
+C        use weight of 1. for temp. right endpoint at IH = NNI, 
+C        calculate partial sum below, then return.  If only one point
+C        is included in this sum (IL = IH = NNI), use weight of 0
+C        for right point, and add only left endpoint to sum.
+            VLBLL = (V1I+(IH-1)*DVI)-DVI/2.
+            WGTR = 1.
+            IF (IL.EQ.IH) THEN 
+               WGTR = 0.
+               NEP = 1
+            ENDIF
+         ENDIF                                                            I15730
+C
+C        If returning with new panel to partially summed box, then set
+C        weight for temporary left endpoint to 1.  If it's the last
+C        point going into the box, then count it as final right endpoint,
+C        and use weight of 0 for left point (since IL = IH = 1).
+C
+         IF (IL.LE.1) THEN
+            IL = 1
+            VLBLR = (V1I+(IL-1)*DVI)+DVI/2.
+            WGTL = 1.
+            IF (IL.GE.IH) THEN 
+               WGTL = 0.
+               NEP = 1
+            ENDIF
+         ENDIF
+C                                                                         I15740
+C        If retrieving next panel while box sum is not in progress, then
+C        check that left edge of current output box is beyond last data on
+C        panel (IL.GT.NNI), if so, go back for new panel without summing
+C
+         IF (JFLG.EQ.1.AND.IDATA.EQ.0.AND.IL.GT.NNI) THEN
+            IPANEL = 0                                                    I15910
+            JFLG = 0                                                      I15920
+            RETURN                                                        I15930
+         ENDIF
+C
+C        If last point on current input panel is reached, and there is    I15750
+C        no more data to retrieve, then return                            I15760
+C                                                                         I15770
+         IF (JFLG.EQ.1.AND.IDATA.EQ.1) RETURN                             I15780
+C                                                                         I15790
+C        Compute sum for current box number NB, using a weight of 1.0     I15800
+C        for all points but the end points, which use WGTL and WGTR
+C                                                                         I15810
+         DO 20 I = IL+1, IH-1                                             I15820
+            SUMJ = SUMJ+S(I)                                              I15830
+   20    CONTINUE                                                         I15840
+C
+C        Add weighted end points to sum
+         SUMJ = SUMJ+S(IL)*WGTL
+         SUMJ = SUMJ+S(IH)*WGTR
+C
+C        Define sum of the weights, where all inner points are weighted
+C        as 1, and the end points are weighted with the fraction that
+C        occurs within the box.
+C
+         RNJ = RNJ+(IH-IL+1-NEP)+WGTL+WGTR                                I15850
+C                                                                         I15860
+C        If out of data on current input panel, go back for more;         I15870
+C        partial SUMJ, current NB, and JFLG are saved in COMMON RCTSV     I15880
+C                                                                         I15890
+         IF (JFLG.EQ.1.AND.IDATA.EQ.0) THEN                               I15900
+            IPANEL = 0                                                    I15910
+            JFLG = 0                                                      I15920
+            RETURN                                                        I15930
+         ENDIF                                                            I15940
+C                                                                         I15950
+C        IPANEL=IDATA                                                     I15960
+C                                                                         I15970
+         SUMIN = SUMIN+SUMJ                                               I15980
+C                                                                         I16000
+C        Compute average radiance for completed box                       I16010
+C                                                                         I16020
+         R1(JN) = SUMJ/RNJ                                                I16030
+C
+C        Increment current box counters, initialize SUMJ and RNJ
+         JN = JN+1                                                        I16040
+         SUMJ = 0.                                                        I16040
+         RNJ = 0.                                                         I16040
+C                                                                         I16050
+C        Output panel when number of boxes, NB, reaches a multiple of     I16060
+C        2400, using then incrementing current output panel number, IPC.
+C                                                                         I16070
+         IF (NB.EQ.IPC*(NHI-NLO+1)) THEN                                  I16080
+            IPANEL = 1                                                    I16090
+            IPC = IPC+1
+            NB = NB+1
+            RETURN                                                        I16100
+         ENDIF                                                            I16110
+C
+C        Increment NB
+         NB = NB+1
+C                                                                         I16150
+C        Go back to top of loop over NB boxes                             I16160
+C                                                                         I16170
+         GO TO 10                                                         I16180
+C
       ENDIF                                                               I16190
 C                                                                         I16200
       RETURN                                                              I16210
