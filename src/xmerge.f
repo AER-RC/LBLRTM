@@ -1584,7 +1584,6 @@ C                                                                         H11410
       NLIM1 = 0                                                           H11570
       NLIM2 = 0                                                           H11580
 C                                                                         H11590
-      aa=0.278
       rec_6 = 1./6.
 c
 c     **********************************************************
@@ -5678,12 +5677,20 @@ C                                                                         H29020
       COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF                            H29100
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H29110
 C                                                                         H29120
+      parameter (nn_tbl=10000)
+c
+      common /fn_tbls/ jtbl_calc, aa_inv, xnn,
+     *     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl)
+c
       DIMENSION PNLHDR(2),EM(*),TR(*)                                     H29130
 C                                                                         H29140
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4)                 H29150
       EQUIVALENCE (PNLHDR(1),V1PBF)                                       H29160
       EQUIVALENCE (FSCDID(4),IAERSL)                                      H29170
 C                                                                         H29180
+      data xtrtot_min /1.e-04/, od_lo /0.005/,od_hi /12./
+      data itbl_calc/-99/, aa /0.278/ 
+c
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H29190
       IF (KEOF.LE.0) RETURN                                               H29200
       CALL BUFIN (KFILE,KEOF,TR(1),NLIMBF)                                H29210
@@ -5722,8 +5729,15 @@ C                                                                         H29400
       RDDUM = -1.                                                         H29540
       NLIM1 = 0                                                           H29550
       NLIM2 = 0                                                           H29560
-C                                                                         H29570
-      AA = 0.278                                                          H29580
+C                                                                         H11590
+      rec_6 = 1./6.
+c
+c     **********************************************************
+c
+c     if the the exponential table and the 'linear-in-tau' table 
+c     have not been created, then call create_fn_tbls
+c
+      if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 C                                                                         H29590
       BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                          H29600
       IF (IAERSL.NE.0) THEN                                               H29610
@@ -5799,20 +5813,35 @@ C                                                                         H30440
       NLIM2 = (VIDV-V1P)/DVP+1.001                                        H30450
       NLIM2 = MIN(NLIM2,NLIM)                                             H30460
 C                                                                         H30470
+      bb_dif = bba-bb
+      bb_dif_del = bbdla-bbdel
+c
       DO 20 I = NLIM1, NLIM2                                              H30480
+
          ODVI = SECNT*TR(I)+EXT*RADFN0                                    H30510
-C                                                                         H30540
-         XX = AA*ODVI                                                     H30550
-C                                                                         H30560
-         TR(I) = EXP(-ODVI)                                               H30570
-         EM(I) = (1.-TR(I))*(BB+XX*BBA)/(1.+XX)                           H30580
-C                                                                         H30590
-C        Increment interpolation values
+c      
+         if (abs(odvi) .le. od_lo) then
+            tr(i) = 1. - odvi
+            em(i) = odvi * (bb+ bbdif*rec_6*odvi)
+         else if (odvi .ge. od_hi) then
+            tr(i) = 0.
+            em(i) = bba
+         else   
+c           tri = exp(-odvi)
+            tau_fn = odvi/(aa_inv+odvi)
+            i_tbl = xnn * tau_fn + .5
+            tr(i) = exp_tbl(i_tbl)
+C           Obtain correct value for the tau function from look up table
+            em(i) = (1.-tr(i)) * (bb+bb_dif*tau_tbl(i_tbl))
+         end if
+c
+C              Increment interpolation values
 C
          EXT = EXT+ADEL                                                   H30490
          RADFN0 = RADFN0+RDEL                                             H30500
          BB = BB+BBDEL                                                    H30520
-         BBA = BBA+BBDLA                                                  H30530
+         bb_dif = bb_dif + bb_dif_del
+c
    20 CONTINUE                                                            H30600
 C                                                                         H30610
       IF (NLIM2.LT.NLIM) GO TO 10                                         H30620
