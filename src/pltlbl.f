@@ -21,7 +21,8 @@ C                                                                         M00080
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     M00130
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      M00140
      *                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                      M00150
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           M00160
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502)                               M00170
       COMMON /POINTS/ XXI,YI                                              M00180
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         M00190
@@ -259,7 +260,7 @@ C
       JPLOT = 0                                                           M02320
       LOGPLT = 0                                                          M02330
       NPLT = 0                                                            M02340
-      XLOGCN = -ALOG10(EXP(1.))                                           M02350
+      XLOGCN = - LOG10(EXP(1.))                                           M02350
       X3 = 0.                                                             M02360
       YPL = 0.                                                            M02370
       READ (IRD,900) CPRGID,CEX                                           M02380
@@ -479,7 +480,7 @@ C                                                                         M03560
             NUMDVY = (YMAX-YMIN)/DELY+0.01                                M03610
          ENDIF                                                            M03620
          IF (LOGPLT.EQ.0) THEN                                            M03630
-            NMAX = ALOG10(ABS(YMAX))                                      M03640
+            NMAX =  LOG10(ABS(YMAX))                                      M03640
             SFY = 10.**(-NMAX+1)                                          M03650
          ENDIF                                                            M03660
       ELSE                                                                M03670
@@ -1128,7 +1129,7 @@ C                                                                         M09650
       RW = 0.                                                             M09870
       HIP = 0.                                                            M09880
       IF (WBROAD.LT.1.E-23) GO TO 30                                      M09890
-      IP = ALOG10(WBROAD)                                                 M09900
+      IP =  LOG10(WBROAD)                                                 M09900
       HIP = IP                                                            M09910
       RW = WBROAD/10.**IP                                                 M09920
    30 CALL SYMBOL (X6,YT,XP15,HOTHER,0.0,7)                               M09930
@@ -1143,7 +1144,7 @@ C                                                                         M09650
          YTE = YT+XP1                                                     M10020
          RW = 0.                                                          M10030
          HIP = 0.                                                         M10040
-         IP = ALOG10(W(M))                                                M10050
+         IP =  LOG10(W(M))                                                M10050
          HIP = IP                                                         M10060
          RW = W(M)/10.**IP                                                M10070
          CALL SYMBOL (X6,YT,XP15,HMOL(M),0.0,6)                           M10080
@@ -1168,7 +1169,7 @@ C                                                                         M10170
          YTE = YT+XP1                                                     M10270
          RW = 0.                                                          M10280
          HIP = 0.                                                         M10290
-         IP = ALOG10(W(M))                                                M10300
+         IP =  LOG10(W(M))                                                M10300
          HIP = IP                                                         M10310
          RW = W(M)/10.**IP                                                M10320
          CALL SYMBOL (X12,YT,XP15,HMOL(M),0.0,6)                          M10330
@@ -1272,7 +1273,7 @@ C                                                                         M11250
      *            1,0,0)                                                  M11300
       TOP = 10000./V1                                                     M11310
       STEP = (TOP-10000./V2)/5.                                           M11320
-      NDP = -ALOG10(STEP)+1.                                              M11330
+      NDP = - LOG10(STEP)+1.                                              M11330
       ISTEP = STEP*(10.**NDP)                                             M11340
       IF (ISTEP.GE.6) ISTEP = 10+10*((ISTEP-5)/10)                        M11350
       STEP = FLOAT(ISTEP)/(10.**NDP)                                      M11360
@@ -1287,7 +1288,7 @@ C                                                                         M11440
 C     ('3' AS FOURTH ARGUMENT REPRESENTS PLUS SYMBOL FOR TIC MARK)        M11450
 C                                                                         M11460
       DIGITS = 0.                                                         M11470
-      IF (TOP.GE.10.) DIGITS = ALOG10(TOP)                                M11480
+      IF (TOP.GE.10.) DIGITS =  LOG10(TOP)                                M11480
       DIGITS = AINT(DIGITS+1.0E-12)                                       M11490
       SIZNUM = HGT*(DIGITS+FLOAT(NDP)+1.7)                                M11500
       XPOS = XINCH-0.5*SIZNUM                                             M11510
@@ -1313,7 +1314,7 @@ C                                                                         M11580
          CALL PLOT (XG,YSIZE,3)                                           M11710
          CALL PLOT (XG,YSIZE+HLFHGT,2)                                    M11720
          DIGITS = 0.                                                      M11730
-         IF (G.GE.10.) DIGITS = ALOG10(G)                                 M11740
+         IF (G.GE.10.) DIGITS =  LOG10(G)                                 M11740
          DIGITS = AINT(DIGITS+1.0E-12)                                    M11750
          SIZNUM = HGT*(DIGITS+0.7)                                        M11760
          XPOS = XG-0.5*SIZNUM                                             M11770
@@ -1415,7 +1416,8 @@ C                                                                         M12700
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      M12730
      *                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                      M12740
 C                                                                         M12750
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           M12760
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         M12770
 C     BBFN  BLACK BODY                                                    M12780
 C                                                                         M12790
@@ -1433,9 +1435,9 @@ C                                                                         M12790
       ELSE                                                                M12910
          RATYF = YMIN/YMAX                                                M12920
       ENDIF                                                               M12930
-      NS = ALOG10(YMAX1)                                                  M12940
+      NS =  LOG10(YMAX1)                                                  M12940
       IF (YMIN1.GT.0.) THEN                                               M12950
-         NB = ALOG10(YMIN1)                                               M12960
+         NB =  LOG10(YMIN1)                                               M12960
       ELSE                                                                M12970
          NB = NS-5                                                        M12980
       ENDIF                                                               M12990
@@ -1539,14 +1541,15 @@ C                                                                         M13940
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     M13970
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      M13980
      *                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                      M13990
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           M14000
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         M14010
       DATA HTEN / '10'/,                                                  M14020
      *     TITL3 / ' RADIANCE WATTS /  (CM**2*STER*CM-1)  * '/,           M14030
      *     NT3 / 37 /                                                     M14040
 C                                                                         M14050
       BB(X,TAVE) = (RADCN1*X**3)/(EXP(RADCN2*X/TAVE)-1.0)                 M14060
-      TEM(X,BBY) = RADCN2*X/ALOG(RADCN1*X**3/BBY+1.0)                     M14070
+      TEM(X,BBY) = RADCN2*X/ LOG(RADCN1*X**3/BBY+1.0)                     M14070
 C                                                                         M14080
       ISKIP = 0                                                           M14090
       CALL PLOT (XSIZE,0.0,3)                                             M14100
@@ -1559,7 +1562,7 @@ C                                                                         M14080
       HGTE = HGT*(2./3.)                                                  M14170
       S2 = V2                                                             M14180
       BB1 = BB(S2,YMAX)                                                   M14190
-      IB1 = ALOG10(BB1)                                                   M14200
+      IB1 =  LOG10(BB1)                                                   M14200
       B1 = 10.**IB1                                                       M14210
    10 DO 30 I = 1, 5                                                      M14220
          FN = 2*(5-I)                                                     M14230
@@ -1712,7 +1715,7 @@ C                                                                         M15650
 C                                                                         M15690
       DO 10 I = NST, NND                                                  M15700
          IF (Y(I).LE.0.) Y(I) = EXPMIN                                    M15710
-         YY(J) = -ALOG(Y(I))                                              M15720
+         YY(J) = - LOG(Y(I))                                              M15720
          J = J+1                                                          M15730
    10 CONTINUE                                                            M15740
 C                                                                         M15750
@@ -1724,7 +1727,8 @@ C                                                                         M15800
       IMPLICIT REAL*8           (V)                                     ! M15810
 C                                                                         M15820
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M15830
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           M15840
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON XX(2450),YY(2450)                                            M15850
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502)                               M15860
 C                                                                         M15870
@@ -1733,7 +1737,7 @@ C                                                                         M15870
          IF (Y(I).GE.EXPMIN) THEN                                         M15900
             X = RADCN1*(XX(J)**3)/Y(I)                                    M15910
             IF (X.GE.EXPMIN) THEN                                         M15920
-               Z = ALOG(X+1.)                                             M15930
+               Z =  LOG(X+1.)                                             M15930
                YY(J) = RADCN2*(XX(J)/Z)                                   M15940
             ENDIF                                                         M15950
          ENDIF                                                            M15960
@@ -1753,7 +1757,7 @@ C                                                                         M16060
 C                                                                         M16100
       DO 10 I = NST, NND                                                  M16110
          IF (Y(I).LE.0.) Y(I) = EXPMIN                                    M16120
-         YY(J) = ALOG10(Y(I))                                             M16130
+         YY(J) =  LOG10(Y(I))                                             M16130
          J = J+1                                                          M16140
    10 CONTINUE                                                            M16150
 C                                                                         M16160
@@ -1790,7 +1794,7 @@ C                                                                         M16450
 C                                                                         M16470
       DO 10 I = NST, NND                                                  M16480
          IF (Y(I).LE.0.) Y(I) = EXPMIN                                    M16490
-         YY(J) = -CON*ALOG(Y(I))                                          M16500
+         YY(J) = -CON* LOG(Y(I))                                          M16500
          J = J+1                                                          M16510
    10 CONTINUE                                                            M16520
 C                                                                         M16530
@@ -1809,7 +1813,7 @@ C                                                                         M16640
 C                                                                         M16660
       DO 10 I = NST, NND                                                  M16670
          IF (Y(I).LE.0.) Y(I) = EXPMIN                                    M16680
-         YY(J) = ALOG10(Y(I)*CON)                                         M16690
+         YY(J) =  LOG10(Y(I)*CON)                                         M16690
          J = J+1                                                          M16700
    10 CONTINUE                                                            M16710
 C                                                                         M16720
@@ -1828,9 +1832,9 @@ C                                                                         M16830
 C                                                                         M16850
       DO 10 I = NST, NND                                                  M16860
          IF (Y(I).LE.0.) Y(I) = EXPMIN                                    M16870
-         YY(J) = -CON*ALOG(Y(I))                                          M16880
+         YY(J) = -CON* LOG(Y(I))                                          M16880
          IF (YY(J).LE.0.) YY(J) = EXPMIN                                  M16890
-         YY(J) = ALOG10(YY(J))                                            M16900
+         YY(J) =  LOG10(YY(J))                                            M16900
          J = J+1                                                          M16910
    10 CONTINUE                                                            M16920
 C                                                                         M16930
@@ -1863,9 +1867,9 @@ C                                                                         M17190
       DO 10 I = NST, NND                                                  M17200
          CAY = Y(I)                                                       M17210
          IF (CAY.EQ.0) CAY = EXPMIN                                       M17220
-         CAY = -ALOG(CAY)                                                 M17230
+         CAY = - LOG(CAY)                                                 M17230
          IF (CAY.EQ.0) CAY = EXPMIN                                       M17240
-         YY(J) = ALOG10(CAY)                                              M17250
+         YY(J) =  LOG10(CAY)                                              M17250
          J = J+1                                                          M17260
    10 CONTINUE                                                            M17270
 C                                                                         M17280
@@ -2066,7 +2070,7 @@ C                                                                         M19080
       IF ((NOEND.EQ.1.OR.NOEND.EQ.2).AND.NDIV.EQ.0) GO TO 30              M19160
       IF ((NOEND.EQ.1.OR.NOEND.EQ.3).AND.NDIV.EQ.NUMDIV) GO TO 30         M19170
       DIVNUM = BEGNUM+DELNUM*FLOAT(NDIV)                                  M19180
-      IF (ABS(DIVNUM).GE.10.0) DIGITS = ALOG10(ABS(DIVNUM))               M19190
+      IF (ABS(DIVNUM).GE.10.0) DIGITS =  LOG10(ABS(DIVNUM))               M19190
       DIGITS = AINT(DIGITS+1.0E-12)                                       M19200
       IF (DIVNUM.LT.0.0) DIGITS = DIGITS+1.0                              M19210
       SIZNUM = (DIGITS+FLOAT(NUMDEC)+1.7)*HEIGHT                          M19220
@@ -2224,7 +2228,7 @@ C                                                                         M20400
       EXP = BEGEXP                                                        M20730
       DO 30 I = 1, NNUMB                                                  M20740
          DIGITS = 0.0                                                     M20750
-         IF (ABS(EXP).GE.10.0) DIGITS = ALOG10(ABS(EXP))                  M20760
+         IF (ABS(EXP).GE.10.0) DIGITS =  LOG10(ABS(EXP))                  M20760
          DIGITS = AINT(DIGITS+1.0E-12)+0.7                                M20770
          IF (EXP.LT.0.0) DIGITS = DIGITS+1.0                              M20780
          SIZNUM = DIGITS*EXPSIZ                                           M20790

@@ -1575,6 +1575,8 @@ C
      *     IMLOW,WGM(MXZMD),DENW(MXZMD)                                  FL14770
 C
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL14780
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       DIMENSION INEW( *)                                                 FL14790
       DIMENSION ZMDL( *),P(MXZMD),T(MXZMD)                               FL14800
 C                                                                        FL14810
@@ -1585,8 +1587,7 @@ C                                                                        FL14850
 C     THIS ROUTINE INTERPOLATES P,T,AND H2O INTO                         FL14860
 C     LOWTRAN LAYERS WHEN MODEL = 7                                      FL14870
 C                                                                        FL14880
-      AVOGAD = 6.022045E23                                               FL14890
-      WTH2O = 18.015                                                     FL14900
+      WTH2O = 18.015 
       B = WTH2O*1.E06/AVOGAD                                             FL14910
       J = INEW(K)                                                        FL14920
 C                                                                        FL14930
@@ -3244,7 +3245,7 @@ C        RELITIVE HUMIDITY WEIGHTED BY BOUNDRY LAYER AEROSOL (0 TO 2 KM) FL30340
 C                                                                        FL30350
          RELH = RELHUM(I)                                                FL30360
          RELH = MIN(RELH,99.)                                            FL30370
-         RHLOG = ALOG(100.-RELH)                                         FL30380
+         RHLOG =  LOG(100.-RELH)                                         FL30380
 C                                                                        FL30390
 C        DENSTY(15,I)=RELHUM(I)*DENSTY(7,I)                              FL30400
 C                                                                        FL30410
@@ -4267,9 +4268,9 @@ C                                                                        FL39400
       RHOA = PA/(GCAIR*TA)                                               FL39450
       RHOB = PB/(GCAIR*TB)                                               FL39460
       DZ = ZL(J+1)-ZL(J)                                                 FL39470
-      HP = -DZ/ALOG(PB/PA)                                               FL39480
+      HP = -DZ/ LOG(PB/PA)                                               FL39480
       IF (ABS(RHOB/RHOA-1.0).LT.EPSILN) GO TO 10                         FL39490
-      HRHO = -DZ/ALOG(RHOB/RHOA)                                         FL39500
+      HRHO = -DZ/ LOG(RHOB/RHOA)                                         FL39500
       GO TO 20                                                           FL39510
    10 HRHO = 1.0E30                                                      FL39520
    20 CONTINUE                                                           FL39530
@@ -4281,7 +4282,7 @@ C                                                                        FL39400
 C                                                                        FL39590
 C        **   USE EXPONENTIAL INTERPOLATION                              FL39600
 C                                                                        FL39610
-         HDEN(K) = -DZ/ALOG(DENB(K)/DENA(K))                             FL39620
+         HDEN(K) = -DZ/ LOG(DENB(K)/DENA(K))                             FL39620
          GO TO 40                                                        FL39630
 C                                                                        FL39640
 C        **   USE LINEAR INTERPOLATION                                   FL39650
@@ -4649,7 +4650,7 @@ C     CC                                                                 FL42960
 C     CC    DESCRIBES THE IMAGINARY PART OF THE DIELECTRIC CONSTANT      FL42970
 C     CC                                                                 FL42980
 C                                                                        FL42990
-      AB = -A*EXP(-ABS((ALOG10(10000.*WAVL/CEN)/B))**C)                  FL43000
+      AB = -A*EXP(-ABS(( LOG10(10000.*WAVL/CEN)/B))**C)                  FL43000
       RETURN                                                             FL43010
       END                                                                FL43020
       FUNCTION GAMFOG(FREQ,T,RHO)                                        FL43030
@@ -4938,7 +4939,7 @@ C                                                                        FL45760
    60 CONTINUE                                                           FL45810
 C                                                                        FL45820
 C     INTERPOLATE                                                        FL45830
-C     CC   Z = -ALOG(FREQ)                                               FL45840
+C     CC   Z = - LOG(FREQ)                                               FL45840
 C     CC   DO 25 K=1,3                                                   FL45850
 C                                                                        FL45860
       DO 80 K = 1, 4                                                     FL45870
@@ -4946,7 +4947,7 @@ C                                                                        FL45860
          RATES(K) = RATTAB(KJ)                                           FL45890
          DO 70 J = 1, JMAX                                               FL45900
             IJ = ILOW+J                                                  FL45910
-            Y(J) = ALOG(ATTAB(IJ,KJ))                                    FL45920
+            Y(J) =  LOG(ATTAB(IJ,KJ))                                    FL45920
    70    CONTINUE                                                        FL45930
          ATTN(K) = EXP(AITK(X,Y,FREQ,JMAX))                              FL45940
    80 CONTINUE                                                           FL45950
@@ -5374,7 +5375,7 @@ C                                                                        FL49850
    30 A(K) = AA(2)                                                       FL49860
       E = EE(1)                                                          FL49870
       IF (ZC.EQ.0.0) WRITE (IPR,905)                                     FL49880
-      IF (ZC.EQ.0.0) CEIL = ALOG(ALOG(E/A(K))/(ALOG(D/A(K))))/CC(2)      FL49890
+      IF (ZC.EQ.0.0) CEIL =  LOG( LOG(E/A(K))/( LOG(D/A(K))))/CC(2)      FL49890
       IF (ZC.EQ.0.0) WRITE (IPR,935) CEIL                                FL49900
       IF (ZC.GT.0.0) WRITE (IPR,950) ZC                                  FL49910
       IF (ZC.EQ.0.0) ZC = CEIL                                           FL49920
@@ -5416,12 +5417,12 @@ C                                                                        FL50270
 C     CASE 4:  NO CLOUD CEILING OR INVERSION LAYER;                      FL50280
 C     CONSTANT EXTINCTION WITH HEIGHT.                                   FL50290
 C                                                                        FL50300
-   60 IF (IC.NE.4) B(K) = ALOG(D/A(K))                                   FL50310
+   60 IF (IC.NE.4) B(K) =  LOG(D/A(K))                                   FL50310
       IF (IC.EQ.4) WRITE (IPR,970)                                       FL50320
       IF (IC.EQ.2) THEN                                                  FL50330
-         C(K) = ALOG(ALOG(E/A(K))/B(K))/(ZC-SZ)                          FL50340
+         C(K) =  LOG( LOG(E/A(K))/B(K))/(ZC-SZ)                          FL50340
       ENDIF                                                              FL50350
-      IF (IC.EQ.3) C(K) = ALOG(ALOG(E/A(K))/B(K))/ZINV                   FL50360
+      IF (IC.EQ.3) C(K) =  LOG( LOG(E/A(K))/B(K))/ZINV                   FL50360
       IF (ZC.LT.HMAX.AND.K.EQ.1.AND.IC.EQ.2) GO TO 20                    FL50370
       IF (IC.EQ.2) HMAX = AMIN1(ZC,HMAX)                                 FL50380
       ZALGO = HMAX                                                       FL50390
@@ -5453,7 +5454,7 @@ C                                                                        FL50560
          ENDIF                                                           FL50650
          IF (IC.LE.0.AND.I.GE.5) Z(I) = Z(I)+ZC                          FL50660
          Z(I) = Z(I)/KMTOM                                               FL50670
-         RH(I) = 6.953*ALOG(AHAZE(I))+86.407                             FL50680
+         RH(I) = 6.953* LOG(AHAZE(I))+86.407                             FL50680
          IF (AHAZE(I).GE.EE(1)) RH(I) = 100.0                            FL50690
          VISIB = 3.912/(AHAZE(I)+0.012)                                  FL50700
          IH(I) = IHAZE                                                   FL50710
@@ -5593,9 +5594,9 @@ C                                                                        FL51780
    20    CONTINUE                                                        FL51810
          I = 4                                                           FL51820
    30    II = I-1                                                        FL51830
-         IF (WRH.GT.0.0.AND.WRH.LT.99.) X = ALOG(100.0-WRH)              FL51840
-         X1 = ALOG(100.0-RHZONE(II))                                     FL51850
-         X2 = ALOG(100.0-RHZONE(I))                                      FL51860
+         IF (WRH.GT.0.0.AND.WRH.LT.99.) X =  LOG(100.0-WRH)              FL51840
+         X1 =  LOG(100.0-RHZONE(II))                                     FL51850
+         X2 =  LOG(100.0-RHZONE(I))                                      FL51860
          IF (WRH.GE.99.0) X = X2                                         FL51870
          IF (WRH.LE.0.0) X = X1                                          FL51880
          DO 180 N = NB, NE                                               FL51890
@@ -5611,53 +5612,53 @@ C                                                                        FL51980
 C           RH DEPENDENT AEROSOLS                                        FL51990
 C                                                                        FL52000
             GO TO (50,50,60,70,80,90), ITA                               FL52010
-   50       Y2 = ALOG(RUREXT(N,I))                                       FL52020
-            Y1 = ALOG(RUREXT(N,II))                                      FL52030
-            Z2 = ALOG(RURABS(N,I))                                       FL52040
-            Z1 = ALOG(RURABS(N,II))                                      FL52050
-            A2 = ALOG(RURSYM(N,I))                                       FL52060
-            A1 = ALOG(RURSYM(N,II))                                      FL52070
-            E2 = ALOG(ELWCR(I))                                          FL52080
-            E1 = ALOG(ELWCR(II))                                         FL52090
+   50       Y2 =  LOG(RUREXT(N,I))                                       FL52020
+            Y1 =  LOG(RUREXT(N,II))                                      FL52030
+            Z2 =  LOG(RURABS(N,I))                                       FL52040
+            Z1 =  LOG(RURABS(N,II))                                      FL52050
+            A2 =  LOG(RURSYM(N,I))                                       FL52060
+            A1 =  LOG(RURSYM(N,II))                                      FL52070
+            E2 =  LOG(ELWCR(I))                                          FL52080
+            E1 =  LOG(ELWCR(II))                                         FL52090
             GO TO 100                                                    FL52100
    60       IF (M.GT.1) GO TO 70                                         FL52110
-            A2 = ALOG(OCNSYM(N,I))                                       FL52120
-            A1 = ALOG(OCNSYM(N,II))                                      FL52130
+            A2 =  LOG(OCNSYM(N,I))                                       FL52120
+            A1 =  LOG(OCNSYM(N,II))                                      FL52130
             A = A1+(A2-A1)*(X-X1)/(X2-X1)                                FL52140
             ASYM(M,N) = EXP(A)                                           FL52150
-            E2 = ALOG(ELWCM(I))                                          FL52160
-            E1 = ALOG(ELWCM(II))                                         FL52170
+            E2 =  LOG(ELWCM(I))                                          FL52160
+            E1 =  LOG(ELWCM(II))                                         FL52170
 C                                                                        FL52180
 C           NAVY MARITIME AEROSOL CHANGES TO MARINE IN MICROWAVE         FL52190
 C           NO NEED TO DEFINE EQUIVALENT WATER                           FL52200
 C                                                                        FL52210
             GO TO 180                                                    FL52220
-   70       Y2 = ALOG(OCNEXT(N,I))                                       FL52230
-            Y1 = ALOG(OCNEXT(N,II))                                      FL52240
-            Z2 = ALOG(OCNABS(N,I))                                       FL52250
-            Z1 = ALOG(OCNABS(N,II))                                      FL52260
-            A2 = ALOG(OCNSYM(N,I))                                       FL52270
-            A1 = ALOG(OCNSYM(N,II))                                      FL52280
-            E2 = ALOG(ELWCM(I))                                          FL52290
-            E1 = ALOG(ELWCM(II))                                         FL52300
+   70       Y2 =  LOG(OCNEXT(N,I))                                       FL52230
+            Y1 =  LOG(OCNEXT(N,II))                                      FL52240
+            Z2 =  LOG(OCNABS(N,I))                                       FL52250
+            Z1 =  LOG(OCNABS(N,II))                                      FL52260
+            A2 =  LOG(OCNSYM(N,I))                                       FL52270
+            A1 =  LOG(OCNSYM(N,II))                                      FL52280
+            E2 =  LOG(ELWCM(I))                                          FL52290
+            E1 =  LOG(ELWCM(II))                                         FL52300
             GO TO 100                                                    FL52310
-   80       Y2 = ALOG(URBEXT(N,I))                                       FL52320
-            Y1 = ALOG(URBEXT(N,II))                                      FL52330
-            Z2 = ALOG(URBABS(N,I))                                       FL52340
-            Z1 = ALOG(URBABS(N,II))                                      FL52350
-            A2 = ALOG(URBSYM(N,I))                                       FL52360
-            A1 = ALOG(URBSYM(N,II))                                      FL52370
-            E2 = ALOG(ELWCU(I))                                          FL52380
-            E1 = ALOG(ELWCU(II))                                         FL52390
+   80       Y2 =  LOG(URBEXT(N,I))                                       FL52320
+            Y1 =  LOG(URBEXT(N,II))                                      FL52330
+            Z2 =  LOG(URBABS(N,I))                                       FL52340
+            Z1 =  LOG(URBABS(N,II))                                      FL52350
+            A2 =  LOG(URBSYM(N,I))                                       FL52360
+            A1 =  LOG(URBSYM(N,II))                                      FL52370
+            E2 =  LOG(ELWCU(I))                                          FL52380
+            E1 =  LOG(ELWCU(II))                                         FL52390
             GO TO 100                                                    FL52400
-   90       Y2 = ALOG(TROEXT(N,I))                                       FL52410
-            Y1 = ALOG(TROEXT(N,II))                                      FL52420
-            Z2 = ALOG(TROABS(N,I))                                       FL52430
-            Z1 = ALOG(TROABS(N,II))                                      FL52440
-            A2 = ALOG(TROSYM(N,I))                                       FL52450
-            A1 = ALOG(TROSYM(N,II))                                      FL52460
-            E2 = ALOG(ELWCT(I))                                          FL52470
-            E1 = ALOG(ELWCT(II))                                         FL52480
+   90       Y2 =  LOG(TROEXT(N,I))                                       FL52410
+            Y1 =  LOG(TROEXT(N,II))                                      FL52420
+            Z2 =  LOG(TROABS(N,I))                                       FL52430
+            Z1 =  LOG(TROABS(N,II))                                      FL52440
+            A2 =  LOG(TROSYM(N,I))                                       FL52450
+            A1 =  LOG(TROSYM(N,II))                                      FL52460
+            E2 =  LOG(ELWCT(I))                                          FL52470
+            E1 =  LOG(ELWCT(II))                                         FL52480
   100       Y = Y1+(Y2-Y1)*(X-X1)/(X2-X1)                                FL52490
             ZK = Z1+(Z2-Z1)*(X-X1)/(X2-X1)                               FL52500
             A = A1+(A2-A1)*(X-X1)/(X2-X1)                                FL52510
@@ -7344,8 +7345,9 @@ C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL68760
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL68770
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL68780
-      COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL68790
-     *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)                  FL68800
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CONSTL/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL) 
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(NCASE2),WMOL1(NCASE),
      *                WAIR1,JLOW                                         FL68810
 C
@@ -7466,8 +7468,9 @@ C
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL69880
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(NCASE2),WMOL1(NCASE),
      *                WAIR,JLOW                                          FL69890
-      COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL69900
-     *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)                  FL69910
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CONSTL/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL) 
 C
       DATA C1/18.9766/,C2/-14.9595/,C3/-2.43882/                         FL69920
       DATA XLOSCH/2.6868E19/                                             FL69930
@@ -8779,10 +8782,10 @@ C                                                                        FL82870
 C                                                                        FL82900
 C     WRITE (IPR,60) Z,MATM                                              FL82910
 C                                                                        FL82920
-      X1 = ALOG(PMATM(I0,MATM))                                          FL82930
-      X2 = ALOG(PMATM(I1,MATM))                                          FL82940
-      X3 = ALOG(PMATM(I2,MATM))                                          FL82950
-      X4 = ALOG(PMATM(I3,MATM))                                          FL82960
+      X1 =  LOG(PMATM(I0,MATM))                                          FL82930
+      X2 =  LOG(PMATM(I1,MATM))                                          FL82940
+      X3 =  LOG(PMATM(I2,MATM))                                          FL82950
+      X4 =  LOG(PMATM(I3,MATM))                                          FL82960
       IF (IUPPER.EQ.2) X4 = X3+2*(X3-X2)                                 FL82970
       P = VAL(A1,A2,A3,A4,X1,X2,X3,X4)                                   FL82980
       P = EXP(P)                                                         FL82990
@@ -8851,12 +8854,8 @@ C                                                                        FL83610
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
-      COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL83620
-     *    CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)                   FL83630
+      COMMON /CONSTL/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL) 
       DATA PZERO/1013.25/,TZERO/273.15/                                  FL83640
-      DATA AVOGAD/6.022045E+23/,ALOSMT/2.68675E+19/,                     FL83650
-     *    GASCON/8.31441E+7/,PLANK/6.626176E-27/,BOLTZ/1.380662E-16/,    FL83660
-     *    CLIGHT/2.99792458E10/                                          FL83670
 C                                                                        FL83680
 C     **   ALZERO IS THE MEAN LORENTZ HALFWIDTH AT PZERO AND 296.0 K.    FL83690
 C     **   AVMWT IS THE MEAN MOLECULAR WEIGHT USED TO AUTOMATICALLY      FL83700

@@ -31,7 +31,8 @@ C                                                                         H00180
 C                                                                         H00220
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H00230
       COMMON /XME/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(4996)                   H00240
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H00250
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H00260
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),                H00270
      *            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),                H00280
@@ -175,7 +176,8 @@ C                                                                         H01010
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    H01040
 C                                                                         H01050
       COMMON /XMI/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(4815)                   H01060
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H01070
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H01080
 C                                                                         H01090
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),                H01100
@@ -242,7 +244,8 @@ C                                                                         H01630
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H01670
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H01680
      *              EXTID(10)                                             H01690
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H01700
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H01710
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -409,7 +412,8 @@ C                                                                         H02640
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H02680
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H02690
      *              EXTID(10)                                             H02700
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H02710
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H02720
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -654,7 +658,8 @@ C                                                                         H05050
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H05090
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H05100
      *              EXTID(10)                                             H05110
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H05120
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H05130
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -960,7 +965,8 @@ C                                                                         H08070
 C                                                                         H08080
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H08090
 C                                                                         H08100
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H08110
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H08120
       DATA FACTOR / 0.003 /                                               H08130
 C                                                                         H08140
@@ -1084,7 +1090,8 @@ C
 C                                                                      
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2        
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                      
       DATA FACTOR / 0.003 /                                            
 C                                                                      
@@ -2169,7 +2176,8 @@ C                                                                         H16580
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H16620
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H16630
      *              EXTID(10)                                             H16640
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H16650
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H16660
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -2458,7 +2466,8 @@ C                                                                         H19400
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H19440
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H19450
      *              EXTID(10)                                             H19460
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H19470
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H19480
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -3005,7 +3014,8 @@ C                                                                         H24470
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H24510
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H24520
      *              EXTID(10)                                             H24530
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H24540
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H24550
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -3319,7 +3329,8 @@ C                                                                         H27590
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H27600
 C                                                                         H27610
       DIMENSION NEWEM(*),NEWTR(*)                                         H27620
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H27630
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H27640
       REAL NEWEM,NEWTR                                                    H27650
 C                                                                         H27660
@@ -4666,7 +4677,8 @@ C                                                                         H16580
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H16620
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H16630
      *              EXTID(10)                                             H16640
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H16650
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H16660
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -4999,7 +5011,8 @@ C                                                                         H19400
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H19440
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H19450
      *              EXTID(10)                                             H19460
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H19470
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H19480
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -5890,7 +5903,8 @@ C                                                                         H31030
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H31070
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H31080
      *              EXTID(10)                                             H31090
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H31100
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H31110
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -6101,7 +6115,8 @@ C                                                                         H33070
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H33110
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H33120
      *              EXTID(10)                                             H33130
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H33140
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H33150
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -6459,7 +6474,8 @@ C                                                                         H36580
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H36620
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H36630
      *              EXTID(10)                                             H36640
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H36650
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                         H36660
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 

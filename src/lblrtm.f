@@ -374,7 +374,8 @@ C
      *                MSFLAG,                                             A03140
      *                MSWIT,IODFIL,MSTGLE                                 A03150
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           A03020
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A03030
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2
       COMMON /HDRF/ V1D,V2D,DVD,NLND,IWLD                                 A03240
       COMMON /NGTH/ VD,SD,AD,EPD,MOLD,HWHD,TMPD,PSHD,FLGD,ILS2D           A03250
       COMMON /HDRL/ V1LD,VL2D,NLD,NWDS,ILST3D                             A03260
@@ -488,9 +489,7 @@ C                                                                         A03910
       NLNGTH = NWDL(IWD3,ILS2D)                                           A03960
       ILST3D = -654321
       NPHDRL = NWDL(IWD4,ILST3D)                                          A03970
-      PI = 2.*ASIN(1.)                                                    A03980
-      RADCN1 = 2.*PLANCK*CLIGHT*CLIGHT*1.E-07                             A03990
-      RADCN2 = PLANCK*CLIGHT/BOLTZ                                        A04000
+c
    10 WRITE (IPR,900)                                                     A04010
 C                                                                         A04020
       LOWFLG = 0                                                          A04030
@@ -1009,12 +1008,39 @@ C                                                                         A07280
 
 C                                                                         A07580
       END                                                                 A07590
+c**********************************************************************
+      Block Data phys_consts
+c
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2
+c
+      DATA PI / 3.1415927410125732 /
+c
+c    Constants from NIST 01/11/2002
+c
+      DATA PLANCK / 6.62606876E-27 /, BOLTZ  / 1.3806503E-16 /,
+     *     CLIGHT / 2.99792458E+10 /,
+     *     AVOGAD / 6.02214199E+23 /, ALOSMT / 2.6867775E+19 /,
+     *     GASCON / 8.314472  E+07 /
+     *     RADCN1 / 1.191042722E-12 /, RADCN2 / 1.4387752    /
+c
+c     Pi was obtained from   PI = 2.*ASIN(1.)                             A03980
+c
+c     units are genrally cgs
+c
+c     The first and second radiation constants are taken from NIST.
+c     They were previously obtained from the relations:
+c                            RADCN1 = 2.*PLANCK*CLIGHT*CLIGHT*1.E-07      A03990
+c                            RADCN2 = PLANCK*CLIGHT/BOLTZ                 A04000
+      end
+c
       BLOCK DATA                                                          A07600
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3)
       COMMON /FLFORM/ CFORM                                               A03270
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),            A07610
      *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,          A07620
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                  A07630
+c
       COMMON /CVRLBL/ HVRLBL
       COMMON /CVRCNT/ HVRCNT
       COMMON /CVRFFT/ HVRFFT
@@ -1029,25 +1055,23 @@ C                                                                         A07580
       COMMON /CVRXMR/ HVRXMR
       COMMON /CVNLTE/ HVNLTE
       COMMON /CVRSOL/ HVRSOL
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A07640
+c
       COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODT,PTHRDR
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
 C                                                                         A07650
       CHARACTER CFORM*11                                                  A03430
       CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+     *             HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
       CHARACTER*15 HVRSOL
 C
       CHARACTER*55 PTHT3M,PTHODI,PTHODT,PTHRDR
-
 C
       DATA PTHT3M /'TAPE3'/
       DATA PTHODI/'ODint_'/,PTHODT/'ODtotal_'/,
      *     PTHRDR/'RDderiv_'/
 
       DATA CFORM / 'UNFORMATTED'/                                         A03580
-      DATA PLANCK / 6.626176E-27 /,BOLTZ / 1.380662E-16 /,                A07660
-     *     CLIGHT / 2.99792458E10 /,AVOG / 6.022045E23 /                  A07670
+c
       DATA IOD / 0 /,IDIR / 0 /,ITOP / 0 /,ISURF / 0 /,MSPTS / 0 /,       A07680
      *     MSPANL /MXLAY*0/,MSPNL1 /MXLAY*0/,ISFILE / 0 /,JSFILE / 0 /,
      *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
@@ -1451,7 +1475,8 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A11320
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A11330
      *              EXTID(10)                                             A11340
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A11350
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A11360
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        A11370
      *              NLTEFL,LNFIL4,LNGTH4                                  A11380
@@ -2106,14 +2131,20 @@ C                                                                         A13790
       REWIND MFILE                                                        A13820
 C                                                                         A13830
 C    DETERMINE IF FORCED IPATHL, AND SET APPROPRIATELY                    A13840
+c     This occurs when you are reading in precalculated KFILE
+c     with imrg options for merged (not sequential) output
+c     imrg=12 upwelling, imrg=22 tangent, imrg=32 downwelling
 C                                                                         A13850
       IF (IMRG.NE.2) THEN                                                 A13860
          IF (IMRG.EQ.12) THEN                                             A13870
             JPATHL = 1                                                    A13880
+         else if (imrg.eq.22) then
+            JPATHL = 2
          ELSE                                                             A13890
             JPATHL = 3                                                    A13900
          ENDIF                                                            A13910
       ENDIF                                                               A13920
+C                                                                         A13850
       NNTAN = 1                                                           A13930
       NTAN(NNTAN) = 1                                                     A13940
       IF (2*(NLAYER/2).NE.NLAYER) GO TO 60                                A13950
@@ -2690,7 +2721,7 @@ C                                                                         A18820
       SECANT = SECNTA(LAYER)                                              A18910
       IF (ALTZ(LAYER-1).GE.0.) THEN                                       A18920
          ALTAV = ALTZ(LAYER-1)-                                           A18930
-     *      HZ*ALOG(.5*(1.+EXP(-(ALTZ(LAYER)-ALTZ(LAYER-1))/HZ)))         A18940
+     *      HZ* LOG(.5*(1.+EXP(-(ALTZ(LAYER)-ALTZ(LAYER-1))/HZ)))         A18940
       ELSE                                                                A18950
          ALTAV = ALTZ(LAYER)                                              A18960
       ENDIF                                                               A18970
@@ -2749,7 +2780,8 @@ C
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),
      *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A19330
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2
 C                                                                         A19340
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ
@@ -3237,7 +3269,7 @@ C                                                                         A22000
          ALBAR = ALFAL0*ALFCOR*H2OSLF                                     A22030
          ALBL(L) = ALBAR                                                  A22040
 C                                                                         A22050
-C     3.58115E-07 = SQRT( 2.*ALOG(2.)*AVOG*BOLTZ/(CLIGHT*CLIGHT) )        A22060
+C     3.58115E-07 = SQRT( 2.* LOG(2.)*AVOGAD*BOLTZ/(CLIGHT*CLIGHT) )        A22060
 C                                                                         A22070
          ADBAR = 3.58115E-07*(0.5*(V1+V2))*SQRT(TAVEL(L)/AVMASS)          A22080
          ADBL(L) = ADBAR                                                  A22090
@@ -3288,7 +3320,7 @@ C                                                                         A22310
 C     DV IS ASSUMED TO BE .LT. 1                                          A22320
 C     SET DV TO 3 SIGNIFICANT FIGURES                                     A22330
 C                                                                         A22340
-            ISCAL = ALOG10(DV)-3.                                         A22350
+            ISCAL =  LOG10(DV)-3.                                         A22350
             SCAL = 10.**ISCAL                                             A22360
             IDV = (DV/SCAL)+0.5                                           A22370
 C                                                                         A22380
@@ -3829,7 +3861,6 @@ C                                                                         A24660
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A24680
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        A24690
      *              NLTEFL,LNFIL4,LNGTH4                                  A24700
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A24710
       COMMON /CONVF/ CHI(251),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4            A24720
 C                                                                         A24730
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL

@@ -102,7 +102,7 @@ C                                                                        FA00870
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA00880
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA00890
      *              NLTEFL,LNFIL4,LNGTH4                                 FA00900
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA00910
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA00920
      *                IPHMID,IPDIM,KDIM,KMXNOM,KMAX                      FA00930
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NOP,H1F,H2F,       FA00940
@@ -147,7 +147,7 @@ C                                                                        FA01230
          HMOLID(M) = HMOLS(M)                                            FA01260
    10 CONTINUE                                                           FA01270
 C                                                                        FA01280
-      CALL ATMPTH (IEMIT)                                                FA01290
+      CALL ATMPTH (xid,IEMIT)                                                FA01290
 C                                                                        FA01300
       SECANT = 1.0                                                       FA01310
       NMOL = KMAX                                                        FA01320
@@ -168,7 +168,7 @@ C                                                                        FA01450
 C
 C     ----------------------------------------------------------------
 C
-      SUBROUTINE ATMPTH (IEMIT)                                          FA01470
+      SUBROUTINE ATMPTH (xid,IEMIT)                                          FA01470
 C                                                                        FA01480
 C**********************************************************************  FA01490
 C                                                                        FA01500
@@ -370,11 +370,13 @@ C                                                                        FA03360
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NOP,H1F,H2F,       FA03450
      *                ANGLEF,RANGEF,BETAF,LENF,V1,V2,RO,IPUNCH,XVBAR,    FA03460
      *                HMINF,PHIF,IERRF,HSPACE                            FA03470
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA03480
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,        FA03480
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA03490
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA03500
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA03510
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA03520
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
+
 C                                                                        FA03530
 C     BLANK COMMON FOR ZMDL                                              FA03540
 C                                                                        FA03550
@@ -423,13 +425,13 @@ C                                                                        FA03820
       COMMON /PCHINF/ MUNITS,CTYPE(MXLAY)
       COMMON /FIXITYL/ IFXTYP
       DIMENSION XPBAR(NXPBAR),XZOUT(NXZOUT),WMT(MXMOL)                   FA03970
-
       DIMENSION TTMP(2),WVTMP(2),PTMP(2),ZTMP(2)
 
       dimension densave(mxzmd)
 C                                                                        FA03980
       EQUIVALENCE (PBAR(1),XPBAR(1)) , (ZOUT(1),XZOUT(1))                FA03990
 C                                                                        FA04000
+      character*8 xid(10)
       CHARACTER*48 CFORM1,CFORM2                                         FA04010
       CHARACTER*8 COTHER                                                 FA04020
       CHARACTER*7 PAFORM(2)                                              FA04030
@@ -444,7 +446,7 @@ C                                                                        FA04050
       DATA PAFORM / '1PE15.7','  G15.7'/                                 FA04110
       DATA CFORM1 / '(1PE15.7,0PF10.2,10X,A3,I2,1X,2(F7.3,F8.3,F7.2))'/  FA04120
       DATA CFORM2 / '(  G15.7,0PF10.2,10X,A3,I2,23X,(F7.3,F8.3,F7.2))'/  FA04130
-      DATA IERROR / 0 /                                                  FA04140
+      DATA IERROR / 0 /, IPASS / 0 /
       DATA T296 /296.0/
 C                                                                        FA04150
 C     IAMT = 1: CALCULATE AMOUNTS, IAMT = 2: DO NOT CALCULATE AMOUNTS    FA04160
@@ -456,7 +458,7 @@ C     FROM GROUND TO SPACE                                               FA04210
 C                                                                        FA04220
       DATA AIRMS1 / 2.153E25 /                                           FA04230
       SECNT0 = 1.0                                                       FA04240
-      PI = ASIN(1.0)*2.0                                                 FA04250
+c
       DEG = 180.0/PI                                                     FA04260
 C                                                                        FA04270
 C     GCAIR IS THE GAS CONSTANT FOR RHO IN MOL CM(-3), P IN MB, AND      FA04280
@@ -466,7 +468,7 @@ C                                                                        FA04300
 C                                                                        FA04320
 C     ADCON IS THE CONSTANT FOR THE DOPPLER HALFWIDTH                    FA04330
 C                                                                        FA04340
-      ADCON = SQRT(2.0*ALOG(2.0)*GASCON/CLIGHT**2)                       FA04350
+      ADCON = SQRT(2.0* LOG(2.0)*GASCON/CLIGHT**2)                       FA04350
 C                                                                        FA04360
 C     ZERO OUT COMMON BLOCKS                                             FA04370
 C                                                                        FA04380
@@ -534,7 +536,15 @@ C                                                                        FA04860
       IF (M.LT.0.OR.M.GT.6) GO TO 290                                    FA04970
       IF (IBMAX.GT.IBDIM) GO TO 290                                      FA04980
       IF (NMOL.GT.KDIM) GO TO 290                                        FA04990
-      IF (IPUNCH.EQ.1) OPEN (UNIT=IPU,FILE='TAPE7',STATUS='UNKNOWN')     FA05000
+      IF (IPUNCH.EQ.1) then
+c        Tape7 only opened if ipu selected and first time through
+         if (ipass.eq.0) 
+     *          OPEN (UNIT=IPU,FILE='TAPE7',STATUS='UNKNOWN') 
+        ipass = ipass + 1
+      if (ipunch .eq. 1)
+     *  write (ipu,905) ipass, xid
+      endif
+c
       IF (RE.NE.0.0) GO TO 60                                            FA05010
       RE = 6371.23                                                       FA05020
       IF (M.EQ.1) RE = 6378.39                                           FA05030
@@ -542,12 +552,6 @@ C                                                                        FA04860
       RO = RE                                                            FA05050
 
    60 CONTINUE                                                           FA05060
-
-      IF (REF_LAT .EQ. 0.0) THEN
-         REF_LAT = 45.0
-         IF (M .EQ. 1) REF_LAT = 15.0
-         IF (M .EQ. 4 .OR. M .EQ. 5) REF_LAT = 60.0
-      ENDIF
 
 C                                                                        FA05070
       IF (HSPACE.EQ.0.) HSPACE = 100.                                    FA05080
@@ -817,9 +821,9 @@ C F1(P) = INTERPOLATION IN LN(P), F2(P) = HYDROSTATIC CALCULATION
                     
 C PERFORM INTERPOLATION IN LN(PM)
                         HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         ZINT = ZMDL(LIP-1)+
-     &                       HIP*ALOG(PBND(IP)/PM(LIP-1))
+     &                       HIP* LOG(PBND(IP)/PM(LIP-1))
 
 C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
                         PTMP(1) = PM(LIP-1)
@@ -830,21 +834,21 @@ C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
                         PTMP(2) = PBND(IP)
 
                         TIP = (TM(LIP)-TM(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         TTMP(2) = TM(LIP-1)+
-     &                       TIP*ALOG(PBND(IP)/PM(LIP-1))
+     &                       TIP* LOG(PBND(IP)/PM(LIP-1))
 
                         WVIP =  (DENW(LIP)-DENW(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         WVTMP(2) =  DENW(LIP-1) +
-     &                       WVIP*ALOG(PBND(IP)/PM(LIP-1))                     
+     &                       WVIP* LOG(PBND(IP)/PM(LIP-1))                     
                         CALL CMPALT(2,PTMP,TTMP,
      &                       WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
 
 C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
 
-                        RATP = ALOG(PBND(IP)/PM(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        RATP =  LOG(PBND(IP)/PM(LIP-1))/
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         
                         A = RATP**3
 
@@ -882,9 +886,9 @@ C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
                     
 C PERFORM INTERPOLATION IN LN(PM)
                   HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
-     &                 ALOG(PM(LIP)/PM(LIP-1))
+     &                  LOG(PM(LIP)/PM(LIP-1))
                   ZINT = ZMDL(LIP-1)+
-     &                 HIP*ALOG(H1/PM(LIP-1))
+     &                 HIP* LOG(H1/PM(LIP-1))
 
 C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
                   PTMP(1) = PM(LIP-1)
@@ -895,21 +899,21 @@ C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
                   PTMP(2) = H1
 
                   TIP = (TM(LIP)-TM(LIP-1))/
-     &                 ALOG(PM(LIP)/PM(LIP-1))
+     &                  LOG(PM(LIP)/PM(LIP-1))
                   TTMP(2) = TM(LIP-1)+
-     &                 TIP*ALOG(H1/PM(LIP-1))
+     &                 TIP* LOG(H1/PM(LIP-1))
                   
                   WVIP =  (DENW(LIP)-DENW(LIP-1))/
-     &                 ALOG(PM(LIP)/PM(LIP-1))
+     &                  LOG(PM(LIP)/PM(LIP-1))
                   WVTMP(2) =  DENW(LIP-1) +
-     &                 WVIP*ALOG(H1/PM(LIP-1))                     
+     &                 WVIP* LOG(H1/PM(LIP-1))                     
                   CALL CMPALT(2,PTMP,TTMP,
      &                 WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
 
 C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
 
-                  RATP = ALOG(H1/PM(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+                  RATP =  LOG(H1/PM(LIP-1))/
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         
                   A = RATP**3
 
@@ -946,9 +950,9 @@ C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
                ELSE
 C PERFORM INTERPOLATION IN LN(PM)
                   HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
-     &                 ALOG(PM(LIP)/PM(LIP-1))
+     &                  LOG(PM(LIP)/PM(LIP-1))
                   ZINT = ZMDL(LIP-1)+
-     &                 HIP*ALOG(H2/PM(LIP-1))
+     &                 HIP* LOG(H2/PM(LIP-1))
 
 C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
                   PTMP(1) = PM(LIP-1)
@@ -959,21 +963,21 @@ C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
                   PTMP(2) = H2
 
                   TIP = (TM(LIP)-TM(LIP-1))/
-     &                 ALOG(PM(LIP)/PM(LIP-1))
+     &                  LOG(PM(LIP)/PM(LIP-1))
                   TTMP(2) = TM(LIP-1)+
-     &                 TIP*ALOG(H2/PM(LIP-1))
+     &                 TIP* LOG(H2/PM(LIP-1))
                   
                   WVIP =  (DENW(LIP)-DENW(LIP-1))/
-     &                 ALOG(PM(LIP)/PM(LIP-1))
+     &                  LOG(PM(LIP)/PM(LIP-1))
                   WVTMP(2) =  DENW(LIP-1) +
-     &                 WVIP*ALOG(H2/PM(LIP-1))                     
+     &                 WVIP* LOG(H2/PM(LIP-1))                     
                   CALL CMPALT(2,PTMP,TTMP,
      &                 WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
 
 C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
 
-                  RATP = ALOG(H2/PM(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+                  RATP =  LOG(H2/PM(LIP-1))/
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         
                   A = RATP**3
 
@@ -1144,7 +1148,7 @@ C                                                                        FA09270
          PHIF = PHI                                                      FA09350
          IERRF = IERROR                                                  FA09360
          LENF = LEN                                                      FA09370
-         HMINF = HMIN                                                    FA09380
+          HMINF = HMIN                                                    FA09380
 C                                                                        FA09390
 C        > CONDENSE THE AMOUNTS INTO THE LBLRTM OUTPUT LAYERS ZOUT, <    FA09400
 C        > WHICH ARE DEFINED BY THE BOUNDARIES ZBND FROM HMIN TO    <    FA09410
@@ -1245,7 +1249,7 @@ C
             IF (IPUNCH.EQ.1) THEN                                        FA09890
                LTST = L                                                  FA09900
                IF (L.EQ.1) LTST = 0                                      FA09910
-               PTST = ALOG10(PZ(LTST))                                   FA09920
+               PTST =  LOG10(PZ(LTST))                                   FA09920
                NPTST = PTST+2                                            FA09930
                IF (PTST.LT.0.0) NPTST = 1                                FA09940
                CFORM1(38:41) = PZFORM(NPTST)                             FA09950
@@ -1415,6 +1419,7 @@ C                                                                        FA10530
      *        F10.3,' KM',/,10X,'HSPACE  = ',F10.3,' KM',/,10X,          FA10600
      *        'VBAR    = ',F10.3,' CM-1',/,10X,'CO2MX   = ',
      *        F10.3,' PPM',/,10X,'REF_LAT = ',F10.3, ' DEG')             FA10610
+  905 format('$',i5, 10a8)
   906 FORMAT (///,' CONTROL CARD 3.1 PARAMETERS WITH DEFAULTS:')         FA10620
   908 FORMAT (///,' HORIZONTAL PATH SELECTED')                           FA10630
   910 FORMAT (F10.3,10X,10X,F10.3)                                       FA10640
@@ -1568,11 +1573,12 @@ C                                                                        FA11790
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA11800
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA11810
 C                                                                        FA11820
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA11830
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA11840
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA11850
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA11860
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA11870
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
 C                                                                        FA11880
       CHARACTER*8      HMOLS                                            &FA11890
 C                                                                        FA11900
@@ -1581,7 +1587,6 @@ C                                                                        FA11900
       COMMON /HMOLC/ HMOLC(MXMOL)                                        FA11930
       COMMON /FIXITYL/ IFXTYP
       CHARACTER*8 HMOLC                                                  FA11940
-
 C     IFXTYP is the flag for fixing the value of ITYL
       DATA IFXTYP /0/
 C                                                                        FA11950
@@ -1599,9 +1604,6 @@ C     DELTAS IS THE NOMINAL SLANT PATH INCREMENT IN KM.                  FA12060
 C                                                                        FA12070
       DATA DELTAS / 5.0 /                                                FA12080
       DATA PZERO / 1013.25 /,TZERO / 273.15 /                            FA12090
-      DATA AVOGAD / 6.022045E+23 /,ALOSMT / 2.68675E+19 /,               FA12100
-     *     GASCON / 8.31441E+7 /,PLANK / 6.626176E-27 /,                 FA12110
-     *     BOLTZ / 1.380662E-16 /, CLIGHT / 2.99792458E10 /              FA12120
 C                                                                        FA12130
 C     ALZERO IS THE MEAN LORENTZ HALFWIDTH AT PZERO AND 296.0 K.         FA12140
 C     AVMWT IS THE MEAN MOLECULAR WEIGHT USED TO AUTOMATICALLY           FA12150
@@ -2761,7 +2763,7 @@ C                                                                        FA23620
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA23630
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA23640
      *              NLTEFL,LNFIL4,LNGTH4                                 FA23650
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA23660
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA23670
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA23680
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),           FA23690
@@ -2883,11 +2885,12 @@ C                                                                        FA24710
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA24720
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA24730
      *              NLTEFL,LNFIL4,LNGTH4                                 FA24740
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA24750
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA24760
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA24770
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA24780
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA24790
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA24800
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA24810
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA24820
@@ -3101,8 +3104,9 @@ C                                                                        FA26670
      *               JUNITT                                              FA26690
       CHARACTER*1 JCHAR,JCHARP,JCHART,JLONG                              FA26700
       COMMON /MCHAR/ JCHAR(MXMOL),JCHARP,JCHART,JLONG                    FA26710
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA26720
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA26730
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
 C                                                                        FA26740
 C     ***********************************************************        FA26750
 C                                                                        FA26760
@@ -3318,7 +3322,7 @@ C                                                                        FA28560
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA28570
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA28580
      *              NLTEFL,LNFIL4,LNGTH4                                 FA28590
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA28600
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA28610
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA28620
 C                                                                        FA28630
@@ -3413,10 +3417,10 @@ C                                                                        FA29490
 C                                                                        FA29520
 C     WRITE (IPR,60) Z,MATM                                              FA29530
 C                                                                        FA29540
-      X1 = ALOG(PMATM(I0,MATM))                                          FA29550
-      X2 = ALOG(PMATM(I1,MATM))                                          FA29560
-      X3 = ALOG(PMATM(I2,MATM))                                          FA29570
-      X4 = ALOG(PMATM(I3,MATM))                                          FA29580
+      X1 =  LOG(PMATM(I0,MATM))                                          FA29550
+      X2 =  LOG(PMATM(I1,MATM))                                          FA29560
+      X3 =  LOG(PMATM(I2,MATM))                                          FA29570
+      X4 =  LOG(PMATM(I3,MATM))                                          FA29580
       IF (IUPPER.EQ.2) X4 = X3+2*(X3-X2)                                 FA29590
       P = VAL(A1,A2,A3,A4,X1,X2,X3,X4)                                   FA29600
       P = EXP(P)                                                         FA29610
@@ -3512,7 +3516,7 @@ C                                                                        FA28560
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA28570
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA28580
      *              NLTEFL,LNFIL4,LNGTH4                                 FA28590
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA28600
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA28610
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA28620
 C                                                                        FA28630
@@ -3531,7 +3535,7 @@ C     *** 4PT INTERPOLATION FUNCTION                                     FA28750
 C                                                                        FA28760
       VAL(A1,A2,A3,A4,X1,X2,X3,X4) = A1*X1+A2*X2+A3*X3+A4*X4             FA28770
 C                                                                        FA28780
-      XLOG_P = ALOG(P)
+      XLOG_P =  LOG(P)
 C
       DO 200 J_MDL=1,6
 
@@ -3575,9 +3579,9 @@ C                                                                        FA29150
 C      UPPER ENDPOINT EXTRAPOLATION                                      FA29160
 C                                                                        FA29170
  50      CONTINUE                                                        FA29180
-         P_0 = ALOG(PMATM(I0,J_MDL))
-         P_1 = ALOG(PMATM(I1,J_MDL))
-         P_2 = ALOG(PMATM(I2,J_MDL))
+         P_0 =  LOG(PMATM(I0,J_MDL))
+         P_1 =  LOG(PMATM(I1,J_MDL))
+         P_2 =  LOG(PMATM(I2,J_MDL))
          P_3 = P_2+2.*(XLOG_P-P_2)                                       FA29220
          IUPPER = 2                                                      FA29230
          WRITE (IPR,900) P                                               FA29240
@@ -3590,10 +3594,10 @@ C                                                                        FA29290
 C                                                                        FA29310
 C     LAGRANGE COEF DETERMINATION                                        FA29320
 C                                                                        FA29330
-         P_0 = ALOG(PMATM(I0,J_MDL))
-         P_1 = ALOG(PMATM(I1,J_MDL))
-         P_2 = ALOG(PMATM(I2,J_MDL))
-         P_3 = ALOG(PMATM(I3,J_MDL))
+         P_0 =  LOG(PMATM(I0,J_MDL))
+         P_1 =  LOG(PMATM(I1,J_MDL))
+         P_2 =  LOG(PMATM(I2,J_MDL))
+         P_3 =  LOG(PMATM(I3,J_MDL))
          DEN1 = (P_0-P_1)*(P_0-P_2)*(P_0-P_3)                            FA29380
          DEN2 = (P_1-P_2)*(P_1-P_3)*(P_1-P_0)                            FA29390
          DEN3 = (P_2-P_3)*(P_2-P_0)*(P_2-P_1)                            FA29400
@@ -3687,8 +3691,9 @@ C                                                                        FA30280
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA30290
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA30300
      *              NLTEFL,LNFIL4,LNGTH4                                 FA30310
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA30320
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA30330
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)
 C                                                                        FA30340
 C
@@ -3806,8 +3811,9 @@ C                                                                        FA31260
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA31270
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA31280
      *              NLTEFL,LNFIL4,LNGTH4                                 FA31290
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA31300
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA31310
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
 C                                                                        FA31320
       DATA C1 / 18.9766 /,C2 / -14.9595 /,C3 / -2.4388 /                 FA31330
 C                                                                        FA31340
@@ -3932,7 +3938,7 @@ C                                                                        FA32330
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA32340
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA32350
      *              NLTEFL,LNFIL4,LNGTH4                                 FA32360
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA32370
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA32380
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA32390
 C                                                                        FA32400
@@ -4223,7 +4229,7 @@ C                                                                        FA34430
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA34440
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA34450
      *              NLTEFL,LNFIL4,LNGTH4                                 FA34460
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA34470
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA34480
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA34490
 C                                                                        FA34500
@@ -4271,7 +4277,7 @@ C                                                                        FA34880
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA34890
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA34900
      *              NLTEFL,LNFIL4,LNGTH4                                 FA34910
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA34920
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA34930
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA34940
       COMMON /BNDRY/ ZBND(MXFSC),PBND(MXFSC),TBND(MXFSC),ALORNZ(MXFSC),  FA34950
@@ -4451,7 +4457,7 @@ C                                                                        FA36640
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA36650
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA36660
      *              NLTEFL,LNFIL4,LNGTH4                                 FA36670
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA36680
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA36690
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA36700
 C                                                                        FA36710
@@ -4573,7 +4579,7 @@ C                                                                        FA37830
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA37840
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA37850
      *              NLTEFL,LNFIL4,LNGTH4                                 FA37860
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA37870
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA37880
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA37890
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA37900
@@ -4616,7 +4622,7 @@ C                                                                        FA38210
       RF2 = RFNDX2+1.0E-20                                               FA38230
       RATIO = RF1/RF2                                                    FA38240
       IF (ABS(RATIO-1.0).LT.1.0E-05) GO TO 10                            FA38250
-      SH = (Z2-Z1)/ALOG(RATIO)                                           FA38260
+      SH = (Z2-Z1)/ LOG(RATIO)                                           FA38260
       GAMMA = RF1*(RF2/RF1)**(-Z1/(Z2-Z1))                               FA38270
       GO TO 20                                                           FA38280
    10 CONTINUE                                                           FA38290
@@ -4700,7 +4706,7 @@ C                                                                        FA38940
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA38950
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA38960
      *              NLTEFL,LNFIL4,LNGTH4                                 FA38970
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA38980
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA38990
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA39000
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA39010
@@ -4880,11 +4886,12 @@ C                                                                        FA40590
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA40600
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA40610
      *              NLTEFL,LNFIL4,LNGTH4                                 FA40620
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA40630
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA40640
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA40650
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA40660
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA40670
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA40680
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA40690
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA40700
@@ -5070,7 +5077,7 @@ C                                                                        FA42400
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA42410
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA42420
      *              NLTEFL,LNFIL4,LNGTH4                                 FA42430
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA42440
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA42450
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA42460
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA42470
@@ -5131,9 +5138,9 @@ C                                                                        FA42860
           RHOA = PA/(GCAIR*TA)                                           FA42910
           RHOB = PB/(GCAIR*TB)                                           FA42920
           DZ = ZPTH(J+1)-ZPTH(J)                                         FA42930
-          HP = -DZ/ALOG(PB/PA)                                           FA42940
+          HP = -DZ/ LOG(PB/PA)                                           FA42940
           IF (ABS(RHOB/RHOA-1.0).GE.EPSILN) THEN                         FA42950
-              HRHO = -DZ/ALOG(RHOB/RHOA)                                 FA42960
+              HRHO = -DZ/ LOG(RHOB/RHOA)                                 FA42960
           ELSE                                                           FA42970
               HRHO = 1.0E30                                              FA42980
           ENDIF                                                          FA42990
@@ -5150,7 +5157,7 @@ C
 C                                                                        FA43050
 C                 Use exponential interpolation                          FA43060
 C                                                                        FA43070
-                  HDEN(K) = -DZ/ALOG(DENB(K)/DENA(K))                    FA43080
+                  HDEN(K) = -DZ/ LOG(DENB(K)/DENA(K))                    FA43080
               ENDIF
   40      CONTINUE                                                       FA43140
       ENDIF
@@ -5306,11 +5313,12 @@ C                                                                        FA44630
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA44640
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA44650
      *              NLTEFL,LNFIL4,LNGTH4                                 FA44660
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA44670
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA44680
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA44690
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA44700
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA44710
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA44720
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA44730
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA44740
@@ -5384,11 +5392,11 @@ C                                                                        FA45350
          ZBND(IB) = (ZMDL(IM)+ZMDL(IM-1))/2.                             FA45410
          GO TO 50                                                        FA45420
       ELSE                                                               FA45430
-         ALOGX = ALOG(X)                                                 FA45440
+         ALOGX =  LOG(X)                                                 FA45440
       ENDIF                                                              FA45450
       Y = AVOIGT(IB)/AVTM(IM-1)                                          FA45460
       ALOGY = 1.-Y                                                       FA45470
-      IF (ABS(ALOGY).GT.0.001) ALOGY = ALOG(Y)                           FA45480
+      IF (ABS(ALOGY).GT.0.001) ALOGY =  LOG(Y)                           FA45480
       ZBND(IB) = ZMDL(IM-1)+(ZMDL(IM)-ZMDL(IM-1))*ALOGY/ALOGX            FA45490
    50 CONTINUE                                                           FA45500
 C                                                                        FA45510
@@ -5494,11 +5502,12 @@ C                                                                        FA46470
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA46480
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA46490
      *              NLTEFL,LNFIL4,LNGTH4                                 FA46500
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA46510
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA46520
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA46530
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA46540
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA46550
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA46560
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA46570
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA46580
@@ -5549,11 +5558,12 @@ C                                                                        FA46470
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA46480
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA46490
      *              NLTEFL,LNFIL4,LNGTH4                                 FA46500
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA46510
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA46520
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA46530
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA46540
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA46550
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA46560
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA46570
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA46580
@@ -5614,11 +5624,12 @@ C                                                                        FA47020
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA47030
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA47040
      *              NLTEFL,LNFIL4,LNGTH4                                 FA47050
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA47060
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,   
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA47070
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA47080
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA47090
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA47100
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA47110
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA47120
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA47130
@@ -5783,8 +5794,9 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,
      *              EXTID(10)
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
 C
       DV = 0.
 C
@@ -5804,7 +5816,7 @@ C     DV is assumed to be less than 1
 C     Set DV to 3 significant figures
 C
       IF (L.EQ.1) THEN
-         ISCAL = ALOG10(DV)-3.
+         ISCAL =  LOG10(DV)-3.
          SCAL = 10.**ISCAL
          IDV = (DV/SCAL)+0.5
 C
@@ -5897,12 +5909,13 @@ C                                                                        FX00340
 C     LAMCHN CARRIES HARDWARE SPECIFIC PARAMETERS                        FX00350
 C                                                                        FX00360
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                          FX00370
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FX00380
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FX00390
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NOP,H1F,H2F,       FX00400
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,XVBAR,  FX00410
      *                HMINF,PHIF,IERRF,HSPACE                            FX00420
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FX00430
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,   
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FX00440
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FX00450
       COMMON /MLATM/ ALT(MXZMD),PMDL(MXZMD,6),TMDL(MXZMD,6),             FX00460
@@ -6209,7 +6222,7 @@ C                                                                        FX02800
          IF (IPUNCH.EQ.1.AND.ITYPE.NE.1) THEN                            FX02810
             LTST = L                                                     FX02820
             IF (L.EQ.1) LTST = 0                                         FX02830
-            PTST = ALOG10(PZ(LTST))                                      FX02840
+            PTST =  LOG10(PZ(LTST))                                      FX02840
             NPTST = PTST+2                                               FX02850
             IF (PTST.LT.0.0) NPTST = 1                                   FX02860
             CFORM1(38:41) = PZFORM(NPTST)                                FX02870
@@ -6381,7 +6394,7 @@ C                                                                        FX03740
 C     LAMCHN CARRIES HARDWARE SPECIFIC PARAMETERS                        FX03750
 C                                                                        FX03760
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                          FX03770
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FX03780
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FX03790
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FX03800
 C                                                                        FX03810
@@ -6512,9 +6525,9 @@ C F1(P) = INTERPOLATION IN LN(P), F2(P) = HYDROSTATIC CALCULATION
                     
 C PERFORM INTERPOLATION IN LN(PM)
                         HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         ZINT = ZMDL(LIP-1)+
-     &                       HIP*ALOG(PX(IP)/PM(LIP-1))
+     &                       HIP* LOG(PX(IP)/PM(LIP-1))
 
 C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
                         PTMP(1) = PM(LIP-1)
@@ -6525,21 +6538,21 @@ C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
                         PTMP(2) = PX(IP)
 
                         TIP = (TM(LIP)-TM(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         TTMP(2) = TM(LIP-1)+
-     &                       TIP*ALOG(PX(IP)/PM(LIP-1))
+     &                       TIP* LOG(PX(IP)/PM(LIP-1))
 
                         WVIP =  (DENW(LIP)-DENW(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         WVTMP(2) =  DENW(LIP-1) +
-     &                       WVIP*ALOG(PX(IP)/PM(LIP-1))                     
+     &                       WVIP* LOG(PX(IP)/PM(LIP-1))                     
 
                         CALL CMPALT(2,PTMP,TTMP,
      &                       WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
 C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
 
-                        RATP = ALOG(PX(IP)/PM(LIP-1))/
-     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        RATP =  LOG(PX(IP)/PM(LIP-1))/
+     &                        LOG(PM(LIP)/PM(LIP-1))
                         
                         A = RATP**3
 
@@ -6682,8 +6695,9 @@ C                                                                        FX05730
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FX05740
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FX05750
      *              NLTEFL,LNFIL4,LNGTH4                                 FX05760
-      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FX05770
-     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FX05780
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
 C                                                                        FX05790
 C     LAMCHN CARRIES HARDWARE SPECIFIC PARAMETERS                        FX05800
 C                                                                        FX05810
@@ -6703,7 +6717,7 @@ C                                                                        FX05880
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),              FX05940
      *               TST(MXZMD),AMOLS(MXZMD,MXMOL)                       FX05950
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FX05960
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FX05970
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FX05980
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FX05990
 C                                                                        FX06000
@@ -7131,7 +7145,7 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      
      *              NLTEFL,LNFIL4,LNGTH4                                 
 C
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,      
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                             
 C
@@ -7211,7 +7225,7 @@ C
 C     THE ROOT IS ACTUALLY THE TANGENT HEIGHT, BETWEEN X1 AND X2.
 C     THIS ROUTINE IS FROM "NUMERICAL RECIPES" BY PRESS, ET AL.
 C                                                                       
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,    
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,    
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,
      *                IPHMID,IPDIM,KDIM,KMXNOM,KMAX                            
 
@@ -7257,7 +7271,7 @@ C     INPUTS ARE H1, HTAN (TANGENT HEIGHT), RANGE (RANGEI) AND
 C     THE PATH CONSTANT, CPATH.
 C     RANGEO IS THE OUTPUT RANGE WHICH SHOULD EQUAL THE INPUT RANGE.
 C
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,
      *                IPHMID,IPDIM,KDIM,KMXNOM,KMAX
 C
@@ -7419,7 +7433,7 @@ C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       
      *              NLTEFL,LNFIL4,LNGTH4                                 
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,      
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                             
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      
@@ -7467,7 +7481,7 @@ C
       RF2 = RFNDX2+1.0E-20
       RATIO = RF1/RF2
       IF (ABS(RATIO-1.0).LT.1.0E-05) GO TO 10                            
-      SH = (Z2-Z1)/ALOG(RATIO)                                           
+      SH = (Z2-Z1)/ LOG(RATIO)                                           
       GAMMA = RF1*(RF2/RF1)**(-Z1/(Z2-Z1))                               
       GO TO 20                                                           
    10 CONTINUE                                                           
@@ -7559,7 +7573,7 @@ C**************************************************************
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA00890
      *              NLTEFL,LNFIL4,LNGTH4                                 FA00900
 
-      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA00910
+      COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA00920
      *                IPHMID,IPDIM,KDIM,KMXNOM,KMAX  
 
@@ -7610,7 +7624,7 @@ C CONVERT REFERENCE ALTITUDE TO METERS
 
       DO 20 I=1, ILVL - 1
          GAVE = G0*(RE/(RE+ZTEMP(I)/1000.0))**2
-         Y = ALOG(PM(I+1)/PM(I))
+         Y =  LOG(PM(I+1)/PM(I))
 
          IF (Y. NE. 0.0) THEN
             CHI0 = H2O_MIXRAT(I)

@@ -617,7 +617,7 @@ C*****If the FFT can be performed in memory (LREC = 1), then find the
 C*****smallest sized FFT possible = LPTFFT = smallest power of 2 > LTOTAL 
 C*****and < LPTSMX
       If(LREC .eq. 1) Then
-          POWER = ALOG(FLOAT(LTOTAL))/ALOG(2.0)
+          POWER =  LOG(FLOAT(LTOTAL))/ LOG(2.0)
           If(POWER-INT(POWER) .EQ. 0) Then
               LPTFFT = 2**INT(POWER)
           Else
@@ -836,7 +836,7 @@ C*****records) which include real data (not just FILL).
           KRDATA = INT(ARDATA)+1
       Endif
 C*****Find KREC = smallest power of 2 .GE. KRDATA
-      POWER = ALOG(FLOAT(KRDATA))/ALOG(2.0)
+      POWER =  LOG(FLOAT(KRDATA))/ LOG(2.0)
       If((POWER-INT(POWER)) .EQ. 0) Then
           KREC = 2**INT(POWER)
       Else
@@ -1561,7 +1561,7 @@ C*****Recompute V2, in case of round off errors
           LRDATA = INT(ARDATA+1)
       Endif
 
-      POWER = ALOG(FLOAT(LRDATA))/ALOG(2.0)
+      POWER =  LOG(FLOAT(LRDATA))/ LOG(2.0)
       If(POWER-INT(POWER) .EQ. 0) Then
           LREC = 2**INT(POWER)
       Else
@@ -3350,7 +3350,7 @@ C
 C
       FUNCTION LLOG2(N)
 C     FINDS INTEGER LOG TO BASE TWO
-      LLOG2=ALOG(FLOAT(N))/.69314718+.5
+      LLOG2= LOG(FLOAT(N))/.69314718+.5
       RETURN
       END
 C     

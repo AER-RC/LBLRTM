@@ -20,7 +20,8 @@ C                                                                         F00120
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       F00130
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   F00140
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    F00150
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           F00160
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         F00170
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        F00180
      *              NLTEFL,LNFIL4,LNGTH4                                  F00190
@@ -7938,7 +7939,7 @@ C           =.20487/WN(I)     IN MICRONS                                  F42960
 C           =WCM(I)/48811.0   IN CM-1                                     F42970
 C                                                                         F42980
       YRATIO = V/48811.0                                                  F42990
-      HERZ = 6.884E-24*(YRATIO)*EXP(-69.738*(ALOG(YRATIO))**2)-CORR       F43000
+      HERZ = 6.884E-24*(YRATIO)*EXP(-69.738*( LOG(YRATIO))**2)-CORR       F43000
 C                                                                         F43010
       RETURN                                                              F43020
 C                                                                         F43030

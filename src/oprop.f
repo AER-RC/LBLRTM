@@ -80,7 +80,8 @@ C                                                                         B00650
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           B00690
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   B00700
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        B00710
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,            B00720
@@ -817,7 +818,8 @@ C                                                                         B05000
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B05030
       COMMON /XSUB/ VBOT,VTOP,VFT,DUM(7)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           B05040
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        B05050
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
@@ -1247,7 +1249,8 @@ C                                                                         B10350
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B10360
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B10370
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B10380
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           B10390
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   B10400
       COMMON /SUB1/ MAX1,MAX2,MAX3,NLIM1,NLIM2,NLIM3,NLO,NHI,DVR2,DVR3,   B10410
      *              N1R1,N2R1,N1R2,N2R2,N1R3,N2R3                         B10420
@@ -1737,7 +1740,7 @@ C                                                                         B14670
       DIMENSION FG(*)                                                     B14700
 C                                                                         B14710
       FGAUSS(XSQ) = EXP(-FLN2*XSQ)                                        B14720
-      FLN2 = ALOG(2.)                                                     B14730
+      FLN2 =  LOG(2.)                                                     B14730
       RECPI = 1./(2.*ASIN(1.))                                            B14740
       FGNORM = SQRT(FLN2*RECPI)                                           B14750
       TOTAL = 0.                                                          B14760
@@ -2285,7 +2288,8 @@ C                                                                         C00170
       COMMON /FILHDR/ XID(10),SECANT,P   ,TEMP,HMOLID(60),XALTZ(4),       C00180
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   C00190
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    C00200
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           C00210
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       DIMENSION SCOR(*),RHOSLF(*),ALFD1(*)                                C00220
       COMMON /SMOLEC/ W(42,9),ND(42,9),FAD                                C00230
       COMMON /XMOLEC/ NV(42),IVIB(42,2,9),XR(42),ROTFAC(42),QV0(42)
@@ -2361,8 +2365,8 @@ C
             READ (MOLID(M),900) HMOLID(M)                                 C00680
  10      CONTINUE                                                         C00690
 C     
-         FLN2 = ALOG(2.)                                                  C00710
-         FAD = FLN2*2.*AVOG*BOLTZ/(CLIGHT*CLIGHT)                         C00720
+         FLN2 =  LOG(2.)                                                  C00710
+         FAD = FLN2*2.*AVOGAD*BOLTZ/(CLIGHT*CLIGHT)
          XKT0 = TEMP0/RADCN2                                              C00730
 C     
          DO 30 M = 1, MDIM                                                C00760
@@ -2446,6 +2450,7 @@ C                                                                         C01330
 C                                                                         C01480
       DATA NV1,IV11,IV21,IV31,IV41,IV51,IV61,IV71,IV81,IV91,XR1,ROTFC1/   C01490
 C                                                                         C01500
+c            1        2        3        4        5        6        7
 C          H2O      CO2       O3      N2O       CO      CH4       O2      C01510
      C       3 ,      3 ,      3 ,      3 ,      1 ,      4 ,      1 ,    C01520
      1  3657,1 , 1388,1 , 1103,1 , 1285,1 , 2143,1 , 2917,1 , 1556,1 ,    C01530
@@ -2462,6 +2467,7 @@ C          H2O      CO2       O3      N2O       CO      CH4       O2      C01510
 C                                                                         C01640
       DATA NV2,IV12,IV22,IV32,IV42,IV52,IV62,IV72,IV82,IV92,XR2,ROTFC2/   C01650
 C                                                                         C01660
+c            8        9       10       11       12       13       14
 C           NO      SO2      NO2      NH3     HNO3       OH       HF      C01670
      C       1 ,      3 ,      3 ,      4 ,      9 ,      1 ,      1 ,    C01680
      1  1876,1 , 1152,1 , 1318,1 , 3337,1 , 3550,1 , 3569,1 , 3961,1 ,    C01690
@@ -2478,6 +2484,7 @@ C           NO      SO2      NO2      NH3     HNO3       OH       HF      C01670
 C                                                                         C01800
       DATA NV3,IV13,IV23,IV33,IV43,IV53,IV63,IV73,IV83,IV93,XR3,ROTFC3/   C01810
 C                                                                         C01820
+c           15       16       17       18       19       20       21
 C          HCL      HBR       HI      CLO      OCS     H2CO     HOCL      C01830
      C       1 ,      1 ,      1 ,      1 ,      3 ,      6 ,      3 ,    C01840
      1  2885,1 , 2558,1 , 2229,1 ,  842,1 ,  859,1 , 2782,1 , 3609,1 ,    C01850
@@ -2494,6 +2501,7 @@ C          HCL      HBR       HI      CLO      OCS     H2CO     HOCL      C01830
 C                                                                         C01960
       DATA NV4,IV14,IV24,IV34,IV44,IV54,IV64,IV74,IV84,IV94,XR4,ROTFC4/   C01970
 C                                                                         C01980
+c           22       23       24       25       26       27       28
 C           N2      HCN    CH3CL     H2O2     C2H2     C2H6      PH3      C01990
      C       1 ,      3 ,      6 ,      6 ,      5 ,      9 ,      4 ,    C02000
      1  2330,1 , 2089,1 , 2968,1 , 3607,1 , 3374,1 , 2899,1 , 2327,1 ,    C02010
@@ -2510,6 +2518,7 @@ C           N2      HCN    CH3CL     H2O2     C2H2     C2H6      PH3      C01990
 C                                                                         C02120
       DATA NV5,IV15,IV25,IV35,IV45,IV55,IV65,IV75,IV85,IV95,XR5,ROTFC5/   C02130
 C                                                                         C02140
+c           29       30       31       32       33       34       35  
 C         COF2      SF6      H2S    HCOOH      HO2        O   CLONO2      C02150
      C       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,    C02160
      1  0000,1 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 ,    C02170
@@ -2526,6 +2535,7 @@ C         COF2      SF6      H2S    HCOOH      HO2        O   CLONO2      C02150
 C                                                                         C02280
       DATA NV6,IV16,IV26,IV36,IV46,IV56,IV66,IV76,IV86,IV96,XR6,ROTFC6/ 
 C                                                                       
+c           36
 C          NO+      ???      ???      ???      ???      ???      ??? 
      C       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,    C02160
      1  0000,1 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 ,    C02170
@@ -2579,7 +2589,6 @@ c
 c  ****************************************
       BLOCK DATA Isotop
 c  ****************************************
-C$$   IMPLICIT DOUBLE PRECISION (a-h,o-z)
 c
       PARAMETER (NMOL=36,Nspeci=85)
       COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISONM(NMOL),
@@ -2672,8 +2681,6 @@ c
 c...input - Mol, Iso, and a temperature Tout
 c...output - Total internal partition sum, QT, at T=Tout
 c
-c$$$      IMPLICIT DOUBLE PRECISION (a-h,o-z)
-c
 c++
       PARAMETER (NMOL=36,Nspeci=85)
 c++
@@ -2707,8 +2714,6 @@ c
 c**************************************
       BLOCK DATA QTdata
 c**************************************
-c$$$      IMPLICIT DOUBLE PRECISION (a-h,o-z)
-c
 c
 c++
       PARAMETER (NMOL=36,Nspeci=85)
@@ -3710,7 +3715,8 @@ C                                                                         D00300
       COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),       D00310
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1 ,V2 ,TBOUND,    D00320
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    D00330
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           D00340
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D00350
      *               DPTFC,ILIN4,ILIN4T                                   D00360
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D00370
@@ -4282,7 +4288,8 @@ C                                                                         D04610
       COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),       D04620
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1H,V2H,TBOUND,    D04630
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    D04640
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           D04650
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,         D04660
      *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL                      D04670
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D04680
@@ -4778,7 +4785,7 @@ C                                                                         E01080
                V1FX(NSPECR(I),I) = V1X                                    E01290
                V2FX(NSPECR(I),I) = V2X                                    E01300
 C                                                                         E01301
-C     3.58115E-07 = SQRT( 2.*ALOG(2.)*AVOG*BOLTZ/(CLIGHT*CLIGHT) )        E01302
+C     3.58115E-07 = SQRT( 2.* LOG(2.)*AVOGAD*BOLTZ/(CLIGHT*CLIGHT) ) 
 C                                                                         E01303
                XDOPLR(NSPECR(I),I)=3.58115E-07*(0.5*(V1X+V2X))*           E01304
      *                             SQRT(T296/XSMASS(IXINDX(I)))           E01305
@@ -4934,7 +4941,8 @@ C                                                                         E02610
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E02620
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   E02630
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    E02640
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           E02650
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   E02660
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        E02670
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,            E02680
@@ -5686,7 +5694,8 @@ C                                                                         E09670
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       E09730
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E09740
      *              EXTID(10)                                             E09750
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           E09760
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000)                         E09770
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E09780
       COMMON /XSECTF/ XSFILE(6,5,35),XSNAME(35),ALIAS(4,35)               E09790
@@ -5788,7 +5797,8 @@ C                                                                         E10530
      *                HWF3,DXF3,NX3,N3MAX                                 E10680
       COMMON /XSCINF/ HWHM,JEMIT,JFN,SAMPLE,SCANID,NPTS,XF(851)           E10690
 C                                                                         E10700
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           E10710
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
       COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000)                         E10720
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E10730
       COMMON /XSECTF/ XSFILE(6,5,35),XSNAME(35),ALIAS(4,35)               E10740

@@ -2740,7 +2740,7 @@ C                                                                         J03000
       ENDIF                                                               J03050
       IF (JEMIT.EQ.2.AND.ICNVRT.EQ.0) THEN                                J03060
          DO 50 I = 1, NNI                                                 J03070
-            S(I) = -ALOG(S(I))                                            J03080
+            S(I) = - LOG(S(I))                                            J03080
    50    CONTINUE                                                         J03090
       ENDIF                                                               J03100
 C                                                                         J03110
