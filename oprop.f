@@ -62,7 +62,7 @@ C                                                                         B00480
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         B00550
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         B00560
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                      B00570
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   B00580
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   B00580
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       B00590
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       B00600
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      B00610
@@ -504,7 +504,7 @@ C                                                                         B04870
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    B04890
      *       ZETAI(250),IZETA(250)                                        B04900
       COMMON /IOU/ IOUT(250)                                              B04920
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   B04930
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   B04930
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       B04940
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       B04950
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      B04960
@@ -1122,6 +1122,12 @@ C                                                                         B12140
 C                                                                         B12160
       DATA LIMOUT / 2400 /                                                B12180
 C                                                                         B12190
+C     THE DATA FOR NM1 AND N0 ARE USED INSTEAD OF DIRECTLY INSERTING
+C     '-1' AND '0' INTO THE SUBSCRIPTS FOR R1 (LINES 1158-9) TO AVOID
+C     COMPILER WARNINGS 'CONSTANT SUBSCRIPT IS OUT OF BOUNDS'
+C     
+      DATA NM1/-1/,N0/0/
+C
       CALL CPUTIM (TIME)                                                  B12200
       WRITE (IPR,900) TIME                                                B12210
       NPANLS = 0                                                          B12220
@@ -1173,8 +1179,8 @@ C                                                                         B12670
 C     ZERO POINT OF FIRST PANEL                                           B12680
 C                                                                         B12690
       IF (V1PO.EQ.0.0) THEN                                               B12700
-         R1(-1) = R1(1)                                                   B12710
-         R1(0) = R1(1)                                                    B12720
+         R1(NM1) = R1(1)                                                   B12710
+         R1(N0) = R1(1)                                                    B12720
          V1PO = V1P                                                       B12730
          NLIM1 = 1                                                        B12740
       ENDIF                                                               B12750
@@ -1919,7 +1925,7 @@ C                                                                         C00040
      *                SMASSI(NSPECI)                                      C00070
       COMMON /QTOT/ QCOEF(NSPECI,2,4),Q296(NSPECI),AQ(NSPECI),            C00080
      *              BQ(NSPECI),GJ(NSPECI)                                 C00090
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   C00100
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   C00100
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       C00110
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       C00120
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      C00130
@@ -3224,7 +3230,7 @@ C                                                                         D00180
      *       SPP(1250)                                                    D00200
 C                                                                         D00210
       COMMON /IOU/ IOUT(250)                                              D00220
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   D00230
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   D00230
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       D00240
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       D00250
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D00260
@@ -3664,7 +3670,7 @@ C                                                                         D04500
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D04510
       COMMON /BUF/ VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250),   D04520
      *             SPP(1250)                                              D04530
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   D04540
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   D04540
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       D04550
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       D04560
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D04570
@@ -4299,7 +4305,7 @@ C                                                                         E02470
       COMMON R1(3600),R2(900),R3(225)                                     E02510
       COMMON /IOU/ IOUT(250)                                              E02520
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                E02530
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   E02540
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   E02540
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       E02550
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       E02560
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E02570
@@ -5027,7 +5033,7 @@ C                                                                         E09670
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E09680
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   E09690
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    E09700
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   E09710
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   E09710
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       E09720
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       E09730
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E09740
