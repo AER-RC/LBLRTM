@@ -446,6 +446,32 @@ C                                                                         A04280
      *                      IOD,IXSECT,IRAD,MPTS,NPTS                     A04310
 C                                                                         A04320
       IXSCNT = IXSECT*10+ICNTNM                                           A04330
+C
+C     *********************** SOLAR RADIANCE ***********************
+C
+C     Check to be sure that no radiative transfer is being done other
+C     than solar and calculate attenuated solar radiation.
+C
+C
+      IF (IEMIT.EQ.2) THEN
+         IF (IHIRAC+ILBLF4+ICNTNM+IAERSL.GT.0) THEN
+            WRITE(IPR,*) 'No radiative transfer calculation allowed',
+     *           ' when IEMIT=2 (solar radiance)'
+            STOP 'ERROR: IHIRAC+ILBLF4+ICNTNM+IAERSL > 0'
+         ENDIF
+         INFLAG = 0
+         IOTFLG = 0
+         READ(IRD,1010) INFLAG,IOTFLG
+         IF (INFLAG.EQ.0) THEN
+            IFILE = MFILE
+         ELSE
+            IFILE = KFILE
+         ENDIF
+         CALL SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG)
+         GOTO 60
+      ENDIF
+C
+C     **************************************************************
 C                                                                         A04340
 C    OPEN LINFIL DEPENDENT UPON IHIRAC AND ITEST                          A04350
 C                                                                         A04360
@@ -728,6 +754,7 @@ C                                                                         A07280
      *         ' oprop.f: ',6X,A8,10X, ' postsub.f: ',6X,A8,/,5X,
      *         'pltlbl.f: ',6X,A8,10X, '  testmm.f: ',6X,A8,/,5X,
      *         'xmerge.f: ',6X,A8,10X, 'util_xxx.f: ',6X,A8,/ )
+ 1010 FORMAT (2I5)
 C                                                                         A07580
       END                                                                 A07590
       BLOCK DATA                                                          A07600
@@ -1815,13 +1842,17 @@ C                                                                         A19580
      *                NTEMPF(5,35),NSPECR(35),IXFORM(5,35),               A19620
      *                XSMASS(35),XDOPLR(5,35),NUMXS,IXSBIN                A19625
 C                                                                         A19630
+      CHARACTER*20 HEAD20
       CHARACTER*6 MOLID                                                   A19640
       COMMON /MOLNAM/ MOLID(0:NTMOL)                                      A19650
+      CHARACTER*7 HEAD7
       CHARACTER*6 HOLN2                                                   A19660
+      CHARACTER*5 HEAD5
+      CHARACTER*4 HEAD4
       CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT                             A19670
       CHARACTER*3 CINP,CINPX,CBLNK                                        A19680
       DIMENSION FILHDR(2),AMOUNT(2),AMTSTR(2)                             A19690
-      DIMENSION HEDDR(15),HEDXS(15),WMT(35),SECL(64),WXT(35),WTOTX(67)    A19700
+      DIMENSION HEDXS(15),WMT(35),SECL(64),WXT(35),WTOTX(67)              A19700
 C                                                                         A19710
       EQUIVALENCE (XID(1),FILHDR(1))                                      A19720
       EQUIVALENCE (YID(10),LTNSAV) , (YID(9),LH1SAV) , (YID(8),LH2SAV)    A19730
@@ -1864,8 +1895,11 @@ C                                                                         A20070
       LH1 = 1                                                             A20100
       LH2 = 1                                                             A20110
 C                                                                         A20120
+C     Read in atmospheric definition information
+C
       IF (IATM.EQ.0) THEN                                                 A20130
-         READ (IRD,900) IFORM,NLAYRS,NMOL,SECNT0,HEDDR                    A20140
+         READ (IRD,901) IFORM,NLAYRS,NMOL,SECNT0,HEAD20,ZH1,HEAD4,ZH2,
+     *                  HEAD5,ZANGLE,HEAD7                                A20140
          IF (NMOL.EQ.0) NMOL = 7                                          A20150
          IF (SECNT0.LT.0.) THEN                                           A20160
             IPATHL = 1                                                    A20170
@@ -1873,7 +1907,13 @@ C                                                                         A20120
             IPATHL = 3                                                    A20190
          ENDIF                                                            A20200
          SECNT0 = ABS(SECNT0)                                             A20210
-         WRITE (IPR,902) SECNT0,NLAYRS,NMOL,HEDDR                         A20220
+         WRITE (IPR,902) SECNT0,NLAYRS,NMOL,HEAD20,ZH1,HEAD4,ZH2,
+     *                   HEAD5,ZANGLE,HEAD7                               A20220
+C
+C        Put H1, H2, and ANGLE into YID (ANGLE is needed for
+C        CHARTS multiple scattering calculation)
+C
+         CALL YDIH1(ZH1,ZH2,ZANGLE,YID)
          IF (IHIRAC.EQ.9) THEN                                            A20230
             CALL VECISO                                                   A20240
             DO 20 M = 1, NMOL                                             A20250
@@ -2529,8 +2569,9 @@ C
       RETURN                                                              A24040
 C                                                                         A24050
   900 FORMAT (1X,I1,I3,I5,F10.2,15A4)                                     A24060
+  901 FORMAT (1X,I1,I3,I5,F10.2,A20,F8.2,A4,F8.2,A5,F8.3,A7)
   902 FORMAT ('0 SECANT   =',F13.4,/'0 NLAYRS=',I4,/'0 NMOL=',I4,/'0',    A24070
-     *        15A4)                                                       A24080
+     *        A20,F8.2,A4,F8.2,A5,F8.3,A7)                                A24080
   905 FORMAT (A6)                                                         A24090
   907 FORMAT ('0 SECANT   =',F13.4)                                       A24100
   910 FORMAT (E15.7,F10.4,F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))
