@@ -56,7 +56,12 @@ C                                                                         B00480
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    B00490
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    B00500
      *       ZETAI(250),IZETA(250)                                        B00510
-      COMMON RR1(4624),RR2(1412),RR3(289)                                 B00520
+C
+C     DIMENSION RR1 =  NBOUND   + 1 + DIM(R1)
+C     DIMENSION RR2 =  NBOUND/2 + 1 + DIM(R2)
+C     DIMENSION RR3 =  NBOUND/4 + 1 + DIM(R3)
+C
+      COMMON RR1(6099),RR2(2075),RR3(429)                                 B00520
       COMMON /IOU/ IOUT(250)                                              B00530
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                B00540
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         B00550
@@ -70,6 +75,8 @@ C                                                                         B00480
 C                                                                         B00630
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & B00640
 C                                                                         B00650
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
@@ -83,9 +90,12 @@ C                                                                         B00650
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTS       B00760
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,         B00770
      *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL                      B00780
-      COMMON /VOICOM/ AVRAT(101),CGAUSS(101),CF1(101),CF2(101),           B00790
-     *                CF3(101),CER(101)                                   B00800
-      COMMON /FNSH/ IFN,F1(301),F2(301),F3(301),FG(301),XVER(301)         B00810
+      COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),           B00790
+     *                CF3(102),CER(102)                                   B00800
+C
+      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS)
+C
+      COMMON /FNSH/ IFN,F1(NFMX),F2(NFMX),F3(NFMX),FG(NFMX),XVER(NFMX)    B00810
       COMMON /R4SUB/ VLOF4,VHIF4,ILOF4,IST,IHIF4,LIMIN4,LIMOUT,ILAST,     B00820
      *               DPTMN4,DPTFC4,ILIN4,ILIN4T                           B00830
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
@@ -105,21 +115,28 @@ C                                                                         B00890
 C                                                                         B00970
       REAL L4TIM,L4TMR,L4TMS
       CHARACTER CFORM*11,KFILYR*6,CKFIL*4,KDFLYR*6,KDFIL*4                B00980
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       LOGICAL OP                                                          B00990
 C                                                                         B01000
       DIMENSION MEFDP(64),FILHDR(2),IWD(2)                                B01010
-      DIMENSION R1(3600),R2(900),R3(225)
+      DIMENSION R1(4050),R2(1050),R3(300)
 C                                                                         B01020
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),                B01030
      *            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),                B01040
      *            (JRAD,FSCDID(9)) , (IMRG,FSCDID(11)),                   B01050
      *            (IATM,FSCDID(15)) , (YI1,IOD) , (XID(1),FILHDR(1)),     B01060
      *            (V1P,IWD(1)) , (NPNLXP,LSTWDX)                          B01070
-      EQUIVALENCE (R1(1),RR1(1025)),(R2(1),RR2(513)),(R3(1),RR3(65))
+      EQUIVALENCE (R1(1), RR1(2049)),(R2(1),RR2(1025)),(R3(1),RR3(129))
 C                                                                         B01080
-      DATA HWFF1 / 4. /,DXFF1 / 0.02 /,NXF1 / 201 /,NF1MAX / 301 /        B01090
-      DATA HWFF2 / 16. /,DXFF2 / 0.08 /,NXF2 / 201 /,NF2MAX / 301 /       B01100
-      DATA HWFF3 / 64. /,DXFF3 / 0.32 /,NXF3 / 201 /,NF3MAX / 301 /       B01110
+C
+C     NOTE that DXFF1 = (HWFF1/(NFPTS-1))
+C     and       DXFF2 = (HWFF2/(NFPTS-1))
+C     and       DXFF3 = (HWFF3/(NFPTS-1))
+C
+      DATA HWFF1 /  4. /,DXFF1 / 0.002 /,NXF1 / NFPTS /,NF1MAX / NFMX /   B01090
+      DATA HWFF2 / 16. /,DXFF2 / 0.008 /,NXF2 / NFPTS /,NF2MAX / NFMX /   B01100
+      DATA HWFF3 / 64. /,DXFF3 / 0.032 /,NXF3 / NFPTS /,NF3MAX / NFMX /   B01110
 C                                                                         B01120
       DATA MEFDP / 64*0 /                                                 B01130
 C                                                                         B01140
@@ -127,6 +144,10 @@ C                                                                         B01140
 C                                                                         B01160
       CALL CPUTIM (TIMEH0)                                                B01170
 C                                                                         B01180
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVROPR = '$Revision$'
+C
       NPNLXP = NWDL(IWD,LSTWDX)                                           B01190
       ICNTNM = MOD(IXSCNT,10)                                             B01200
       IXSECT = IXSCNT/10                                                  B01210
@@ -163,7 +184,7 @@ C                                                                         B01430
 C                                                                         B01520
 C     SAMPLE IS AVERAGE ALPHA / DV                                        B01530
 C                                                                         B01540
-      NBOUND = 2.*(2.*HWF3)*SAMPLE+0.01                                   B01550
+      NBOUND = 4.*(2.*HWF3)*SAMPLE+0.01                                   B01550
       NLIM1 = 2401                                                        B01560
       NLIM2 = (NLIM1/4)+1                                                 B01570
       NLIM3 = (NLIM2/4)+1                                                 B01580
@@ -206,20 +227,20 @@ C                                                                         B01870
       MAX2 = MAX2+NSHIFT+1+4                                              B01950
       MAX3 = MAX3+NSHIFT+1+1                                              B01960
 C                                                                         B01970
-C     FOR CONSTANTS IN PROGRAM  MAX1=2994  MAX2=773  MAX3=218             B01980
+C     FOR CONSTANTS IN PROGRAM  MAX1=4018  MAX2=1029  MAX3=282            B01980
 C                                                                         B01990
       BOUND = FLOAT(NBOUND)*DV/2.                                         B02000
       BOUNF3 = BOUND/2.                                                   B02010
       ALFMAX = BOUND/HWF3                                                 B02020
       NLO = NSHIFT+1                                                      B02030
       NHI = NLIM1+NSHIFT-1                                                B02040
-      DO 10 I = 1, 3600                                                   B02050
+      DO 10 I = 1, MAX1                                                   B02050
          R1(I) = 0.                                                       B02060
    10 CONTINUE                                                            B02070
-      DO 20 I = 1, 900                                                    B02080
+      DO 20 I = 1, MAX2                                                   B02080
          R2(I) = 0.                                                       B02090
    20 CONTINUE                                                            B02100
-      DO 30 I = 1, 225                                                    B02110
+      DO 30 I = 1, MAX3                                                   B02110
          R3(I) = 0.                                                       B02120
    30 CONTINUE                                                            B02130
       IF (ILBLF4.EQ.0) THEN                                               B02140
@@ -417,8 +438,12 @@ C                                                                         B03750
 C                                                                         B03900
       END                                                                 B03910
       BLOCK DATA BHIRAC                                                   B03920
+C
+      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS)
+C
+
 C                                                                         B03930
-      COMMON /FNSH/ IFN,F1(301),F2(301),F3(301),FG(301),XVER(301)         B03940
+      COMMON /FNSH/ IFN,F1(NFMX),F2(NFMX),F3(NFMX),FG(NFMX),XVER(NFMX)    B03940
 C                                                                         B03950
       DATA IFN / 0 /                                                      B03960
 C                                                                         B03970
@@ -529,10 +554,11 @@ C                                                                         B05000
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B05010
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B05020
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B05030
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           B05040
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        B05050
-      COMMON /VOICOM/ AVRAT(101),CGAUSS(101),CF1(101),CF2(101),           B05060
-     *                CF3(101),CER(101)                                   B05070
+      COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),           B05060
+     *                CF3(102),CER(102)                                   B05070
 C                                                                         B05080
       PARAMETER (NTMOL=32,NSPECI=75)                                      B05090
 C                                                                         B05100
@@ -660,9 +686,11 @@ C                                                                         B06280
          ALFAD = VNU(I)*ALFD1(ILOC)                                       B06290
          ZETA = ALFL/(ALFL+ALFAD)                                         B06300
          ZETAI(I) = ZETA                                                  B06310
-         IZ = 100.*ZETA+1.5                                               B06320
+         FZETA = 100.*ZETA
+         IZ = FZETA + ONEPL                                               B06320
          IZETA(I) = IZ                                                    B06330
-         ALFV = AVRAT(IZ)*(ALFL+ALFAD)                                    B06340
+         ZETDIF = FZETA - FLOAT(IZ-1)
+         ALFV = (AVRAT(IZ)+ZETDIF*(AVRAT(IZ+1)-AVRAT(IZ)))*(ALFL+ALFAD)   B06340
          IF (ALFV.LT.DV) THEN                                             B06350
             ALFV = DV                                                     B06360
             NMINAD = 1                                                    B06370
@@ -791,8 +819,8 @@ C                                                                         B07370
      *              N1R1,N2R1,N1R2,N2R2,N1R3,N2R3                         B07460
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,         B07470
      *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL                      B07480
-      COMMON /VOICOM/ AVRAT(101),CGAUSS(101),CF1(101),CF2(101),           B07490
-     *                CF3(101),CER(101)                                   B07500
+      COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),           B07490
+     *                CF3(102),CER(102)                                   B07500
       COMMON /IOU/ IOUT(250)                                              B07510
 C                                                                         B07520
       DIMENSION VNU(*),SP(*),SPPSP(*),RECALF(*)                           B07530
@@ -803,9 +831,9 @@ C                                                                         B07520
 C                                                                         B07580
       CALL CPUTIM (TIME0)                                                 B07590
 C                                                                         B07600
-      CLC1 = 4./200.                                                      B07610
-      CLC2 = 16./200.                                                     B07620
-      CLC3 = 64./200.                                                     B07630
+      CLC1 = 4./(FLOAT(NX1-1))                                            B07610
+      CLC2 = 16./(FLOAT(NX2-1))                                           B07620
+      CLC3 = 64./(FLOAT(NX3-1))                                           B07630
       WAVDXF = DV/DXF1                                                    B07640
       HWDXF = HWF1/DXF1                                                   B07650
       CONF2 = DV/DVR2                                                     B07660
@@ -817,24 +845,14 @@ C                                                                         B07690
             I = IOUT(J)                                                   B07720
             IF (SP(I).NE.0.) THEN                                         B07730
                DEPTHI = SP(I)*RECALF(I)                                   B07740
-               IZ = IZETA(I)                                              B07750
-               IF (ZETAI(I).GE.0.3) THEN                                  B07760
-                  STRF1 = DEPTHI*CF1(IZ)                                  B07770
-                  STRF2 = DEPTHI*CF2(IZ)                                  B07780
-                  STRD = DEPTHI*CGAUSS(IZ)                                B07790
-                  STRVER = DEPTHI*CER(IZ)                                 B07800
-                  STRF3 = DEPTHI*CF3(IZ)                                  B07810
-               ELSE                                                       B07820
-                  IZM = 100.*ZETAI(I)+1.                                  B07830
-                  ZETDIF = 100.*ZETAI(I)-FLOAT(IZM-1)                     B07840
-                  STRF1 = DEPTHI*(CF1(IZM)+ZETDIF*(CF1(IZM+1)-CF1(IZM)))  B07850
-                  STRF2 = DEPTHI*(CF2(IZM)+ZETDIF*(CF2(IZM+1)-CF2(IZM)))  B07860
-                  STRF3 = DEPTHI*(CF3(IZM)+ZETDIF*(CF3(IZM+1)-CF3(IZM)))  B07870
-                  STRD = DEPTHI*(CGAUSS(IZM)+ZETDIF*(CGAUSS(IZM+1)-       B07880
+               IZM = IZETA(I)                                             B07750
+               ZETDIF = 100.*ZETAI(I)-FLOAT(IZM-1)                        B07840
+               STRF1 = DEPTHI*(CF1(IZM)+ZETDIF*(CF1(IZM+1)-CF1(IZM)))     B07850
+               STRF2 = DEPTHI*(CF2(IZM)+ZETDIF*(CF2(IZM+1)-CF2(IZM)))     B07860
+               STRF3 = DEPTHI*(CF3(IZM)+ZETDIF*(CF3(IZM+1)-CF3(IZM)))     B07870
+               STRD = DEPTHI*(CGAUSS(IZM)+ZETDIF*(CGAUSS(IZM+1)-          B07880
      *               CGAUSS(IZM)))                                        B07890
-                  STRVER = DEPTHI*(CER(IZM)+ZETDIF*(CER(IZM+1)-CER(IZM))  B07900
-     *               )                                                    B07910
-               ENDIF                                                      B07920
+               STRVER = DEPTHI*(CER(IZM)+ZETDIF*(CER(IZM+1)-CER(IZM)) )   B07900
 C                                                                         B07930
                ZSLOPE = RECALF(I)*WAVDXF                                  B07940
                ZINT = (VNU(I)-VFT)/DV                                     B07950
@@ -1481,12 +1499,12 @@ C                                                                         B15450
 C     AVRAT CONTAINS THE PARAMTERS AS A FUNCTION OF ZETA USED TO          B15460
 C     OBTAIN THE VOIGTS' WIDTH FROM THE LORENTZ AND DOPPLER WIDTHS.       B15470
 C                                                                         B15480
-C     COMMON /VOICOM/ AVRAT(101),                                         B15490
-C    C                CGAUSS(101),CF1(101),CF2(101),CF3(101),CER(101)     B15500
+C     COMMON /VOICOM/ AVRAT(102),                                         B15490
+C    C                CGAUSS(102),CF1(102),CF2(102),CF3(102),CER(102)     B15500
 C                                                                         B15510
-      COMMON /VOICOM/ AV01(50),AV51(51),CG01(50),CG51(51),CFA01(50),      B15520
-     *                CFA51(51),CFB01(50),CFB51(51),CFC01(50),            B15530
-     *                CFC51(51),CER01(50),CER51(51)                       B15540
+      COMMON /VOICOM/ AV01(50),AV51(52),CG01(50),CG51(52),CFA01(50),      B15520
+     *                CFA51(52),CFB01(50),CFB51(52),CFC01(50),            B15530
+     *                CFC51(52),CER01(50),CER51(52)                       B15540
 C                                                                         B15550
        DATA AV01/                                                         B15560
      *  .10000E+01,  .99535E+00,  .99073E+00,  .98613E+00,  .98155E+00,   B15570
@@ -1510,7 +1528,7 @@ C                                                                         B15550
      *  .87747E+00,  .88376E+00,  .89035E+00,  .89721E+00,  .90435E+00,   B15750
      *  .91176E+00,  .91945E+00,  .92741E+00,  .93562E+00,  .94409E+00,   B15760
      *  .95282E+00,  .96179E+00,  .97100E+00,  .98044E+00,  .99011E+00,   B15770
-     *  .10000E+01/                                                       B15780
+     *  .10000E+01,  .10000E+01/                                          B15780
       DATA CG01 /                                                         B15790
      *  1.00000E+00, 1.01822E+00, 1.03376E+00, 1.04777E+00, 1.06057E+00,  B15800
      *  1.07231E+00, 1.08310E+00, 1.09300E+00, 1.10204E+00, 1.11025E+00,  B15810
@@ -1533,7 +1551,7 @@ C                                                                         B15550
      *  7.99428E-02, 6.88453E-02, 5.86399E-02, 4.93211E-02, 4.08796E-02,  B15980
      *  3.33018E-02, 2.65710E-02, 2.06669E-02, 1.55667E-02, 1.12449E-02,  B15990
      *  7.67360E-03, 4.82345E-03, 2.66344E-03, 1.16151E-03, 2.84798E-04,  B16000
-     *  0.         /                                                      B16010
+     *  0.         , 0.         /                                         B16010
       DATA CFA01 /                                                        B16020
      *  0.         ,-2.56288E-03,-3.05202E-03,-2.50689E-03,-1.18504E-03,  B16030
      *  7.84668E-04, 3.32528E-03, 6.38605E-03, 9.93124E-03, 1.39345E-02,  B16040
@@ -1556,7 +1574,7 @@ C                                                                         B15550
      *  9.53036E-01, 9.59594E-01, 9.65613E-01, 9.71101E-01, 9.76064E-01,  B16210
      *  9.80513E-01, 9.84460E-01, 9.87919E-01, 9.90904E-01, 9.93432E-01,  B16220
      *  9.95519E-01, 9.97184E-01, 9.98445E-01, 9.99322E-01, 9.99834E-01,  B16230
-     *  1.00000E+00/                                                      B16240
+     *  1.00000E+00, 1.00000E+00/                                         B16240
       DATA CFB01 /                                                        B16250
      *  0.         , 1.15907E-02, 2.32978E-02, 3.51022E-02, 4.69967E-02,  B16260
      *  5.89773E-02, 7.10411E-02, 8.31858E-02, 9.54097E-02, 1.07711E-01,  B16270
@@ -1579,7 +1597,7 @@ C                                                                         B15550
      *  9.73763E-01, 9.77481E-01, 9.80878E-01, 9.83962E-01, 9.86741E-01,  B16440
      *  9.89223E-01, 9.91419E-01, 9.93337E-01, 9.94989E-01, 9.96385E-01,  B16450
      *  9.97536E-01, 9.98452E-01, 9.99146E-01, 9.99628E-01, 9.99909E-01,  B16460
-     *  1.00000E+00/                                                      B16470
+     *  1.00000E+00, 1.00000E+00/                                         B16470
       DATA CFC01 /                                                        B16480
      *  0.         , 9.88700E-03, 1.98515E-02, 2.99036E-02, 4.00474E-02,  B16490
      *  5.02856E-02, 6.06200E-02, 7.10521E-02, 8.15830E-02, 9.22137E-02,  B16500
@@ -1602,7 +1620,7 @@ C                                                                         B15550
      *  9.68373E-01, 9.72833E-01, 9.76915E-01, 9.80625E-01, 9.83973E-01,  B16670
      *  9.86967E-01, 9.89617E-01, 9.91935E-01, 9.93933E-01, 9.95622E-01,  B16680
      *  9.97015E-01, 9.98125E-01, 9.98965E-01, 9.99549E-01, 9.99889E-01,  B16690
-     *  1.00000E+00/                                                      B16700
+     *  1.00000E+00, 1.00000E+00/                                         B16700
       DATA CER01 /                                                        B16710
      *  0.         ,-2.11394E-02,-4.08818E-02,-5.97585E-02,-7.79266E-02,  B16720
      * -9.54663E-02,-1.12425E-01,-1.28834E-01,-1.44713E-01,-1.60076E-01,  B16730
@@ -1625,7 +1643,7 @@ C                                                                         B15550
      * -4.07029E-02,-3.51053E-02,-2.99424E-02,-2.52153E-02,-2.09229E-02,  B16900
      * -1.70614E-02,-1.36249E-02,-1.06056E-02,-7.99360E-03,-5.77750E-03,  B16910
      * -3.94443E-03,-2.48028E-03,-1.36995E-03,-5.97540E-04,-1.46532E-04,  B16920
-     *  0.         /                                                      B16930
+     *  0.         , 0.         /                                         B16930
 C                                                                         B16940
       END                                                                 B16950
       SUBROUTINE RSYM (R,DV,VFT)                                          B16960
@@ -3701,7 +3719,7 @@ C                                                                         D04610
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D04680
      *               DPTFC,ILIN4,ILIN4T                                   D04690
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        D04700
-      COMMON /VOICOM/ AVRAT(101),DUMMY(5,101)                             D04710
+      COMMON /VOICOM/ AVRAT(102),DUMMY(5,102)                             D04710
       COMMON /CONVF/ CHI(251),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4            D04720
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D04730
      *              NLNGTH,KFILE,KPANEL,LINFIO,NFILE,IAFIL,IEXFIL,        D04740
@@ -3869,7 +3887,7 @@ C                                                                         D06320
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D06340
      *               DPTFC,ILIN4,ILIN4T                                   D06350
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        D06360
-      COMMON /VOICOM/ AVRAT(101),DUMMY(5,101)                             D06370
+      COMMON /VOICOM/ AVRAT(102),DUMMY(5,102)                             D06370
       COMMON /CONVF/ CHI(251),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4            D06380
 C                                                                         D06390
       DIMENSION VNU(*),S(*),ALFAL(*),ALFAD(*),MOL(*),SPP(*)               D06400
@@ -3931,8 +3949,10 @@ C                                                                         D06910
          ALFADI = ALFAD(I)                                                D06930
          ALFALI = ALFAL(I)                                                D06940
          ZETAI = ALFALI/(ALFALI+ALFADI)                                   D06950
-         IZETA = 100.*ZETAI+1.5                                           D06960
-         ALFAVI = AVRAT(IZETA)*(ALFALI+ALFADI)                            D06970
+         IZ = 100.*ZETAI + ONEPL                                          D06960
+         ZETDIF = 100.*ZETAI - FLOAT(IZ-1)
+         ALFAVI = ( AVRAT(IZ) + ZETDIF*(AVRAT(IZ+1)-AVRAT(IZ)) ) *        D06970
+     x            (ALFALI+ALFADI)
          RALFVI = 1./ALFAVI                                               D06980
          SIL = S(I)*RECPI*ALFALI                                          D06990
          SIV = (ALFALI*RALFVI)*S(I)*RECPI*RALFVI                          D07000
@@ -4319,7 +4339,7 @@ C                                                                         E02470
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    E02480
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    E02490
      *       ZETAI(250),IZETA(250)                                        E02500
-      COMMON RR1(4624),RR2(1412),RR3(289)
+      COMMON RR1(6099),RR2(2075),RR3(429)
       COMMON /IOU/ IOUT(250)                                              E02520
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                E02530
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   E02540
@@ -4360,11 +4380,11 @@ C                                                                         E02610
       CHARACTER*10 XSFILE,XSNAME,ALIAS                                    E02880
       CHARACTER HEADT1*100                                                E02890
 C                                                                         E02900
-      DIMENSION R1(3600),R2(900),R3(225)
+      DIMENSION R1(4050),R2(1050),R3(300)
       DIMENSION FILHDR(2)                                                 E02910
       LOGICAL OPCL                                                        E02920
 C                                                                         E02930
-      EQUIVALENCE (R1(1),RR1(1025)),(R2(1),RR2(513)),(R3(1),RR3(65))
+      EQUIVALENCE (R1(1),RR1(2049)),(R2(1),RR2(1025)),(R3(1),RR3(129))
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),                E02940
      *            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),                E02950
      *            (JRAD,FSCDID(9)) , (IATM,FSCDID(15)),                   E02960
@@ -5152,6 +5172,7 @@ C                                                                         E10530
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,         E10640
      *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL                      E10650
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 E10660
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,               E10670
      *                HWF3,DXF3,NX3,N3MAX                                 E10680
       COMMON /XSCINF/ HWHM,JEMIT,JFN,SAMPLE,SCANID,NPTS,XF(851)           E10690
@@ -5250,7 +5271,6 @@ C                                                                         E11480
       ENDIF                                                               E11590
       REWIND IFILEO                                                       E11600
 C                                                                         E11610
-      ONEPL = 1.01                                                        E11620
       NLIMX = 510                                                         E11630
       IOTPAN = 1                                                          E11640
       LPMAX = 0                                                           E11650
