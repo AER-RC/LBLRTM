@@ -303,6 +303,9 @@ C
       CHARACTER*1 CONE,CTWO,CTHREE,CA,CB,CC,CDOL,CPRCNT,CBLNK             A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       DIMENSION IDCNTL(14),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2)      A03280
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A02970
      *                AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     A02980
@@ -316,14 +319,15 @@ C                                                                         A02940
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A03110
      *                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      A03120
      *                NLTEFL,LNFIL4,LNGTH4                                A03130
-      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A03160
-     *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   A03170
-     *                JEFILE,KEFILE                                       A03180
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),            A03160
+     *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,          A03170
+     *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                  A03180
       COMMON /LASIV/ VLAS,ILAS                                            A03190
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         A03200
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         A03210
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                      A03220
-      COMMON /MSCONS/ AIRMAS(67),TGRND,SEMIS(3),HMINMS,HMAXMS,MSFLAG,     A03140
+      COMMON /MSCONS/ AIRMAS(MXLAY),TGRND,SEMIS(3),HMINMS,HMAXMS,
+     *                MSFLAG,                                             A03140
      *                MSWIT,IODFIL,MSTGLE                                 A03150
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           A03020
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A03030
@@ -718,7 +722,7 @@ C                                                                         A07580
       END                                                                 A07590
       BLOCK DATA                                                          A07600
       COMMON /FLFORM/ CFORM                                               A03270
-      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A07610
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(203),MSPNL1(203),  A07610
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   A07620
      *                JEFILE,KEFILE                                       A07630
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A07640
@@ -729,7 +733,7 @@ C#    DATA CFORM / 'BUFFERED   '/                                         A03570
       DATA PLANCK / 6.626176E-27 /,BOLTZ / 1.380662E-16 /,                A07660
      *     CLIGHT / 2.99792458E10 /,AVOG / 6.022045E23 /                  A07670
       DATA IOD / 0 /,IDIR / 0 /,ITOP / 0 /,ISURF / 0 /,MSPTS / 0 /,       A07680
-     *     MSPANL / 67*0 /,MSPNL1 / 67*0 /,ISFILE / 0 /,JSFILE / 0 /,
+     *     MSPANL /203*0 /,MSPNL1 /203*0 /,ISFILE / 0 /,JSFILE / 0 /,
      *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
      *     JEFILE / 0 /,KEFILE / 0 /,MSLAY1 / 0 /                         A07700
 C                                                                         A07710
@@ -967,6 +971,9 @@ C                                                                         A11220
 C                                                                         A11240
 C     XLAYER CONTROLS LAYER BY LAYER CALCULATION                          A11250
 C                                                                         A11260
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         A11270
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         A11280
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                      A11290
@@ -979,11 +986,12 @@ C                                                                         A11260
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A11360
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        A11370
      *              NLTEFL,LNFIL4,LNGTH4                                  A11380
-      COMMON /MSCONS/ AIRMAS(67),TGRND,SEMIS(3),HMINMS,HMAXMS,MSFLAG,     A11390
+      COMMON /MSCONS/ AIRMAS(MXLAY),TGRND,SEMIS(3),HMINMS,HMAXMS,
+     *                MSFLAG,                                             A11390
      *                MSWIT,IODFIL,MSTGLE                                 A11400
-      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A11410
-     *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   A11420
-     *                JEFILE,KEFILE                                       A11430
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),            A11410
+     *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,          A11420
+     *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                  A11430
 C                                                                         A11440
 C     COMMON /MLTSCT/ TAUGAS(2410),FUPC(2410),RUPC(2410)                  A11450
 C                                                                         A11460
@@ -1528,11 +1536,17 @@ C                                                                         A16880
       IMPLICIT DOUBLE PRECISION (V)                                     ! A16890
 C                                                                         A16900
 C     OPPATH CALLS LBLATM AND CALLS PATH FIRST                            A16910
+C                                                                         A11260
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C                                                                         A16920
-      COMMON /PATHD/ PAVEL(67),TAVEL(67),WKL(35,67),WBRODL(67),DVL(67),   A16930
-     *               WTOTL(67),ALBL(67),ADBL(67),AVBL(67),H2OSL(67),      A16940
-     *               IPTH(67),ITYL(67),SECNTA(67),HT1,HT2,ALTZ(0:67),     A16950
-     *               PZ(0:67),TZ(0:67)                                    A16960
+      COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(35,MXLAY),
+     *               WBRODL(MXLAY),DVL(MXLAY),                            A16930
+     *               WTOTL(MXLAY),ALBL(MXLAY),ADBL(MXLAY),
+     *               AVBL(MXLAY),H2OSL(MXLAY),                            A16940
+     *               IPTH(MXLAY),ITYL(MXLAY),SECNTA(MXLAY),
+     *               HT1,HT2,ALTZ(0:MXLAY),                               A16950
+     *               PZ(0:MXLAY),TZ(0:MXLAY)                              A16960
 C                                                                         A16970
 C     IXMAX=MAX NUMBER OF X-SECTION MOLECULES, IXMOLS=NUMBER OF THESE     A16980
 C     MOLECULES SELECTED, IXINDX=INDEX VALUES OF SELECTED MOLECULES       A16990
@@ -1540,7 +1554,7 @@ C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     A17000
 C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         A17010
 C     MOLECULES.                                                          A17020
 C                                                                         A17030
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(35),XAMNT(35,67)                 A17040
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(35),XAMNT(35,MXLAY)              A17040
 C                                                                         A17050
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         A17060
 C     FOR THE CROSS-SECTION MOLECULES.                                    A17070
@@ -1573,7 +1587,8 @@ C                                                                         A17320
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A17330
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        A17340
      *              NLTEFL,LNFIL4,LNGTH4                                  A17350
-      COMMON /MSCONS/ AIRMAS(67),TGRND,SEMIS(3),HMINMS,HMAXMS,MSFLAG,     A17360
+      COMMON /MSCONS/ AIRMAS(MXLAY),TGRND,SEMIS(3),HMINMS,HMAXMS,
+     *                MSFLAG,                                             A17360
      *                MSWIT,IODFIL,MSTGLE                                 A17370
       COMMON /LASIV/ VLAS,ILAS                                            A17380
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         A17390
@@ -1763,6 +1778,9 @@ C     SUBROUTINE PATH INITIALIZES LINFIL AND INPUTS LAYER PARAMETERS      A19220
 C     SUBROUTINE PATH INPUTS AND OUTPUTS HEADER FROM LINFIL AND           A19230
 C     INPUTS AND OUTPUTS PATH PARAMETERS FOR EACH LAYER                   A19240
 C                                                                         A19250
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       COMMON COMSTR(250,9)                                                A19260
       COMMON R1(3600),R2(900),R3(225)                                     A19270
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A19280
@@ -1770,9 +1788,9 @@ C                                                                         A19250
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A19300
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A19310
      *              EXTID(10)                                             A19320
-      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),
-     *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,
-     *                JEFILE,KEFILE
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),
+     *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,
+     *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A19330
 C                                                                         A19340
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & A19350
@@ -1780,10 +1798,13 @@ C                                                                         A19360
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A19370
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A19380
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    A19390
-      COMMON /PATHD/ PAVEL(67),TAVEL(67),WKL(35,67),WBRODL(67),DVL(67),   A19400
-     *               WTOTL(67),ALBL(67),ADBL(67),AVBL(67),H2OSL(67),      A19410
-     *               IPTH(67),ITYL(67),SECNTA(67),HT1,HT2,ALTZ(0:67),     A19420
-     *               PZ(0:67),TZ(0:67)                                    A19430
+      COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(35,MXLAY),
+     *               WBRODL(MXLAY),DVL(MXLAY),                            A19400
+     *               WTOTL(MXLAY),ALBL(MXLAY),ADBL(MXLAY),
+     *               AVBL(MXLAY),H2OSL(MXLAY),                            A19410
+     *               IPTH(MXLAY),ITYL(MXLAY),SECNTA(MXLAY),
+     *               HT1,HT2,ALTZ(0:MXLAY),                               A19420
+     *               PZ(0:MXLAY),TZ(0:MXLAY)                              A19430
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A19440
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        A19450
      *              NLTEFL,LNFIL4,LNGTH4                                  A19460
@@ -1794,7 +1815,7 @@ C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     A19500
 C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         A19510
 C     MOLECULES.                                                          A19520
 C                                                                         A19530
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(35),XAMNT(35,67)                 A19540
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(35),XAMNT(35,MXLAY)              A19540
 C                                                                         A19550
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         A19560
 C     FOR THE CROSS-SECTION MOLECULES.                                    A19570
