@@ -302,6 +302,7 @@ C
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      CHARACTER*8 HVRSOL
       CHARACTER*1 CONE,CTWO,CTHREE,CA,CB,CC,CDOL,CPRCNT,CBLNK             A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
@@ -316,6 +317,7 @@ C
      *                EXTID(10)                                           A03010
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+      COMMON /ARMCM1/ HVRSOL
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A03070
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A03080
      *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF    A03090
@@ -726,7 +728,7 @@ C                                                                         A07120
 C                                                                         A07240
    90 CONTINUE                                                            A07250
       WRITE(IPR,1000) HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *                HVRPST,HVRPLT,HVRTST,HVRXMR,HVRUTL
+     *                HVRPST,HVRPLT,HVRTST,HVRXMR,HVRUTL,HVRSOL
       IF (IENDPL.EQ.1) CALL ENDPLT                                        A07260
       STOP ' LBLRTM EXIT '                                                A07270
 C                                                                         A07280
@@ -763,7 +765,8 @@ C                                                                         A07280
      *         'lbllow.f: ',6X,A8,10X, ' ncargks.f: ',6X,A8,/,5X,
      *         ' oprop.f: ',6X,A8,10X, ' postsub.f: ',6X,A8,/,5X,
      *         'pltlbl.f: ',6X,A8,10X, '  testmm.f: ',6X,A8,/,5X,
-     *         'xmerge.f: ',6X,A8,10X, 'util_xxx.f: ',6X,A8,/ )
+     *         'xmerge.f: ',6X,A8,10X, 'util_xxx.f: ',6X,A8,/,5X,
+     *         ' solar.f: ',6X,A8,10X, '            ',6X,8X,/)
  1010 FORMAT (2I5)
 C                                                                         A07580
       END                                                                 A07590
@@ -774,11 +777,13 @@ C                                                                         A07580
      *                JEFILE,KEFILE                                       A07630
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+      COMMON /ARMCM1/ HVRSOL
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A07640
 C                                                                         A07650
       CHARACTER CFORM*11                                                  A03430
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      CHARACTER*8 HVRSOL
 C
       DATA CFORM / 'UNFORMATTED'/                                         A03580
       DATA PLANCK / 6.626176E-27 /,BOLTZ / 1.380662E-16 /,                A07660
@@ -796,6 +801,7 @@ C
      *     HVROPR / 'NOT USED' /, HVRPST / 'NOT USED' /,
      *     HVRPLT / 'NOT USED' /, HVRTST / 'NOT USED' /,
      *     HVRUTL / 'NOT USED' /, HVRXMR / 'NOT USED' /
+      DATA HVRSOL / 'NOT USED' /
 C                                                                         A07710
       END                                                                 A07720
       FUNCTION NWDL (IWD,ILAST)                                           A08590
