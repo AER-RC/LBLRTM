@@ -296,6 +296,7 @@ C                                                                         A02920
       IMPLICIT DOUBLE PRECISION (V)                                     ! A02930
 C
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & A03050
+      LOGICAL OP
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
       CHARACTER*55 CTAPE3
       CHARACTER*9 CT6FIL
@@ -488,7 +489,11 @@ C
          ELSE
             IFILE = KFILE
          ENDIF
-         CALL SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG)
+         INQUIRE (UNIT=13,OPENED=OP)
+         IF (OP) CLOSE(13)
+         OPEN(UNIT=13,FILE='TAPE13',FORM='UNFORMATTED')
+         CALL SOLINT(IFILE,13,NPTS,INFLAG,IOTFLG)
+         REWIND 13
          GOTO 60
       ENDIF
 C     **************************************************************
