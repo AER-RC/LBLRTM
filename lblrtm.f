@@ -1020,7 +1020,7 @@ C
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULES
 C
-      DATA HVRLBL / '$RCSfile$ $Revision' /,      
+      DATA HVRLBL / '$RCSfile$ $Revision' /,
      *     HVRCNT / 'NOT USED' /,
      *     HVRFFT / 'NOT USED' /, HVRATM / 'NOT USED' /,
      *     HVRLOW / 'NOT USED' /, HVRNCG / 'NOT USED' /,
@@ -2894,6 +2894,8 @@ C               if WKL is less than one, then mixing ratio
 C
          WDNSTY = WBRODL(L)
          WMXRAT = 0.0
+         WDRAIR(L) = 0.0
+
          DO 22 M = 2,NMOL
             IF (WKL(M,L).GT.1) THEN
                WDNSTY = WDNSTY + WKL(M,L)
@@ -2901,34 +2903,50 @@ C
                WMXRAT = WMXRAT + WKL(M,L)
             ENDIF
  22      CONTINUE
+
 C
-C        First, test to see that the sum of molecular densities in
-C        the layer is greater than zero to avoid division by zero
-C        later.
-C        
-C        If the layer sum of mixing ratios is less than one (which
-C        it should be, given that WBROAD contributes to the dry air
-C        mixing ratio), then compute dry air by dividing the total
-C        molecular amounts given in density by the fraction of dry
-C        air (mixing ratio) those molecules comprise.
+C        EXECUTE TESTS TO ENSURE ALL COMBINATION OF COLUMN DENSITIES
+C        AND MIXING RATIOS FOR EACH LAYER HAVE BEEN PROPERLY SPECIFIED.
+
+C        IF THE LAYER SUM OF MIXING RATIOS IS LESS THAN ONE (WHICH
+C        IT SHOULD BE, GIVEN THAT WBROAD CONTRIBUTES TO THE DRY AIR
+C        MIXING RATIO), THEN COMPUTE DRY AIR BY DIVIDING THE TOTAL
+C        MOLECULAR AMOUNTS GIVEN IN DENSITY BY THE FRACTION OF DRY
+C        AIR (MIXING RATIO) THOSE MOLECULES COMPRISE.
 C
-C        If the layer sum of mixing ratios is greater than or equal
-C        to one, than an error has occurred, so stop the program.
-C        WBROAD is always listed in column density, so the sum of
-C        the given mixing ratios must always be less than one.
+C        IF THE LAYER SUM OF MIXING RATIOS IS GREATER THAN OR EQUAL
+C        TO ONE, THAN AN ERROR HAS OCCURRED, SO STOP THE PROGRAM.
+C        WBROAD IS ALWAYS LISTED IN COLUMN DENSITY, SO THE SUM OF
+C        THE GIVEN MIXING RATIOS MUST ALWAYS BE LESS THAN ONE.
 C
-         IF (WDNSTY.EQ.0.0) THEN
-            WRITE(IPR,920) L
-            WRITE(*,920) L
-            STOP 'WDNSTY ERROR IN PATH'
+
+         IF (WBRODL(L).LT.1.0 .AND. WBRODL(L).NE.0.0) THEN
+            WRITE(IPR,918) L
+            WRITE(*,918) L
+            STOP
          ENDIF
+
+         IF (WDNSTY.EQ.0.0 .AND. WMXRAT.NE.0.0) THEN
+            WRITE(IPR,921) L,WDNSTY,WMXRAT
+            WRITE(*,921) L,WDNSTY,WMXRAT
+            STOP 'WMXRAT AND/OR WDNSTY NOT PROPERLY SPECIFIED IN PATH'
+         ENDIF
+
          IF (WMXRAT.LT.1.0) THEN
             WDRAIR(L) = WDNSTY/(1.0-WMXRAT)
          ELSE
-            WRITE(IPR,1000) L,WMXRAT, WDNSTY
-            WRITE(*,1000) L,WMXRAT, WDNSTY
-            STOP 'WMXRAT ERROR IN PATH'
+            WRITE(IPR,921) L,WMXRAT, WDNSTY
+            WRITE(*,921) L,WMXRAT, WDNSTY
+            STOP 'WMXRAT EXCEEDS 1.0'
          ENDIF
+
+         IF (WKL(1,L).LE.1.0 .AND. WKL(1,L) .NE. 0.0 
+     *        .AND. WDRAIR(L).EQ.0.0) THEN
+            WRITE(IPR,921) L,WKL(1,L),WDRAIR(L)
+            WRITE(*,921) L,WKL(1,L),WDRAIR(L)
+            STOP 'WMXRAT NOT PROPERLY SPECIFIED IN PATH'
+         ENDIF
+
 C
 C     NOW CONVERT ALL OTHER MOLECULES WHICH MAY BE IN MIXING RATIO
 C     TO MOLECULAR DENSITY USING WDRAIR(L)
@@ -2936,6 +2954,7 @@ C
          DO 25 M = 1,NMOL
             IF (WKL(M,L).LT.1) WKL(M,L) = WKL(M,L)*WDRAIR(L)
  25      CONTINUE
+
 C
 C     --------------------------------------------------------------
 C
@@ -3003,7 +3022,14 @@ C
 C     NOTE that if XAMNT is greater than one, then column density
 C               if XAMNT is less than one, then mixing ratio
 C
+
          DO 35 M = 1,IXMOL
+            IF (WDRAIR(L).EQ.0.0 .AND. XAMNT(M,L).LT.1 .AND.
+     *           XAMNT(M,L).NE.0.0) THEN
+               WRITE(IPR,921) L,XAMNT(M,L),WDRAIR(L)
+               WRITE(*,921) L,XAMNT(M,L),WDRAIR(L)
+               STOP 'XAMNT NOT PROPERLY SPECIFIED IN PATH'         
+            ENDIF
             IF (XAMNT(M,L).LT.1) XAMNT(M,L) = XAMNT(M,L)*WDRAIR(L)
  35      CONTINUE
 C
@@ -3395,6 +3421,8 @@ C
 C     Write out column densities for molecules to TAPE6
 C
 C
+
+
       IF (IFORM.EQ.1) THEN                                                A23490
          WRITE (IPR,974) (HMOLID(I),I=1,7),HOLN2                          A23500
          DO 150 L = 1, NLAYRS
@@ -3477,9 +3505,13 @@ C
             DO 171 M = 2,NMOL
                WDRAIR(L) = WDRAIR(L) + WKL(M,L)
  171        CONTINUE
-            WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
-     *           TAVEL(L),
-     *           IPTH(L),(WKL(M,L)/WDRAIR(L),M=1,7),WBRODL(L)
+            IF (WDRAIR(L).EQ.0.0) THEN
+               WRITE(IPR,979)
+            ELSE
+               WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *              TAVEL(L),
+     *              IPTH(L),(WKL(M,L)/WDRAIR(L),M=1,7),WBRODL(L)
+            ENDIF
  172     CONTINUE
       ELSE
          WRITE (IPR,977) (HMOLID(I),I=1,7),HOLN2
@@ -3488,13 +3520,18 @@ C
             DO 173 M = 2,NMOL
                WDRAIR(L) = WDRAIR(L) + WKL(M,L)
  173        CONTINUE
-            WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+            IF (WDRAIR(L).EQ.0.0) THEN
+               WRITE(IPR,979)
+            ELSE
+               WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *           TAVEL(L),
      *           IPTH(L),(WKL(M,L)/WDRAIR(L),M=1,7),WBRODL(L)
+            ENDIF
  174     CONTINUE
       ENDIF
 C
 C
+
       IF (NMOL.GT.7) THEN
          DO 178 MLO = 8, NMOL, 8
             MHI = MLO+7
@@ -3507,14 +3544,24 @@ C
             IF (IFORM.EQ.1) THEN
                WRITE (IPR,976) (HMOLID(I),I=MLO,MHI)
                DO 176 L = 1, NLAYRS
-                  WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
-     *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR(L),M=MLO,MHI)
+                  IF (WDRAIR(L).EQ.0.0) THEN
+                     WRITE(IPR,979)
+                  ELSE
+                     WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,
+     *                    PAVEL(L),TAVEL(L),IPTH(L),
+     *                    (WKL(M,L)/WDRAIR(L),M=MLO,MHI)
+                  ENDIF
  176           CONTINUE
             ELSE
                WRITE (IPR,977) (HMOLID(I),I=MLO,MHI)
-               DO 177 L = 1, NLAYRS
-                  WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
-     *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR(L),M=MLO,MHI)
+                  DO 177 L = 1, NLAYRS
+                     IF (WDRAIR(L).EQ.0.0) THEN
+                        WRITE(IPR,979)
+                     ELSE
+                        WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,
+     *                       PAVEL(L),TAVEL(L),IPTH(L),
+     *                       (WKL(M,L)/WDRAIR(L),M=MLO,MHI)
+                     ENDIF
  177           CONTINUE
             ENDIF
  178     CONTINUE
@@ -3602,7 +3649,10 @@ C                                                                         A24050
   915 FORMAT (E15.7,F10.4,F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))
   916 FORMAT (3F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))                          A24130
   917 FORMAT (A4)                                                         A24140
+  918 FORMAT ('0 WBROD FOR LAYER=',I3,' MUST BE SPECIFIED 
+     *       IN COLUMN DENSITY')
   920 FORMAT (I3)                                                         A24150
+  921 FORMAT (I3,2E15.7)                                                  A24150
   925 FORMAT (8E15.7)
   927 FORMAT (8E10.3)                                                     A24160
   930 FORMAT (I5,5X,I5)                                                   A24170
@@ -3648,6 +3698,7 @@ C                                                                         A24050
   977 FORMAT (/,'1',54X,'----------------------------------',
      *         /,'0',60X,'MIXING RATIOS BY LAYER ',/,29X,
      *        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,A6,3X))
+  979 FORMAT (/,'0','  MIXING RATIO IS UNDEFINED. DRYAIR DENSITY=0.0')
   980 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,I5,2X,1P,5E15.7,0P,/,
      *         54X,1P,3E15.7,0P)
   982 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,I5,2X,1P,8E10.3,0P)            A24390
@@ -3749,7 +3800,7 @@ C     PRINT LAYER INFORMATION                                             A24930
 C                                                                         A24940
       IF (NOPR.EQ.0) THEN                                                 A24950
          IF (IMRG.LE.10) WRITE (IPR,900)                                  A24960
-         WRITE (IPR,905) LAYRS                                            A24970
+         WRITE (IPR,905) LAYRS                                            A2497
          IF (ILAS.GT.0) WRITE (IPR,910) VLAS,V1,V2                        A24980
          WRITE (IPR,915) XID,(YID(M),M=1,2),TIME0                         A24990
       ENDIF                                                               A25000
