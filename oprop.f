@@ -56,7 +56,7 @@ C                                                                         B00480
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    B00490
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    B00500
      *       ZETAI(250),IZETA(250)                                        B00510
-      COMMON  RR1(4624),RR2(1412),RR3(289)                                B00520
+      COMMON RR1(4624),RR2(1412),RR3(289)                                 B00520
       COMMON /IOU/ IOUT(250)                                              B00530
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                B00540
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         B00550
@@ -4302,7 +4302,7 @@ C                                                                         E02470
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    E02480
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    E02490
      *       ZETAI(250),IZETA(250)                                        E02500
-      COMMON R1(3600),R2(900),R3(225)                                     E02510
+      COMMON RR1(4624),RR2(1412),RR3(289)
       COMMON /IOU/ IOUT(250)                                              E02520
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                E02530
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   E02540
@@ -4343,9 +4343,11 @@ C                                                                         E02610
       CHARACTER*10 XSFILE,XSNAME,ALIAS                                    E02880
       CHARACTER HEADT1*100                                                E02890
 C                                                                         E02900
+      DIMENSION R1(3600),R2(900),R3(225)
       DIMENSION FILHDR(2)                                                 E02910
       LOGICAL OPCL                                                        E02920
 C                                                                         E02930
+      EQUIVALENCE (R1(1),RR1(1025)),(R2(1),RR2(513)),(R3(1),RR3(65))
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),                E02940
      *            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),                E02950
      *            (JRAD,FSCDID(9)) , (IATM,FSCDID(15)),                   E02960
