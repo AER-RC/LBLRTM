@@ -5,7 +5,7 @@ C     presently: %H%  %T%
 C
 C     ----------------------------------------------------------------
 C
-      SUBROUTINE SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG)
+      SUBROUTINE SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG,JULDAT)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
@@ -29,9 +29,9 @@ C
 C                                                                      
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-      PARAMETER (NSOL=3000001)
+      PARAMETER (NSOL=2000001)
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
 C     ------------------------------------------------------------
 C     SUBROUTINE SOLINT interpolates solar radiances from the binary
@@ -77,8 +77,12 @@ C
      *              EXTID(10)
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2
 C
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID
-      DOUBLE PRECISION XIDS,SECNTS,HMLIDS,XALTZS,YIDS
+      character*8      XID,       HMOLID,      YID        
+      real*8               SECANT,       XALTZ 
+c
+      character*8      XIDS,       HMLIDS,       YIDS        
+      real*8                SECNTS,       XALTZS 
+c
 C
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,
@@ -155,6 +159,24 @@ C
       NPANLS = 0
       TIMRD = 0.0
       TIMOT = 0.0
+
+C     Calculate Earth distance to sun given Julian Day JULDAT. Used to
+C     scale solar source function. Formula taken from "Atmospheric Radiative
+C     Transfer", J. Lenoble, 1993.
+
+c     Test validity of JULDAT
+
+      if ((juldat.lt.1).or.(juldat.gt.366)) then
+         write(*,*) 'JULDAT = ',juldat,' is out of range 1-366.'
+         write(ipr,*) 'JULDAT = ',juldat,' is out of range 1-366.'
+         stop 'Stopped in SOLINT'
+      endif
+
+      theta = 2*pi*(float(JULDAT)-1.)/365.
+      XJUL_SCALE = 1.00011 + 0.034221*cos(theta) + 1.28E-3*sin(theta)
+     *          + 7.19E-4*cos(2.*theta) + 7.7E-5*sin(2.*theta)
+
+
 C
 C     FOR AEROSOL RUNS, MOVE YID (IFILE) INTO YID (LFILE)
 C
@@ -362,24 +384,29 @@ C        If IOTFLG = 2, then calculate attenuated solar radiance
 C                       through the reflected atmosphere plus
 C                       atmospheric radiance
 C
-C        Solar irradiance is input from SOLAR.RAD (W/cm2 cm-1).
+C        Solar irradiance is input from SOLAR.RAD (W/m2 cm-1).
 C        Convert to radiance units (W/cm2 sr cm-1) by multiplying
 C        by 1/6.8e-5.
 
-         conv_ster = 1./6.8e-5
+         conv_ster = 1./(1.e4*6.8e-5)
+
+C
+C        Combine XJUL_SCALE and conv_ster into one scale factor SCAL_FAC
+
+         SCAL_FAC = conv_ster*XJUL_SCALE
 C
          IF (IOTFLG.EQ.0) THEN
             DO 40 I = 1, NLIM
-               SOLRAD(I) = SOLAR(I)*conv_ster*TRAN(I)
+               SOLRAD(I) = SOLAR(I)*SCAL_FAC*TRAN(I)
  40         CONTINUE
          ELSEIF (IOTFLG.EQ.1) THEN
             DO 41 I = 1, NLIM
-               SOLRAD(I) = SOLAR(I)*conv_ster*TRAN(I)+RADN(I)
+               SOLRAD(I) = SOLAR(I)*SCAL_FAC*TRAN(I)+RADN(I)
  41         CONTINUE
          ELSEIF (IOTFLG.EQ.2) THEN
             IF (TBOUND.EQ.0) THEN
                DO 42 I = 1, NLIM
-                  SOLRAD(I) = SOLAR(I)*conv_ster*TRAN2(I)*XRFLT(I)*
+                  SOLRAD(I) = SOLAR(I)*SCAL_FAC*TRAN2(I)*XRFLT(I)*
      *                 TRAN(I)+RADN(I)
  42            CONTINUE
             ELSE
@@ -389,7 +416,7 @@ C
                   VBND = V1PO+(I-1)*DVPO
                   ZEMSV = EMISFN(VBND,DVPO,VINEM,EMDEL,EMDUM)
                   BBND = BBFN(VBND,DVPO,VBND,XKTBND,VINEW,BBDEL,BBDUM)
-                  SOLRAD(I) = (SOLAR(I)*conv_ster*TRAN2(I)*XRFLT(I)
+                  SOLRAD(I) = (SOLAR(I)*SCAL_FAC*TRAN2(I)*XRFLT(I)
      *                 +ZEMSV*BBND)*TRAN(I)+RADN(I)
  43            CONTINUE
             ENDIF
@@ -640,11 +667,17 @@ C     If IOTFLG = 2, then calculate attenuated solar radiance
 C                    through the reflected atmosphere plus
 C                    atmospheric radiance
 C
-C     Solar irradiance is input from SOLAR.RAD (W/cm2 cm-1).
+C     Solar irradiance is input from SOLAR.RAD (W/m2 cm-1).
 C     Convert to radiance units (W/cm2 sr cm-1) by multiplying
 C     by 1/6.8e-5.
 
-      conv_ster = 1./6.8e-5
+      conv_ster = 1./(1.e4*6.8e-5)
+
+C
+C     Combine XJUL_SCALE and conv_ster into one scale factor SCAL_FAC
+      
+      SCAL_FAC = conv_ster*XJUL_SCALE
+C
 
       IF (IOTFLG.EQ.0) THEN
          DO 90 II = 1, NLIMO
@@ -652,7 +685,7 @@ C     by 1/6.8e-5.
             JJ = IFIX(FJJ)-2
             JP = (FJJ-FLOAT(JJ))*100.-199.5
             SOLRAD(II) = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
-     *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*conv_ster*
+     *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*SCAL_FAC*
      *           TRAN(II)
 c
  90      CONTINUE
@@ -662,7 +695,7 @@ c
             JJ = IFIX(FJJ)-2
             JP = (FJJ-FLOAT(JJ))*100.-199.5
             SOLRAD(II) = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
-     *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*conv_ster*
+     *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*SCAL_FAC*
      *           TRAN(II)+RADN(II)
  91      CONTINUE
       ELSEIF (IOTFLG.EQ.2) THEN
@@ -678,7 +711,7 @@ c
                JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
                JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
                ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
-     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*conv_ster
+     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*SCAL_FAC
                ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
      *              A2T2(JPT2)*TRAN2(JJT2)+
      *              A3T2(JPT2)*TRAN2(JJT2+1)+
@@ -701,7 +734,7 @@ c
                JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
                JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
                ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
-     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*conv_ster
+     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*SCAL_FAC
                ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
      *              A2T2(JPT2)*TRAN2(JJT2)+
      *              A3T2(JPT2)*TRAN2(JJT2+1)+
@@ -858,13 +891,14 @@ C
 C                                                                      
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
 C     SUBROUTINE SOLIN inputs files for use with solar radiation
 C     calculations for interpolation in SOLINT.  Reads files with
 C     one record per panel.
 C
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID
+      character*8      XID,       HMOLID,      YID       
+      real*8               SECANT,       XALTZ 
 C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,
@@ -917,13 +951,14 @@ C
 C                                                                      
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
 C     SUBROUTINE SOLIN inputs files for use with solar radiation
 C     calculations for interpolation in SOLINT.  Reads files with
 C     two records per panel.
 C
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID
+      character*8      XID,       HMOLID,      YID       
+      real*8               SECANT,       XALTZ 
 C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,
@@ -977,7 +1012,7 @@ C
 C                                                                      
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
 C     SUBROUTINE SOLOUT OUTPUTS ATTENUATED SOLAR RADIANCE (INTERPOLATED)
 C     TO LFILE
