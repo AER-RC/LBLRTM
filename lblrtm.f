@@ -1595,21 +1595,32 @@ C                                                                         A17580
       AV1 = V1                                                            A17590
       AV2 = V2                                                            A17600
 C                                                                         A17610
+C     RESET ALFAL0 TO DEFAULT OF 0.04 IN VALUE READ IN .LE. 0.0
+C     FOR LINE COUPLING USER SHOULD READ IN VALUE OF 0.05
+C
+      IF (SAMPLE.LT.0.01) SAMPLE = 4.
+      IF (ALFAL0.LE.0.) ALFAL0 = 0.04
+      IF (AVMASS.LE.0.) AVMASS = 36.
+C
+C     Write SAMPLE, ALFAL0, and AVMASS if IHIRAC = 0 and IATM >= 1
+C     (printed for informational puroses in case IFXTYP = 1).
+C
+      IF ((IHIRAC.EQ.0).AND.(IATM.GE.1))
+     *     WRITE (IPR,890) SAMPLE,ALFAL0,AVMASS
+C
       IF (LAYER.LE.0) THEN                                                A17620
-C                                                                         A17630
          IF (IAERSL.EQ.0.OR.IAERSL.EQ.9) THEN                             A17640
 C                                                                         A17650
-C     IF LAYER GT 0 SAVE THE VECTORS                                      A17660
+C           IF LAYER GT 0 SAVE THE VECTORS                                A17660
 C                                                                         A17670
             IF (IATM.GE.1.AND.IATM.LE.5) THEN                             A17680
 C                                                                         A17690
-C     CALL LBLATM TO COMPLETE GEOMETRY ON FINAL COMBINED LAYERS           A17700
-C     IF AEROSOLS PRESENT AND HORIZONTAL PATH SKIP CALL TO LBLATM         A17710
-C                                                                         A17720
-               CALL LBLATM                                                A17730
-C                                                                         A17740
+C              CALL LBLATM TO COMPLETE GEOMETRY ON FINAL COMBINED LAYERS  A17700
+C              IF AEROSOLS PRESENT AND HORIZONTAL PATH SKIP CALL          A17710
+C              TO LBLATM                                                  A17720
+C                                                                         A17730
+               CALL LBLATM                                                A17740
                IF (IHIRAC.EQ.0) RETURN                                    A17750
-C                                                                         A17760
             ENDIF                                                         A17770
          ELSE                                                             A17780
 C                                                                         A17790
@@ -1642,13 +1653,6 @@ C                                                                         A18040
 C                                                                         A18060
             WRITE (IPR,905)                                               A18070
 C                                                                         A18080
-C     RESET ALFAL0 TO DEFAULT OF 0.04 IN VALUE READ IN .LE. 0.0           A18090
-C     FOR LINE COUPLING USER SHOULD READ IN VALUE OF 0.05                 A18100
-C                                                                         A18110
-            IF (SAMPLE.LT.0.01) SAMPLE = 4.                               A18120
-            IF (ALFAL0.LE.0.) ALFAL0 = 0.04                               A18130
-            IF (AVMASS.LE.0.) AVMASS = 36.                                A18140
-C                                                                         A18150
             WRITE (IPR,910) V1,V2,SAMPLE,DVSET,ALFAL0,AVMASS,DPTMIN,      A18160
      *                      DPTFAC                                        A18170
 C                                                                         A18180
@@ -1734,6 +1738,10 @@ C                                                                         A18820
 C                                                                         A18980
       RETURN                                                              A18990
 C                                                                         A19000
+  890 FORMAT (//,
+     *        '0 SAMPLE   =',F13.4,/,
+     *        '0 ALFAL0   =',F13.4,/,
+     *        '0 AVMASS   =',F13.4,/)
   900 FORMAT ('1 ERROR IATM = 0 IAERSL GT 0 ')                            A19010
   905 FORMAT ('1')                                                        A19020
   910 FORMAT ('0 V1(CM-1) = ',F12.4,/'0 V2(CM-1) = ',F12.4,/,             A19030
@@ -2043,7 +2051,11 @@ C
       ENDIF                                                               A21100
 C                                                                         A21110
    50 WRITE (IPR,945) XID,(YID(M),M=1,2)                                  A21120
-      WRITE (IPR,950)                                                     A21130
+      IF (IFRMX.EQ.1) THEN
+         WRITE (IPR,950)
+      ELSE
+         WRITE (IPR,951)
+      ENDIF
 C                                                                         A21140
       DO 80 L = 1, NLAYRS                                                 A21150
          IF (IATM.GT.0.) SECL(L) = 1.0                                    A21160
@@ -2277,7 +2289,12 @@ C
             ENDIF                                                         A23200
          ENDIF                                                            A23210
          WRITE (IPR,945) XID,(YID(M),M=1,2)                               A23220
-         WRITE (IPR,950)                                                  A23230
+         WRITE (IPR,948)
+         IF (IFORM.EQ.1) THEN
+            WRITE (IPR,950)
+         ELSE
+            WRITE (IPR,951)
+         ENDIF
          DO 140 L = 1, NLAYRS                                             A23240
             ALBAR = ALBL(L)                                               A23250
             ADBAR = ADBL(L)                                               A23260
@@ -2317,24 +2334,34 @@ C
 C     Write out column densities for molecules to TAPE6
 C
 C
-      WRITE (IPR,975) (HMOLID(I),I=1,7),HOLN2                             A23490
-      DO 150 L = 1, NLAYRS                                                A23500
-         IF (IFORM.EQ.1) THEN
+      IF (IFORM.EQ.1) THEN                                                A23490
+         WRITE (IPR,974) (HMOLID(I),I=1,7),HOLN2                          A23500
+         DO 150 L = 1, NLAYRS
             WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *           TAVEL(L),                                                A23510
      *           IPTH(L),(WKL(M,L),M=1,7),WBRODL(L)                       A23520
-         ELSE
+ 150     CONTINUE                                                         A23530
+         IF (NLAYRS.GT.1) THEN                                            A23540
+            WRITE (IPR,985)                                               A23550
+            L = NLAYRS                                                    A23560
+            WRITE (IPR,990) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTD,TWTD,          A23570
+     *                      (WMT(M),M=1,7),SUMN2                          A23580
+         ENDIF                                                            A23590
+      ELSE
+         WRITE (IPR,975) (HMOLID(I),I=1,7),HOLN2
+         DO 151 L = 1, NLAYRS
             WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *           TAVEL(L),
      *           IPTH(L),(WKL(M,L),M=1,7),WBRODL(L)
+ 151     CONTINUE
+         IF (NLAYRS.GT.1) THEN
+            WRITE (IPR,985)
+            L = NLAYRS
+            WRITE (IPR,991) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTD,TWTD,
+     *                      (WMT(M),M=1,7),SUMN2
          ENDIF
-  150 CONTINUE                                                            A23530
-      IF (NLAYRS.GT.1) THEN                                               A23540
-         WRITE (IPR,985)                                                  A23550
-         L = NLAYRS                                                       A23560
-         WRITE (IPR,990) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTD,TWTD,             A23570
-     *                   (WMT(M),M=1,7),SUMN2                             A23580
-      ENDIF                                                               A23590
+      ENDIF
+C
       IF (NMOL.GT.7) THEN                                                 A23600
          DO 170 MLO = 8, NMOL, 8                                          A23610
             MHI = MLO+7                                                   A23620
@@ -2344,54 +2371,70 @@ C
             ELSE                                                          A23660
                WRITE (IPR,945) XID,(YID(M),M=1,2)                         A23670
             ENDIF                                                         A23680
-            WRITE (IPR,975) (HMOLID(I),I=MLO,MHI)                         A23690
-            DO 160 L = 1, NLAYRS                                          A23700
-               IF (IFORM.EQ.1) THEN
+            IF (IFORM.EQ.1) THEN
+               WRITE (IPR,974) (HMOLID(I),I=MLO,MHI)                      A23690
+               DO 160 L = 1, NLAYRS                                       A23700
                   WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),   A23710
      *                 TAVEL(L),IPTH(L),(WKL(M,L),M=MLO,MHI)              A23720
-               ELSE
-                  WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
-     *                 TAVEL(L),IPTH(L),(WKL(M,L),M=MLO,MHI)
+ 160           CONTINUE
+               IF (NLAYRS.GT.1) THEN
+                  WRITE (IPR,985)
+                  L = NLAYRS
+                  WRITE (IPR,990) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTD,TWTD,
+     *                            (WMT(M),M=MLO,MHI)
                ENDIF
-  160       CONTINUE                                                      A23730
-            IF (NLAYRS.GT.1) THEN                                         A23740
-               WRITE (IPR,985)                                            A23750
-               L = NLAYRS                                                 A23760
-               WRITE (IPR,990) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTD,TWTD,       A23770
-     *                         (WMT(M),M=MLO,MHI)                         A23780
+            ELSE
+               WRITE (IPR,975) (HMOLID(I),I=MLO,MHI)                      A23730
+               DO 161 L = 1, NLAYRS                                       A23740
+                  WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),   A23750
+     *                 TAVEL(L),IPTH(L),(WKL(M,L),M=MLO,MHI)              A23760
+ 161           CONTINUE                                                   A23770
+               IF (NLAYRS.GT.1) THEN                                      A23780
+                  WRITE (IPR,985)
+                  L = NLAYRS
+                  WRITE (IPR,991) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTD,TWTD,
+     *                            (WMT(M),M=MLO,MHI)
+               ENDIF
             ENDIF                                                         A23790
-  170    CONTINUE                                                         A23800
+C     
+ 170     CONTINUE                                                         A23800
       ENDIF                                                               A23810
 C
 C     --------------------------------------------------------------
 C
-C     Write out mixing ratios for molecules to TAPE6
+C     Write out mixing ratios for molecules to TAPE6 in either
+C     15.7 format (IFORM = 1) or 10.4 format (IFORM = 0).
+C
+C           Reset WDRAIR for each layer (WKL(M,L) now in column density)
 C
 C
-      WRITE (IPR,976) (HMOLID(I),I=1,7),HOLN2
-C
-      DO 172 L = 1, NLAYRS
-C
-C        Reset WDRAIR for each layer (WKL(M,L) now in column density)
-C
-         WDRAIR = WBRODL(L)
-         DO 171 M = 2,NMOL
-            WDRAIR = WDRAIR + WKL(M,L)
- 171     CONTINUE
-C
-         IF (IFORM.EQ.1) THEN
+      IF (IFORM.EQ.1) THEN
+         WRITE (IPR,976) (HMOLID(I),I=1,7),HOLN2
+         DO 172 L = 1, NLAYRS
+            WDRAIR = WBRODL(L)
+            DO 171 M = 2,NMOL
+               WDRAIR = WDRAIR + WKL(M,L)
+ 171        CONTINUE
             WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *           TAVEL(L),
      *           IPTH(L),(WKL(M,L)/WDRAIR,M=1,7),WBRODL(L)
-         ELSE
+ 172     CONTINUE
+      ELSE
+         WRITE (IPR,977) (HMOLID(I),I=1,7),HOLN2
+         DO 174 L = 1, NLAYRS
+            WDRAIR = WBRODL(L)
+            DO 173 M = 2,NMOL
+               WDRAIR = WDRAIR + WKL(M,L)
+ 173        CONTINUE
             WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *           TAVEL(L),
      *           IPTH(L),(WKL(M,L)/WDRAIR,M=1,7),WBRODL(L)
-         ENDIF
- 172  CONTINUE
+ 174     CONTINUE
+      ENDIF
+C
 C
       IF (NMOL.GT.7) THEN
-         DO 174 MLO = 8, NMOL, 8
+         DO 178 MLO = 8, NMOL, 8
             MHI = MLO+7
             MHI = MIN(MHI,NMOL)
             IF (NLAYRS.LT.5) THEN
@@ -2399,17 +2442,20 @@ C
             ELSE
                WRITE (IPR,945) XID,(YID(M),M=1,2)
             ENDIF
-            WRITE (IPR,976) (HMOLID(I),I=MLO,MHI)
-            DO 173 L = 1, NLAYRS
-               IF (IFORM.EQ.1) THEN
+            IF (IFORM.EQ.1) THEN
+               WRITE (IPR,976) (HMOLID(I),I=MLO,MHI)
+               DO 176 L = 1, NLAYRS
                   WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR,M=MLO,MHI)
-               ELSE
+ 176           CONTINUE
+            ELSE
+               WRITE (IPR,977) (HMOLID(I),I=MLO,MHI)
+               DO 177 L = 1, NLAYRS
                   WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR,M=MLO,MHI)
-               ENDIF
- 173        CONTINUE
- 174     CONTINUE
+ 177           CONTINUE
+            ENDIF
+ 178     CONTINUE
       ENDIF
 C
 C     --------------------------------------------------------------
@@ -2426,23 +2472,32 @@ C
             ELSE                                                          A23880
                WRITE (IPR,995) XID,(YID(M),M=1,2)                         A23890
             ENDIF                                                         A23900
-            WRITE (IPR,975) (XSNAME(I),I=MLO,MHI)                         A23910
-            DO 180 L = 1, NLAYRS                                          A23920
-               IF (IFRMX.EQ.1) THEN
+            IF (IFRMX.EQ.1) THEN
+               WRITE (IPR,974) (XSNAME(I),I=MLO,MHI)                      A23910
+               DO 180 L = 1, NLAYRS                                       A23920
                   WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),   A23930
      *                 TAVEL(L),IPTH(L),(XAMNT(M,L),M=MLO,MHI)            A23940
-               ELSE
+ 180           CONTINUE
+               IF (NLAYRS.GT.1) THEN
+                  WRITE (IPR,985)
+                  L = NLAYRS
+                  WRITE (IPR,990) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTX,TWTX,
+     *                            (WXT(M),M=MLO,MHI)
+               ENDIF
+            ELSE
+               WRITE (IPR,975) (XSNAME(I),I=MLO,MHI)
+               DO 181 L = 1, NLAYRS
                   WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *                 TAVEL(L),IPTH(L),(XAMNT(M,L),M=MLO,MHI)
-               ENDIF
-  180       CONTINUE                                                      A23950
-            IF (NLAYRS.GT.1) THEN                                         A23960
-               WRITE (IPR,985)                                            A23970
-               L = NLAYRS                                                 A23980
-               WRITE (IPR,990) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTX,TWTX,       A23990
-     *                         (WXT(M),M=MLO,MHI)                         A24000
+ 181           CONTINUE
+               IF (NLAYRS.GT.1) THEN                                      A23950
+                  WRITE (IPR,985)                                         A23960
+                  L = NLAYRS                                              A23970
+                  WRITE (IPR,991) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTX,TWTX,    A23980
+     *                            (WXT(M),M=MLO,MHI)                      A23990
+               ENDIF                                                      A24000
             ENDIF                                                         A24010
-  190    CONTINUE                                                         A24020
+ 190     CONTINUE                                                         A24020
 C
 C     --------------------------------------------------------------
 C
@@ -2450,19 +2505,23 @@ C        Write out mixing ratios for cross sectional
 C             molecules to TAPE6
 C
 C
-         DO 195 MLO = 1, IXMOLS, 8
+         DO 198 MLO = 1, IXMOLS, 8
             MHI = MLO+7
             MHI = MIN(MHI,IXMOLS)
-            WRITE (IPR,976) (XSNAME(I),I=MLO,MHI)
-            DO 195 L = 1, NLAYRS
-               IF (IFRMX.EQ.1) THEN
+            IF (IFRMX.EQ.1) THEN
+               WRITE (IPR,976) (XSNAME(I),I=MLO,MHI)
+               DO 195 L = 1, NLAYRS
                   WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *                 TAVEL(L),IPTH(L),(XAMNT(M,L)/WDRAIR,M=MLO,MHI)
-               ELSE
+ 195           CONTINUE
+            ELSE
+               WRITE (IPR,977) (XSNAME(I),I=MLO,MHI)
+               DO 196 L = 1, NLAYRS
                   WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *                 TAVEL(L),IPTH(L),(XAMNT(M,L)/WDRAIR,M=MLO,MHI)
-               ENDIF
- 195        CONTINUE
+ 196           CONTINUE
+            ENDIF
+ 198     CONTINUE
 C
 C     --------------------------------------------------------------
 C
@@ -2492,7 +2551,11 @@ C                                                                         A24050
   942 FORMAT (/,'0 SECANTX  =',F13.4,/'0 NLAYXS=',I4,/'0 ISMOLS=',I4,/,   A24230
      *        '0',15A4)                                                   A24240
   945 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X))                                A24250
-  950 FORMAT ('0','LAYER',25X,'P(MB)',3X,'T(K)',4X,'ALPHL',4X,'ALPHD',    A24260
+  948 FORMAT ('0   ****** DVSET is set from input ******')
+  950 FORMAT ('0','LAYER',26X,'P(MB)',7X,'T(K)',4X,'ALPHL',4X,'ALPHD',    A24260
+     *        4X,'ALPHV',3X,'ZETA',2X,'CALC DV',2X,'H2OSLF',5X,'DV',5X,   A24270
+     *        'TYPE',' ITYPE IPATH ',3X,'SECANT'/)                        A24280
+  951 FORMAT ('0','LAYER',25X,'P(MB)',3X,'T(K)',4X,'ALPHL',4X,'ALPHD',    A24260
      *        4X,'ALPHV',3X,'ZETA',2X,'CALC DV',2X,'H2OSLF',5X,'DV',5X,   A24270
      *        'TYPE',' ITYPE IPATH ',3X,'SECANT'/)                        A24280
   953 FORMAT ('0 ***** EXACT CALCULATED DV USED IN CALCULATION *****')
@@ -2511,15 +2574,21 @@ C                                                                         A24050
   965 FORMAT (/,20X,'  TYPE GT 2.5')                                      A24340
   967 FORMAT ('  RATIO ERROR ',F10.3,'  DVSET = ',F10.4,'  DV=',F10.4)    A24350
   970 FORMAT (////)                                                       A24360
+  974 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,32X,    A24370
+     *        'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(A10,4X))                  A24380
   975 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,29X,    A24370
-     *        'P(MB)',7X,'T(K)',1X,'IPATH',1X,8(1X,A6,3X))                A24380
+     *        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,A6,3X))
   976 FORMAT (/,'1',54X,'----------------------------------',
+     *         /,'0',60X,'MIXING RATIOS BY LAYER ',/,32X,
+     *        'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(A10,4X))                  A24380
+  977 FORMAT (/,'1',54X,'----------------------------------',
      *         /,'0',60X,'MIXING RATIOS BY LAYER ',/,29X,
-     *        'P(MB)',7X,'T(K)',1X,'IPATH',1X,8(1X,A6,3X))
+     *        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,A6,3X))
   980 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,I5,2X,1P,8E15.7,0P)
   982 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,I5,2X,1P,8E10.3,0P)            A24390
   985 FORMAT ('0',54X,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH')     A24400
-  990 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,7X,1P,8E10.3,0P)               A24410
+  990 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,7X,1P,8E15.7,0P)               A24410
+  991 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,7X,1P,8E10.3,0P)               A24410
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                    A24420
      *        '     *****  CROSS SECTIONS  *****      ')                  A24430
 C                                                                         A24440
