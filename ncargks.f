@@ -2,6 +2,7 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
+C
       SUBROUTINE PLTID3 (PROGID,XSIZ,YSIZ,FAC)                            NC0010
 C                                                                         NC0020
 C----------------------------------------------------------------------   NC0030
@@ -41,7 +42,7 @@ C                                                                         NC0340
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       NC0350
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     NC0360
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      NC0370
-     *                JOUT,JPLTFL,JHDR,IFUNCT                             NC0380
+     *                JOUT,JPLTFL,JHDR,IFUNCT,NODUM                       NC0380
 C                                                                         NC0390
       COMMON /NCARID/ IFIRST                                              NC0400
 C
@@ -117,7 +118,7 @@ C                                                                         NC1040
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       NC1050
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     NC1060
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      NC1070
-     *                JOUT,JPLTFL,JHDR,IFUNCT                             NC1080
+     *                JOUT,JPLTFL,JHDR,IFUNCT,NODUM                       NC1080
 C                                                                         NC1090
       FAC = 0.141176471                                                   NC1100
       IF (IPEN.LT.0) THEN                                                 NC1110
@@ -190,7 +191,7 @@ C                                                                         NC1770
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       NC1780
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     NC1790
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      NC1800
-     *                JOUT,JPLTFL,JHDR,IFUNCT                             NC1810
+     *                JOUT,JPLTFL,JHDR,IFUNCT,NODUM                       NC1810
 C                                                                         NC1820
       DIMENSION X(*),Y(*)                                                 NC1830
 C                                                                         NC1840
