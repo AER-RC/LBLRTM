@@ -98,7 +98,7 @@ C*      R. F. CALFEE, K. FOX, L.S. ROTHMAN AND J. S. GARING               A00910
 C*                                                                        A00920
 C**********************************************************************   A00930
 C*                                                                        A00940
-C*       FSCATM - ATMOSPHERIC OPTICAL PROPERTIES                          A00950
+C*       LBLATM - ATMOSPHERIC OPTICAL PROPERTIES                          A00950
 C*                SPHERICAL REFRACTIVE GEOMETRY                           A00960
 C*                                                                        A00970
 C*    AFGL ATMOSPHERIC CONSTITUENT PROFILES (0-120 KM)  AFGL-TR-86-0110   A00980
@@ -223,7 +223,7 @@ C-    TAPE5       LBLRTM  INPUT FILE                                      A02160
 C-                                                                        A02170
 C-    TAPE6       LBLRTM  OUTPUT FILE                                     A02180
 C-                                                                        A02190
-C-    TAPE7       FILE OF MOLECULAR COLUMN AMOUNTS FROM FSCATM            A02200
+C-    TAPE7       FILE OF MOLECULAR COLUMN AMOUNTS FROM LBLATM            A02200
 C-                               ONLY FOR IATM=1; IPUNCH=1 (CARD 2.1)     A02210
 C-                                                                        A02220
 C-    TAPE9       FILE OF EFFECTIVE LINES FOR LBLF4 CREATED BY LINF4      A02230
@@ -727,7 +727,7 @@ C                                                                         A07080
 C                                                                         A07082
       IF (IFILTR.EQ.1) CALL FLTRFN (MFILE)                                A07090
 C                                                                         A07100
-      IF (IPLOT.NE.0) CALL PLTFAS (IENDPL)                                A07110
+      IF (IPLOT.NE.0) CALL PLTLBL (IENDPL)                                A07110
 C                                                                         A07120
    70 CONTINUE                                                            A07130
       CALL CPUTIM (TIME1)                                                 A07140
@@ -1591,7 +1591,7 @@ C                                                                         A16850
 C                                                                         A16880
       IMPLICIT DOUBLE PRECISION (V)                                     ! A16890
 C                                                                         A16900
-C     OPPATH CALLS FSCATM AND CALLS PATH FIRST                            A16910
+C     OPPATH CALLS LBLATM AND CALLS PATH FIRST                            A16910
 C                                                                         A16920
       COMMON /PATHD/ PAVEL(67),TAVEL(67),WKL(35,67),WBRODL(67),DVL(67),   A16930
      *               WTOTL(67),ALBL(67),ADBL(67),AVBL(67),H2OSL(67),      A16940
@@ -1658,7 +1658,7 @@ C                                                                         A17510
 C                                                                         A17540
       NBNDF = 0                                                           A17550
 C                                                                         A17560
-C     SET AV1 AND AV2 FOR PASS TO FSCATM AND LOWTRN                       A17570
+C     SET AV1 AND AV2 FOR PASS TO LBLATM AND LOWTRN                       A17570
 C                                                                         A17580
       AV1 = V1                                                            A17590
       AV2 = V2                                                            A17600
@@ -1671,10 +1671,10 @@ C     IF LAYER GT 0 SAVE THE VECTORS                                      A17660
 C                                                                         A17670
             IF (IATM.GE.1.AND.IATM.LE.5) THEN                             A17680
 C                                                                         A17690
-C     CALL FSCATM TO COMPLETE GEOMETRY ON FINAL COMBINED LAYERS           A17700
-C     IF AEROSOLS PRESENT AND HORIZONTAL PATH SKIP CALL TO FSCATM         A17710
+C     CALL LBLATM TO COMPLETE GEOMETRY ON FINAL COMBINED LAYERS           A17700
+C     IF AEROSOLS PRESENT AND HORIZONTAL PATH SKIP CALL TO LBLATM         A17710
 C                                                                         A17720
-               CALL FSCATM                                                A17730
+               CALL LBLATM                                                A17730
 C                                                                         A17740
                IF (IHIRAC.EQ.0) RETURN                                    A17750
 C                                                                         A17760
@@ -1688,7 +1688,7 @@ C                                                                         A17790
 C                                                                         A17840
             IREAD = 0                                                     A17850
 C                                                                         A17860
-            CALL FSCATM                                                   A17870
+            CALL LBLATM                                                   A17870
 C                                                                         A17880
             NBNDF = NLAYRS+1                                              A17890
 C                                                                         A17900
