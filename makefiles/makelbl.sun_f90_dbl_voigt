@@ -7,18 +7,17 @@ SHELL = /bin/sh
 # Set variables
 ###############################
 
-PLATFORM = SGI
+PLATFORM = SUN
 
 
 FC = f90
-#FCFLAG = -mips4 -r10000 -lfastm -O3 -64 -TENV:X=0
-FCFLAG = -mips4 -r10000 -lfastm -O3 -TENV:X=0
-OUTPUT = lblrtm_v8.2_f90_sgi_sgl
+FCFLAG = -fast -xtypemap=real:64,double:64,integer:64
+OUTPUT = lblrtm_v8.2_f90_sun_dbl_voigt
 CPATH = src
-CDOTO = sgi_sgl.o
+CDOTO = sun_f90_dbl.o
 
 CLBL = lblrtm
-COPR = oprop
+COPR = oprop_voigt
 CCNT = contnm
 CXMG = xmerge
 CTST = testmm
@@ -27,10 +26,10 @@ CLOW = lbllow
 CPST = postsub
 CFFT = fftscn
 CPLT = pltlbl
-CUTL = util_sgi
+CUTL = util_sun
 CDUM = lbldum
 CSOL = solar
-CNLT = nonlte
+CNLT = nonlte_voigt
 
 
 OBJFIL = $(CLBL).o \
