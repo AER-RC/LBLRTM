@@ -277,7 +277,7 @@ C
          BNDTST = ABS(BNDRFL(1))+ABS(BNDRFL(2))+ABS(BNDRFL(3))
          IF (BNDTST.NE.0.) IBPROP = 1
 C
-C        If BNDEMI(1) < 0, read in coefficients from file 'EMISSION'
+C        If BNDEMI(1) < 0, read in coefficients from file 'EMISSIVITY'
 C        If BNDEMI(1) > 0, check to see if emissivity is reasonable
 C
 C        UNIT ICOEF used for input files
@@ -285,7 +285,7 @@ C
          ICOEF = 14
 C         
          IF (BNDEMI(1).LT.0) THEN
-            OPEN (UNIT=ICOEF,FILE='EMISSION',STATUS='OLD')
+            OPEN (UNIT=ICOEF,FILE='EMISSIVITY',STATUS='OLD')
             CALL READEM(ICOEF)
             CLOSE (ICOEF)
          ELSE
@@ -301,11 +301,11 @@ C        ------------------------------------------------------------
 C        *** NOTE: REFLECTION FUNCTION NOT CURRENTLY INCORPORATED ***
 C        *** INTO SOLAR RADIATIVE TRANSFER CALCULATION            ***
 C
-C        If BNDRFL(1) < 0, read in coefficients from file 'REFLECTION'
+C        If BNDRFL(1) < 0, read in coefficients from file 'REFLECTIVITY'
 C        If BNDRFL(1) > 0, check to see if reflectivity is reasonable
 C     
          IF (BNDRFL(1).LT.0) THEN
-            OPEN (UNIT=ICOEF,FILE='REFLECTION',STATUS='OLD')
+            OPEN (UNIT=ICOEF,FILE='REFLECTIVITY',STATUS='OLD')
             CALL READRF(ICOEF)
             CLOSE (ICOEF)
          ELSE

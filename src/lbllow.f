@@ -71,7 +71,7 @@ C     FORMAT(I5,18A4)                                                    FL00320
 C                                                                        FL00330
 C     RECORD 3.5 IS REPEATED ML TIMES                                    FL00340
 C                                                                        FL00350
-C     RECORD 3.5   ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,                         FL00360
+C     RECORD 3.5   ZMDL,AHAZE,EQLWCZ,RRATZ,IHAZ1,                         FL00360
 C     ICLD1,IVUL1,ISEA1,ICHR1                                            FL00370
 C     FORMAT (4F10.3,5I5)                                                FL00380
 C                                                                        FL00390
@@ -224,7 +224,7 @@ C     > 0 USER DEFINED EXTINCTION COEFFICIENT                            FL01850
 C                                                                        FL01860
 C     ISEED    = RANDOM NUMBER INITIALIZATION FLAG.                      FL01870
 C     0 USE DEFAULT MEAN VALUES FOR CIRRUS                               FL01880
-C     > 0 INITIAL VALUE OF SEED FOR RANF FUNCTION                        FL01890
+C     > 0 INITIAL VALUE OF SEED FOR RANDM FUNCTION                        FL01890
 C                                                                        FL01900
 C                                                                        FL01910
 C     ****************************************************************** FL01920
@@ -263,7 +263,7 @@ C                                                                        FL02240
 C     RECORD 3.5 IS REPEATED ML TIMES                                    FL02250
 C                                                                        FL02260
 C     RECORD 3.5                                READ IN AERNSM           FL02270
-C     ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,ISEA1,ICHR1               FL02280
+C     ZMDL,AHAZE,EQLWCZ,RRATZ,IHAZ1,ICLD1,IVUL1,ISEA1,ICHR1               FL02280
 C     (IAERSL=7)                                                         FL02290
 C     FORMAT(4F10.3,5I5)                                                 FL02300
 C                                                                        FL02310
@@ -279,16 +279,16 @@ C     FOR THE AEROSOL, CLOUD OR FOG MODELS                               FL02400
 C                                                                        FL02410
 C     RRATZ  = RAIN RATE (MM/HR) AT ALT ZMDL                             FL02420
 C                                                                        FL02430
-C     IHA1 AEROSOL MODEL USED FOR SPECTRAL DEPENDENCE OF EXTINCTION      FL02440
+C     IHAZ1 AEROSOL MODEL USED FOR SPECTRAL DEPENDENCE OF EXTINCTION      FL02440
 C                                                                        FL02450
 C     IVUL1 STRATOSPHERIC AERSOL MODEL USED FOR SPECTRAL DEPENDENCE      FL02460
 C     OF EXT AT ZMDL                                                     FL02470
 C                                                                        FL02480
 C     ICLD1 CLOUD MODEL USED FOR SPECTRAL DEPENDENCE OF EXT AT ZMDL      FL02490
 C                                                                        FL02500
-C     ONLY ONE OF IHA1, ICLD1 OR IVUL1 IS ALLOWED                        FL02510
-C     IHA1 NE 0 OTHERS IGNORED                                           FL02520
-C     IHA1 EQ 0 AND ICLD1 NE 0 USE ICLD1                                 FL02530
+C     ONLY ONE OF IHAZ1, ICLD1 OR IVUL1 IS ALLOWED                        FL02510
+C     IHAZ1 NE 0 OTHERS IGNORED                                           FL02520
+C     IHAZ1 EQ 0 AND ICLD1 NE 0 USE ICLD1                                 FL02530
 C                                                                        FL02540
 C     IF AHAZE AND EQLWCZ ARE BOTH ZERO, DEFAULT PROFILE LOADED          FL02550
 C     ACCORDING TO IHAZ1,ICLD1,IVUL1                                     FL02560
@@ -1029,7 +1029,7 @@ C                                                                        FL09080
          WH(K) = 0.                                                      FL09100
          WO(K) = 0.                                                      FL09110
          DP = 0                                                          FL09120
-         IHA1 = 0                                                        FL09130
+         IHAZ1 = 0                                                        FL09130
          ICLD1 = 0                                                       FL09140
          ISEA1 = 0                                                       FL09150
          IVUL1 = 0                                                       FL09160
@@ -1070,34 +1070,34 @@ C        FOR AEROSOL, CLOUD OR FOG MODELS                                FL09500
 C                                                                        FL09510
 C        RRATZ=RAIN RATE (MM/HR) AT ALT Z                                FL09520
 C                                                                        FL09530
-C        IHA1 AEROSOL MODEL USED FOR SPECTRAL DEPENDENCE OF EXTINCTION   FL09540
+C        IHAZ1 AEROSOL MODEL USED FOR SPECTRAL DEPENDENCE OF EXTINCTION   FL09540
 C                                                                        FL09550
 C        IVUL1 STRATOSPHERIC AERSOL MODEL USED FOR SPECTRAL DEPENDENCE   FL09560
 C        OF EXT AT Z                                                     FL09570
 C                                                                        FL09580
 C        ICLD1 CLOUD MODEL USED FOR SPECTRAL DEPENDENCE OF EXT AT Z      FL09590
 C                                                                        FL09600
-C        ONLY ONE OF IHA1,ICLD1  OR IVUL1 IS ALLOWED                     FL09610
-C        IHA1 NE 0 OTHERS IGNORED                                        FL09620
-C        IHA1 EQ 0 AND ICLD1 NE 0 USE ICLD1                              FL09630
+C        ONLY ONE OF IHAZ1,ICLD1  OR IVUL1 IS ALLOWED                     FL09610
+C        IHAZ1 NE 0 OTHERS IGNORED                                        FL09620
+C        IHAZ1 EQ 0 AND ICLD1 NE 0 USE ICLD1                              FL09630
 C                                                                        FL09640
 C        IF AHAZE AND EQLWCZ ARE BOUTH ZERO                              FL09650
-C        DEFAULT PROFILE ARE LOADED FROM IHA1,ICLD1,IVUL1                FL09660
+C        DEFAULT PROFILE ARE LOADED FROM IHAZ1,ICLD1,IVUL1                FL09660
 C        ISEA1 = AERSOL SEASON CONTROL FOR ALTITUDE Z                    FL09670
 C                                                                        FL09680
 C        C    IF(IRD2 .EQ. 1) THEN                                       FL09690
 C                                                                        FL09700
          IF (IAERSL.EQ.7) THEN                                           FL09710
-            READ (IRD,915) ZMDL(K),AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,  FL09720
-     *         ISEA1,ICHR                                                FL09730
-            WRITE (IPR,915) ZMDL(K),AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1, FL09740
-     *         ISEA1,ICHR                                                FL09750
+            READ (IRD,915)  ZMDL(K),AHAZE,EQLWCZ,RRATZ,IHAZ1,ICLD1,
+     *         IVUL1,ISEA1,ICHR                                    
+            WRITE (IPR,915) ZMDL(K),AHAZE,EQLWCZ,RRATZ,IHAZ1,ICLD1,
+     *         IVUL1,ISEA1,ICHR                                    
 C                                                                        FL09760
             IF (ICHR.EQ.1) THEN                                          FL09770
-               IF (IHA1.EQ.0) THEN                                       FL09780
+               IF (IHAZ1.EQ.0) THEN                                       FL09780
                   IF (ICLD1.NE.11) ICHR = 0                              FL09790
                ELSE                                                      FL09800
-                  IF (IHA1.NE.7) ICHR = 0                                FL09810
+                  IF (IHAZ1.NE.7) ICHR = 0                                FL09810
                ENDIF                                                     FL09820
             ENDIF                                                        FL09830
             INEW(K) = KLO-1                                              FL09840
@@ -1130,13 +1130,13 @@ C                                                                        FL10090
          IF (ICLD1.EQ.0) ICLD1 = ICLD                                    FL10110
          ICLDL = ICLD1                                                   FL10120
          IF (ICLD1.GT.11) ICLD1 = 0                                      FL10130
-         IF (IHA1.NE.0) IVUL1 = 0                                        FL10140
-         IF (IHA1.NE.0) ICLD1 = 0                                        FL10150
+         IF (IHAZ1.NE.0) IVUL1 = 0                                        FL10140
+         IF (IHAZ1.NE.0) ICLD1 = 0                                        FL10150
          IF (ICLD1.NE.0) IVUL1 = 0                                       FL10160
          IF ((AHAZE.NE.0.).OR.(EQLWCZ.NE.0.)) GO TO 100                  FL10170
          IF (RRATZ.NE.0.) GO TO 100                                      FL10180
          IF ((IVSA.EQ.1).AND.(ICLD1.EQ.0)) THEN                          FL10190
-            CALL LAYVSA (K,RH,AHAZE,IHA1,ZSTF)                           FL10200
+            CALL LAYVSA (K,RH,AHAZE,IHAZ1,ZSTF)                           FL10200
          ELSE                                                            FL10210
             CALL LAYCLD (K,EQLWCZ,RRATZ,IAERSL,ICLD1,GNDALT,RAINRT)      FL10220
             IF (ICLD1.LT.1) GO TO 100                                    FL10230
@@ -1161,30 +1161,30 @@ C                                                                        FL10090
          ENDIF                                                           FL10420
          AHAST(K) = AHAZE                                                FL10430
 C                                                                        FL10440
-C        IHA1  IS IHAZE FOR THIS LAYER                                   FL10450
+C        IHAZ1  IS IHAZE FOR THIS LAYER                                   FL10450
 C        ISEA1 IS ISEASN FOR THIS LAYER                                  FL10460
 C        IVUL1 IS IVULCN FOR THE LAYER                                   FL10470
 C                                                                        FL10480
          IF (ISEA1.EQ.0) ISEA1 = ISEASN                                  FL10490
          ITYAER = IHAZE                                                  FL10500
-         IF (IHA1.GT.0) ITYAER = IHA1                                    FL10510
+         IF (IHAZ1.GT.0) ITYAER = IHAZ1                                    FL10510
          IF (IVUL1.GT.0) IVULCN = IVUL1                                  FL10520
          IF (IVUL1.LE.0) IVUL1 = IVULCN                                  FL10530
 C                                                                        FL10540
          IF (K.EQ.1) GO TO 130                                           FL10550
          IF (ICHR.EQ.1) GO TO 120                                        FL10560
          IF (ICLD1.NE.IREGC(IC1)) GO TO 110                              FL10570
-         IF (IHA1.EQ.0.AND.ICLD1.EQ.0) THEN                              FL10580
+         IF (IHAZ1.EQ.0.AND.ICLD1.EQ.0) THEN                              FL10580
             IF (ZSC.GT.2.) ITYAER = 6                                    FL10590
             IF (ZSC.GT.10.) ITYAER = IVULCN+10                           FL10600
             IF (ZSC.GT.30.) ITYAER = 19                                  FL10610
             IF (ITYAER.EQ.ICH(IC1)) GO TO 130                            FL10620
          ENDIF                                                           FL10630
-         IF (ICLD1.EQ.0.AND.IHA1.EQ.0) GO TO 120                         FL10640
+         IF (ICLD1.EQ.0.AND.IHAZ1.EQ.0) GO TO 120                         FL10640
          N = 7                                                           FL10650
          IF (IC1.GT.1) N = IC1+10                                        FL10660
-         IF (IHA1.EQ.0) GO TO 130                                        FL10670
-         IF (IHA1.NE.ICH(IC1)) GO TO 120                                 FL10680
+         IF (IHAZ1.EQ.0) GO TO 130                                        FL10670
+         IF (IHAZ1.NE.ICH(IC1)) GO TO 120                                 FL10680
          GO TO 130                                                       FL10690
   110    IF (ICLD1.NE.0) THEN                                            FL10700
             IF (ICLD1.EQ.IREGC(1)) THEN                                  FL10710
@@ -1205,7 +1205,7 @@ C                                                                        FL10540
                GO TO 140                                                 FL10860
             ENDIF                                                        FL10870
          ELSE                                                            FL10880
-            IF (IHA1.EQ.0.AND.ICLD1.EQ.0) THEN                           FL10890
+            IF (IHAZ1.EQ.0.AND.ICLD1.EQ.0) THEN                           FL10890
                IF (ZSC.GT.2.) ITYAER = 6                                 FL10900
                IF (ZSC.GT.10.) ITYAER = IVULCN+10                        FL10910
                IF (ZSC.GT.30.) ITYAER = 19                               FL10920
@@ -1245,7 +1245,7 @@ C                                                                        FL11160
 C                                                                        FL11260
 C        FOR LVSA OR CLD OR RAIN ONLY                                    FL11270
 C                                                                        FL11280
-  140    IF (IHA1.LE.0) IHA1 = IHAZE                                     FL11290
+  140    IF (IHAZ1.LE.0) IHAZ1 = IHAZE                                     FL11290
 C                                                                        FL11300
          DENSTY(7,K) = 0.                                                FL11310
          DENSTY(12,K) = 0.                                               FL11320
@@ -1358,8 +1358,8 @@ C                                                                        FL12230
             IDSR = IDSR+1                                                FL12390
          ENDIF                                                           FL12400
          IF (AHAZE.GT.0.0) GO TO 200                                     FL12410
-         CALL AERPRF (J,K,VIS1,HAZ1,IHA1,ICLD1,ISEA1,IVUL1,NN)           FL12420
-         CALL AERPRF (L,K,VIS1,HAZ2,IHA1,ICLD1,ISEA1,IVUL1,NN)           FL12430
+         CALL AERPRF (J,K,VIS1,HAZ1,IHAZ1,ICLD1,ISEA1,IVUL1,NN)           FL12420
+         CALL AERPRF (L,K,VIS1,HAZ2,IHAZ1,ICLD1,ISEA1,IVUL1,NN)           FL12430
          HAZE = 0.                                                       FL12440
          IF ((HAZ1.LE.0.0).OR.(HAZ2.LE.0.0)) GO TO 190                   FL12450
          HAZE = HAZ1*(HAZ2/HAZ1)**FAC                                    FL12460
@@ -1377,7 +1377,7 @@ C                                                                        FL12230
          ENDIF                                                           FL12580
   210    CONTINUE                                                        FL12590
          ITY1(K) = ITYAER                                                FL12600
-         IH1(K) = IHA1                                                   FL12610
+         IH1(K) = IHAZ1                                                   FL12610
          IF (AHAZE.NE.0) IH1(K) = -99                                    FL12620
          IS1(K) = ISEA1                                                  FL12630
          IVL1(K) = IVUL1                                                 FL12640
@@ -1418,7 +1418,7 @@ C                                                                        FL12950
          IF (ITYAER.EQ.16) ITYAER = 11                                   FL13010
          IF (ITYAER.EQ.17) ITYAER = 11                                   FL13020
          IF (ITYAER.EQ.18) ITYAER = 13                                   FL13030
-         IHA1 = IH1(KK)                                                  FL13040
+         IHAZ1 = IH1(KK)                                                  FL13040
          ISEA1 = IS1(KK)                                                 FL13050
          IVUL1 = IVL1(KK)                                                FL13060
 C                                                                        FL13070
@@ -3272,7 +3272,7 @@ C                                                                        FL28340
 C
 C     *****************************************************************
 C
-      SUBROUTINE LAYVSA(K,RH,AHAZE,IHA1,ZSTF)                            FL28430
+      SUBROUTINE LAYVSA(K,RH,AHAZE,IHAZ1,ZSTF)                            FL28430
 C                                                                        FL28440
 C     RETURNS HAZE FOR VSA OPTION                                        FL28450
 C                                                                        FL28460
@@ -3310,13 +3310,13 @@ C
 C
       RH = 0.                                                            FL28600
       AHAZE = 0                                                          FL28610
-      IHA1 = 0                                                           FL28620
+      IHAZ1 = 0                                                           FL28620
       IF (MODEL.EQ.0) GO TO 10                                           FL28630
       IF (K.GT.9) RETURN                                                 FL28640
       ZMDL(K) = ZVSA(K)                                                  FL28650
       RH = RHVSA(K)                                                      FL28660
       AHAZE = AHVSA(K)                                                   FL28670
-      IHA1 = IHVSA(K)                                                    FL28680
+      IHAZ1 = IHVSA(K)                                                    FL28680
       RETURN                                                             FL28690
 C                                                                        FL28700
 C     MODEL 7 CODEING                                                    FL28710
@@ -3344,7 +3344,7 @@ C                                                                        FL28810
       DIF = ZVSA(JN)-ZVSA(JL)                                            FL28930
       DZ = ZVSA(JN)-ZSTF(K)                                              FL28940
       DLIN = DZ/DIF                                                      FL28950
-      IHA1 = IHVSA(JL)                                                   FL28960
+      IHAZ1 = IHVSA(JL)                                                   FL28960
 C                                                                        FL28970
 C     FAC=(ZVSA(JL)-ZSTF  ( K))/DIF                                      FL28980
 C                                                                        FL28990

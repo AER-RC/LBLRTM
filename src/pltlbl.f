@@ -253,7 +253,7 @@ C                                                                         M02150
 C**********************************************************************   M02160
 C                                                                         M02170
       DATA I_0/0/, I_1/1/, I_3/3/, I_6/6/, I_10/10/, I_100/100/
-C                                                                         M06690
+C  
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
       HVRPLT =  '$Revision$'
@@ -1074,6 +1074,8 @@ C                                                                         M09050
      *     HVA / ' (VARIABLE)'/,             HHW / 'HWHM(CM-1)='/,        M09160
      *     HLR / 'NLAYERS  = '/,             H4C / 'H4CXAEISRM'/,         M09170
      *     HAMNTS / 'AMOUNTS (MOL/CM**2)'/,  HOTHER / ' OTHER '/          M09180
+C                                                                         M02170
+      DATA I_10/10/, I_100/100/
 C                                                                         M09190
       ICNTNM = MOD(IXSCNT,I_10)                                             M09200
       IXSECT = IXSCNT/10                                                  M09210

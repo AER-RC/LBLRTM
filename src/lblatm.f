@@ -7803,7 +7803,7 @@ C IDEAL GAS LAW
          TOTAL_AIR = PM(J)*1.0E-4/(BTZ*TM(J))
          DRY_AIR = TOTAL_AIR - DENW(J)
          H2O_MIXRAT(J) = DENW(J)/DRY_AIR
-         CHIM = 0.6223*H2O_MIXRAT(J)
+         CHIM = XMASS_RATO*H2O_MIXRAT(J)
          COMP_FACTOR(J) = 1. - (PM(J)*100/TM(J))*
      *        (CA0 + CA1*DT + CA2*DT**2 + 
      *        (CB0 + CB1*DT)*CHIM + (CC0 + CC1*DT)*CHIM**2) + 

@@ -1437,6 +1437,8 @@ c
 C                                                                         H10170
       DATA FACTOR / 0.001 /                                               H10180
 C
+      DATA I_1/1/
+C
 C     ***************************************************
 C     Check for A < 0.  If so, use input values read in from file
 C     "REFLECTION"
