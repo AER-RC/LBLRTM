@@ -870,18 +870,6 @@ C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
             WVTMP(2) = 0.0
             ZTMP(2) = 0.0
 
-            IF (H1 .GT. PM(1)) THEN
-                PRINT 946, H1,PM(1)
-                WRITE (IPR,946) H1,PM(1)
-                STOP ' BOUNDARIES OUTSIDE OF ATMOS'  
-            ENDIF
-
-            IF (H2 .GT. PM(1)) THEN
-                PRINT 946, H2,PM(1)
-                WRITE (IPR,946) H2,PM(1)
-                STOP ' BOUNDARIES OUTSIDE OF ATMOS'  
-            ENDIF
-
             DO 166 LIP = 2,IMMAX
                IF (H1 .GT. PM(LIP)) GO TO 167
  166           CONTINUE
@@ -909,6 +897,12 @@ C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
                CALL CMPALT(2,PTMP,TTMP,WVTMP,
      &           ZTMP(1),REF_LAT,ZTMP)
                H1 = ZTMP(2)
+            ENDIF
+
+            IF (H1 .LT. 0.0) THEN
+               PRINT 946, H1,ZTMP(1)
+               WRITE (IPR,946) H1,ZTMP(1)
+               STOP ' COMPUTED ALTITUDE VALUE OF H1 IS NEGATIVE'
             ENDIF
 
             PTMP(1) = 0.0
@@ -948,6 +942,11 @@ C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
                CALL CMPALT(2,PTMP,TTMP,WVTMP,
      &           ZTMP(1),REF_LAT,ZTMP)
                H2 = ZTMP(2)
+            ENDIF
+            IF (H2 .LT. 0.0) THEN
+               PRINT 946, H2,ZTMP(1)
+               WRITE (IPR,946) H2,ZTMP(1)
+               STOP ' COMPUTED ALTITUDE VALUE OF H2 IS NEGATIVE'
             ENDIF
          ENDIF
 
