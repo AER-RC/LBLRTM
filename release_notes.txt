@@ -1,0 +1,52 @@
+
+LBLRTM_v7.01
+
+1) Completely new water vapor continuum model (0-20,000cm-1):  MT_CKD_1.00
+    See the release notes for the mt_ckd continuum for further details.
+    (E.J. Mlawer, D.C Tobin and S.A. Clough)
+
+2) LBLRTM modified to read the single precision SOLAR.RAD file when
+    running LBLRTM in double precision (solar applications)
+    (S.A. Clough).
+
+3) Fixed a bug when using cross sections (XS directory) specified on
+    pressure levels when the first reference altitude is zero.
+    (M.W. Shephard)
+
+4) For LBLATM (IATM=1), volume mixing ratio values on TAPE6 (output) have
+    been changed from ppv to ppmv with the units indicated in the text.
+    This provides consistency with volume mixing ratio input for LBLATM (TAPE5).
+    Note that the vmr variables internal to the code are ppv.
+    (M.W. Shephard)
+
+5) Increased the maximum number of LBLATM input levels from 3400 to 4000 in
+    order to input full radiosonde profiles.
+    (M.W. Shephard)
+
+6) Increased the portability of LBLRTM by providing makefiles and utilities
+    to run LBLRTM on IBM (AIX) and on OS X (Mac).
+    (S.A. Clough, M.W. Shephard, P. VanDelst, A. Goldman)
+
+    Note: This version of LBLRTM has been executed on the following platforms:
+
+     System     Mfr.        Compiler       sgl       dbl
+                                         
+      IRIX      SGI                       f90,f77   f90,f77
+      SOLARIS   SUN                       f90,f77   f90,f77   
+      AIX       IBM                       f90       f90	
+      LINUX     ----         PGI          f90     **f90**
+      OS X      Apple        Absoft       f90       f90
+                             g77 (gnu)    g77      
+
+   Makefiles are included for the compilers appearing in bold in the above table.
+
+   **f90** for compiling LINUX in double precision, the script "linux_dbl_script"
+           must be executed which includes the appropriate makefile.
+
+   LBLRTM has previously been run by us on DEC alpha, Cray, MS_dos, and HP
+   platforms.  The associated utilities used are included in this release but are likely outdated.
+
+
+    
+
+
