@@ -934,8 +934,8 @@ C                                                                        FA10530
      *        //,10X,'AMOUNTS (MOL CM-2):',T36,'AIR',(T32,8A10))         FA10760
   920 FORMAT (//,T30,1PE10.2,(T30,8E10.2))                               FA10770
   922 FORMAT (A4)                                                        FA10780
-  924 FORMAT (2I5,F10.6,3A8,' * ',F7.2,' KM PATH AT ',F7.2,' KM ALT')    FA10790
-  926 FORMAT (2F10.4,10X,I5,1X,F7.2,15X,F7.2,/,(1P8E10.2))               FA10800
+  924 FORMAT (2I5,F10.6,3A8,' * ',F7.3,' KM PATH AT ',F7.3,' KM ALT')    FA10790
+  926 FORMAT (2F10.4,10X,I5,1X,F7.3,15X,F7.3,/,(1P8E10.3))               FA10800
   928 FORMAT (//,' MULTIPLE SCATTERING TURNED OFF, HMIN = ',F10.6,       FA10810
      *        ' > HMAXMS = ',F10.6,/)                                    FA10820
   930 FORMAT (///,' SLANT PATH SELECTED, ITYPE = ',I5)                   FA10830
@@ -5018,10 +5018,10 @@ C                                                                        FX03150
      *        '  DOES NOT MATCH IOUTMX = ',I5)                           FX03260
   940 FORMAT (2(I5,5X),' THE FOLLOWING CROSS-SECTIONS WERE SELECTED:')   FX03270
   945 FORMAT (8A10)                                                      FX03280
-  950 FORMAT ('XS',I3,I5,F10.6,3A8,' * ',F7.2,' KM PATH AT ',F7.2,       FX03290
+  950 FORMAT ('  ',I3,I5,F10.6,3A8,' * ',F7.3,' KM PATH AT ',F7.3,       FX03290
      *        ' KM ALT')                                                 FX03300
-  955 FORMAT (2F10.4,10X,I5,1X,F7.2,15X,F7.2,/,(1P8E10.2))               FX03310
-  960 FORMAT ('XS',I3,I5,F10.6,2A8,' H1=',F8.2,' H2=',F8.2,' ANG=',      FX03320
+  955 FORMAT (2F10.4,10X,I5,1X,F7.3,15X,F7.3,/,(1P8E10.3))               FX03310
+  960 FORMAT ('  ',I3,I5,F10.6,2A8,' H1=',F8.3,' H2=',F8.3,' ANG=',      FX03320
      *        F8.3,' LEN=',I2)                                           FX03330
   965 FORMAT (//,'  LAYER AMOUNTS FOR THE CROSS-SECTION MOLECULES',//,   FX03340
      *        '           LAYER          AMOUNTS (MOLS/CM2)',/,          FX03350
