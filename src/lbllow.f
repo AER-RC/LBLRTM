@@ -8,6 +8,28 @@ C     CC                                                                 FL00020
 C     CC   STRIPPED DOWN VERSION OF LOWTRAN 7 TO RUN AS A SUBROUTINE     FL00030
 C     CC   TO SUPPLY LBLRTM WITH AEROSOLS,CLOUDS,FOGS AND RAIN           FL00040
 C     CC                                                                 FL00050
+c_______________________________________________________________________
+c
+c     1 May 2003
+c
+c     The interface between LBLRTM and LOWTRN has been substantially
+c     modified by S. A. Clough and M. W. Shephard.
+c
+c     In general, the overall strategy has been changed to have LOWTRN
+c     provide aerosol, cloud and rain properties on the LBLRTM 
+c     vertical grid.
+c
+c     The implications of this are that the any' user suppled' LOWTRN
+c     information should be provided on a vertical grid consistent with 
+c     that of LBLRTM.
+c
+c     The results have been checked for a number of options: downwelling 
+c     radiance, upwelling radiance, both at arbitrary zenith angles.
+c
+c     A known error is that the TANGENT case is NOT working properly.
+c
+c     Continued improvements of the interface will be implemented over 
+c     time.
 C                                                                        FL00060
 C     ****************************************************************** FL00070
 C     THIS SUBROUTINE IS ONLY USED FOR AEROSOLS AND CLOUDS               FL00080
@@ -315,7 +337,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FL03040
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,                    FL03040
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -327,11 +349,17 @@ C
 C
       CHARACTER*8      HMOD                                              FL03080
 C
-      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL03090
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL03100
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL03110
-     *     IMLOW,WGM(MXZMD),DENW(MXZMD)                                  FL03120
+      COMMON /CMN/ HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD),
+     *          ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
 C
+      COMMON /PATHD/ PBAR(MXLAY),TBAR(MXLAY),AMOUNT(MXMOL,MXLAY),        FA00530
+     *               WN2L(MXLAY),DVL(MXLAY),WTOTL(MXLAY),ALBL(MXLAY),    FA00540
+     *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FA00550
+     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA00560
+     *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA00570
+c 
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL03130
      *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL03140
      *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL03150
@@ -353,7 +381,7 @@ C
      *     WK(60),PZL,PZU,TZL,TZU,WN2   ,DVP,V1P,V2P,TBOUNF,EMISIV,      FL03290
      *     FSCDID(17),NMOL,LAYER,YI1,YID(10) ,LSTWDF                     FL03300
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL03310
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL03320
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL03320
       COMMON/MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                     FL03330
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL03340
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
@@ -434,6 +462,13 @@ C                                                                        FL03990
             ASYM(I,J) = 0.                                               FL04070
  18      CONTINUE 
  20   CONTINUE                                                           FL04080
+c
+C     CC                                                                 FL04440
+C     CC    OBTAIN ITYPE FROM LBLRTM CONTROL AS STORED IN COMMON ADRIVE  FL04450
+C     CC                                                                 FL04460
+C                                                                        FL04470
+      ITYPE = ITYPEF                                                     FL04480
+C                                                                        FL04490
       H1 = H1F                                                           FL04090
       NOPRNT = NOPRNF                                                    FL04100
       MODEL = MODELF                                                     FL04110
@@ -441,7 +476,7 @@ C                                                                        FL03990
       M1 = MODEL                                                         FL04130
       M2 = MODEL                                                         FL04140
       M3 = MODEL                                                         FL04150
-      ML = IMLOW                                                         FL04160
+c
 C                                                                        FL04170
       IF (ITYPE.EQ.1) THEN                                               FL04180
          LENF = 0                                                        FL04190
@@ -469,12 +504,6 @@ C                                                                        FL04340
       V2 = VL2                                                           FL04410
       RE = RO                                                            FL04420
 C                                                                        FL04430
-C     CC                                                                 FL04440
-C     CC    OBTAIN ITYPE FROM LBLRTM CONTROL AS STORED IN COMMON ADRIVE  FL04450
-C     CC                                                                 FL04460
-C                                                                        FL04470
-      ITYPE = ITYPEF                                                     FL04480
-C                                                                        FL04490
 C     CC                                                                 FL04500
 C     CC    SET TBOUND AND SALB TO ZERO NOT UTILIZED HERE                FL04510
 C     CC                                                                 FL04520
@@ -554,15 +583,18 @@ C                                                                        FL05240
       ZTVSA = -99.                                                       FL05260
       ZINVSA = -99.                                                      FL05270
 C                                                                        FL05280
-      IF (IVSA.EQ.0) GO TO 60                                            FL05290
-      READ (IRD,950) ZCVSA,ZTVSA,ZINVSA                                  FL05300
-      WRITE (IPR,955) ZCVSA,ZTVSA,ZINVSA                                 FL05310
+      IF (IVSA.ne.0) then                                                   FL05290
+         READ (IRD,950) ZCVSA,ZTVSA,ZINVSA                                  FL05300
+         WRITE (IPR,955) ZCVSA,ZTVSA,ZINVSA                                 FL05310
 C                                                                        FL05320
-      CALL VSA (IHAZE,VIS,ZCVSA,ZTVSA,ZINVSA,ZVSA,RHVSA,AHVSA,IHVSA)     FL05330
+         CALL VSA 
+     *        (IHAZE,VIS,ZCVSA,ZTVSA,ZINVSA,ZVSA,RHVSA,AHVSA,IHVSA)         FL05330
 C                                                                        FL05340
 C     END OF VSA MODEL SET-UP                                            FL05350
+c
+      endif
 C                                                                        FL05360
-   60 IF (MODEL.NE.0) ML = NL                                            FL05370
+      IF (MODEL.NE.0) ML = NL                                            FL05370
 C                                                                        FL05380
       IF (MDELS.NE.0) HMODEL(7) = HMODEL(MDELS)                          FL05390
       IF (MDELS.EQ.0) HMODEL(7) = HMODEL(8)                              FL05400
@@ -787,7 +819,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C     
 C
@@ -799,11 +831,19 @@ C
 C
       CHARACTER*8      HMOD                                              FL07530
 C
-      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL07540
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL07550
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL07560
-     *     IMMAX,WGM(MXZMD),DENW(MXZMD)                                  FL07570
+      COMMON /CMN/ HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD),
+     *          ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMMAX,WGM(MXZMD),DENW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
 C
+      COMMON /PATHD/ PBAR(MXLAY),TBAR(MXLAY),AMOUNT(MXMOL,MXLAY),        FA00530
+     *               WN2L(MXLAY),DVL(MXLAY),WTOTL(MXLAY),ALBL(MXLAY),    FA00540
+     *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FA00550
+c     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA00560
+     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(MXLAY+1),    FA00560
+c     *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA00570
+     *               PZ(MXLAY+1),TZ(MXLAY+1)                             FA00570
+c 
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL07580
      *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL07590
      *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL07600
@@ -815,7 +855,7 @@ C
       COMMON /LCRD2D/ IREG(4),ALTB(4),IREGC(4)                           FL07660
       COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL07670
       COMMON /LCRD4/ V1,V2,DV                                            FL07680
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL07690
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL07690
       COMMON /MART/ RHH                                                  FL07700
 c     COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL07710
 c    *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL07720
@@ -884,8 +924,8 @@ C                                                                        FL08210
       IREGC(4) = 0                                                       FL08250
       ICL = 0                                                            FL08260
       MLSV = ML                                                          FL08270
-      DO 10 I = 1, IMMAX                                                 FL08280
-         ZSTF(I) = ZM(I)                                                 FL08290
+      DO 10 I = 1, n_lvl
+         ZSTF(I) = ALTZ(I)                                                 FL08290
    10 CONTINUE                                                           FL08300
       ICONV = 1                                                          FL08310
       IRD0 = 1                                                           FL08320
@@ -913,18 +953,29 @@ C                                                                        FL08410
       IDSR = 0                                                           FL08540
       IF (ICLD.EQ.18.OR.ICLD.EQ.19) THEN                                 FL08550
          CALL CIRR18                                                     FL08560
-         CLDD = 0.1*CTHIK                                                FL08570
-         CLD0 = CALT-0.5*CLDD                                            FL08580
+c*****************%%%%%%%%%%%
+c         CLDD = 0.1*CTHIK                                                FL08570
+c         CLD0 = CALT-0.5*CLDD                                            FL08580
+c         IF (CLD0.LE.0.) CLD0 = 0.                                       FL08590
+c         CLD1 = CLD0+CLDD                                                FL08600
+c         CLD2 = CLD1+CTHIK-CLDD                                          FL08610
+c         CLD3 = CLD2+CLDD                                                FL08620
+
+         cld1 = calt
+         cld2 =calt + cthik
+
+         cld0 = cld1 - 0.010
          IF (CLD0.LE.0.) CLD0 = 0.                                       FL08590
-         CLD1 = CLD0+CLDD                                                FL08600
-         CLD2 = CLD1+CTHIK-CLDD                                          FL08610
-         CLD3 = CLD2+CLDD                                                FL08620
+         cld3 = cld2 + 0.010
 C                                                                        FL08630
 C        CLD1 1ST Z OF CIRRUS                                            FL08640
 C        CLD2 LST Z OF CIRRUS                                            FL08650
 C                                                                        FL08660
       ENDIF                                                              FL08670
-      CALL FLAYZ (ML,MODEL,ICLD,IAERSL,ZMDL,ZM,GNDALT,IVSA,IEMSCT)       FL08680
+c
+      CALL FLAYZ 
+     *   (ML,MODEL,ICLD,IAERSL,ZMDL,altz,n_lvl,GNDALT,IVSA,IEMSCT)      
+c
       DO 20 I = 1, ML                                                    FL08690
          JPRT = 1                                                        FL08700
          IF (MODEL.EQ.0.OR.MODEL.EQ.7) JPRT = 0                          FL08710
@@ -952,11 +1003,11 @@ C                                                                        FL08920
       IF (IAERSL.NE.7) THEN                                              FL08930
          DO 50 I = 1, ML                                                 FL08940
             INEW(I) = KLO-1                                              FL08950
-            IF (ZMDL(I).LT.ZM(KLO)) GO TO 50                             FL08960
+            IF (ZMDL(I).LT.ALTZ(KLO)) GO TO 50                             FL08960
    40       INEW(I) = KLO                                                FL08970
             KLO = KLO+1                                                  FL08980
             IF (KLO.GT.MLSV) GO TO 50                                    FL08990
-            IF (ZMDL(I).GT.ZM(KLO)) GO TO 40                             FL09000
+            IF (ZMDL(I).GT.ALTZ(KLO)) GO TO 40                             FL09000
    50    CONTINUE                                                        FL09010
       ENDIF                                                              FL09020
 C                                                                        FL09030
@@ -1041,11 +1092,11 @@ C                                                                        FL09760
                ENDIF                                                     FL09820
             ENDIF                                                        FL09830
             INEW(K) = KLO-1                                              FL09840
-            IF (ZMDL(K).LT.ZM(KLO)) GO TO 90                             FL09850
+            IF (ZMDL(K).LT.ALTZ(KLO)) GO TO 90                             FL09850
    80       INEW(K) = KLO                                                FL09860
             KLO = KLO+1                                                  FL09870
             IF (KLO.GT.MLSV) GO TO 90                                    FL09880
-            IF (ZMDL(K).GT.ZM(KLO)) GO TO 80                             FL09890
+            IF (ZMDL(K).GT.ALTZ(KLO)) GO TO 80                             FL09890
    90       CONTINUE                                                     FL09900
          ENDIF                                                           FL09910
          IF (IAERSL.NE.7) THEN                                           FL09920
@@ -1344,11 +1395,9 @@ C                                                                        FL12810
       IF (JPRT.EQ.0) WRITE (IPR,940)                                     FL12850
 C                                                                        FL12860
       IF (JPRT.EQ.1) GO TO 240                                           FL12870
+c
       DO 230 KK = 1, ML                                                  FL12880
-         ZM(KK) = ZMDL(KK)                                               FL12890
-         PF(KK) = P(KK)                                                  FL12900
-         TF(KK) = T(KK)                                                  FL12910
-         RELFAS(KK) = RELHUM(KK)                                         FL12920
+c
          K = KK                                                          FL12930
          IF (JPRT.EQ.1) GO TO 230                                        FL12940
 C                                                                        FL12950
@@ -1422,7 +1471,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 c     COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL13530
@@ -1502,7 +1551,7 @@ C     >    BLOCK DATA                                                    FL14220
 C                                                                        FL14230
 C     CLOUD AND RAIN   DATA                                              FL14240
 C                                                                        FL14250
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FL14260
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,                    FL14260
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FL14270
 C                                                                        FL14280
 c     COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL14290
@@ -1528,24 +1577,24 @@ C     C      75.0,      80.0,      85.0,      90.0,      95.0,           FL14430
 C     C     100.0,     105.0,     110.0,     115.0,     120.0/           FL14440
 C     CC   CLOUD MODELS 1-5                                              FL14450
 C                                                                        FL14460
-      DATA CLD1/ 0.0,0.0,0.0,0.2,0.35,1.0,1.0,1.0,0.3,0.15,3390*0.0/     FL14470
-      DATA CLD2/ 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.3,0.4,0.3,3390*0.0/       FL14480
-      DATA CLD3/ 0.0,0.0,0.15,0.30,0.15,3395*0.0/                        FL14490
-      DATA CLD4/ 0.0,0.0,0.0,0.10,0.15,0.15,0.10,3393*0.0/               FL14500
-      DATA CLD5/ 0.0,0.30,0.65,0.40,3396*0.0/                            FL14510
-      DATA CLD6/ 3400*0.0/                                               FL14520
-      DATA CLD7/ 3400*0.0/                                               FL14530
+      DATA CLD1/ 0.0,0.0,0.0,0.2,0.35,1.0,1.0,1.0,0.3,0.15,3990*0.0/     FL14470
+      DATA CLD2/ 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.3,0.4,0.3,3990*0.0/       FL14480
+      DATA CLD3/ 0.0,0.0,0.15,0.30,0.15,3995*0.0/                        FL14490
+      DATA CLD4/ 0.0,0.0,0.0,0.10,0.15,0.15,0.10,3993*0.0/               FL14500
+      DATA CLD5/ 0.0,0.30,0.65,0.40,3996*0.0/                            FL14510
+      DATA CLD6/ 4000*0.0/                                               FL14520
+      DATA CLD7/ 4000*0.0/                                               FL14530
 C                                                                        FL14540
 C     CC   RAIN MODELS 1-5                                               FL14550
 C                                                                        FL14560
-      DATA RR1/ 2.0,1.78,1.43,1.22,0.86,0.22,3394*0.0/                   FL14570
-      DATA RR2/ 5.0,4.0,3.4,2.6,0.8,0.2,3394*0.0/                        FL14580
-      DATA RR3/ 12.5,10.5,8.0,6.0,2.5,0.8,0.2,3393*0.0/                  FL14590
-      DATA RR4/ 25.0,21.5,17.5,12.0,7.5,4.2,2.5,1.0,0.7,0.2,3390*0.0/    FL14600
+      DATA RR1/ 2.0,1.78,1.43,1.22,0.86,0.22,3994*0.0/                   FL14570
+      DATA RR2/ 5.0,4.0,3.4,2.6,0.8,0.2,3994*0.0/                        FL14580
+      DATA RR3/ 12.5,10.5,8.0,6.0,2.5,0.8,0.2,3993*0.0/                  FL14590
+      DATA RR4/ 25.0,21.5,17.5,12.0,7.5,4.2,2.5,1.0,0.7,0.2,3990*0.0/    FL14600
       DATA RR5/ 75.0,70.0,65.0,60.0,45.0,20.0,12.5,7.0,3.5,              FL14610
-     * 1.0,0.2,3389*0.0/                                                 FL14620
-      DATA RR6/ 3400*0.0/                                                FL14630
-      DATA RR7/ 3400*0.0/                                                FL14640
+     * 1.0,0.2,3989*0.0/                                                 FL14620
+      DATA RR6/ 4000*0.0/                                                FL14630
+      DATA RR7/ 4000*0.0/                                                FL14640
 C                                                                        FL14650
 C     DATA CO2       /                                                   FL14660
 C                                                                        FL14670
@@ -1563,7 +1612,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -1575,19 +1624,28 @@ C
 C
       CHARACTER*8      HMOD                                              FL14730
 C
-      COMMON HMOD(3),Z1(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)         FL14740
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL14750
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL14760
-     *     IMLOW,WGM(MXZMD),DENW(MXZMD)                                  FL14770
+      COMMON /CMN/ HMOD(3),Zc(MXZMD),Pc(MXZMD),Tc(MXZMD),RFNDXM(MXZMD), 
+     *          ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
 C
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL14780
+C
+      COMMON /PATHD/ PBAR(MXLAY),TBAR(MXLAY),AMOUNT(MXMOL,MXLAY),        FA00530
+     *               WN2L(MXLAY),DVL(MXLAY),WTOTL(MXLAY),ALBL(MXLAY),    FA00540
+     *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FA00550
+c     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA00560
+     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(MXLAY+1),   
+c     *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA00570
+     *               PM(MXLAY+1),TM(MXLAY+1)                             FA00570
+c 
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL14780
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
       DIMENSION INEW( *)                                                 FL14790
       DIMENSION ZMDL( *),P(MXZMD),T(MXZMD)                               FL14800
 C                                                                        FL14810
 C     ZP BLANK COMMON UNUSED                                             FL14820
-C     Z1  BLANK COMMON LBLRTM ALTITUDES                                  FL14830
+C     ALTZ  BLANK COMMON LBLRTM ALTITUDES                                  FL14830
 C     ZMDL COMMON /MODEL/ FINAL ALTITUDE FOR LOWTRAN                     FL14840
 C                                                                        FL14850
 C     THIS ROUTINE INTERPOLATES P,T,AND H2O INTO                         FL14860
@@ -1601,8 +1659,8 @@ C                                                                        FL14930
       IF (JL.LT.1) JL = 1                                                FL14950
       JP = JL+1                                                          FL14960
       IF (JP.GT.ML) GO TO 40                                             FL14970
-      DIF = Z1(JP)-Z1(JL)                                                FL14980
-      FAC = (ZMDL(K)-Z1(JL))/DIF                                         FL14990
+      DIF = ALTZ(JP)-ALTZ(JL)                                                FL14980
+      FAC = (ZMDL(K)-ALTZ(JL))/DIF                                         FL14990
       P(K) = PM(JL)                                                      FL15000
       IF (PM(JP).LE.0.0.OR.PM(JL).LE.0.) GO TO 10                        FL15010
       P(K) = PM(JL)*(PM(JP)/PM(JL))**FAC                                 FL15020
@@ -1658,7 +1716,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -1762,7 +1820,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -1979,14 +2037,15 @@ C                                                                        FL18070
 C
 C     *****************************************************************
 C
-      SUBROUTINE FLAYZ(ML,MODEL,ICLD,IAERSL,ZMDL,ZM,GNDALT,IVSA,IEMSCT)  FL18370
+      SUBROUTINE FLAYZ(ML,MODEL,ICLD,IAERSL,ZMDL,ALTZ,n_lvl,
+     *     GNDALT,IVSA,IEMSCT) 
 C                                                                        FL18380
 C     SUBROUTINE TO CREATE FINAL LOWTRAN BOUNDRIES                       FL18390
 C                                                                        FL18400
 C     ZMDL COMMON /MODEL/ FINAL ALTITUDE FOR LOWTRAN                     FL18410
 C     ZCLD CLOUD ALTITUDE                                                FL18420
 C     ZK1 USED WITH VSA                                                  FL18430
-C     ZM BLANK COMMON LBLRTM ALTITUDES                                   FL18440
+C     ALTZ BLANK COMMON LBLRTM ALTITUDES                                   FL18440
 C     ZNEW ALTITUDES ABOVE THE CLOUD                                     FL18450
 C     ZNEWV ALTITUDES ABOVE THE 1ST 9 VSA ALTITUDES                      FL18460
 C     ZTST  =ZCLD(J)                                                     FL18470
@@ -1994,8 +2053,8 @@ C     ZVSA  VSA ALTITUDES                                                FL18480
 C                                                                        FL18490
       COMMON /LCRD2A/ CTHIK,CALT,CEXT                                    FL18500
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL18510
-      DIMENSION ZNEWV(24),ZM( *),ZMDL( *)                                FL18520
-      DIMENSION ZNEW(17),ZCLD(16),ZAER(34),ZST(34)                       FL18530
+      DIMENSION ZNEWV(24),ALTZ( *),ZMDL( *)                                FL18520
+      DIMENSION ZNEW(17),ZCLD(16),ZAER(34),ZST(234)                       FL18530
       DATA ZCLD/ 0.0,0.16,0.33,0.66,1.0,1.5,2.0,2.4,2.7,                 FL18540
      * 3.0,3.5,4.0,4.5,5.0,5.5,6.0/                                      FL18550
       DATA ZNEWV/1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,                 FL18560
@@ -2007,9 +2066,13 @@ C                                                                        FL18490
      *           20.,21.,22.,23.,24.,25.,30.,35.,40.,45.,                FL18620
      *           50.,70.,100.,   1000./                                  FL18630
       DATA DELZ /0.02/                                                   FL18640
-      IF (IAERSL.EQ.7) GO TO 250                                         FL18650
+
+      parameter (maxlay=205)
+
+      IF (IAERSL.EQ.7) GO TO 300                                         FL18650
 C                                                                        FL18660
       IF (MODEL.EQ.0) GO TO 140                                          FL18670
+c
       IF (IVSA.EQ.1) THEN                                                FL18680
          DO 10 I = 1, 9                                                  FL18690
             ZMDL(I) = ZVSA(I)                                            FL18700
@@ -2033,10 +2096,10 @@ C                                                                        FL18840
       ENDIF                                                              FL18880
 C                                                                        FL18890
       IF (ICLD.GE.1.AND.ICLD.LE.11) GO TO 110                            FL18900
-      DO 30 I = 1, ML                                                    FL18910
-         IF (ZM(I).GT.100.) GO TO 40                                     FL18920
+      DO 30 I = 1, n_lvl                                                    FL18910
+         IF (ALTZ(I).GT.100.) GO TO 40                                     FL18920
          IL = I                                                          FL18930
-         ZMDL(I) = ZM(I)                                                 FL18940
+         ZMDL(I) = ALTZ(I)                                                 FL18940
    30 CONTINUE                                                           FL18950
    40 ML = IL                                                            FL18960
 C                                                                        FL18970
@@ -2050,35 +2113,50 @@ C                                                                        FL19030
          ZMDL(I) =  REAL(I-1)*DALT+GNDALT                                FL19050
    50 CONTINUE                                                           FL19060
    60 IF (ICLD.EQ.18.OR.ICLD.EQ.19) THEN                                 FL19070
-         CLDD = 0.1*CTHIK                                                FL19080
-         CLD0 = CALT-0.5*CLDD                                            FL19090
-         CLD0 = MAX(CLD0,0.)                                             FL19100
-         CLD1 = CLD0+CLDD                                                FL19110
-         CLD2 = CLD1+CTHIK-CLDD                                          FL19120
-         CLD3 = CLD2+CLDD                                                FL19130
+c******%%%%%%%%
+c         CLDD = 0.1*CTHIK                                                FL19080
+c         CLD0 = CALT-0.5*CLDD                                            FL19090
+c         CLD0 = MAX(CLD0,0.)                                             FL19100
+c         CLD1 = CLD0+CLDD                                                FL19110
+c         CLD2 = CLD1+CTHIK-CLDD                                          FL19120
+c         CLD3 = CLD2+CLDD                                                FL19130
+
+         cld1 = calt
+         cld2 =calt + cthik
+
+         cld0 = cld1 - 0.010
+         IF (CLD0.LE.0.) CLD0 = 0.                                       FL08590
+         cld3 = cld2 + 0.010
+c
          DO 70 I = 1, ML                                                 FL19140
             IJ = I                                                       FL19150
-            IF (ZMDL(I).LT.CLD0) GO TO 70                                FL19160
+            IF (ZMDL(I).LT.CLD1) GO TO 70                                FL19160
             GO TO 80                                                     FL19170
    70    CONTINUE                                                        FL19180
-         GO TO 250                                                       FL19190
-   80    ML1 = ML-IJ                                                     FL19200
-         DO 90 I = 1, ML1                                                FL19210
-            ZST(I) = ZMDL(IJ+I-1)                                        FL19220
-   90    CONTINUE                                                        FL19230
+         GO TO 300                                                       FL19190
+   80    mcld = ij
+c     save model levels
+         DO 90 I = mcld, ML
+            ZST(I) = ZMDL(I)
+ 90      CONTINUE                                                        FL19230
+c     insert cloud- make small layers at cloud bottom and top
+c     to trick path intergration in geo
          ZMDL(IJ) = CLD0                                                 FL19240
          ZMDL(IJ+1) = CLD1                                               FL19250
          ZMDL(IJ+2) = CLD2                                               FL19260
          ZMDL(IJ+3) = CLD3                                               FL19270
-         II = 3                                                          FL19280
-         DO 100 I = 1, ML1                                               FL19290
+         IJ = IJ + 3                      
+c     restore rest of zmdl above cloud top
+         DO 100 I = mcld,ml
             IF (ZST(I).LT.CLD3) GO TO 100                                FL19300
-            II = II+1                                                    FL19310
-            IF ((IJ+II).GT.ML) GO TO 250                                 FL19320
-            ZMDL(IJ+II) = ZST(I)                                         FL19330
+            IJ = IJ+1                                                    FL19310
+            ZMDL(IJ) = ZST(I)         
   100    CONTINUE                                                        FL19340
       ENDIF                                                              FL19350
-      GO TO 250                                                          FL19360
+c
+      ml = ij
+c
+      GO TO 300                                                          FL19360
 C                                                                        FL19370
 C     STAND CLOUD                                                        FL19380
 C                                                                        FL19390
@@ -2094,18 +2172,21 @@ C                                                                        FL19440
          ZMDL(I) = ZNEW(J)                                               FL19490
   130 CONTINUE                                                           FL19500
       ML = I                                                             FL19510
-      GO TO 250                                                          FL19520
+      GO TO 300                                                          FL19520
 C                                                                        FL19530
 C     MODEL 7                                                            FL19540
 C                                                                        FL19550
   140 CONTINUE                                                           FL19560
-      IF (ICLD.EQ.0) GO TO 230                                           FL19570
-      IF (ICLD.EQ.20) GO TO 230                                          FL19580
-      IF (IVSA.EQ.1) GO TO 230                                           FL19590
-      IF (ML.EQ.1) GO TO 230                                             FL19600
+c
+      ml = n_lvl
+c
+      IF (ICLD.EQ.0) GO TO 280                                           FL19570
+      IF (ICLD.EQ.20) GO TO 280                                          FL19580
+      IF (IVSA.EQ.1) GO TO 280                                           FL19590
+      IF (ML.EQ.1) GO TO 280                                             FL19600
       KK = 0                                                             FL19610
-      DO 150 I = 1, ML                                                   FL19620
-         IF (ZM(I).GT.6.0) GO TO 160                                     FL19630
+      DO 150 I = 1, n_lvl                                                  FL19620
+         IF (ALTZ(I).GT.6.0) GO TO 160                                     FL19630
          KK = I                                                          FL19640
   150 CONTINUE                                                           FL19650
   160 IF (KK.LT.1) GO TO 200                                             FL19660
@@ -2114,30 +2195,30 @@ C                                                                        FL19670
       J = 1                                                              FL19690
       K = 1                                                              FL19700
   170 ZTST = ZCLD(J)                                                     FL19710
-      IF (ZCLD(J).LT.ZM(1)) THEN                                         FL19720
+      IF (ZCLD(J).LT.ALTZ(1)) THEN                                         FL19720
          J = J+1                                                         FL19730
          GO TO 170                                                       FL19740
       ENDIF                                                              FL19750
-      IF (ABS(ZTST-ZM(K)).LT.DELZ) GO TO 180                             FL19760
-      IF (ZTST.LT.ZM(K)) THEN                                            FL19770
+      IF (ABS(ZTST-ALTZ(K)).LT.DELZ) GO TO 180                             FL19760
+      IF (ZTST.LT.ALTZ(K)) THEN                                            FL19770
          ZMDL(I) = ZTST                                                  FL19780
          I = I+1                                                         FL19790
          J = J+1                                                         FL19800
       ELSE                                                               FL19810
-         ZMDL(I) = ZM(K)                                                 FL19820
+         ZMDL(I) = ALTZ(K)                                                 FL19820
          I = I+1                                                         FL19830
          K = K+1                                                         FL19840
       ENDIF                                                              FL19850
       GO TO 190                                                          FL19860
 C                                                                        FL19870
-  180 ZMDL(I) = ZM(K)                                                    FL19880
+  180 ZMDL(I) = ALTZ(K)                                                    FL19880
       I = I+1                                                            FL19890
       J = J+1                                                            FL19900
       K = K+1                                                            FL19910
 C                                                                        FL19920
   190 IF (K.GE.KK) GO TO 200                                             FL19930
       IF (J.GE.17) GO TO 200                                             FL19940
-      IF (I.GT.35) GO TO 220                                             FL19950
+      IF (I.GT.maxlay) GO TO 220                                             FL19950
       GO TO 170                                                          FL19960
 C                                                                        FL19970
   200 IF (KK.EQ.0) THEN                                                  FL19980
@@ -2145,19 +2226,75 @@ C                                                                        FL19970
          KK = 1                                                          FL20000
       ENDIF                                                              FL20010
 C                                                                        FL20020
-      DO 210 M = KK, ML                                                  FL20030
-         ZMDL(I) = ZM(M)                                                 FL20040
+      DO 210 M = KK, n_lvl                                                  FL20030
+         ZMDL(I) = ALTZ(M)                                                 FL20040
          I = I+1                                                         FL20050
-         IF (I.GT.35) GO TO 220                                          FL20060
+         IF (I.GT.maxlay) GO TO 220                                          FL20060
   210 CONTINUE                                                           FL20070
 C                                                                        FL20080
-  220 ML = I-1                                                           FL20090
-      GO TO 250                                                          FL20100
+  220 continue
+      ML = I-1                                                           FL20090
+
+c insert levels just above and below cloud bottom and top
+
+      IF (ICLD.EQ.18.OR.ICLD.EQ.19) THEN                                    FL19070
+c******%%%%%%%%
+c         CLDD = 0.1*CTHIK                                                FL19080
+c         CLD0 = CALT-0.5*CLDD                                            FL19090
+c         CLD0 = MAX(CLD0,0.)                                             FL19100
+c         CLD1 = CLD0+CLDD                                                FL19110
+c         CLD2 = CLD1+CTHIK-CLDD                                          FL19120
+c         CLD3 = CLD2+CLDD                                                FL19130
+
+         cld1 = calt
+         cld2 =calt + cthik
+
+         cld0 = cld1 - 0.010
+         IF (CLD0.LE.0.) CLD0 = 0.                                       FL08590
+         cld3 = cld2 + 0.010
+c
+         DO 225 I = 1, ML                                                 FL19140
+            IJ = I                                                       FL19150
+            IF (ZMDL(I).LT.CLD1) GO TO 225                                FL19160
+            GO TO 230                                                     FL19170
+ 225     CONTINUE                                                        FL19180
+         GO TO 300                                                       FL19190
+ 230     mcld = ij
+c     save model levels
+         DO 235 I = mcld, ML
+            ZST(I) = ZMDL(I)
+ 235     CONTINUE                                                        FL19230
+c     insert cloud- make small layers at cloud bottom and top
+c     to trick path intergration in geo
+         ZMDL(IJ) = CLD0                                                 FL19240
+         ZMDL(IJ+1) = CLD1                                               FL19250
+         ZMDL(IJ+2) = CLD2                                               FL19260
+         ZMDL(IJ+3) = CLD3                                               FL19270
+         IJ = IJ + 3                      
+c     restore rest of zmdl above cloud top
+         DO 240 I = mcld,ml
+            IF (ZST(I).LT.CLD3) GO TO 240                                FL19300
+            IJ = IJ+1                                                    FL19310
+            ZMDL(IJ) = ZST(I)         
+ 240     CONTINUE                                                        FL19340
+      ENDIF                                                              FL19350
+c
+      ml = ij
+c     
+
+
+
+      GO TO 300                                                          FL20100
+c____________________________________________________________________
 C                                                                        FL20110
-  230 DO 240 I = 1, ML                                                   FL20120
-         ZMDL(I) = ZM(I)                                                 FL20130
-  240 CONTINUE                                                           FL20140
-  250 RETURN                                                             FL20150
+ 280  CONTINUE
+      DO 285 I = 1, ML                                                   FL20120
+         ZMDL(I) = ALTZ(I)                                                 FL20130
+ 285  CONTINUE                                                           FL20140
+ 300  CONTINUE
+
+
+      RETURN  
       END                                                                FL20160
 C
 C     ******************************************************************
@@ -2194,7 +2331,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FL20400
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,                    FL20400
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FL20410
 C
 C
@@ -2206,14 +2343,26 @@ C
 C
       CHARACTER*8      HMOD                                              FL20440
 C
-      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL20450
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL20460
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),
-     *     IMLOW,WGM(MXZMD),DENW(MXZMD)
+      COMMON /CMN/ HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD),
+     *          ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
+C
+      COMMON /PATHD/ PBAR(MXLAY),TBAR(MXLAY),AMOUNT(MXMOL,MXLAY),        FA00530
+     *               WN2L(MXLAY),DVL(MXLAY),WTOTL(MXLAY),ALBL(MXLAY),    FA00540
+     *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FA00550
+     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA00560
+     *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA00570
 C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL20480
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL20490
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL20500
+c
+      COMMON /MODEL/ ZMDL(MXZMD),PMM(MXZMD),TMM(MXZMD),                  FL07730
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL07740
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
+
+c
       COMMON /RAIN/ RNPATH(IM2),RRAMTK(IM2)                              FL20510
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL20520
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL20530
@@ -2221,7 +2370,7 @@ C
       COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL20550
       COMMON /LCRD4/ V1,V2,DV                                            FL20560
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL20570
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL20580
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL20580
       COMMON /AER/ XX1,XX2,XX3,XX4,XX5,                                  FL20590
      *     YY1,YY2,YY3,YY4,YY5,ZZ1,ZZ2,ZZ3,ZZ4,ZZ5                       FL20600
       CHARACTER*8      XID,       HMOLID,      YID                     
@@ -2229,7 +2378,7 @@ C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      FL20620
      *     WK(60),PZL,PZU,TZL,TZU,WN2   ,DVP,V1P,V2P,TBOUNF,EMISIV,      FL20630
      *     FSCDID(17),NMOL,LAYER,YI1,YID(10) ,LSTWDF                     FL20640
-      REAL*8           VI1,VI2,V1P,V2P,VV                                FL20650
+      REAL*8           VI1,VI2,V1P,V2P,VV,v_mid                                FL20650
       COMMON /LPANEL/ VI1,VI2,DVV,NLIMAP                                 FL20660
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FL20670
      *     AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)                      FL20680
@@ -2238,6 +2387,8 @@ C
       EQUIVALENCE (XID(1),XFILHD(1))                                     FL20710
       DIMENSION XFILHD(2),PNLHDR(2),SRAI(MAXDV)                          FL20720
       DIMENSION ABST(MAXDV),SCTT(MAXDV),ASYT(MAXDV),ASYDM(MAXDV)         FL20730
+      DIMENSION ABST_st(MAXDV),SCTT_st(MAXDV),ASYT_st(MAXDV),
+     *     ASYDM_st(MAXDV)
       DIMENSION VID(6),VL10(5),SUMEXT(MAXDV)                             FL20740
       DATA VID/0.1,0.2,0.5,1.0,2.0,5.0/                                  FL20750
       DATA VL10/25.,50.,125.,250.,500./                                  FL20760
@@ -2306,7 +2457,10 @@ C                                                                        FL20980
          ASYT(I) = 0.                                                    FL21390
          SRAI(I) = 0.                                                    FL21400
          ASYDM(I) = 0.                                                   FL21410
-         SUMEXT(I) = 0.0                                                 FL21420
+         ABST_st(I) = 0.                                                    FL21370
+         SCTT_st(I) = 0.                                                    FL21380
+         ASYT_st(I) = 0.                                                    FL21390
+         ASYDM_st(I) = 0.                                                   FL21410
    80 CONTINUE                                                           FL21430
       REWIND IEXFIL                                                      FL21440
       CALL BUFOUT (IEXFIL,XFILHD(1),NFHDRF)                              FL21450
@@ -2319,7 +2473,13 @@ C     **   BEGINING OF   LAYER   LOOP                                    FL21510
 C                                                                        FL21520
       VI1 = V1                                                           FL21530
       VI2 = V2                                                           FL21540
-      IFL = 2                                                            FL21550
+      mid_v = nlim/2
+      v_mid = v1 + dvp*real(mid_v-1)
+
+c     initialize flag for buffering out and output layer count
+
+      i_bufout = 1
+      laycnt   = 1
 C                                                                        FL21560
       DO 130 IK = IKLO, IKMAX                                            FL21570
          W7 = WPATH(IK,7)                                                FL21580
@@ -2349,6 +2509,9 @@ C                                                                        FL21790
          NV = 0                                                          FL21820
          XKT = 0.6951*TBBY(IK)                                           FL21830
          BETAR = 1./XKT                                                  FL21840
+
+         rad_mid = RADFN(v_mid,XKT)    
+
 C                                                                        FL21850
 C        CC                                                              FL21860
 C        CC   BEGINNING OF FREQUENCY LOOP                                FL21870
@@ -2474,11 +2637,19 @@ C                                                                        FL23000
             ABST(NV) = ABST(NV)+ABT*RADRAT                               FL23070
             SCTT(NV) = SCTT(NV)+SCT*RADRAT                               FL23080
          ENDIF                                                           FL23090
+
 C                                                                        FL23100
 C        CC                                                              FL23110
 C        CC    CIRRUS CLOUD SHOULD BE ADDED IN LATER                     FL23120
 C        CC                                                              FL23130
 C                                                                        FL23140
+
+            IF (ASYDM(nv).GT.0.) THEN                                     FL23330
+               ASYT(nv) = ASYT(nv)/ASYDM(nv)                              FL23340
+            ELSE                                                         FL23350
+               ASYT(nv) = 0.                                              FL23360
+            ENDIF                                                        FL23370
+
          IF (VI.LT.V2) GO TO 90                                          FL23150
 C                                                                        FL23160
 C        CC                                                              FL23170
@@ -2489,35 +2660,76 @@ C        CC   ASYMMETRY PANELS OF LAYERS BY FREQUENCY                    FL23210
 C        CC   TO IEXFIL FOR USE IN LBLRTM                                FL23220
 C        CC                                                              FL23230
 C                                                                        FL23240
-         IF (IK.NE.IKMAX) THEN                                           FL23250
-            IF (IEMISS.EQ.1) THEN                                        FL23260
-               IF (ZP(IK+1).LT.ZOUT(IFL)) GO TO 130                      FL23270
-            ENDIF                                                        FL23280
-         ELSE                                                            FL23290
-            GO TO 110                                                    FL23300
-         ENDIF                                                           FL23310
-         DO 100 I = 1, MAXDV                                             FL23320
-            IF (ASYDM(I).GT.0.) THEN                                     FL23330
-               ASYT(I) = ASYT(I)/ASYDM(I)                                FL23340
-            ELSE                                                         FL23350
-               ASYT(I) = 0.                                              FL23360
-            ENDIF                                                        FL23370
-  100    CONTINUE                                                        FL23380
-  110    CONTINUE                                                        FL23390
-         IF ((IEMISS.GE.1).OR.(IK.EQ.IKMAX)) THEN                        FL23400
-            CALL BUFOUT (IEXFIL,PNLHDR(1),NPHDRF)                        FL23410
-            CALL BUFOUT (IEXFIL,ABST(1),NLIM)                            FL23420
-            CALL BUFOUT (IEXFIL,SCTT(1),NLIM)                            FL23430
-            CALL BUFOUT (IEXFIL,ASYT(1),NLIM)                            FL23440
-            DO 120 I = 1, MAXDV                                          FL23450
-               ABST(I) = 0.                                              FL23460
-               SCTT(I) = 0.                                              FL23470
-               ASYT(I) = 0.                                              FL23480
-               ASYDM(I) = 0.                                             FL23490
-  120       CONTINUE                                                     FL23500
-            IFL = IFL+1                                                  FL23510
+c  _____________________________________________
+
+         IF (((IEMISS.GE.1).OR.(IK.EQ.IKMAX)) ) THEN      
+
+            if (i_bufout .eq. -1) then
+c     store absorption, scattering and asymmetry for layer reduction
+               do 110 i=1,nlim
+
+                  abst_st(i) = abst_st(i)+abst(i)
+                  sctt_sum_i = sctt_st(i)+sctt(i)
+
+                  if (sctt_sum_i .gt. 0) then
+                     f_asym = sctt(i)/sctt_sum_i
+c    obtain a weighted average for the asymmetry paramter
+c                     asyt_st(i) = (1-f_asym)*asyt_st(i)+f_asym*asyt(i)
+                     asyt_st(i) = 
+     *                       asyt_st(i) - f_asym*(asyt_st(i)-asyt(i))
+                  else
+                     asyt_st(i) = 0.
+                  endif
+
+                  sctt_st(i) = sctt_sum_i
+
+ 110           continue
+            else
+               do 115 i=1,nlim
+                  abst_st(i) = abst(i)
+                  sctt_st(i) = sctt(i)
+                  asyt_st(i) = asyt(i)
+ 115           continue
+            endif
+c  _____________________________________________
+
+            if (abs(zmdl(ik+1)- zout(laycnt+1)) .gt. 0.001) then
+               i_bufout = -1
+               go to 122
+            else
+c
+               CALL BUFOUT (IEXFIL,PNLHDR(1),NPHDRF)
+c
+               CALL BUFOUT (IEXFIL,ABST_st(1),NLIM) 
+               CALL BUFOUT (IEXFIL,SCTT_st(1),NLIM) 
+               CALL BUFOUT (IEXFIL,ASYT_st(1),NLIM) 
+c
+               if (laycnt.eq.1) write(ipr,935) v_mid
+c
+               write(ipr,940) laycnt,zout(laycnt),zout(laycnt+1),
+     *                 rad_mid*ABST_st(mid_v),rad_mid*sctt_st(mid_v),
+     *                 asyt_st(mid_v)
+c  
+               DO 120 I = 1, nlim
+                  ABST_st(I) = 0.                                          FL23460
+                  SCTT_st(I) = 0.                                          FL23470
+                  ASYT_st(I) = 0.                                          FL23480
+                  ASYDM_st(I) = 0.                                         FL23490
+ 120           CONTINUE                                                    FL23500
+               laycnt = laycnt +1
+               i_bufout = 1
+            endif
          ENDIF                                                           FL23520
-C                                                                        FL23530
+c
+ 122     continue
+c
+         DO 125 I = 1, MAXDV                                             FL23450
+            ABST(I) = 0.                                                 FL23460
+            SCTT(I) = 0.                                                 FL23470
+            ASYT(I) = 0.                                                 FL23480
+            ASYDM(I) = 0.                                                FL23490
+ 125     CONTINUE                                                        FL23500
+c               
 C        ***END OF LAYER LOOP***    (IK LOOP)                            FL23540
 C                                                                        FL23550
   130 CONTINUE                                                           FL23560
@@ -2553,20 +2765,28 @@ C                                                                        FL23580
       IF (ICLD.EQ.20) WRITE (IPR,925) TCRRIS                             FL23860
       AB = 1.0-SUMA/(VI-V1)                                              FL23870
       WRITE (IPR,930) V1,VI,SUMA,AB                                      FL23880
+c
       RETURN                                                             FL23890
 C                                                                        FL23900
 C     **   FORMAT STATEMENTS FOR SPECTRAL DATA                           FL23910
 C     **   PAGE HEADERS                                                  FL23920
 C                                                                        FL23930
-  900 FORMAT('0 LOWTRAN WAVENUMBER INTERVAL **',3F10.3)                  FL23940
+  900 FORMAT(/,'1 LOWTRAN WAVENUMBER INTERVAL- V1P, V2P, DVP:',
+     *                                                  3F10.3,//)
   905 FORMAT(' CIRRUS NOT DEFINED BELOW 350 CM-1')                       FL23950
-  910 FORMAT ('1',/ 1X,'  FREQ WAVELENGTH  TOTAL    RAIN '//)       
+  910 FORMAT ('1',/ 1X,'  FREQ WAVELENGTH  TOTAL    RAIN '/)       
   915 FORMAT ('1',/ 1X,'  FREQ FREQUENCY   TOTAL    RAIN  ',        
      *                 /2X,' CM-1    GHZ  ',2(4X,'TRANS')/)         
   920 FORMAT(1X,F7.1,F8.3,10F9.4,F12.3)                                  FL23990
   925 FORMAT('0TRANSMISSION DUE TO CIRRUS = ',F10.4)                     FL24000
   930 FORMAT('0INTEGRATED ABSORPTION FROM ',F9.3,' TO ',F9.3,' CM-1 =',  FL24010
      * F10.2,' CM-1',/,' AVERAGE TRANSMITTANCE =',F6.4,/)                FL24020
+ 935  FORMAT(//,'    LAYER OPTICAL PROPERTIES AT',f12.3, 
+     * ' FOR THE PATH FROM Z(J) TO Z(J+1)',//,
+     * T3,'J',T10,'Z(J)',T19,'Z(J+1)',
+     * T27,'ABSORB',T37,'SCATTR',T47,'ASYM PAR',/,
+     * T10,'(KM)',T20,'(KM)',)
+ 940  format(i4,2f10.3,1p,3e10.2)
 C                                                                        FL24030
       END                                                                FL24040
 C
@@ -3005,11 +3225,15 @@ C     CC   A=41.*RR**(-0.21)                                             FL28170
 C     CC   D=DROP DIAMETER (CM)                                          FL28180
 C     CC                                                                 FL28190
 C                                                                        FL28200
+      REAL*8           V
+c
       REAL NZERO                                                         FL28210
       DATA NZERO /8000./                                                 FL28220
 C                                                                        FL28230
 C     CC                                                                 FL28240
 C                                                                        FL28250
+      freq = V
+c
       A = 41./RR**0.21                                                   FL28260
 C                                                                        FL28270
 C     CC                                                                 FL28280
@@ -3019,11 +3243,11 @@ C                                                                        FL28290
 C                                                                        FL28320
 C     CC                                                                 FL28330
 C                                                                        FL28340
-      IF (V.GE.350.0) THEN                                               FL28350
+      IF (FREQ.GE.350.0) THEN                                               FL28350
          TNRAIN = PI*NZERO/A**3                                          FL28360
          TNRAIN = TNRAIN/RADFLD                                          FL28370
       ELSE                                                               FL28380
-         TNRAIN = GMRAIN(V,TM,RR)                                        FL28390
+         TNRAIN = GMRAIN(FREQ,TM,RR)                                        FL28390
       ENDIF                                                              FL28400
       RETURN                                                             FL28410
       END                                                                FL28420
@@ -3043,10 +3267,10 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL28470
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL28470
       COMMON/MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                     FL28480
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)          FL28490
@@ -3139,7 +3363,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -3151,10 +3375,10 @@ C
 C
       CHARACTER*8      HMOD
 C
-      COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)
-      COMMON ZP(IM2),PP1(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),
-     *     IMMAX,WGM(MXZMD),DEMW(MXZMD)
+      COMMON /CMN/ HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD),
+     *         ZP(IM2),PP1(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMMAX,WGM(MXZMD),DEMW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
 C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL29210
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL29220
@@ -3170,7 +3394,7 @@ c    *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL29300
      *                 CLD(MXZMD,7),RR(MXZMD,7)                          FL29300
       COMMON /MDATA2/ZMDL(MXZMD),P(MXZMD),T(MXZMD)
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL29310
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL29320
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL29320
       COMMON /MODEL/ ZM(MXZMD),PM(MXZMD),TM(MXZMD),
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),
      *     CLDM(MXZMD),RRM(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
@@ -3344,12 +3568,8 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
-C
-C
-C     BLANK COMMON FOR ZMDL
-C
 C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL31010
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL31020
@@ -3360,7 +3580,7 @@ C
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)          FL31070
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),
      *     AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)                      FL31080
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISS,IKP,JH1                 FL31090
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISS,N_LVL,JH1                 FL31090
 C
       DIMENSION PTMP(MXZMD),TTMP(MXZMD),RTMP(MXZMD),                     FL31100
      *     DENTMP(16,MXZMD),ZMTP(MXZMD),RRAMTJ(MXZMD)                    FL31110
@@ -3377,7 +3597,7 @@ C
  10   CONTINUE                                                           FL31200
       IF (ITYPE.EQ.1) GO TO 130                                          FL31210
       IF (ML.LT.2) GO TO 130                                             FL31220
-      DO 20 I = 1, IKP                                                   FL31230
+      DO 20 I = 1, N_LVL                                                   FL31230
          DO 18 K = 1, 16 
             DENSTY(K,I) = 0.                                             FL31250
  18      CONTINUE     
@@ -3420,7 +3640,7 @@ C
          IF (L.GT.MAXATM) GO TO 100                                      FL31620
          GO TO 90                                                        FL31630
    80 CONTINUE                                                           FL31640
-   90 IF (I.EQ.IKP) GO TO 110                                            FL31650
+   90 IF (I.EQ.N_LVL) GO TO 110                                            FL31650
       I = I+1                                                            FL31660
       GO TO 30                                                           FL31670
 C                                                                        FL31680
@@ -3459,7 +3679,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
       COMMON/PRFD  / ZHT(34),HZ2K(34,5),FAWI50(34),FAWI23(34),           FL31920
@@ -3593,7 +3813,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
       PARAMETER (MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
 C
@@ -3606,10 +3826,10 @@ C
 C
       CHARACTER*8      HMOD                                              FL33130
 C
-      COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)         FL33140
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL33150
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL33160
-     *     IMMAX,WGM(MXZMD),DEMW(MXZMD)                                  FL33170
+      COMMON /CMN/ HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD),
+     *          ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMMAX,WGM(MXZMD),DEMW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
 C
 C     RFRPTH is dependent upon MXZMD (MXZ20=MXZMD+20;MX2Z3=2*MXZMD+3)
 C
@@ -3626,7 +3846,7 @@ C
       COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,REE,LEN                      FL33280
       COMMON /LCRD4/ V1,V2,DV                                            FL33290
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL33300
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL33310
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL33310
       COMMON/MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                     FL33320
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL33330
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
@@ -3905,7 +4125,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL35960
@@ -3937,7 +4157,7 @@ C     EARTH CENTERED ANGLE AND THE TOTAL DISTANCE RESPECTIVELY           FL36190
 C     FOR THE REFRACTED PATH FROM H1 TO H2                               FL36200
 C     ****************************************************************** FL36210
 C                                                                        FL36220
-      PARAMETER (MXZMD=3400, MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
+      PARAMETER (MXZMD=4000, MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL36230
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL36240
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL36250
@@ -3949,7 +4169,7 @@ C
       COMMON  /RFRPTH/ ZL(MXZ20),PL(MXZ20),TL(MXZ20),RFNDXL(MXZ20),      FL36280
      *     SL(MXZ20),PPSUML(MXZ20),TPSUML(MXZ20),RHOSML(MXZ20),          FL36290
      *     DENL(16,MXZ20),AMTL(16,MXZ20),LJ(MX2Z3)                       FL36300
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL36310
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL36310
 C
       DATA I_2/2/
 C
@@ -4138,7 +4358,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
       PARAMETER (MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
 C
@@ -4150,7 +4370,7 @@ C
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL38170
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL38180
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL38190
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL38190
 C
 C     RFRPTH is dependent upon MXZMD (MXZ20=MXZMD+20;MX2Z3=2*MXZMD+3)
 C
@@ -4248,11 +4468,11 @@ C     THIS SUBROUTINE CALCULATES THE REFRACTED PATH FROM Z1 TO Z2        FL39050
 C     WITH THE SIN OF THE INITIAL INCIDENCE ANGLE SINAI                  FL39060
 C     *****************************************************************  FL39070
 C                                                                        FL39080
-      PARAMETER (MXZMD=3400, MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
+      PARAMETER (MXZMD=4000, MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
 C
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL39090
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL39100
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL39110
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL39110
 C
 C     RFRPTH is dependent upon MXZMD (MXZ20=MXZMD+20;MX2Z3=2*MXZMD+3)
 C
@@ -4460,7 +4680,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -4472,12 +4692,12 @@ C
 C
       CHARACTER*8      HMOD                                              FL41050
 C
-      COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)         FL41060
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL41070
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL41080
-     *     IMMAX,WGM(MXZMD),DEMW(MXZMD)                                  FL41090
+      COMMON /CMN/ HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD),
+     *          ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMMAX,WGM(MXZMD),DEMW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
 C
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISS,IKP,JH1
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISS,N_LVL,JH1
       COMMON /MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                    FL41100
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL41110
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)          FL41120
@@ -4805,6 +5025,7 @@ C                                                                        FL44090
       EQUIVALENCE (FACEQ3(1,1),FACTOR(1,1,3))                            FL44210
       EQUIVALENCE (FACEQ4(1,1),FACTOR(1,1,4))                            FL44220
       EQUIVALENCE (FACEQ5(1,1),FACTOR(1,1,5))                            FL44230
+c
       DATA WVLTAB/.03,.033,.0375,.043,.05,.06,.075,.1,.15,.2,.25,.3,.5,  FL44240
      *.8,1.,2.,3.,4.,5.,5.5,6.,6.5,7.,8.,9.,10.,15./                     FL44250
       DATA WVNTBL/ 0.0000,                                               FL44260
@@ -5083,7 +5304,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -5095,12 +5316,13 @@ C
 C
       CHARACTER*8      HMOD                                              FL46930
 C
-      COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)         FL46940
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL46950
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL46960
-     *     IMMAX,WGM(MXZMD),DEMW(MXZMD)                                  FL46970
 C
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL46980
+      COMMON /CMN/ HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD),
+     *         ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2), PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMMAX,WGM(MXZMD),DEMW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
+C
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL46980
       COMMON /MODEL/ ZMDL (MXZMD),PM(MXZMD),TM(MXZMD),
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL46990
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)          FL47000
@@ -5539,7 +5761,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -5551,10 +5773,10 @@ C
 C
       CHARACTER*8      HMOD
 C
-      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),
-     *     IMLOW,WGM(MXZMD),DENW(MXZMD)
+      COMMON /CMN/ HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD),
+     *          ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
 C
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL51150
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL51160
@@ -5807,7 +6029,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -5819,10 +6041,10 @@ C
 C
       CHARACTER*8      HMOD                                              FL53620
 C
-      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL53630
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL53640
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL53650
-     *     IMLOW,WGM(MXZMD),DENW(MXZMD)                                  FL53660
+      COMMON /CMN/ HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD),
+     *          ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
 C
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL53670
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL53680
@@ -6940,7 +7162,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
 C         OBTAINED BY MERGING ZMDL AND ZOUT
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C
@@ -6952,10 +7174,10 @@ C
 C
       CHARACTER*8      HMOD                                              FL64730
 C
-      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL64740
-      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL64750
-     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL64760
-     *     IMLOW,WGM(MXZMD),DENW(MXZMD)                                  FL64770
+      COMMON /CMN/ HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD),
+     *          ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),
+     *          TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD),
+     *          AMTP(MXMOL,MXPDIM)                                        
 C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL64780
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL64790
@@ -7364,7 +7586,7 @@ C     J       19    REQUEST DEFAULT TO SPECIFIED MODEL ATMOSPHERE        FL68720
 C                                                                        FL68730
 C     ***************************************************************    FL68740
 C                                                                        FL68750
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
       PARAMETER (NCASE=15, NCASE2=NCASE-2)
 C
@@ -7485,7 +7707,7 @@ C     'JUNIT' GOVERNS CHOICE OF UNITS -                                  FL69820
 C                                                                        FL69830
 C     ****************************************************************** FL69840
 C                                                                        FL69850
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
       PARAMETER (NCASE=15, NCASE2=NCASE-2)
 C
@@ -8877,7 +9099,7 @@ C     PROGRAM. CONSTANTS RELATING TO THE ATMOSPHERIC PROFILES ARE STORED FL83580
 C     IN BLOCK DATA MLATMB.                                              FL83590
 C     ****************************************************************** FL83600
 C                                                                        FL83610
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=4000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
       COMMON /CONSTL/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL) 
@@ -8893,3 +9115,31 @@ C                                                                        FL83720
      *    36.46,80.92,127.91,51.45,60.08,30.03,52.46,28.014,             FL83760
      *    27.03, 50.49, 34.01, 26.03, 30.07, 34.00, 7*0./                FL83770
       END                                                                FL83780
+      SUBROUTINE YDIAR (IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH   M22460
+     *                 ,RAINRT,GNDALT,YID)                                M22470
+C                                                                         M22480
+C     IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT       M22490
+C                                                                         M22500
+      DIMENSION YID(10)                                                   M22510
+C                                                                         M22520
+      CHARACTER*8      YID                                              & M22530
+C                                                                         M22540
+      CHARACTER GOUT*64,BLNK*18                                           M22550
+      DATA BLNK / '                  '/                                   M22560
+      WRITE (GOUT,900) (YID(I),I=3,7)                                     M22570
+      IVIS = VIS*10                                                       M22580
+      IWSS = WSS*10                                                       M22590
+      IWHH = WHH*10                                                       M22600
+      IRAINR = RAINRT*10                                                  M22610
+      IGNDAL = GNDALT*10                                                  M22620
+      WRITE (GOUT(19:40),905) IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,IVIS,   M22630
+     *   IWSS,IWHH,IRAINR,IGNDAL                                          M22640
+      GOUT(1:18) = BLNK(1:18)                                             M22650
+      READ (GOUT,900) (YID(I),I=3,7)                                      M22660
+C                                                                         M22670
+      RETURN                                                              M22680
+C                                                                         M22690
+  900 FORMAT (8A8)                                                        M22700
+  905 FORMAT (4I1,I2,I1,I4,3I3,I2)                                        M22710
+C                                                                         M22720
+      END                                                                 M22730

@@ -2401,31 +2401,3 @@ C                                                                         M22400
   910 FORMAT (3F6.2)                                                      M22430
 C                                                                         M22440
       END                                                                 M22450
-      SUBROUTINE YDIAR (IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH   M22460
-     *                 ,RAINRT,GNDALT,YID)                                M22470
-C                                                                         M22480
-C     IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT       M22490
-C                                                                         M22500
-      DIMENSION YID(10)                                                   M22510
-C                                                                         M22520
-      CHARACTER*8      YID                                              & M22530
-C                                                                         M22540
-      CHARACTER GOUT*64,BLNK*18                                           M22550
-      DATA BLNK / '                  '/                                   M22560
-      WRITE (GOUT,900) (YID(I),I=3,7)                                     M22570
-      IVIS = VIS*10                                                       M22580
-      IWSS = WSS*10                                                       M22590
-      IWHH = WHH*10                                                       M22600
-      IRAINR = RAINRT*10                                                  M22610
-      IGNDAL = GNDALT*10                                                  M22620
-      WRITE (GOUT(19:40),905) IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,IVIS,   M22630
-     *   IWSS,IWHH,IRAINR,IGNDAL                                          M22640
-      GOUT(1:18) = BLNK(1:18)                                             M22650
-      READ (GOUT,900) (YID(I),I=3,7)                                      M22660
-C                                                                         M22670
-      RETURN                                                              M22680
-C                                                                         M22690
-  900 FORMAT (8A8)                                                        M22700
-  905 FORMAT (4I1,I2,I1,I4,3I3,I2)                                        M22710
-C                                                                         M22720
-      END                                                                 M22730
