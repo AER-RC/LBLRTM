@@ -118,6 +118,7 @@ C     presently: %H%  %T%
                           (LBLF4 extends bound of line by line calculation beyond 64 halfwidths from line center)
  
                      = 0  LBLF4 not activated (line by line bound is 64 halfwidths)
+                            (Note: if IHARAC>0 and line coupling is used in generating the input TAPE3 then ILBLF4 = 1)
                      = 1  line by line bound is 25 cm-1 for all layer pressures (altitudes)
                      = 2  line by line bound is 25 cm-1 for layers with pressures .GT. 0.5 mb
                                              and 5 cm-1 for layers with pressures .LE. 0.5 mb
