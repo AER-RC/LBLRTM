@@ -108,6 +108,7 @@ C                                                                         B00890
      *              PAVP2,RECTLC,TMPDIF,ILC                               B00950
       COMMON /FLFORM/ CFORM                                               B00960
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS
+      COMMON /IODFLG/ DVOUT
 C                                                                         B00970
       REAL L4TIM,L4TMR,L4TMS
       CHARACTER CFORM*11,KFILYR*6,CKFIL*4,KDFLYR*6,KDFIL*4                B00980
@@ -247,37 +248,38 @@ C                                                                         B01990
 C                                                                         B02190
       IF (IATM.GE.1.AND.IATM.LE.5) CALL YDIH1 (H1F,H2F,ANGLEF,YID)        B02200
 C                                                                         B02210
-C     IF IOD = 1 AND IMERGE = 1 THEN CALCULATE OPTICAL DEPTHS
-C     FOR EACH LAYER WITH DV = DVSET AND MAINTAIN SEPARATELY
-C     
+C     If IOD = 1 and IMERGE = 1 then calculate optical depths
+C     for each layer with DV = DVOUT (from DVSET in TAPE5, carried
+C     in by COMMON BLOCK /IODFLG/) and maintain separately
+C
+C     If IOD = 2 and IMERGE = 1 then calculate optical depths
+C     for each layer using the exact DV of each layer
+C
       IF (IOD.EQ.1.AND.IMRG.EQ.1) THEN                                    B02220
          WRITE (KFILYR,'(A4,I2.2)') CKFIL,LAYER                           B02230
          INQUIRE (UNIT=KFILE,OPENED=OP)                                   B02240
          IF (OP) CLOSE (KFILE)                                            B02250
          OPEN (KFILE,FILE=KFILYR,FORM=CFORM,STATUS='UNKNOWN')             B02260
          REWIND KFILE                                                     B02270
-         DVSAV = DV                                                       B02280
-         DVOUT = DVSET                                                    B02290
-         IF (DVOUT.NE.0.0) DV=DVOUT                                       B02300
+         DVSAV = DV
+         DV = DVOUT
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02310
+         DV = DVSAV
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02320
-         DV = DVSAV                                                       B02330
-      ELSE                                                                B02340
-         IF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
-            WRITE(KDFLYR,'(A4,I2.2)') KDFIL,LAYER
-            INQUIRE (UNIT=KFILE,OPENED=OP)
-            IF (OP) CLOSE (KFILE)
-            OPEN (KFILE,FILE=KDFLYR,FORM=CFORM,STATUS='UNKNOWN')
-            REWIND KFILE
-            DVOUT = DV
-            CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
-            IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3
-         ELSE
-            DVOUT = 0.0                                                   B02350
-            CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                          B02360
-            IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                B02370
-         ENDIF                                                            B02380
-      ENDIF
+      ELSEIF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
+         WRITE(KDFLYR,'(A4,I2.2)') KDFIL,LAYER
+         INQUIRE (UNIT=KFILE,OPENED=OP)
+         IF (OP) CLOSE (KFILE)
+         OPEN (KFILE,FILE=KDFLYR,FORM=CFORM,STATUS='UNKNOWN')
+         REWIND KFILE
+         DVOUT = DV
+         CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
+         IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3
+      ELSE
+         DVOUT = 0.0                                                      B02350
+         CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02360
+         IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02370
+      ENDIF                                                               B02380
 C                                                                         B02390
       IF (IHIRAC.EQ.9) THEN                                               B02400
          DO 50 M = 1, NMOL                                                B02410
@@ -373,7 +375,7 @@ C                                                                         B03280
       IF (ICNTNM.GE.1)                                                    B03310
      *    CALL XINT (V1ABS,V2ABS,DVABS,ABSRB,1.,VFT,DVR3,R3,N1R3,N2R3)    B03320
 C                                                                         B03330
-      CALL PANEL (R1,R2,R3,KFILE,JRAD,DVOUT,IENTER)                       B03340
+      CALL PANEL (R1,R2,R3,KFILE,JRAD,IENTER)                             B03340
 C                                                                         B03350
       IF (ISTOP.NE.1) THEN                                                B03360
          IF (ILBLF4.GE.1) THEN                                            B03370
@@ -935,7 +937,7 @@ C                                                                         B08730
       RETURN                                                              B08770
 C                                                                         B08780
       END                                                                 B08790
-      SUBROUTINE PANEL (R1,R2,R3,KFILE,JRAD,DVOUT,IENTER)                 B09990
+      SUBROUTINE PANEL (R1,R2,R3,KFILE,JRAD,IENTER)                       B09990
 C                                                                         B10000
       IMPLICIT DOUBLE PRECISION (V)                                     ! B10010
 C                                                                         B10020
@@ -985,6 +987,7 @@ C                                                                         B10350
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B10460
      *              NLNGTH,KDUMM,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B10470
      *              NLTEFL,LNFIL4,LNGTH4                                  B10480
+      COMMON /IODFLG/ DVOUT
       DIMENSION R1(*),R2(*),R3(*)                                         B10490
       DIMENSION PNLHDR(2)                                                 B10500
 C                                                                         B10510
@@ -1076,13 +1079,18 @@ C                                                                         B11260
 C     V1P IS FIRST FREQ OF PANEL                                          B11270
 C     V2P IS LAST FREQ OF PANEL                                           B11280
 C                                                                         B11290
+C     If DVOUT (carried in from COMMON BLOCK /IODFLG/) is zero,
+C     then no interpolation is necessary.  For nozero DVOUT
+C     (in case of IOD>0 and IMRG=1), call PNLINT.
+C
       IF (DVOUT.EQ.0.) THEN                                               B11300
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B11310
          CALL BUFOUT (KFILE,R1(NLO),NLIM)                                 B11320
 C                                                                         B11330
-         IF (NPTS.GT.0) CALL R1PRNT (R1,NLO,KFILE,IENTER)                 B11340
+         IF (NPTS.GT.0) CALL R1PRNT (V1P,DVP,NLIM,R1,NLO,NPTS,KFILE,
+     *                               IENTER)                              B11340
       ELSE                                                                B11350
-         CALL PNLINT (R1(NLO),DVOUT,IENTER)                               B11360
+         CALL PNLINT (R1(NLO),IENTER)                                     B11360
       ENDIF                                                               B11370
 C                                                                         B11380
       VFT = VFT+FLOAT(NLIM1-1)*DV                                         B11390
@@ -1113,7 +1121,7 @@ C                                                                         B11690
       RETURN                                                              B11700
 C                                                                         B11710
       END                                                                 B11720
-      SUBROUTINE PNLINT (R1,DVOUT,IENTER)                                 B11730
+      SUBROUTINE PNLINT (R1,IENTER)                                       B11730
 C                                                                         B11740
       IMPLICIT DOUBLE PRECISION (V)                                     ! B11750
 C                                                                         B11760
@@ -1152,6 +1160,7 @@ C                                                                         B12000
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B12070
      *              NLTEFL,LNFIL4,LNGTH4                                  B12080
       COMMON /R1SAV/ R1OUT(2410)                                          B12090
+      COMMON /IODFLG/ DVOUT
 C                                                                         B12100
       DIMENSION A1(0:100),A2(0:100),A3(0:100),A4(0:100)                   B12110
       DIMENSION R1(*)                                                     B12120
@@ -1170,6 +1179,8 @@ C
 C      CALL CPUTIM (TIME)                                                 B12220
 C      WRITE (IPR,900) TIME                                               B12230
 C                                                                         B12240
+C     The value of DVOUT is carried from COMMON BLOCK /IODFLG/
+C
       NPNXPO = NPNLXP                                                     B12250
       DVPO = DVOUT                                                        B12260
       NPPANL = 1                                                          B12270
@@ -1187,7 +1198,8 @@ C                                                                         B12360
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B12390
          CALL BUFOUT (KFILE,R1(1),NLIM)                                   B12400
 C                                                                         B12410
-         IF (NPTS.GT.0) CALL R1PRNT (R1,1,KFILE,IENTER)                   B12420
+         IF (NPTS.GT.0) CALL R1PRNT (V1P,DVP,NLIM,R1,1,NPTS,KFILE,
+     *                               IENTER)                              B12420
 C                                                                         B12430
          GO TO 40                                                         B12440
       ENDIF                                                               B12460
@@ -1228,10 +1240,24 @@ C     *** BEGINNING OF LOOP THAT DOES INTERPOLATION  ***
 C
    20 CONTINUE
 C
+C     Determine potential last point for the outgoing panel (2400 pts.)
+C
       V2PO = V1PO+FLOAT(LIMOUT)*DVOUT                                     B12860
 C                                                                         B12870
       IF (V2P.LE.V2PO+DVP.AND.ILAST.EQ.0.AND.NPPANL.LE.0) GO TO 40        B12880
 C                                                                         B12890
+C     Four possibilities:
+C       1a.  Last panel to be done, set the appropriate
+C            final output point and total number of points in panel.
+C
+C       1b.  Would be last panel, but need more incoming points to
+C            fill panel.
+C
+C       2a.  More panels to come, set last point in panel.
+C
+C       2b.  More panels to come, but need more incoming points to
+C            fill panel.
+C
       IF ((V1PO+(LIMOUT-1)*DVOUT).GT.V2) THEN                             B12900
          NLIM2 = (V2-V1PO)/DVOUT + 1.                                     B12910
          V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT                                 B12920
@@ -1240,6 +1266,15 @@ C                                                                         B12890
             NLIM2 = NLIM2+1
          ENDIF
          ILAST = 1
+         IF (V2PO.GT.V2P-DVP) THEN
+            NLIM2 = ((V2P-DVP-V1PO)/DVOUT) + 1.
+            V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT
+            IF (V2PO+DVOUT.LT.V2P-DVP) THEN
+               NLIM2 = NLIM2+1
+               V2PO = V2PO+DVOUT
+            ENDIF
+            ILAST = 0
+         ENDIF
       ELSE
          NLIM2 = LIMOUT
          V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT                                 B12930
@@ -1270,14 +1305,19 @@ C                                                                         B13110
      *               A4(JP)*R1(JJ+2)                                      B13170
    30 CONTINUE                                                            B13180
 C                                                                         B13190
-C     Buffer out whole panel (NLIM2 = 2400) or the remaining              B13200
-C     interpolated points                                                 B13210
+C     Two possibilities:
+C       1.  Buffer out whole panel (NLIM2 = 2400) or the remaining        B13200
+C           interpolated points                                           B13210
+C
+C       2.  Return to PANEL to obtain more incoming points to fill
+C           outgoing panel
 C
       IF (NLIM2.EQ.LIMOUT.OR.ILAST.EQ.1) THEN                             B13220
-         CALL PMNMX (R1OUT,NLIM,RMINO,RMAXO)                              B13230
+         CALL PMNMX (R1OUT,NLIM2,RMINO,RMAXO)                             B13230
          CALL BUFOUT (KFILE,PNLHDO(1),NPHDRF)                             B13240
          CALL BUFOUT (KFILE,R1OUT(1),NLIM2)                               B13250
-         IF (NPTS.GT.0) CALL R1PRNT (R1OUT,1,KFILE,IENTER)                B13260
+         IF (NPTS.GT.0) CALL R1PRNT (V1PO,DVOUT,NLIM2,R1OUT,1,NPTS,
+     *        KFILE,IENTER)                                               B13260
          NLIM1 = 1                                                        B13270
          NPPANL = 0                                                       B13280
          V1PO = V2PO+DVOUT                                                B13290
@@ -3201,11 +3241,10 @@ C                                                                         C12330
      *           -.100000E+01,-.100000E+01,-.100000E+01 /                 C12520
 C                                                                         C12530
       END                                                                 C12540
-      SUBROUTINE R1PRNT (R1,JLO,MFILE,IENTER)                             C12550
+      SUBROUTINE R1PRNT (V1P,DVP,NLIM,R1,JLO,NPTS,MFILE,IENTER)           C12550
 C                                                                         C12560
       IMPLICIT DOUBLE PRECISION (V)                                     ! C12570
 C                                                                         C12580
-      COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHFT,NPTS        C12590
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         C12600
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        C12610
      *              NLTEFL,LNFIL4,LNGTH4                                  C12620
