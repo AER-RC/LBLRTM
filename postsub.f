@@ -6,14 +6,15 @@ C
 C     --------------------------------------------------------------
       SUBROUTINE SCANFN (IFILE,JFILE)                                     I00010
 C                                                                         I00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! I00030
+      IMPLICIT REAL*8          (V)                                     ! I00030
 C                                                                         I00040
 C     DRIVER FOR CONVOLVING INSTRUMENTAL SCANNING FUNCTION                I00050
 C     WITH SPECTRUM                                                       I00060
 C                                                                         I00070
       COMMON S(3850),R1(5000),N1(5000)                                    I00080
 C                                                                         I00090
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & I00100
+      character*8      XID,       HMOLID,      YID,SCANID        
+      real*8               SECANT,       XALTZ 
 C                                                                         I00110
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -24,7 +25,7 @@ C                                                                         I00110
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I00160
      *               DVSC,XDUM,V1SHFT                                     I00170
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I00180
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I00190
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I00190
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I00200
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
@@ -535,13 +536,14 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE SCANRD (DVINT,IEMIT)                                     I04530
 C                                                                         I04540
-      IMPLICIT DOUBLE PRECISION (V)                                     ! I04550
+      IMPLICIT REAL*8          (V)                                     ! I04550
 C                                                                         I04560
 C     READ CONTROL CARD FOR SCANNING WITH WEIGHTING FUNCTIONS             I04570
 C                                                                         I04580
       COMMON S(3850),R1(5000)                                             I04590
 C                                                                         I04600
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & I04610
+      character*8      XID,       HMOLID,      YID,SCANID
+      real*8               SECANT,       XALTZ 
 C                                                                         I04620
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       I04630
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,   I04640
@@ -550,7 +552,7 @@ C                                                                         I04620
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I04670
      *               DVSC,XDUM,V1SHFT                                     I04680
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I04690
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I04700
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I04700
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I04710
       COMMON /SCSHAP/ HWFS,DXFS,NFS,NFMAXS
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
@@ -745,7 +747,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE SCNINT (IFILE,JFILE,DVINT,JEMIT,NPTS,IBUF)               I06310
 C                                                                         I06320
-      IMPLICIT DOUBLE PRECISION (V)                                     ! I06330
+      IMPLICIT REAL*8          (V)                                     ! I06330
 C                                                                         I06340
 C**********************************************************************   I06350
 C                                                                         I06360
@@ -767,7 +769,8 @@ C                                                                         I06500
       DIMENSION S(2406)                                                   I06520
       EQUIVALENCE (T(5),S(1))                                             I06530
 C                                                                         I06540
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & I06550
+      character*8      XID,       HMOLID,      YID        
+      real*8               SECANT,       XALTZ 
 C                                                                         I06560
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       I06570
      *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1C,V2C,TBOUND,   I06580
@@ -776,7 +779,7 @@ C                                                                         I06560
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I06610
      *               DVSC,XDUM,V1SHFT                                     I06620
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I06630
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I06640
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I06640
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      I06650
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     I06660
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I06670
@@ -955,14 +958,15 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE SCNMRG (IFILE,JFILE)                                     I08350
 C                                                                         I08360
-      IMPLICIT DOUBLE PRECISION (V)                                     ! I08370
+      IMPLICIT REAL*8          (V)                                     ! I08370
 C                                                                         I08380
 C     DRIVER FOR CONVOLVING INSTRUMENTAL SCANNING FUNCTION                I08390
 C     WITH SPECTRUM                                                       I08400
 C                                                                         I08410
       COMMON S(3850),R1(5000)                                             I08420
 C                                                                         I08430
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & I08440
+      character*8      XID,       HMOLID,      YID,SCANID
+      real*8               SECANT,       XALTZ 
 C                                                                         I08450
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       I08460
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,   I08470
@@ -971,7 +975,7 @@ C                                                                         I08450
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I08500
      *               DVSC,XDUM,V1SHFT                                     I08510
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I08520
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I08530
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I08530
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I08540
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
@@ -1187,7 +1191,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE SHRKSC (INIT,HWHM)                                       I10520
 C                                                                         I10530
-      IMPLICIT DOUBLE PRECISION (V)                                     ! I10540
+      IMPLICIT REAL*8          (V)                                     ! I10540
 C                                                                         I10550
 C     THIS SUBROUTINE COMPRESSES (SHRINKS) THE INPUT TO THE CONVOLUTION   I10560
 C     ROUTINE FOR THE SCANNING FUNCTION TO ACCELERATE THE CALCULATION     I10570
@@ -1196,7 +1200,7 @@ C                                                                         I10580
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   I10600
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I10610
      *               DVSC,XDUM,V1SHFT                                     I10620
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I10630
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I10630
       COMMON /RSCAN/ V1I,V2I,DVI,NLIM                                     I10640
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I10650
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I10660
@@ -1318,7 +1322,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE RDSCAN (S,JTREM,IFILE,ISCAN,IPRT)                        I11770
 C                                                                         I11780
-      IMPLICIT DOUBLE PRECISION (V)                                     ! I11790
+      IMPLICIT REAL*8          (V)                                     ! I11790
 C                                                                         I11800
 C     SUBROUTINE RDSCAN INPUTS PANELS FROM IFILE RESULTING                I11810
 C     FROM THE LBLRTM CALCULATION FOR CONVOLUTION                         I11820
@@ -1420,7 +1424,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE CONVSC (S,HWHMV1,R1,XF)                                  I12710
 C                                                                         I12720
-      IMPLICIT DOUBLE PRECISION (V)                                     ! I12730
+      IMPLICIT REAL*8          (V)                                     ! I12730
 C                                                                         I12740
 C     SUBROUTINE CONVSC PERFORMS THE CONVOLUTION WITH THE SELECTED        I12750
 C     SCANNING FUNCTION                                                   I12760
@@ -1429,7 +1433,7 @@ C                                                                         I12770
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I12790
      *               DVSC,XDUM,V1SHFT                                     I12800
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I12810
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I12820
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I12820
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I12830
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
@@ -1500,7 +1504,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE PANLSC (R1,JFILE,SUMR,NPTS)                              I13480
 C                                                                         I13490
-      IMPLICIT DOUBLE PRECISION (V)                                     ! I13500
+      IMPLICIT REAL*8          (V)                                     ! I13500
 C                                                                         I13510
 C     SUBROUTINE PANLSC OUTPUTS THE RESULTS OF THE SCANNING FUNCTION      I13520
 C     TO FILE JFILE                                                       I13530
@@ -1512,7 +1516,7 @@ C                                                                         I13540
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I13590
      *               DVSC,XDUM,V1SHFT                                     I13600
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I13610
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I13620
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I13620
       COMMON /SPANEL/ V1P,V2P,DV,NLIM                                     I13630
       DIMENSION PNLHDR(2)                                                 I13640
       DIMENSION R1(*),SUMR(*)                                             I13650
@@ -1587,7 +1591,7 @@ C
 C     --------------------------------------------------------------
 C
       SUBROUTINE PNLRCT (R1,JFILE,SUMR,NPTS)                              I14350
-      IMPLICIT DOUBLE PRECISION (V)                                       I14360
+      IMPLICIT REAL*8          (V)                                       I14360
 C                                                                         I14370
 C     SUBROUTINE PNLRCT OUTPUTS THE RESULTS OF THE SCANNING FUNCTION      I14380
 C     TO FILE JFILE                                                       I14390
@@ -1599,7 +1603,7 @@ C                                                                         I14400
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I14450
      *               DVSC,XDUM,V1SHFT                                     I14460
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I14470
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I14480
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I14480
       COMMON /SPANEL/ V1P,V2P,DV,NLIM                                     I14490
       DIMENSION PNLHDR(2)                                                 I14500
       DIMENSION R1(*),SUMR(*)                                             I14510
@@ -1667,7 +1671,7 @@ C                                                                         I14960
 C                                                                         I15060
   900    FORMAT('0 V1P =',F12.5,' V2P =',F12.5,' DVOUT =',F12.8,          I15070
      *   ' NLIM =',I10)                                                   I15080
-  905    FORMAT(1H0)                                                      I15090
+  905    FORMAT('0')
   910    FORMAT(I5,0PF12.5,1PE12.5,I15,0PF12.5,1PE12.5)                   I15100
 C                                                                         I15110
       END                                                                 I15120
@@ -1675,7 +1679,7 @@ C
 C     --------------------------------------------------------------
 C
       SUBROUTINE CNVRCT (S,HWHM,R1,XF)                                    I15130
-      IMPLICIT DOUBLE PRECISION (V)                                       I15140
+      IMPLICIT REAL*8          (V)                                       I15140
 C                                                                         I15150
 C     SUBROUTINE CNVRCT PERFORMS THE CONVOLUTION WITH AN ALTERNATE        I15160
 C     RECTANGULAR SCANNING FUNCTION (ADJACENT BOXES OF ONE SIZE,          I15170
@@ -1693,7 +1697,7 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I15230
      *              NLTEFL,LBL4FL,LNGTH4                                  I15240
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I15250
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I15270
       COMMON /RCTSV/ JN,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
       DIMENSION S(*),R1(*),XF(*)                                          I15290
@@ -1881,7 +1885,7 @@ C
 C     --------------------------------------------------------------
 C
       SUBROUTINE CNVVRC (S,AFOV,R1,XF)                                    I15130
-      IMPLICIT DOUBLE PRECISION (V)                                       I15140
+      IMPLICIT REAL*8          (V)                                       I15140
 C                                                                         I15150
 C     SUBROUTINE CNVVRC PERFORMS THE CONVOLUTION WITH A RECTANGULAR       I15160
 C     SCANNING FUNCTION OF VARIABLE SIZE, WHERE THE BOX SIZE IS           I15170
@@ -1913,7 +1917,7 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I15230
      *              NLTEFL,LBL4FL,LNGTH4                                  I15240
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I15250
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I15270
       COMMON /RCTSV/ JN,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
       DIMENSION S(*),R1(*),XF(*)                                          I15290
@@ -2110,7 +2114,7 @@ C
 C     --------------------------------------------------------------
 C
       SUBROUTINE CNVVRL (S,AFOV,R1,XF)                                    I15130
-      IMPLICIT DOUBLE PRECISION (V)                                       I15140
+      IMPLICIT REAL*8          (V)                                       I15140
 C                                                                         I15150
 C     SUBROUTINE CNVVRL PERFORMS THE CONVOLUTION WITH A RECTANGULAR       I15160
 C     SCANNING FUNCTION OF VARIABLE SIZE, WHERE THE BOX SIZE IS           I15170
@@ -2142,7 +2146,7 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I15230
      *              NLTEFL,LBL4FL,LNGTH4                                  I15240
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I15250
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I15270
       COMMON /RCTSV/ JN,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
       DIMENSION S(*),R1(*),XF(*)                                          I15290
@@ -2421,7 +2425,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE INTRPL (IFILE,JFILE)                                     J00010
 C                                                                         J00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! J00030
+      IMPLICIT REAL*8          (V)                                     ! J00030
 C                                                                         J00040
 C**********************************************************************   J00050
 C                                                                         J00060
@@ -2442,7 +2446,8 @@ C                                                                         J00190
       DIMENSION S(2406)                                                   J00210
       EQUIVALENCE (S(1),T(5))                                             J00220
 C                                                                         J00230
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & J00240
+      character*8      XID,       HMOLID,      YID        
+      real*8               SECANT,       XALTZ 
 C                                                                         J00250
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -2453,7 +2458,7 @@ C                                                                         J00250
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       J00300
      *               DVSC,XDUM,V1SHFT                                     J00310
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 J00320
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J00330
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J00330
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J00340
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J00350
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         J00360
@@ -2663,7 +2668,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE RDPANL (S,JTREM,IFILE,ISCAN,JEMIT,ICNVRT)                J02260
 C                                                                         J02270
-      IMPLICIT DOUBLE PRECISION (V)                                     ! J02280
+      IMPLICIT REAL*8          (V)                                     ! J02280
 C                                                                         J02290
 C     SUBROUTINE RDPANL INPUTS PANELS FROM IFILE RESULTING FROM THE       J02300
 C     LBLRTM CALCULATION                                                  J02310
@@ -2672,7 +2677,7 @@ C                                                                         J02320
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   J02340
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       J02350
      *               DVSC,XDUM,V1SHFT                                     J02360
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J02370
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J02370
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 J02380
       COMMON /INPNL/ VMIN,VMAX,DVI,NNI                                    J02390
       COMMON /RPANL/ V1P,V2P,DVP,NLIMP                                    J02400
@@ -2777,7 +2782,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE OTPANL (R1,JFILE,NPTS)                                   J03370
 C                                                                         J03380
-      IMPLICIT DOUBLE PRECISION (V)                                     ! J03390
+      IMPLICIT REAL*8          (V)                                     ! J03390
 C                                                                         J03400
 C     SUBROUTINE OTPANL OUTPUTS THE RESULTS OF THE INTERPOLATION ON       J03410
 C     TO FILE JFILE                                                       J03420
@@ -2785,7 +2790,7 @@ C                                                                         J03430
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         J03440
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        J03450
      *              NLTEFL,LNFIL4,LNGTH4                                  J03460
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J03470
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J03470
       COMMON /OUTPNL/ V1P,V2P,DVP,NLIM                                    J03480
       DIMENSION PNLHDR(2),R1(*)                                           J03490
 C                                                                         J03500
@@ -2830,7 +2835,7 @@ C
       SUBROUTINE INTERP (IFILE,JFILE,I4PT,IBOUND,NPTS,JTREM,ISCAN,        J03860
      *                   JEMIT,RSTAT,ICNVRT)                              J03870
 C                                                                         J03880
-      IMPLICIT DOUBLE PRECISION (V)                                     ! J03890
+      IMPLICIT REAL*8          (V)                                     ! J03890
 C                                                                         J03900
 C**********************************************************************   J03910
 C     THIS SUBROUTINE INTERPOLATES THE SPECTRAL DATA FROM IFILE, ON       J03920
@@ -2859,7 +2864,7 @@ C                                                                         J04100
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        J04150
      *              NLTEFL,LNFIL4,LNGTH4                                  J04160
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 J04170
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J04180
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J04180
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J04190
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J04200
       DIMENSION C1(0:202),C2(0:202),C3(0:202),C4(0:202),RSTAT(3)          J04210
@@ -3121,7 +3126,8 @@ C
 C                                                                         L00040
       COMMON S(2650),R1(3750)                                             L00050
 C                                                                         L00060
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & L00070
+      character*8      XID,       HMOLID,      YID        
+      real*8               SECANT,       XALTZ 
 C                                                                         L00080
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -3132,7 +3138,7 @@ C                                                                         L00080
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       L00130
      *               DVSC,XDUM,V1SHFT                                     L00140
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L00150
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L00160
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L00160
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L00170
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L00180
      *                HEDDR(9),XF(NFLTPT),SUMFLT                          L00190
@@ -3179,6 +3185,34 @@ C
       IF (NIFILS.LE.0) NIFILS = 99                                        L00440
 C                                                                         L00450
       IF (V1F.LT.0) RETURN                                                L00460
+
+c
+c     DVF < 0 option flags V1F value to be the center frequency
+c     Check that there NPTF is odd (to ensure a center frequency),
+c     save center frequency value, and reset V1F to endpoint value.
+
+      if (DVF.lt.0.) then
+
+         dvf = abs(dvf)
+
+         if (mod((nptf-1),2).ne.0) then
+            write(*,*) 'Use of V1F as center frequency requires odd
+     *           number of points'
+            write(ipr,*) 'Use of V1F as center frequency requires odd
+     *           number of points, stopping in FLTFRN'
+            stop 'FLTRFN'
+         endif
+
+         V1F_center = V1F
+         nptf_half = (abs(nptf)-1)/2
+         V1F = V1F_center - DVF*float(nptf_half)
+         write(ipr,*) ' ``````````````````````````````'
+         write(ipr,*) ' Use of V1F as center frequency:'
+         write(ipr,*) '   V center = ',V1F_center
+         write(ipr,*) '   V1F      = ',V1F
+         write(ipr,*) " ''''''''''''''''''''''''''''''"
+      endif
+
 C                                                                         L00470
       WRITE (IPR,905)                                                     L00480
       REWIND IFILE                                                        L00490
@@ -3317,7 +3351,8 @@ C     READ CONTROL CARD FOR FILTER WITH WEIGHTING FUNCTIONS               L01740
 C                                                                         L01750
       COMMON S(2650),R1(3750)                                             L01760
 C                                                                         L01770
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & L01780
+      character*8      XID,       HMOLID,      YID        
+      real*8               SECANT,       XALTZ 
 C                                                                         L01790
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       L01800
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DVC,V1C,V2C,TBOUND,   L01810
@@ -3326,7 +3361,7 @@ C                                                                         L01790
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       L01840
      *               DVSC,XDUM,V1SHFT                                     L01850
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L01860
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L01870
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L01870
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L01880
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L01890
      *                HEDDR(9),XF(NFLTPT),SUMFLT                          L01900
@@ -3428,7 +3463,8 @@ C     OF THE FILTER TO FILE JFILE                                         L02780
 C                                                                         L02790
       COMMON S(2650),R1(3750)                                             L02800
 C                                                                         L02810
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & L02820
+      character*8      XID,       HMOLID,      YID        
+      real*8               SECANT,       XALTZ 
 C                                                                         L02830
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       L02840
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DVC,V1C,V2C,TBOUND,   L02850
@@ -3442,7 +3478,7 @@ C                                                                         L02830
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      L02930
      *              EXTID(10)                                             L02940
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L02950
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L02960
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L02960
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L02970
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L02980
      *                HEDDR(9),XF(NFLTPT),SUMFLT                          L02990
@@ -3599,7 +3635,7 @@ C                                                                         L04380
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   L04430
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       L04440
      *               DVSC,XDUM,V1SHFT                                     L04450
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L04460
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L04460
 C                                                                         L04470
       DIMENSION XF(*),S(*)                                                L04480
 C                                                                         L04490
@@ -3637,7 +3673,8 @@ C     OF THE FILTERED WEIGHTING FUNCTION TO IPR                           L04730
 C                                                                         L04740
       COMMON S(2650),R1(3750)                                             L04750
 C                                                                         L04760
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & L04770
+      character*8      XID,       HMOLID,      YID        
+      real*8               SECANT,       XALTZ 
 C                                                                         L04780
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       L04790
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DVC,V1C,V2C,TBOUND,   L04800
@@ -3651,7 +3688,7 @@ C                                                                         L04780
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      L04880
      *              EXTID(10)                                             L04890
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L04900
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L04910
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L04910
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L04920
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L04930
      *                HEDDR(9),XF(NFLTPT),SUMFLT                          L04940
