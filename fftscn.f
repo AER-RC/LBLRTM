@@ -46,6 +46,22 @@ C            Silicon Graphics workstations.  The problem was solved with a
 C            SAVE statement.
 C         3. Added Norton-Beer, Brault, and Kaiser-Bessel Scanning Functions
 C
+C     Version 1.2: November, 1993
+C         Changes in Version 1.2
+C         1. Added option to interpolate the final result onto a user-
+C            specified grid. 
+C         2. If the DV of the input spectrum is greater than HWHM/6, then
+C            the input spectrum is first interpolated onto a frequency grid
+C            where DV <= HWHM/6.
+C         3. Fixed bug in Norton-Beer functions: it always returned the weak
+C            function.
+C         4. Fixed bug: IFILE is now closed after each scanning function 
+C            request.  On some machines (Convex), not doing this and requesting
+C            another operation on IFILE generated an error.
+C         5. Fixed bug: the output spectral grid was sometimes off by
+C            one dv.
+C
+C
 C     Program instructions:
 C     The program commands are contained on a single mani record plus
 C     up to 3 additional records, depending upon the case.  Multiple 
@@ -90,7 +106,8 @@ C     MRAT    For prescanning with a boxcar, the ratio of HWHM of the
 C             scanning function to the halfwidth of the boxcar,
 C             default = MRATDF (=12). If MRAT < 0, no boxcaring is
 C             performed.
-C     DVOUT   Not used (reserved for future use.)
+C     DVOUT   If DVOUT > 0, then the scanned spectral file is interpolated 
+C             onto the grid defined by V1, V2, and DV
 C     IUNIT   Unit number of the file containing the spectrum to be 
 C             scanned. 
 C             = 0: use file on UNIT = IFILE (from LBLRTM, default=12)
@@ -262,6 +279,14 @@ C*****to the width of the boxcar used to prescan the spectrum.  MRATDF
 C*****is the default value of this parameter.
       Data MRATDF/12/
 
+C*****MDVHW  is the minimum allowed value of the input dv to the hwhm
+C*****If hwhm/dv is less than MDVHW/2, then the spectrum is first 
+C*****interpolated onto a grid with dv' = 2*hwhm/MDVHW.  Note: MDVHW 
+C*****and MRATIO are coupled: if MDVHW > MRATIO, then the program
+C*****will interpolate onto a fine grid but then boxcar back onto a
+C*****coarser grid
+      Data MDVHW /12/
+
 C*****Assign SCCS version number to module fftscn.f
       HVRFFT = '$Revision$' 
 
@@ -274,15 +299,15 @@ C*****Read in scan commands until HWHM .le. 0.
       PARM2 = 0.0
 
       Read(IRD,10,End=120) HWHM, V1, V2, JEMIT, JFNIN, MRATIN, 
-     1     IUNIT,IFILST,NIFILS, JUNIT, IVX, NOFIX
-   10 Format(3F10.3,3I5,10X,4I5,I3,I2)
+     1     DVOUT,IUNIT,IFILST,NIFILS, JUNIT, IVX, NOFIX
+   10 Format(3F10.3,3I5,F10.5,4I5,I3,I2)
 
-      Write(IPR,15)  HWHM, V1, V2, JEMIT, JFNIN, MRATIN, IUNIT,
+      Write(IPR,15)  HWHM, V1, V2, JEMIT, JFNIN, MRATIN, DVOUT, IUNIT,
      1     IFILST, NIFILS, JUNIT, IVX, NOFIX
    15 Format(/,'       HWHM        V1        V2   JEMIT   JFNIN',
      1   '  MRATIN', /,1X,3F10.4,3I8,12X,//,
-     2   '   IUNIT  IFILST  NIFILS   JUNIT     IVX   NOFIX',/,
-     3    (6I8))
+     2   '      DVOUT   IUNIT  IFILST  NIFILS   JUNIT     IVX   NOFIX',
+     3    /,(1X,F10.4,6I8))
 
       If(HWHM .LE. 0) Goto 115
 
@@ -352,10 +377,10 @@ C*****Decode boxcaring parameter MRATIN
 
 C*****Check the status of the input and output spectra files, and read
 C*****in the filenames if necessary
-      Call CKFILE(IFILE,IUNIT,0,IERR)
+      Call Ckfile(IFILE,IUNIT,0,IERR)
       If(IERR .NE. 0) Goto 125
       
-      Call CKFILE(JFILE,JUNIT,1,IERR)
+      Call Ckfile(JFILE,JUNIT,1,IERR)
       If(IERR .NE. 0) Goto 125
 
       If(IFILST .LE. 0) IFILST = 1
@@ -365,7 +390,7 @@ C*****in the filenames if necessary
 C*****Loop over NIFILS on IFILE
       Rewind IFILE
       If(IFILST .GT. 1) Then
-          Call SKIPFL(IFILST-1, IFILE, IEOF)
+          Call Skipfl(IFILST-1, IFILE, IEOF)
           If(IEOF .EQ. 0) Then
               WRITE(IPR,'('' EOF encountered skipping files: STOP'')')
               Goto 125
@@ -404,12 +429,6 @@ C*****     3   two panels, set second (mono. transmittance)
           Goto 125
       Endif
 
-C*****Check halfwidth against frequency spacing.  Minimum halfwidth 
-C*****is 2*DV (this criteria is only a guess)
-      If (HWHM .LT. 2.0*DV) Then
-          Write(IPR,*) ' Halfwidth too small for this spectrum: STOP'
-          Goto 125
-      Endif
 
 C*****Check frequency limits and adjust, if necessary.  V1 and V2 are
 C*****the requested limits, V1C and V2C are the limits of the input  
@@ -439,8 +458,8 @@ C*****    grid (interpolation not yet implemented)
       V1Z = V1-HWHM*CLIMIT(JFN)
       V2Z = V2+HWHM*CLIMIT(JFN)
 C*****Adjust V1Z, V2Z to fall on current frequency grid
-      V1Z = INT((V1Z-V1C)/DV-1.0)*DV+V1C
-      V2Z = INT((V2Z-V1C)/DV+1.0)*DV+V1C
+      V1Z = V1C+DBLE(INT((V1Z-V1C)/DV+1.01))*DV
+      V2Z = V1C+DBLE(INT((V2Z-V1C)/DV+1.01))*DV
 
       If (V1Z .LT. V1C) Then
           V1Z = V1C
@@ -462,6 +481,38 @@ C*****Adjust V1Z, V2Z to fall on current frequency grid
      1         'accurate calculation: STOP'
           Goto 125
       Endif
+
+C*****If the frequency grid is too coarse compared to the HWHM,
+C*****then interpolate the spectrum onto a new, finer frequency grid.
+C*****The new DV must be <= 2*HWHM/MDVHW, where the parameter MDVHW
+C*****is nominally 12 (educated guess.)  
+      DVN = 2.*HWHM/MDVHW
+      If (DV .gt. DVN) Then
+          Write(IPR,*) ' FFTSCN: input grid too coarse. ',
+     1        'Interpolating onto a grid with dv = ',DVN
+
+C*****    The interpolated file will be on UNIT = KFILE
+          Call Getunt(KFILE)
+          Open(KFILE,Status='Scratch',Form='Unformatted')
+
+C*****    Interpolate onto new grid.
+          Call Intpdr(IFILE,KFILE,V1Z,V2Z,DVN,IFILST,JEMIT,IERR)
+          If (IERR .ne. 0) Then
+              Write(IPR,*) 'FFTSCN - error: Error in interpolation:',
+     1             ' STOP'
+              Goto 125
+          Endif
+
+C*****    Need to reposition KFILE to just after the file header
+          Rewind KFILE
+
+          Call Gethdr(KFILE,0,JDATA,IEOFSC)
+C*****    Following statement correct ??? (have interpolated to the 
+C*****    desired parameter??)
+          JCONVT = 0
+      Else
+          KFILE = IFILE
+      Endif
  
 C*****Decide whether to calculate the apodization function 
 C*****analytically (IVX = 1) or as the fft of the scanning
@@ -473,11 +524,11 @@ C*****overides.
           Goto 125
       Endif
       If(IVX .EQ. 0) Then
-         If( (V2Z-V1Z)/HWHM .GT. CRATIO(JFN)) Then
-             IVX = 1
-         Else
-             IVX = -1
-         Endif
+          If( (V2Z-V1Z)/HWHM .GT. CRATIO(JFN)) Then
+              IVX = 1
+          Else
+              IVX = -1
+          Endif
       Endif
       If(JFN .EQ. 0) IVX = 0
 
@@ -500,9 +551,9 @@ C*****If LREC = 1, then a memory based FFT is used.  If LREC>1, then
 C*****a disk based FFT is used.
 
 C*****Get free file unit number for LFILE1 
-      Call GETUNT(LFILE1)
+      Call Getunt(LFILE1)
 
-      Call Loadsp(IFILE,LFILE1,JCONVT,JEMIT,V1Z,V2Z,LREC,LTOTAL,
+      Call Loadsp(KFILE,LFILE1,JCONVT,JEMIT,V1Z,V2Z,LREC,LTOTAL,
      1            FUNCT1,IERROR)
       If(IERROR .NE. 0) Then
            Write(IPR,'(2A)') ' LOADSP detected an error: STOP'
@@ -578,7 +629,7 @@ C*****put on file on unit LFILE1
       Call Fourtr(LREC,LPTFFT,LFILE1,FUNCT1,1)
 
 C*****Calculate apodization and store in FUNCT2 or on LFILE2
-      Call GETUNT(LFILE2)
+      Call Getunt(LFILE2)
       Call Scntrn(JFN,A,IVX,DV,LREC,LPTFFT,LFILE2,FUNCT2,PARM1,PARM2)
 
 C*****Multiply FUNCT1 and FUNCT2 and store the result in FUNCT1 or
@@ -616,10 +667,10 @@ C*****4 point interpolation (note: interpolation not yet implemented.)
           V1S = V1Z
       Endif
 
-      N2 = INT((V2-V1Z)/DV+3.0)
+      N2 = INT((V2-V1Z)/DV+3.01)
       V2S = V1Z+(N2-1)*DV
       If (V2S .GT. V2Z) Then 
-          N2 = (V2Z-V1Z)/DV+1.00001
+          N2 = (V2Z-V1Z)/DV+1.01
           V2S = V1Z+(N2-1)*DV
       Endif
 
@@ -639,8 +690,33 @@ C*****format.  First, modify the header.
 
       ISCHDR = ISCHDR+1
 
-      Call BUFOUT(JFILE,FILHDR(1),NFHDRF)
-      Call Wrtspc(N1,NTOTAL,LREC,LFILE1,FUNCT1,JFILE)
+C*****If DVOUT > 0, then write the spectral file to a temporary file, 
+C*****and interpolate it to JFILE
+      If (DVOUT .gt. 0) Then
+          Call Getunt(NFILE)
+          Open(NFILE,Status='Scratch',Form='Unformatted')
+          Rewind IFILE
+      Else
+          NFILE = JFILE
+      Endif
+
+      Call BUFOUT(NFILE,FILHDR(1),NFHDRF)
+      Call Wrtspc(N1,NTOTAL,LREC,LFILE1,FUNCT1,NFILE)
+
+C*****Interpolate the spectrum onto the desired grid
+      If (DVOUT .gt. 0) Then
+
+          Write(IPR,'(/,A,2F12.4,F12.6)') ' Interpolating the '//
+     1        'spectrum to the grid definded by:', V1,V2,DVOUT
+
+          Call Intpdr(NFILE,JFILE,V1,V2,DVOUT,1,JEMIT,IERR)
+          If (IERR .ne. 0) Then
+              Write(IPR,*) 'FFTSCN - error: Error in interpolation:',
+     1             ' STOP'
+              Goto 125
+          Endif
+          Close(NFILE)
+      Endif
 
 C*****End of convolution for this scan request
 
@@ -947,7 +1023,7 @@ C*****    File for input
                   Return
               Endif
 C*****        Get a free file unit number
-              Call GETUNT(IFILE)
+              Call Getunt(IFILE)
               Open(UNIT=IFILE,FILE=FILNAM,STATUS='OLD',
      1            FORM='UNFORMATTED')
           Endif
@@ -970,7 +1046,7 @@ C*****        Use this file even if it already exists
               Read(IRD,'(A)') FILNAM
               Write(IPR,'(2A)') ' Output file name is: ',FILNAM
 C*****        Get a free file unit number
-              Call GETUNT(IFILE)
+              Call Getunt(IFILE)
               OPEN(UNIT=IFILE,FILE=FILNAM,STATUS='UNKNOWN',
      1            FORM='UNFORMATTED')
           Endif
@@ -1296,7 +1372,7 @@ C*****Read in the spectral data and convert if necessary
    10 Format(1x,A)
       Stop 'Stopped in GETPNL'
       End
-      Subroutine GETUNT(IFILE)
+      Subroutine Getunt(IFILE)
 C**********************************************************************
 C     This subroutine gets the first free file unit number > 60
 C     If there are none, stop with error message
@@ -2625,8 +2701,8 @@ C*****    Write out a panel
 
           V2P = V1P+DVP*(NP-1)
 
-          CALL Bufout(JFILE,V1P,NPHDRF)
-          CALL Bufout(JFILE,S(1),NP)
+          Call Bufout(JFILE,V1P,NPHDRF)
+          Call Bufout(JFILE,S(1),NP)
 
           NDONE = NDONE+NP
           NLAST = 0
@@ -2640,6 +2716,207 @@ C*****    Write out a panel
   900 Continue
       Write(IPR,*) 'Wrtspc - err: error reading LFILE = ',LFILE
       Stop 'Stopped in Wrtspc'
+
+      End
+      Subroutine INTPDR(IFILE,JFILE,VV1,VV2,DVV,IFILST,JEMIT,IERR)
+C**********************************************************************
+C     This subroutine is a driver for the subroutine INTERP, which 
+C     interpolates the spectral data on IFILE onto the wavenumber grid
+C     VV1, VV2, and DVV and writes the result to JFILE.
+C     JEMIT selects absorption (-1), transmittance (0), or radiance (1)
+C     IERR is non-zero if an error occurs
+C**********************************************************************
+
+C*****Computers with 32 bit words need the Double Precision Statements
+C*****Computers with 64 bit words (e.g. Cyber) do not.
+C*****Frequency variables start with V
+      Implicit Double Precision (V)
+      Double Precision XID,SECANT,HMOLID,XALTZ,YID   
+
+C*****Blank Common carries the spectral data
+      COMMON S(2450),R1(2650),XF(251)
+
+C*****SCNHRD carries the header information for the scanned file
+      COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,
+     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF 
+      DIMENSION FILHDR(2),IFSDID(17)
+      EQUIVALENCE (FILHDR(1),XID(1))
+      EQUIVALENCE (FSCDID(1),IFSDID(1),IHIRAC),(FSCDID(2),ILBLF4), 
+     C (FSCDID(3),IXSCNT),(FSCDID(4 ),IAERSL ),(FSCDID(5),IEMIT), 
+     C (FSCDID(6),ISCHDR ),(FSCDID(7 ),IPLOT  ),(FSCDID(8),IPATHL),   
+     C (FSCDID(9),JRAD  ),(FSCDID(10),ITEST  ),(FSCDID(11),IMRG),  
+     C (FSCDID(12),XSCID),(FSCDID(13),XHWHM  ),(FSCDID(14),IDABS),   
+     C (FSCDID(15),IATM ),(FSCDID(16),LAYR1  ),(FSCDID(17),NLAYFS),  
+     C (YID(1)    ,HDATE),(YID(2),      HTIME),(YI1,IMULT)        
+
+C*****PANL carries the information from the panel header
+      COMMON /PANL/ V1P,V2P,DVP,NP
+      DIMENSION PNLHDR(4)
+      EQUIVALENCE (PNLHDR(1),V1P)
+
+
+C*****IFIL carries file information
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL, 
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+
+C*****LAMCHN carries hardware specific parameters
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
+
+C**********************************************************************
+C*****THE INPUT DATA WILL BE PUT INTO S(5) = SS(1) WITH THE LAST
+C*****4 POINTS OF THE PREVIOUS PANEL PUT INTO S(1 TO 4)
+C*****THIS SCHEME PERMITS 6 POINT INTERPOLATION
+
+C*****SS IS NOMINALLY 2401 POINTS BUT MAY NEED TO BE EXTENDED BY
+C*****2 POINTS TO PERMIT 4 POINT INTERPOLATION UP TO THE LAST
+C*****DATA POINT.
+
+      DIMENSION SS(2406)
+      EQUIVALENCE (S(5),SS(1))
+
+
+      COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   J04110
+     *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       J04120
+     *               DVSC,XDUM,V1SHFT                                     J04130
+      COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 J04170
+      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J04180
+      COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J04190
+      COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J04200
+
+      Logical OP
+
+      IERR = 0
+      IBOUND = 4
+      NPTS = 0
+
+      Inquire(IFILE,OPENED=OP)
+            If (.NOT. OP) Then
+          Write(IPR,*) 'INTPDR: error: IFILE not open. IFILE = ',IFILE
+          IERR = 1
+          Return
+      Endif
+
+      Rewind IFILE
+      If (IFILST .gt. 1) Then
+          Call SKIPFL(IFILST-1,IFILE,IEOF)
+
+          If (IEOF .eq. 0) Then
+              Write(IPR,*) ' INTPDR: error: EOF skipping files'
+              IERR = 1
+          Endif
+      Endif
+
+      CALL GETHDR(IFILE,0,JDATA,IEOFSC)
+
+C*****Ensure that the requested interpolation limits VV1 and VV2 are within
+C*****the limits of the spectral data.
+      If (VV1 .lt. V1C) Then
+          AN = (V1C-VV1)/DVV
+          If (AN .eq. INT(AN)) Then
+              VV1 = V1+DVV*INT(AN)
+          Else
+              VV1 = V1+DVV*(INT(AN)+1)
+          Endif
+      Endif
+
+      If (VV2 .gt. V2C) Then
+          AN = (VV2-V2C)/DVV
+          If (AN .eq. INT(AN))Then
+              VV2 = VV2-DVV*INT(AN)
+          Else
+              VV2 = VV2-DVV*(INT(AN)+1)
+          Endif
+      Endif
+
+C*****Reset frequency parameters in the file header
+      V1C = VV1
+      V2C = VV2
+      DV = DVV
+C*****Set V1 and V2, although I am not sure of all the implications
+      V1 = VV1
+      V2 = VV2
+      DVO = DVV
+
+C*****The following code was lifted from scnint.f.
+C*****It sets various parameters in the file header and initializes
+C*****the spectral buffer S. Note: the variables have been renamed from
+C*****scnint: T -> S, and S -> SS
+      ISCAN = ISCHDR                                                      I07370
+      IF (ISCAN.LE.0.OR.XSCID.EQ.-99.) ISCAN = 0                          I07380
+      IF (ISCHDR.GE.1000.AND.ISCAN.EQ.0) ISCAN = ISCHDR                   I07390
+      ISCHDR = ISCAN+10                                                   I07400
+C     V1C = V1                                                            I07410
+C     V2C = V2                                                            I07420
+C     DV = DVO                                                            I07430
+C                                                                         I07440
+      SCNID = 100*JEMIT                                                   I07450
+      XSCID = SCNID+0.01                                                  I07460
+C                                                                         I07470
+      Call BUFOUT (JFILE,FILHDR(1),NFHDRF)                                I07480
+C                                                                         I07490
+      JTREM = -1                                                          I07500
+      IF ((IEMIT.EQ.0).AND.(JEMIT.EQ.0)) JTREM = 0                        I07510
+      IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        I07520
+      IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.2)) JTREM = 2                        I07530
+      IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        I07540
+      ISCANT = MOD(ISCAN,1000)                                            I07550
+      IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       I07560
+      IF (JTREM.LT.0) THEN                                                I07570
+         WRITE(IPR,*) ' JTREM.LT.0 AT I07570'                             I07572
+         STOP         ' JTREM.LT.0 AT I07570'
+      ENDIF                                                                     
+C     WRITE (IPR,910) IFILE,IEMIT,JEMIT,JTREM,JABS                        I07580
+C                                                                         I07590
+      IDATA = -1                                                          I07600
+C                                                                         I07610
+C     NEED TO SAVE LAST IBOUND POINTS OF EACH PANEL TO ATTACH TO NEXT     I07620
+C                                                                         I07630
+      IBOUND = 4                                                          I07640
+C                                                                         I07650
+C     VBOT IS LOWEST NEEDED WAVENUMBER, VTOP IS HIGHEST                   I07660
+C                                                                         I07670
+      BOUND = FLOAT(IBOUND)*DV                                            I07680
+
+C*****What if VBOT and VTOP are outside the limits of the data???
+
+      VBOT = V1-BOUND                                                     I07690
+      VTOP = V2+BOUND                                                     I07700
+C                                                                         I07710
+C     IF (JEMIT.EQ.0.AND.IDABS.EQ.0) BCD = HTRANS                         I07720
+C     IF (JEMIT.EQ.0.AND.IDABS.EQ.-1) BCD = HABSRB                        I07730
+C     IF (JEMIT.EQ.1) BCD = HRADIA                                        I07740
+C     IF (NPTS.GT.0) WRITE (IPR,915) BCD                                  I07750
+C                                                                         I07760
+C     ZERO OUT T(1 TO IBOUND)                                             I07770
+C                                                                         I07780
+      DO 10 II = 1, IBOUND                                                I07790
+         S(II) = 0.0                                                      I07800
+   10 CONTINUE                                                            I07810
+C                                                                         I07820
+C     READ FROM IFILE UNTIL THE FIRST REQUIRED POINT IS REACHED           I07830
+C     AND LOAD DATA INTO SS                                               I07840
+C                                                                         I07850
+      CALL RDPANL (SS,JTREM,IFILE,ISCAN,JEMIT,ICNVRT)                     I07860
+      IF (IEOFSC.LE.0) GO TO 20                                           I07870
+C                                                                         I07880
+C     DO INTERPOLATION                                                    I07890
+C                                                                         I07900
+      CALL INTERP (IFILE,JFILE,I4PT,IBOUND,NPTS,JTREM,ISCAN,JEMIT,        I07910
+     *             RSTAT,ICNVRT)                                          I07920
+C                                                                         I07930
+      Call ENDFIL(JFILE)
+
+      Return
+
+ 20   Continue
+
+      Write(IPR,*) 'INTPDR: error - EOF on input unit ',IFILE,
+     1    ' before V1 was reached'
+      IERR = 1
+
+      Return
 
       End
       SUBROUTINE REALFT(DATA,N,ISIGN)
