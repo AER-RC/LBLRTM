@@ -1961,7 +1961,6 @@ C                                                                         A20610
          IF (IPTHRK.NE.0) IPATHL = IPTHRK                                 A20680
          IPTH(L) = IPATHL                                                 A20690
          IF (SECANT.EQ.0.) STOP 'PATH; SECANT = 0'                        A20700
-         IF ((TBOUND.NE.0.).AND.(IPATHL.NE.1)) STOP 'PATH; TBOUND NE 0'   A20710
          READ (IRD,925) (WKL(M,L),M=1,7),WBRODL(L)                        A20720
          IF (NMOL.GT.7) READ (IRD,925) (WKL(M,L),M=8,NMOL)                A20730
    30 CONTINUE                                                            A20740
