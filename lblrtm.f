@@ -802,7 +802,7 @@ C                                                                         A08750
       DIMENSION IDUM(6)                                                   A08760
       DATA IDUM / 6*-99 /                                                 A08770
 C                                                                         A08780
-      CALL BUFOUT (IFILE,1,6,IDUM)                                        A08790
+      CALL BUFOUT (IFILE,IDUM(1),6)                                       A08790
 C                                                                         A08800
       RETURN                                                              A08810
 C                                                                         A08820
@@ -813,7 +813,7 @@ C                                                                         A08850
 C                                                                         A08870
       IF (NUMFL.LE.0) RETURN                                              A08880
       ISKIP = 0                                                           A08890
-   10 CALL BUFIN (IFILE,IEOF,1,1,DUM)                                     A08900
+   10 CALL BUFIN (IFILE,IEOF,DUM(1),1)                                    A08900
       IF (IEOF.EQ.1) GO TO 10                                             A08910
       ISKIP = ISKIP+1                                                     A08920
       IF (ISKIP.LT.NUMFL) GO TO 10                                        A08930
@@ -843,17 +843,17 @@ C                                                                         A09130
 C                                                                         A09170
       CALL CPUTIM (TIME)                                                  A09180
       IF (NOPR.EQ.0) WRITE (IPR,900) TIME                                 A09190
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             A09200
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 A09210
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            A09200
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                A09210
 C                                                                         A09220
-   10 CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHD)                              A09230
+   10 CALL BUFIN (KFILE,KEOF,PNLHD(1),NPHDRF)                             A09230
       IF (KEOF.LE.0) GO TO 20                                             A09240
-      CALL BUFOUT (MFILE,1,NPHDRF,PNLHD)                                  A09250
-      CALL BUFIN (KFILE,KEOF,1,NLIMO,TR)                                  A09260
-      CALL BUFOUT (MFILE,1,NLIMO,TR)                                      A09270
+      CALL BUFOUT (MFILE,PNLHD(1),NPHDRF)                                 A09250
+      CALL BUFIN (KFILE,KEOF,TR(1),NLIMO)                                 A09260
+      CALL BUFOUT (MFILE,TR(1),NLIMO)                                     A09270
       IF (IEMIT.EQ.0.OR.ISCAN.GT.0) GO TO 10                              A09280
-      CALL BUFIN (KFILE,KEOF,1,NLIMO,TR)                                  A09290
-      CALL BUFOUT (MFILE,1,NLIMO,TR)                                      A09300
+      CALL BUFIN (KFILE,KEOF,TR(1),NLIMO)                                 A09290
+      CALL BUFOUT (MFILE,TR(1),NLIMO)                                     A09300
       GO TO 10                                                            A09310
 C                                                                         A09320
    20 CALL CPUTIM (TIME1)                                                 A09330
@@ -907,7 +907,7 @@ C                                                                         A09800
       NFHDRL = NWDL(IWD,LSTWDL)                                           A09810
 C                                                                         A09820
       REWIND LINFIL                                                       A09830
-      CALL BUFIN (LINFIL,LEOF,1,NFHDRL,HLINHD)                            A09840
+      CALL BUFIN (LINFIL,LEOF,HLINHD(1),NFHDRL)                           A09840
       IF (LEOF.LE.0) STOP 'LAYER; TAPE3 DOES NOT EXIST'                   A09850
 C                                                                         A09860
       DO 10 M = 1, LINMOL                                                 A09870
@@ -1165,7 +1165,7 @@ C                                                                         A12700
       GO TO 20                                                            A12740
 C                                                                         A12750
    10 REWIND KFILE                                                        A12760
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,FILDU1)                             A12770
+      CALL BUFIN (KFILE,KEOF,FILDU1(1),NFHDRF)                            A12770
       LTGNT = LTNSAV                                                      A12780
       TBOUND = TMPBND                                                     A12790
       EMISIV = BNDEMI(1)                                                  A12800
