@@ -150,7 +150,7 @@ C*****SCNHRD carries the header information for the scanned file
      C (YID(1)    ,HDATE),(YID(2),      HTIME),(YI1,IMULT)        
 
 C*****PANL carries the information from the panel header
-      COMMON /PANL/ V1P,V2P,DVP,NP,IWLD
+      COMMON /PANL/ V1P,V2P,DVP,NP
       DIMENSION PNLHDR(1)
       EQUIVALENCE (PNLHDR(1),V1P)
 
@@ -1102,7 +1102,7 @@ C*****SCNHRD carries the header information for the scanned file
      C (YID(1)    ,HDATE),(YID(2),      HTIME),(YI1,IMULT)        
 
 C*****PANL carries the information from the panel header
-      COMMON /PANL/ V1P,V2P,DVP,NP,IWLD
+      COMMON /PANL/ V1P,V2P,DVP,NP
       DIMENSION PNLHDR(1)
       EQUIVALENCE (PNLHDR(1),V1P)
 
@@ -1235,7 +1235,7 @@ C*****SCNHRD carries the header information for the scanned file
      C (YID(1)    ,HDATE),(YID(2),      HTIME),(YI1,IMULT)        
 
 C*****PANL carries the information from the panel header
-      COMMON /PANL/ V1P,V2P,DVP,NP,IWLD
+      COMMON /PANL/ V1P,V2P,DVP,NP
       DIMENSION PNLHDR(1)
       EQUIVALENCE (PNLHDR(1),V1P)
 
@@ -1356,7 +1356,7 @@ C*****SCNHRD carries the header information for the scanned file
      C (YID(1)    ,HDATE),(YID(2),      HTIME),(YI1,IMULT)        
 
 C*****PANL carries the information from the panel header
-      COMMON /PANL/ V1P,V2P,DVP,NP,IWLD
+      COMMON /PANL/ V1P,V2P,DVP,NP
       DIMENSION PNLHDR(1)
       EQUIVALENCE (PNLHDR(1),V1P)
 
@@ -2478,7 +2478,7 @@ C*****SCNHRD carries the header information for the scanned file
      C (YID(1)    ,HDATE),(YID(2),      HTIME),(YI1,IMULT)        
 
 C*****PANL carries the information from the panel header
-      COMMON /PANL/ V1P,V2P,DVP,NP,IWLD
+      COMMON /PANL/ V1P,V2P,DVP,NP
       DIMENSION PNLHDR(1)
       EQUIVALENCE (PNLHDR(1),V1P)
 
