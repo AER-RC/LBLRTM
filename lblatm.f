@@ -413,8 +413,8 @@ C                                                                        FA04050
      *     HT2SLT / ' KM '/                                              FA04090
       DATA PZFORM / 'F8.6','F8.5','F8.4','F8.3','F8.2'/                  FA04100
       DATA PAFORM / '1PE10.4','  G10.5'/                                 FA04110
-      DATA CFORM1 / '(1PE10.4,0PF10.2,10X,I5,1X,2(F7.2,F8.3,F7.2))'/     FA04120
-      DATA CFORM2 / '(  G10.5,0PF10.2,10X,I5,23X,(F7.2,F8.3,F7.2))'/     FA04130
+      DATA CFORM1 / '(1PE10.4,0PF10.2,10X,I5,1X,2(F7.3,F8.3,F7.2))'/     FA04120
+      DATA CFORM2 / '(  G10.5,0PF10.2,10X,I5,23X,(F7.3,F8.3,F7.2))'/     FA04130
       DATA IERROR / 0 /                                                  FA04140
 C                                                                        FA04150
 C     IAMT = 1: CALCULATE AMOUNTS, IAMT = 2: DO NOT CALCULATE AMOUNTS    FA04160
@@ -4785,8 +4785,8 @@ C                                                                        FX00920
       DATA HOTHER / ' OTHER    '/                                        FX00930
       DATA PZFORM / 'F8.6','F8.5','F8.4','F8.3','F8.2'/                  FX00940
       DATA PAFORM / '1PE10.4','  G10.5'/                                 FX00950
-      DATA CFORM1 / '(1PE10.4,0PF10.2,10X,I5,1X,2(F7.2,F8.3,F7.2))'/     FX00960
-      DATA CFORM2 / '(  G10.5,0PF10.2,10X,I5,23X,(F7.2,F8.3,F7.2))'/     FX00970
+      DATA CFORM1 / '(1PE10.4,0PF10.2,10X,I5,1X,2(F7.3,F8.3,F7.2))'/     FX00960
+      DATA CFORM2 / '(  G10.5,0PF10.2,10X,I5,23X,(F7.3,F8.3,F7.2))'/     FX00970
 C                                                                        FX00980
       WRITE (IPR,900)                                                    FX00990
 C                                                                        FX01000
