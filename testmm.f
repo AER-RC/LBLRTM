@@ -65,7 +65,7 @@ C                                                                         N00500
          ENDIF                                                            N00610
    20 CONTINUE                                                            N00620
       REWIND LINFIL                                                       N00630
-      CALL BUFOUT (LINFIL,1,NWDLIN,HLINHD)                                N00640
+      CALL BUFOUT (LINFIL,HLINHD(1),NWDLIN)                               N00640
       NREC = IRECTL                                                       N00650
       K = 0                                                               N00660
       DO 70 I = 1, NREC                                                   N00670
@@ -131,7 +131,7 @@ C                                                                         N00990
          JLIN = K                                                         N01070
 C                                                                         N01080
          NWDS = ILNGTH                                                    N01090
-         CALL BUFOUT (LINFIL,1,NPHDRL,RCDHDR)                             N01100
+         CALL BUFOUT (LINFIL,RCDHDR(1),NPHDRL)                            N01100
          IF (K.GE.250) GO TO 60                                           N01110
          KLO = K+1                                                        N01120
          KHI = 250                                                        N01130
@@ -146,7 +146,7 @@ C                                                                         N01080
             PSHIFT(K) = 0.                                                N01220
             IFLG(K) = 0.                                                  N01230
    50    CONTINUE                                                         N01240
-   60    CALL BUFOUT (LINFIL,1,ILNGTH,VNU)                                N01250
+   60    CALL BUFOUT (LINFIL,VNU(1),ILNGTH)                               N01250
          K = 0                                                            N01260
    70 CONTINUE                                                            N01270
       ENDFILE LINFIL                                                      N01280
