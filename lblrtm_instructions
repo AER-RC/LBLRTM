@@ -413,11 +413,52 @@ C     presently: %H%  %T%
               SREMIS(I)    frequency dependent boundary emissivity coefficients (I = 1,2,3)
  
                              EMISSIVITY   = SREMIS(1) + SREMIS(2)*V + SREMIS(3)*(V**2)
+
+                             *** NOTE: Entering a value for SREMIS(1) < 0 allows for direct input of boundary emissivities
+                                        from file 'EMISSION'
  
               SRREFL(I)    frequency dependent boundary reflectivity coefficients (I = 1,2,3)
  
                              REFLECTIVITY = SRREFL(1) + SRREFL(2)*V + SRREFL(3)*(V**2)
  
+                             *** NOTE: Entering a value for SRREFL(1) < 0 allows for direct input of boundary reflectivities
+                                        from file 'REFLECTION'
+
+
+                     ---------------------------------------------------------------------------------------------------
+                    |                                FORMAT FOR 'EMISSION' and 'REFLECTION' FILES                       |
+                    |                                --------------------------------------------                       |
+                    |                                                                                                   |
+                    |      Record 1:                                                                                    |
+                    |                V1,      V2,      DV,      NLIM                                                    |
+                    |                                                                                                   |
+                    |              1-10,   11-20,   21-30,     35-40                                                    |
+                    |                                                                                                   |
+                    |             E10.3,   E10.3,   E10.3,     5X,I5                                                    |
+                    |                                                                                                   |
+                    |                                                                                                   |
+                    |             V1   beginning wavenumber of input (should be less than V1 on RECORD 1.3 from TAPE5)  |
+                    |                                                                                                   |
+                    |             V2   ending wavenumber of input (should be greater than V2 on RECORD 1.3 from TAPE5)  |
+                    |                                                                                                   |
+                    |             DV   spectral spacing of input (cannot be less than 0.5 cm-1)                         |
+                    |                                                                                                   |
+                    |           NLIM   number of points in input (must be less than or equal to 4040)                   |
+                    |                                                                                                   |
+                    |                                                                                                   |
+                    |      Record 2(i), i=1,NLIM:                                                                       |
+                    |                                                                                                   |
+                    |               ZDATA                                                                               |
+                    |                                                                                                   |
+                    |                1-10                                                                               |
+                    |                                                                                                   |
+                    |               E10.3                                                                               |
+                    |                                                                                                   |
+                    |                                                                                                   |
+                    |          ZDATA   Spectrally dependent boundary emission or reflection value                       |
+                    |                         (one spectral value per card)                                             |
+                    |                                                                                                   |
+                     ---------------------------------------------------------------------------------------------------
   
 
 
