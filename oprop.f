@@ -480,7 +480,7 @@ C                                                                         B03550
          IF (ILBLF4.GE.1) WRITE (IPR,905) DVR4,BOUND4                     B03570
          IF (NMINUS.GT.0) WRITE (IPR,910) NMINUS                          B03580
          IF (NPLUS.GT.0) WRITE (IPR,915) NPLUS                            B03590
-         TOTHHI = TLNCOR+TXNIT+TSHAPE+TLOOPS+TODFIL+TMOLEC
+         TOTHHI = TLNCOR+TXINT+TSHAPE+TLOOPS+TODFIL+TMOLEC
          WRITE (IPR,920) L4TIM,L4TMR,L4TMS,LOTHER,L4NLN,L4NLS,
      *                   TXS,TXSRDF,TXSCNV,TXSPNL,                        B03600
      *                   TF4,TF4RDF,TF4CNV,TF4PNL,ILIN4T,ILIN4,           B03610
