@@ -1859,8 +1859,11 @@ C     presently: %H%  %T%
  
                     negative value terminates SCANFN option
  
-                  Note: HWHM is first zero crossing of periodic functions for JFN < 0.
-                        HWHM is redefined as  HWHM=(FIRST ZERO)/(PI/SCALE)
+                  Notes: 1. HWHM is first zero crossing of periodic functions for JFN < 0.
+                            HWHM is redefined as  HWHM=(FIRST ZERO)/(PI/SCALE)
+			 2. HWHM is instrument field of view half angle (in degrees) for JFN=5,6
+                            (e.g., for FOV of 10.0 degrees, HWHM=5.0)
+                         
  
             V1    beginning wavenumber value for performing SCAN
  
@@ -1885,11 +1888,27 @@ C     presently: %H%  %T%
                     =  3     sinc squared         54.1826               4.0
  
                     =  4     sinc                119.332818             4.0
+
+                    =  5     FOV correction        1.0                  0.5
+                             (uses center of box)
+
+                    =  6     FOV correction        1.0                  0.5
+                             (uses left edge of box)
+
+
+                              SCANFN (Continued)
+ RECORD 8.1  (Continued)
  
-                          Note: For each function BOUND = HWHM*(Half-width Bound).  BOUND represents the overlap
-                                required before V1 and after V2 in the monochromatic calculation. (Record 1.3)
+ 
+                          Notes: 1. For each function BOUND = HWHM*(Half-width Bound).  BOUND represents the overlap
+                                    required before V1 and after V2 in the monochromatic calculation. (Record 1.3)
+
+                                 2. If JFN < 0, HWHM contains the value for the first zero crossing of periodic function.
+
+                                 3. JFN cannot hold the values of -5 or -6.
+
+                                 4. JFN = 5,6 cannot be used with IMRG = 13-18,35,36 on Record 1.2.
                           -------------------------------------------------------------------------------------------
-                          Note: If JFN < 0, HWHM contains the value for the first zero crossing of periodic function.
  
           JVAR    flag for variable HWHM
  
@@ -1897,17 +1916,14 @@ C     presently: %H%  %T%
  
                     =  1  HWHM(vi) = HWHM(v1) * (vi / v1)
  
-
-                              SCANFN (Continued)
- RECORD 8.1  (Continued)
- 
- 
          SAMPL    number of sample points per half width
  
                     =  0  gives default value for each function
  
                     <  0  this variable specifies the output spectral spacing (DELVO cm-1)
                           The value of SAMPL is calculated internally as SAMPL = HWHM/DELVO
+
+                         Note: SAMPL must be < 0 and carry the value of the output spectral spacing for JFN=5,6.
  
          IUNIT    unit designation of file to be scanned (default is MFILE)
  
