@@ -6,7 +6,7 @@ C
 C     --------------------------------------------------------------
       SUBROUTINE SCANFN (IFILE,JFILE)                                     I00010
 C                                                                         I00020
-      IMPLICIT REAL*8          (V)                                     ! I00030
+      IMPLICIT REAL*8          (V)                                        I00030
 C                                                                         I00040
 C     DRIVER FOR CONVOLVING INSTRUMENTAL SCANNING FUNCTION                I00050
 C     WITH SPECTRUM                                                       I00060
@@ -3238,17 +3238,17 @@ c     save center frequency value, and reset V1F to endpoint value.
       ENDIF
 
       JFILE = junit
-      if (jfile.ne.0) then
-         inquire(jfile,opened=op)
-         if (itest.eq.0) then
-            if (op) close(jfile)
-            itest = 1
-            fltout = 'FLT_OUT'
+      IF (JFILE.NE.0) THEN
+         INQUIRE(JFILE,OPENED=OP)
+         IF (ITEST.EQ.0) THEN
+            IF (OP) CLOSE(JFILE)
+            ITEST = 1
+            FLTOUT = 'FLT_OUT'
             OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
-            rewind jfile
-         endif
+            REWIND JFILE
+         ENDIF
 
-      endif
+      ENDIF
 
       IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  L00500
       IEOFSC = 0                                                          L00510
@@ -3315,13 +3315,13 @@ C                                                                         L01000
       WRITE (IPR,940) WBROAD,(HMOLID(M),WK(M),M=1,NMOL)                   L01110
       WRITE (IPR,945) V1F,V2F,DVF,NPTF,IEMIT,JEMIT,JABS,IUNIT,IFILST,     L01120
      *   NIFILS,HEDDR                                                     L01130
-      if ((jfile.ne.0).and.(itest2.eq.0)) then
-            WRITE (jfile,925) XID,(YID(M),M=1,2)
-            WRITE (jfile,935) SECANT,PAVE,TAVE,DVC,V1C,V2C
-            WRITE (jfile,940) WBROAD,(HMOLID(M),WK(M),M=1,NMOL)
-            WRITE(jfile,980)
-            itest2 = 1
-      endif
+      IF ((JFILE.NE.0).AND.(ITEST2.EQ.0)) THEN
+            WRITE (JFILE,925) XID,(YID(M),M=1,2)
+            WRITE (JFILE,935) SECANT,PAVE,TAVE,DVC,V1C,V2C
+            WRITE (JFILE,940) WBROAD,(HMOLID(M),WK(M),M=1,NMOL)
+            WRITE(JFILE,980)
+            ITEST2 = 1
+      ENDIF
       IDATA = -1                                                          L01140
    80 CALL CPUTIM (TIMEO)                                                 L01150
       CALL RDSCAN (S,JTREM,IFILE,ISCAN,IPRT)                              L01160
@@ -3395,7 +3395,7 @@ C                                                                         L01680
 C
 C     --------------------------------------------------------------
 C
-      SUBROUTINE FLTRRD (IFILE)                                           L01700
+      SUBROUTINE FLTRRD                                                   L01700
 C                                                                         L01710
 C     NFLTPT sets the maximum number of points in the incoming filter
 C
@@ -3444,11 +3444,6 @@ C                                                                         L02080
       READ (IRD,900) V1F,DVF,NPTF,JEMIT,NNFILE,HEDDR                      L02110
 C                                                                         L02120
       JABS = 0                                                            L02130
-      IEOFT = 1                                                           L02140
-      IUNIT = IFILE                                                       L02150
-      IFILE = IUNIT                                                       L02160
-      IFILST = 1                                                          L02170
-      NIFILS = 1                                                          L02180
       IF (NNFILE.NE.NFILE.AND.NNFILE.GT.0) THEN                           L02190
          INQUIRE (UNIT=NFILE,OPENED=OP)                                   L02200
          IF (OP) CLOSE (NFILE)                                            L02210
@@ -3463,16 +3458,11 @@ C                                                                         L02120
 C                                                                         L02300
       IF (V1F.LT.0) RETURN                                                L02310
       WRITE (IPR,910)                                                     L02320
-      REWIND IFILE                                                        L02330
-      IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  L02340
-      IEOFSC = 0                                                          L02350
-      ISTOP = 0                                                           L02360
-C                                                                         L02370
+c
       IF (NPTF.LE.0) GO TO 10                                             L02380
       NPTS = NPTF                                                         L02390
    10 V2F = V1F+DVF*FLOAT(NPTS-1)                                         L02400
-      WRITE (IPR,915) V1F,V2F,DVF,NPTF,JEMIT,JABS,IUNIT,IFILST,NIFILS,    L02410
-     *                NFILE,HEDDR                                         L02420
+      WRITE (IPR,915) V1F,V2F,DVF,NPTF,NFILE,HEDDR    
       V1 = V1F                                                            L02430
       V2 = V2F                                                            L02440
       DV = DVF                                                            L02450
@@ -3497,9 +3487,8 @@ C                                                                         L02620
   905 FORMAT (A4,I2.2)                                                    L02640
   910 FORMAT ('1',/'   ***  FILTER ***',8(' ********** '))                L02650
   915 FORMAT ('0   V1F=',F10.4,' V2F=',F10.4,',DVF=',F10.4,               L02660
-     *        ',NPTF =',I5,/,'0',10X,', JEMIT= ',I2,', JABS= ',           L02670
-     *        I2,', INPUT FILE= ',I3,' ,IFILST =',I5,' ,NIFILS =',        L02680
-     *        I5,', OUTPUT FILE= ',I3,2X,8A4,A3)                          L02690
+     *        ',NPTF =',I5,/,'0',10X,', JEMIT= ',I2,', JABS= ',I2,
+     *        ',NIFILS =',I5,', OUTPUT FILE= ',I3,2X,8A4,A3)    
   920 FORMAT (A80)                                                        L02700
 C                                                                         L02710
       END                                                                 L02720
