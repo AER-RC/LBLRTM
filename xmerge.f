@@ -42,7 +42,7 @@ C                                                                         H00330
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRXMR = '$Revision$' 
+      HVRXMR = '$Revision$'
 C
       IOD = 0                                                             H00340
 C                                                                         H00350
@@ -1830,7 +1830,11 @@ C                                                                         H18060
             BB = BB-BBDEL                                                 H18190
          ENDIF                                                            H18200
 C                                                                         H18210
-         NLIM2 = (VIDV-V1PO)/DVPO+1.001                                   H18220
+         IF (VIDV.GE.9.E+4) THEN 
+            NLIM2 = NLIMO+1
+         ELSE
+            NLIM2 = (VIDV-V1PO)/DVPO+1.001                                H18220
+         ENDIF
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18230
 C                                                                         H18240
          DO 50 J = NLIM1, NLIM2                                           H18250
