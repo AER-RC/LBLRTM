@@ -4810,6 +4810,9 @@ C     THAN 0.1 PERCENT OF THE TOTAL FOR THAT MOLECULE, UNLESS THE        FA46960
 C     NOZERO OPTION IS SELECTED.                                         FA46970
 C     *****************************************************************  FA46980
 C                                                                        FA46990
+      IMPLICIT DOUBLE PRECISION (V)
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID
+C
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA47000
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA47010
 C                                                                        FA47020
@@ -4840,11 +4843,20 @@ C                                                                        FA47210
      *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA47270
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FA47280
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FA47290
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
+     *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1 ,V2 ,TBOUND,
+     *                EMISIV,FSCDID(17),NDUM,LAYER ,YI1,YID(10),LSTWDF
 C                                                                        FA47300
       I2 = IPMAX-1                                                       FA47310
       IOUT = 1                                                           FA47320
       PZ(0) = PP(1)                                                      FA47330
       TZ(0) = TP(1)                                                      FA47340
+C
+C     If entry in TAPE5 for TBOUND < 0, use TZ(O) as boundary
+C     temperature
+C
+      IF (TBOUND.LT.0.) TBOUND = TZ(0)
+C
       DO 20 IP = 1, I2                                                   FA47350
          PBAR(IOUT) = PBAR(IOUT)+PPSUM(IP)                               FA47360
          TBAR(IOUT) = TBAR(IOUT)+TPSUM(IP)                               FA47370
