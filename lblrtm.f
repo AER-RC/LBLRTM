@@ -2178,6 +2178,7 @@ C                                                                         A19630
       CHARACTER*3 CINP,CINPX,CBLNK                                        A19680
       DIMENSION FILHDR(2),AMOUNT(2),AMTSTR(2)                             A19690
       DIMENSION HEDXS(15),WMT(35),SECL(64),WXT(35),WTOTX(67)              A19700
+      DIMENSION WDRAIR(MXLAY)
 C                                                                         A19710
       EQUIVALENCE (XID(1),FILHDR(1))                                      A19720
       EQUIVALENCE (YID(10),LTNSAV) , (YID(9),LH1SAV) , (YID(8),LH2SAV)    A19730
@@ -2314,30 +2315,30 @@ C                     MIXING RATIO INPUT
 C
 C
 C     First calculate the column amount of dry air ("WDRAIR")
-C     Initialize WDRAIR to WBRODL(L) (automatically in column density)
+C     Initialize WDRAIR(L) to WBRODL(L) (always in column density)
 C     Determine if each molecule is in column density.
-C        - if so, just add to WDRAIR
+C        - if so, just add to WDRAIR(L)
 C        - if not, convert mixing ratio on the fly in determining WDRAIR
 C
 C     NOTE that if WKL is greater than one, then column density
 C               if WKL is less than or equal to one, then mixing ratio
 C
-         WDRAIR = WBRODL(L)
+         WDRAIR(L) = WBRODL(L)
          DO 22 M = 2,NMOL
             IF (WKL(M,L).GT.1) THEN
-               WDRAIR = WDRAIR + WKL(M,L)
+               WDRAIR(L) = WDRAIR(L) + WKL(M,L)
             ELSEIF (WKL(M,L).LT.1) THEN
-               WDRAIR = WDRAIR + WKL(M,L)*WBRODL(L)/(1-WKL(M,L))
+               WDRAIR(L) = WDRAIR(L) + WKL(M,L)*WBRODL(L)/(1-WKL(M,L))
             ELSE
-               WDRAIR = WBRODL(L)
+               WDRAIR(L) = WBRODL(L)
             ENDIF
  22      CONTINUE
 C
 C     NOW CONVERT ALL OTHER MOLECULES WHICH MAY BE IN MIXING RATIO
-C     TO MOLECULAR DENSITY USING WDRAIR
+C     TO MOLECULAR DENSITY USING WDRAIR(L)
 C
          DO 25 M = 1,NMOL
-            IF (WKL(M,L).LE.1) WKL(M,L) = WKL(M,L)*WDRAIR
+            IF (WKL(M,L).LE.1) WKL(M,L) = WKL(M,L)*WDRAIR(L)
  25      CONTINUE
 C
 C     --------------------------------------------------------------
@@ -2401,13 +2402,13 @@ C
 C     The column amount of dry air ("WDRAIR") has already been
 C     calculated above, so just convert all cross sectional
 C     molecules which may be in mixing ratio to molecular density
-C     using WDRAIR
+C     using WDRAIR(L)
 C
 C     NOTE that if XAMNT is greater than one, then column density
 C               if XAMNT is less than or equal to one, then mixing ratio
 C
          DO 35 M = 1,IXMOL
-            IF (XAMNT(M,L).LE.1) XAMNT(M,L) = XAMNT(M,L)*WDRAIR
+            IF (XAMNT(M,L).LE.1) XAMNT(M,L) = XAMNT(M,L)*WDRAIR(L)
  35      CONTINUE
 C
 C     --------------------------------------------------------------
@@ -2809,30 +2810,31 @@ C
 C     Write out mixing ratios for molecules to TAPE6 in either
 C     15.7 format (IFORM = 1) or 10.4 format (IFORM = 0).
 C
-C           Reset WDRAIR for each layer (WKL(M,L) now in column density)
+C           Reset WDRAIR(L) for each layer
+C           (WKL(M,L) now in column density)
 C
 C
       IF (IFORM.EQ.1) THEN
          WRITE (IPR,976) (HMOLID(I),I=1,7),HOLN2
          DO 172 L = 1, NLAYRS
-            WDRAIR = WBRODL(L)
+            WDRAIR(L) = WBRODL(L)
             DO 171 M = 2,NMOL
-               WDRAIR = WDRAIR + WKL(M,L)
+               WDRAIR(L) = WDRAIR(L) + WKL(M,L)
  171        CONTINUE
             WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *           TAVEL(L),
-     *           IPTH(L),(WKL(M,L)/WDRAIR,M=1,7),WBRODL(L)
+     *           IPTH(L),(WKL(M,L)/WDRAIR(L),M=1,7),WBRODL(L)
  172     CONTINUE
       ELSE
          WRITE (IPR,977) (HMOLID(I),I=1,7),HOLN2
          DO 174 L = 1, NLAYRS
-            WDRAIR = WBRODL(L)
+            WDRAIR(L) = WBRODL(L)
             DO 173 M = 2,NMOL
-               WDRAIR = WDRAIR + WKL(M,L)
+               WDRAIR(L) = WDRAIR(L) + WKL(M,L)
  173        CONTINUE
             WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *           TAVEL(L),
-     *           IPTH(L),(WKL(M,L)/WDRAIR,M=1,7),WBRODL(L)
+     *           IPTH(L),(WKL(M,L)/WDRAIR(L),M=1,7),WBRODL(L)
  174     CONTINUE
       ENDIF
 C
@@ -2850,13 +2852,13 @@ C
                WRITE (IPR,976) (HMOLID(I),I=MLO,MHI)
                DO 176 L = 1, NLAYRS
                   WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
-     *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR,M=MLO,MHI)
+     *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR(L),M=MLO,MHI)
  176           CONTINUE
             ELSE
                WRITE (IPR,977) (HMOLID(I),I=MLO,MHI)
                DO 177 L = 1, NLAYRS
                   WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
-     *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR,M=MLO,MHI)
+     *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR(L),M=MLO,MHI)
  177           CONTINUE
             ENDIF
  178     CONTINUE
@@ -2916,13 +2918,13 @@ C
                WRITE (IPR,976) (XSNAME(I),I=MLO,MHI)
                DO 195 L = 1, NLAYRS
                   WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
-     *                 TAVEL(L),IPTH(L),(XAMNT(M,L)/WDRAIR,M=MLO,MHI)
+     *                TAVEL(L),IPTH(L),(XAMNT(M,L)/WDRAIR(L),M=MLO,MHI)
  195           CONTINUE
             ELSE
                WRITE (IPR,977) (XSNAME(I),I=MLO,MHI)
                DO 196 L = 1, NLAYRS
                   WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
-     *                 TAVEL(L),IPTH(L),(XAMNT(M,L)/WDRAIR,M=MLO,MHI)
+     *                TAVEL(L),IPTH(L),(XAMNT(M,L)/WDRAIR(L),M=MLO,MHI)
  196           CONTINUE
             ENDIF
  198     CONTINUE
