@@ -101,7 +101,9 @@ C                                                                         B00890
      *              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,       B00940
      *              PAVP2,RECTLC,TMPDIF,ILC                               B00950
       COMMON /FLFORM/ CFORM                                               B00960
+      COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS
 C                                                                         B00970
+      REAL L4TIM,L4TMR,L4TMS
       CHARACTER CFORM*11,KFILYR*6,CKFIL*4                                 B00980
       LOGICAL OP                                                          B00990
 C                                                                         B01000
@@ -366,8 +368,9 @@ C                                                                         B03550
          IF (ILBLF4.GE.1) WRITE (IPR,905) DVR4,BOUND4                     B03570
          IF (NMINUS.GT.0) WRITE (IPR,910) NMINUS                          B03580
          IF (NPLUS.GT.0) WRITE (IPR,915) NPLUS                            B03590
-         WRITE (IPR,920)  TXS,TXSRDF,TXSCNV,TXSPNL,                       B03600
-     *                    TF4,TF4RDF,TF4CNV,TF4PNL,ILIN4T,ILIN4,          B03610
+         WRITE (IPR,920) L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,
+     *                   TXS,TXSRDF,TXSCNV,TXSPNL,                        B03600
+     *                   TF4,TF4RDF,TF4CNV,TF4PNL,ILIN4T,ILIN4,           B03610
      *                   TIME,TIMRDF,TIMCNV,TIMPNL,NLIN,LINCNT,NCHNG      B03620
          IF (LINCNT.GE.1) THEN                                            B03630
             AVALF = SUMALF/FLOAT(LINCNT)                                  B03640
@@ -388,9 +391,10 @@ C                                                                         B03750
   910 FORMAT ('0 -------------------------',I5,' HALF WIDTH CHANGES')     B03790
   915 FORMAT ('0 +++++++++++++++++++++++++',I5,' HALF WIDTH CHANGES')     B03800
   920 FORMAT ('0',20X,'TIME',11X,'READ',4X,'CONVOLUTION',10X,'PANEL',     B03810
-     *        6X,'NO. LINES',3X,'AFTER REJECT',5X,'HW CHANGES',/,2X,      B03820
-     *        'XSECT ',2X,4F15.3,/,2X,'LBLF4 ',2X,4F15.3,2I15,/,2X,       B03830
-     *        'HIRAC1',2X,4F15.3,3I15)                                    B03840
+     *        6X,'NO. LINES',3X,'AFTER REJECT',5X,'HW CHANGES',/,         B03820
+     *        2x,'LINF4',3X,2F15.3,15X,F15.3,2I15,/,
+     *        2X,'XSECT ',2X,4F15.3,/,2X,'LBLF4 ',2X,4F15.3,2I15,/,       B03830
+     *        2X,'HIRAC1',2X,4F15.3,3I15)                                 B03840
   925 FORMAT ('0  * HIRAC1 *  AVERAGE WIDTH = ',F8.6,                     B03850
      *        ',  AVERAGE ZETA = ',F8.6)                                  B03860
   930 FORMAT ('0 ********  HIRAC1  ********',I5,' STRENGTHS FOR',         B03870
@@ -3241,7 +3245,9 @@ C                                                                         D00300
       COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),       D00410
      *              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)          D00420
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D                          D00430
+      COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS
 C                                                                         D00440
+      REAL L4TIM,L4TMR,L4TMS
       DIMENSION MEFDP(64)                                                 D00450
       DIMENSION SCOR(NSPECI),RHOSLF(NSPECI),ALFD1(NSPECI)                 D00460
       DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4)               D00470
@@ -3448,7 +3454,14 @@ C                                                                         D02450
    80 CONTINUE                                                            D02480
       CALL CPUTIM (TIMEL1)                                                D02490
       TIME = TIMEL1-TIMEL0                                                D02500
-      IF (NOPR.EQ.0) WRITE (IPR,910) TIME,TIMR,TIMS,NLIN,NLINS            D02510
+      IF (NOPR.EQ.0) THEN
+         WRITE (IPR,910) TIME,TIMR,TIMS,NLIN,NLINS                        D02510
+         L4TIM=TIME
+         L4TMR=TIMR
+         L4TMS=TIMS
+         L4NLN=NLIN
+         L4NLS=NLINS
+      ENDIF
       RETURN                                                              D02520
 C                                                                         D02530
   900 FORMAT ('0  *****  LINF4 - VNU LIMITS DO NOT INTERSECT WITH ',      D02540
