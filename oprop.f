@@ -299,7 +299,9 @@ C       sending output to a different file for each layer (IEMIT=0,
 C       IOD=0, and IMRG=1), then use PTHODI for the optical depth
 C       pathnames.
 C
-C     - Otherwise, use TAPE10.
+C     - Otherwise, use TAPE10.  For IOD=1, calculate optical depths
+C       for each layer with DV = DVOUT (from DVSET in TAPE5, carried
+C       in by COMMON BLOCK /IODFLG/ (interpolation in PNLINT).
 C
       CALL CPUTIM(TPAT0)
       IF (IOD.EQ.1.AND.IMRG.EQ.1) THEN                                    B02220
@@ -345,8 +347,15 @@ C
             OPEN (KFILE,FILE=KODLYR,FORM=CFORM,STATUS='UNKNOWN')
             REWIND KFILE
          ENDIF
-         DVOUT = 0.0                                                      B02350
-         CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02360
+         IF (IOD.EQ.1) THEN
+            DVSAV = DV
+            IF (DVOUT.NE.0.) DV = DVOUT
+            CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
+            DV = DVSAV
+         ELSE
+            DVOUT = 0.0                                                   B02350
+            CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                          B02360
+         ENDIF
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02370
       ENDIF                                                               B02380
       CALL CPUTIM(TPAT1)
@@ -1169,7 +1178,7 @@ C     V2P IS LAST FREQ OF PANEL                                           B11280
 C                                                                         B11290
 C     If DVOUT (carried in from COMMON BLOCK /IODFLG/) is zero,
 C     then no interpolation is necessary.  For nozero DVOUT
-C     (in case of IOD>0 and IMRG=1), call PNLINT.
+C     (in case of IOD=1,3), call PNLINT.
 C
       IF (DVOUT.EQ.0.) THEN                                               B11300
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B11310
