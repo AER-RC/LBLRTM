@@ -2,6 +2,7 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
+C
       SUBROUTINE SCANFN (IFILE,JFILE)                                     I00010
 C                                                                         I00020
       IMPLICIT DOUBLE PRECISION (V)                                     ! I00030
@@ -126,7 +127,7 @@ C                                                                         I01170
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRPST = '$Revision$' 
+      HVRPST = '$Revision$'
 C
       PI = 2.*ASIN(1.)                                                    I01180
 C                                                                         I01190
@@ -677,7 +678,7 @@ C                                                                         I06500
       DIMENSION S(2406)                                                   I06520
       EQUIVALENCE (T(5),S(1))                                             I06530
 C                                                                         I06540
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & I06550
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & I06550
 C                                                                         I06560
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       I06570
      *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1C,V2C,TBOUND,   I06580
@@ -1765,7 +1766,7 @@ C                                                                         J00190
       DIMENSION S(2406)                                                   J00210
       EQUIVALENCE (S(1),T(5))                                             J00220
 C                                                                         J00230
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & J00240
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & J00240
 C                                                                         J00250
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -1811,7 +1812,7 @@ C                                                                         J00620
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRPST = '$Revision$' 
+      HVRPST = '$Revision$'
 C
    10 CONTINUE                                                            J00630
       CALL CPUTIM (TIME1)                                                 J00640
@@ -2460,7 +2461,7 @@ C                                                                         L00310
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRPST = '$Revision$' 
+      HVRPST = '$Revision$'
 C
       NLIMF = 2401                                                        L00320
       NREN = 0                                                            L00330
