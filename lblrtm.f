@@ -1377,9 +1377,13 @@ C
 C        Test number of layer read in from TAPE5 RECORD1.6a to total
 C        number of layers information extracted from the fileheader
 C        from the first layer optical depth file.  If they do not
-C        agree, then issue a warning to TAPE6.
+C        agree, then issue a warning to TAPE6, and set LH2 to LAYTOT
+C        as well (for use with boundary temperature in XMERGE).
 C
-         IF (LAYTOT.NE.NLAYD1) WRITE(IPR,950) NLAYER,NLAYD1
+         IF (LAYTOT.NE.NLAYD1) THEN
+            WRITE(IPR,950) NLAYER,NLAYD1
+            LH2 = LAYTOT
+         ENDIF
 C
 C        Check for forced IPATHL, and set layer boundaries as needed
 C
