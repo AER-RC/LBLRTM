@@ -305,8 +305,9 @@ C
       CHARACTER*1 CONE,CTWO,CTHREE,CFOUR,CA,CB,CC,CDOL,CPRCNT,CBLNK       A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
-      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
-     *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,
+     *                MXTRAC=22,MXSPC=3)
 C
 C     -------------------------
 C
@@ -803,9 +804,9 @@ C                                                                         A07580
       END                                                                 A07590
       BLOCK DATA                                                          A07600
       COMMON /FLFORM/ CFORM                                               A03270
-      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(203),MSPNL1(203),  A07610
-     *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   A07620
-     *                JEFILE,KEFILE                                       A07630
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(3403),             A07610
+     *                MSPNL1(3403),MSLAY1,ISFILE,JSFILE,KSFILE,           A07620
+     *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                  A07630
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /ARMCM1/ HVRSOL
@@ -820,7 +821,7 @@ C
       DATA PLANCK / 6.626176E-27 /,BOLTZ / 1.380662E-16 /,                A07660
      *     CLIGHT / 2.99792458E10 /,AVOG / 6.022045E23 /                  A07670
       DATA IOD / 0 /,IDIR / 0 /,ITOP / 0 /,ISURF / 0 /,MSPTS / 0 /,       A07680
-     *     MSPANL /203*0 /,MSPNL1 /203*0 /,ISFILE / 0 /,JSFILE / 0 /,
+     *     MSPANL /3403*0 /,MSPNL1 /3403*0 /,ISFILE / 0 /,JSFILE / 0 /,
      *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
      *     JEFILE / 0 /,KEFILE / 0 /,MSLAY1 / 0 /                         A07700
 C
@@ -1077,8 +1078,9 @@ C**********************************************************************
 C     XLAYER CONTROLS LAYER BY LAYER CALCULATION                          A11250
 C**********************************************************************
 C                                                                         A11260
-      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
-     *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
+     *                MXMOL=35,MXTRAC=22)
 C
       CHARACTER*55 PATH1,PTHRAD
       CHARACTER*10 HFORM1,HFMRAD
@@ -1280,15 +1282,14 @@ C
 C
 C     ---------------------
 C
-C     For IMRG = 35,36,40,41 (those options which use
-C     For IMRG = 35,36,40,41,45,46 (those options which
+C     For IMRG = 35,36,40,41 (those options which
 C     use precalculated layer optical depths stored on different
 C     files for radiative transfer), read in the pathname of
 C     the layer optical depths and determine format for the
 C     addition of the layer number suffix.
 C
       IF (IMRG.GE.35) THEN
-         READ (IRD,945) PATH1
+         READ (IRD,945) PATH1,LAYTOT
          CALL QNTIFY(PATH1,HFORM1)
          CALL OPNODF(1,1,PATH1,HFORM1)
       ENDIF
@@ -1321,7 +1322,18 @@ C
          LH1 = LH1SAV
          LH2 = LH2SAV
          IPATHL = IPTHD1
-         NLAYER = NLAYD1
+C
+C        Set number of layers upon which to perform radiative transfer
+C        to LAYTOT, read in from TAPE5 RECORD1.6a.
+C
+         NLAYER = LAYTOT
+C
+C        Test number of layer read in from TAPE5 RECORD1.6a to total
+C        number of layers information extracted from the fileheader
+C        from the first layer optical depth file.  If they do not
+C        agree, then issue a warning to TAPE6.
+C
+         IF (LAYTOT.NE.NLAYD1) WRITE(IPR,950) NLAYER,NLAYD1
 C
 C        Check for forced IPATHL, and set layer boundaries as needed
 C
@@ -1398,6 +1410,17 @@ C                                                                         A12750
       LH2 = LH2SAV                                                        A12820
       IPATHL = IPTHD1                                                     A12830
       NLAYER = NLAYD1                                                     A12840
+C
+C     For IMRG = 35,36,45,46, reset NLAYER to LAYTOT, read in from
+C     TAPE5 RECORD1.6a.  Test number of layer read in from TAPE5
+C     RECORD1.6a to total number of layers information extracted
+C     from the fileheader from the first layer optical depth file.
+C     If they do not agree, then issue a warning to TAPE6.
+C
+      IF (IMRG.GE.35) THEN
+         NLAYER = LAYTOT
+         IF (LAYTOT.NE.NLAYD1) WRITE(IPR,950) NLAYER,NLAYD1
+      ENDIF
 C
 C     -----------------------------
 C     Standard Merge Options Follow
@@ -1824,7 +1847,17 @@ C                                                                         A16720
   930 FORMAT (/,'  TANGENT WEIGHTING FUNCTION, LAYER',I3,' TO LAYER',     A16830
      *        I3)                                                         A16840
   940 FORMAT ('TAPE5: IPATHL',I5,', IMRG = ',I5)
-  945 FORMAT (A55)
+  945 FORMAT (A55,1X,I4)
+  946 FORMAT (A55)
+  950 FORMAT ('***********************************************',/,
+     *        '*                   WARNING                   *',/,
+     *        '*                  =========                  *',/,
+     *        '*   TOTAL NUMER OF LAYERS LAYTOT FROM TAPE5   *',/,
+     *        '*       NOT EQUAL TO LAYER TOTAL NLAYD1       *',/,
+     *        '*   EXTRACTED FROM OPTICAL DEPTH FILEHEADER   *',/,
+     *        '*                                             *',/,
+     *        '***********************************************',//,
+     *        'LAYTOT = ',I4,'NLAYD1 = ',I4)
 C                                                                         A16850
       END                                                                 A16860
       SUBROUTINE OPPATH                                                   A16870
@@ -1833,8 +1866,9 @@ C                                                                         A16880
 C                                                                         A16900
 C     OPPATH CALLS LBLATM AND CALLS PATH FIRST                            A16910
 C                                                                         A11260
-      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
-     *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
+     *                MXMOL=35,MXTRAC=22)
 C                                                                         A16920
       COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(35,MXLAY),
      *               WBRODL(MXLAY),DVL(MXLAY),                            A16930
@@ -2082,8 +2116,9 @@ C     SUBROUTINE PATH INITIALIZES LINFIL AND INPUTS LAYER PARAMETERS      A19220
 C     SUBROUTINE PATH INPUTS AND OUTPUTS HEADER FROM LINFIL AND           A19230
 C     INPUTS AND OUTPUTS PATH PARAMETERS FOR EACH LAYER                   A19240
 C                                                                         A19250
-      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
-     *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
+     *                MXMOL=35,MXTRAC=22)
 C
       COMMON COMSTR(250,9)                                                A19260
       COMMON R1(3600),R2(900),R3(225)                                     A19270
