@@ -1007,6 +1007,8 @@ C                                                                         I08640
      *            (FSCDID(16),LAYR1)                                      I08680
 C                                                                         I08690
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               I08700
+C
+      DATA I_1000/1000/
 C                                                                         I08710
       DATA HTRANS / 'TRANSMISSION'/,HABSRB / ' ABSORPTION '/,             I08720
      *     HRADIA / ' RADIANCE   '/                                       I08730
@@ -1363,7 +1365,7 @@ CPRT  WRITE(IPR,900) VBOT,VTOP                                            I11990
 C                                                                         I12000
       IDUM1 = 0                                                           I12010
       IDUM2 = 0                                                           I12020
-      ISCANT = MOD(ISCAN,1000)                                            I12030
+      ISCANT = MOD(ISCAN,I_1000)
       IF(JTREM.EQ.0.AND.ISCANT.GE.1) GO TO 60                             I12035
       IF (ISCAN.LT.1) THEN                                                I12040
          IF (JTREM.EQ.1) IDUM1 = 1                                        I12050
