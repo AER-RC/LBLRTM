@@ -3128,6 +3128,8 @@ C                                                                         L00040
 C                                                                         L00060
       character*8      XID,       HMOLID,      YID        
       real*8               SECANT,       XALTZ 
+
+      logical op
 C                                                                         L00080
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -3145,16 +3147,23 @@ C                                                                         L00080
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         L00200
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        L00210
      *              NLTEFL,LNFIL4,LNGTH4                                  L00220
+      COMMON /FLFORM/ CFORM                                               I00270
       DIMENSION FILHDR(2)                                                 L00230
       CHARACTER*80 CVAR                                                   L00240
+      CHARACTER*11 CFORM                                                  I00300
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      character ctape*4,fltinf*7
 C                                                                         L00250
       EQUIVALENCE (FILHDR(1),XID(1)) , (FSCDID(5),IEMIT),                 L00260
      *            (FSCDID(6),ISCAN) , (FSCDID(7),IPLOT),                  L00270
      *            (FSCDID(8),IPATHL) , (FSCDID(9),JRAD),                  L00280
      *            (FSCDID(12),SCNID) , (FSCDID(13),HWHM),                 L00290
      *            (FSCDID(16),LAYR1)                                      L00300
+
+
+      DATA FLTINF / '       '/,CTAPE / 'TAPE'/
+
 C                                                                         L00310
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
@@ -3216,6 +3225,12 @@ c     save center frequency value, and reset V1F to endpoint value.
 C                                                                         L00470
       WRITE (IPR,905)                                                     L00480
       REWIND IFILE                                                        L00490
+      inquire(ifile,opened=op)
+      IF (.NOT.OP) THEN                                                   I02680
+         WRITE (FLTINF,970) CTAPE,IFILE                                   I02690
+         OPEN (IFILE,FILE=FLTINF,STATUS='UNKNOWN',FORM=CFORM)             I02700
+         REWIND IFILE                                                     I02710
+      ENDIF                                                               I02720
       IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  L00500
       IEOFSC = 0                                                          L00510
       ISTOP = 0                                                           L00520
@@ -3334,6 +3349,7 @@ C                                                                         L01380
      *        '0 UNNORMALIZED INTEGRATED ABSORPTION =    ',E14.5)         L01650
   965 FORMAT ('0 INTEGRATED EMISSION = ',1PE14.5,                         L01660
      *        '  NORMALIZATION OF THE',' FILTER = ',E14.5)                L01670
+ 970  format (a4,i2.2)
 C                                                                         L01680
       END                                                                 L01690
 C
