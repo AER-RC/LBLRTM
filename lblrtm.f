@@ -298,8 +298,6 @@ C
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & A03050
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
       CHARACTER*55 CTAPE3
-      CHARACTER*55 PTHRAD
-      CHARACTER*10 HFMRAD
       CHARACTER*9 CT6FIL
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
@@ -311,12 +309,6 @@ C                                                                         A02940
      *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C     -------------------------
-C
-C     -------------------------
-C     Common blocks for layer radiances
-C     -------------------------
-C
-      COMMON /RADLAY/ PTHRAD,HFMRAD
 C
       DIMENSION IDCNTL(14),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2)      A03280
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A02970
@@ -388,8 +380,6 @@ C
       CT6FIL = 'TAPE6    '
       CTAPE3 = 'TAPE3'
 C
-      PTHRAD = 'RDlayer_'
-      CALL QNTIFY(PTHRAD,HFMRAD)
 C     -------------------------
 C
 C     FILE ASSIGNMENTS                                                    A03600
@@ -1090,8 +1080,14 @@ C                                                                         A11260
       PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
      *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
-      CHARACTER*55 PATH1
-      CHARACTER*10 HFORM1
+      CHARACTER*55 PATH1,PTHRAD
+      CHARACTER*10 HFORM1,HFMRAD
+C
+C
+C     Common blocks for layer radiances
+C     -------------------------
+      COMMON /RADLAY/ PTHRAD,HFMRAD
+C     -------------------------
 C
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         A11270
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         A11280
@@ -1540,7 +1536,11 @@ C     open output layer radiance file.
 C
       IF ((IMRG.EQ.36).OR.(IMRG.EQ.46)) THEN
          CALL OPNODF(NLAYER,LAYER,PATH1,HFORM1)
-         IF (IMRG.EQ.46) CALL OPNRAD(NLAYER,LAYER)
+         IF (IMRG.EQ.46) THEN
+            PTHRAD = 'RDUPlayer_'
+            CALL QNTIFY(PTHRAD,HFMRAD)
+            CALL OPNRAD(NLAYER,LAYER)
+         ENDIF
       ENDIF
       CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)                               A14170
       NNTAN = NNTAN+1                                                     A14180
@@ -1620,7 +1620,11 @@ C
          REWIND KFILE                                                     A14870
       ELSEIF (IMRG.EQ.35.OR.IMRG.EQ.45) THEN
          CALL OPNODF(1,LAYER,PATH1,HFORM1)
-         IF (IMRG.EQ.45) CALL OPNRAD(NLAYER,LAYER)
+         IF (IMRG.EQ.45) THEN
+            PTHRAD = 'RDDNlayer_'
+            CALL QNTIFY(PTHRAD,HFMRAD)
+            CALL OPNRAD(NLAYER,LAYER)
+         ENDIF
       ELSE
          CALL SKIPFL (ISKIP,KFILE,IEOF)                                   A14890
       ENDIF                                                               A14900
