@@ -12,7 +12,7 @@ PLATFORM = AIX
 
 FC = xlf90
 FCFLAG = -O2 -qfixed=72 -qmaxmem=-1 -qrealsize=8 -qintsize=8
-OUTPUT = lblrtm_v7.03_f90_aix_dbl
+OUTPUT = lblrtm_v7.04_f90_aix_dbl
 CPATH = src
 CDOTO = aix_f90_dbl.o
 
