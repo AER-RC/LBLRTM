@@ -4143,6 +4143,8 @@ C     ABSORBER AMOUNTS                                                   FA42850
 C                                                                        FA42860
       PA = PP(J)                                                         FA42870
       PB = PP(J+1)                                                       FA42880
+      IF (PB.EQ.PA) 
+     *     STOP 'LBLATM: PRESSURES IN ADJOINING LAYERS MUST DIFFER'
       TA = TP(J)                                                         FA42890
       TB = TP(J+1)                                                       FA42900
       RHOA = PA/(GCAIR*TA)                                               FA42910
