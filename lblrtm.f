@@ -2023,6 +2023,15 @@ C                                                                         A14980
             CALL SCNINT (MFILE,LFILE,DVINT,JEMIT,NPTS,IBUF)               A15020
             MMFILE = LFILE                                                A15030
          ENDIF                                                            A15040
+C
+C        If scanning, reset values of HWF1,DXF1,NX1,N1MAX which may
+C        have been been changed in HIRAC1 after having been read in
+C        in SCANRD, but before being used in SCNMRG.
+C
+         HWF1 = HWFS
+         DXF1 = DXFS
+         NX1 = NFS
+         N1MAX = NFMAXS
          CALL SCNMRG (MMFILE,NFILE)                                       A15050
       ENDIF                                                               A15060
       IF (IMRG.EQ.23.OR.IMRG.EQ.25) CALL FLTMRG (MFILE,NFILE)             A15070
@@ -2663,6 +2672,11 @@ C                                                                         A20360
             READ (CINP,920) ITYL(L)                                       A20590
          ENDIF                                                            A20600
 C                                                                         A20610
+C        If TZ(L) = 0 then reset TZ(L) = TAVE to avoid errors when
+C        calculating EMB in SUBROUTINE EMIN
+C
+         IF (TZ(L).EQ.0.) TZ(L) = TAVE
+C
          PAVEL(L) = PAVE                                                  A20620
          TAVEL(L) = TAVE                                                  A20630
          SECANT = SECNT0                                                  A20640
