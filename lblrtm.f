@@ -484,10 +484,10 @@ C
          INFLAG = 0
          IOTFLG = 0
          READ(IRD,1010) INFLAG,IOTFLG
-         IF (INFLAG.EQ.0) THEN
-            IFILE = MFILE
-         ELSE
+         IF (INFLAG.EQ.1) THEN
             IFILE = KFILE
+         ELSE
+            IFILE = MFILE
          ENDIF
          INQUIRE (UNIT=13,OPENED=OP)
          IF (OP) CLOSE(13)
