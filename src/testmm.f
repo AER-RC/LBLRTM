@@ -46,7 +46,7 @@ C                                                                         N00210
      *            (HLINHD(1),HID(1),IWD(1))                               N00230
 C                                                                         N00240
       CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
 C
 C     LINCPL - IS THE FLAG FOR LINE COUPLING --- 0 = OFF; 1 = ON          N00250
 C                                                                         N00260
