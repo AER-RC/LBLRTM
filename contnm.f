@@ -72,7 +72,7 @@ C
 C--------------------------------------------------------------------
 C                             FOREIGN
       ALPHF2= 330.**2
-      BETAF = 5.E-06
+      BETAF = 1.5 E-11
       V0F =1130.
       FACTRF = 0.97
 C     XFACT= 1.- FACTRF
@@ -97,7 +97,8 @@ C                                                                         F00660
 C     CORRECTION TO FOREIGN CONTINUUM                                     F00670
 C                                                                         F00680
         VF2 = (VJ-V0F)**2
-        FH2O(J)=FH2O(J)*(1.-FACTRF*(ALPHF2/(VF2+(BETAF*VF2**2)+ALPHF2)))
+        VF6 = VF2 * VF2 * VF2
+        FH2O(J)=FH2O(J)*(1.-FACTRF*(ALPHF2/(VF2+(BETAF*VF6)+ALPHF2)))
 C                                                                         F00700
          C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)                              F00710
 C                                                                         F00720
