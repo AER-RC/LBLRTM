@@ -421,6 +421,8 @@ C                                                                        FA03820
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FA03960
       COMMON /PCHINF/ MUNITS,CTYPE(MXLAY)
       DIMENSION XPBAR(NXPBAR),XZOUT(NXZOUT),WMT(MXMOL)                   FA03970
+
+      dimension densave(mxzmd)
 C                                                                        FA03980
       EQUIVALENCE (PBAR(1),XPBAR(1)) , (ZOUT(1),XZOUT(1))                FA03990
 C                                                                        FA04000
@@ -694,7 +696,7 @@ C                                                                        FA06870
 C      >  READ IN CONTROL CARD 3.2 CONTAINING SLANT PATH PARAMETERS <    FA06880
 C                                                                        FA06890
          IF (IREAD.LE.0)                                                 FA06900
-     *         READ (IRD,932) H1F,H2F,ANGLEF,RANGEF,BETAF,LENF           FA06910
+     *         READ (IRD,932) H1F,H2F,ANGLEF,RANGEF,BETAF,LENF,HOBS      FA06910
          H1 = H1F                                                        FA06920
          H2 = H2F                                                        FA06930
          ANGLE = ANGLEF                                                  FA06940
@@ -792,14 +794,31 @@ C                                                                        FA08520
 C        > DENG=DENM(1,IM)*2.989641E-17 <                                FA08530
 C                                                                        FA08540
             DENAIR = ALOSMT*(PM(IM)/PZERO)*(TZERO/TM(IM))                FA08550
+            densave(im) = denair
             WRITE (IPR,954) IM,ZMDL(IM),PM(IM),TM(IM),RFNDXM(IM),        FA08560
      *                      DENAIR,(DENM(K,IM),K=1,NMOL)                 FA08570
+
+
   180    CONTINUE                                                        FA08580
+
+         WRITE (IPR,951) (HMOLS(K),K=1,NMOL)
+
+         DO 188 IM = 1, IMMAX
+
+c           Calculate mixing ratio, using dry air
+
+            dry_air = densave(im)-denm(1,im)
+            WRITE (IPR,954) IM,ZMDL(IM),PM(IM),TM(IM),RFNDXM(IM),
+     *                      DENsave(im),
+     *                      (DENM(K,IM)/DRY_AIR,K=1,NMOL)
+
+ 188     continue
   190    CONTINUE                                                        FA08590
 C                                                                        FA08600
 C        > REDUCE SLANT PATH PARAMETERS TO STANDARD FORM <               FA08610
 C                                                                        FA08620
-         CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,IERROR)  FA08630
+         CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,IERROR,
+     *                HOBS)
          IF (IERROR.NE.0) GO TO 310                                      FA08640
 C                                                                        FA08650
 C        > SET UP LBLRTM LAYER BOUNDARIES <                              FA08660
@@ -1127,7 +1146,7 @@ C                                                                        FA10530
   928 FORMAT (//,' MULTIPLE SCATTERING TURNED OFF, HMIN = ',F10.6,       FA10810
      *        ' > HMAXMS = ',F10.6,/)                                    FA10820
   930 FORMAT (///,' SLANT PATH SELECTED, ITYPE = ',I5)                   FA10830
-  932 FORMAT (5F10.4,I5)                                                 FA10840
+  932 FORMAT (5F10.4,I5,5X,F10.4)                                        FA10840
   934 FORMAT (///' CONTROL CARD 3.2:  SLANT PATH PARAMETERS',//,10X,     FA10850
      *        'H1      = ',F12.6,' KM',/,10X,'H2      = ',F12.6,' KM',   FA10860
      *        /,10X,'ANGLE   = ',F12.6,' DEG',/,10X,'RANGE   = ',F12.6,  FA10870
@@ -1147,6 +1166,12 @@ C                                                                        FA10530
   948 FORMAT ('1ATMOSPHERIC PROFILE SELECTED IS: M = ',I3,5X,3A8)        FA11010
   950 FORMAT (/,T4,'I',T11,'Z',T20,'P',T29,'T',T35,'REFRACT',T73,        FA11020
      *        'DENSITY  (MOLS CM-3)',/,T35,'INDEX-1',/,T10,'(KM)',T19,   FA11030
+     *        '(MB)',T28,'(K)',T35,'*1.0E6',T47,'AIR',(T54,8(1X,A9)))    FA11040
+ 951  FORMAT (/,T4,'I',T11,'Z',T20,'P',T29,'T',T35,'REFRACT',T45,
+     *        'DENSITY',T70,'MIXING RATIO (BASED UPON DRY AIR)',/,
+     *        T35,'INDEX-1',T44,
+     *        '(MOL CM-3)'/,T10,
+     *        '(KM)',T19,
      *        '(MB)',T28,'(K)',T35,'*1.0E6',T47,'AIR',(T54,8(1X,A9)))    FA11040
   952 FORMAT (/)                                                         FA11050
   954 FORMAT (I4,F9.3,F11.5,F8.2,6PF9.2,1X,1P9E10.3,/,(52X,1P8E10.3))    FA11060
@@ -3334,7 +3359,7 @@ C
 C     ----------------------------------------------------------------
 C
       SUBROUTINE FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,      FA32150
-     *                   IERROR)                                         FA32160
+     *                   IERROR,HOBS)                                    FA32160
 C                                                                        FA32170
 C     -------------------------------------------------------------
 C     This routine was modified for LBLRTM to reflect changes
@@ -3533,8 +3558,29 @@ C                                                                        FA33650
 C                                                                        FA33680
 C     At this point the following parameters are defined-                FA33690
 C         H1,H2,ANGLE,PHI,HMIN,LEN                                       FA33700
+C
+C     Calculate sin(PHI) and sin(ANGLE) and output
 C                                                                        FA33710
-      WRITE (IPR,935) H1,H2,ANGLE,PHI,HMIN,LEN                           FA33720
+      radconv = 2.*pi/360.
+      sinphi = sin(radconv*phi)
+      sinangle = sin(radconv*angle)
+      WRITE (IPR,935) H1,H2,ANGLE,sinangle,PHI,sinphi,HMIN,LEN           FA33720
+
+C
+C     Calculate and output geometry from satellite above 120km.
+C     Subtract from 180 degrees to correctly place angle in the
+C     3rd quadrant.
+C
+      if (hobs.gt.0.) then
+         sinphi_sat = ((re+h1)/(re+hobs))*sinphi
+         phi_sat = 180. - asin(sinphi_sat)/radconv
+         sinphi_sat = sin(radconv*phi_sat)
+         diffangle = phi_sat - phi
+         WRITE (IPR,937) hobs,phi_sat,sinphi_sat,diffangle
+      endif
+
+
+C
       RETURN                                                             FA33730
 C                                                                        FA33740
 C     Error messages                                                     FA33750
@@ -3570,11 +3616,20 @@ C                                                                        FA33930
   930 FORMAT (//,' CASE 2C: GIVEN H1, H2, RANGE',//,10X,                 FA34050
      *        'NOTE: ANGLE IS COMPUTED FROM H1, H2, AND RANGE ',         FA34060
      *        'ASSUMING NO REFRACTION')                                  FA34070
-  935 FORMAT (///,' SLANT PATH PARAMETERS IN STANDARD FORM',//,10X,      FA34080
-     *        'H1      = ',F12.6,' KM',/,10X,'H2      = ',F12.6,' KM',   FA34090
-     *        /,10X,'ANGLE   = ',F12.6,' DEG',/,10X,'PHI     = ',F12.6,  FA34100
-     *        ' DEG',/,10X,'HMIN    = ',F12.6,' KM',/,10X,'LEN     = ',  FA34110
-     *        I10)                                                       FA34120
+  935 FORMAT (///,' SLANT PATH PARAMETERS IN STANDARD FORM',/            FA34080
+     *        /,10X,'H1         = ',F12.6,' KM',
+     *        /,10X,'H2         = ',F12.6,' KM',
+     *        /,10X,'ANGLE      = ',F12.6,' DEG',
+     *        /,10X,'sin(ANGLE) = ',F12.6,
+     *        /,10X,'PHI        = ',F12.6,' DEG',
+     *        /,10X,'sin(PHI)   = ',F12.6,
+     *        /,10X,'HMIN       = ',F12.6,' KM',
+     *        /,10X,'LEN        = ',I10)
+ 937  FORMAT (///,' SLANT PATH PARAMETERS AT SATELLITE',/
+     *        /,10X,'H_SAT        = ',F12.6,' KM',
+     *        /,10X,'PHI_SAT      = ',F12.6,' DEG'
+     *        /,10X,'sin(PHI_SAT) = ',F12.6,
+     *        /,10X,'PHI_SAT-PHI  = ',F12.6,' DEG')
   940 FORMAT ('0FSCGEO: CASE 3B (H1,HMIN,SPACE): ERROR IN INPUT DATA',   FA34130
      *        //,10X,'H1 = ',F12.6,'    IS LESS THAN HMIN = ',F12.6)     FA34140
   945 FORMAT ('0FSCGEO: ERROR IN INPUT DATA, ITYPE NOT EQUAL TO ',       FA34150
