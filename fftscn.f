@@ -1540,7 +1540,7 @@ C*****         0's or 1's
 C*****LSLAST  = number of valid points in record LRDATA.
 C*****Note: there is a potential roundoff problem using n = (v2-v1)/dv
 C*****when n reaches 7 digits, the limit of single precision.  
-      LTOTAL = (V2-V1)/DV+1.00001
+      LTOTAL = (V2-V1)/DV+1.1
 C*****Recompute V2, in case of round off errors
       V2 = V1+DV*(LTOTAL-1)
 
