@@ -6,6 +6,32 @@ C     created:   $Date$
       SUBROUTINE NONLTE(MPTS)                                             600000
       IMPLICIT REAL*8           (V)                                     ! B00030
 C
+C**********************************************************************
+C*                                                                     
+C*                                                                     
+C*    CALCULATES MONOCHROMATIC ABSORPTION COEFFICIENT FOR SINGLE LAYER 
+C*    Under the conditions of NLTE                                     
+C*                                                                     
+C**********************************************************************
+C                                                                      
+C                                                                      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      
+C                  IMPLEMENTATION:    W.O. GALLERY                     
+C                                                                      
+C             ALGORITHM REVISIONS:    M.W.SHEPHARD                     
+C                                                                      
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.      
+C                     131 Hartwell Ave,  Lexington,  MA   02421        
+C                                                                      
+C----------------------------------------------------------------------
+C                                                                      
+C               WORK SUPPORTED BY:    JPL, TES                         
+C                                                                      
+C      SOURCE OF ORIGINAL ROUTINE:    AFGL LINE-BY-LINE MODEL FASCOD         
+C                                                                      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   B00580
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       B00590
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       B00600
@@ -25,9 +51,8 @@ C
      *               DPTMN4,DPTFC4,ILIN4,ILIN4T                           B00830
 
 c
-      CHARACTER*15 hvnlte
-      COMMON /CVNLTE/ HVNLTE
-
+      CHARACTER*18 hnmnlte,hvnlte
+      COMMON /CVNLTE/ HNMNLTE,HVNLTE
 
       EQUIVALENCE (FSCDID(1),IHIRAC),(FSCDID(2),ILBLF4),
      &  (FSCDID(3),IXSCNT),(FSCDID(4),IAERSL),(FSCDID(5),IEMIT),
@@ -111,14 +136,15 @@ C                                                                         600750
      2     '1' , 2143.272,                                                600780
      3     '2' , 4260.063/                                                600790
 C                                                                         600800
-       DATA (HNO(I),ENO(I),I=1,3)/                                        600810
+      DATA (HNO(I),ENO(I),I=1,3)/                                         600810
      1      '0' ,    0.  ,                                                600820
      2      '1' , 1878.077,                                               600830
      3      '2' , 3724.067/                                               600840
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-       hvnlte = '$Revision$'
+      hvnlte = '$Revision$'
+      hnmnlte= '         nonlte.f:'
 
       NUMH2O =  8
       NUMCO2 = 26
@@ -581,7 +607,7 @@ C                                     J.L. MONCET                         B00280
 C                                                                         B00290
 C                                                                         B00300
 C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         B00310
-C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139          B00320
+C                     131 Hartwell Ave,  Lexington,  MA   02421           B00320
 C                                                                         B00330
 C----------------------------------------------------------------------   B00340
 C                                                                         B00350
@@ -655,7 +681,7 @@ C
 C                                                                         B00870
       PARAMETER (NTMOL=36,NSPECI=85)   
 C                                                                         B00890
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           B00900
+      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISO_MAX(NTMOL),           B00900
      *                SMASSI(NSPECI)                                      B00910
       COMMON /LNC1/ RHOSLF(NSPECI),ALFD1(NSPECI),SCOR(NSPECI),ALFMAX,     B00920
      *              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,      B00930
@@ -664,6 +690,7 @@ C                                                                         B00890
       COMMON /FLFORM/ CFORM                                               B00960
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER
       COMMON /IODFLG/ DVOUT
+
 c     Total timing array for layer line-by-line calculation
       common /timing_lay_nlte/ time_lay_lbl(20)
 C                                                                         B00970
@@ -716,7 +743,7 @@ C
 C
       LSTWDX = -654321
       NPNLXP = NWDL(IWD,LSTWDX)                                           B01190
-      ICNTNM = MOD(IXSCNT,10)                                             B01200
+      ICNTNM = MOD(IXSCNT,I_10)                                             B01200
       IXSECT = IXSCNT/10                                                  B01210
 C                                                                         B01220
 C     SET INPUT FLAG FOR USE BY X-SECTIONS                                B01230
@@ -1074,6 +1101,8 @@ C                                                                         B03550
      *                   TF4,TF4RDF,TF4CNV,TF4PNL,ILIN4T,ILIN4,           B03610
      *                   TIME,TIMRDF,TIMCNV,TIMPNL,TOTHHI,
      *                   NLIN,LINCNT,NCHNG                                B03620
+
+c        Fill timing array
 c         time_lay_lbl(1) = l4tim
 c         time_lay_lbl(2) = l4tmr
 c         time_lay_lbl(3) = 0.0
@@ -1097,7 +1126,7 @@ c         time_lay_lbl(20) = tothhi
 
 c        Accumulate timing array
 
-         DATA  i_time_lay/454545/
+         DATA i_time_lay/454545/
          
          if (i_time_lay .eq. 454545) then
             i_time_lay = 676767
@@ -1105,7 +1134,6 @@ c        Accumulate timing array
                time_lay_lbl(ltime) = 0.0
             enddo
          endif
-
 
          time_lay_lbl(1) = time_lay_lbl(1) + l4tim
          time_lay_lbl(2) = time_lay_lbl(2) + l4tmr
@@ -1141,7 +1169,7 @@ c        Accumulate timing array
      *           time_lay_lbl(18),time_lay_lbl(19),time_lay_lbl(20)
                            
          ENDIF
-
+         
          WRITE(IPR,935)
          IF (LINCNT.GE.1) THEN                                            B03630
             AVALF = SUMALF/ REAL(LINCNT)                                  B03640
@@ -1187,7 +1215,7 @@ C                                                                         B03900
       END                                                                 B03910
       SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)                             B04840
 C                                                                         B04850
-      IMPLICIT REAL*8           (V)                                     ! B00030
+      IMPLICIT REAL*8           (V)                                     ! B04860
 C                                                                         B04870
       CHARACTER*1 FREJ(250),HREJ,HNOREJ
       COMMON /RCNTRL/ ILNFLG
@@ -1203,7 +1231,6 @@ C                                                                         B04870
 C                                                                         B04980
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
-
 C                                                                         B05000
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B05010
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B05020
@@ -1222,9 +1249,9 @@ C                                                                         B05000
      &               NUMH2O,NUMCO2,NUMO3,NUMCO,NUMNO                      603430
 
 C                                                                         B05080
-      PARAMETER (NTMOL=36,NSPECI=85)                                      B05090
+      PARAMETER (NTMOL=36,NSPECI=85) 
 C                                                                         B05100
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           B05110
+      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISO_MAX(NTMOL),           B05110
      *                SMASSI(NSPECI)                                      B05120
       COMMON /LNC1/ RHOSLF(NSPECI),ALFD1(NSPECI),SCOR(NSPECI),ALFMAX,     B05130
      *              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,      B05140
@@ -1238,6 +1265,10 @@ C                                                                         B05190
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),                B05210
      *            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),                B05220
      *            (JRAD,FSCDID(9)) , (XID(1),FILHDR(1))                   B05230
+c                                                                          D00540
+      character*8 h_lncor1
+c
+      data h_lncor1/' lncor1 '/
 C                                                                         B05240
 C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         B05250
 C                                                                         B05260
@@ -1245,6 +1276,8 @@ C                                                                         B05260
       DATA HREJ /'0'/,HNOREJ /'1'/
       DATA NWDTH /0/
 C                                                                         B05280
+      DATA I_1/1/, I_100/100/, I_1000/1000/
+C
       NLNCR = NLNCR+1                                                     B05290
       IF (NLNCR.EQ.1) THEN                                                B05300
 C                                                                         B05310
@@ -1283,14 +1316,22 @@ C                                                                         B05560
          I = IOUT(J)                                                      B05620
          IFLAG = IFLG(I)                                                  B05630
          MFULL=MOL(I)
-         M = MOD(MOL(I),100)                                              B05640
+         M = MOD(MOL(I),I_100)                                              B05640
 C                                                                         B05650
 C     ISO=(MOD(MOL(I),1000)-M)/100   IS PROGRAMMED AS:                    B05660
 C                                                                         B05670
-         ISO = MOD(MOL(I),1000)/100                                       B05680
+         ISO = MOD(MOL(I),I_1000)/100                                       B05680
          ILOC = ISOVEC(M)+ISO                                             B05690
 C
-         IF ((M.GT.NMOL).OR.(M.LT.1)) GO TO 25
+c     check if lines are within allowed molecular and isotopic limits
+c
+         if (m.gt.nmol .or. m.lt. 1) then
+            call line_exception (1,ipr,h_lncor1,m,nmol,iso,iso_max)
+            go to 25
+         else if (iso .gt. iso_max(m)) then
+            call line_exception (2,ipr,h_lncor1,m,nmol,iso,iso_max)
+            go to 25
+         endif
 C
          MOL(I) = M                                                       B05760
          SUI = S(I)*WK(M)                                                 B05770
@@ -1382,7 +1423,6 @@ C                                                                         B06500
      *                        EXP(-EPP(I)*BETACR)*(1.+EXP(-VNU(I)/XKT))   B06600
          IF (JRAD.EQ.1) SUI = SUI*SCOR(ILOC)*VNU(I)*                      B06610
      *                        EXP(-EPP(I)*BETACR)*(1.-EXP(-VNU(I)/XKT))   B06620
-C                                                                         B06630
 C                                                                         B06860
          SPI = SUI*(1.+GI*PAVP2)                                          B06870
          SPPI = SUI*YI*PAVP0                                              B06880
@@ -1504,14 +1544,14 @@ C                                                                         B06800
          SUMALF = SUMALF+ALFV                                             B06830
          SUMZET = SUMZET+ZETA                                             B06840
          LINCNT = LINCNT+1                                                B06850
-
+C                                                                         B06860
          GO TO 30
 C
   25     SABS(I)=0.0
          SRAD(I)=0.0
          SPPSP(I) = 0.0  
 C                                                                         B06900
-  30  CONTINUE                                                            B06910
+   30 CONTINUE                                                            B06910
 C                                                                         B06920
       NCHNG = NMINUS+NPLUS                                                B06930
       IF (ILNFLG.EQ.1) WRITE(15)(FREJ(J),J=ILO,IHI)
@@ -1519,6 +1559,64 @@ C                                                                         B06940
       RETURN                                                              B06950
 C                                                                         B06960
       END                                                                 B06970
+c-----------------------------------------------------------------------
+c
+      subroutine line_exception(ind,ipr,h_sub,mol,nmol,iso,iso_max)
+
+      character*8 h_sub
+      dimension iso_max(*)
+
+      data  mol_max_pr_1/-99/, iso_max_pr_1/-99/
+      
+      if ((ind.eq.1 .and. mol_max_pr_1.lt.0) .or.
+     *    (ind.eq.2 .and. iso_max_pr_1.lt.0)) then
+         write (*,*)
+         write (*,*) 'Line file exception encountered in', h_sub
+         write (*,*) 'This message only written for first exception',
+     *               ' for molecule and isotope cases'
+         write (*,*) 'Other exceptions may exist'
+
+         write (ipr,*) '****************************************'
+         write (ipr,*) 'Line file exception encountered'
+         write (ipr,*) 'This message only written for first exception'
+         write (ipr,*) 'Other exceptions may exist'
+      endif
+c
+      if (ind .eq. 1) then
+          if (mol_max_pr_1 .lt. 0) then
+             mol_max_pr_1 = 11
+             write (*,*)
+             write (*,*)   ' tape3: molecule number ', mol,
+     *             ' greater than ', nmol,' encountered and skipped'
+             write (ipr,*) ' tape3: molecule number ', mol,
+     *             ' greater than ', nmol,' encountered and skipped'
+               write (*,*)
+            endif
+            go to 25
+c
+         else if (ind .eq. 2) then
+            if (iso_max_pr_1 .lt. 0) then
+               iso_max_pr_1 = 11
+               write (*,*)
+               write (*,*)   ' tape3: molecule number ', mol
+               write (ipr,*) ' tape3: molecule number ', mol
+
+               write (*,*)   ' tape3: isotope number ', iso,
+     *                       ' greater than ', iso_max(mol),
+     *                       ' encountered and skipped'
+               write (ipr,*) ' tape3: isotope number ', iso,
+     *                       ' greater than ', iso_max(mol),
+     *                       ' encountered and skipped'
+               write (*,*)
+            endif
+            go to 25
+         endif
+C
+ 25      continue
+
+         return
+         end
+c-----------------------------------------------------------------------
       SUBROUTINE CNVFNQ (VNU,SABS,SRAD,SPPSP,RECALF,R1,R2,R3,RR1,
      &    RR2,RR3,F1,F2,F3,FG,XVER,ZETAI,IZETA)
 C                                                                         B07000
@@ -2144,6 +2242,8 @@ C                                                                         D06410
       DATA ASUBL / 0.623 /,BSUBL / 0.410 /                                D06430
       DATA HREJ /'0'/,HNOREJ /'1'/
 C                                                                         D06440
+      DATA I_1/1/, I_251/251/
+C
       VNULST = V2R4+BOUND4                                                D06450
 C                                                                         D06460
       IF (JCNVF4.NE.0) GO TO 20                                           D06470
@@ -2210,10 +2310,10 @@ C                                                                         D06910
 c nlte line coupling constant
          cupcon=spp(i)/sabs(i)
 C                                                                         D07010
-            SPEAK = A3*(ABS(SIV))                                         D07030
-C
+         SPEAK = A3*(ABS(SIV))
+C                                                                         D07090
          JJ = (VNU(I)-V1R4)/DVR4+1.                                       D07100
-         JJ = MAX(JJ,1)                                                   D07110
+         JJ = MAX(JJ,I_1)                                                   D07110
          JJ = MIN(JJ,NPTR4)                                               D07120
 C
          IF (ILNFLG.LE.1) THEN
@@ -2238,13 +2338,14 @@ C                                                                         D07190
 C                                                                         D07220
          IF (VNUI.GE.VNULST) GO TO 70                                     D07230
          IF (JMIN.GT.NPTR4) GO TO 60                                      D07240
-         JMIN = MAX(JMIN,1)                                               D07250
+         JMIN = MAX(JMIN,I_1)                                               D07250
          JMAX = (XNUI+BOUND4)/DVR4+1.                                     D07260
          IF (JMAX.LT.JMIN) GO TO 50                                       D07270
          JMAX = MIN(JMAX,NPTR4)                                           D07280
          ALFLI2 = ALFALI*ALFALI                                           D07290
          ALFVI2 = ALFAVI*ALFAVI                                           D07300
          XJJ =  REAL(JMIN-1)*DVR4                                         D07310
+
          F4BND = SIL/(ALFLI2+BNDSQ)                                       D07320
          FRBND = SRL/(ALFLI2+BNDSQ)                                       D07320
 C                                                                         D07340
