@@ -903,48 +903,6 @@ C                                                                         A10080
      *        /,3X,52('*'))                                               A10240
 C                                                                         A10250
       END                                                                 A10260
-      SUBROUTINE PRCNTM                                                   A10270
-C                                                                         A10280
-C     THIS SUBROUTINE PRINTS THE CONTINUUM INFORMATION TO FILE IPR        A10290
-C                                                                         A10300
-      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A10310
-     *              NLNGTH,KFILE,KPANEL,LINFIL,NDFLE,IAFIL,IEXFIL,        A10320
-     *              NLTEFL,LNFIL4,LNGTH4                                  A10330
-C                                                                         A10340
-      WRITE (IPR,900)                                                     A10350
-      WRITE (IPR,901)                                                     A10350
-C                                                                         A10360
-      RETURN                                                              A10370
-C                                                                         A10380
-  900 FORMAT (//,'0  *****  CONTINUA:  ',//,20X,                          A10390
-C
-     *        ' H2O   SELF  (T)      0 - 20000 CM-1',/,20X,               A10400
-     *        '       AIR   (T)      0 - 20000 CM-1',/,20X,               A10410
-     *        ' CO2   AIR            0 - 20000 CM-1',/,20X,               A10420
-C
-     *        ' N2    AIR         2020 -  2800 CM-1',20X,                 A10430
-     *        '  (01 JULY  1982)  ',/,20X,                                A10440
-C
-     *        ' O2    AIR   (T)   1390 -  1760 CM-1',/,20X,               A10450
-     *        '       O2/N2      36000 - ***** CM-1',2X,                  A10452
-     *        '  HERZBERG',/,20X,                                         A10454
-C
-     *        ' O3    AIR        13000 - 23600 CM-1',2X,                  A10460
-     *        '  CHAPPUIS',/,20X,                                         A10470
-     *        '             (T)  27370 - 40800 CM-1',2X,                  A10480
-     *        '  HARTLEY HUGGINS ',/,20X,                                 A10490
-     *        '                  40800 - 54000 CM-1',2X,                  A10500
-     *        '  HARTLEY HUGGINS '          )                             A10510
-C
-  901  FORMAT( //,
-     *        '  H2O SELF HAS BEEN REDUCED IN THE 800-1200 CM-1',         A10520
-     *        ' REGION',16X,'  (01 SEPT  1985)  ',/,                      A10530
-     *        '  03       TEMPERATURE DEPENDENCE HAS BEEN CORRECTED',     A10540
-     *        8X,16X,'  (01 MAY   1987)  ',/,                             A10550
-     *        '  02       (1390-1760) HAS BEEN REDUCED (FACTOR = 0.78)',  A10560
-     *        5x,16X,'  (07 MARCH 1990)  '  )                             A10570
-C                                                                         A10580
-      END                                                                 A10590
       SUBROUTINE EXPINT (X,X1,X2,A)                                       A10600
 C                                                                         A10610
 C**********************************************************************   A10620
