@@ -225,7 +225,7 @@ C                                                                         N01420
       FUNCTION NWDL_4 (IWD,ILAST) 
 C                                                                        LN06500
       implicit real*4 (a-h,o-z)
-      implicit integer*4 (i-n) 
+      implicit integer*4 (i-m) 
 
       DIMENSION IWD(*)                                                   LN06510
 C                                                                        LN06520
