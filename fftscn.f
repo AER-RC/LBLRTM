@@ -1464,7 +1464,7 @@ C*****LREC   = smallest power of 2 .GE. LRDATA = total number of
 C*****         records on LFILE. Records in excess of LRDATA are all
 C*****         0's or 1's
 C*****LSLAST  = number of valid points in record LRDATA.
-C*****Note: the is a potential roundoff problem using n = (v2-v2)/dv
+C*****Note: there is a potential roundoff problem using n = (v2-v1)/dv
 C*****when n reaches 7 digits, the limit of single precision.  
       LTOTAL = (V2-V1)/DV+1.00001
 C*****Recompute V2, in case of round off errors
@@ -1497,6 +1497,10 @@ C*****LS = cumulative total points currently in SPECT
 C*****N1 = index of next point in S to go into SPECT
 C*****From first panel, N1 will in general not be 1
 C*****NN = number of unused points available from S = NP-N1+1
+C*****This is a correction from the original fftscn for a
+C*****potential roundoff problem that occurs when the total
+C*****number of points needed reaches 7 digits, the limit
+C*****of single precision
       N1 = (V1 - V1P)/DV+1.00001
       NN = NP-N1+1
 
