@@ -6786,7 +6786,7 @@ C                                                                        FX04880
   925 FORMAT (F10.3,5X,38A1)                                             FX04980
   930 FORMAT (2X,F10.3,5X,38A1)                                           FX04990
   935 FORMAT (8E10.3)                                                    FX05000
-  940 FORMAT (2X,8E10.3)                                                 FX05010
+  940 FORMAT (2X,1p,8E12.3)                                                 FX05010
   988 FORMAT (///,' ERROR: BOUNDARY ALTITUDES FOR CROSS_SECTION LEVELS',       
      *        'ARE NEGATIVE OR NOT IN ASCENDING ORDER',//,5X,' ZX ',   
      *        /,(10F10.4))                                               
@@ -7803,7 +7803,7 @@ C IDEAL GAS LAW
          TOTAL_AIR = PM(J)*1.0E-4/(BTZ*TM(J))
          DRY_AIR = TOTAL_AIR - DENW(J)
          H2O_MIXRAT(J) = DENW(J)/DRY_AIR
-         CHIM = XMASS_RATO*H2O_MIXRAT(J)
+         CHIM = XMASS_RATIO*H2O_MIXRAT(J)
          COMP_FACTOR(J) = 1. - (PM(J)*100/TM(J))*
      *        (CA0 + CA1*DT + CA2*DT**2 + 
      *        (CB0 + CB1*DT)*CHIM + (CC0 + CC1*DT)*CHIM**2) + 

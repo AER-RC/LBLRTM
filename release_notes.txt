@@ -1,4 +1,12 @@
 
+LBLRTM_v9.4
+
+1) Fixed a minor bug in the hydrostatic calculation where a variable name was
+   mistyped.
+
+2) Modified the double precision f90 makefile for OS X.  
+
+
 LBLRTM_v9.3
 
 1) Fixed a minor bug in the analytic derivative computation.
