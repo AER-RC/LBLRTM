@@ -3113,6 +3113,10 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE FLTRFN (IFILE)                                           L00010
 C                                                                         L00020
+C     NFLTPT sets the maximum number of points in the incoming filter
+C
+      PARAMETER (NFLTPT = 1001)
+C
       IMPLICIT DOUBLE PRECISION (V)                                     ! L00030
 C                                                                         L00040
       COMMON S(2650),R1(3750)                                             L00050
@@ -3131,7 +3135,7 @@ C                                                                         L00080
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L00160
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L00170
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L00180
-     *                HEDDR(9),XF(251),SUMFLT                             L00190
+     *                HEDDR(9),XF(NFLTPT),SUMFLT                          L00190
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         L00200
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        L00210
      *              NLTEFL,LNFIL4,LNGTH4                                  L00220
@@ -3156,6 +3160,15 @@ C
       IPRT = 1                                                            L00340
       NSHIFT = 0                                                          L00350
    10 READ (IRD,900) V1F,DVF,NPTF,JEMIT,IUNIT,IFILST,NIFILS,HEDDR         L00360
+C
+C     Test to ensure NPTF is less than NFLTPT, the maximum number
+C     of filter points allowed
+C
+      IF (NPTF.GT.NFLTPT) THEN
+         WRITE(IPR,*) 'FLTRFN: NPTS > NFLTPT limit', NLFTPT
+         STOP 'FLTRFN: NPTS > NFLTPT limit'
+      ENDIF
+C
       JABS = 0                                                            L00370
       IF (JEMIT.GE.0) GO TO 20                                            L00380
       JEMIT = 0                                                           L00390
@@ -3294,6 +3307,10 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE FLTRRD (IFILE)                                           L01700
 C                                                                         L01710
+C     NFLTPT sets the maximum number of points in the incoming filter
+C
+      PARAMETER (NFLTPT = 1001)
+C
       IMPLICIT DOUBLE PRECISION (V)                                     ! L01720
 C                                                                         L01730
 C     READ CONTROL CARD FOR FILTER WITH WEIGHTING FUNCTIONS               L01740
@@ -3312,7 +3329,7 @@ C                                                                         L01790
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L01870
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L01880
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L01890
-     *                HEDDR(9),XF(251),SUMFLT                             L01900
+     *                HEDDR(9),XF(NFLTPT),SUMFLT                          L01900
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         L01910
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        L01920
      *              NLTEFL,LNFIL4,LNGTH4                                  L01930
@@ -3400,6 +3417,10 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE FLTMRG (IFILE,JFILE)                                     L02730
 C                                                                         L02740
+C     NFLTPT sets the maximum number of points in the incoming filter
+C
+      PARAMETER (NFLTPT = 1001)
+C
       IMPLICIT DOUBLE PRECISION (V)                                     ! L02750
 C                                                                         L02760
 C     SUBROUTINE FLTMRG CALCULATES AND OUTPUTS THE RESULTS                L02770
@@ -3424,7 +3445,7 @@ C                                                                         L02830
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L02960
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L02970
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L02980
-     *                HEDDR(9),XF(251),SUMFLT                             L02990
+     *                HEDDR(9),XF(NFLTPT),SUMFLT                          L02990
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         L03000
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        L03010
      *              NLTEFL,LNFIL4,LNGTH4                                  L03020
@@ -3565,12 +3586,16 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE CNVFLT (S,RFILTR,XF)                                     L04350
 C                                                                         L04360
+C     NFLTPT sets the maximum number of points in the incoming filter
+C
+      PARAMETER (NFLTPT = 1001)
+C
       IMPLICIT DOUBLE PRECISION (V)                                     ! L04370
 C                                                                         L04380
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L04390
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L04400
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L04410
-     *                HEDDR(9),XFS(251),SUMFLT                            L04420
+     *                HEDDR(9),XFS(NFLTPT),SUMFLT                         L04420
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   L04430
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       L04440
      *               DVSC,XDUM,V1SHFT                                     L04450
@@ -3601,6 +3626,10 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE FLTPRT (IFILE)                                           L04680
 C                                                                         L04690
+C     NFLTPT sets the maximum number of points in the incoming filter
+C
+      PARAMETER (NFLTPT = 1001)
+C
       IMPLICIT DOUBLE PRECISION (V)                                     ! L04700
 C                                                                         L04710
 C     SUBROUTINE FLTPRT READS FROM IFILE AND FORMATS OUT THE RESULTS      L04720
@@ -3625,7 +3654,7 @@ C                                                                         L04780
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L04910
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L04920
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L04930
-     *                HEDDR(9),XF(251),SUMFLT                             L04940
+     *                HEDDR(9),XF(NFLTPT),SUMFLT                          L04940
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         L04950
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        L04960
      *              NLTEFL,LNFIL4,LNGTH4                                  L04970
