@@ -875,28 +875,48 @@ C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
  166           CONTINUE
                LIP = IMMAX
  167        CONTINUE
-            IF (H1 .LE. PM(LIP)+0.001*PM(LIP) .AND.
-     &           H1 .GE. PM(LIP)) THEN
-               H1 = ZMDL(LIP)
-            ELSE
-               PTMP(1) = PM(LIP-1)
-               TTMP(1) = TM(LIP-1)
-               WVTMP(1) = DENW(LIP-1)
-               ZTMP(1) = ZMDL(LIP-1)
+            IF (H1 .EQ. PM(LIP-1)) THEN
+               H1 = ZMDL(LIP-1)
+            ELSE 
+               IF(H1 .EQ. PM(LIP)) THEN
+                  H1 = ZMDL(LIP)
+               ELSE
+                    
+C PERFORM INTERPOLATION IN LN(PM)
+                  HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
+     &                 ALOG(PM(LIP)/PM(LIP-1))
+                  ZINT = ZMDL(LIP-1)+
+     &                 HIP*ALOG(H1/PM(LIP-1))
 
-               PTMP(2) = H1
-               TIP = (TM(LIP)-TM(LIP-1))/
-     &              ALOG(PM(LIP)/PM(LIP-1))
-               TTMP(2) = TM(LIP-1)+TIP*ALOG(H1/PM(LIP-1))
+C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
+                  PTMP(1) = PM(LIP-1)
+                  ZTMP(1) = ZMDL(LIP-1)
+                  TTMP(1) = TM(LIP-1)
+                  WVTMP(1) = DENW(LIP-1)
+                  
+                  PTMP(2) = H1
 
-               WVIP =  (DENW(LIP)-DENW(LIP-1))/
-     &              ALOG(PM(LIP)/PM(LIP-1))
-               WVTMP(2) =  DENW(LIP-1) +
-     &              WVIP*ALOG(H1/PM(LIP-1))
+                  TIP = (TM(LIP)-TM(LIP-1))/
+     &                 ALOG(PM(LIP)/PM(LIP-1))
+                  TTMP(2) = TM(LIP-1)+
+     &                 TIP*ALOG(H1/PM(LIP-1))
+                  
+                  WVIP =  (DENW(LIP)-DENW(LIP-1))/
+     &                 ALOG(PM(LIP)/PM(LIP-1))
+                  WVTMP(2) =  DENW(LIP-1) +
+     &                 WVIP*ALOG(H1/PM(LIP-1))                     
+                  CALL CMPALT(2,PTMP,TTMP,
+     &                 WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
 
-               CALL CMPALT(2,PTMP,TTMP,WVTMP,
-     &           ZTMP(1),REF_LAT,ZTMP)
-               H1 = ZTMP(2)
+C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
+
+                  RATP = ALOG(H1/PM(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        
+                  A = RATP**3
+
+                  H1 = A*ZINT + (1-A)*ZTMP(2)
+               ENDIF
             ENDIF
 
             IF (H1 .LT. 0.0) THEN
@@ -920,29 +940,49 @@ C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
  168           CONTINUE
                LIP = IMMAX
  169        CONTINUE
-            IF (H2 .LE. PM(LIP)+0.001*PM(LIP) .AND.
-     &           H2 .GE. PM(LIP)) THEN
-               H2 = ZMDL(LIP)
-            ELSE
-               PTMP(1) = PM(LIP-1)
-               TTMP(1) = TM(LIP-1)
-               WVTMP(1) = DENW(LIP-1)
-               ZTMP(1) = ZMDL(LIP-1)
-               PTMP(2) = H2
+            IF (H2 .EQ. PM(LIP-1)) THEN
+               H2 = ZMDL(LIP-1)
+            ELSE 
+               IF(H2 .EQ. PM(LIP)) THEN
+                  H2 = ZMDL(LIP)
+               ELSE
+C PERFORM INTERPOLATION IN LN(PM)
+                  HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
+     &                 ALOG(PM(LIP)/PM(LIP-1))
+                  ZINT = ZMDL(LIP-1)+
+     &                 HIP*ALOG(H2/PM(LIP-1))
 
-               TIP = (TM(LIP)-TM(LIP-1))/
-     &              ALOG(PM(LIP)/PM(LIP-1))
-               TTMP(2) = TM(LIP-1)+TIP*ALOG(H2/PM(LIP-1))
+C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
+                  PTMP(1) = PM(LIP-1)
+                  ZTMP(1) = ZMDL(LIP-1)
+                  TTMP(1) = TM(LIP-1)
+                  WVTMP(1) = DENW(LIP-1)
+                  
+                  PTMP(2) = H2
 
-               WVIP =  (DENW(LIP)+DENW(LIP-1))/
-     &              ALOG(PM(LIP)/PM(LIP-1))
-               WVTMP(2) =  DENW(LIP-1) -
-     &              WVIP*ALOG(H2/PM(LIP-1))
+                  TIP = (TM(LIP)-TM(LIP-1))/
+     &                 ALOG(PM(LIP)/PM(LIP-1))
+                  TTMP(2) = TM(LIP-1)+
+     &                 TIP*ALOG(H2/PM(LIP-1))
+                  
+                  WVIP =  (DENW(LIP)-DENW(LIP-1))/
+     &                 ALOG(PM(LIP)/PM(LIP-1))
+                  WVTMP(2) =  DENW(LIP-1) +
+     &                 WVIP*ALOG(H2/PM(LIP-1))                     
+                  CALL CMPALT(2,PTMP,TTMP,
+     &                 WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
 
-               CALL CMPALT(2,PTMP,TTMP,WVTMP,
-     &           ZTMP(1),REF_LAT,ZTMP)
-               H2 = ZTMP(2)
+C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
+
+                  RATP = ALOG(H2/PM(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        
+                  A = RATP**3
+
+                  H2 = A*ZINT + (1-A)*ZTMP(2)
+               ENDIF
             ENDIF
+
             IF (H2 .LT. 0.0) THEN
                PRINT 946, H2,ZTMP(1)
                WRITE (IPR,946) H2,ZTMP(1)
