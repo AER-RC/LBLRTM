@@ -2186,8 +2186,9 @@ C     SET UP FOUR POINT INTERPOLATION COEFICIENTS FOR P FOR 201           J04270
 C     POINTS BETWEEN 0 AND 1.0                                            J04280
 C                                                                         J04290
       IF (I4PT.NE.0) THEN                                                 J04300
+         XNUMCF = FLOAT(NUMCOF)
          DO 10 IP = 1, NUMCOF                                             J04310
-            P = (IP-1.0)/(NUMCOF-1.0)                                     J04320
+            P = (FLOAT(IP)-1.0)/(XNUMCF-1.0)                              J04320
             PP = P**2                                                     J04330
             C1(IP) = -P/2.0*(1-P)**2                                      J04340
             C2(IP) = 1.0-PP*(3.0-2.0*P)+PP/2.0*(1.0-P)                    J04350
@@ -2282,7 +2283,7 @@ C                                                                         J05260
 C                                                                         J05280
 C     PERFORM INTERPOLATION                                               J05290
 C                                                                         J05300
-            IP = P*NUMCOF+1                                               J05310
+            IP = P*XNUMCF+1.00001                                         J05310
             R(J) = C1(IP)*T(I-1)+C2(IP)*T(I)+C3(IP)*T(I+1)+               J05320
      *             C4(IP)*T(I+2)                                          J05330
 C                                                                         J05340
