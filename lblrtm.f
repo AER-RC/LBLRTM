@@ -2316,30 +2316,57 @@ C                     MIXING RATIO INPUT
 C
 C
 C     First calculate the column amount of dry air ("WDRAIR")
-C     Initialize WDRAIR(L) to WBRODL(L) (always in column density)
+C     Initialize WDNSTY to WBRODL(L) (always in column density)
 C     Determine if each molecule is in column density.
-C        - if so, just add to WDRAIR(L)
-C        - if not, convert mixing ratio on the fly in determining WDRAIR
+C        - if so, just add to WDNSTY
+C        - if not, add to WMXRAT
 C
 C     NOTE that if WKL is greater than one, then column density
-C               if WKL is less than or equal to one, then mixing ratio
+C               if WKL is less than one, then mixing ratio
 C
-         WDRAIR(L) = WBRODL(L)
+         WDNSTY = WBRODL(L)
+         WMXRAT = 0.0
          DO 22 M = 2,NMOL
             IF (WKL(M,L).GT.1) THEN
-               WDRAIR(L) = WDRAIR(L) + WKL(M,L)
-            ELSEIF (WKL(M,L).LT.1) THEN
-               WDRAIR(L) = WDRAIR(L) + WKL(M,L)*WBRODL(L)/(1-WKL(M,L))
+               WDNSTY = WDNSTY + WKL(M,L)
             ELSE
-               WDRAIR(L) = WBRODL(L)
+               WMXRAT = WMXRAT + WKL(M,L)
             ENDIF
  22      CONTINUE
+C
+C        First, test to see that the sum of molecular densities in
+C        the layer is greater than zero to avoid division by zero
+C        later.
+C        
+C        If the layer sum of mixing ratios is less than one (which
+C        it should be, given that WBROAD contributes to the dry air
+C        mixing ratio), then compute dry air by dividing the total
+C        molecular amounts given in density by the fraction of dry
+C        air (mixing ratio) those molecules comprise.
+C
+C        If the layer sum of mixing ratios is greater than or equal
+C        to one, than an error has occurred, so stop the program.
+C        WBROAD is always listed in column density, so the sum of
+C        the given mixing ratios must always be less than one.
+C
+         IF (WDNSTY.EQ.0.0) THEN
+            WRITE(IPR,1010) L
+            WRITE(*,1010) L
+            STOP 'WDNSTY ERROR IN PATH'
+         ENDIF
+         IF (WMXRAT.LT.1.0) THEN
+            WDRAIR(L) = WDNSTY/(1.0-WMXRAT)
+         ELSE
+            WRITE(IPR,1000) L,WMXRAT, WDNSTY
+            WRITE(*,1000) L,WMXRAT, WDNSTY
+            STOP 'WMXRAT ERROR IN PATH'
+         ENDIF
 C
 C     NOW CONVERT ALL OTHER MOLECULES WHICH MAY BE IN MIXING RATIO
 C     TO MOLECULAR DENSITY USING WDRAIR(L)
 C
          DO 25 M = 1,NMOL
-            IF (WKL(M,L).LE.1) WKL(M,L) = WKL(M,L)*WDRAIR(L)
+            IF (WKL(M,L).LT.1) WKL(M,L) = WKL(M,L)*WDRAIR(L)
  25      CONTINUE
 C
 C     --------------------------------------------------------------
@@ -2406,10 +2433,10 @@ C     molecules which may be in mixing ratio to molecular density
 C     using WDRAIR(L)
 C
 C     NOTE that if XAMNT is greater than one, then column density
-C               if XAMNT is less than or equal to one, then mixing ratio
+C               if XAMNT is less than one, then mixing ratio
 C
          DO 35 M = 1,IXMOL
-            IF (XAMNT(M,L).LE.1) XAMNT(M,L) = XAMNT(M,L)*WDRAIR(L)
+            IF (XAMNT(M,L).LT.1) XAMNT(M,L) = XAMNT(M,L)*WDRAIR(L)
  35      CONTINUE
 C
 C     --------------------------------------------------------------
@@ -3002,6 +3029,17 @@ C                                                                         A24050
   991 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,7X,1P,8E10.3,0P)               A24410
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                    A24420
      *        '     *****  CROSS SECTIONS  *****      ')                  A24430
+ 1000 FORMAT (' ************************************************',/
+     *        '  ERROR in SUBROUTINE PATH: Sum of mixing ratios ',/
+     *        '         greater than or equal to 1.0:           ',/
+     *        '       Layer #:',I3,/
+     *        '       Total mixing ratio: ',E10.3,/
+     *        '       Total column density: ',E10.3,/
+     *        ' ************************************************')
+ 1010 FORMAT (' ************************************************',/
+     *        '    ERROR: Sum of molecular densities in layer  ',/
+     *        '           equal to zero; Layer #: ',I3,/
+     *        ' ************************************************')
 C                                                                         A24440
       END                                                                 A24450
       BLOCK DATA BOPDPT                                                   A07600
