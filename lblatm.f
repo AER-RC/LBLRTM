@@ -105,8 +105,8 @@ C                                                                        FA00870
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA00890
      *              NLTEFL,LNFIL4,LNGTH4                                 FA00900
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA00910
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA00920
-     *                IPDIM,KDIM,KMXNOM,KMAX                             FA00930
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA00920
+     *                IPHMID,IPDIM,KDIM,KMXNOM,KMAX                      FA00930
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NOP,H1F,H2F,       FA00940
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,        FA00950
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                     FA00960
@@ -373,8 +373,8 @@ C                                                                        FA03360
      *                ANGLEF,RANGEF,BETAF,LENF,V1,V2,RO,IPUNCH,XVBAR,    FA03460
      *                HMINF,PHIF,IERRF,HSPACE                            FA03470
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA03480
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA03490
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA03500
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA03490
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA03500
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA03510
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA03520
 C                                                                        FA03530
@@ -386,7 +386,8 @@ C                                                                        FA03550
 C                                                                        FA03590
       CHARACTER*8      HMOD                                             &FA03600
 C                                                                        FA03610
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA03620
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     *      REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA03630
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA03640
       COMMON AMTP(MXMOL,MXPDIM)                                          FA03650
@@ -424,6 +425,8 @@ C                                                                        FA03820
       COMMON /PCHINF/ MUNITS,CTYPE(MXLAY)
       COMMON /FIXITYL/ IFXTYP
       DIMENSION XPBAR(NXPBAR),XZOUT(NXZOUT),WMT(MXMOL)                   FA03970
+
+      DIMENSION TTMP(2),WVTMP(2),PTMP(2),ZTMP(2)
 
       dimension densave(mxzmd)
 C                                                                        FA03980
@@ -515,15 +518,16 @@ C                                                                        FA04780
 C                                                                        FA04800
 C     READ CONTROL CARD 3.1                                              FA04810
 C                                                                        FA04820
-         READ (IRD,900) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,     FA04830
-     *                  IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX              FA04840
+         READ (IRD,900) MODEL,ITYPE,IBMAX_B,NOZERO,NOPRNT,NMOL,IPUNCH,   FA04830
+     *                  IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX,REF_LAT      FA04840
+         IBMAX = ABS(IBMAX_B)
       ENDIF                                                              FA04850
 C                                                                        FA04860
       NOP = NOPRNT                                                       FA04870
       RO = RE                                                            FA04880
       WRITE (IPR,902)                                                    FA04890
       WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA04900
-     *                IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX                FA04910
+     *                IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX,REF_LAT        FA04910
       IF (CO2MX.EQ.0.) CO2MX = 330.                                      FA04920
       CO2RAT = CO2MX/330.                                                FA04930
       M = MODEL                                                          FA04940
@@ -538,7 +542,15 @@ C                                                                        FA04860
       IF (M.EQ.1) RE = 6378.39                                           FA05030
       IF (M.EQ.4.OR.M.EQ.5) RE = 6356.91                                 FA05040
       RO = RE                                                            FA05050
+
    60 CONTINUE                                                           FA05060
+
+      IF (REF_LAT .EQ. 0.0) THEN
+         REF_LAT = 45.0
+         IF (M .EQ. 1) REF_LAT = 15.0
+         IF (M .EQ. 4 .OR. M .EQ. 5) REF_LAT = 60.0
+      ENDIF
+
 C                                                                        FA05070
       IF (HSPACE.EQ.0.) HSPACE = 100.                                    FA05080
       IF (XVBAR.LE.0.) THEN                                              FA05090
@@ -546,9 +558,9 @@ C                                                                        FA05070
          IF (V2.LT.V1) XVBAR = V1                                        FA05110
       ENDIF                                                              FA05120
 C                                                                        FA05130
-      WRITE (IPR,906)                                                    FA05140
+      WRITE (IPR,906)    
       WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA05150
-     *                IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX                FA05160
+     *                IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX,REF_LAT        FA05160
 C                                                                        FA05170
       IF (ITYPE.EQ.1) THEN                                               FA05180
 C                                                                        FA05190
@@ -707,7 +719,11 @@ C                                                                        FA06890
          RANGE = RANGEF                                                  FA06950
          BETA = BETAF                                                    FA06960
          LEN = LENF                                                      FA06970
-         WRITE (IPR,934) H1,H2,ANGLE,RANGE,BETA,LEN                      FA06980
+         IF (IBMAX_B .LT. 0) THEN
+            WRITE (IPR,933) H1,H2,ANGLE,RANGE,BETA,LEN                  
+         ELSE
+            WRITE (IPR,934) H1,H2,ANGLE,RANGE,BETA,LEN                   FA06980
+         ENDIF
 C                                                                        FA06990
 C        > GENERATE OR READ IN LBLRTM BOUNDARY LAYERS <                  FA07000
 C                                                                        FA07010
@@ -735,20 +751,192 @@ C                                                                        FA07220
 C        > READ IN LBLRTM BOUNDARY LAYERS <                              FA07230
 C                                                                        FA07240
          IF (IREAD.LE.0) THEN                                            FA07250
-            READ (IRD,940) (ZBND(IB),IB=1,IBMAX)                         FA07260
-            WRITE (IPR,942) (IB,ZBND(IB),IB=1,IBMAX)                     FA07270
+            IF (IBMAX_B .LT. 0) THEN
+               READ (IRD,940) (PBND(IB),IB=1,IBMAX)                         
+               WRITE (IPR,943) (IB,PBND(IB),IB=1,IBMAX)                     
+            ELSE   
+               READ (IRD,940) (ZBND(IB),IB=1,IBMAX)                      FA07260
+               WRITE (IPR,942) (IB,ZBND(IB),IB=1,IBMAX)                  FA07270
+            ENDIF
          ENDIF                                                           FA07280
 C                                                                        FA07290
-         IF (IBMAX.LT.1) GO TO 150                                       FA07300
-         DO 140 IB = 2, IBMAX                                            FA07310
-            IF (ZBND(IB).LE.ZBND(IB-1)) GO TO 300                        FA07320
-  140    CONTINUE                                                        FA07330
-  150    CONTINUE                                                        FA07340
+         IF (IBMAX.EQ.0) GO TO 150                                       FA07300
+         
+         IF (IBMAX_B .GT. 0) THEN
+            DO 140 IB = 2, IBMAX                                         FA07310
+               IF (ZBND(IB).LE.ZBND(IB-1)) GO TO 300                     FA07320
+  140       CONTINUE                                                     FA07330
+         ENDIF
+         IF (IBMAX_B .LT. 0) THEN
+           DO 145 IB = 2,IBMAX
+               IF (PBND(IB) .GE. PBND(IB-1)) GO TO 305
+  145        CONTINUE
+         ENDIF
+ 150    CONTINUE                                                        FA07340
+
 C                                                                        FA07350
 C        > SET UP ATMOSPHERIC PROFILE <                                  FA07360
 C                                                                        FA07370
+         
          CALL MDLATM (ITYPE,M,IREAD,HSPACE,CO2RAT)                       FA07380
-         IERB = 0                                                        FA07390
+
+
+C INTERPOLATE PBND GRID ONTO ZBND GRID.
+
+C TO ENSURE THAT CALCULATED/INPUT ZMDL'S WILL MATCH CALCULATED USER-LEVEL
+C ALTITUDES, A COMBINATION OF INTERPOLATION AND HYDROSTATICS ARE USED.
+C ZBND = A * F1(P) + (1 - A) * F2(P), WHERE
+C F1(P) = INTERPOLATION IN LN(P), F2(P) = HYDROSTATIC CALCULATION
+
+         IF (IBMAX_B .LT. 0) THEN
+
+            ISTART = 2
+
+            DO 160 IP=1,IBMAX
+               PTMP(1:2) = 0.0
+               TTMP(1:2) = 0.0
+               WVTMP(1:2) = 0.0
+               ZTMP(1:2) = 0.0
+
+               DO 161 LIP=ISTART,IMMAX
+                  IF (PBND(IP) .GT. PM(LIP)) GO TO 162
+ 161              CONTINUE
+                  LIP=IMMAX
+ 162              CONTINUE
+                  IF (PBND(IP) .EQ. PM(LIP-1)) THEN
+                     ZBND(IP) = ZMDL(LIP-1)
+                     TBND(IP) = TM(LIP-1)
+                  ELSE 
+                     IF(PBND(IP) .EQ. PM(LIP)) THEN
+                        ZBND(IP) = ZMDL(LIP)
+                        TBND(IP) = TM(LIP)
+                     ELSE
+                    
+C PERFORM INTERPOLATION IN LN(PM)
+                        HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        ZINT = ZMDL(LIP-1)+
+     &                       HIP*ALOG(PBND(IP)/PM(LIP-1))
+
+C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
+                        PTMP(1) = PM(LIP-1)
+                        ZTMP(1) = ZMDL(LIP-1)
+                        TTMP(1) = TM(LIP-1)
+                        WVTMP(1) = DENW(LIP-1)
+
+                        PTMP(2) = PBND(IP)
+
+                        TIP = (TM(LIP)-TM(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        TTMP(2) = TM(LIP-1)+
+     &                       TIP*ALOG(PBND(IP)/PM(LIP-1))
+
+                        WVIP =  (DENW(LIP)-DENW(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        WVTMP(2) =  DENW(LIP-1) +
+     &                       WVIP*ALOG(PBND(IP)/PM(LIP-1))                     
+                        CALL CMPALT(2,PTMP(1:2),TTMP(1:2),
+     &                       WVTMP(1:2),ZTMP(1),REF_LAT,ZTMP(1:2))                     
+
+C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
+
+                        RATP = ALOG(PBND(IP)/PM(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        
+                        A = RATP**3
+
+                        ZBND(IP) = A*ZINT + (1-A)*ZTMP(2)
+                        TBND(IP) = TTMP(2)
+                     ENDIF
+               ENDIF
+
+               ISTART = LIP
+
+ 160           CONTINUE
+
+C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
+            PTMP(1:2) = 0.0
+            TTMP(1:2) = 0.0
+            WVTMP(1:2) = 0.0
+            ZTMP(1:2) = 0.0
+
+            IF (H1 .GT. PM(1)) THEN
+                PRINT 946, H1,PM(1)
+                WRITE (IPR,946) H1,PM(1)
+                STOP ' BOUNDARIES OUTSIDE OF ATMOS'  
+            ENDIF
+
+            IF (H2 .GT. PM(1)) THEN
+                PRINT 946, H2,PM(1)
+                WRITE (IPR,946) H2,PM(1)
+                STOP ' BOUNDARIES OUTSIDE OF ATMOS'  
+            ENDIF
+
+            DO 166 LIP = 2,IMMAX
+               IF (H1 .GT. PM(LIP)) GO TO 167
+ 166           CONTINUE
+               LIP = IMMAX
+ 167        CONTINUE
+            IF (H1 .LE. PM(LIP)+0.001*PM(LIP) .AND.
+     &           H1 .GE. PM(LIP)) THEN
+               H1 = ZMDL(LIP)
+            ELSE
+               PTMP(1) = PM(LIP-1)
+               TTMP(1) = TM(LIP-1)
+               WVTMP(1) = DENW(LIP-1)
+               ZTMP(1) = ZMDL(LIP-1)
+
+               PTMP(2) = H1
+               TIP = (TM(LIP)-TM(LIP-1))/
+     &              ALOG(PM(LIP)/PM(LIP-1))
+               TTMP(2) = TM(LIP-1)+TIP*ALOG(H1/PM(LIP-1))
+
+               WVIP =  (DENW(LIP)-DENW(LIP-1))/
+     &              ALOG(PM(LIP)/PM(LIP-1))
+               WVTMP(2) =  DENW(LIP-1) +
+     &              WVIP*ALOG(H1/PM(LIP-1))
+
+               CALL CMPALT(2,PTMP(1:2),TTMP(1:2),WVTMP(1:2),
+     &           ZTMP(1),REF_LAT,ZTMP(1:2))
+               H1 = ZTMP(2)
+            ENDIF
+
+            PTMP(1:2) = 0.0
+            TTMP(1:2) = 0.0
+            WVTMP(1:2) = 0.0
+            ZTMP(1:2) = 0.0
+
+            DO 168 LIP = 2,IMMAX
+               IF (H2 .GT. PM(LIP)) GO TO 169
+ 168           CONTINUE
+               LIP = IMMAX
+ 169        CONTINUE
+            IF (H2 .LE. PM(LIP)+0.001*PM(LIP) .AND.
+     &           H2 .GE. PM(LIP)) THEN
+               H2 = ZMDL(LIP)
+            ELSE
+               PTMP(1) = PM(LIP-1)
+               TTMP(1) = TM(LIP-1)
+               WVTMP(1) = DENW(LIP-1)
+               ZTMP(1) = ZMDL(LIP-1)
+               PTMP(2) = H2
+
+               TIP = (TM(LIP)-TM(LIP-1))/
+     &              ALOG(PM(LIP)/PM(LIP-1))
+               TTMP(2) = TM(LIP-1)+TIP*ALOG(H2/PM(LIP-1))
+
+               WVIP =  (DENW(LIP)+DENW(LIP-1))/
+     &              ALOG(PM(LIP)/PM(LIP-1))
+               WVTMP(2) =  DENW(LIP-1) -
+     &              WVIP*ALOG(H2/PM(LIP-1))
+
+               CALL CMPALT(2,PTMP(1:2),TTMP(1:2),WVTMP(1:2),
+     &           ZTMP(1),REF_LAT,ZTMP(1:2))
+               H2 = ZTMP(2)
+            ENDIF
+         ENDIF
+
+         IERB = 0      
          IF (IBMAX.GE.1) THEN                                            FA07400
             IF (ZBND(1).LT.ZMDL(1)) THEN                                 FA07410
                IERB = 1                                                  FA07420
@@ -840,10 +1028,17 @@ C                                                                        FA08770
 C        > USER SUPPLIED LAYERING <                                      FA08780
 C                                                                        FA08790
          WRITE (IPR,956)                                                 FA08800
-         DO 210 IB = 1, IBMAX                                            FA08810
-            CALL HALFWD (ZBND(IB),XVBAR,PBND(IB),TBND(IB),ALORNZ(IB),    FA08820
-     *                   ADOPP(IB),AVOIGT(IB))                           FA08830
+         IF (IBMAX_B .LT. 0) THEN
+            DO 205 IB = 1, IBMAX
+               CALL HALFWD_P(ZBND(IB),XVBAR,PBND(IB),TBND(IB),           FA08820
+     *                   ALORNZ(IB),ADOPP(IB),AVOIGT(IB))
+ 205        CONTINUE
+         ELSE
+            DO 210 IB = 1, IBMAX                                         FA08810
+               CALL HALFWD (ZBND(IB),XVBAR,PBND(IB),TBND(IB),
+     *                   ALORNZ(IB),ADOPP(IB),AVOIGT(IB))                FA08830
   210    CONTINUE                                                        FA08840
+         ENDIF
   220    CONTINUE                                                        FA08850
          WRITE (IPR,958) ALZERO,AVMWT,XVBAR                              FA08860
          DO 230 IB = 1, IBMAX                                            FA08870
@@ -1137,10 +1332,19 @@ C                                                                        FA10360
 C                                                                        FA10380
       STOP ' CARD 3.1'                                                   FA10390
 C                                                                        FA10400
+C                                                                        FA10400
   300 WRITE (IPR,988) (ZBND(I),I=1,IBMAX)                                FA10410
       PRINT 988,(ZBND(I),I=1,IBMAX)                                      FA10420
 C                                                                        FA10430
       STOP ' ZBND'                                                       FA10440
+
+  301 PRINT 988,(ZTMP(I),I=2,IBMAX)
+      STOP ' USER INPUT LEVELS TOO CLOSE - IBMAX'  
+C
+  305 WRITE (IPR,989) (PBND(I),I=1,IBMAX)     
+      PRINT 989,(PBND(I),I=1,IBMAX)            
+C                                                                        FA10430
+      STOP ' PBND'                                                       FA10440
 C                                                                        FA10450
   310 WRITE (IPR,990)                                                    FA10460
 C                                                                        FA10470
@@ -1150,7 +1354,7 @@ C                                                                        FA10490
 C                                                                        FA10510
       STOP ' AVTRAT,TDIFF'                                               FA10520
 C                                                                        FA10530
-  900 FORMAT (7I5,I2,1X,I2,4F10.3)                                       FA10540
+  900 FORMAT (7I5,I2,1X,I2,4F10.3,F10.3)                                 FA10540
   902 FORMAT (' CONTROL CARD 3.1: MODEL AND OPTIONS ')                   FA10550
   904 FORMAT (/,10X,'MODEL   = ',I5,/,10X,'ITYPE   = ',I5,/,10X,         FA10560
      *        'IBMAX   = ',I5,/,10X,'NOZERO  = ',I5,/,10X,'NOPRNT  = ',  FA10570
@@ -1158,7 +1362,7 @@ C                                                                        FA10530
      *        'IFXTYP  = ',I5,/,10X,'MUNITS  = ',I5,/,10X,'RE      = ',  FA10590
      *        F10.3,' KM',/,10X,'HSPACE  = ',F10.3,' KM',/,10X,          FA10600
      *        'VBAR    = ',F10.3,' CM-1',/,10X,'CO2MX   = ',
-     *        F10.3,' PPM')                                              FA10610
+     *        F10.3,' PPM',/,10X,'REF_LAT = ',F10.3, ' DEG')             FA10610
   906 FORMAT (///,' CONTROL CARD 3.1 PARAMETERS WITH DEFAULTS:')         FA10620
   908 FORMAT (///,' HORIZONTAL PATH SELECTED')                           FA10630
   910 FORMAT (F10.3,10X,10X,F10.3)                                       FA10640
@@ -1183,6 +1387,11 @@ C                                                                        FA10530
      *        ' > HMAXMS = ',F10.6,/)                                    FA10820
   930 FORMAT (///,' SLANT PATH SELECTED, ITYPE = ',I5)                   FA10830
   932 FORMAT (5F10.4,I5,5X,F10.4)                                        FA10840
+  933 FORMAT (///' CONTROL CARD 3.2:  SLANT PATH PARAMETERS',//,10X,     FA10850
+     *       'H1      = ',F12.6,' MBAR',/,10X,'H2      = ',F12.6,' MBAR',FA10860
+     *        /,10X,'ANGLE   = ',F12.6,' DEG',/,10X,'RANGE   = ',F12.6,  FA10870
+     *        ' KM',/,10X,'BETA    = ',F12.6,' DEG',/,10X,'LEN     = ',  FA10880
+     *        I10)                                                       FA10890
   934 FORMAT (///' CONTROL CARD 3.2:  SLANT PATH PARAMETERS',//,10X,     FA10850
      *        'H1      = ',F12.6,' KM',/,10X,'H2      = ',F12.6,' KM',   FA10860
      *        /,10X,'ANGLE   = ',F12.6,' DEG',/,10X,'RANGE   = ',F12.6,  FA10870
@@ -1195,6 +1404,8 @@ C                                                                        FA10530
   940 FORMAT (8F10.3)                                                    FA10940
   942 FORMAT (///,' USER DEFINED BOUNDARIES FOR LBLRTM LAYERS',/,10X,    FA10950
      *        'I',4X,'Z (KM)',//,(10X,I4,F10.4))                         FA10960
+  943  FORMAT (///,' USER DEFINED BOUNDARIES FOR LBLRTM LAYERS',/,10X, 
+     *        'I',4X,'P (MB)',//,(10X,I4,F10.4))                       
   944 FORMAT (' ERROR IN USER INPUT BOUNDARIES ')                        FA10970
   946 FORMAT (' BOUNDARIES ARE OUTSIDE THE RANGE OF THE ATMOSPHERE',/,   FA10980
      *        ' BOUNDARY = ',F10.2,' ATMOSPHERE =',F10.2,/,              FA10990
@@ -1276,6 +1487,9 @@ C                                                                        FA10530
   988 FORMAT (///,' ERROR: BOUNDARY ALTITUDES FOR LBLRTM LAYERS ',       FA11610
      *        'ARE NEGATIVE OR NOT IN ASCENDING ORDER',//,5X,' ZBND ',   FA11620
      *        /,(10F10.4))                                               FA11630
+  989 FORMAT (///,' ERROR: BOUNDARY PRESSURES FOR LBLRTM LAYERS ',
+     *        'ARE POSITIVE OR NOT IN DESCENDING ORDER',//,5X,' PBND ',
+     *        /,(10F10.4))                                            
   990 FORMAT ('0ERROR FLAG RETURNED FROM FSCGEO:  AN ERROR OCCURED ',    FA11640
      *        'IN PROCESSING THE SLANT PATH PARAMETERS',/,'0PROGRAM ',   FA11650
      *        'STOP')                                                    FA11660
@@ -1303,8 +1517,8 @@ C                                                                        FA11790
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA11810
 C                                                                        FA11820
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA11830
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA11840
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA11850
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA11840
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA11850
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA11860
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA11870
 C                                                                        FA11880
@@ -2496,8 +2710,8 @@ C                                                                        FA23620
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA23640
      *              NLTEFL,LNFIL4,LNGTH4                                 FA23650
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA23660
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA23670
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA23680
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA23670
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA23680
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),           FA23690
      *                MXPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,         FA23700
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                 FA23710
@@ -2509,7 +2723,8 @@ C                                                                        FA23620
 C                                                                        FA23770
       CHARACTER*8      HMOD                                             &FA23780
 C                                                                        FA23790
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA23800
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA23810
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA23820
       COMMON AMTP(MXMOL,MXPDIM)                                          FA23830
@@ -2617,8 +2832,8 @@ C                                                                        FA24710
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA24730
      *              NLTEFL,LNFIL4,LNGTH4                                 FA24740
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA24750
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA24760
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA24770
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA24760
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA24770
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA24780
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA24790
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA24800
@@ -2627,7 +2842,8 @@ C                                                                        FA24710
 C                                                                        FA24830
       CHARACTER*8      HMOD                                             &FA24840
 C                                                                        FA24850
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA24860
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA24870
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA24880
       COMMON AMTP(MXMOL,MXPDIM)                                          FA24890
@@ -2646,25 +2862,36 @@ C                                                                        FA25010
 C     ************************************************************       FA25020
 C                                                                        FA25030
       WRITE (IPR,900)                                                    FA25040
-      READ (IRD,905) IMMAX,HMOD                                          FA25050
+      READ (IRD,905) IMMAX_B,HMOD
 C                                                                        FA25060
+      IMMAX = ABS(IMMAX_B)
       IMLOW = IMMAX                                                      FA25070
-      WRITE (IPR,910) IMMAX,HMOD                                         FA25080
+      WRITE (IPR,910) IMMAX,HMOD
       IF (IMMAX.GT.IMDIM) GO TO 30                                       FA25090
       DO 20 IM = 1, IMMAX                                                FA25100
 C                                                                        FA25110
 C     READ IN GENERIC UNITS FOR USER MODEL                               FA25120
 C                                                                        FA25130
-         CALL RDUNIT (IM,ZMDL(IM),PM(IM),TM(IM),NMOL,NOPRNT,CO2RAT)      FA25140
+         CALL RDUNIT (IMMAX_B,IM,ZMDL(IM),PM(IM),TM(IM),
+     &        NMOL,NOPRNT,CO2RAT)                                        FA25140
 C                                                                        FA25150
 C     CONVERSION OF GENERIC UNITS TO DENSITIES FOR LBLRTM RUNS           FA25200
 C                                                                        FA25210
-c         CALL CONVRT (PM(IM),TM(IM),JUNIT,WMOL,DENM,IM,NMOL,NOPRNT)     FA25230
          CALL CONVRT (PM(IM),TM(IM),JUNIT,WMOL,IM,NMOL,NOPRNT)           FA25230
 C                                                                        FA25240
          DENW(IM) = DENM(1,IM)                                           FA25250
    20 CONTINUE                                                           FA25270
-C                                                                        FA25280
+C                
+
+      IF (IMMAX_B .LT. 0) THEN
+         CALL CMPALT (IMMAX,PM(1:IMMAX),TM(1:IMMAX),DENW(1:IMMAX),
+     &        ZMDL(1),REF_LAT,ZMDL(1:IMMAX))      
+      ENDIF
+
+      DO 25 IM = 2,IMMAX
+         IF (ZMDL(IM) .LE. ZMDL(IM-1)) GO TO 35
+ 25      CONTINUE
+
       RETURN                                                             FA25290
 C                                                                        FA25300
    30 CONTINUE                                                           FA25310
@@ -2672,11 +2899,19 @@ C                                                                        FA25300
 C                                                                        FA25330
       STOP ' LEVEL ERROR IN NSMDL '                                      FA25340
 C                                                                        FA25350
+   35 CONTINUE
+      WRITE (IPR,920) im,im+1,ZMDL(IM),ZMDL(IM+1)
+
+      STOP 'INPUT ALTITUDES NOT IN ASCENDING ORDER'
+
   900 FORMAT (///,' READING IN USER SUPPLIED MODEL ATMOSPHERE')          FA25360
-  905 FORMAT (I5,3A8)                                                    FA25370
-  910 FORMAT (//,10X,'IMMAX    = ',I5,/,10X,'PROFILE = ',3A8)            FA25380
+  905 FORMAT (I5,3A8)
+  910 FORMAT (//,10X,'IMMAX    = ',I5,/,10X,'PROFILE = ',3A8)
   915 FORMAT (/,' NUMBER OF PROFILE LEVELS IMMAX = ',I5,                 FA25390
      *        ' EXCEEDS THE MAXIMUM ALLOWED = ',I5)                      FA25400
+  920 FORMAT (///,' ERROR: INPUT ALTITUDES FOR LBLRTM LAYERS ',    
+     *        'ARE NOT IN ASCENDING ORDER',//,5X,
+     *        ' ZMDL AT GRID PT I,I+1 = ',i5,i5,/,(2F10.4))     
 C                                                                        FA25410
       END                                                                FA25420
 C
@@ -2736,7 +2971,7 @@ C                                                                        FA25920
 C
 C     ----------------------------------------------------------------
 C
-      SUBROUTINE RDUNIT (IM,ZMDL,PM,TM,NMOL,NOPRNT,CO2RAT)               FA25940
+      SUBROUTINE RDUNIT (IMMAX_B,IM,ZMDL,PM,TM,NMOL,NOPRNT,CO2RAT)       FA25940
 C                                                                        FA25950
 C     *******************************************************            FA25960
 C                                                                        FA25970
@@ -2838,7 +3073,7 @@ C                                                                        FA26920
 C     **********************************************************         FA26930
 C                                                                        FA26940
       READ (IRD,900) ZMDL,PM,TM,JCHARP,JCHART,JLONG,
-     *               (JCHAR(K),K=1,MXMOL)                                FA26950
+     *               (JCHAR(K),K=1,MXMOL)   
       ISAME = 0                                                          FA26960
       JUNITP = JOU(JCHARP)                                               FA26970
       JUNITT = JOU(JCHART)                                               FA26980
@@ -2878,7 +3113,12 @@ C                                                                        FA27100
 C                                                                        FA27180
 C     SUBROUTINE DEFAULT DEFINES WMOL  FOR JCHAR  1-6                    FA27190
 C                                                                        FA27200
-      CALL DEFALT (ZMDL,PM,TM,CO2RAT)                                    FA27210
+      IF (IMMAX_B .LT. 0) THEN
+         CALL DEFALT_P (PM,TM,CO2RAT) 
+      ELSE
+         CALL DEFALT (ZMDL,PM,TM,CO2RAT)
+      ENDIF
+
       RETURN                                                             FA27220
 C                                                                        FA27230
   900 FORMAT (3E10.3,5X,2A1,1X,A1,1X,35A1)                               FA27240
@@ -2887,10 +3127,10 @@ C                                                                        FA27230
   910 FORMAT (//,'  ECHO INPUT PARAMETERS FOR USER PROVIDED MODEL',/,    FA27260
      *        '0   (P : UNIT)=   ',5X,'(T : UNIT)=   ',5X,               FA27270
      *        '(MOLECULE NUMBER : UNIT)=   ')                            FA27280
-  915 FORMAT ('0',I3,1X,'(ALT:KM)=',F7.3,4X,'(P:',A1,')=',G11.5,4X,      FA27290
-     *        '(T:',A1,')=',F8.3,/,(4X,7(' (',I2,':',A1,')=',1PE10.3)))  FA27300
- 916  FORMAT ('0',I3,1X,'(ALT:KM)=',F7.3,4X,'(P:',A1,')=',G11.5,4X,      FA27290
-     *        '(T:',A1,')=',F8.3,/,(4X,7(' (',I2,':',A1,')=',1PE15.8)))  FA27300
+ 915  FORMAT ('0',I4,1X,'(ALT:KM)=',F7.3,4X,'(P:',A1,')=',G11.5,4X,  
+     *        '(T:',A1,')=',F8.3,/,(5X,7(' (',I2,':',A1,')=',1PE10.3)))
+ 916  FORMAT ('0',I4,1X,'(ALT:KM)=',F7.3,4X,'(P:',A1,')=',G11.5,4X,    
+     *        '(T:',A1,')=',F8.3,/,(5X,7(' (',I2,':',A1,')=',1PE15.8)))
 C                                                                        FA27310
       END                                                                FA27320
       FUNCTION JOU (CHAR)                                                FA27330
@@ -3027,8 +3267,8 @@ C                                                                        FA28560
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA28580
      *              NLTEFL,LNFIL4,LNGTH4                                 FA28590
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA28600
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA28610
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA28620
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA28610
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA28620
 C                                                                        FA28630
       CHARACTER*8      HMOLS                                            &FA28640
 C                                                                        FA28650
@@ -3173,6 +3413,200 @@ C                                                                        FA30020
 C
 C     ----------------------------------------------------------------
 C
+
+      SUBROUTINE DEFALT_P (P,T,CO2RAT)                                   FA28140
+C                                                                        FA28150
+C     *****************************************************************  FA28160
+C                                                                        FA28170
+C     THIS SUBROUTINE LOADS ONE OF THE 6 BUILT IN ATMOSPHERIC PROFILES   FA28180
+C     FROM WHICH IT WILL INTERPOLATE "DEFAULT" VALUES FOR PRESSURE "P"   FA28190
+C                                                                        FA28200
+C                                                                        FA28210
+C      ***  THIS SUBROUTINE IS CALLED BY "RDUNIT" WHICH                  FA28220
+C      ***  READS USER SUPPLIED INPUT PROFILES OR SINGLE VALUES          FA28230
+C      ***  UNDER "MODEL = 0     " SPECIFICATIONS                        FA28240
+C                                                                        FA28250
+C      *** SEE DOCUMENTATION FOR CLARIFICATION ***                       FA28260
+C                                                                        FA28270
+C     SUBROUTINE "DEFALT"IS TRIGGERRED WHENEVER ANY ONE OF               FA28280
+C     THE INPUT PARAMETERS JCHARP, JCART, (JCHAR(K),K=1,NMOL) IS = 1-6   FA28290
+C                                                                        FA28300
+C     FOR SIMPLICITY, ALL INTERPOLATIONS ARE DONE AT ONE TIME BECAUSE    FA28310
+C     THE LAGRANGE WEIGHTS (4PT), BASED ON (ALT-Z), REMAIN UNCHANGED     FA28320
+C                                                                        FA28330
+C     JCHARP,JCHART AND JCHAR(K) FOR K<8 ALLOW MODEL-DEPENDENT CHOICES   FA28340
+C                                                                        FA28350
+C                   JCHAR=JUNIT                                          FA28360
+C                                                                        FA28370
+C                        1       CHOOSES TROPICAL                        FA28380
+C                        2         "     MID-LATITUDE SUMMER             FA28390
+C                        3         "     MID-LATITUDE WINTER             FA28400
+C                        4         "     HIGH-LAT SUMMER                 FA28410
+C                        5         "     HIGH-LAT WINTER                 FA28420
+C                        6         "     US STANDARD                     FA28430
+C                                                                        FA28440
+C                                                                        FA28450
+C     JUNIT(K) FOR K>7 CHOOSES FROM THE SINGLE TRACE CONSTITUENT         FA28460
+C        PROFILES, ALL APPRORIATE FOR THE US STD ATMOSPHERE              FA28470
+C                                                                        FA28480
+C     ***  NOTE ***  T<0 WILL ALSO PRINT OUT A MESSAGE INDICATING        FA28490
+C     ***  A POSSIBLE MISAPPLICATION OF TEMPERATURE UNITS, (K) VS (C)    FA28500
+C                                                                        FA28510
+C     *****************************************************************  FA28520
+C                                                                        FA28530
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA28540
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA28550
+C                                                                        FA28560
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA28570
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA28580
+     *              NLTEFL,LNFIL4,LNGTH4                                 FA28590
+      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA28600
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA28610
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA28620
+C                                                                        FA28630
+      CHARACTER*8      HMOLS                                             FA28640
+C                                                                        FA28650
+      COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA28660
+     *               JUNITT                                              FA28670
+      COMMON /MLATM/ ALT(MXZMD),PMATM(MXZMD,6),TMATM(MXZMD,6),           FA28680
+     *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),TST(MXZMD),   FA28690
+     *               AMOLS(MXZMD,MXMOL)                                  FA28700
+      COMMON /MLATMC/ ATMNAM(6)                                          FA28710
+      CHARACTER*24 ATMNAM                                                FA28720
+      COMMON /TRAC/ TRAC(MXZMD,MXTRAC)                                   FA28730
+C                                                                        FA28740
+C     *** 4PT INTERPOLATION FUNCTION                                     FA28750
+C                                                                        FA28760
+      VAL(A1,A2,A3,A4,X1,X2,X3,X4) = A1*X1+A2*X2+A3*X3+A4*X4             FA28770
+C                                                                        FA28780
+      XLOG_P = ALOG(P)
+C
+      DO 200 J_MDL=1,6
+
+         ILOWER = 0                                             
+         IUPPER = 0                                                      FA28800
+         LVL_50 = 50                                                     FA28810
+         DO 10 LVL = 2, LVL_50                                           FA28820
+            I2 = LVL                                                     FA28830
+            IF (P .GE. PMATM(LVL,J_MDL)) GO TO 20                            
+ 10      CONTINUE                                                        FA28850
+         I2 = LVL_50                                                     FA28860
+ 20      I1 = I2-1                                                       FA28870
+         I0 = I2-2                                                       FA28880
+         I3 = I2+1                                                       FA28890
+         IF (I0.LT.1) GO TO 30                                           FA28900
+         IF (I3.GT.LVL_50) GO TO 40                                      FA28910
+C                                                                        FA28920
+         GO TO 60                                                        FA28930
+C                                                                        FA28940
+C     LOWER ENDPOINT CORRECTION                                          FA28950
+C                                                                        FA28960
+ 30      CONTINUE                                                        FA28970
+         ILOWER = 1                                                      FA28980
+         I0 = I1                                                         FA28990
+         I1 = I2                                                         FA29000
+         I2 = I3                                                         FA29010
+         I3 = I3+1                                                       FA29020
+         GO TO 60                                                        FA29030
+C                                                                        FA29040
+C     UPPER ENDPOINT CORRECTION                                          FA29050
+C                                                                        FA29060
+ 40      CONTINUE                                                        FA29070
+         IUPPER = 1                                                      FA29080
+         IF (P .LE. PMATM(LVL_50,J_MDL)) GO TO 50   
+         I3 = I2                                                         FA29100
+         I2 = I1                                                         FA29110
+         I1 = I0                                                         FA29120
+         I0 = I1-1                                                       FA29130
+         GO TO 60                                                        FA29140
+C                                                                        FA29150
+C      UPPER ENDPOINT EXTRAPOLATION                                      FA29160
+C                                                                        FA29170
+ 50      CONTINUE                                                        FA29180
+         P_0 = ALOG(PMATM(I0,J_MDL))
+         P_1 = ALOG(PMATM(I1,J_MDL))
+         P_2 = ALOG(PMATM(I2,J_MDL))
+         P_3 = P_2+2.*(XLOG_P-P_2)                                       FA29220
+         IUPPER = 2                                                      FA29230
+         WRITE (IPR,900) P                                               FA29240
+C                                                                        FA29250
+         STOP 'DEFAULT P'                                                FA29260
+C                                                                        FA29270
+C     LAGRANGE CONTINUATION                                              FA29280
+C                                                                        FA29290
+ 60      CONTINUE                                                        FA29300
+C                                                                        FA29310
+C     LAGRANGE COEF DETERMINATION                                        FA29320
+C                                                                        FA29330
+         P_0 = ALOG(PMATM(I0,J_MDL))
+         P_1 = ALOG(PMATM(I1,J_MDL))
+         P_2 = ALOG(PMATM(I2,J_MDL))
+         P_3 = ALOG(PMATM(I3,J_MDL))
+         DEN1 = (P_0-P_1)*(P_0-P_2)*(P_0-P_3)                            FA29380
+         DEN2 = (P_1-P_2)*(P_1-P_3)*(P_1-P_0)                            FA29390
+         DEN3 = (P_2-P_3)*(P_2-P_0)*(P_2-P_1)                            FA29400
+         DEN4 = (P_3-P_0)*(P_3-P_1)*(P_3-P_2)                            FA29410
+         A1 = ((XLOG_P-P_1)*(XLOG_P-P_2)*(XLOG_P-P_3))/DEN1 
+         A2 = ((XLOG_P-P_2)*(XLOG_P-P_3)*(XLOG_P-P_0))/DEN2 
+         A3 = ((XLOG_P-P_3)*(XLOG_P-P_0)*(XLOG_P-P_1))/DEN3 
+         A4 = ((XLOG_P-P_0)*(XLOG_P-P_1)*(XLOG_P-P_2))/DEN4 
+C                                                                        FA29460
+C     TEST INPUT PARAMETERS (JUNIT'S) SEQUENTIALLY FOR TRIGGER           FA29470
+C      I.E.  JUNIT(P,T,K) = 1-6                                          FA29480
+C                                                                        FA29490
+C     FOR THIS VERSION OF THE SUBROUTINE DRIVEN BY PRESSURE P
+C     JUNITP IS THE MODEL ATMOSPHERES TO BE USED FOR THE ALTITUDE
+C
+ 70      IF (JUNITT.GT.6 .OR. JUNITT.NE.J_MDL) GO TO 80   
+         MATM = JUNITT                                                   FA29630
+C                                                                        FA29640
+C     WRITE (IPR,65) P_,MATM                                             FA29650
+C                                                                        FA29660
+         X1 = TMATM(I0,MATM)                                             FA29670
+         X2 = TMATM(I1,MATM)                                             FA29680
+         X3 = TMATM(I2,MATM)                                             FA29690
+         X4 = TMATM(I3,MATM)                                             FA29700
+         T = VAL(A1,A2,A3,A4,X1,X2,X3,X4)                                FA29710
+
+ 80      DO 110 K = 1, NMOL                                              FA29720
+            IF (JUNIT(K).GT.6  .OR. JUNIT(K).NE.J_MDL) GO TO 110
+C                                                                        FA29740
+            IF (K.GT.7) GO TO 90                                         FA29750
+            MATM = JUNIT(K)                                              FA29760
+C                                                                        FA29770
+C     WRITE (IPR,70) K,HMOLS(K),P_,MATM                                  FA29780
+C                                                                        FA29790
+            X1 = AMOL(I0,K,MATM)                                         FA29800
+            X2 = AMOL(I1,K,MATM)                                         FA29810
+            X3 = AMOL(I2,K,MATM)                                         FA29820
+            X4 = AMOL(I3,K,MATM)                                         FA29830
+            GO TO 100                                                    FA29840
+ 90         ITR = K-7                                                    FA29850
+            MATM = 6                                                     FA29860
+C                                                                        FA29870
+C     WRITE (IPR,70) K,HMOLS(K),P_,MATM                                  FA29880
+C                                                                        FA29890
+            X1 = TRAC(I0,ITR)                                            FA29900
+            X2 = TRAC(I1,ITR)                                            FA29910
+            X3 = TRAC(I2,ITR)                                            FA29920
+            X4 = TRAC(I3,ITR)                                            FA29930
+ 100        WMOL(K) = VAL(A1,A2,A3,A4,X1,X2,X3,X4)                       FA29940
+            IF (K.EQ.2) WMOL(2) = WMOL(2)*CO2RAT                         FA29950
+            JUNIT(K) = 10                                                FA29960
+ 110     CONTINUE                                                        FA29970
+C                                                                        FA29980
+ 200  CONTINUE
+
+      RETURN                                                             FA29990
+C                                                                        FA30000
+  900 FORMAT (/,'   *** P IS GREATER THAN P(120 KM)  ***, P = ',
+     *     1PE10.4) 
+C                                                                        FA30020
+      END                                                                FA30030
+C
+C     ----------------------------------------------------------------
+C
+      
       SUBROUTINE CONVRT (P,T,JUNIT,WMOL,IM,NMOL,NOPRNT)                  FA30040
 C                                                                        FA30050
 C*************************************************************           FA30060
@@ -3327,6 +3761,7 @@ C                                                                        FA31320
 C                                                                        FA31340
       DENSAT(ATEMP) = ATEMP*B*EXP(C1+C2*ATEMP+C3*ATEMP**2)*1.0E-6        FA31350
 C                                                                        FA31360
+
       RHOAIR = ALOSMT*(P/PZERO)*(TZERO/T)                                FA31370
       A = TZERO/T                                                        FA31380
       B = AVOGAD/AMWT(1)                                                 FA31390
@@ -3446,8 +3881,8 @@ C                                                                        FA32330
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA32350
      *              NLTEFL,LNFIL4,LNGTH4                                 FA32360
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA32370
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA32380
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA32390
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA32380
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA32390
 C                                                                        FA32400
       ITER = 0                                                           FA32410
 C
@@ -3737,8 +4172,8 @@ C                                                                        FA34430
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA34450
      *              NLTEFL,LNFIL4,LNGTH4                                 FA34460
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA34470
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA34480
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA34490
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA34480
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA34490
 C                                                                        FA34500
       IF (H1.LE.ZMAX.AND.H2.LE.ZMAX) RETURN                              FA34510
       CALL FINDSH (H1,SH,GAMMA)                                          FA34520
@@ -3785,8 +4220,8 @@ C                                                                        FA34880
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA34900
      *              NLTEFL,LNFIL4,LNGTH4                                 FA34910
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA34920
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA34930
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA34940
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA34930
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA34940
       COMMON /BNDRY/ ZBND(MXFSC),PBND(MXFSC),TBND(MXFSC),ALORNZ(MXFSC),  FA34950
      *               ADOPP(MXFSC),AVOIGT(MXFSC)                          FA34960
 C                                                                        FA34970
@@ -3965,8 +4400,8 @@ C                                                                        FA36640
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA36660
      *              NLTEFL,LNFIL4,LNGTH4                                 FA36670
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA36680
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA36690
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA36700
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA36690
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA36700
 C                                                                        FA36710
       REAL*8           CPATH,CRFRCT,ANDEXD,SH,GAMMA,CT1,CTP,
      *                 CH2,CMIN
@@ -4087,15 +4522,16 @@ C                                                                        FA37830
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA37850
      *              NLTEFL,LNFIL4,LNGTH4                                 FA37860
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA37870
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA37880
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA37890
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA37880
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA37890
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA37900
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA37910
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA37920
 C                                                                        FA37930
       CHARACTER*8      HMOD                                             &FA37940
 C                                                                        FA37950
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA37960
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA37970
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA37980
       COMMON AMTP(MXMOL,MXPDIM)                                          FA37990
@@ -4213,8 +4649,8 @@ C                                                                        FA38940
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA38960
      *              NLTEFL,LNFIL4,LNGTH4                                 FA38970
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA38980
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA38990
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA39000
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA38990
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA39000
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA39010
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA39020
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA39030
@@ -4222,7 +4658,8 @@ C                                                                        FA39040
       CHARACTER*8      HMOD                                             &FA39050
       REAL*8           DS,DBEND,S,SINAI,COSAI,CPATH,ANDEXD,SH,GAMMA
 C                                                                        FA39060
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA39070
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA39080
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA39090
       COMMON AMTP(MXMOL,MXPDIM)                                          FA39100
@@ -4392,8 +4829,8 @@ C                                                                        FA40590
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA40610
      *              NLTEFL,LNFIL4,LNGTH4                                 FA40620
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA40630
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA40640
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA40650
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA40640
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA40650
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA40660
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA40670
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA40680
@@ -4402,7 +4839,8 @@ C                                                                        FA40590
 C                                                                        FA40710
       CHARACTER*8      HMOD                                             &FA40720
 C                                                                        FA40730
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA40740
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA40750
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA40760
       COMMON AMTP(MXMOL,MXPDIM)                                          FA40770
@@ -4581,15 +5019,16 @@ C                                                                        FA42400
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA42420
      *              NLTEFL,LNFIL4,LNGTH4                                 FA42430
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA42440
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA42450
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA42460
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA42450
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA42460
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA42470
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA42480
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA42490
 C                                                                        FA42500
       CHARACTER*8      HMOD                                             &FA42510
 C                                                                        FA42520
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA42530
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA42540
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA42550
       COMMON AMTP(MXMOL,MXPDIM)                                          FA42560
@@ -4816,8 +5255,8 @@ C                                                                        FA44630
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA44650
      *              NLTEFL,LNFIL4,LNGTH4                                 FA44660
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA44670
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA44680
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA44690
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA44680
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA44690
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA44700
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA44710
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA44720
@@ -4826,7 +5265,8 @@ C                                                                        FA44630
 C                                                                        FA44750
       CHARACTER*8      HMOD                                             &FA44760
 C                                                                        FA44770
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA44780
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA44790
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA44800
       COMMON AMTP(MXMOL,MXPDIM)                                          FA44810
@@ -4984,6 +5424,61 @@ C                                                                        FA46310
 C
 C     ----------------------------------------------------------------
 C
+      SUBROUTINE HALFWD_P (Z,XVBAR,P,T,ALORNZ,ADOPP,AVOIGT)              FA46330
+C                                                                        FA46340
+C     *****************************************************************  FA46350
+C     GIVEN AN PRESSURE AND TEMP. AND AVERAGE WAVENUMBER VBAR, THIS      FA46360
+C     SUBROUTINE                                                         FA46370
+C     CALCULATES THE LORENTZ, THE DOPPLER, AND THE VOIGT HALFWIDTHS      FA46380
+C     (AT HALFHEIGHT) ALORNZ, ADOPP, AND AVOIGT RESPECTIVELY FOR         FA46390
+C     THE ALTITUDE Z                                                     FA46400
+C     AN AVERAGE LORENTZ WIDTH ALZERO AND AN AVERAGE MOLECULAR           FA46410
+C     WEIGHT AVMWT ARE ASSUMED                                           FA46420
+C     *****************************************************************  FA46430
+C                                                                        FA46440
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA46450
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA46460
+C                                                                        FA46470
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA46480
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA46490
+     *              NLTEFL,LNFIL4,LNGTH4                                 FA46500
+      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA46510
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA46520
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA46530
+      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA46540
+     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA46550
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA46560
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FA46570
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA46580
+C                                                                        FA46590
+      CHARACTER*8      HMOD                                             &FA46600
+C                                                                        FA46610
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
+      COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA46630
+     *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA46640
+      COMMON AMTP(MXMOL,MXPDIM)                                          FA46650
+C                                                                        FA46660
+C     FUNCTIONS                                                          FA46670
+C     ALZERO IS AT 1013.25 MB AND 296.0 K                                FA46680
+C                                                                        FA46690
+      ALPHAL(P,T) = ALZERO*(P/PZERO)*SQRT(296.0/T)                       FA46700
+      ALPHAD(T,V) = ADCON*V*SQRT(T/AVMWT)                                FA46710
+      ALPHAV(AL,AD) = 0.5*(AL+SQRT(AL**2+4.0*AD**2))                     FA46720
+C                                                                        FA46730
+      ALORNZ = ALPHAL(P,T)                                               FA46830
+      ADOPP = ALPHAD(T,XVBAR)                                            FA46840
+      AVOIGT = ALPHAV(ALORNZ,ADOPP)                                      FA46850
+C                                                                        FA46860
+      RETURN                                                             FA46870
+C                                                                        FA46880
+      END                                                                FA46890
+C
+C     ----------------------------------------------------------------
+C
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE HALFWD (Z,XVBAR,P,T,ALORNZ,ADOPP,AVOIGT)                FA46330
 C                                                                        FA46340
 C     *****************************************************************  FA46350
@@ -5003,8 +5498,8 @@ C                                                                        FA46470
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA46490
      *              NLTEFL,LNFIL4,LNGTH4                                 FA46500
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA46510
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA46520
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA46530
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA46520
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA46530
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA46540
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA46550
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA46560
@@ -5013,7 +5508,8 @@ C                                                                        FA46470
 C                                                                        FA46590
       CHARACTER*8      HMOD                                             &FA46600
 C                                                                        FA46610
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA46620
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA46630
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA46640
       COMMON AMTP(MXMOL,MXPDIM)                                          FA46650
@@ -5041,10 +5537,11 @@ C                                                                        FA46860
       RETURN                                                             FA46870
 C                                                                        FA46880
       END                                                                FA46890
+
 C
 C     ----------------------------------------------------------------
-C
       SUBROUTINE FPACK (H1,H2,HMID,LEN,IEMIT,NOZERO)                     FA46900
+
 C                                                                        FA46910
 C     *****************************************************************  FA46920
 C     FPACK TAKES THE AMOUNTS STORED IN THE LAYERS DEFINED BY ZPTH AND   FA46930
@@ -5066,8 +5563,8 @@ C                                                                        FA47020
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA47040
      *              NLTEFL,LNFIL4,LNGTH4                                 FA47050
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA47060
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA47070
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FA47080
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA47070
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA47080
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA47090
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA47100
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA47110
@@ -5076,7 +5573,8 @@ C                                                                        FA47020
 C                                                                        FA47140
       CHARACTER*8      HMOD                                             &FA47150
 C                                                                        FA47160
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA47170
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA47180
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA47190
       COMMON AMTP(MXMOL,MXPDIM)                                          FA47200
@@ -5332,7 +5830,8 @@ C                                                                        FX00170
 C                                                                        FX00210
       CHARACTER*8      HMOD                                             &FX00220
 C                                                                        FX00230
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FX00240
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FX00250
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FX00260
       COMMON AMTP(MXMOL,MXPDIM)                                          FX00270
@@ -5352,8 +5851,8 @@ C                                                                        FX00360
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,XVBAR,  FX00410
      *                HMINF,PHIF,IERRF,HSPACE                            FX00420
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FX00430
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FX00440
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FX00450
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FX00440
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FX00450
       COMMON /MLATM/ ALT(MXZMD),PMDL(MXZMD,6),TMDL(MXZMD,6),             FX00460
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),              FX00470
      *               TST(MXZMD),AMOLS(MXZMD,MXMOL)                       FX00480
@@ -5815,7 +6314,8 @@ C                                                                        FX03570
 C                                                                        FX03610
       CHARACTER*8      HMOD                                             &FX03620
 C                                                                        FX03630
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FX03640
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FX03650
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FX03660
       COMMON AMTP(MXMOL,MXPDIM)                                          FX03670
@@ -5830,8 +6330,8 @@ C     LAMCHN CARRIES HARDWARE SPECIFIC PARAMETERS                        FX03750
 C                                                                        FX03760
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                          FX03770
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FX03780
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FX03790
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FX03800
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FX03790
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FX03800
 C                                                                        FX03810
 C     IXMAX=MAX NUMBER OF X-SECTION MOLECULES, IXMOLS=NUMBER OF THESE    FX03820
 C     MOLECULES SELECTED, IXINDX=INDEX VALUES OF SELECTED MOLECULES      FX03830
@@ -5857,8 +6357,10 @@ C     LEVEL, ALTX(L)= ALTITUDE OF THE L'TH LEVEL, LAYXMX LEVELS MAX      FX04020
 C                                                                        FX04030
       COMMON /MLATMX/ LAYXMX,ALTX(MXZMD),AMOLX(MXZMD,MXMOL)              FX04040
                                                                          FX04050
-      DIMENSION ZX(MXZMD),DTMP(MXMOL),DENX(MXMOL,MXZMD)                  FX04060
-      CHARACTER JCHAR(MXMOL)*1,XTITLE*50                                 FX04070
+      DIMENSION ZX(MXZMD),DTMP(MXMOL,MXZMD),DENX(MXMOL,MXZMD)            FX04060
+      DIMENSION PX(MXZMD)
+      DIMENSION ZTMP(2),PTMP(2),TTMP(2),WVTMP(2)
+      CHARACTER JCHAR(MXMOL,MXZMD)*1,XTITLE*50                           FX04070
 C                                                                        FX04080
 C     LOAD THE PROFILES OF ALTITUDE, PRESSURE, AND TEMPERATURE THAT      FX04090
 C     WERE USED TO CALCULATE THE MOLECULAR AMOUNTS BACK INTO THE         FX04100
@@ -5904,34 +6406,116 @@ C                                                                        FX04420
 C                                                                        FX04500
          WRITE (IPR,920) (K,K=1,IXMOLS)                                  FX04510
 C                                                                        FX04520
-         DO 50 L = 1, LAYX                                               FX04530
-            READ (IRD,925) ZORP,(JCHAR(I),I=1,IXMOLS)                    FX04540
-            WRITE (IPR,930) ZORP,(JCHAR(I),I=1,IXMOLS)                   FX04550
-C                                                                        FX04560
-C             IF ZORP IS PRESSURE, INTERPOLATE LOG(PRESSURE) AGAINST     FX04570
-C             LOG(PM) TO GET ALTITUDE IN KM.                             FX04580
-C                                                                        FX04590
-            IF (IZORP.EQ.1) THEN                                         FX04600
-               CALL ZINTRP (ZORP,ZMDL,PM,IMMAX,Z)                        FX04610
-               ZX(L) = Z                                                 FX04620
-            ELSE                                                         FX04630
-               ZX(L) = ZORP                                              FX04640
-            ENDIF                                                        FX04650
-C                                                                        FX04660
-            READ (IRD,935) (DTMP(K),K=1,IXMOLS)                          FX04670
-            WRITE (IPR,940) (DTMP(K),K=1,IXMOLS)                         FX04680
-C                                                                        FX04690
-C             IF JCHAR(K) = 1, THEN OBTAIN THE VOLUME MIXING RATIO FROM  FX04700
-C             THE STANDARD PROFILE FOR THAT MOLECULE                     FX04710
-C                                                                        FX04720
-            CALL XTRACT (DTMP,JCHAR,ZX(L))                               FX04730
-C                                                                        FX04740
-            DO 40 K = 1, IXMOLS                                          FX04750
-               DENX(K,L) = DTMP(K)                                       FX04760
-   40       CONTINUE                                                     FX04770
-   50    CONTINUE                                                        FX04780
-C                                                                        FX04790
-      ENDIF                                                              FX04800
+         IF (IZORP .EQ. 0) THEN
+            DO 50 L = 1, LAYX                                               FX04530
+               READ (IRD,925) ZX(L),(JCHAR(I,L),I=1,IXMOLS)                 FX04540
+               WRITE (IPR,930) ZX(L),(JCHAR(I,L),I=1,IXMOLS)                FX04550
+C                                                                           FX04560
+               READ (IRD,935) (DTMP(K,L),K=1,IXMOLS)                        FX04670
+               WRITE (IPR,940) (DTMP(K,L),K=1,IXMOLS)                       FX04680
+ 50         CONTINUE                                                        FX04780
+         ELSE
+            DO 60 L = 1, LAYX                                               FX04530
+               READ (IRD,925) PX(L),(JCHAR(I,L),I=1,IXMOLS)                 FX04540
+               WRITE (IPR,930) PX(L),(JCHAR(I,L),I=1,IXMOLS)                FX04550
+C                                                                           FX04560
+               READ (IRD,935) (DTMP(K,L),K=1,IXMOLS)                        FX04670
+               WRITE (IPR,940) (DTMP(K,L),K=1,IXMOLS)                       FX04680
+ 60         CONTINUE
+         ENDIF
+
+         IF (IZORP .EQ. 1) THEN
+
+C INTERPOLATE PX GRID ONTO ZX GRID.
+
+C TO ENSURE THAT CALCULATED/INPUT ZMDL'S WILL MATCH CALCULATED USER-LEVEL
+C ALTITUDES, A COMBINATION OF INTERPOLATION AND HYDROSTATICS ARE USED.
+C ZBND = A * F1(P) + (1 - A) * F2(P), WHERE
+C F1(P) = INTERPOLATION IN LN(P), F2(P) = HYDROSTATIC CALCULATION
+            ISTART = 2
+
+            DO 160 IP=1,LAYX
+               PTMP(1:2) = 0.0
+               TTMP(1:2) = 0.0
+               WVTMP(1:2) = 0.0
+               ZTMP(1:2) = 0.0
+
+               DO 161 LIP=ISTART,IMMAX
+                  IF (PX(IP) .GT. PM(LIP)) GO TO 162
+ 161              CONTINUE
+                  LIP=IMMAX
+ 162              CONTINUE
+
+                  IF (PX(IP) .EQ. PM(LIP-1)) THEN
+                     ZX(IP) = ZMDL(LIP-1)
+                  ELSE 
+                     IF(PX(IP) .EQ. PM(LIP)) THEN
+                        ZX(IP) = ZMDL(LIP)
+                     ELSE
+                    
+C PERFORM INTERPOLATION IN LN(PM)
+                        HIP =  (ZMDL(LIP)-ZMDL(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        ZINT = ZMDL(LIP-1)+
+     &                       HIP*ALOG(PX(IP)/PM(LIP-1))
+
+C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
+                        PTMP(1) = PM(LIP-1)
+                        ZTMP(1) = ZMDL(LIP-1)
+                        TTMP(1) = TM(LIP-1)
+                        WVTMP(1) = DENW(LIP-1)
+
+                        PTMP(2) = PX(IP)
+
+                        TIP = (TM(LIP)-TM(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        TTMP(2) = TM(LIP-1)+
+     &                       TIP*ALOG(PX(IP)/PM(LIP-1))
+
+                        WVIP =  (DENW(LIP)-DENW(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        WVTMP(2) =  DENW(LIP-1) +
+     &                       WVIP*ALOG(PX(IP)/PM(LIP-1))                     
+
+                        CALL CMPALT(2,PTMP(1:2),TTMP(1:2),
+     &                       WVTMP(1:2),ZTMP(1),REF_LAT,ZTMP(1:2))                     
+C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
+
+                        RATP = ALOG(PX(IP)/PM(LIP-1))/
+     &                       ALOG(PM(LIP)/PM(LIP-1))
+                        
+                        A = RATP**3
+
+                        ZX(IP) = A*ZINT + (1-A)*ZTMP(2)
+                     ENDIF
+                  ENDIF
+
+                  IF (IP .EQ. 1) THEN
+                     IF (ZX(IP) .LE. 0.0) GO TO 300
+                  ELSE
+                     IF (ZX(IP).LE.ZX(IP-1)) GO TO 300
+                  ENDIF
+
+                  ISTART = LIP
+
+                  CALL XTRACT (DTMP(1:IXMOLS,IP),JCHAR(1:IXMOLS,IP),
+     &                 ZX(IP))
+                  DO 40 K = 1, IXMOLS                                         
+                     DENX(K,IP) = DTMP(K,IP)                                
+ 40               CONTINUE            
+                  
+ 160           CONTINUE
+
+        ELSE
+           DO 171 L=1,LAYX
+            CALL XTRACT (DTMP(1:IXMOLS,L),JCHAR(1:IXMOLS,L),
+     &             ZX(L))
+            DO 41 K = 1, IXMOLS                                        
+               DENX(K,L) = DTMP(K,L)                               
+   41       CONTINUE                                                   
+ 171        CONTINUE
+        ENDIF
+        ENDIF
 C                                                                        FX04810
 C     INTERPOLATE THE DENSITY PROFILE DENX DEFINED ON ZX TO DENM         FX04820
 C     DEFINED ON ZMDL, THEN CONVERT MIXING RATIO TO NUMBER DENSITY.      FX04830
@@ -5939,6 +6523,12 @@ C                                                                        FX04840
       CALL XINTRP (ZX,DENX,LAYX,IXMOLS)                                  FX04850
 C                                                                        FX04860
       RETURN                                                             FX04870
+
+C ERROR MESSAGES
+  300 WRITE(IPR,988) (ZX(I),I=1,LAYX) 
+      PRINT 988,(ZX(I),I=1,IBMAX)  
+
+      STOP 'ZX IN XPROFL'
 C                                                                        FX04880
   900 FORMAT (/,' READING IN A PROFILE FOR THE CROSS-SECTION',           FX04890
      *        ' MOLECULES')                                              FX04900
@@ -5953,6 +6543,9 @@ C                                                                        FX04880
   930 FORMAT (2X,F10.3,5X,35A)                                           FX04990
   935 FORMAT (8E10.3)                                                    FX05000
   940 FORMAT (2X,8E10.3)                                                 FX05010
+  988 FORMAT (///,' ERROR: BOUNDARY ALTITUDES FOR CROSS_SECTION LEVELS',       
+     *        'ARE NEGATIVE OR NOT IN ASCENDING ORDER',//,5X,' ZX ',   
+     *        /,(10F10.4))                                               
 C                                                                        FX05020
       END                                                                FX05030
 C
@@ -5962,7 +6555,7 @@ C
 C                                                                        FX05050
 C     *****************************************************************  FX05060
 C     FOR EACH MOLECULE K FOR WHICH JCHAR(K) IS '1', THIS SUBROUTINE     FX05070
-C     INTERPOLATES THE MIXING RATIO DTMP(K) AT THE ALTITUDE Z FROM THE   FX05080
+C     INTERPOLATES THE MIXING RATIO DTMP(K,L) AT THE ALTITUDE Z FROM THE FX05080
 C     STANDARD PROFILE IN AMOLX ON THE ALTITUDE GRID ALTX.               FX05090
 C     *****************************************************************  FX05100
 C                                                                        FX05110
@@ -5994,7 +6587,7 @@ C                                                                        FX05340
 C                                                                        FX05370
 C     FIND SMALLEST ALTX(L) GT Z                                         FX05380
 C                                                                        FX05390
-      DO 10 L = 1, LAYXMX                                                FX05400
+      DO 10 L = 2, LAYXMX                                                FX05400
          IF (Z.LE.ALTX(L)) GO TO 20                                      FX05410
    10 CONTINUE                                                           FX05420
       L = LAYXMX                                                         FX05430
@@ -6046,7 +6639,8 @@ C                                                                        FX05810
 C                                                                        FX05860
       CHARACTER*8      HMOD                                             &FX05870
 C                                                                        FX05880
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FX05890
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FX05900
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FX05910
       COMMON AMTP(MXMOL,MXPDIM)                                          FX05920
@@ -6055,8 +6649,8 @@ C                                                                        FX05880
      *               TST(MXZMD),AMOLS(MXZMD,MXMOL)                       FX05950
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FX05960
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FX05970
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FX05980
-     *                IPDIM,KDIM,KMXNOM,NMOL                             FX05990
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FX05980
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FX05990
 C                                                                        FX06000
       DIMENSION ZX(MXZMD),DENX(MXMOL,MXZMD)                              FX06010
 C                                                                        FX06020
@@ -6098,31 +6692,6 @@ C                                                                        FX06330
   900 FORMAT (//,'  XINTPL: CAUTION- EXTRAPOLATING X-SECTION PROFILE')   FX06340
 C                                                                        FX06350
       END                                                                FX06360
-C
-C     ----------------------------------------------------------------
-C
-      SUBROUTINE ZINTRP (P,ZMDL,PM,IMMAX,Z)                              FX06370
-C                                                                        FX06380
-C**********************************************************************  FX06390
-C     THIS SUBROUTINE FINDS THE ALTITUDE Z CORRESPONDING TO THE          FX06400
-C     PRESSURE P FROM THE PROFILE DEFINED BY ZMDL AND PM.  LOGARITHMIC   FX06410
-C     INTERPOLATION IS USED.                                             FX06420
-C**********************************************************************  FX06430
-C                                                                        FX06440
-      DIMENSION ZMDL(IMMAX),PM(IMMAX)                                    FX06450
-C                                                                        FX06460
-      DO 10 L = 2, IMMAX                                                 FX06470
-         IF (Z.LE.ZMDL(L)) GO TO 20                                      FX06480
-   10 CONTINUE                                                           FX06490
-      L = IMMAX                                                          FX06500
-   20 CONTINUE                                                           FX06510
-C                                                                        FX06520
-      H = -(ZMDL(L)-ZMDL(L-1))/LOG10(PM(L)/PM(L-1))                      FX06530
-      Z = ZMDL(L-1)-H*LOG10(P/PM(L-1))                                   FX06540
-C                                                                        FX06550
-      RETURN                                                             FX06560
-C                                                                        FX06570
-      END                                                                FX06580
 C
 C -------------------------------------------------------------------
 C
@@ -6508,8 +7077,8 @@ C
      *              NLTEFL,LNFIL4,LNGTH4                                 
 C
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      
-     *                IPDIM,KDIM,KMXNOM,NMOL                             
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,      
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                             
 C
 C     BLANK COMMON FOR ZMDL                                              
 C                                                                        
@@ -6519,7 +7088,8 @@ C
 C                                                                        
       CHARACTER*8      HMOD                                             
 C
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         
       COMMON AMTP(MXMOL,MXPDIM)                                          
@@ -6587,8 +7157,8 @@ C     THE ROOT IS ACTUALLY THE TANGENT HEIGHT, BETWEEN X1 AND X2.
 C     THIS ROUTINE IS FROM "NUMERICAL RECIPES" BY PRESS, ET AL.
 C                                                                       
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,    
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,     
-     *                IPDIM,KDIM,KMXNOM,KMAX                            
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,
+     *                IPHMID,IPDIM,KDIM,KMXNOM,KMAX                            
 
       REAL*8           CX1,CX2,CPATH,F,FMID,SH,GAMMA,ANDEXD
       DATA XACC/1E-5/                                                   
@@ -6633,8 +7203,8 @@ C     THE PATH CONSTANT, CPATH.
 C     RANGEO IS THE OUTPUT RANGE WHICH SHOULD EQUAL THE INPUT RANGE.
 C
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,
-     *                IPDIM,KDIM,KMXNOM,KMAX
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,
+     *                IPHMID,IPDIM,KDIM,KMXNOM,KMAX
 C
       REAL*8           SAVE,STHETA,CAPRJ,PNTGRN,CTHETA,CTHET1,DX,
      *     DRNG,DBETA,R,DIFF,CPATH,ANDEXD,SH,GAMMA,RX,RATIO,RPLDR
@@ -6795,8 +7365,8 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       
      *              NLTEFL,LNFIL4,LNGTH4                                 
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     
-     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      
-     *                IPDIM,KDIM,KMXNOM,NMOL                             
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,      
+     *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                             
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      
       COMMON WPATH(IM2,16),TBBY(IM2)                                     
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         
@@ -6804,7 +7374,8 @@ C
       REAL*8                SH,GAMMA
       CHARACTER*8      HMOD
 C                                                                        
-      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       
+      COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD),
+     &       REF_LAT
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         
       COMMON AMTP(MXMOL,MXPDIM)                                          
@@ -6906,3 +7477,123 @@ C
 C                                                                        
       END                                                                
 C
+
+      SUBROUTINE CMPALT(ILVL,PM,TM,DENW,REF_Z,REF_LAT,ZMDL)      
+
+C**************************************************************
+C     AUTHOR: TONY CLOUGH, JENNIFER DELAMERE, JOHN WARDEN
+C             JANUARY 2001
+C     PROGRAM TO CALCULATE ALTITUDE LEVEL (ZMDL) GIVEN 
+C     PRESSURE (PM), TEMPERATURE (TM) AND THE NUMBER DENSITY
+C     OF WATER VAPOR (DENW) USING THE HYDROSTATIC EQUATION
+C
+C     INPUT:
+C      A) PRESSURE (MBAR)
+C      B) TEMPERATURE (KELVIN)
+C      C) NUMBER DENSITY OF WATER VAPOR 
+C      
+C     OUTPUT:
+C      A) ALTITUDE (KM)
+C      IDEAL GAS LAW: CRIDOR (1996) 
+C**************************************************************
+
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     
+
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA00880
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA00890
+     *              NLTEFL,LNFIL4,LNGTH4                                 FA00900
+
+      COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA00910
+     *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA00920
+     *                IPHMID,IPDIM,KDIM,KMXNOM,KMAX  
+
+      REAL PM(MXZMD),TM(MXZMD),DENW(MXZMD),ZMDL(MXZMD)
+      REAL H2O_MIXRAT(MXZMD),COMP_FACTOR(MXZMD),ZTEMP(MXZMD)
+
+      REAL Y
+      REAL CHI0,DCHI0
+      REAL T0,DT
+      REAL C1,C2,C3
+      REAL A
+      REAL B
+      REAL KB
+      REAL DUM
+      REAL XINT1,XINT2,XINT3,XINT4,XINT_TOT
+
+      DATA CA0/1.58123E-6/,CA1/-2.9331E-8/,CA2/1.1043E-10/
+      DATA CB0/5.707E-6/,CB1/-2.051E-8/
+      DATA CC0/1.9898E-4/,CC1/-2.376E-6/
+      DATA CD/1.83E-11/,CE/-0.0765E-8/
+
+      DATA XMASS_H2O/0.018015/,XMASS_DRY/0.0289654/
+
+      DATA RGAS/ 8.31441 /, KB/ 1.380662E-23 /
+
+C CALCULATE GRAVITY AT REFERENCE LATITUDE AT SURFACE
+
+      G0 = 9.80612 - 0.02586*COS(2.0*PI*REF_LAT/180.0)
+
+C CALCULATE THE NUMBER DENSITY OF TOTAL AIR MOLECULES [MOLEC/CM^3]
+C CALCULATE THE COMPRESSIBILITY FACTOR (COMP_FAC) FOR THE 
+C IDEAL GAS LAW 
+      XMASS_RATIO = XMASS_H2O/XMASS_DRY
+      DO 10 J=1,ILVL
+         DT = TM(J) - 273.15
+         TOTAL_AIR = PM(J)*1.0E-4/(KB*TM(J))
+         DRY_AIR = TOTAL_AIR - DENW(J)
+         H2O_MIXRAT(J) = DENW(J)/DRY_AIR
+         CHIM = 0.6223*H2O_MIXRAT(J)
+         COMP_FACTOR(J) = 1. - (PM(J)*100/TM(J))*
+     *        (CA0 + CA1*DT + CA2*DT**2 + 
+     *        (CB0 + CB1*DT)*CHIM + (CC0 + CC1*DT)*CHIM**2) + 
+     *        (CD + CE*CHIM**2)*(PM(J)*100./TM(J))**2
+ 10   CONTINUE
+
+C CONVERT REFERENCE ALTITUDE TO METERS
+
+      ZTEMP(1) = REF_Z*1000.0
+      ZMDL(1) = REF_Z
+
+      DO 20 I=1, ILVL - 1
+         GAVE = G0*(RE/(RE+ZTEMP(I)/1000.0))**2
+         Y = ALOG(PM(I+1)/PM(I))
+
+         IF (Y. NE. 0.0) THEN
+            CHI0 = H2O_MIXRAT(I)
+            DCHI = (H2O_MIXRAT(I+1)-H2O_MIXRAT(I))/Y
+
+            T0 = TM(I)
+            DT = (TM(I+1) - TM(I))/Y
+
+            C1 = T0 + T0*CHI0
+            C2 = T0*DCHI + DT*CHI0 + DT
+            C3 = DT*DCHI
+
+            B = 1 + XMASS_RATIO*CHI0
+            A = XMASS_RATIO*DCHI
+            ALPHA = A/B
+            
+            IF ( ABS(ALPHA*Y) .GE. 0.01) THEN
+               PRINT*,'LAYER TOO THICK'
+               STOP
+            ENDIF
+
+            XINT_TOT = C1*Y + 0.5*(C2-C1*ALPHA)*Y**2 + 
+     &           0.3333*(C3-C2*ALPHA+C1*ALPHA**2)*Y**3
+            XINT_TOT =  -XINT_TOT*RGAS/(XMASS_DRY*GAVE*B)
+
+            ZTEMP(I+1) = ZTEMP(I) + XINT_TOT*COMP_FACTOR(I)
+            ZMDL(I+1) = ZTEMP(I+1)/1000.
+        ELSE
+           ZTEMP(I+1) = ZMDL(I)*1000.0
+           ZMDL(I+1) = ZMDL(I)
+        ENDIF
+ 20      CONTINUE
+
+         RETURN
+
+      RETURN
+      END
+
+
