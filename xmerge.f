@@ -52,10 +52,16 @@ C                                                                         H00350
       IEXFIL = 20                                                         H00360
       IAFIL = 14                                                          H00370
 C                                                                         H00380
+C     --------------------------------------------------------------
+C
 C     WHEN IAERSL EQUALS 2 CALL ADARSL TO ADD ABSORPTION AND SCATTERING   H00390
 C     TO COMMON BLOCKS FOR USE IN A TRANSMITTANCE RUN                     H00400
 C                                                                         H00410
-      IF (IEMIT.NE.1) THEN                                                H00420
+C     --------------------------------------------------------------
+C
+C     IEMIT = 0  =>  Optical depth calculation only
+C
+      IF (IEMIT.EQ.0) THEN                                                H00420
          IF (LAYER.EQ.1) THEN                                             H00430
             CALL ABINIT (NPTS,MFILE,JPATHL)                               H00440
          ELSE                                                             H00450
@@ -64,32 +70,42 @@ C                                                                         H00410
          ENDIF                                                            H00480
       ELSE                                                                H00490
 C                                                                         H00500
-C     IEMIT = 1 TO REACH THIS STATEMENT                                   H00510
+C     --------------------------------------------------------------
+C
+C     IEMIT > 0 TO REACH THIS STATEMENT                                   H00510
 C                                                                         H00520
          WRITE (IPR,900) XID,(YID(M),M=1,2)                               H00530
          IF (LAYER.EQ.1.AND.IAERSL.GE.1) REWIND IEXFIL                    H00540
          IF (IAERSL.GE.1) CALL GETEXT (IEXFIL,LAYER,IEMIT)                H00550
 C                                                                         H00560
          TBND = 0.                                                        H00570
-         IF (IMRG.NE.36) THEN                                             H00580
-            IF (LAYER.EQ.1) THEN                                          H00590
-               IF (IPATHL.EQ.1) TBND = TMPBND                             H00600
-               CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                       H00610
-            ELSE                                                          H00620
-               IF (IPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND            H00630
-               CALL RADMRG (NPTS,LFILE,MFILE,JPATHL,TBND)                 H00640
-            ENDIF                                                         H00650
-         ELSE                                                             H00660
-            IF (LAYER.EQ.1) THEN                                          H00670
-               TBND = TMPBND                                              H00680
-               CALL FLINIT (NPTS,MFILE,JPATHL,TBND)                       H00690
-            ELSE                                                          H00700
-               CALL FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND)                 H00710
-            ENDIF
-         ENDIF                                                            H00720
-C                                                                         H00730
-      ENDIF                                                               H00740
-C                                                                         H00750
+C
+C        -----------------------------------------------------------
+C
+C        IEMIT = 1  =>  Radiance and Transmittance calculated
+C
+         IF (IEMIT.EQ.1) THEN
+            IF (IMRG.NE.36) THEN                                          H00580
+               IF (LAYER.EQ.1) THEN                                       H00590
+                  IF (IPATHL.EQ.1) TBND = TMPBND                          H00600
+                  CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                    H00610
+               ELSE                                                       H00620
+                  IF (IPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND         H00630
+                  CALL RADMRG (NPTS,LFILE,MFILE,JPATHL,TBND)              H00640
+               ENDIF                                                      H00650
+            ELSE                                                          H00660
+               IF (LAYER.EQ.1) THEN                                       H00670
+                  TBND = TMPBND                                           H00680
+                  CALL FLINIT (NPTS,MFILE,JPATHL,TBND)                    H00690
+               ELSE                                                       H00700
+                  CALL FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND)              H00710
+               ENDIF                                                      H00720
+            ENDIF                                                         H00730
+         ENDIF                                                            H00740
+      ENDIF
+C
+C     --------------------------------------------------------------
+C
       RETURN                                                              H00760
 C                                                                         H00770
   900 FORMAT (///,1X,10A8,2X,2(1X,A8,1X))                                 H00780
@@ -2945,8 +2961,47 @@ C                                                                         H28570
 C                                                                         H28630
       END                                                                 H28640
 C
-C     ----------------------------------------------------------------
+C     ---------------------------------------------------------------
 C
+      SUBROUTINE OPNRAD(NLAYER,LAYER,PTHODL,HFMODL)
+C
+C     This subroutine opens file for calculating the radiance using
+C     precalculated optical depths
+C     (IEMIT = 1,IMRG=A/12,B/22,C/32,40,41)
+C
+      LOGICAL OP
+      CHARACTER*57 FILE1
+      CHARACTER*55 PTHODL
+      CHARACTER*11 CFORM
+      CHARACTER*10 HFMODL
+C
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+C
+C           123456789-123456789-123456789-123456789-123456789-1234567
+      DATA FILE1 /
+     *     '                                                         '/
+      DATA CFORM / 'UNFORMATTED' /
+C
+      WRITE(IPR,910) LAYER,NLAYER
+      INQUIRE (UNIT=KFILE,OPENED=OP)
+      IF (OP) CLOSE (KFILE)
+      WRITE(FILE1,HFMODL) PTHODL,LAYER
+      OPEN(UNIT=KFILE,FILE=FILE1,FORM=CFORM,STATUS='OLD')
+C
+C     Write procedure
+C
+      WRITE(IPR,900) FILE1
+C
+      RETURN
+C
+ 900  FORMAT ('          Opened layer optical depth file:  ',A57)
+ 910  FORMAT ('LAYER ',I5,' OF ',I5,':')
+C
+      END
+C
+C     ----------------------------------------------------------------
 C
       SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)         H28650
 C                                                                         H28660
