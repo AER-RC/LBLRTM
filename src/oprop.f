@@ -519,7 +519,6 @@ C                                                                         B03550
      *                   NLIN,LINCNT,NCHNG                                B03620
 
 c        Fill timing array
-
 c         time_lay_lbl(1) = l4tim
 c         time_lay_lbl(2) = l4tmr
 c         time_lay_lbl(3) = 0.0
@@ -540,6 +539,45 @@ c         time_lay_lbl(17) = timrdf
 c         time_lay_lbl(18) = timcnv
 c         time_lay_lbl(19) = timpnl
 c         time_lay_lbl(20) = tothhi
+
+c        Accumulate timing array
+
+         DATA time_lay_lbl/ 20*0./
+
+         time_lay_lbl(1) = time_lay_lbl(1) + l4tim
+         time_lay_lbl(2) = time_lay_lbl(2) + l4tmr
+         time_lay_lbl(3) = 0.0
+         time_lay_lbl(4) = time_lay_lbl(4) + l4tms
+         time_lay_lbl(5) = time_lay_lbl(5) + lother
+         time_lay_lbl(6) = time_lay_lbl(6) + txs  
+         time_lay_lbl(7) = time_lay_lbl(7) + txsrdf
+         time_lay_lbl(8) = time_lay_lbl(8) + txscnv
+         time_lay_lbl(9) =  time_lay_lbl(9) + txspnl
+         time_lay_lbl(10) = 0.0
+         time_lay_lbl(11) = time_lay_lbl(11) + tf4   
+         time_lay_lbl(12) = time_lay_lbl(12) + tf4rdf
+         time_lay_lbl(13) = time_lay_lbl(13) + tf4cnv
+         time_lay_lbl(14) = time_lay_lbl(14) + tf4pnl
+         time_lay_lbl(15) = 0.0
+         time_lay_lbl(16) = time_lay_lbl(16) + time
+         time_lay_lbl(17) = time_lay_lbl(17) + timrdf
+         time_lay_lbl(18) = time_lay_lbl(18) + timcnv
+         time_lay_lbl(19) = time_lay_lbl(19) + timpnl
+         time_lay_lbl(20) = time_lay_lbl(20)+ tothhi
+
+         IF (LAYER.EQ.NLAYRS) THEN 
+
+             WRITE (IPR,*) 'Total Accumulated Times'
+             WRITE (IPR,922) time_lay_lbl(1),time_lay_lbl(2),
+     *           time_lay_lbl(4), time_lay_lbl(5),
+     *           time_lay_lbl(6),
+     *           time_lay_lbl(7),time_lay_lbl(8),time_lay_lbl(9),
+     *           time_lay_lbl(11),time_lay_lbl(12),time_lay_lbl(13),                        
+     *           time_lay_lbl(14),time_lay_lbl(16),
+     *           time_lay_lbl(17),     
+     *           time_lay_lbl(18),time_lay_lbl(19),time_lay_lbl(20)
+                           
+         ENDIF
          
          WRITE(IPR,935)
          IF (LINCNT.GE.1) THEN                                            B03630
@@ -570,6 +608,11 @@ C                                                                         B03750
      *        2X,'XSECT ',2X,4F15.3,
      *        2X,'LBLF4 ',2X,4F15.3,
      *        2X,'HIRAC1',2X,5F15.3)
+  922 FORMAT ('0',20X,'TIME',11X,'READ',4X,'CONVOLUTION',10X,'PANEL',     
+     *        9X,'OTHER+',/,      
+     *        2x,'LINF4',3X,2F15.3,15X,2F15.3,/,
+     *        2X,'XSECT ',2X,4F15.3,/,2X,'LBLF4 ',2X,4F15.3,15X,/,   
+     *        2X,'HIRAC1',2X,5F15.3)                                 
   925 FORMAT ('0  * HIRAC1 *  AVERAGE WIDTH = ',F8.6,                     B03850
      *        ',  AVERAGE ZETA = ',F8.6)                                  B03860
   930 FORMAT ('0 ********  HIRAC1  ********',I5,' STRENGTHS FOR',         B03870
@@ -934,7 +977,13 @@ C                                                                         B06500
      *                        EXP(-EPP(I)*BETACR)*(1.+EXP(-VNU(I)/XKT))   B06600
          IF (JRAD.EQ.1) SUI = SUI*SCOR(ILOC)*VNU(I)*                      B06610
      *                        EXP(-EPP(I)*BETACR)*(1.-EXP(-VNU(I)/XKT))   B06620
-C                                                                         B06630
+C                                                                         B06860
+         SP(I) = SUI*(1.+GI*PAVP2)                                        B06870
+         SPPI = SUI*YI*PAVP0                                              B06880
+         SPPSP(I) = SPPI/SP(I)                                            B06890
+C
+c     SPEAK is used for line rejection (no LCPL lines (sppsp ne 1) are rejected)
+
          IF (IFLAG.EQ.0) THEN                                             B06640
             IF (ILNFLG.LE.1) THEN
                FREJ(J) = HNOREJ
@@ -948,7 +997,8 @@ C                                                                         B06630
                   JJ = (VNU(I)-V1R4)/DVR4+1.                              B06690
                   JJ = MAX(JJ,1)                                          B06700
                   JJ = MIN(JJ,NPTR4)                                      B06710
-                  IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ))) THEN
+                  IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ)) 
+     &                .and. sppsp(i).eq.0.) THEN
                      FREJ(J) = HREJ
                      GO TO 25
                   ENDIF
@@ -966,10 +1016,6 @@ C                                                                         B06800
          SUMZET = SUMZET+ZETA                                             B06840
          LINCNT = LINCNT+1                                                B06850
 C                                                                         B06860
-         SP(I) = SUI*(1.+GI*PAVP2)                                        B06870
-         SPPI = SUI*YI*PAVP0                                              B06880
-         SPPSP(I) = SPPI/SP(I)                                            B06890
-C
          GO TO 30
 C
    25    SP(I) = 0.
@@ -983,6 +1029,7 @@ C                                                                         B06940
       RETURN                                                              B06950
 C                                                                         B06960
       END                                                                 B06970
+c
       SUBROUTINE CNVFNV (VNU,SP,SPPSP,RECALF,R1,R2,R3,F1,F2,F3,FG,        B06980
      *                   XVER,ZETAI,IZETA)                                B06990
 C                                                                         B07000
@@ -1089,6 +1136,7 @@ C                                                                         B07930
                ZF1 = ZF1L                                                 B08130
                ZF2 = ZF2L                                                 B08140
                ZF3 = ZF3L                                                 B08150
+c
                DO 10 J1 = JMIN1, JMAX1                                    B08160
                   J2 = J1-J2SHFT                                          B08170
                   J3 = J1-J3SHFT                                          B08180
@@ -4479,21 +4527,17 @@ C                                                                         D06910
          SIL = S(I)*RECPI*ALFALI                                          D06990
          SIV = (ALFALI*RALFVI)*S(I)*RECPI*RALFVI                          D07000
 C                                                                         D07010
-         IF (SPP(I).EQ.0.) THEN                                           D07020
-            SPEAK = A3*(ABS(SIV))                                         D07030
-         ELSE                                                             D07040
-            SILX = SPP(I)*RECPI                                           D07050
-            SIVX = ((ALFALI*RALFVI)*SPP(I)*RECPI*RALFVI)*RALFVI           D07060
-            SPEAK = A3*(ABS(SIV)+ABS(SIVX))                               D07070
-         ENDIF                                                            D07080
+         SPEAK = A3*(ABS(SIV))
 C                                                                         D07090
          JJ = (VNU(I)-V1R4)/DVR4+1.                                       D07100
          JJ = MAX(JJ,1)                                                   D07110
          JJ = MIN(JJ,NPTR4)                                               D07120
 C
+C     SPEAK is used for line rejection
          IF (ILNFLG.LE.1) THEN
             FREJ(I) = HNOREJ
-            IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ))) THEN
+c     No rejection for line-coupled lines (SPP ne. 0)
+            IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ)) .and. spp(i).eq.0.) THEN
                FREJ(I) = HREJ
                GO TO 60                                                   D07130
             ENDIF
@@ -4519,24 +4563,33 @@ C                                                                         D07220
          ALFLI2 = ALFALI*ALFALI                                           D07290
          ALFVI2 = ALFAVI*ALFAVI                                           D07300
          XJJ = FLOAT(JMIN-1)*DVR4                                         D07310
+
          F4BND = SIL/(ALFLI2+BNDSQ)                                       D07320
-         IF (SPP(I).NE.0.) F4BNDX = SILX/(ALFLI2+BNDSQ)                   D07330
 C                                                                         D07340
 C                FOURTH FUNCTION CONVOLUTION                              D07350
 C                                                                         D07360
-         DO 40 JJ = JMIN, JMAX                                            D07370
+
+         dptrat = spp(i)/(s(i)*alfavi)
+         rec_alfvi2 = 1./ALFVI2
+         siv_a3 = SIV*A3
+         siv_b3 = SIV*B3
+
+
+        DO 40 JJ = JMIN, JMAX                                            D07370
             XM = (XJJ-XNUI)                                               D07380
             XMSQ = XM*XM                                                  D07390
-            ZVSQ = XMSQ/ALFVI2                                            D07400
+            ZVSQ = XMSQ * rec_alfvi2  
 C                                                                         D07410
             IF (ZVSQ.LE.ZSQBND) THEN                                      D07420
-               F4FN = SIV*(A3+ZVSQ*B3)-F4BND                              D07430
-               IF (SPP(I).NE.0.)                                          D07440
-     *             F4FN = F4FN+XM*(SIVX*(A3+ZVSQ*B3)-F4BNDX)              D07450
+               F4FN = (siv_A3 + ZVSQ * siv_B3) - F4BND
+               IF (SPP(I).NE.0.) then
+                   f4fn = f4fn + xm*dptrat*f4fn
+               endif 
             ELSE                                                          D07460
-               F4FN = SIL/(ALFLI2+XMSQ)-F4BND                             D07470
-               IF (SPP(I).NE.0.)                                          D07480
-     *             F4FN = F4FN+XM*(SILX/(ALFLI2+XMSQ)-F4BNDX)             D07490
+                f4fn = sil/(alfli2+xmsq) - f4bnd
+                if (SPP(I).NE.0.) then
+                    F4FN = F4FN + XM*dptrat*f4fn
+                endif
             ENDIF                                                         D07500
 C                                                                         D07510
             IF (MOL(I).EQ.2.AND.SPP(I).EQ.0.) THEN                        D07520
@@ -4560,8 +4613,7 @@ C                                                                         D07690
 C     THE CALCULATION FOR NEGATIVE VNU(I) IS FOR VAN VLECK WEISSKOPF      D07700
 C                                                                         D07710
             VNUI = -VNU(I)                                                D07720
-            SIVX = -SIVX                                                  D07730
-            SILX = -SILX                                                  D07740
+c
             GO TO 30                                                      D07750
 C                                                                         D07760
          ENDIF                                                            D07770
