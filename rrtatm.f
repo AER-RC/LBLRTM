@@ -1,7 +1,7 @@
-C     path:      /home/rc1/aer_lblrtm/src/SCCS/s.lblatm.f                       
-C     revision:  5.2                                                            
-C     created:   08/17/98  09:43:43                                             
-C     presently: 08/17/98  09:44:36                                             
+C     path:      /stormrc1/aer_lblrtm/src/SCCS/s.lblatm.f                       
+C     revision:  5.3                                                            
+C     created:   02/23/99  15:11:50                                             
+C     presently: 02/23/99  15:12:41                                             
       SUBROUTINE RRTATM
 C
 C     This routine has been modified from lblatm.f for use with RRTM,
@@ -5158,6 +5158,8 @@ C                                                                        FA47500
 C     CALCULATE THE DENSITY WEIGHTED PRESSURE AND TEMPERATURE AND        FA47510
 C     ZERO OUT LAYER AMOUNTS AFTER 99.9 PERCENT OF THE TOTAL             FA47520
 C                                                                        FA47530
+      iskip(7) = 0                                                              
+c                                                                               
       DO 30 K = 1, NMOL                                                  FA47540
          AMTCUM(K) = 0.0                                                 FA47550
          ISKIP(K) = 0                                                    FA47560
@@ -5199,15 +5201,18 @@ C                                                                        FA47820
 C                                                                        FA47920
 C     TEST FOR ZEROING OF AMOUNTS                                        FA47930
 C                                                                        FA47940
-         ISKPT = 1                                                       FA47950
-         IF (ISKIP(7).EQ.1) ISKPT = 0                                    FA47960
+         ISKPT = 0                                                       FA47950
+         nmol_max = nmol                                                        
+         IF (ISKIP(7).EQ.1) nmol_max = nmol - 1                                 
          FAC = 1.0                                                       FA47970
          IF (IPATH(L).EQ.2) FAC = 2.0                                    FA47980
 C                                                                        FA47990
          DO 80 K = 1, NMOL                                               FA48000
+                                                                                
+            IF (NOZERO.EQ.1) go to 70                                           
+                                                                                
             IF (ISKIP(K).NE.1) THEN                                      FA48010
-               IF (NOZERO.EQ.1.OR.K.EQ.7 .OR.                            FA48020
-     *            (IEMIT.EQ.1.AND.IPATH(L).NE.3)) GO TO 70               FA48030
+               IF (K.EQ.7 .OR. (IEMIT.EQ.1.AND.IPATH(L).NE.3)) GO TO 70         
                IF (((AMTTOT(K)-AMTCUM(K))/AMTTOT(K)).GT.0.001) GO TO 70  FA48040
             ENDIF                                                        FA48050
 C                                                                        FA48060
@@ -5219,7 +5224,7 @@ C                                                                        FA48080
 C                                                                        FA48120
 C     IF ALL BUT O2 ARE ZEROED, ELIMINATE ALL HIGHER LAYERS              FA48130
 C                                                                        FA48140
-            IF (ISKPT.GE.(NMOL)) GO TO 100                               FA48150
+            IF (ISKPT.GE.(NMOL_max))  GO TO 100                                 
    70       CONTINUE                                                     FA48160
             AMTCUM(K) = AMTCUM(K)+FAC*AMOUNT(K,L)                        FA48170
    80    CONTINUE                                                        FA48180
