@@ -985,7 +985,7 @@ C     BOUND AT THIS POINT IS THE WAVENUMBER VALUE OF THE                  I09480
 C     FULL SCANNING FUNCTION                                              I09490
 C                                                                         I09500
       BOUND = FLOAT(NBOUND)*DVO/2.                                        I09510
-      MAXF = NLIMF+2*NBOUND                                               I09520
+      MAXF = NLIMF+2*NBOUND+NSHIFT                                        I09520
 C                                                                         I09530
       TIMRDF = 0.                                                         I09540
       TIMCNV = 0.                                                         I09550
