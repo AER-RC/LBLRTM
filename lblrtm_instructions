@@ -340,13 +340,14 @@ C     presently: %H%  %T%
 
  RECORD 1.2.1    (required if IEMIT = 2; otherwise omit)
  
-                             NOTE:  IEMIT = 2 requires binary solar radiance file SOLAR.RAD
+                             NOTE:  IEMIT = 2 requires binary solar radiance file SOLAR.RAD, containing
+                                    extraterrestrial source spectra in units W/(m2 cm-1).
  
-         INFLAG,  IOTFLG
+         INFLAG,  IOTFLG,  JULDAT
  
-            1-5,    6-10
+            1-5,    6-10,   13-15
  
-             I5,      I5
+             I5,      I5,  2X, I3
 
 
               INFLAG       (0,1) input flag for solar radiance calculation
@@ -363,6 +364,10 @@ C     presently: %H%  %T%
                            = 1  output total radiance (requires INFLAG = 0)
                            = 2  output total radiance, including effects of downwelling thermal and reflection
                                 from solar path (requires INFLAG = 2)
+
+              JULDAT       Julian day associated with calculation (1-365/366 starting January 1). Used to calculate
+                               Earth distance from sun.
+
 
 
 
@@ -2210,6 +2215,9 @@ C     presently: %H%  %T%
                         negative value terminates the FLTRFN option
  
               DVF     wavenumber increment between filter values
+ 
+                        negative value indicates V1F value is center wavenumber of filter function
+                        (NOTE: requires NPTS to be an odd number)
  
              NPTS     number of filter values
                       (if NPTS.LT.0, previous values of XF utilized)
