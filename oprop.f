@@ -1150,15 +1150,14 @@ C                                                                         B11070
 C                                                                         B11090
          VI = VFT+FLOAT(NPTSI1-1)*DV                                      B11100
          RADVI = RADFNI(VI,DV,XKT,VITST,RDEL,RDLAST)                      B11110
-         RADVI = RADVI-RDEL                                               B11120
 C                                                                         B11130
          NPTSI2 = (VITST-VFT)/DV+1.001                                    B11140
          NPTSI2 = MIN(NPTSI2,NHI)                                         B11150
 C                                                                         B11160
          DO 40 I = NPTSI1, NPTSI2                                         B11170
 C           VI = VI+DV                                                    B11180
-            RADVI = RADVI+RDEL                                            B11190
             R1(I) = R1(I)*RADVI                                           B11200
+            RADVI = RADVI+RDEL                                            B11190
    40    CONTINUE                                                         B11210
 C                                                                         B11220
          IF (NPTSI2.LT.NHI) GO TO 30                                      B11230
@@ -2015,7 +2014,7 @@ C                                                                         B19240
                INTVLS = MAX(INTVLS,1)                                     B19290
                VINEW = VI+DVI*FLOAT(INTVLS)                               B19300
             ELSE                                                          B19310
-               VINEW = ABS(VINEW)+DVI-0.00001                             B19320
+               VINEW = ABS(VINEW)                                         B19320
                INTVLS = (VINEW-VI)/DVI                                    B19330
                INTVLS = MAX(INTVLS,1)                                     B19340
             ENDIF                                                         B19350
@@ -2034,7 +2033,7 @@ C                                                                         B19390
                INTVLS = MAX(INTVLS,1)                                     B19480
                VINEW = VI+DVI*FLOAT(INTVLS)                               B19490
             ELSE                                                          B19500
-               VINEW = ABS(VINEW)+DVI-0.00001                             B19510
+               VINEW = ABS(VINEW)                                         B19510
                INTVLS = (VINEW-VI)/DVI                                    B19520
                INTVLS = MAX(INTVLS,1)                                     B19530
             ENDIF                                                         B19540
@@ -2049,7 +2048,7 @@ C                                                                         B19580
                INTVLS = MAX(INTVLS,1)                                     B19630
                VINEW = VI+DVI*FLOAT(INTVLS)                               B19640
             ELSE                                                          B19650
-               VINEW = ABS(VINEW)+DVI-0.00001                             B19660
+               VINEW = ABS(VINEW)                                         B19660
                INTVLS = (VINEW-VI)/DVI                                    B19670
                INTVLS = MAX(INTVLS,1)                                     B19680
             ENDIF                                                         B19690
@@ -2064,7 +2063,7 @@ C                                                                         B19710
             INTVLS = MAX(INTVLS,1)                                        B19780
             VINEW = VI+DVI*FLOAT(INTVLS)                                  B19790
          ELSE                                                             B19800
-            VINEW = ABS(VINEW)+DVI-0.00001                                B19810
+            VINEW = ABS(VINEW)                                            B19810
             INTVLS = (VINEW-VI)/DVI                                       B19820
             INTVLS = MAX(INTVLS,1)                                        B19830
          ENDIF                                                            B19840
@@ -2075,7 +2074,6 @@ C                                                                         B19860
 C                                                                         B19890
       RDEL = (RDNEXT-RADFNI)/FLOAT(INTVLS)                                B19900
 C                                                                         B19910
-      VINEW = VINEW-DVI+0.00001                                           B19920
       RDLAST = RDNEXT                                                     B19930
 C                                                                         B19940
       RETURN                                                              B19950
@@ -3952,15 +3950,14 @@ C                                                                         D05400
 C                                                                         D05420
          VI = V1R4+DVR4*FLOAT(NPTSI1-1)                                   D05430
          RADVI = RADFNI(VI,DVR4,XKT,VITST,RDEL,RDLAST)                    D05440
-         RADVI = RADVI-RDEL                                               D05450
 C                                                                         D05460
          NPTSI2 = (VITST-V1R4)/DVR4+1.001                                 D05470
          NPTSI2 = MIN(NPTSI2,NPTR4)                                       D05480
 C                                                                         D05490
          DO 50 I = NPTSI1, NPTSI2                                         D05500
             VI = VI+DVR4                                                  D05510
-            RADVI = RADVI+RDEL                                            D05520
             R4(I) = R4(I)*RADVI                                           D05530
+            RADVI = RADVI+RDEL                                            D05520
    50    CONTINUE                                                         D05540
 C                                                                         D05550
          IF (NPTSI2.LT.NPTR4) GO TO 40                                    D05560
@@ -4866,15 +4863,14 @@ C                                                                         E06050
 C                                                                         E06070
             VI = V1X+FLOAT(NPTSI1-1)*DVX                                  E06080
             RADVI = RADFNI(VI,DVX,XKT,VITST,RDEL,RDLAST)                  E06090
-            RADVI = RADVI-RDEL                                            E06100
 C                                                                         E06110
             NPTSI2 = (VITST-V1X)/DVX+1.001                                E06120
             NPTSI2 = MIN(NPTSI2,NPTSX)                                    E06130
 C                                                                         E06140
             DO 130 I = NPTSI1, NPTSI2                                     E06150
                VI = VI+DVX                                                E06160
-               RADVI = RADVI+RDEL                                         E06170
-               RX(I) = RX(I)/RADVI                                        E06180
+               RX(I) = RX(I)/RADVI                                        E06170
+               RADVI = RADVI+RDEL                                         E06180
   130       CONTINUE                                                      E06190
 C                                                                         E06200
             IF (NPTSI2.LT.NPTSX) GO TO 120                                E06210
