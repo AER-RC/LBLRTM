@@ -1891,7 +1891,11 @@ C                                                                         H18480
             EMISIV = EMISIV-EMDEL                                         H18760
          ENDIF                                                            H18770
 C                                                                         H18780
-         NLIM2 = (VIDV-V1PO)/DVPO+1.001                                   H18790
+         IF (VIDV.GE.9.E+4) THEN 
+            NLIM2 = NLIMO+1
+         ELSE
+            NLIM2 = (VIDV-V1PO)/DVPO+1.001                                H18790
+         ENDIF
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18800
 C                                                                         H18810
          DO 70 J = NLIM1, NLIM2                                           H18820
@@ -2302,7 +2306,11 @@ C                                                                         H22850
                REFLCT = REFLFN(VI,DVI,VIDVRF,RFDEL,RFLAST)                H22870
                REFLCT = REFLCT-RFDEL                                      H22880
 C                                                                         H22890
-               NLIM2 = (VIDVRF+DVI-DVP-V1P)/DVP+1.001                     H22900
+               IF (VIDVRF.GE.9.E+4) THEN 
+                  NLIM2 = NLIM+1
+               ELSE
+                  NLIM2 = (VIDVRF+DVI-DVP-V1P)/DVP+1.001                  H22900
+               ENDIF
                NLIM2 = MIN(NLIM2,NLIM)                                    H22910
 C                                                                         H22920
                DO 50 I = NLIM1, NLIM2, LL                                 H22930
@@ -2393,7 +2401,11 @@ C                                                                         H23760
                REFLCT = REFLFN(VI,DVI,VIDVRF,RFDEL,RFLAST)                H23780
                REFLCT = REFLCT-RFDEL                                      H23790
 C                                                                         H23800
-               NLIM2 = (VIDVRF+DVI-DVP-V1P)/DVP+1.001                     H23810
+               IF (VIDVRF.GE.9.E+4) THEN 
+                  NLIM2 = NLIM+1
+               ELSE
+                  NLIM2 = (VIDVRF+DVI-DVP-V1P)/DVP+1.001                  H23810
+               ENDIF
                NLIM2 = MIN(NLIM2,NLIM)                                    H23820
 C                                                                         H23830
                DO 100 I = NLIM1, NLIM2, LL                                H23840
@@ -2812,7 +2824,11 @@ C                                                                         H27830
          BB = BB-BBDEL                                                    H27960
       ENDIF                                                               H27970
 C                                                                         H27980
-      NLIM2 = (VIDV-V1PO)/DVPO+1.001                                      H27990
+      IF (VIDV.GE.9.E+4) THEN 
+         NLIM2 = NLIMO+1
+      ELSE
+         NLIM2 = (VIDV-V1PO)/DVPO+1.001                                   H27990
+      ENDIF
       NLIM2 = MIN(NLIM2,NLIMO)                                            H28000
 C                                                                         H28010
       DO 20 J = NLIM1, NLIM2                                              H28020
@@ -3258,7 +3274,11 @@ C                                                                         H32290
             BB = BB-BBDEL                                                 H32420
          ENDIF                                                            H32430
 C                                                                         H32440
-         NLIM2 = (VIDV-V1PO)/DVPO+1.001                                   H32450
+         IF (VIDV.GE.9.E+4) THEN 
+            NLIM2 = NLIMO+1
+         ELSE
+            NLIM2 = (VIDV-V1PO)/DVPO+1.001                                H32450
+         ENDIF
          NLIM2 = MIN(NLIM2,NLIMO)                                         H32460
 C                                                                         H32470
          DO 40 J = NLIM1, NLIM2                                           H32480
