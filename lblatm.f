@@ -59,7 +59,7 @@ C                                                                        FA00520
      *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FA00550
      *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA00560
      *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA00570
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,  FA00580
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,  FA00580
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,      FA00590
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,      FA00600
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,     FA00610
@@ -389,7 +389,7 @@ C                                                                        FA03820
      *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FA03850
      *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA03860
      *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA03870
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,  FA03880
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,  FA03880
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,      FA03890
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,      FA03900
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,     FA03910
@@ -1098,10 +1098,10 @@ C                                                                        FA10530
   940 FORMAT (8F10.3)                                                    FA10940
   942 FORMAT (///,' USER DEFINED BOUNDARIES FOR FASCODE LAYERS',/,10X,   FA10950
      *        'I',4X,'Z (KM)',//,(10X,I2,F10.4))                         FA10960
-  944 FORMAT (' ERROR IN USER INPUT BOUNDRIES ')                         FA10970
-  946 FORMAT (' BOUNDRIES ARE OUTSIDE THE RANGE OF THE ATMOSPHERE',/,    FA10980
-     *        ' BOUNDRY = ',F10.2,' ATMOSPHERE =',F10.2,/,               FA10990
-     *        ' RESET BOUNDRY GT THAN ATMOSPHERE')                       FA11000
+  944 FORMAT (' ERROR IN USER INPUT BOUNDARIES ')                        FA10970
+  946 FORMAT (' BOUNDARIES ARE OUTSIDE THE RANGE OF THE ATMOSPHERE',/,   FA10980
+     *        ' BOUNDARY = ',F10.2,' ATMOSPHERE =',F10.2,/,              FA10990
+     *        ' RESET BOUNDARY GT THAN ATMOSPHERE')                      FA11000
   948 FORMAT ('1ATMOSPHERIC PROFILE SELECTED IS: M = ',I3,5X,3A8)        FA11010
   950 FORMAT (/,T4,'I',T11,'Z',T20,'P',T29,'T',T35,'REFRACT',T73,        FA11020
      *        'DENSITY  (MOLS CM-3)',/,T35,'INDEX-1',/,T10,'(KM)',T19,   FA11030
@@ -1139,7 +1139,7 @@ C                                                                        FA10530
      *        'AMOUNT FOR THAT LAYER AND ABOVE IS LESS THAN 0.1 ',       FA11350
      *        'PERCENT',/,' OF THE TOTAL AMOUNT. THIS IS DONE ONLY ',    FA11360
      *        'FOR THE FOLLOWING CASES',/,5X,'1.  IEMIT = 0 ',           FA11370
-     *        '(TRANSMITTANCE)',/,5X,'2.  IEMIT = 1 (RADIANCE) AND '     FA11380
+     *        '(TRANSMITTANCE)',/,5X,'2.  IEMIT = 1 (RADIANCE) AND ',    FA11380
      *        'IPATH = 3 (PATH LOOKING UP)',/,' O2 IS NOT INCLUDED',/,   FA11390
      *        ' IF THE AMOUNTS FOR ALL THE MOLECULES BUT O2 ARE ',       FA11400
      *        'ZEROED, THE REMAINING LAYERS ARE ELIMINATED',///,T13,     FA11410
@@ -2591,7 +2591,7 @@ C                                                                        FA25610
      *        '       = H        - RELATIVE HUMIDITY (PERCENT) ',        FA25870
      *                             '*H2O ONLY*',/,                       FA25880
      *        '       = I        - AVAILABLE FOR USER DEFINITION',/,     FA25890
-     *        '       = 1-6      - DEFAULT TO SPECIFIED MODEL '          FA25900
+     *        '       = 1-6      - DEFAULT TO SPECIFIED MODEL ',         FA25900
      *        'ATMOSPHERE',/,' JCHAR MUST BE LESS THAN "J"',/)           FA25910
 C                                                                        FA25920
       END                                                                FA25930
@@ -4906,7 +4906,7 @@ C                                                                        FX00630
      *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FX00670
      *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FX00680
      *               PZ(0:MXLAY),TZ(0:MXLAY)                             FX00690
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,  FX00700
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,  FX00700
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,      FX00710
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,      FX00720
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,     FX00730
