@@ -5,7 +5,7 @@ C     presently: 03/18/96  18:32:37
       SUBROUTINE RRTATM
 C
 C     This routine has been modified from lblatm.f for use with RRTM,
-C      using the translation code, lbl2r.f, version 1.8
+C      using the translation code, lbl2r.f, version 1.9
 C
 C     path:      %P%
 C     revision:  $Revision$
@@ -81,6 +81,7 @@ C                                                                        FA00520
      *                 ALBL(MXLAY),ADBL(MXLAY),AVBL(MXLAY),
      *                 H2OSL(MXLAY),IPATH(MXLAY),ITYL(MXLAY),
      *                 SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY)
+      COMMON /XRRTATM/ IXSECT
 C                                                                        FA00630
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      &FA00640
 C                                                                        FA00650
