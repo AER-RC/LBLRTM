@@ -32,6 +32,7 @@ C                                                                         I00110
      *              NLTEFL,LNFIL4,LNGTH4                                  I00250
       COMMON /SCINF/ HWHM,JEMIT,JFN,SAMPLE,SCANID,NPTS,XF(6018)           I00260
       COMMON /FLFORM/ CFORM                                               I00270
+      COMMON /RCTSV/ JDUM,SDUM,JFLG,NJDUM
 C                                                                         I00280
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               I00290
       CHARACTER*11 CFORM                                                  I00300
@@ -356,6 +357,8 @@ C                                                                         I03250
    30 CONTINUE                                                            I03360
       INIT = 0                                                            I03370
       IDATA = -1                                                          I03380
+      IPANEL = -1
+      JFLG = -1
       VFT = V1-FLOAT(NSHIFT)*DV                                           I03390
       VBOT = V1-BOUND                                                     I03400
       VTOP = V2+BOUND                                                     I03410
@@ -1603,7 +1606,7 @@ C                                                                         I15530
 C                                                                         I15560
       FHM = (VFT-HWHM-V1I-DVO)/DVI                                        I15570
       FHP = (VFT+HWHM-V1I-DVO)/DVI                                        I15580
-                                                                          I15590
+C                                                                         I15590
 C     Top of loop over JJ boxes                                           I15600
 C                                                                         I15610
    10 IF (NLO.LE.NHI) THEN                                                I15620
