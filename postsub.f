@@ -3154,6 +3154,7 @@ C                                                                         L00080
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       character ctape*4,fltinf*7,fltout*7
+      integer*4 itest
 C                                                                         L00250
       EQUIVALENCE (FILHDR(1),XID(1)) , (FSCDID(5),IEMIT),                 L00260
      *            (FSCDID(6),ISCAN) , (FSCDID(7),IPLOT),                  L00270
@@ -3164,6 +3165,8 @@ C                                                                         L00250
 
       DATA FLTINF / '       '/,FLTOUT / '       ' /,
      *     CTAPE / 'TAPE'/
+      data itest / 0 /
+      save itest
 
 C                                                                         L00310
 C
@@ -3236,11 +3239,14 @@ C                                                                         L00470
       JFILE = junit
       if (jfile.ne.0) then
          inquire(jfile,opened=op)
-         if (op) close(jfile)
+         if (itest.eq.0) then
+            if (op) close(jfile)
+            itest = 1
+            fltout = 'FLT_OUT'
+            OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
+            rewind jfile
+         endif
 
-         fltout = 'FLT_OUT'
-         OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
-         rewind jfile
       endif
 
       IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  L00500
