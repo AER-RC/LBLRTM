@@ -316,7 +316,7 @@ C                                                                         A02940
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A03110
      *                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      A03120
      *                NLTEFL,LNFIL4,LNGTH4                                A03130
-      COMMON /MSACCT/ IMS,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A03160
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A03160
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   A03170
      *                JEFILE,KEFILE                                       A03180
       COMMON /LASIV/ VLAS,ILAS                                            A03190
@@ -324,7 +324,7 @@ C                                                                         A02940
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         A03210
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                      A03220
       COMMON /MSCONS/ AIRMAS(67),TGRND,SEMIS(3),HMINMS,HMAXMS,MSFLAG,     A03140
-     *                MSWIT,IMSFIL,MSTGLE                                 A03150
+     *                MSWIT,IODFIL,MSTGLE                                 A03150
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           A03020
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A03030
       COMMON /HDRF/ V1D,V2D,DVD,NLND,IWLD                                 A03240
@@ -378,7 +378,7 @@ C                                                                         A03610
       OPEN (LFILE,FILE='TAPE11',STATUS='UNKNOWN',FORM=CFORM)              A03720
       MFILE = 12                                                          A03730
       OPEN (MFILE,FILE='TAPE12',STATUS='UNKNOWN',FORM=CFORM)              A03740
-      IMSFIL = 19                                                         A03750
+      IODFIL = 19                                                         A03750
       IEXFIL = 20                                                         A03760
       KKSTOR = KFILE                                                      A03770
       LLSTOR = LFILE                                                      A03780
@@ -387,6 +387,7 @@ C                                                                         A03800
       IENDPL = 0                                                          A03810
       MSFLAG = 0                                                          A03820
       HMINMS = 0.0                                                        A03830
+      DVSET = 0.0
       HMAXMS = 15.0                                                       A03840
       MSWIT = 0                                                           A03850
       MSTGLE = 0                                                          A03860
@@ -432,9 +433,9 @@ C                                                                         A04080
       CALL CPUTIM (TIME0)                                                 A04260
       WRITE (IPR,920) TIME0                                               A04270
 C                                                                         A04280
-      READ (IRD,925,END=80) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,            A04290
+      READ(IRD,925,END=80) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,             A04290
      *                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,      A04300
-     *                      IMS,IXSECT,IRAD,MPTS,NPTS                     A04310
+     *                      IOD,IXSECT,IRAD,MPTS,NPTS                     A04310
 C                                                                         A04320
       IXSCNT = IXSECT*10+ICNTNM                                           A04330
 C                                                                         A04340
@@ -474,80 +475,31 @@ C                                                                         A04660
       IF (IRAD.NE.0) JRAD = -1                                            A04680
       WRITE (IPR,935) (IDCNTL(I),I=1,14)                                  A04690
       WRITE (IPR,940) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,ISCAN,IFILTR,     A04700
-     *                IPLOT,ITEST,IATM,IMRG,ILAS,IMS,IXSECT               A04710
+     *                IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT               A04710
 C                                                                         A04720
-C     FIRST CHECK TO SEE IF PROPER FLAGS SET FOR MULTIPLE SCATTERING      A04730
-C     IF MULTIPLE SCATTERING CASE, SET UP FILES                           A04740
-C                                                                         A04750
-      IF (IEMIT.EQ.0.AND.IMS.NE.0.AND.IMRG.NE.1) THEN                     A04760
-         WRITE (IPR,945)                                                  A04770
-         STOP ' IEMIT=0 FOR IMS=1 '                                       A04780
-      ENDIF                                                               A04790
       IF (IHIRAC.EQ.4) THEN                                               A04800
          IF (IEMIT.NE.1) THEN                                             A04810
             WRITE (IPR,950)                                               A04820
             STOP ' IEMIT=0 FOR NLTE '                                     A04830
          ENDIF                                                            A04840
       ENDIF                                                               A04850
-      IMULT = IMS                                                         A04860
+C
+C     CHECK VALUES OF IOD AND IMRG AND
+C     SET IMULT EQUAL TO IOD, THE FLAG FOR OPTICAL DEPTH DV
+C
+      IF (IOD.GE.1.AND.IMRG.NE.1) THEN
+         WRITE (IPR,955)
+         STOP ' IF IOD>=1 THEN IMRG MUST = 1'
+      ENDIF
+      IMULT = IOD
+C
       IF (IAERSL.GE.1) LOWFLG = 1                                         A04870
-      IF (IMS.EQ.1.AND.IMRG.NE.1) THEN                                    A04880
-         READ (IRD,955,END=80) TGRND,(SEMIS(ISRF),ISRF=1,3),RMINMS,       A04890
-     *                         RMAXMS                                     A04900
-         WRITE (IPR,960) TGRND,(SEMIS(ISRF),ISRF=1,3),RMINMS,RMAXMS       A04910
-         IF (IEMIT.EQ.1.AND.IATM.EQ.1.AND.IMRG.EQ.0.AND.                  A04920
-     *      (IAERSL.EQ.1.OR.IAERSL.EQ.7)) THEN                            A04930
-            IF (RMINMS.NE.0.0) HMINMS = RMINMS                            A04940
-            IF (RMAXMS.NE.15.0) HMAXMS = RMAXMS                           A04950
-            IF (RMINMS.GT.RMAXMS) STOP ' MS MIN GT MAX '                  A04960
-            IF (MSFLAG.EQ.0) THEN                                         A04970
-               ISFILE = 21                                                A04980
-               OPEN (ISFILE,FILE='TAPE21',STATUS='UNKNOWN',FORM=CFORM)    A04990
-               JSFILE = 22                                                A05000
-               OPEN (JSFILE,FILE='TAPE22',STATUS='UNKNOWN',FORM=CFORM)    A05010
-               KSFILE = 23                                                A05020
-               OPEN (KSFILE,FILE='TAPE23',STATUS='UNKNOWN',FORM=CFORM)    A05030
-               LSFILE = 24                                                A05040
-               OPEN (LSFILE,FILE='TAPE24',STATUS='UNKNOWN',FORM=CFORM)    A05050
-               MSFILE = 25                                                A05060
-               OPEN (MSFILE,FILE='TAPE25',STATUS='UNKNOWN',FORM=CFORM)    A05070
-               IEFILE = 26                                                A05080
-               OPEN (IEFILE,FILE='TAPE26',STATUS='UNKNOWN',FORM=CFORM)    A05090
-               JEFILE = 27                                                A05100
-               OPEN (JEFILE,FILE='TAPE27',STATUS='UNKNOWN',FORM=CFORM)    A05110
-               KEFILE = 28                                                A05120
-               OPEN (KEFILE,FILE='TAPE28',STATUS='UNKNOWN',FORM=CFORM)    A05130
-            ENDIF                                                         A05140
-            REWIND ISFILE                                                 A05150
-            REWIND JSFILE                                                 A05160
-            REWIND KSFILE                                                 A05170
-            REWIND LSFILE                                                 A05180
-            REWIND MSFILE                                                 A05190
-            REWIND IEFILE                                                 A05200
-            REWIND JEFILE                                                 A05210
-            REWIND KEFILE                                                 A05220
-            MSPTS = NPTS                                                  A05230
-         ELSE                                                             A05240
-            IMS = 0                                                       A05250
-            WRITE (IPR,965)                                               A05260
-         ENDIF                                                            A05270
-      ELSE                                                                A05280
-         MSTGLE = 1                                                       A05290
-      ENDIF                                                               A05300
 C                                                                         A05310
-      IF (IAERSL.GE.1.AND.MSFLAG.EQ.0) THEN                               A05320
-         OPEN (IEXFIL,FILE='TAPE20',STATUS='UNKNOWN',FORM=CFORM)          A05330
-         REWIND IEXFIL                                                    A05340
-         IF (IMS.EQ.1.AND.IMRG.NE.1) THEN                                 A05350
-            OPEN (IMSFIL,FILE='TAPE19',STATUS='UNKNOWN',FORM=CFORM)       A05360
-            REWIND IMSFIL                                                 A05370
-         ENDIF                                                            A05380
-      ENDIF                                                               A05390
       IAFIL = 14                                                          A05400
 C                                                                         A05410
 C     IEXFIL=20                                                           A05420
 C                                                                         A05430
-      IF (IAERSL.GE.1.AND.MSFLAG.EQ.0) THEN                               A05440
+      IF (IAERSL.GE.1) THEN                                               A05440
          OPEN (IAFIL,FILE='TAPE14',STATUS='UNKNOWN',FORM=CFORM)           A05450
          OPEN (IEXFIL,FILE='TAPE20',STATUS='UNKNOWN',FORM=CFORM)          A05460
          REWIND IEXFIL                                                    A05470
@@ -555,12 +507,12 @@ C                                                                         A05430
       ENDIF                                                               A05490
       NFILE = 13                                                          A05500
       MMRG = MOD(IMRG,10)                                                 A05510
-      IF (MMRG.GE.3.AND.MSFLAG.EQ.0) THEN                                 A05520
+      IF (MMRG.GE.3) THEN                                                 A05520
          OPEN (NFILE,FILE='TAPE13',STATUS='UNKNOWN',FORM=CFORM)           A05530
          REWIND NFILE                                                     A05540
       ENDIF                                                               A05550
       NLTEFL = 4                                                          A05560
-      IF (IHIRAC.EQ.4.AND.MSFLAG.EQ.0) THEN                               A05570
+      IF (IHIRAC.EQ.4) THEN                                               A05570
          OPEN (NLTEFL,FILE='TAPE4',STATUS='OLD')                          A05580
       ENDIF                                                               A05590
 C                                                                         A05600
@@ -568,9 +520,6 @@ C     TAPE39  IS AFGL PLOT FILE                                           A05610
 C                                                                         A05620
       IPLFL = 39                                                          A05630
 C                                                                         A05640
-C#    IF(IPLOT.EQ.1.AND.MSFLAG.EQ.0)                                      A05650
-C#   X       OPEN(IPLFL,FILE='TAPE39',STATUS='UNKNOWN',FORM='BUFFERED')   A05660
-C                                                                         A05670
       IF (ITEST.EQ.1) CALL TESTMM (LINFIL)                                A05680
 C                                                                         A05690
 C     IHIRAC = 1 CALL HIRAC1     VOIGT                                    A05700
@@ -680,16 +629,6 @@ C                                                                         A06620
       IF (IHIRAC+IATM+IMRG.GT.0)                                          A06630
      *    CALL XLAYER (MPTS,NPTS,LFILE,MFILE,NFILE)                       A06640
 C                                                                         A06650
-C     IF MSFLAG=XY THEN RESET FOR USER DESIRED LBLRTM  RUN                A06660
-C                                                                         A06670
-      IF (IMS.EQ.0.OR.IMRG.EQ.1) GO TO 50                                 A06680
-      IF (MSFLAG.NE.33) THEN                                              A06690
-         REWIND IRD                                                       A06700
-         MSTGLE = 0                                                       A06710
-         GO TO 10                                                         A06720
-      ENDIF                                                               A06730
-C                                                                         A06740
-   50 CONTINUE                                                            A06750
       IF ((IAERSL.EQ.1.OR.IAERSL.EQ.7).AND.IEMIT.EQ.0) THEN               A06760
          REWIND MFILE                                                     A06770
          REWIND IAFIL                                                     A06780
@@ -754,11 +693,12 @@ C                                                                         A07280
   930 FORMAT (I1)                                                         A07350
   935 FORMAT (14(A6,3X))                                                  A07360
   940 FORMAT (1X,I4,13I9)                                                 A07370
-  945 FORMAT ('0 IMS=1 AND IEMIT=0 IS NOT IMPLEMENTED ',/,                A07380
-     *        '  CHANGE IEMIT TO 1 OR IMS TO 0 ')                         A07390
+  945 FORMAT ('0 IOD=1 AND IEMIT=0 IS NOT IMPLEMENTED ',/,                A07380
+     *        '  CHANGE IEMIT TO 1 OR IOD TO 0 ')                         A07390
   950 FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,                 A07400
      *        '  CHANGE IEMIT TO 1 OR IHIRAC TO 1 ')                      A07410
-  955 FORMAT (6E10.3)                                                     A07420
+  955 FORMAT ('0 IMRG MUST BE ONE WHEN NOT MERGING ',
+     *        'OPTICAL DEPTHS (IOD>=1)')
   960 FORMAT (/,' TGRND ',1PE10.3,' SEMIS ',3E11.3,' RMINMS ',E10.3,      A07430
      *        ' RMAXMS ',E10.3)                                           A07440
   965 FORMAT ('0 MULTIPLE SCATTERING TURNED OFF - IMPROPER FLAGS SET ')   A07450
@@ -778,7 +718,7 @@ C                                                                         A07580
       END                                                                 A07590
       BLOCK DATA                                                          A07600
       COMMON /FLFORM/ CFORM                                               A03270
-      COMMON /MSACCT/ IMS,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A07610
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A07610
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   A07620
      *                JEFILE,KEFILE                                       A07630
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A07640
@@ -788,7 +728,7 @@ C#    DATA CFORM / 'BUFFERED   '/                                         A03570
       DATA CFORM / 'UNFORMATTED'/                                         A03580
       DATA PLANCK / 6.626176E-27 /,BOLTZ / 1.380662E-16 /,                A07660
      *     CLIGHT / 2.99792458E10 /,AVOG / 6.022045E23 /                  A07670
-      DATA IMS / 0 /,IDIR / 0 /,ITOP / 0 /,ISURF / 0 /,MSPTS / 0 /,       A07680
+      DATA IOD / 0 /,IDIR / 0 /,ITOP / 0 /,ISURF / 0 /,MSPTS / 0 /,       A07680
      *     MSPANL / 67*0 /,MSPNL1 / 67*0 /,ISFILE / 0 /,JSFILE / 0 /,
      *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
      *     JEFILE / 0 /,KEFILE / 0 /,MSLAY1 / 0 /                         A07700
@@ -1040,8 +980,8 @@ C                                                                         A11260
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        A11370
      *              NLTEFL,LNFIL4,LNGTH4                                  A11380
       COMMON /MSCONS/ AIRMAS(67),TGRND,SEMIS(3),HMINMS,HMAXMS,MSFLAG,     A11390
-     *                MSWIT,IMSFIL,MSTGLE                                 A11400
-      COMMON /MSACCT/ IMS,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A11410
+     *                MSWIT,IODFIL,MSTGLE                                 A11400
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A11410
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   A11420
      *                JEFILE,KEFILE                                       A11430
 C                                                                         A11440
@@ -1221,10 +1161,6 @@ C                                                                         A13170
 C                                                                         A13180
 C    START OF LOOP OVER LAYERS                    IMRG=0                  A13190
 C                                                                         A13200
-      IF (IMS.EQ.1) THEN                                                  A13210
-         CALL XLAYMS (MPTS,NPTS,LFILE,MFILE,NFILE)                        A13220
-         GO TO 170                                                        A13230
-      ENDIF                                                               A13240
       IF (2*(NLAYER/2).NE.NLAYER) GO TO 30                                A13250
       MSTOR = MFILE                                                       A13260
       MFILE = LFILE                                                       A13270
@@ -1638,7 +1574,7 @@ C                                                                         A17320
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        A17340
      *              NLTEFL,LNFIL4,LNGTH4                                  A17350
       COMMON /MSCONS/ AIRMAS(67),TGRND,SEMIS(3),HMINMS,HMAXMS,MSFLAG,     A17360
-     *                MSWIT,IMSFIL,MSTGLE                                 A17370
+     *                MSWIT,IODFIL,MSTGLE                                 A17370
       COMMON /LASIV/ VLAS,ILAS                                            A17380
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         A17390
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         A17400
@@ -1834,6 +1770,9 @@ C                                                                         A19250
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A19300
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A19310
      *              EXTID(10)                                             A19320
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),
+     *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,
+     *                JEFILE,KEFILE
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A19330
 C                                                                         A19340
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & A19350
@@ -2153,6 +2092,16 @@ C                                                                         A22130
          IF (IHIRAC.EQ.2) DV = ALBAR/SAMPLE                               A22160
          IF (IHIRAC.EQ.3) DV = ADBAR/SAMPLE                               A22170
 C                                                                         A22180
+C     SKIP TO NEXT LAYER IF IOD=2 (OPTICAL DEPTH FLAG)
+C     AND IMRG = 1
+C
+         IF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
+            DVL(L) = DV
+            WRITE(IPR,953)
+            IF (DVSET.NE.0) WRITE(IPR,954) DVSET
+            GOTO 130
+         ENDIF
+C
          IF (DV.LT.DVSET.AND.ISET.EQ.1) THEN                              A22190
             DV = OLDDV                                                    A22200
             IF (L.EQ.1.AND.DV.EQ.0.) DV = DVSET                           A22210
@@ -2247,6 +2196,12 @@ C                                                                         A22990
          ENDIF
          IF (IPROB.GT.0) WRITE (IPR,962) TYPMAX                           A23030
   130 CONTINUE                                                            A23040
+C    
+C     SKIP TO END WHEN USING EXACT CALCULATED DV FOR OPTICAL
+C     DEPTH CALCULATIONS (IOD = 2,IMRG = 1)
+C
+      IF (IOD.EQ.2.AND.IMRG.EQ.1) GOTO 145
+C
       PWTD = PWTD/WTOT                                                    A23050
       TWTD = TWTD/WTOT                                                    A23060
       IF (IXSECT.GE.1) THEN                                               A23070
@@ -2292,6 +2247,8 @@ C                                                                         A23280
   140    CONTINUE                                                         A23410
       ENDIF                                                               A23420
 C                                                                         A23430
+ 145  CONTINUE
+C
       IF (NLAYRS.LT.5) THEN                                               A23440
          WRITE (IPR,970)                                                  A23450
       ELSE                                                                A23460
@@ -2342,6 +2299,7 @@ C                                                                         A23430
             ENDIF                                                         A23790
   170    CONTINUE                                                         A23800
       ENDIF                                                               A23810
+C
       IF (IXSECT.GE.1) THEN                                               A23820
          DO 190 MLO = 1, IXMOLS, 8                                        A23830
             MHI = MLO+7                                                   A23840
@@ -2397,6 +2355,11 @@ C                                                                         A24050
   950 FORMAT ('0','LAYER',25X,'P(MB)',3X,'T(K)',4X,'ALPHL',4X,'ALPHD',    A24260
      *        4X,'ALPHV',3X,'ZETA',2X,'CALC DV',2X,'H2OSLF',5X,'DV',5X,   A24270
      *        'TYPE',' ITYPE IPATH ',3X,'SECANT'/)                        A24280
+  953 FORMAT ('0 ***** EXACT CALCULATED DV USED IN CALCULATION *****')
+  954 FORMAT ('0 *** DVSET =',F10.4,' ***',/,
+     *        '  *** OPTICAL DEPTHS FOR EACH LAYER WILL BE ',
+     *        'CALCULATED USING THE EXACT DV, SO THE VALUE ',
+     *        'OF DVSET HAS BEEN IGNORED ***')
   955 FORMAT (/,'0 **** CALC DV WAS RESET TO PREVIOUS DV',F12.6,/,        A24290
      *        '  AT ALT=  ',2(F7.2,A3),' AND ABOVE')                      A24300
   960 FORMAT ('0',I5,2(F7.2,A3),1P,E15.7,0P,F8.2,3F9.6,F6.3,
