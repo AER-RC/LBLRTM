@@ -1071,6 +1071,16 @@ C                                                                         B07930
                   R2(J2) = R2(J2)+STRF2*F2(IZ2)                           B08260
                   R1(J1) = R1(J1)+STRF1*F1(IZ1)+STRD*FG(IZ1)+STRVER*XVER  B08270
      *               (IZ1)                                                B08280
+ 
+c                  if (iz1 .ge. 2601 .or. iz2 .ge. 2601 .or.
+c     &                iz3 .ge. 2601 .or. iz1 .le. 0    .or. 
+c     &                iz2 .le. 0    .or. iz3 .le. 0) then
+
+c                 if (r3(j3) .lt. 0.0 .or. r2(j2) .lt. 0.0 .or.
+                  if (r1(j1) .lt. 0.0) then
+                      xxx=0
+                  endif
+
    10          CONTINUE                                                   B08290
 C                                                                         B08300
                IF (SPPSP(I).NE.0.) THEN                                   B08310
@@ -1100,6 +1110,9 @@ C                                                                         B08440
                      R2(J2) = R2(J2)+STRF2*F2(IZ2)*ZF2L                   B08550
                      R1(J1) = R1(J1)+(STRF1*F1(IZ1)+STRD*FG(IZ1)+STRVER*  B08560
      *                  XVER(IZ1))*ZF1L                                   B08570
+                     if (r1(j1) .lt. 0.0) then
+                         xxx=0
+                     endif
    20             CONTINUE                                                B08580
 C                                                                         B08590
                ENDIF                                                      B08600
@@ -1117,6 +1130,12 @@ C                                                                         B08680
       ENDIF                                                               B08720
 C                                                                         B08730
    40 ILO = ILAST+1                                                       B08740
+      do 45 ii=1, 2601
+          if (r1(ii) .lt. 0) then
+              xxx = 0
+          endif
+  45  continue
+
       CALL CPUTIM (TIME)                                                  B08750
       TIMCNV = TIMCNV+TIME-TIME0                                          B08760
       RETURN                                                              B08770
@@ -2210,7 +2229,9 @@ C                                                                         C00170
 C                                                                         C00280
 C     IS EQUIV. TO THE FOLLOWING DIMENSION AND EQUIVALENT STATEMENTS      C00290
 C                                                                         C00300
-      DIMENSION IV(2)
+C*****wog, 2/1/2001. 
+C     DIMENSION IV(2)
+      DIMENSION IV(42*2*9)
       EQUIVALENCE (IV(1),IVIB(1,1,1))                                     C00320
 C                                                                         C00330
       DATA MDIM / 42 /,NVDIM / 9 /
