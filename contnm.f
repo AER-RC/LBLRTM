@@ -187,6 +187,15 @@ C                                                                         F00900
       endif
 C                                                                         F00940
 C                                                                         F00940
+C     *********************  NITROGEN CONTINUA  ********************
+c
+         IF (NMOL.GE.22) THEN                                             F01000
+            WN2 = WK(22)                                                  F01010
+         ELSE                                                             F01020
+            WN2 = WBROAD                                                  F01030
+         ENDIF                                                            F01040
+C                                                                         F00460
+C
 C     ******** NITROGEN COLLISION INDUCED PURE ROTATION BAND  ********
 C
 C     Model used:
@@ -204,12 +213,6 @@ c      if (((V2.gt.-10.0).and.(V2.lt.350.)).or.
 c     *    ((V1.gt.-10.0).and.(V1.lt.350.))) then
       if ((V2.gt.-10.0).and.(V1.lt.350.)) then
 
-         IF (NMOL.GE.22) THEN                                             F01000
-            WN2 = WK(22)                                                  F01010
-         ELSE                                                             F01020
-            WN2 = WBROAD                                                  F01030
-         ENDIF                                                            F01040
-C                                                                         F00460
 C        The following puts WXN2 units in 1./(CM AMAGAT)
 C
          WXN2 = WN2/XLOSMT
