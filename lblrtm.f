@@ -1474,6 +1474,7 @@ C     If they do not agree, then issue a warning to TAPE6.
 C
       IF (IMRG.GE.35) THEN
          NLAYER = LAYTOT
+         LH1 = NLAYER
          IF (LAYTOT.NE.NLAYD1) WRITE(IPR,950) NLAYER,NLAYD1
       ENDIF
 C
