@@ -12,7 +12,7 @@ PLATFORM = SGI
 
 FC = f90
 FCFLAG = -mips4 -r10000 -lfastm -O3 -64 -r8 -i8 -TENV:X=0
-OUTPUT = lblrtm_v6.00_f90_dbl_voigt
+OUTPUT = lblrtm_v6.12_f90_dbl_voigt
 CPATH = src
 CDOTO = dbl.o
 
