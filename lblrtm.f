@@ -298,7 +298,8 @@ C
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & A03050
       LOGICAL OP
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
-      CHARACTER*55 CTAPE3
+      CHARACTER*55 PTHT3M,PTHODI,PTHODT,PTHRDR,CTAPE3
+      CHARACTER*10 HFMODI,HFMODT,HFMRDR
       CHARACTER*9 CT6FIL
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
@@ -319,6 +320,17 @@ C
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
 C     ----------------------------------------------------------------
 C
+C     -------------------------
+      CHARACTER*6  CMOL(MXMOL),CSPC(MXSPC),SPCRT
+C
+C     -------------------------
+C     Common blocks for analytic derivative
+C     -------------------------
+      COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODT,PTHRDR
+      COMMON /ADRFRM/ HFMODI,HFMODT,HFMRDR
+      COMMON /IADFLG/ IANDER,NSPCRT
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
+      COMMON /RETINF/ SPCRT
 C     -------------------------
 C
       DIMENSION IDCNTL(14),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2)      A03280
@@ -389,7 +401,32 @@ C
 C     Set name of output TAPE6, depending upon type calculation
 C
       CT6FIL = 'TAPE6    '
-      CTAPE3 = 'TAPE3'
+C     
+C     -------------------------
+C     Variables hardwired in for now
+C
+      DATA CMOL   /
+     *     '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ','  CH4 ',
+     *     '   O2 ','   NO ','  SO2 ','  NO2 ','  NH3 ','  HNO3',
+     *     '    OH','    HF','  HCL ','  HBR ','   HI ','  CLO ',
+     *     '  OCS ',' H2CO ',' HOCL ','   N2 ','  HCN ','CH3CL ',
+     *     ' H2O2 ',' C2H2 ',' C2H6 ','  PH3 ',' COF2 ','  SF6 ',
+     *     '  H2S ','HCOOH ','      ','      ','      ' /
+      DATA CSPC   / 'T LAYR','T SURF','LOW PR' /
+C
+      KODFIL = 17
+      KODTOT = 18
+      KFILAD = 19
+      KTEMP  = 88
+      PTHODI = 'ODint_'
+      PTHODT = 'ODtotal_'
+      PTHRDR = 'RDderiv_'
+      PTHT3M = 'TAPE3'
+      CALL QNTIFY(PTHODI,HFMODI)
+      CALL QNTIFY(PTHODT,HFMODT)
+      CALL QNTIFY(PTHRDR,HFMRDR)
+      CTAPE3 = PTHT3M
+      IANDER = 2
 C
 C     -------------------------
 C
@@ -496,7 +533,26 @@ C
          REWIND 13
          GOTO 60
       ENDIF
-C     **************************************************************
+C
+C     ****************** ANALYTIC DERIVATIVE ***********************
+C
+C     Assign name to number of the species selected.
+C     If the species is a molecule, then assign the appropriate
+C     molecule name from CMOL.  If the species is something other
+C     than a molecule (e.g., layer temperature, surface temperature,
+C     etc.), then assign the appropriate species name from CSPC.
+C
+      IF (IEMIT.EQ.3) THEN
+         READ (IRD,1015) NSPCRT
+         IF ((NSPCRT.GT.0).AND.(NSPCRT.LT.29)) THEN
+            SPCRT = CMOL(NSPCRT)
+         ELSEIF (NSPCRT.GE.29) THEN
+            SPCRT = CSPC(NSPCRT-28)
+         ENDIF
+      ENDIF
+C
+C     ***************************************************************
+C
 C                                                                         A04340
 C    OPEN LINFIL DEPENDENT UPON IHIRAC AND ITEST                          A04350
 C                                                                         A04360
@@ -716,9 +772,10 @@ C
          DVSET = 0.0
       ENDIF
 C
-C     If IOD = 3, then set DVOUT to DVSET as flag for interpolation
-C     in PNLINT, and preserve value of DVSET for use in
-C     SUBROUTINE PATH.
+C     If IOD = 3 (Analytic Derivative optical depth pass or
+C     Analytic Derivative absorptance coefficient flag), then
+C     set DVOUT to DVSET as flag for interpolation in PNLINT,
+C     and preserve value of DVSET for use in SUBROUTINE PATH.
 C
       IF (IOD.EQ.3) THEN
          IF (DVSET.EQ.0.) STOP 'DVSET MUST BE NONZERO FOR IOD=3'
@@ -1015,6 +1072,12 @@ C     PRLNHD PRINTS OUT LINE FILE HEADER                                  A09470
 C                                                                         A09480
       PARAMETER (MXMOL=35)
 C
+C     Common blocks for analytic derivative
+C     -------------------------
+      COMMON /IADFLG/ IANDER,NSPCRT
+      COMMON /RETINF/ SPCRT
+C     -------------------------
+C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A09490
      *              NLNGTH,KFILE,KPANEL,LINFIL,NDFLE,IAFIL,IEXFIL,        A09500
      *              NLTEFL,LNFIL4,LNGTH4                                  A09510
@@ -1036,6 +1099,7 @@ C                                                                         A09660
       DIMENSION HLINHD(2),IWD(2)                                          A09670
 C                                                                         A09680
       CHARACTER CHID10*8,CHARID*5,CHARDT*2,CHARI*1,CHTST*1                A09690
+      CHARACTER*6 CDUM,SPCRT
 C                                                                         A09700
       EQUIVALENCE (HLINID(1),HLINHD(1),IWD(1))                            A09710
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),                A09720
@@ -1064,6 +1128,20 @@ C                                                                         A09860
 C                                                                         A09950
       WRITE (IPR,920) FLINLO,FLINHI,LINCNT                                A09960
 C                                                                         A09970
+C     When calculating derivative, check make sure the
+C     appropriate molecule is included in the linefile.
+C     If not, then stop and issue message.
+C
+      IF ((IEMIT.EQ.3).AND.(NSPCRT.LT.29)) THEN
+         DO 20 M = 1,LINMOL
+            WRITE(CDUM,'(A6)') BMOLID(M)
+            IF (CDUM.EQ.SPCRT) GOTO 30
+ 20      CONTINUE
+         WRITE(IPR,940) SPCRT
+         WRITE(IPR,945) (BMOLID(I),I=1,LINMOL)
+         STOP 'Molecule to be retrieved not in line file'
+      ENDIF
+C
 C     CHECK HEADER FOR FLAG INDICATING COMPATIBILITY WITH ISOTOPES        A09980
 C                                                                         A09990
  30   WRITE (CHID10,925) HLINID(10)                                       A10000
@@ -1091,6 +1169,9 @@ C                                                                         A10080
      *        'MUST BE PRESERVED ON TAPE3.  USE A TAPE3 *',/,3X,          A10220
      *        '* CREATED WITH THE 91I OR LATER VERSION OF LNFL.   *',     A10230
      *        /,3X,52('*'))                                               A10240
+ 940  FORMAT (' Molecule to be retrieved: ',A6,' not in linefile.',/,
+     *        ' Molecules in linefile: ')
+ 945  FORMAT (24X,A6)
 C                                                                         A10250
       END                                                                 A10260
 C
@@ -1128,12 +1209,19 @@ C                                                                         A11260
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
      *                MXMOL=35,MXTRAC=22)
 C
-      CHARACTER*55 PATH1,PTHRAD
-      CHARACTER*10 HFORM1,HFMRAD
+      CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR,PTHRAD,PATH1,PATH2
+      CHARACTER*10 HFMODI,HFMODT,HFMRDR,HFMRAD,HFORM1,HFORM2
 C
+C     Common block for analytic derivative
+C     -------------------------
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODT,PTHRDR
+      COMMON /ADRFRM/ HFMODI,HFMODT,HFMRDR
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
 C
+C     -------------------------
 C     Common blocks for layer radiances
 C     -------------------------
+C
       COMMON /RADLAY/ PTHRAD,HFMRAD
 C     -------------------------
 C
@@ -1155,6 +1243,9 @@ C
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),            A11410
      *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,          A11420
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                  A11430
+      COMMON /SCSHAP/ HWFS,DXFS,NFS,NFMAXS
+      COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,
+     *                HWF3,DXF3,NX3,N3MAX
 C                                                                         A11440
 C     COMMON /MLTSCT/ TAUGAS(2410),FUPC(2410),RUPC(2410)                  A11450
 C                                                                         A11460
@@ -1217,6 +1308,8 @@ C     1 < IMRG < 10 OPTICAL DEPTHS ARE SEQUENTIAL ON KFILE BY LAYER       A12020
 C
 C     IMRG = 1 Optical Depths are stored on different files by layer
 C
+C     IMRG = 10 OPTICAL DEPTHS are stored on multiple KFILEs by layer
+C               and accumulated Optical Depths are calculated by layer
 C     IMRG = 40-46 RADIANCE and TRANSMITTANCE are calculated from
 C               multiple optical depth files by layer
 C                                                                         A12030
@@ -1272,12 +1365,16 @@ C                                                                         A12520
 C      IMRG=35 --- SPACE TO GROUND MERGE FROM PRESTORED OPTICAL DEPTHS    A12530
 C      IMRG=36 --- GROUND TO SPACE MERGE FROM PRESTORED OPTICAL DEPTHS    A12540
 C                                                                         A12550
-C        ****  RADIANCE CALCULATIONS  **** 
+C        ****  RADIANCE/DERIVATIVE CALCULATIONS  **** 
 C
 C      IMRG=40 --- Downwelling radiance from prestored optical depths,
-C                  monochromatic
+C                  monochromatic (radiance & derivative calculations)
 C      IMRG=41 --- Upwelling radiance from prestored optical depths,
-C                  monochromatic
+C                  monochromatic (radiance & derivative calculations)
+C      IMRG=42 --- Downwelling radiance from prestored optical depths,
+C                  scanned (derivative calculations only)
+C      IMRG=43 --- Upwelling radiance from prestored optical depths,
+C                  scanned (derivative calculations only)
 C
 C        ****  FLUX CALCULATIONS (Layer Radiance) -MONOCHROMATIC ****
 C
@@ -1328,7 +1425,105 @@ C
 C
 C     ---------------------
 C
-C     For IMRG = 35,36,40,41 (those options which
+C     If IMRG = 10, then calculate optical depths on multiple
+C     files, and calculate accumulated optical depths to
+C     multiple files. Default names for input files KFILE "ODDV##"
+C     and output files MFILE "ODMG##" are used (layer number ##).
+C     Spacing of optical depths for all layers should be equal.
+C
+C                                            SPECIAL CASE -> IMRG=10
+C
+C     First portion mimicks IMRG = 1 procedure, and then when
+C     LAYER = NLAYER, merge takes place.
+C
+C
+      IF (IMRG.EQ.10) THEN
+C
+C        -----------------------------
+C        Initial call to OPPATH, which calls PATH
+C        -----------------------------
+C
+         LAYHDR = LAYER
+         CALL OPPATH
+         IF (IHIRAC.EQ.0) RETURN
+C
+C        -----------------------------
+C        Begin loop over layers
+C        -----------------------------
+C
+ 4       LAYER = LAYER+1
+         LAYHDR = LAYER 
+         CALL OPPATH    
+         NLAYHD = NLAYER
+         CALL OPDPTH (MPTS)
+         CALL ENDFIL (KFILE)
+         CLOSE (KFILE)
+         REWIND MFILE   
+         REWIND LFILE   
+         IF (LAYER.EQ.NLAYER) THEN
+            PATH1  = PTHODI
+            PATH2  = PTHODT
+            HFORM1 = HFMODI
+            HFORM2 = HFMODT
+C
+C           First, copy the farthest layer optical depths to the
+C           pathname for the total optical depths up to the
+C           first layer. Then, add the sum of the previous
+C           L layers to the (L+1)'st layer.  Output procedure
+C           (title written here, rest written in OPNMRG).
+C
+            WRITE(IPR,935)
+            IF (IPATHL.EQ.1) THEN
+               CALL OPNMRG(LFILE,PATH1,NLAYER,HFORM1,PATH1,NLAYER,
+     *              HFORM1,MFILE,PATH2,HFORM2)
+            ELSEIF (IPATHL.EQ.3) THEN 
+               CALL OPNMRG(LFILE,PATH1,1,HFORM1,PATH1,1,HFORM1,
+     *              MFILE,PATH2,HFORM2)
+            ELSE
+               STOP 'XLAYER: IPATHL NOT VALID'
+            ENDIF
+            CALL COPYFL(NPTS,LFILE,MFILE)
+            CALL ENDFIL (MFILE)
+            REWIND MFILE   
+            REWIND LFILE   
+            CLOSE(MFILE)
+            CLOSE(LFILE)
+            IF (IPATHL.EQ.1) THEN
+               DO 5 L = 2,NLAYER
+                  CALL OPNMRG(LFILE,PATH2,NLAYER-L+2,HFORM2,PATH1,
+     *                     NLAYER-L+1,HFORM1,MFILE,PATH2,HFORM2)
+                  CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
+                  REWIND MFILE
+                  REWIND LFILE
+                  CLOSE(MFILE)
+                  CLOSE(LFILE)
+ 5             CONTINUE
+            ELSEIF (IPATHL.EQ.3) THEN
+               DO 7 L = 2,NLAYER
+                  CALL OPNMRG(LFILE,PATH2,L-1,HFORM2,PATH1,
+     *                     L,HFORM1,MFILE,PATH2,HFORM2)
+                  CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
+                  REWIND MFILE   
+                  REWIND LFILE   
+                  CLOSE(MFILE)
+                  CLOSE(LFILE)
+ 7             CONTINUE
+            ELSE
+               STOP 'XLAYER: IPATHL NOT VALID'
+            ENDIF
+            RETURN
+         ENDIF
+         GO TO 4
+C
+C        -----------------------------
+C        End loop over layers
+C        -----------------------------
+C
+      ENDIF
+C
+C     ---------------------
+C
+C     For IMRG = 35,36,40,41,42,43,45,46 (those options which
 C     use precalculated layer optical depths stored on different
 C     files for radiative transfer), read in the pathname of
 C     the layer optical depths and determine format for the
@@ -1337,7 +1532,116 @@ C
       IF (IMRG.GE.35) THEN
          READ (IRD,945) PATH1,LAYTOT
          CALL QNTIFY(PATH1,HFORM1)
-         CALL OPNODF(1,1,PATH1,HFORM1)
+         IF ((IMRG.GE.40).AND.(IEMIT.EQ.3)) THEN
+            READ (IRD,946) PTHODT
+            CALL QNTIFY(PTHODT,HFMODT)
+         ENDIF
+         CALL OPNODF(1,1,PATH1,HFORM1,IEMIT)
+      ENDIF
+C
+C     ---------------------
+C
+C     If IMRG = 41/43 and IEMIT = 3, then precalculated optical depths
+C     on multiple files, precalculated cumulative optical depths on
+C     multiple files, and just-calculated layer absorptance
+C     coefficients are combined to produce analytic layer radiance
+C     derivatives (from ground to space) as well as total upwelling
+C     radiance, written to PTHRDR.  The results are monochromatic for
+C     IMRG = 41, scanned for IMRG = 43.
+C
+C     If IMRG = 40/42 and IEMIT = 3, then precalculated optical depths
+C     on multiple files, precalculated cumulative optical depths on
+C     multiple files, and just-calculated layer absorptance
+C     coefficients are combined to produce analytic layer radiance
+C     derivatives (from space to ground) as well as total downwelling
+C     radiance, written to PTHRDR.  The results are monochromatic for
+C     IMRG = 40, scanned for IMRG = 42.
+C
+C                                     SPECIAL CASE -> IMRG=40-43, IEMIT=3
+C
+      IF ((IMRG.GE.40.OR.IMRG.LE.43).AND.(IEMIT.EQ.3)) THEN
+C
+C        Call OPPATH, which calls PATH
+C
+         LAYHDR = LAYER
+         CALL OPPATH
+C
+C        Read card for scan for IMRG = 42,43
+C
+         IF (IMRG.GE.42) CALL SCANRD (DVINT,JEMIT)
+C
+C        Start loop over layers
+C
+         IF (2*(NLAYER/2).NE.NLAYER) GO TO 8
+         MSTOR = MFILE
+         MFILE = LFILE
+         LFILE = MSTOR
+ 8       LAYER = 0
+ 9       LAYER = LAYER+1
+         REWIND KFILE
+         LAYHDR = LAYER
+         CALL OPPATH
+         NLAYHD = NLAYER
+         CALL OPDPTH (MPTS)
+         REWIND KFILE
+         REWIND MFILE
+         REWIND LFILE
+C
+C        Check to ensure derivative and radiance calculations
+C        are going in right direction.
+C
+         IF ((((IMRG.EQ.40).OR.(IMRG.EQ.42)).AND.(IPATHL.EQ.3)).OR.
+     *       (((IMRG.EQ.41).OR.(IMRG.EQ.43)).AND.(IPATHL.EQ.1))) THEN
+            WRITE(IPR,940) IPATHL,IMRG
+            STOP 'XLAYER ERROR: IPATH PROBLEM'
+         ENDIF
+C
+C        Open files appropriate to derivative calculation:
+C
+C        KODFIL = optical depth file for layer (all molecules)
+C        KODTOT = total optical depth file up to layer (all molecules)
+C        KTEMP  = outgoing monochromatic layer analytic derivatives
+C        KFILAD = outgoing scanned layer analytic derivatives
+C
+C        Other files appropriate to derivative calculation:
+C
+C        KFILE  = Absorptance coefficient file for layer & molecule (TAPE10)
+C        MFILE  = Outgoing/incoming acculmulated radiance and transmittance
+C        LFILE  = Incoming/outgoing acculmulated radiance and transmittance
+C
+         IF (IPATHL.EQ.1) THEN
+            CALL OPNDRV(NLAYER,LAYER,LAYER+1)
+         ELSEIF (IPATHL.EQ.3) THEN
+            CALL OPNDRV(1,NLAYER-LAYER+1,NLAYER-LAYER)
+         ELSE
+            STOP 'XLAYER: IPATHL NOT VALID'
+         ENDIF
+         CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
+         REWIND MFILE
+C
+C        Scan if IMRG=42/43, copy derivatives if IMRG=40/41
+C        If scanning, reset values of HWF1,DXF1,NX1,N1MAX which may
+C        have been been changed in HIRAC1 after having been read in
+C        in SCANRD, but before being used in SCNMRG.
+C
+         IF (IMRG.GE.42) THEN
+            MMFILE = KTEMP
+            HWF1 = HWFS
+            DXF1 = DXFS
+            NX1 = NFS
+            N1MAX = NFMAXS
+            CALL SCNMRG (MMFILE,KFILAD)
+            CALL ENDFIL (KFILAD)
+         ELSEIF (IMRG.GE.40) THEN
+            MMFILE = KTEMP
+            REWIND MMFILE
+            CALL COPYFL (NPTS,MMFILE,KFILAD)
+         ENDIF
+         IF (LAYER.EQ.NLAYER) RETURN
+         MSTOR = MFILE
+         MFILE = LFILE
+         LFILE = MSTOR
+         GO TO 9
       ENDIF
 C
 C     ---------------------
@@ -1415,7 +1719,7 @@ C
          REWIND LFILE
          WRITE (IPR,900)
          WRITE (IPR,905)
-         CALL OPNODF(NLAYER,LAYER,PATH1,HFORM1)
+         CALL OPNODF(NLAYER,LAYER,PATH1,HFORM1,IEMIT)
          WRITE (IPR,905)
          CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
          IF (LAYER.EQ.NLAYER) RETURN
@@ -1611,7 +1915,7 @@ C     Open layer optical depth file for IMRG=36,46.  If IMRG=46, then
 C     open output layer radiance file.
 C
       IF ((IMRG.EQ.36).OR.(IMRG.EQ.46)) THEN
-         CALL OPNODF(NLAYER,LAYER,PATH1,HFORM1)
+         CALL OPNODF(NLAYER,LAYER,PATH1,HFORM1,IEMIT)
          IF (IMRG.EQ.46) THEN
             PTHRAD = 'RDUPlayer_'
             CALL QNTIFY(PTHRAD,HFMRAD)
@@ -1695,7 +1999,7 @@ C
          CALL OPDPTH (MPTS)                                               A14860
          REWIND KFILE                                                     A14870
       ELSEIF (IMRG.EQ.35.OR.IMRG.EQ.45) THEN
-         CALL OPNODF(1,LAYER,PATH1,HFORM1)
+         CALL OPNODF(1,LAYER,PATH1,HFORM1,IEMIT)
          IF (IMRG.EQ.45) THEN
             PTHRAD = 'RDDNlayer_'
             CALL QNTIFY(PTHRAD,HFMRAD)
@@ -1899,6 +2203,9 @@ C                                                                         A16720
      *        ' TO LAYER',I3)                                             A16820
   930 FORMAT (/,'  TANGENT WEIGHTING FUNCTION, LAYER',I3,' TO LAYER',     A16830
      *        I3)                                                         A16840
+  935 FORMAT (/,' ---------------------------------------------- ',/,
+     *          '        Results of Optical Depth Merging',/,
+     *          '        --------------------------------',//)
   940 FORMAT ('TAPE5: IPATHL',I5,', IMRG = ',I5)
   945 FORMAT (A55,1X,I4)
   946 FORMAT (A55)
@@ -2181,6 +2488,11 @@ C                                                                         A19250
 C
       COMMON COMSTR(250,9)                                                A19260
       COMMON R1(3600),R2(900),R3(225)                                     A19270
+C
+C     Common blocks for analytic derivative
+C     -------------------------
+      COMMON /IADFLG/ IANDER,NSPCRT
+C     -------------------------
 C
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A19280
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       A19290
@@ -2511,8 +2823,37 @@ C                                                                         A21110
 C                                                                         A21140
 C     --------------------------------------------------------------
 C
+C
+C     Set unit number for atmospheric profile file for use when
+C     calculating radiance derivatives analytically
+C
+      IATMFL = 20
+C
+C     When calculating derivatives, open IATMFL and write out
+C     molecular amounts, for use when combining layer derivatives
+C     during retrieval
+C
+      IF (IEMIT.EQ.3) OPEN(UNIT=IATMFL,FILE='ATMSFR',STATUS='UNKNOWN')
+C
+C     --------------------------------------------------------------
+C
       DO 80 L = 1, NLAYRS                                                 A21150
          IF (IATM.GT.0.) SECL(L) = 1.0                                    A21160
+C
+C        --------------------------------------------------------------
+C
+C        When calculating derivatives, write levels and molecular
+C        amounts out to IATMFL for use when combining layer derivatives 
+C        during retrieval.
+C
+         IF (IEMIT.EQ.3) THEN
+            WRITE(IATMFL,1010) ALTZ(L-1),ALTZ(L),PAVEL(L),TAVEL(L)
+            WRITE (IATMFL,925) (WKL(M,L),M=1,7),WBRODL(L)
+            IF (NMOL.GT.7) WRITE (IATMFL,925) (WKL(M,L),M=8,NMOL)
+         ENDIF
+C
+C        --------------------------------------------------------------
+C                                                                         A21170
          DO 60 M = 1, NMOL                                                A21180
             WKL(M,L) = WKL(M,L)*SECL(L)                                   A21190
    60    CONTINUE                                                         A21200
@@ -2524,6 +2865,12 @@ C
          WBRODL(L) = WBRODL(L)*SECL(L)                                    A21260
          SECL(L) = 1.0                                                    A21270
    80 CONTINUE                                                            A21280
+C
+C     --------------------------------------------------------------
+C
+C     Close file containing atmospheric information
+C
+      IF (IEMIT.EQ.3) CLOSE(IATMFL)
 C
 C     --------------------------------------------------------------
 C                                                                         A21290
@@ -2823,6 +3170,31 @@ C
 C
 C     --------------------------------------------------------------
 C
+C     If IEMIT is 3 (radiance derivative calculated) and NSPCRT < 29
+C     (molecular amount being retrieved), then set the column amount
+C     of the species to be retrieved to 1.0E20, and if IANDER is 2,
+C     then zero all molecules not being retrieved.
+C
+      IF ((IEMIT.EQ.3).AND.(NSPCRT.LT.29)) THEN
+c     pdb
+c     save column amount, zero all amounts, and reset old amount for
+c     molecule to be retrieved
+c     pdb
+         DO 148 L = 1, NLAYRS
+            IF (IANDER.EQ.2) THEN
+               wklsav =  wkl(nspcrt,l)
+               DO 147 M = 1,NMOL
+                  WKL(M,L) = 0.0
+ 147           CONTINUE
+            ENDIF
+            WKL(NSPCRT,L) = 1.0E20
+            wkl(nspcrt,l) = wklsav
+ 148     CONTINUE
+         WRITE(IPR,1020)
+      ENDIF
+C
+C     --------------------------------------------------------------
+C
 C     Write out column densities for molecules to TAPE6
 C
 C
@@ -3088,17 +3460,33 @@ C                                                                         A24050
   991 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,7X,1P,8E10.3,0P)               A24410
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                    A24420
      *        '     *****  CROSS SECTIONS  *****      ')                  A24430
- 1000 FORMAT (' ************************************************',/
+ 1000 FORMAT ('Layer',I2,': Changing molecule ',I2,' from ',E10.3,
+     *          ' to 1.000E+20.')
+ 1001 FORMAT (' ************************************************',/
      *        '  ERROR in SUBROUTINE PATH: Sum of mixing ratios ',/
      *        '         greater than or equal to 1.0:           ',/
      *        '       Layer #:',I3,/
      *        '       Total mixing ratio: ',E10.3,/
      *        '       Total column density: ',E10.3,/
      *        ' ************************************************')
- 1010 FORMAT (' ************************************************',/
+ 1010 FORMAT (2F7.3,E15.7,F10.4)
+ 1011 FORMAT (' ************************************************',/
      *        '    ERROR: Sum of molecular densities in layer  ',/
      *        '           equal to zero; Layer #: ',I3,/
      *        ' ************************************************')
+ 1020 FORMAT (55X,'************************************************',/,
+     *        55X,'**                                            **',/,
+     *        55X,'**            DERIVATIVE CALCULATION          **',/,
+     *        55X,'**            ----------------------          **',/,
+     *        55X,'**   All molecular amounts were retained for  **',/,
+     *        55X,'**   molecular broadening purposes.           **',/,
+     *        55X,'**   Molecular amounts except those for       **',/,
+     *        55X,'**   which derivatives are to be calculated   **',/,
+     *        55X,'**   will now be zeroed.  Absorptance         **',/,
+     *        55X,'**   coefficients will be calculated in       **',/,
+     *        55X,'**   place of optical depths on TAPE10.       **',/,
+     *        55X,'**                                            **',/,
+     *        55X,'************************************************',/)
 C                                                                         A24440
       END                                                                 A24450
       BLOCK DATA BOPDPT                                                   A07600
