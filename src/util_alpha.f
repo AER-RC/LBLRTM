@@ -10,11 +10,9 @@ C     AT LOCATION IARRAY
 C
 C     IFILE IS THE FILE DESIGNATION
 C                                                                         A10830
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
+      COMMON /CVRUTL/ HVRUTL
 C
-      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      CHARACTER*15 HVRUTL
 C                                  
       DIMENSION IARRAY(IWORDS)
 C

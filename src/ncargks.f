@@ -37,8 +37,7 @@ C----------------------------------------------------------------------   NC0310
 C                                                                         NC0320
       IMPLICIT REAL*8           (V)                                     [ NC0330
 C                                                                         NC0340
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
+      COMMON /CVRNCG/ HVRNCG
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       NC0350
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     NC0360
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      NC0370
@@ -46,8 +45,7 @@ C                                                                         NC0340
 C                                                                         NC0390
       COMMON /NCARID/ IFIRST                                              NC0400
 C
-      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      CHARACTER*15 HVRNCG
 C
       LOGICAL IFIRST                                                      NC0410
       DIMENSION PROGID(*)                                                 NC0420

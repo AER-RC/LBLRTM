@@ -101,7 +101,7 @@ C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
-      COMMON /ARMCM1/ HVRSOL
+      COMMON /CVRSOL/ HVRSOL
 C
 C     ----------------------------------------------------------------
 C     Parameter and common blocks for direct input of emission and

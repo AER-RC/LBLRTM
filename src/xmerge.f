@@ -24,8 +24,7 @@ C                                                                         H00160
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
 C                                                                         H00180
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
+      COMMON /CVRXMR/ HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H00190
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H00200
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    H00210
@@ -41,8 +40,7 @@ C                                                                         H00260
      *            (FSCDID(11),IMRG) , (FSCDID(16),LAYR1),                 H00310
      *            (FSCDID(17),NLAYHD)                                     H00320
 C                                                                         H00330
-      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      CHARACTER*15 HVRXMR
 C
 C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C

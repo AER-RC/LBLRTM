@@ -198,9 +198,8 @@ C*****Frequency variables start with V
 C*****Blank Common carries the spectral data
       COMMON S(2450),R1(2650),XF(251)
 
-C*****HVERSN carries the module SCCS version numbers
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
+C*****HVRFFT carries the module CVSversion numbers
+      COMMON /CVRFFT/ HVRFFT
 
 C*****SCNHRD carries the header information for the scanned file
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
@@ -231,8 +230,7 @@ C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
 
-      Character*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      Character*15 HVRFFT
       Character*16 SFNAME,ANAMES(0:JFNMAX)
       Dimension C(0:JFNMAX),CRATIO(0:JFNMAX),CLIMIT(0:JFNMAX)
 

@@ -16,8 +16,7 @@ C                                                                         I00090
       character*8      XID,       HMOLID,      YID,SCANID        
       real*8               SECANT,       XALTZ 
 C                                                                         I00110
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
+      COMMON /CVRPST/ HVRPST
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       I00120
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,   I00130
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    I00140
@@ -40,8 +39,7 @@ C                                                                         I00280
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               I00290
       CHARACTER*11 CFORM                                                  I00300
       CHARACTER*8 HSCNID(0:6)                                             I00310
-      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      CHARACTER*15 HVRPST
       CHARACTER SCNOUT*7,SCNINF*7,CTAPE*4                                 I00320
       LOGICAL OP                                                          I00330
 C                                                                         I00340

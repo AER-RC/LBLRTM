@@ -8,12 +8,10 @@ C     THIS SUBROUTINE BUFFERS IN (READS) IWORDS INTO  IARRAY STARTING     A10790
 C     AT LOCATION IWORDS                                                  A10800
 C                                                                         A10810
 C     IFILE IS THE FILE DESIGNATION                                       A10820
+      COMMON /CVRUTL/ HVRUTL
 C                                                                         A10830
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
 C
-      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      CHARACTER*15 HVRUTL
 C
       DIMENSION IARRAY(IWORDS)                                            A10840
 C

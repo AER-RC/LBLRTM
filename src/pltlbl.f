@@ -13,8 +13,7 @@ C                                                                         M00060
       character*8      XID,       HMOL  ,      YID,PROGID
       real*8               SEC   ,       XALTZ 
 C                                                                         M00080
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
+      COMMON /CVRPLT/ HVRPLT
       COMMON /PLTHDR/ XID(10),SEC,P0,T0,HMOL(60),XALTZ(4),                M00090
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVT,V1V,V2V,TBOUND,    M00100
      *                EMISIV,FSCDID(17),NMOL,NLAYER,YID1,YID(10),LSTWDF   M00110
@@ -33,8 +32,8 @@ C                                                                         M00080
 C                                                                         M00240
       CHARACTER*8 FSTAT,NSTAT,OSTAT                                       M00245
       CHARACTER*8 COPT,CDIF,CRAT                                          M00250
-      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      CHARACTER*15 HVRPLT
+
       CHARACTER*11 CFORM,BFORM,FFORM                                      M00253
       CHARACTER*25 TAPEJJ,TAPELL,TAPEMM,TAPE29,TAPEST(99),                M00256
      *             JFILEN,LFILEN,MFILEN,JOUTNM,CFILEN(3),BLNKNM           M00260
