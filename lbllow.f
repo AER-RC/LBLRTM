@@ -2147,7 +2147,7 @@ C                                                                        FL20980
          SUMEXT(I) = 0.0                                                 FL21420
    80 CONTINUE                                                           FL21430
       REWIND IEXFIL                                                      FL21440
-      CALL BUFOUT (IEXFIL,1,NFHDRF,XFILHD)                               FL21450
+      CALL BUFOUT (IEXFIL,XFILHD(1),NFHDRF)                              FL21450
       IF (ICLD.EQ.20.AND.V1.LT.350.) WRITE (IPR,905)                     FL21460
       NLIMAP = NLIM                                                      FL21470
       XKT0 = 0.6951*296.                                                 FL21480
@@ -2343,10 +2343,10 @@ C                                                                        FL23240
   100    CONTINUE                                                        FL23380
   110    CONTINUE                                                        FL23390
          IF ((IEMISS.GE.1).OR.(IK.EQ.IKMAX)) THEN                        FL23400
-            CALL BUFOUT (IEXFIL,1,NPHDRF,PNLHDR)                         FL23410
-            CALL BUFOUT (IEXFIL,1,NLIM,ABST)                             FL23420
-            CALL BUFOUT (IEXFIL,1,NLIM,SCTT)                             FL23430
-            CALL BUFOUT (IEXFIL,1,NLIM,ASYT)                             FL23440
+            CALL BUFOUT (IEXFIL,PNLHDR(1),NPHDRF)                        FL23410
+            CALL BUFOUT (IEXFIL,ABST(1),NLIM)                            FL23420
+            CALL BUFOUT (IEXFIL,SCTT(1),NLIM)                            FL23430
+            CALL BUFOUT (IEXFIL,ASYT(1),NLIM)                            FL23440
             DO 120 I = 1, MAXDV                                          FL23450
                ABST(I) = 0.                                              FL23460
                SCTT(I) = 0.                                              FL23470
