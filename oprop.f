@@ -4050,6 +4050,9 @@ C**********************************************************************   E00090
 C                                                                         E00100
 C     IFIL CARRIES FILE INFORMATION                                       E00110
 C                                                                         E00120
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         E00130
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        E00140
      *              NLTEFL,LNFIL4,LNGTH4                                  E00150
@@ -4060,7 +4063,7 @@ C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     E00190
 C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         E00200
 C     MOLECULES.                                                          E00210
 C                                                                         E00220
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(35),XAMNT(35,67)                 E00230
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(35),XAMNT(35,MXLAY)              E00230
 C                                                                         E00240
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         E00250
 C     FOR THE CROSS-SECTION MOLECULES.                                    E00260
