@@ -1809,6 +1809,11 @@ C     SET INPUT(IFILE), OUTPUT(JFILE) UNITS.                              J00800
 C                                                                         J00810
       IF (IUNIT.LE.0) IUNIT = IFILE                                       J00820
       IFILE = IUNIT                                                       J00830
+      INQUIRE (UNIT=IFILE,OPENED=OP)
+      IF (.NOT.OP) THEN
+         WRITE (SCNOUT,910) CTAPE,IFILE
+         OPEN (IFILE,FILE=SCNOUT,STATUS='UNKNOWN',FORM=CFORM)
+      ENDIF
       IFILST = MAX(IFILST,1)                                              J00840
       IF (NIFILS.LE.0) NIFILS = 99                                        J00850
       IF (JUNIT.LE.0) JUNIT = JFILE                                       J00860
@@ -2211,15 +2216,11 @@ C                                                                         J04810
             R(J) = 0.0                                                    J04830
    30    CONTINUE                                                         J04840
 C                                                                         J04850
-         IF (J2.GE.2400) THEN                                             J04860
             V2J = V1J+DVJ*(J2-1)                                          J04870
-            NNJ = 2400                                                    J04880
+            NNJ = J2                                                      J04880
             CALL OTPANL (R,JFILE,NPTS)                                    J04890
             V1J = V2J+DVJ                                                 J04900
             VJ = V1J                                                      J04910
-         ELSE                                                             J04920
-            VJ = V1J+DVJ*J2                                               J04930
-         ENDIF                                                            J04940
 C                                                                         J04950
          GO TO 20                                                         J04960
       ENDIF                                                               J04970
@@ -2311,7 +2312,7 @@ C                                                                         J05820
 C     IF THE OUTPUT PANEL IS FULL OR IF V2 REACHED,                       J05830
 C     WRITE OUT THE PANEL                                                 J05840
 C                                                                         J05850
-      IF (J2.GE.2400.OR.(VJ-DVJ).GE.V2) THEN                              J05860
+      IF (J2.GE.2400.OR.VJ.GE.V2) THEN                                    J05860
          NNJ = J2                                                         J05870
          V2J = V1J+DVJ*(J2-1)                                             J05880
          CALL OTPANL (R,JFILE,NPTS)                                       J05890
@@ -2321,7 +2322,7 @@ C                                                                         J05850
 C                                                                         J05930
 C     IF REACHED V2, THEN FINISH                                          J05940
 C                                                                         J05950
-      IF ((VJ-DVJ).GE.V2) GO TO 100                                       J05960
+      IF (VJ.GE.V2) GO TO 100                                             J05960
 C                                                                         J05970
 C     IF THE INPUT FILE REACHED AN EOF, THEN ZERO FILL TO END             J05980
 C                                                                         J05990
