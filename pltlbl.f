@@ -4,6 +4,8 @@ C     revision:  $Revision$
 C     created:   $Date$
 C
 C                                                                         M00020
+      SUBROUTINE PLTLBL (IENDPL)                                          M00010
+C                                                                         M00020
       IMPLICIT REAL*8           (V)                                     ! M00030
 C                                                                         M00040
       COMMON XX(2450),YY(2450)                                            M00050
