@@ -308,7 +308,7 @@ C                                                                        FL03020
 C     ****************************************************************** FL03030
 C
 C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
-C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXLAY IS THE MAXIMUM NUMBER OF OUTPUT LAYERS
 C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
 C         STORED IN ZMDL (INPUT)
 C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
@@ -373,7 +373,7 @@ C     **   TAPE7 RESPECTIVELY                                            FL03510
 C                                                                        FL03520
       EQUIVALENCE (FSCDID(5),IEMS),(FSCDID(4),IAERSL)                    FL03530
 C                                                                        FL03540
-      DATA MAXATM,MAXGEO   /220, 214/                                    FL03550
+      DATA MAXATM,MAXGEO   /3020, 3014/                                  FL03550
       IEMSCT = IEMS                                                      FL03560
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
@@ -3545,6 +3545,7 @@ C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+      PARAMETER (MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
 C
 C
 C     BLANK COMMON FOR ZMDL
@@ -3560,11 +3561,11 @@ C
      *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL33160
      *     IMMAX,WGM(MXZMD),DEMW(MXZMD)                                  FL33170
 C
-C     RFRPTH is dependent upon MXZMD (220=MXZMD+20;443=2*MXZMD+3)
+C     RFRPTH is dependent upon MXZMD (MXZ20=MXZMD+20;MX2Z3=2*MXZMD+3)
 C
-      COMMON  /RFRPTH/ ZL(220),PL(220),TL(220),RFNDXL(220),SL(220),      FL33190
-     *     PPSUML(220),TPSUML(220),RHOSML(220),DENL(16,220),             FL33190
-     *     AMTL(16,220),LJ(443)                                          FL33200
+      COMMON  /RFRPTH/ ZL(MXZ20),PL(MXZ20),TL(MXZ20),RFNDXL(MXZ20),      FL33180
+     *     SL(MXZ20),PPSUML(MXZ20),TPSUML(MXZ20),RHOSML(MXZ20),          FL33190
+     *     DENL(16,MXZ20),AMTL(16,MXZ20),LJ(MX2Z3)                       FL33200
       COMMON /RAIN/ RNPATH(IM2),RRAMTK(IM2)                              FL33210
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL33220
      *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL33230
@@ -3885,17 +3886,18 @@ C     EARTH CENTERED ANGLE AND THE TOTAL DISTANCE RESPECTIVELY           FL36190
 C     FOR THE REFRACTED PATH FROM H1 TO H2                               FL36200
 C     ****************************************************************** FL36210
 C                                                                        FL36220
+      PARAMETER (MXZMD=3400, MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL36230
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL36240
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL36250
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL36260
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL36270
 C
-C     RFRPTH is dependent upon MXZMD (220=MXZMD+20;443=2*MXZMD+3)
+C     RFRPTH is dependent upon MXZMD (MXZ20=MXZMD+20;MX2Z3=2*MXZMD+3)
 C
-      COMMON  /RFRPTH/ ZL(220),PL(220),TL(220),RFNDXL(220),SL(220),      FL36280
-     *     PPSUML(220),TPSUML(220),RHOSML(220),DENL(16,220),             FL36290
-     *     AMTL(16,220),LJ(443)                                          FL36300
+      COMMON  /RFRPTH/ ZL(MXZ20),PL(MXZ20),TL(MXZ20),RFNDXL(MXZ20),      FL36280
+     *     SL(MXZ20),PPSUML(MXZ20),TPSUML(MXZ20),RHOSML(MXZ20),          FL36290
+     *     DENL(16,MXZ20),AMTL(16,MXZ20),LJ(MX2Z3)                       FL36300
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL36310
 C
       IF (H1.GT.H2) GO TO 10                                             FL36340
@@ -4085,6 +4087,7 @@ C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
 C
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+      PARAMETER (MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL38120
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL38130
@@ -4096,11 +4099,11 @@ C
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL38180
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL38190
 C
-C     RFRPTH is dependent upon MXZMD (220=MXZMD+20;443=2*MXZMD+3)
+C     RFRPTH is dependent upon MXZMD (MXZ20=MXZMD+20;MX2Z3=2*MXZMD+3)
 C
-      COMMON /RFRPTH/ ZL(220),PL(220),TL(220),RFNDXL(220),SL(220),       FL38200
-     *     PPSUML(220),TPSUML(220),RHOSML(220),DENL(16,220),             FL38210
-     *     AMTL(16,220),LJ(443)                                          FL38220
+      COMMON  /RFRPTH/ ZL(MXZ20),PL(MXZ20),TL(MXZ20),RFNDXL(MXZ20),      FL38200
+     *     SL(MXZ20),PPSUML(MXZ20),TPSUML(MXZ20),RHOSML(MXZ20),          FL38210
+     *     DENL(16,MXZ20),AMTL(16,MXZ20),LJ(MX2Z3)                       FL38220
 C
       IF (HA.LT.HB) GO TO 10                                             FL38230
       WRITE (IPR,900) HA,HB,JNEXT                                        FL38240
@@ -4191,15 +4194,17 @@ C     THIS SUBROUTINE CALCULATES THE REFRACTED PATH FROM Z1 TO Z2        FL39050
 C     WITH THE SIN OF THE INITIAL INCIDENCE ANGLE SINAI                  FL39060
 C     *****************************************************************  FL39070
 C                                                                        FL39080
+      PARAMETER (MXZMD=3400, MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3)
+C
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL39090
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL39100
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL39110
 C
-C     RFRPTH is dependent upon MXZMD (220=MXZMD+20;443=2*MXZMD+3)
+C     RFRPTH is dependent upon MXZMD (MXZ20=MXZMD+20;MX2Z3=2*MXZMD+3)
 C
-      COMMON  /RFRPTH/ ZL(220),PL(220),TL(220),RFNDXL(220),SL(220),      FL39120
-     *     PPSUML(220),TPSUML(220),RHOSML(220),DENL(16,220),             FL39130
-     *     AMTL(16,220),LJ(443)                                          FL39140
+      COMMON  /RFRPTH/ ZL(MXZ20),PL(MXZ20),TL(MXZ20),RFNDXL(MXZ20),      FL39120
+     *     SL(MXZ20),PPSUML(MXZ20),TPSUML(MXZ20),RHOSML(MXZ20),          FL39130
+     *     DENL(16,MXZ20),AMTL(16,MXZ20),LJ(MX2Z3)                       FL39140
 C
       DIMENSION HDEN(20),DENA(20),DENB(20)                               FL39150
 C
