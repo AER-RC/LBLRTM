@@ -298,6 +298,8 @@ C
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & A03050
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
       CHARACTER*55 CTAPE3
+      CHARACTER*55 PTHRAD
+      CHARACTER*10 HFMRAD
       CHARACTER*9 CT6FIL
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
@@ -309,6 +311,12 @@ C                                                                         A02940
      *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
 C     -------------------------
+C
+C     -------------------------
+C     Common blocks for layer radiances
+C     -------------------------
+C
+      COMMON /RADLAY/ PTHRAD,HFMRAD
 C
       DIMENSION IDCNTL(14),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2)      A03280
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A02970
@@ -380,6 +388,8 @@ C
       CT6FIL = 'TAPE6    '
       CTAPE3 = 'TAPE3'
 C
+      PTHRAD = 'RDlayer_'
+      CALL QNTIFY(PTHRAD,HFMRAD)
 C     -------------------------
 C
 C     FILE ASSIGNMENTS                                                    A03600
@@ -1163,7 +1173,7 @@ C     1 < IMRG < 10 OPTICAL DEPTHS ARE SEQUENTIAL ON KFILE BY LAYER       A12020
 C
 C     IMRG = 1 Optical Depths are stored on different files by layer
 C
-C     IMRG = 40/41 RADIANCE and TRANSMITTANCE are calculated from
+C     IMRG = 40-46 RADIANCE and TRANSMITTANCE are calculated from
 C               multiple optical depth files by layer
 C                                                                         A12030
 C**********************************************************************   A12040
@@ -1215,16 +1225,21 @@ C                  DEPTHS                                                 A12490
 C                                                                         A12500
 C        ****  FLUX CALCULATIONS -SCANNED ****                            A12510
 C                                                                         A12520
-C      IMRG=35 --- SPACE TO GROUND FROM PRESTORED OPTICAL DEPTHS          A12530
-C      IMRG=36 --- GROUND TO SPACE FROM PRESTORED OPTICAL DEPTHS          A12540
+C      IMRG=35 --- SPACE TO GROUND MERGE FROM PRESTORED OPTICAL DEPTHS    A12530
+C      IMRG=36 --- GROUND TO SPACE MERGE FROM PRESTORED OPTICAL DEPTHS    A12540
 C                                                                         A12550
 C        ****  RADIANCE CALCULATIONS  **** 
-C                                                                         A12520
-C      IMRG=40 --- Downward radiance from prestored optical depths,
+C
+C      IMRG=40 --- Downwelling radiance from prestored optical depths,
 C                  monochromatic
-C      IMRG=41 --- Upward radiance from prestored optical depths,
+C      IMRG=41 --- Upwelling radiance from prestored optical depths,
 C                  monochromatic
-C                                                                         A12550
+C
+C        ****  FLUX CALCULATIONS (Layer Radiance) -MONOCHROMATIC ****
+C
+C      IMRG=45 --- Space to ground merge from prestored optical depths
+C      IMRG=46 --- Ground to space merge from prestored optical depths
+C
 C      WEIGHTING FUNCTION RESULTS ARE ON NFILE SEPARATED BY               A12560
 C      INTERNAL 'EOF'                                                     A12570
 C                                                                         A12580
@@ -1270,7 +1285,8 @@ C
 C     ---------------------
 C
 C     For IMRG = 35,36,40,41 (those options which use
-C     precalculated layer optical depths stored on different
+C     For IMRG = 35,36,40,41,45,46 (those options which
+C     use precalculated layer optical depths stored on different
 C     files for radiative transfer), read in the pathname of
 C     the layer optical depths and determine format for the
 C     addition of the layer number suffix.
@@ -1278,7 +1294,7 @@ C
       IF (IMRG.GE.35) THEN
          READ (IRD,945) PATH1
          CALL QNTIFY(PATH1,HFORM1)
-         CALL OPNRAD(1,1,PATH1,HFORM1)
+         CALL OPNODF(1,1,PATH1,HFORM1)
       ENDIF
 C
 C     ---------------------
@@ -1295,7 +1311,7 @@ C     monochromatic.
 C
 C                                     SPECIAL CASE -> IMRG=40/41, IEMIT=1
 C
-      IF ((IMRG.GE.40).AND.(IEMIT.EQ.1)) THEN
+      IF ((IMRG.EQ.40.OR.IMRG.EQ.41).AND.(IEMIT.EQ.1)) THEN
 C
 C        -----------------------------
 C        Obtain information from KFILE
@@ -1313,7 +1329,7 @@ C
 C
 C        Check for forced IPATHL, and set layer boundaries as needed
 C
-         IF (IMRG.EQ.40) THEN
+         IF (IMRG.EQ.41) THEN
             IF (LH2.NE.1) THEN
                LH1 = MAX(LH1,LH2)
                LH2 = 1
@@ -1339,7 +1355,7 @@ C
          REWIND LFILE
          WRITE (IPR,900)
          WRITE (IPR,905)
-         CALL OPNRAD(NLAYER,LAYER,PATH1,HFORM1)
+         CALL OPNODF(NLAYER,LAYER,PATH1,HFORM1)
          WRITE (IPR,905)
          CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
          IF (LAYER.EQ.NLAYER) RETURN
@@ -1465,7 +1481,7 @@ C                                                                         A13500
 C                                                                         A13610
 C    END OF LOOP OVER LAYERS                                              A13620
 C                                                                         A13630
-C                                    IMRG=2,4,6,12,14,16,22,24,26,32,36   A13640
+C                                 IMRG=2,4,6,12,14,16,22,24,26,32,36,46   A13640
 C                                                                         A13650
    50 IF (MMRG.EQ.1) GO TO 170                                            A13660
       IF (MMRG.EQ.3) GO TO 90                                             A13670
@@ -1518,13 +1534,21 @@ C                                                                         A13850
          CALL OPDPTH (MPTS)                                               A14140
          REWIND KFILE                                                     A14150
       ENDIF                                                               A14160
-      IF (IMRG.EQ.36) CALL OPNRAD(NLAYER,LAYER,PATH1,HFORM1)
+C
+C     Open layer optical depth file for IMRG=36,46.  If IMRG=46, then
+C     open output layer radiance file.
+C
+      IF ((IMRG.EQ.36).OR.(IMRG.EQ.46)) THEN
+         CALL OPNODF(NLAYER,LAYER,PATH1,HFORM1)
+         IF (IMRG.EQ.46) CALL OPNRAD(NLAYER,LAYER)
+      ENDIF
       CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)                               A14170
       NNTAN = NNTAN+1                                                     A14180
       NTAN(NNTAN) = NTAN(NNTAN-1)+1                                       A14190
       IF (MMRG.EQ.2) GO TO 80                                             A14200
       REWIND MFILE                                                        A14210
-      IF (IMRG.EQ.4.OR.IMRG.EQ.6) CALL COPYFL (NPTS,MFILE,NFILE)          A14220
+      IF (IMRG.EQ.4.OR.IMRG.EQ.6.OR.IMRG.EQ.46)
+     *     CALL COPYFL (NPTS,MFILE,NFILE)                                 A14220
 C                                                                         A14230
 C   FOR SCAN CASE, IF DV NOT FINE ENOUGH, FIRST INTERPOLATE               A14240
 C                                                                         A14250
@@ -1546,7 +1570,7 @@ C                                                                         A14250
       REWIND LFILE                                                        A14410
       GO TO 70                                                            A14420
 C                                                                         A14430
-C                                              IMRG=3,5,13,15,23,25,35    A14440
+C                                            IMRG=3,5,13,15,23,25,35,45   A14440
 C                                                                         A14450
 C       MODIFIED TO BEGIN WEIGHTING FUNCTION CALC. FROM H1                A14460
 C                                                                         A14470
@@ -1583,6 +1607,10 @@ C                                                                         A14710
       WRITE (IPR,925) NLAYER,LAYER                                        A14780
       WRITE (IPR,920) (NTAN(N),N=1,NNTAN)                                 A14790
       WRITE (IPR,905)                                                     A14800
+C
+C     Open layer optical depth file for IMRG=35,45.  If IMRG=45, then
+C     open output layer radiance file.
+C
       IF (IMRG.EQ.13.OR.IMRG.EQ.23) THEN                                  A14810
          REWIND KFILE                                                     A14820
          LAYHDR = LAYER                                                   A14830
@@ -1590,8 +1618,9 @@ C                                                                         A14710
          NLAYHD = NLAYER                                                  A14850
          CALL OPDPTH (MPTS)                                               A14860
          REWIND KFILE                                                     A14870
-      ELSEIF (IMRG.EQ.35) THEN
-         CALL OPNRAD(1,LAYER,PATH1,HFORM1)
+      ELSEIF (IMRG.EQ.35.OR.IMRG.EQ.45) THEN
+         CALL OPNODF(1,LAYER,PATH1,HFORM1)
+         IF (IMRG.EQ.45) CALL OPNRAD(NLAYER,LAYER)
       ELSE
          CALL SKIPFL (ISKIP,KFILE,IEOF)                                   A14890
       ENDIF                                                               A14900
@@ -1599,7 +1628,8 @@ C                                                                         A14710
       NNTAN = NNTAN+1                                                     A14920
       NTAN(NNTAN) = NTAN(NNTAN-1)-1                                       A14930
       REWIND MFILE                                                        A14940
-      IF (IMRG.EQ.3.OR.IMRG.EQ.5) CALL COPYFL (NPTS,MFILE,NFILE)          A14950
+      IF (IMRG.EQ.3.OR.IMRG.EQ.5.OR.IMRG.EQ.45)
+     *     CALL COPYFL (NPTS,MFILE,NFILE)                                 A14950
 C                                                                         A14960
 C     FOR SCAN CASE, IF DV NOT FINE ENOUGH, FIRST INTERPOLATE             A14970
 C                                                                         A14980
