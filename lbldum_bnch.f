@@ -10,8 +10,8 @@ C     END
       PRINT * , ' LOWTRN NOT IMPLEMENTED'                                       
       STOP                                                                      
       END                                                                       
-      SUBROUTINE PLTFAS (IENDPL)
-      PRINT * , ' PLTFAS NOT IMPLEMENTED'                                       
+      SUBROUTINE PLTLBL (IENDPL)
+      PRINT * , ' PLTLBL NOT IMPLEMENTED'                                       
       STOP                                                                      
       END                                                                       
       SUBROUTINE FLTPRT (MFILE)                                                 
@@ -38,8 +38,12 @@ C     END
       PRINT * , ' SCANFN NOT IMPLEMENTED'                                       
       STOP                                                                      
       END                                                                       
-      SUBROUTINE FSCATM                                                  
-      PRINT * , ' FSCATM NOT IMPLEMENTED'                                       
+      SUBROUTINE SCNMRG
+      PRINT * , ' SCNMRG NOT IMPLEMENTED'                                       
+      STOP                                                                      
+      END                                                                       
+      SUBROUTINE LBLATM                                                  
+      PRINT * , ' LBLATM NOT IMPLEMENTED'                                       
       STOP                                                                      
       END                                                                       
       SUBROUTINE FLTMRG (MFILE,NFILE)                                         
@@ -81,3 +85,19 @@ c     RANDOM=0.5
 c     IRAND=IABS(IRAND)                                                         
 c     RETURN                                                                    
 c     END                                                                       
+      SUBROUTINE SHRKSC
+      PRINT * , ' SHRKSC NOT IMPLEMENTED'                                       
+      STOP                                                                      
+      END                                                                       
+      SUBROUTINE CONVSC
+      PRINT * , ' CONVSC NOT IMPLEMENTED'                                       
+      STOP                                                                      
+      END                                                                       
+      SUBROUTINE RDSCAN
+      PRINT * , ' RDSCAN NOT IMPLEMENTED'                                       
+      STOP                                                                      
+      END                                                                       
+      SUBROUTINE FFTSCN
+      PRINT * , ' FFTSCN NOT IMPLEMENTED'                                       
+      STOP                                                                      
+      END                                                                       
