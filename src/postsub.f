@@ -873,8 +873,8 @@ C                                                                         I07490
       ISCANT = MOD(ISCAN,1000)                                            I07550
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       I07560
       IF (JTREM.LT.0) THEN                                                I07570
-         WRITE(IPR,*) ' JTREM.LT.0 AT I07570'                             I07572
-         STOP         ' JTREM.LT.0 AT I07570'
+         WRITE(IPR,*) ' Invalid JTREM in SCNINT '
+         STOP         ' Invalid JTREM in SCNINT '
       ENDIF                                                                     
       WRITE (IPR,910) IFILE,IEMIT,JEMIT,JTREM,JABS                        I07580
 C                                                                         I07590
@@ -1046,7 +1046,7 @@ C                                                                         I09120
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        I09190
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        I09200
       ISCANT = MOD(ISCAN,1000)                                            I09210
-      IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       I09220
+      IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 3 
 C
       IF (JTREM.LT.0) THEN                                                I09230
          WRITE(IPR,*) ' SCANF; JTREM LT 0'                                I09230
@@ -1367,7 +1367,7 @@ C                                                                         I12000
       CALL BUFIN (IFILE,IEOFSC,DUMMY(1),2)                                I12200
       IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),1)                I12210
       GO TO 10                                                            I12220
-   20 IF (JTREM.EQ.0) THEN                                                I12230
+   20 IF (JTREM.EQ.0 .or. jtrem.eq.3 ) THEN    
          CALL BUFIN (IFILE,IEOFSC,S(NLOW),NNB)                            I12240
          DO 30 I = NLOW, NNI                                              I12250
             SI = S(I)                                                     I12260
@@ -2566,7 +2566,8 @@ C                                                                         J01290
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        J01350
       ISCANT = MOD(ISCAN,1000)                                            J01360
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       J01370
-      IF (JTREM.LT.0) STOP 71048                                          J01380
+         WRITE(IPR,*) ' Invalid JTREM in INTRPL '
+         STOP         ' Invalid JTREM in INTRPL '
       WRITE (IPR,935) IEMIT,JEMIT,JTREM                                   J01390
       WRITE (IPR,940) IFILE,IFILST,NIFILS,JEMIT,JABS                      J01400
 C                                                                         J01410
@@ -2596,7 +2597,7 @@ C                                                                         J01640
 C     READ FROM IFILE UNTIL THE FIRST REQUIRED POINT IS REACHED           J01650
 C     AND LOAD DATA INTO S                                                J01660
 C                                                                         J01670
-      CALL RDPANL (S,JTREM,IFILE,ISCAN,JEMIT,ICNRT)                       J01680
+      CALL RDPANL (S,JTREM,IFILE,ISCAN,JEMIT,ICNvRT)                       J01680
       IF (IEOFSC.LE.0) GO TO 30                                           J01690
 C                                                                         J01700
 C     DO INTERPOLATION                                                    J01710
