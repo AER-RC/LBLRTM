@@ -2,10 +2,12 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
-      SUBROUTINE NONLTE (MPTS)
-      PRINT * , ' NONLTE NOT IMPLEMENTED'
-      STOP
-      END
+
+C     SUBROUTINE NONLTE (MPTS)
+C     PRINT * , ' NONLTE NOT IMPLEMENTED'
+C     STOP
+C     END
+
       SUBROUTINE LASER(VLAS,MFILE,JAERSL)
       PRINT * , ' LASER NOT IMPLEMENTED'
       STOP
