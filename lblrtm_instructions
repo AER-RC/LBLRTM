@@ -65,8 +65,18 @@ C     presently: %H%  %T%
                                              and 5 cm-1 for layers with pressures .LE. 0.5 mb
                           (ILBLF4 = 2 saves computational time above 50 km with minimal loss of accuracy for most cases)
  
-         ICNTNM   (0,1) flag for continuum (CONTNM)  1 = yes
-                           should be set to 1 for atmospheric calculations
+         ICNTNM   (0,1,2,3,4,5,6) flag for continuum (CONTNM)
+                     = 0  no continuum calculated
+                     = 1  all continua calculated, including Rayleigh extinction where applicable
+                     = 2  H2O self not calculated, all other continua/Rayleigh extinction calculated
+                     = 3  H2O foreign not calculated, all other continua/Rayleigh extinction calculated
+                     = 4  H2O self and foreign not calculated, all other continua/Rayleigh extinction calculated
+                     = 5  Rayleigh extinction not calculated, all other continua calculated
+                     = 6  Individual continuum scale factors input (Requires Record 1.2a)
+ 
+
+ RECORD 1.2 (Continued)
+ 
  
          IAERSL   (0,1,7,9) flag for aerosols (LOWTRN)
  
@@ -75,10 +85,6 @@ C     presently: %H%  %T%
                      = 7  user defined aerosol models
                      = 9  use precalculated aerosols (TAPE20 from a previous aerosol run)
 
-
- RECORD 1.2 (Continued)
- 
- 
           IEMIT   (0,1,2)
  
                      = 0  optical depth only
@@ -336,7 +342,32 @@ C     presently: %H%  %T%
                          (optical depth for IEMIT=0; radiance and transmission for IEMIT=1)
                          (for laser option ILAS > 1, NPTS should be set to 0)
  
+
+
+ RECORD 1.2a   (required if ICNTNM = 6)
  
+
+             XSELF, XFRGN, XCO2C, XO3CN, XO2CN, XN2CN, XRAYL
+ 
+             free format
+
+
+             XSELF  H2O self broadened continuum absorption multiplicative factor
+
+             XFRGN  H2O foreign broadened continuum absorption multiplicative factor
+
+             XCO2C  CO2 continuum absorption multiplicative factor
+
+             XO3CN  O3 continuum absorption multiplicative factor
+
+             XO2CN  O2 continuum absorption multiplicative factor
+
+             XN2CN  N2 continuum absorption multiplicative factor
+
+             XRAYL  Rayleigh extinction multiplicative factor
+ 
+ 
+
 
  RECORD 1.2.1    (required if IEMIT = 2; otherwise omit)
  
