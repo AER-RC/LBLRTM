@@ -335,6 +335,35 @@ C     presently: %H%  %T%
                          (for laser option ILAS > 1, NPTS should be set to 0)
  
  
+
+ RECORD 1.2.1    (required if IEMIT = 2; otherwise omit)
+ 
+                             NOTE:  IEMIT = 2 requires binary solar radiance file SOLAR.RAD
+ 
+         INFLAG,  IOTFLG
+ 
+            1-5,    6-10
+ 
+             I5,      I5
+
+
+              INFLAG       (0,1) input flag for solar radiance calculation
+
+                           = 0  input previously calculated radiance and transmittance from TAPE12 (default)
+                           = 1  input previously calculated optical depth from TAPE10
+                           = 2  input previously calculated upwelling radiance and transmittance from TAPE12,
+                                downwelling radiance and transmittance from 'SOL.PATH.T2', and solar reflection
+                                function from 'SOL.REFLECTANCE' (all binary files).
+ 
+              IOTFLG       (0,1) output flag for solar radiance calculation (output to TAPE13)
+
+                           = 0  output attenuated solar radiance (default)
+                           = 1  output total radiance (requires INFLAG = 0)
+                           = 2  output total radiance, including effects of downwelling thermal and reflection
+                                from solar path (requires INFLAG = 2)
+
+
+
 
  
  RECORD 1.3    (required if IHIRAC > 0; IAERSL > 0; IEMIT = 1; IATM = 1; or ILAS > 0; otherwise omit)
@@ -387,7 +416,7 @@ C     presently: %H%  %T%
  
  
 
- RECORD 1.4    (required if IEMIT = 1; otherwise omit)
+ RECORD 1.4    (required if IEMIT = 1, or both IEMIT=2 and IOTFLG=2; otherwise omit)
  
  
  
@@ -464,34 +493,6 @@ C     presently: %H%  %T%
 
 
  
- RECORD 1.5    (required if IEMIT = 2; otherwise omit)
- 
-                             NOTE:  IEMIT = 2 requires binary solar radiance file SOLAR.RAD
- 
-         INFLAG,  IOTFLG
- 
-            1-5,    6-10
- 
-             I5,      I5
-
-
-              INFLAG       (0,1) input flag for solar radiance calculation
-
-                           = 0  input previously calculated radiance and transmittance from TAPE12 (default)
-                           = 1  input previously calculated optical depth from TAPE10
-                           = 2  input previously calculated upwelling radiance and transmittance from TAPE12,
-                                downwelling radiance and transmittance from 'SOL.PATH.T2', and solar reflection
-                                function from 'SOL.REFLECTANCE' (all binary files).
- 
-              IOTFLG       (0,1) output flag for solar radiance calculation (output to TAPE13)
-
-                           = 0  output attenuated solar radiance (default)
-                           = 1  output total radiance (requires INFLAG = 0)
-                           = 2  output total radiance, including effects of downwelling thermal and reflection
-                                from solar path (requires INFLAG = 2)
-
-
-
 
  RECORD 1.6a    (required if IMRG = 35-36, 40-41, 45-46; otherwise omit)
  
