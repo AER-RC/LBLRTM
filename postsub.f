@@ -3229,12 +3229,16 @@ C                                                                         L00470
       inquire(ifile,opened=op)
       IF (.NOT.OP) THEN
          WRITE (FLTINF,970) CTAPE,IFILE
-         WRITE (FLTOUT,970) COUT,IFILE
          OPEN (IFILE,FILE=FLTINF,STATUS='UNKNOWN',FORM=CFORM)
-         JFILE = IFILE+1
-         OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
          REWIND IFILE
       ENDIF
+      inquire(jfile,opened=op)
+      IF (.NOT.OP) THEN
+         JFILE = IFILE+1
+         WRITE (FLTOUT,970) COUT,IFILE
+         OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
+         rewind jfile
+      endif
       IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  L00500
       IEOFSC = 0                                                          L00510
       ISTOP = 0                                                           L00520
