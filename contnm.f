@@ -4439,7 +4439,7 @@ C                                                                         F42430
          VJ = V1C+DVC*FLOAT(J-1)                                          F42520
          CALL HERTDA (HERZ,VJ)                                            F42530
          CALL HERPRS (HERZ,T,P)                                           F42540
-         C(J) = HERZ                                                      F42550
+         C(J) = HERZ/VJ                                                   F42550
    10 CONTINUE                                                            F42560
 C                                                                         F42570
       RETURN                                                              F42580
