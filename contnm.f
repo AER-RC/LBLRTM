@@ -248,7 +248,7 @@ c        as well, then stop interpolation at 2200 cm-1.
 c            v1c = v1c+npts_hi
          endif
 c
-         CALL XINT_2(V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,npts_lo,NPTABS)  
+         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,npts_lo,NPTABS)
 C        ------------------------------------------------------------
 C                                                                         F00780
 
@@ -770,38 +770,6 @@ C
 C
       END
 C
-C     --------------------------------------------------------------
-C
-      SUBROUTINE XINT_2 (V1A,V2A,DVA,A,AFACT,VFT,DVR3,R3,N1R3,N2R3)  
-C                                                                         B17530
-      IMPLICIT REAL*8           (V)                                     ! B17540
-C                                                                         B17550
-C     THIS SUBROUTINE INTERPOLATES THE A ARRAY STORED                     B17560
-C     FROM V1A TO V2A IN INCREMENTS OF DVA USING A MULTIPLICATIVE         B17570
-C     FACTOR AFACT, INTO THE R3 ARRAY FROM LOCATION N1R3 TO N2R3 IN       B17580
-C     INCREMENTS OF DVR3                                                  B17590
-C                                                                         B17600
-      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           B17610
-      DIMENSION A(*),R3(*)                                                B17620
-C                                                                         B17630
-      RECDVA = 1./DVA                                                     B17640
-      ILO = (V1A+DVA-VFT)/DVR3+1.+ONEMI                                   B17650
-      ILO = MAX(ILO,N1R3)                                                 B17660
-      IHI = (V2A-DVA-VFT)/DVR3+ONEMI                                      B17670
-      IHI = MIN(IHI,N2R3)                                                 B17680
-C                                                                         B17690
-      DO 10 I = ILO, IHI                                                  B17700
-         VI = VFT+DVR3*FLOAT(I-1)                                         B17710
-         J = (VI-V1A)*RECDVA+ONEPL                                        B17720
-         VJ = V1A+DVA*FLOAT(J-1)                                          B17730
-         P = RECDVA*(VI-VJ)                                               B17740
-         CONTI = A(J)*(1.-p) +A(J+1)*p
-         R3(I) = R3(I)+CONTI*AFACT                                        B17800
-   10 CONTINUE                                                            B17810
-C                                                                         B17820
-      RETURN                                                              B17830
-C                                                                         B17840
-      END                                                                 B17850
       SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                               F02220
 C                                                                         F02230
       IMPLICIT REAL*8           (V)                                     ! F02240
