@@ -872,11 +872,11 @@ C                                                                         I07490
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        I07540
       ISCANT = MOD(ISCAN,1000)                                            I07550
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       I07560
+      WRITE (IPR,910) IFILE,IEMIT,JEMIT,JTREM,JABS                        I07580
       IF (JTREM.LT.0) THEN                                                I07570
          WRITE(IPR,*) ' Invalid JTREM in SCNINT '
          STOP         ' Invalid JTREM in SCNINT '
       ENDIF                                                                     
-      WRITE (IPR,910) IFILE,IEMIT,JEMIT,JTREM,JABS                        I07580
 C                                                                         I07590
       IDATA = -1                                                          I07600
 C                                                                         I07610
@@ -1048,12 +1048,12 @@ C                                                                         I09120
       ISCANT = MOD(ISCAN,1000)                                            I09210
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 4 
 C
+      WRITE (IPR,920) SCANID,IUNIT,IFILST,NIFILS,JEMIT,JFN,JVAR,JABS      I09240
+C
       IF (JTREM.LT.0) THEN                                                I09230
          WRITE(IPR,*) ' SCANF; JTREM LT 0'                                I09230
          STOP         ' SCANF; JTREM LT 0'                                I09232
       ENDIF                                                      
-C
-      WRITE (IPR,920) SCANID,IUNIT,IFILST,NIFILS,JEMIT,JFN,JVAR,JABS      I09240
 C                                                                         I09250
 C     JTREM=0   SCANFN CONVOLVED WITH EXPONENTIATED                       I09260
 C                      ABSORPTION COEFFICIENT                             I09270
@@ -2566,10 +2566,12 @@ C                                                                         J01290
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        J01350
       ISCANT = MOD(ISCAN,1000)                                            J01360
       IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 2                       J01370
-         WRITE(IPR,*) ' Invalid JTREM in INTRPL '
-         STOP         ' Invalid JTREM in INTRPL '
       WRITE (IPR,935) IEMIT,JEMIT,JTREM                                   J01390
       WRITE (IPR,940) IFILE,IFILST,NIFILS,JEMIT,JABS                      J01400
+      IF (JTREM.LT.0) then
+         WRITE(IPR,*) ' Invalid JTREM in INTRPL '
+         STOP         ' Invalid JTREM in INTRPL '
+      endif
 C                                                                         J01410
       IDATA = -1                                                          J01420
 C                                                                         J01430
