@@ -3879,6 +3879,7 @@ C                                                                         A09600
       COMMON /IFIL/ Idum1,IPR,Idum2,Ndum1,Ndum2F,Ndum3,Ndum4,Ndum5,
      *              Ndum6,Kdum1,Kdum2,Ldum1,Ndum7,Idum3,Idum4,
      *              Ndum8,Ldum2,Ldum3
+      common /eppinfo/ negepp_flag
 
       real *4 sumstr,flinlo,flinhi
       integer *4 lnfil,molcnt,mcntlc,mcntnl,linmol,
@@ -3918,6 +3919,7 @@ c
 
       IF (CNEGEPP(8).eq.'^') THEN
          write (lnfil4) n_negepp,n_resetepp,xspace
+         negepp_flag = 1
       endif
 C
       return
@@ -4274,6 +4276,8 @@ C                                                                         D05670
 C                                                                         D05690
 C     SUBROUTINE RDLIN4 INPUTS THE LINE DATA FROM LNFIL4                  D05700
 C                                                                         D05710
+      CHARACTER*8      HLINID,BMOLID,HID1
+      CHARACTER*1 CNEGEPP(8)
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SEC   ,       XALTZ
 C                                                                         D05730
@@ -4288,6 +4292,8 @@ C                                                                         D05730
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D05820
      *              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,        D05830
      *              NLTEFL,LNFIL4,LNGTH4                                  D05840
+      common /eppinfo/ negepp_flag
+
       DIMENSION DUM(2),LINPNL(2)                                          D05850
 C                                                                         D05860
       EQUIVALENCE (VMIN,LINPNL(1))                                        D05870
@@ -4306,6 +4312,7 @@ C                                                                         D05990
             RETURN                                                        D06000
 C                                                                         D06010
          ENDIF                                                            D06020
+         if (negepp_flag.eq.1) CALL BUFIN (LNFIL4,LEOF,DUM(1),1)
       ENDIF                                                               D06030
       IEOF = 0                                                            D06040
       ILO = 1                                                             D06050
@@ -4327,6 +4334,8 @@ C                                                                         D06190
 C                                                                         D06210
    20 IEOF = 1                                                            D06220
 C                                                                         D06230
+ 950  FORMAT (8a1)
+
       RETURN                                                              D06240
 C                                                                         D06250
       END                                                                 D06260
