@@ -171,7 +171,7 @@ C     HWHM IS CONSTANT FOR EACH PANEL AS PROGRAMMED                       I01660
 C                                                                         I01670
 C     SET DVINT TO DETERMINE IF INTERPOLATION IS NECESSARY                I01680
 C                                                                         I01690
-      DVINT = HWHM/8.                                                     I01700
+      DVINT = HWHM/12.                                                    I01700
 C                                                                         I01710
       IFN = ABS(JFN)                                                      I01720
       IF (IFN.GT.NFNMAX) THEN                                             I01730
@@ -620,7 +620,7 @@ C    BOUND AT THIS POINT IS THE WAVENUMBER VALUE                          I06030
 C    OF HALF THE SCANNING FUNCTION                                        I06040
 C                                                                         I06050
       DVO = HWHM/SAMPLE                                                   I06060
-      DVINT = HWHM/8.                                                     I06070
+      DVINT = HWHM/12.                                                    I06070
       BOUND = HWF*HWHM                                                    I06080
       V1C = V1                                                            I06090
       V2C = V2                                                            I06100
@@ -1105,7 +1105,7 @@ C                                                                         I10720
       ENDIF                                                               I10790
       NREN = 0                                                            I10800
       IF (INIT.EQ.0) THEN                                                 I10810
-         DVSC = HWHM/8.                                                   I10820
+         DVSC = HWHM/12.                                                  I10820
          IRATSH = DVSC/DVI+0.5                                            I10830
          DO 20 I = 2, 24                                                  I10840
             IF (JRATIO(I).GT.IRATSH) THEN                                 I10850
