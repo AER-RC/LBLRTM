@@ -3864,7 +3864,9 @@ C                                                                         A24660
       COMMON /CONVF/ CHI(251),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4            A24720
 C                                                                         A24730
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
-
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2
+C
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),                A24740
      *            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),                A24750
      *            (FSCDID(5),IEMIT) , (FSCDID(7),IPLOT),                  A24760
