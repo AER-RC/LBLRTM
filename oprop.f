@@ -4296,22 +4296,22 @@ C                                                                         E01750
      *    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',         E01770
      *    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',         E01780
      *    'N2O5      ', 'HNO3      ', 'CF4       ', 'CHCLF2    ',         E01790
-     *    23*' ZZZZZZZZ ' /                                               E01800
+     *    'CCLF3     ', 'C2CLF5    ', 21*' ZZZZZZZZ ' /                   E01800
       DATA (ALIAS(2,I),I=1,35)/                                           E01810
      *    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',         E01820
      *    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',         E01830
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CHF2CL    ',         E01840
-     *    23*' ZZZZZZZZ ' /                                               E01850
+     *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 21*' ZZZZZZZZ ' /                   E01850
       DATA (ALIAS(3,I),I=1,35)/                                           E01860
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',         E01870
      *    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',         E01880
-     *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', ' ZZZZZZZZ ',         E01890
-     *    23*' ZZZZZZZZ ' /                                               E01900
+     *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',         E01890
+     *    'CFC13     ', 'CFC115    ', 21*' ZZZZZZZZ ' /                   E01900
       DATA (ALIAS(4,I),I=1,35)/                                           E01910
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',         E01920
      *    'F11       ', 'F12       ', 'F114      ', 'F113      ',         E01930
-     *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F14       ', ' ZZZZZZZZ ',         E01940
-     *    23*' ZZZZZZZZ ' /                                               E01950
+     *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F14       ', 'F22       ',         E01940
+     *    'F13       ', 'F115      ', 21*' ZZZZZZZZ ' /                   E01950
 C                                                                         E01960
 C     XSMASS IS MASS OF EACH CROSS-SECTION                                E01961
 C                                                                         E01962
@@ -4319,7 +4319,7 @@ C                                                                         E01962
      1      97.46     ,   79.01     ,  102.92     ,  153.82     ,         E01964
      2     137.37     ,  120.91     ,  170.92     ,  187.38     ,         E01965
      3     108.01     ,   63.01     ,   88.00     ,   86.47     ,         E01966
-     4    23*0.00 /                                                       E01967
+     4     104.46     ,  154.47     ,  21*0.00 /                          E01967
 C                                                                         E01969
       DATA V1FX / 175*0.0 /,V2FX / 175*0.0 /,DVFX / 175*0.0 /,            E01970
      *     WXM / 35*0.0 /                                                 E01980
@@ -4857,11 +4857,11 @@ C                                                                         E07110
 C                                                                         E07150
 C     DEFINE PRESSURE CONVERSIONS                                         E07160
 C                                                                         E07170
-C        PTORMB = 1000. MB / 760. TORR  (TORR TO MILLIBARS)               E07180
-C        PATMMB = 1000. MB / 1.0  ATM   (ATMOPHERES TO MILLIBARS)         E07190
+C        PTORMB = 1013. MB / 760. TORR  (TORR TO MILLIBARS)               E07180
+C        PATMMB = 1013. MB / 1.0  ATM   (ATMOPHERES TO MILLIBARS)         E07190
 C                                                                         E07200
-      PTORMB = 1000./760.                                                 E07210
-      PATMMB = 1000.                                                      E07220
+      PTORMB = 1013./760.                                                 E07210
+      PATMMB = 1013.                                                      E07220
 C                                                                         E07230
       IEOF = 0                                                            E07240
       ISFORM = IXFORM(NS,NI)                                              E07250
@@ -4939,7 +4939,7 @@ C                                                                         E07820
                IF (NPANEL.EQ.0) THEN                                      E07970
                   XSTEMP(NT1,NS,NI) = TEMP                                E07980
                   XSMAX(NT1,NS,NI) = SMAX                                 E07990
-                  PDX(NT1,NS,NI) = PRES*PATMMB                            E08000
+                  PDX(NT1,NS,NI) = PRES*PTORMB                            E08000
                ENDIF                                                      E08010
             ENDIF                                                         E08020
             IF (NXMODE.EQ.2) THEN                                         E08030
@@ -4958,7 +4958,7 @@ C                                                                         E07820
                   IF (NPANEL.EQ.0) THEN                                   E08160
                      XSTEMP(NT2,NS,NI) = TEMP                             E08170
                      XSMAX(NT2,NS,NI) = SMAX                              E08180
-                     PDX(NT2,NS,NI) = PRES*PATMMB                         E08190
+                     PDX(NT2,NS,NI) = PRES*PTORMB                         E08190
                   ENDIF                                                   E08200
                ENDIF                                                      E08210
             ENDIF                                                         E08220
@@ -4991,7 +4991,7 @@ C                                                                         E08260
                IF (NPANEL.EQ.0) THEN                                      E08490
                   XSTEMP(NT1,NS,NI) = TEMP                                E08500
                   XSMAX(NT1,NS,NI) = SMAX                                 E08510
-                  PDX(NT1,NS,NI) = PRES*PATMMB                            E08520
+                  PDX(NT1,NS,NI) = PRES*PTORMB                            E08520
                ENDIF                                                      E08530
             ENDIF                                                         E08540
             IF (NXMODE.EQ.2) THEN                                         E08550
@@ -5019,7 +5019,7 @@ C                                                                         E08260
                   IF (NPANEL.EQ.0) THEN                                   E08770
                      XSTEMP(NT2,NS,NI) = TEMP                             E08780
                      XSMAX(NT2,NS,NI) = SMAX                              E08790
-                     PDX(NT2,NS,NI) = PRES*PATMMB                         E08800
+                     PDX(NT2,NS,NI) = PRES*PTORMB                         E08800
                   ENDIF                                                   E08810
                ENDIF                                                      E08820
             ENDIF                                                         E08830
