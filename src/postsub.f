@@ -1046,7 +1046,7 @@ C                                                                         I09120
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.0)) JTREM = 2                        I09190
       IF ((IEMIT.EQ.1).AND.(JEMIT.EQ.1)) JTREM = 1                        I09200
       ISCANT = MOD(ISCAN,1000)                                            I09210
-      IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 3 
+      IF ((ISCANT.GE.1).AND.(JEMIT.EQ.0)) JTREM = 4 
 C
       IF (JTREM.LT.0) THEN                                                I09230
          WRITE(IPR,*) ' SCANF; JTREM LT 0'                                I09230
@@ -1367,7 +1367,7 @@ C                                                                         I12000
       CALL BUFIN (IFILE,IEOFSC,DUMMY(1),2)                                I12200
       IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),1)                I12210
       GO TO 10                                                            I12220
-   20 IF (JTREM.EQ.0 .or. jtrem.eq.3 ) THEN    
+   20 IF (JTREM.EQ.0 .OR. JTREM.EQ.4 ) THEN    
          CALL BUFIN (IFILE,IEOFSC,S(NLOW),NNB)                            I12240
          DO 30 I = NLOW, NNI                                              I12250
             SI = S(I)                                                     I12260
