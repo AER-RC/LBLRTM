@@ -57,7 +57,7 @@ C                                                                        FL00510
 C                                                                        FL00520
 C     ****************************************************************** FL00530
 C                                                                        FL00540
-C     MODEL IS READ IN FSCATM                                            FL00550
+C     MODEL IS READ IN LBLATM                                            FL00550
 C     M1, M2, AND M3 ARE SET DEPENDING ON MODEL                          FL00560
 C                                                                        FL00570
 C     ****************************************************************** FL00580
@@ -358,7 +358,6 @@ C
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL03340
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /MART/ RHH                                                  FL03350
-      COMMON /USRDTA/ NANGLS,ANGF(50),F(4,50)                            FL03360
       COMMON /MDLZ/ HMDLZ(10)                                            FL03370
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL03380
       CHARACTER*20 HHAZE,HSEASN,HVULCN,HMET,HMODEL,BLANK                 FL03390
@@ -369,17 +368,12 @@ C
      * HMET(2),HMODEL(8),HTRRAD(4)                                       FL03420
       COMMON /VSBD/ VSB(10)                                              FL03430
 C                                                                        FL03440
-C     **   HDATE AND HTIME CARRY THE DATA AND TIME AND MUST BE DOUBLE    FL03450
-C     **   PRECISION ON A 32 BIT WORD COMPUTER                           FL03460
-C                                                                        FL03470
-      DOUBLE PRECISION HDATE,HTIME                                       FL03480
-C                                                                        FL03490
 C     **   IRD, IPR, AND IPU ARE UNIT NUMBERS FOR INPUT, OUTPUT, AND     FL03500
 C     **   TAPE7 RESPECTIVELY                                            FL03510
 C                                                                        FL03520
       EQUIVALENCE (FSCDID(5),IEMS),(FSCDID(4),IAERSL)                    FL03530
 C                                                                        FL03540
-      DATA MAXATM,MAXGEO   /70, 64/                                      FL03550
+      DATA MAXATM,MAXGEO   /220, 214/                                    FL03550
       IEMSCT = IEMS                                                      FL03560
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
@@ -425,7 +419,7 @@ C                                                                        FL03920
 C                                                                        FL03940
 C     CC                                                                 FL03950
 C     CC    OBTAIN PARAMETERS IN COMMON/LCRD3/AND/LCRD4/ FROM COMMON ADR FL03960
-C     CC    WHICH PASSED THEM FROM FSCATM                                FL03970
+C     CC    WHICH PASSED THEM FROM LBLATM                                FL03970
 C     CC                                                                 FL03980
 C                                                                        FL03990
       DO 10 II = 1, 4                                                    FL04000
@@ -770,7 +764,7 @@ C                                                                        FL06850
 C                                                                        FL07390
       END                                                                FL07400
       SUBROUTINE AERNSM(IAERSL,JPRT,GNDALT)                              FL07410
-      CHARACTER*1 JCHAR,BL                                               FL07420
+      CHARACTER*1 JCHAR                                                  FL07420
 C                                                                        FL07430
 C     ****************************************************************** FL07440
 C     DEFINES ALTITUDE DEPENDENT VARIABLES Z,P,T,WH,WO AND HAZE          FL07450
@@ -817,17 +811,19 @@ C
       COMMON /LCRD4/ V1,V2,DV                                            FL07680
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL07690
       COMMON /MART/ RHH                                                  FL07700
-      COMMON /MDATA/ZDA(50),P(50)  ,T(50)  ,WH(50)  ,WO(50),             FL07710
-     * HMIX(50),CLD(50,7),RR(50,7)                                       FL07720
+      COMMON /MDATA/ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),    FL07710
+     *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL07720
       COMMON /MODEL/ ZMDL(MXZMD),PMM(MXZMD),TMM(MXZMD),                  FL07730
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL07740
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL07750
       COMMON /MDLZ/HMDLZ(10)                                             FL07760
       COMMON /TITL/ HZ(16),SEASN(2),VULCN(8),BLANK,                      FL07790
-     * HMET(2),HMODEL(8),HTRRAD(4)                                       FL07800
-      DIMENSION ITY1(51),IH1(50),IS1(50),IVL1(50),ZGN(50)                FL07810
-      DIMENSION INEW(50),RELHUM(MXZMD),ZSTF(MXZMD),CLDTOP(10),AHAST(50)
+     *     HMET(2),HMODEL(8),HTRRAD(4)                                   FL07800
+      DIMENSION ITY1(MXZMD+1),IH1(MXZMD),IS1(MXZMD),IVL1(MXZMD),
+     *     ZGN(MXZMD)                                                    FL07810
+      DIMENSION INEW(MXZMD),RELHUM(MXZMD),ZSTF(MXZMD),CLDTOP(10),        FL07820
+     *     AHAST(MXZMD)
 C                                                                        FL07830
       CHARACTER*20 HZ,SEASN,VULCN,HMET,HMODEL,BLANK
       CHARACTER*24 HTRRAD
@@ -1415,8 +1411,8 @@ C
       PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
      *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
-      COMMON /MDATA/ ZDA(50),P(50),T(50),WH(50),WO(50),                  FL13530
-     *     HMIX(50),CLD(50,7),RR(50,7)                                   FL13540
+      COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL13530
+     *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL13540
       COMMON /MODEL/ ZMDL(MXZMD),PN(MXZMD),TN(MXZMD),                    FL13550
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL13560
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
@@ -1489,13 +1485,13 @@ C     >    BLOCK DATA                                                    FL14220
 C                                                                        FL14230
 C     CLOUD AND RAIN   DATA                                              FL14240
 C                                                                        FL14250
-C     COMMON /MDATA/ZDA(50),P(50)  ,T(50)  ,WH(50)  ,WO(50),             FL14260
-C     X HMIX(50),CLD(50,7),RR(50,7)                                      FL14270
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,   FL14260
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)                        FL14270
 C                                                                        FL14280
-      COMMON /MDATA/ZDA(50),P(50)  ,T(50)  ,WH(50)  ,WO(50),             FL14290
-     * HMIX(50),                                                         FL14300
-     * CLD1(50),CLD2(50),CLD3(50),CLD4(50),CLD5(50),CLD6(50),CLD7(50)    FL14310
-     * ,RR1(50), RR2(50), RR3(50), RR4(50), RR5(50), RR6(50), RR7(50)    FL14320
+      COMMON /MDATA/ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),    FL14290
+     *     HMIX(MXZMD),CLD1(MXZMD),CLD2(MXZMD),CLD3(MXZMD),CLD4(MXZMD),  FL14300
+     *     CLD5(MXZMD),CLD6(MXZMD),CLD7(MXZMD),RR1(MXZMD),RR2(MXZMD),    FL14310
+     *     RR3(MXZMD),RR4(MXZMD),RR5(MXZMD),RR6(MXZMD),RR7(MXZMD)        FL14320
 C                                                                        FL14330
 C     DATA  Z/                                                           FL14340
 C     C       0.0,       1.0,       2.0,       3.0,       4.0,           FL14350
@@ -1510,24 +1506,24 @@ C     C      75.0,      80.0,      85.0,      90.0,      95.0,           FL14430
 C     C     100.0,     105.0,     110.0,     115.0,     120.0/           FL14440
 C     CC   CLOUD MODELS 1-5                                              FL14450
 C                                                                        FL14460
-      DATA CLD1/ 0.0,0.0,0.0,0.2,0.35,1.0,1.0,1.0,0.3,0.15,40*0.0/       FL14470
-      DATA CLD2/ 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.3,0.4,0.3,40*0.0/         FL14480
-      DATA CLD3/ 0.0,0.0,0.15,0.30,0.15,45*0.0/                          FL14490
-      DATA CLD4/ 0.0,0.0,0.0,0.10,0.15,0.15,0.10,43*0.0/                 FL14500
-      DATA CLD5/ 0.0,0.30,0.65,0.40,46*0.0/                              FL14510
-      DATA CLD6/ 50*0.0/                                                 FL14520
-      DATA CLD7/ 50*0.0/                                                 FL14530
+      DATA CLD1/ 0.0,0.0,0.0,0.2,0.35,1.0,1.0,1.0,0.3,0.15,190*0.0/      FL14470
+      DATA CLD2/ 0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.3,0.4,0.3,190*0.0/        FL14480
+      DATA CLD3/ 0.0,0.0,0.15,0.30,0.15,195*0.0/                         FL14490
+      DATA CLD4/ 0.0,0.0,0.0,0.10,0.15,0.15,0.10,193*0.0/                FL14500
+      DATA CLD5/ 0.0,0.30,0.65,0.40,196*0.0/                             FL14510
+      DATA CLD6/ 200*0.0/                                                FL14520
+      DATA CLD7/ 200*0.0/                                                FL14530
 C                                                                        FL14540
 C     CC   RAIN MODELS 1-5                                               FL14550
 C                                                                        FL14560
-      DATA RR1/ 2.0,1.78,1.43,1.22,0.86,0.22,44*0.0/                     FL14570
-      DATA RR2/ 5.0,4.0,3.4,2.6,0.8,0.2,44*0.0/                          FL14580
-      DATA RR3/ 12.5,10.5,8.0,6.0,2.5,0.8,0.2,43*0.0/                    FL14590
-      DATA RR4/ 25.0,21.5,17.5,12.0,7.5,4.2,2.5,1.0,0.7,0.2,40*0.0/      FL14600
+      DATA RR1/ 2.0,1.78,1.43,1.22,0.86,0.22,194*0.0/                    FL14570
+      DATA RR2/ 5.0,4.0,3.4,2.6,0.8,0.2,194*0.0/                         FL14580
+      DATA RR3/ 12.5,10.5,8.0,6.0,2.5,0.8,0.2,193*0.0/                   FL14590
+      DATA RR4/ 25.0,21.5,17.5,12.0,7.5,4.2,2.5,1.0,0.7,0.2,190*0.0/     FL14600
       DATA RR5/ 75.0,70.0,65.0,60.0,45.0,20.0,12.5,7.0,3.5,              FL14610
-     * 1.0,0.2,39*0.0/                                                   FL14620
-      DATA RR6/ 50*0.0/                                                  FL14630
-      DATA RR7/ 50*0.0/                                                  FL14640
+     * 1.0,0.2,189*0.0/                                                  FL14620
+      DATA RR6/ 200*0.0/                                                 FL14630
+      DATA RR7/ 200*0.0/                                                 FL14640
 C                                                                        FL14650
 C     DATA CO2       /                                                   FL14660
 C                                                                        FL14670
@@ -1564,7 +1560,7 @@ C
 C
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL14780
       DIMENSION INEW( *)                                                 FL14790
-      DIMENSION ZMDL( *),P(50)  ,T(50)                                   FL14800
+      DIMENSION ZMDL( *),P(MXZMD),T(MXZMD)                               FL14800
 C                                                                        FL14810
 C     ZP BLANK COMMON UNUSED                                             FL14820
 C     Z1  BLANK COMMON LBLRTM ALTITUDES                                  FL14830
@@ -1749,7 +1745,7 @@ C
 C
 C     BLANK COMMON FOR ZMDL
 C
-      COMMON RELHUM(MXZMD),WHNO3(50),ICH(4),VH(16),TX(16),W(16)          FL16330
+      COMMON RELHUM(MXZMD),WHNO3(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL16330
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL16340
 C
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL16350
@@ -2162,7 +2158,7 @@ C     16    CIRRUS CLOUDS                                                FL20350
 C     ****************************************************************** FL20360
 C                                                                        FL20370
       PARAMETER (MAXDV=2050)                                             FL20380
-      INTEGER PHASE,DIST,ERR                                             FL20390
+      INTEGER PHASE,DIST                                                 FL20390
 C
 C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
 C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
@@ -2208,8 +2204,8 @@ C
      *     FSCDID(17),NMOL,LAYER,YI1,YID(10) ,LSTWDF                     FL20640
       DOUBLE PRECISION VI1,VI2,V1P,V2P,VV                                FL20650
       COMMON /LPANEL/ VI1,VI2,DVV,NLIMAP                                 FL20660
-      COMMON /ZOUTP/ ZOUT(67),SOUT(67),RHOSUM(67),AMTTOT(35),AMTCUM(35), FL20670
-     *     ISKIP(35)                                                     FL20680
+      COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FL20670
+     *     AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)                      FL20680
       EQUIVALENCE (VI1,PNLHDR(1))                                        FL20690
       EQUIVALENCE (FSCDID(17),NLIM)                                      FL20700
       EQUIVALENCE (XID(1),XFILHD(1))                                     FL20710
@@ -2556,7 +2552,7 @@ C                                                                        FL24080
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL24090
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL24100
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL24110
-      INTEGER PHASE,DIST,ERR                                             FL24120
+      INTEGER PHASE,DIST                                                 FL24120
       DIMENSION SC(3,4)                                                  FL24130
 C                                                                        FL24140
 C     ARGUMENTS:                                                         FL24150
@@ -2573,7 +2569,6 @@ C                                                                        FL24250
 C     SC(1) = ABSORPTION COEFFICIENT (1/KM)                              FL24260
 C     SC(2) = EXTINCTION COEFFICIENT (1/KM)                              FL24270
 C     SC(I),I=3,NSC = LEGENDRE COEFFICIENTS #I-3  (NSC=10)               FL24280
-C     ERR = ERROR RETURN CODE: 0=NO ERROR, 1=BAD FREQUENCY,              FL24290
 C     2=BAD RAINFALL RATE, 3=BAD TEMPERATURE,                            FL24300
 C     4=BAD PHASE PARAMETER, 5=BAD DROP SIZE DISTRIBUTION                FL24310
 C                                                                        FL24320
@@ -3017,8 +3012,8 @@ C
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL28500
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL28510
      *     RAINRT                                                        FL28520
-      COMMON /MDATA/ ZDA(50),P(50)  ,T(50)  ,WH(50)  ,WO(50),            FL28530
-     *     HMIX(50), DUM1(50,7), DUM2(50,7)                              FL28540
+      COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL28530
+     *     HMIX(MXZMD), DUM1(MXZMD,7), DUM2(MXZMD,7)                     FL28540
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL28550
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL28560
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL28570
@@ -3124,8 +3119,8 @@ C
      *     RAINRT                                                        FL29260
       COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL29270
       COMMON /LCRD4/ V1,V2,DV                                            FL29280
-      COMMON /MDATA/ZMDL(50),P(50) ,T(50)  ,WH(50)  ,WO(50),             FL29290
-     *     HMIX(50),CLD(50,7),RR(50,7)                                   FL29300
+      COMMON /MDATA/ZMDL(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL29290
+     *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL29300
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL29310
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL29320
       COMMON /MODEL/ ZM(MXZMD),PM(MXZMD),TM(MXZMD),
@@ -3314,9 +3309,9 @@ C
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL31040
       COMMON/MODEL/ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                      FL31050
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL31060
-     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
-      COMMON /ZOUTP/ ZOUT(67),SOUT(67),RHOSUM(67),AMTTOT(35),AMTCUM(35), FL31070
-     *     ISKIP(35)                                                     FL31080
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)          FL31070
+      COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),
+     *     AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)                      FL31080
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISS,IKP,JH1                 FL31090
 C
       DIMENSION PTMP(MXZMD),TTMP(MXZMD),RTMP(MXZMD),                     FL31100
@@ -3380,7 +3375,7 @@ C
       GO TO 30                                                           FL31670
 C                                                                        FL31680
 C     CC                                                                 FL31690
-C     CC    SET LOWTRAN HEIGHTS TO FINAL COMBINED LAYERING OF FAS/LOW    FL31700
+C     CC    SET LOWTRAN HEIGHTS TO FINAL COMBINED LAYERING OF LBL/LOW    FL31700
 C     CC    SET ML TO THE FINAL COUNT OF COMBINED LAYERING               FL31710
 C     CC                                                                 FL31720
 C                                                                        FL31730
@@ -3565,9 +3560,11 @@ C
      *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL33160
      *     IMMAX,WGM(MXZMD),DEMW(MXZMD)                                  FL33170
 C
-      COMMON  /RFRPTH/ ZL(70),PL(70),TL(70),RFNDXL(70),SL(70),           FL33180
-     *    PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),      FL33190
-     *   LJ(131)                                                         FL33200
+C     RFRPTH is dependent upon MXZMD (220=MXZMD+20;443=2*MXZMD+3)
+C
+      COMMON  /RFRPTH/ ZL(220),PL(220),TL(220),RFNDXL(220),SL(220),      FL33190
+     *     PPSUML(220),TPSUML(220),RHOSML(220),DENL(16,220),             FL33190
+     *     AMTL(16,220),LJ(443)                                          FL33200
       COMMON /RAIN/ RNPATH(IM2),RRAMTK(IM2)                              FL33210
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL33220
      *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL33230
@@ -3893,13 +3890,14 @@ C                                                                        FL36220
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL36250
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL36260
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL36270
-      COMMON  /RFRPTH/ ZL(70),PL(70),TL(70),RFNDXL(70),SL(70),           FL36280
-     *     PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),     FL36290
-     *     LJ(131)                                                       FL36300
+C
+C     RFRPTH is dependent upon MXZMD (220=MXZMD+20;443=2*MXZMD+3)
+C
+      COMMON  /RFRPTH/ ZL(220),PL(220),TL(220),RFNDXL(220),SL(220),      FL36280
+     *     PPSUML(220),TPSUML(220),RHOSML(220),DENL(16,220),             FL36290
+     *     AMTL(16,220),LJ(443)                                          FL36300
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL36310
 C
-      DIMENSION HLOW(2)                                                  FL36320
-C                                                                        FL36330
       IF (H1.GT.H2) GO TO 10                                             FL36340
       IORDER = 1                                                         FL36350
       HA = H1                                                            FL36360
@@ -3955,8 +3953,6 @@ C                                                                        FL36850
       IHLOW = 1                                                          FL36860
       IF (IORDER.EQ.-1) IHLOW = 2                                        FL36870
 C                                                                        FL36880
-C     IF(IAMT.EQ.1 .AND. NPR.NE.1) WRITE(IPR,24) HLOW(IHLOW)             FL36890
-C                                                                        FL36900
       SINAI = 1.0                                                        FL36910
       COSAI = 0.0                                                        FL36920
       THETA = 90.0                                                       FL36930
@@ -4029,9 +4025,6 @@ C                                                                        FL37550
       IF (IORDER.EQ.-1) IHLOW = 2                                        FL37600
       IHIGH = MOD(IHLOW,2)+1                                             FL37610
 C                                                                        FL37620
-C     IF(IAMT.EQ.1 .AND. NPR.NE.1) WRITE(IPR,28) HLOW(IHLOW),            FL37630
-C     1    HLOW(IHIGH)                                                   FL37640
-C                                                                        FL37650
       DO 150 J = J1, J2                                                  FL37660
          CALL SCALHT (ZL(J),ZL(J+1),RFNDXL(J),RFNDXL(J+1),SH,GAMMA)      FL37670
          CALL LOLAYR (J,SINAI,COSAI,CPATH,SH,GAMMA,IAMT,DS,DBEND)        FL37680
@@ -4102,9 +4095,12 @@ C
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL38170
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL38180
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL38190
-      COMMON  /RFRPTH/ ZL(70),PL(70),TL(70),RFNDXL(70),SL(70),           FL38200
-     *     PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),     FL38210
-     *     LJ(131)                                                       FL38220
+C
+C     RFRPTH is dependent upon MXZMD (220=MXZMD+20;443=2*MXZMD+3)
+C
+      COMMON /RFRPTH/ ZL(220),PL(220),TL(220),RFNDXL(220),SL(220),       FL38200
+     *     PPSUML(220),TPSUML(220),RHOSML(220),DENL(16,220),             FL38210
+     *     AMTL(16,220),LJ(443)                                          FL38220
 C
       IF (HA.LT.HB) GO TO 10                                             FL38230
       WRITE (IPR,900) HA,HB,JNEXT                                        FL38240
@@ -4198,9 +4194,12 @@ C                                                                        FL39080
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL39090
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL39100
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL39110
-      COMMON  /RFRPTH/ ZL(70),PL(70),TL(70),RFNDXL(70),SL(70),           FL39120
-     *     PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),     FL39130
-     *     LJ(131)                                                       FL39140
+C
+C     RFRPTH is dependent upon MXZMD (220=MXZMD+20;443=2*MXZMD+3)
+C
+      COMMON  /RFRPTH/ ZL(220),PL(220),TL(220),RFNDXL(220),SL(220),      FL39120
+     *     PPSUML(220),TPSUML(220),RHOSML(220),DENL(16,220),             FL39130
+     *     AMTL(16,220),LJ(443)                                          FL39140
 C
       DIMENSION HDEN(20),DENA(20),DENB(20)                               FL39150
 C
@@ -4633,7 +4632,7 @@ C     RHO  = EQUIVALENT LIQUID CONTENT  (G/CUBIC METER)                  FL43110
 C     CINDEX=COMPLEX DIELECTRIC CONSTANT M  FROM INDEX                   FL43120
 C     WAVL = WAVELENGTH IN CM                                            FL43130
 C                                                                        FL43140
-      COMPLEX CINDEX,CINDX                                               FL43150
+      COMPLEX CINDEX                                                     FL43150
       IF (RHO.GT.0.) GO TO 10                                            FL43160
       GAMFOG = 0.                                                        FL43170
       RETURN                                                             FL43180
@@ -5545,7 +5544,7 @@ C                                                                        FL51670
          ITA = ICH(M)                                                    FL51690
          ITC = ICH(M)-7                                                  FL51700
          ITAS = ITA                                                      FL51710
-         IF (IREGC(M).NE.0) GO TO 190                                    FL51720
+ 47      IF (IREGC(M).NE.0) GO TO 190                                    FL51720
          WRH = W(15)                                                     FL51730
          IF (ICH(M).EQ.6.AND.M.NE.1) WRH = 70.                           FL51740
 C                                                                        FL51750
@@ -7301,16 +7300,19 @@ C     J       19    REQUEST DEFAULT TO SPECIFIED MODEL ATMOSPHERE        FL68720
 C                                                                        FL68730
 C     ***************************************************************    FL68740
 C                                                                        FL68750
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL68760
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL68770
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL68780
       COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL68790
-     *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(35)                     FL68800
+     *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)                  FL68800
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(13),WMOL1(12),WAIR1,JLOW      FL68810
 C
       DATA C1/18.9766/,C2/-14.9595/,C3/-2.43882/                         FL68820
 C
-      DENSAT(ATEMP) = ATEMP*B*EXP(C1+C2*ATEMP+C3*ATEMP**2)*1.0E-6        FL68830
+C      DENSAT(ATEMP) = ATEMP*B*EXP(C1+C2*ATEMP+C3*ATEMP**2)*1.0E-6       FL68830
 C                                                                        FL68840
       RHOAIR = ALOSMT*(P/PZERO)*(TZERO/T)                                FL68850
 C                                                                        FL68860
@@ -7416,12 +7418,15 @@ C     'JUNIT' GOVERNS CHOICE OF UNITS -                                  FL69820
 C                                                                        FL69830
 C     ****************************************************************** FL69840
 C                                                                        FL69850
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL69860
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL69870
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL69880
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(13),WMOL1(12),WAIR,JLOW       FL69890
       COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL69900
-     *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(35)                     FL69910
+     *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)                  FL69910
 C
       DATA C1/18.9766/,C2/-14.9595/,C3/-2.43882/                         FL69920
       DATA XLOSCH/2.6868E19/                                             FL69930
@@ -8798,8 +8803,11 @@ C     PROGRAM. CONSTANTS RELATING TO THE ATMOSPHERIC PROFILES ARE STORED FL83580
 C     IN BLOCK DATA MLATMB.                                              FL83590
 C     ****************************************************************** FL83600
 C                                                                        FL83610
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL83620
-     *    CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(35)                      FL83630
+     *    CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)                   FL83630
       DATA PZERO/1013.25/,TZERO/273.15/                                  FL83640
       DATA AVOGAD/6.022045E+23/,ALOSMT/2.68675E+19/,                     FL83650
      *    GASCON/8.31441E+7/,PLANK/6.626176E-27/,BOLTZ/1.380662E-16/,    FL83660
