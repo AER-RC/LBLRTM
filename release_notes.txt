@@ -1,3 +1,11 @@
+LBLRTM_v8.2
+
+1) Minor bug fix to the LOWTRAN7 routine in LBLRTM (lbllow.f), which accounts
+   for clouds and aerosols.
+   (S.A. Clough)
+
+2) Added makefiles and utilities to run LBLRTM on LINUX INTEL.
+   (M.W. Shephard and H. Nair) 
 
 LBLRTM_v8.1
 
