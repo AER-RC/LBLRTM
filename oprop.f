@@ -1,4 +1,4 @@
-C     path:      %P%
+C     path:      ! C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
@@ -3906,8 +3906,6 @@ c
       common /eppinfo/ negepp_flag
 
       real *4 sumstr,flinlo,flinhi
-      integer *4 lnfil,molcnt,mcntlc,mcntnl,linmol,
-     *     lincnt,ilinlc,ilinnl,irec,irectl,lnfil4
 
       integer *4 negepp_flag,n_negepp,n_resetepp
       real *4 xspace
