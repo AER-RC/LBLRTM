@@ -331,7 +331,7 @@ C                                                                         I03200
 C     RESET BOUND BASED ON NBOUND                                         I03210
 C                                                                         I03220
       BOUND = FLOAT(NBOUND)*DVO/2.                                        I03230
-      MAXF = NLIMF+2*NBOUND                                               I03240
+      MAXF = NLIMF+2*NBOUND+NSHIFT                                        I03240
 C                                                                         I03250
       TIMRDF = 0.                                                         I03260
       TIMCNV = 0.                                                         I03270
