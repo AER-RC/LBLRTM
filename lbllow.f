@@ -6,7 +6,7 @@ C     presently: %H%  %T%
 C                                                                        FL00010
 C     CC                                                                 FL00020
 C     CC   STRIPPED DOWN VERSION OF LOWTRAN 7 TO RUN AS A SUBROUTINE     FL00030
-C     CC   TO SUPPLY FASCOD3 WITH AEROSOLS,CLOUDS,FOGS AND RAIN          FL00040
+C     CC   TO SUPPLY LBLRTM WITH AEROSOLS,CLOUDS,FOGS AND RAIN           FL00040
 C     CC                                                                 FL00050
 C                                                                        FL00060
 C     ****************************************************************** FL00070
@@ -16,7 +16,7 @@ C     BUILT IN CLOUD AND RAIN MODELS ARE CHOSEN BY ICLD (RECORD 3.1)     FL00100
 C                                                                        FL00110
 C     USER DEFINED MODEL CAN BE INPUT BY SETTING IAERSL=7 (RECORD 1.2)   FL00120
 C                                                                        FL00130
-C     FOR A MORE COMPLETE EXPLANATION SEE FASCODE3 USER INSTUCTIONS      FL00140
+C     FOR A MORE COMPLETE EXPLANATION SEE LBLRTM USER INSTRUCTIONS       FL00140
 C                                                                        FL00150
 C     ****************************************************************** FL00160
 C     PROGRAM ACTIVATED  BY IAERSL = 1 OR 7  (RECORD 1.2)                FL00170
@@ -364,7 +364,7 @@ C     ALTITUDE PARAMETERS                                                FL03580
 C                                                                        FL03590
 C     ZMDL  COMMON/MODEL/  THE ALTITUDES USED IN LOWTRAN                 FL03600
 C     ZCVSA,ZTVSA,ZIVSA RECORD 3.3 LOWTRAN FOR VSA INPUT                 FL03610
-C     ZM  BLANK COMMON  RETURNS ALTITUDES FOR FASCODE USE                FL03620
+C     ZM  BLANK COMMON  RETURNS ALTITUDES FOR LBLRTM USE                 FL03620
 C     ZP  BLANK COMMON NOT USED BY LOWTRAN                               FL03630
 C     ZVSA  NINE ALTITUDES GEN BY VSA ROUTINE                            FL03640
 C                                                                        FL03650
@@ -392,7 +392,7 @@ C                                                                        FL03840
       IKLO = 1                                                           FL03870
 C                                                                        FL03880
 C     CC                                                                 FL03890
-C     CC    FIX DV TO 5.0 FOR FASCODE USAGE                              FL03900
+C     CC    FIX DV TO 5.0 FOR LBLRTM USAGE                               FL03900
 C     CC                                                                 FL03910
 C                                                                        FL03920
       DV = 5.0                                                           FL03930
@@ -447,7 +447,7 @@ C                                                                        FL04340
       RE = RO                                                            FL04420
 C                                                                        FL04430
 C     CC                                                                 FL04440
-C     CC    OBTAIN ITYPE FROM FASCODE CONTROL AS STORED IN COMMON ADRIVE FL04450
+C     CC    OBTAIN ITYPE FROM LBLRTM CONTROL AS STORED IN COMMON ADRIVE  FL04450
 C     CC                                                                 FL04460
 C                                                                        FL04470
       ITYPE = ITYPEF                                                     FL04480
@@ -464,7 +464,7 @@ C                                                                        FL04580
 C                                                                        FL04590
       WRITE (IPR,900)                                                    FL04600
 C                                                                        FL04610
-C     OBTAIN MODEL PARAMETERS FROM FASCODE  (     RECORD 2.1)            FL04620
+C     OBTAIN MODEL PARAMETERS FROM LBLRTM  (     RECORD 2.1)             FL04620
 C                                                                        FL04630
       JPRT = 0                                                           FL04640
       WRITE (IPR,905) MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT              FL04650
@@ -813,16 +813,16 @@ C     F(A) IS SATURATED WATER WAPOR DENSITY AT TEMP T,A=TZERO/T          FL08070
 C                                                                        FL08080
       F(A) = EXP(18.9766-14.9595*A-2.43882*A*A)*A                        FL08090
 C                                                                        FL08100
-C     ZM ORIGINALLY IS FASCODE ALT                                       FL08110
+C     ZM ORIGINALLY IS LBLRTM ALT                                        FL08110
 C                                                                        FL08120
 C     ZGN IS EFFICTIVE ALTITUDE ARRAY                                    FL08130
 C     ZDA COMMON   /MDATA/  ALTITUDE OF THE PRESSURES,TEMP IN MDATA      FL08140
 C     ZMDL COMMON /MODEL/ FINAL ALTITUDE FOR LOWTRAN                     FL08150
-C     ZSTF  STORAGE OF ORIGINAL FASCODE ALTITUDES                        FL08160
+C     ZSTF  STORAGE OF ORIGINAL LBLRTM ALTITUDES                         FL08160
 C     ZK  EFFECTIVE ALTITUDE FOR CLOUD                                   FL08170
 C     ZSC EFFECTIVE ALTITUDE FOR AEROSOLS                                FL08180
 C     ZP  BLANK COMMON  UNUSED                                           FL08190
-C     ZM,PM,TM  ARE FOR FASCODE USE BETWEEN 0 AND 6 KM                   FL08200
+C     ZM,PM,TM  ARE FOR LBLRTM USE BETWEEN 0 AND 6 KM                    FL08200
 C                                                                        FL08210
       IREGC(1) = 0                                                       FL08220
       IREGC(2) = 0                                                       FL08230
@@ -1485,7 +1485,7 @@ C                                                                        FL14670
       DIMENSION ZMDL( *),P(50)  ,T(50)                                   FL14800
 C                                                                        FL14810
 C     ZP BLANK COMMON UNUSED                                             FL14820
-C     Z1  BLANK COMMON FASCODE ALTITUDES                                 FL14830
+C     Z1  BLANK COMMON LBLRTM ALTITUDES                                  FL14830
 C     ZMDL COMMON /MODEL/ FINAL ALTITUDE FOR LOWTRAN                     FL14840
 C                                                                        FL14850
 C     THIS ROUTINE INTERPOLATES P,T,AND H2O INTO                         FL14860
@@ -1846,7 +1846,7 @@ C                                                                        FL18400
 C     ZMDL COMMON /MODEL/ FINAL ALTITUDE FOR LOWTRAN                     FL18410
 C     ZCLD CLOUD ALTITUDE                                                FL18420
 C     ZK1 USED WITH VSA                                                  FL18430
-C     ZM BLANK COMMON FASCODE ALTITUDES                                  FL18440
+C     ZM BLANK COMMON LBLRTM ALTITUDES                                   FL18440
 C     ZNEW ALTITUDES ABOVE THE CLOUD                                     FL18450
 C     ZNEWV ALTITUDES ABOVE THE 1ST 9 VSA ALTITUDES                      FL18460
 C     ZTST  =ZCLD(J)                                                     FL18470
@@ -2085,7 +2085,7 @@ C                                                                        FL20370
       FACTOR = 0.5                                                       FL20800
 C                                                                        FL20810
 C     CC                                                                 FL20820
-C     CC    FREQUENCY CAN GO BELOW 350 CM-1 FOR FASCODE                  FL20830
+C     CC    FREQUENCY CAN GO BELOW 350 CM-1 FOR LBLRTM                   FL20830
 C     CC                                                                 FL20840
 C                                                                        FL20850
       V2 = MIN(V2,50000.)                                                FL20860
@@ -2324,7 +2324,7 @@ C        CC    ***END OF FREQUENCY LOOP                                  FL23180
 C        CC                                                              FL23190
 C        CC   BUFFER OUT ABSORPTION, SCATTERING, AND                     FL23200
 C        CC   ASYMMETRY PANELS OF LAYERS BY FREQUENCY                    FL23210
-C        CC   TO IEXFIL FOR USE IN FASCODE                               FL23220
+C        CC   TO IEXFIL FOR USE IN LBLRTM                                FL23220
 C        CC                                                              FL23230
 C                                                                        FL23240
          IF (IK.NE.IKMAX) THEN                                           FL23250
@@ -3096,10 +3096,10 @@ C                                                                        FL30890
       SUBROUTINE NEWMDL(MAXATM)                                          FL30910
 C                                                                        FL30920
 C     CC                                                                 FL30930
-C     CC   ROUTINE TO COMBINE LOWTRAN AND FASCODE LAYERING               FL30940
+C     CC   ROUTINE TO COMBINE LOWTRAN AND LBLRTM LAYERING                FL30940
 C                                                                        FL30950
 C     ZMTP STORES ZM VALUES                                              FL30960
-C     ZOUT COMMON /ZOUTP/ FINAL FASCODE BOUNDRIES                        FL30970
+C     ZOUT COMMON /ZOUTP/ FINAL LBLRTM BOUNDRIES                         FL30970
 C     ZMDL COMMON /MODEL/ FINAL ALTITUDE FOR LOWTRAN                     FL30980
 C     CC                                                                 FL30990
 C                                                                        FL31000
@@ -8373,7 +8373,7 @@ C                                                                        FL83610
 C                                                                        FL83680
 C     **   ALZERO IS THE MEAN LORENTZ HALFWIDTH AT PZERO AND 296.0 K.    FL83690
 C     **   AVMWT IS THE MEAN MOLECULAR WEIGHT USED TO AUTOMATICALLY      FL83700
-C     **   GENERATE THE FASCODE BOUNDARIES IN AUTLAY                     FL83710
+C     **   GENERATE THE LBLRTM BOUNDARIES IN AUTLAY                      FL83710
 C                                                                        FL83720
       DATA ALZERO/0.1/,AVMWT/36.0/                                       FL83730
       DATA AIRMWT/28.964/,AMWT/18.015,44.010,47.998,44.01,28.011,        FL83740
