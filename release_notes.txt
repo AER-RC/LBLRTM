@@ -1,10 +1,20 @@
+
+LBLRTM_v9.2
+
+1) A correction to the collision induced nitrogen absorption in the 0-350 cm-1 region
+   has been implemented.  The magnitude of the increase is ~35% from 0 to 250 cm-1.
+   (S.A. Clough and R. Tipping)
+
+2) A number of programming bugs have been corrected.
+   (S.A. Clough)
+
 LBLRTM_v9.1
 
 1)The foreign water vapor continuum has been modified in the 250 - 500 cm-1 region to 
   provide improved agreement with AERI_extended_range measurements from SHEBA and 
   North Slope of Alaska (NSA).  The consequence is that in this spectral region, 
   the mt_ckd_1.1 foreign continuum provides results similar to those previously 
-  obtained with ckd_2.4.1.
+  obtained with ckd_2.4.1 (S.A. Clough and J. Delamere).
 
 LBLRTM_v9.0
 

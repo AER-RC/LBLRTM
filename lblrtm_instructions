@@ -7,7 +7,7 @@ C     presently: %H%  %T%
 
                            USER INSTRUCTIONS FOR LBLRTM
 
-                                  23 May 2004 
+                                  1 September 2004 
  
  
 
@@ -30,7 +30,7 @@ C     presently: %H%  %T%
       TAPE6       LBLRTM  OUTPUT FILE                                           
                                                                                 
       TAPE7       FILE OF MOLECULAR COLUMN AMOUNTS FROM LBLATM                  
-                                 ONLY FOR IATM=1; IPUNCH=1 (CARD 2.1)           
+                                 ONLY FOR IATM=1; IPUNCH=1 (CARD 3.1)           
                                                                                 
       TAPE9       FILE OF EFFECTIVE LINES FOR LBLF4 CREATED BY LINF4            
                                                                                 
@@ -181,7 +181,7 @@ C     presently: %H%  %T%
  
          IFILTR   (0,1)   flag for FILTR     1 = yes
  
-           IPLT   (0,1)   flag for PLOT      1 = yes
+          IPLOT   (0,1)   flag for PLTLBL    1 = yes
  
           ITEST   (0,1)   flag for TEST      1 = yes
  
@@ -196,7 +196,7 @@ C     presently: %H%  %T%
 
 
  
-           IMRG   (0 to 10; 12-18; 22-28; 32; 35-36; 40-41; 45-46) selects merge option
+           IMRG   (0 to 10; 12-18; 22-28; 32; 35-36; 40-43; 45-46) selects merge option
 
  
                                    IMRG = 0 KFILE rewound after each layer
@@ -506,7 +506,7 @@ C     presently: %H%  %T%
                                 from solar path (requires INFLAG = 2)
 
               JULDAT       Julian day associated with calculation (1-365/366 starting January 1). Used to calculate
-                               Earth distance from sun. A value of 0 (default) indactes no scaling of solar source
+                               Earth distance from sun. A value of 0 (default) indicates no scaling of solar source
                                function using earth-sun distance.
 
 
@@ -719,8 +719,8 @@ C     presently: %H%  %T%
  
                IFORM      (0,1) column amount format flag
 
-			  = 0  read PAVE, WKL(M,L), WBROADL(L) in F10.4, E10.3, E10.3 formats (default)
-			  = 1  read PAVE, WKL(M,L), WBROADL(L) in E15.7 format
+			  = 0  read PAVE(L), WKL(M,L), WBROADL(L) in F10.4, E10.3, E10.3 formats (default)
+			  = 1  read PAVE(L), WKL(M,L), WBROADL(L) in E15.7 format
  
               NLAYRS      number of layers (maximum of 200)
  
@@ -743,24 +743,24 @@ C     presently: %H%  %T%
  
  RECORD 2.1.1
   
-          PAVE,  TAVE,  SECNTK,  ITYL(L),  IPATH,  ALTZ(L-1),  PZ(L-1),  TZ(L-1),  ATLZ(L),  PZ(L),  TZ(L)
+           PAVE(L), TAVE(L), SECNTK(L), ITYL(L),  IPATH, ALTZ(L-1), PZ(L-1), TZ(L-1), ATLZ(L), PZ(L), TZ(L)
  
-          1-10, 11-20,   21-30,    31-33,  34-35,      37-43,    44-51,    52-58,    59-65,  66-73,  74-80
- 
-         F10.4, F10.4,   F10.4,       A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
- 
+              1-10,   11-20,     21-30,   31-33,  34-35,     37-43,   44-51,   52-58,   59-65, 66-73, 74-80
+  
+             F10.4,   F10.4,     F10.4,      A3,     I2,   1X,F7.2,    F8.3,    F7.2,    F7.2,  F8.3,  F7.2
+  
 	IF IFORM=1 from record 2.1, then the following format is used:
 
-          1-15, 16-25,   26-35,    36-38,  39-40,      42-48,    49-56,    57-63,    64-69,  71-78,  79-85
+              1-15,   16-25,     26-35,    36-38, 39-40,     42-48,   49-56,   57-63,   64-70, 71-78, 79-85
  
-         F15.7, F10.4,   F10.4,       A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
- 
+             E15.7,   F10.4,     F10.4,       A3,    I2,   1X,F7.2,    F8.3,    F7.2,    F7.2,  F8.3,  F7.2
+  
 
-                PAVE   average pressure of layer (millibars) (**If IFORM=1, then PAVE in E15.7 format**)
+             PAVE(L)   average pressure of layer (millibars) (**If IFORM=1, then PAVE in E15.7 format**)
  
-                TAVE   average temperature of layer (K)
+             TAVE(L)   average temperature of layer (K)
  
-              SECNTK   if SECNTK .ne. 0, it is the value of the column amount
+           SECNTK(L)   if SECNTK .ne. 0, it is the value of the column amount
                        scale factor that will be used in the calculation for this layer
  
                        a non-zero value for SECNTK will override the scale factor
@@ -912,7 +912,7 @@ C     presently: %H%  %T%
  
           1-10, 11-20,   21-30,    31-33,  34-35,      37-43,    44-51,    52-58,    59-65,  66-73,  74-80
  
-         F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.3,      F8.3,    F7.2,     F7.3,   F8.3,   F7.2
+         F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
  
  
                 PAVX   ave. pressure of layer (millibars) (**If IFRMX=1, then PAVX in E15.7 format**)
@@ -1234,7 +1234,7 @@ C     presently: %H%  %T%
  
       JLONG        flag for reading long record for molecular information
 
-			  = L  read VMOL(K) in E15.8 format
+			  = L  read VMOL(K) in 8E15.8 format
 
       JCHAR(K)     flag for units and input options for
                    the K'th molecule (see Table I)
@@ -1762,7 +1762,8 @@ C     presently: %H%  %T%
  
      ISEED     =   random number initialization flag
                    0 use default mean values for cirrus
-                   > 0 initial value of SEED for RANF function (machine dependent)
+                   > 0 initial value of SEED for RANDM function 
+                       (option not implemented in current version)
  
  **********************************************************************************
  
@@ -2095,12 +2096,12 @@ C     presently: %H%  %T%
  
  RECORD 8.1 
  
+  
+     HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,  IUNIT,  IFILST, NIFILS, JUNIT,  NPTS 
  
- HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,  IUNIT,  IFILST, NIFILS, JUNIT,  NPTS 
+     1-10,  11-20,  21-30,  34-35,  39-40,  44-45,  46-55,  59-60,  64-65,   69-70, 74-75, 76-80 
  
- 1-10,  11-20,  21-30,  34-35,  39-40,  44-45,  46-55,  59-60,  64-65,   69-70, 74-75, 76-80 
- 
- F10.3  F10.3,  F10.3,  3X,I2,  3X,I2,  3X,I2,  F10.4,  3X,I2,  3X,I2,   3X,I2, 3X,I2,    I5 
+    F10.3,  F10.3,  F10.3,  3X,I2,  3X,I2,  3X,I2,  F10.4,  3X,I2,  3X,I2,   3X,I2, 3X,I2,    I5 
  
  
           HWHM    (Half Width Half Maximum)
@@ -2202,14 +2203,14 @@ C     presently: %H%  %T%
  RECORD 9.1 
  
  
-   DV,     V1,     V2,  JEMIT,   I4PT,   IUNIT,  IFILST, NIFILS, JUNIT,  NPTS 
+      DVO,     V1,     V2,  JEMIT,   I4PT,   IUNIT,  IFILST, NIFILS, JUNIT,  NPTS 
  
-  1-10,  11-20,  21-30,  31-35,  36-40,   56-60,  61-65,   66-70, 71-75, 76-80 
+     1-10,  11-20,  21-30,  31-35,  36-40,   56-60,  61-65,   66-70, 71-75, 76-80 
  
- F10.3,  F10.3,  F10.3,     I5      I5,  15X,I5,     I5,      I5,    I5,    I5 
+    F10.3,  F10.3,  F10.3,     I5      I5,  15X,I5,     I5,      I5,    I5,    I5 
  
  
-            DV    wavenumber spacing for interpolated result
+           DVO    wavenumber spacing for interpolated result
  
                     negative value terminates INTRPL option
  
@@ -2256,11 +2257,11 @@ C     presently: %H%  %T%
  RECORD 10.1 
  
  
- HWHM,     V1,     V2,  JEMIT,    JFN,   MRAT,  DVOUT,  IUNIT,    FIL,   NFIL,  JUNIT,    IVX,  NOFIX
+   HWHM,    V1,    V2,  JEMIT,  JFNin, MRATin,  DVOUT,  IUNIT, IFILST, NIFILS,  JUNIT,    IVX,  NOFIX
  
- 1-10,  11-20,  21-30,  31-35,  36-40,  41-45,  46-55,  56-60,  61-65,  66-70,  71-75,  76-78,  79-80 
+   1-10, 11-20, 21-30,  31-35,  36-40,  41-45,  46-55,  56-60,  61-65,  66-70,  71-75,  76-78,  79-80 
  
- F10.3  F10.3,  F10.3,     I5,     I5,     I5,  F10.3,     I5,     I5,     I5,     I5,     I3,     I2
+  F10.3, F10.3, F10.3,     I5,     I5,     I5,  F10.3,     I5,     I5,     I5,     I5,     I3,     I2
  
  
           HWHM    (Half Width Half Maximum)
@@ -2268,7 +2269,7 @@ C     presently: %H%  %T%
                     negative value terminates FFTSCN option
  
                   Note: HWHM is the maximum optical path difference of an
-			equivalent interferometer for JFN < 0.
+			equivalent interferometer for JFNin < 0.
  
             V1    beginning wavenumber value for performing FFTSCN
  
@@ -2284,12 +2285,12 @@ C     presently: %H%  %T%
  RECORD 10.1  (Continued)
 
 
-           JFN    selects choice of scanning function
+         JFNin    selects choice of scanning function
 
 
  
-                      JFN    Scanning Function          Apodization Function       a/HWHM    a/FZ     CR        
-                      ---    -----------------          --------------------       ------    ----     --
+                    JFNin    Scanning Function          Apodization Function       a/HWHM    a/FZ     CR        
+                    -----    -----------------          --------------------       ------    ----     --
                     =  0     boxcar
  
                     =  1     1-v/a, |v|<a               (sin(pi*x*a)/pi*x*a))**2   2.0       1.0      40
@@ -2342,8 +2343,8 @@ C     presently: %H%  %T%
 
 
  
-                      JFN    Scanning Function          Apodization Function       a/HWHM    a/FZ     CR        
-                      ---    -----------------          --------------------       ------    ----     --
+                    JFNin    Scanning Function          Apodization Function       a/HWHM    a/FZ     CR        
+                    -----    -----------------          --------------------       ------    ----     --
 
 			OTHER FUNCTIONS:
 			_______________
@@ -2388,8 +2389,8 @@ C     presently: %H%  %T%
 
     _______________________________________________________________________________________________________________________
 
-                    Notes:   1.  If JFN < 0, HWHM contains the value for the maximum optical path difference of an
-                                equivalent interferometer, apodized to give the scanning function given by |JFN|.
+                    Notes:   1.  If JFNin < 0, HWHM contains the value for the maximum optical path difference of an
+                                equivalent interferometer, apodized to give the scanning function given by |JFNin|.
 
                              2.  The Brault and Kaiser-Bessel functions depend upon the parameter p.  The values of
                                 a/HWHM and a/FZ for these functions also depend upon p.
@@ -2400,8 +2401,8 @@ C     presently: %H%  %T%
  
  
  
-          MRAT    ratio of HWHM of the scanning function to the halfwidth of the boxcar; for prescanning with a
-                    boxcar (default = 12.).  If MRAT < 0., no boxcaring is performed.
+        MRATin    ratio of HWHM of the scanning function to the halfwidth of the boxcar; for prescanning with a
+                    boxcar (default = 12.).  If MRATin < 0., no boxcaring is performed.
 
          DVOUT    output grid spacing.  The scanned spectral file is interpolated onto the grid defined by V1, V2, and DVOUT.
   
@@ -2424,7 +2425,7 @@ C     presently: %H%  %T%
                      = 0 deconvolve the scanned spectrum with the boxcar
                      = nonzero, do not deconvolve with the boxcar
  
- RECORD 10.2    (required if ABS(JFN) > 10; otherwise omit)
+ RECORD 10.2    (required if ABS(JFNin) > 10; otherwise omit)
 
 
    PARM1,   PARM2,   PARM3
@@ -2434,13 +2435,13 @@ C     presently: %H%  %T%
    F10.4,   F10.4,   F10.4
  
  
-            PARM1      	For JFN = 11, value of p, where (0 < p < 1)
-			For JFN = 12, value of p, where (2 < p < 4)
-			For JFN = 13, value of v_offset
+            PARM1      	For JFNin = 11, value of p, where (0 < p < 1)
+			For JFNin = 12, value of p, where (2 < p < 4)
+			For JFNin = 13, value of v_offset
 
-            PARM2	For JFN = 13, value of c1
+            PARM2	For JFNin = 13, value of c1
  
-            PARM3	For JFN = 13, value of c2
+            PARM3	For JFNin = 13, value of c2
 
  
 

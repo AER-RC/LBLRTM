@@ -21,6 +21,9 @@ C                                                                         F00040
 C     SUBROUTINE CONTNM CONTAINS THE CONTINUUM DATA                       F00050
 C     WHICH IS INTERPOLATED INTO THE ARRAY ABSRB                          F00060
 C                                                                         F00070
+c********************************************
+      COMMON /cnth2o/ V1h,V2h,DVh,NPTh,Ch(5050),csh2o(5050),cfh2o(5050)
+c********************************************
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F00080
       COMMON /XCONT/ V1C,V2C,DVC,NPTC,C(6000)
 C                                                                         F00100
@@ -187,6 +190,13 @@ c
 c
                C(J) = WK(1)*(SH2O*Rself)
 C                                                                         F00720
+c********************************************
+               v1h=V1C
+               dvh=DVC
+               npth=NPTC
+c
+               csh2o(j)=1.e-20 * sh2o * xself  
+c********************************************
                ctmp(j)=sh2o*xself
                ctmp3(j)=c(j)
 C                                                                         F00720
@@ -251,6 +261,9 @@ C
 C     
                C(J) = WK(1)*(FH2O(J)*RFRGN)
 C                                          
+c********************************************
+               cfh2o(j)=1.e-20 * fh2o(j) * xfrgn
+c********************************************
                ctmp(j)=fh2o(j)*xfrgn
                ctmp3(j)=c(j)
 C                                          
@@ -985,6 +998,15 @@ C            rototranslational absorption spectra of N2-N2
 C            pairs for temperatures from 50 to 300 K", The
 C            Astrophysical Journal, 311, 1043-1057, 1986.
 C
+c     Uodated 2004/09/22 based on:
+C
+c      Boissoles, J., C. Boulet, R.H. Tipping, A. Brown and Q. Ma, 
+c         Theoretical CAlculations of the Translation-Rotation 
+c         Collision-Induced Absorption in N2-N2, O2-O2 and N2-O2 Pairs, 
+c         J.Quant. Spec. Rad. Transfer, 82,505 (2003).
+c
+c         The temperature dependence between the two reference temperatures 
+c         has been assumed the same as that for the original continuum
 C                                                                         F00960
 C        THIS NITROGEN CONTINUUM IS IN UNITS OF 1./(CM AMAGAT^2)
 C
@@ -1230,13 +1252,13 @@ C                                                                         A10300
 C
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
-      CHARACTER*18 cnam3(9),cnam4(15)
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,15)
+      CHARACTER*18 cnam3(9),cnam4(16)
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,16)
 C                                                                         A10340
       WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,9)
       WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11)
       WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
-      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,15)
+      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,16)
 C                                                                         A10360
       RETURN                                                              A10370
 C                                                                         A10380
@@ -1251,8 +1273,8 @@ C     --------------------------------------------------------------
 C
 C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 C
-      CHARACTER*18 cnam3(9),cnam4(15)
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,15)
+      CHARACTER*18 cnam3(9),cnam4(16)
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,16)
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
       DATA cnam3/
@@ -1282,8 +1304,9 @@ c           123456789-123456789-123456789-123456789-123456789-1
      1     '     "           ',
      2     ' mt_ckd_1.00 1.00',
      3     '     "           ',
-     4     ' mt_ckd_1.1      ',
-     5     '                 '/
+     4     ' mt_ckd_1.1  9.1 ',
+     5     ' mt_ckd_1.2  9.2 ',
+     6     '                 '/
 c
       DATA CINFO1/
 c           123456789-123456789-123456789-123456789-123456789-1
@@ -1291,7 +1314,7 @@ c           123456789-123456789-123456789-123456789-123456789-1
      2     '                                                   ',
      3     '                                                   ',
      4     '                                                   ',
-     5     '0  *****  CONTINUA mt_ckd_1.1                      ',
+     5     '   *****  CONTINUA mt_ckd_1.2                      ',
      6     '                                                   ',
      7     '                                                   ',
      8     '                                                   ',
@@ -1374,8 +1397,10 @@ C
      3     ' shape/collision induced formulation, mt_ckd  *** )',
      4     '  H2O foreign modified in the 250-550 cm-1 region; ',
      4     'results now consistent with ckd_2.4.1 (August 2004)',
-     5     '  -------------------------------------------------',
-     5     '---------------------------------------------------'/
+     5     '  Collision induced nitrogen 0-350 cm-1 increased (',
+     5     '~1.35):  Boissoles at al., 2003    (September 2004)',
+     6     '  -------------------------------------------------',
+     6     '---------------------------------------------------'/
 C
       END
 C
@@ -3178,11 +3203,21 @@ C      Borysow, A, and L. Frommhold, "Collision-induced
 C         rototranslational absorption spectra of N2-N2
 C         pairs for temperatures from 50 to 300 K", The
 C         Astrophysical Journal, 311, 1043-1057, 1986.
+c
+c     Updated 2004/09/22 based on:
 C
+c      Boissoles, J., C. Boulet, R.H. Tipping, A. Brown and Q. Ma, 
+c         Theoretical CAlculations of the Translation-Rotation 
+c         Collision-Induced Absorption in N2-N2, O2-O2 and N2-O2 Pairs, 
+c         J.Quant. Spec. Rad. Transfer, 82,505 (2003).
+c
+c     The values for scale factor values (sf296) for 296K are based on 
+c     linear interpolation of Boissoles at al. values at 250K and 300K
+c
       IMPLICIT REAL*8           (V)
 C
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
-      COMMON /N2RT0/ V1S,V2S,DVS,NPTS,S(73)
+      COMMON /N2RT0/ V1S,V2S,DVS,NPTS,S(73),sf296(73)
       DIMENSION C(*)
 C
       DVC = DVS
@@ -3204,7 +3239,7 @@ c
          I = I1+J
          C(J) = 0.
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10
-         C(J) = S(I)
+         C(J) = S(I)*sf296(i)
    10 CONTINUE
 C
       RETURN
@@ -3219,7 +3254,7 @@ c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2
 C
 C           THESE DATA ARE FOR 296K
 C
-      COMMON /N2RT0/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT296(73)
+      COMMON /N2RT0/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT296(73),sf296(73)
 C
       DATA V1N2CR,V2N2CR,DVN2CR,NPTN2C / -10., 350., 5.0, 73 /
 C
@@ -3240,6 +3275,23 @@ C
      *     0.5100E-09, 0.4572E-09, 0.4115E-09, 0.3721E-09, 0.3339E-09,
      *     0.3005E-09, 0.2715E-09, 0.2428E-09/
 C
+      DATA sf296/
+     *         1.3534,     1.3517,     1.3508,     1.3517,     1.3534,
+     *         1.3558,     1.3584,     1.3607,     1.3623,     1.3632,
+     *         1.3634,     1.3632,     1.3627,     1.3620,     1.3612,
+     *         1.3605,     1.3597,     1.3590,     1.3585,     1.3582,
+     *         1.3579,     1.3577,     1.3577,     1.3580,     1.3586,
+     *         1.3594,     1.3604,     1.3617,     1.3633,     1.3653,
+     *         1.3677,     1.3706,     1.3742,     1.3780,     1.3822,
+     *         1.3868,     1.3923,     1.3989,     1.4062,     1.4138,
+     *         1.4216,     1.4298,     1.4388,     1.4491,     1.4604,
+     *         1.4718,     1.4829,     1.4930,     1.5028,     1.5138,
+     *         1.5265,     1.5392,     1.5499,     1.5577,     1.5639,
+     *         1.5714,     1.5816,     1.5920,     1.6003,     1.6051,
+     *         1.6072,     1.6097,     1.6157,     1.6157,     1.6157,
+     *         1.6157,     1.6157,     1.6157,     1.6157,     1.6157,
+     *         1.6157,     1.6157,     1.6157/
+C
       END
 C
       SUBROUTINE N2R220 (V1C,V2C,DVC,NPTC,C)
@@ -3250,10 +3302,20 @@ C         rototranslational absorption spectra of N2-N2
 C         pairs for temperatures from 50 to 300 K", The
 C         Astrophysical Journal, 311, 1043-1057, 1986.
 C
+c     Uodated 2004/09/22 based on:
+c
+c      Boissoles, J., C. Boulet, R.H. Tipping, A. Brown and Q. Ma, 
+c         Theoretical CAlculations of the Translation-Rotation 
+c         Collision-Induced Absorption in N2-N2, O2-O2 and N2-O2 Pairs, 
+c         J.Quant. Spec. Rad. Transfer, 82,505 (2003).
+c
+c     The values for scale factor values (sf220) for 220K are based on 
+c     linear interpolation of Boissoles at al. values at 200K and 250K
+c
       IMPLICIT REAL*8           (V)
 C
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
-      COMMON /N2RT1/ V1S,V2S,DVS,NPTS,S(73)
+      COMMON /N2RT1/ V1S,V2S,DVS,NPTS,S(73),sf220(73)
       DIMENSION C(*)
 C
       DVC = DVS
@@ -3275,7 +3337,7 @@ c
          I = I1+J
          C(J) = 0.
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10
-         C(J) = S(I)
+         C(J) = S(I)*sf220(i)
    10 CONTINUE
 C
       RETURN
@@ -3290,7 +3352,7 @@ c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2
 C
 C         THESE DATA ARE FOR 220K
 C
-      COMMON /N2RT1/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT220(73)
+      COMMON /N2RT1/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT220(73),sf220(73)
 C
       DATA V1N2CR,V2N2CR,DVN2CR,NPTN2C / -10., 350., 5.0, 73 /
 C
@@ -3309,8 +3371,24 @@ C
      *     0.7189E-09, 0.6314E-09, 0.5635E-09, 0.4976E-09, 0.4401E-09,
      *     0.3926E-09, 0.3477E-09, 0.3085E-09, 0.2745E-09, 0.2416E-09,
      *     0.2155E-09, 0.1895E-09, 0.1678E-09, 0.1493E-09, 0.1310E-09,
-     *     0.1154E-09, 0.1019E-09, 0.8855E-10/
- 
+     *     0.1154E-09, 0.1019E-09, 0.8855E-10/ 
+C
+      DATA sf220/
+     *         1.3536,     1.3515,     1.3502,     1.3515,     1.3536,
+     *         1.3565,     1.3592,     1.3612,     1.3623,     1.3626,
+     *         1.3623,     1.3616,     1.3609,     1.3600,     1.3591,
+     *         1.3583,     1.3576,     1.3571,     1.3571,     1.3572,
+     *         1.3574,     1.3578,     1.3585,     1.3597,     1.3616,
+     *         1.3640,     1.3666,     1.3698,     1.3734,     1.3776,
+     *         1.3828,     1.3894,     1.3969,     1.4049,     1.4127,
+     *         1.4204,     1.4302,     1.4427,     1.4562,     1.4687,
+     *         1.4798,     1.4894,     1.5000,     1.5142,     1.5299,
+     *         1.5441,     1.5555,     1.5615,     1.5645,     1.5730,
+     *         1.5880,     1.6028,     1.6121,     1.6133,     1.6094,
+     *         1.6117,     1.6244,     1.6389,     1.6485,     1.6513,
+     *         1.6468,     1.6438,     1.6523,     1.6523,     1.6523,
+     *         1.6523,     1.6523,     1.6523,     1.6523,     1.6523,
+     *         1.6523,     1.6523,     1.6523/
 C
       END
 C
