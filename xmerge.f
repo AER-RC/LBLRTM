@@ -54,6 +54,22 @@ C                                                                         H00350
 C                                                                         H00380
 C     --------------------------------------------------------------
 C
+C     Special case of merging optical depths from multiple files to
+C     multiple files, for use when calculating radiance derivatives.
+C     The subroutine call tree is as follows:
+C
+C        LBLSUB called XLAYER when IHIRAC+IATM+IMRG > 0
+C        XLAYER called XMERGE when IMRG   = 10
+C        XMERGE calls  ABSMRG when IMRG   = 10
+C
+      IF (IMRG.EQ.10) THEN
+         CALL ABSMRG (NPTS,LFILE,MFILE,JPATHL)
+         CALL ENDFIL (MFILE)
+         RETURN
+      ENDIF
+C
+C     --------------------------------------------------------------
+C
 C     WHEN IAERSL EQUALS 2 CALL ADARSL TO ADD ABSORPTION AND SCATTERING   H00390
 C     TO COMMON BLOCKS FOR USE IN A TRANSMITTANCE RUN                     H00400
 C                                                                         H00410
@@ -102,6 +118,21 @@ C
                ENDIF                                                      H00720
             ENDIF                                                         H00730
          ENDIF                                                            H00740
+C
+C        -----------------------------------------------------------
+C                                                                         H00750
+C        IEMIT = 3  =>  Radiance, Transmittance and Radiance
+C                       derivative calculated
+C        
+         IF (IEMIT.EQ.3) THEN
+            IF (LAYER.EQ.1) THEN
+               IF (IPATHL.EQ.1) TBND = TMPBND
+               CALL EMADL1 (NPTS,MFILE,JPATHL,TBND)
+            ELSE
+               IF (IPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND
+               CALL EMADMG (NPTS,LFILE,MFILE,JPATHL,TBND)
+            ENDIF
+         ENDIF
       ENDIF
 C
 C     --------------------------------------------------------------
@@ -300,6 +331,68 @@ C                                                                         H02510
      *        ' SECS WERE REQUIRED FOR THIS MERGE ')                      H02560
 C                                                                         H02570
       END                                                                 H02580
+C
+C     ---------------------------------------------------------------
+C
+      SUBROUTINE OPNMRG(LFILE,PATH1,L1,FM1,PATH2,L2,FM2,MFILE,
+     *                  PATH3,FM3)
+C
+C     This subroutine opens file for merging in ABSMRG, when IMRG = 10
+C
+      LOGICAL OP
+      CHARACTER*57 FILE1,FILE2,FILE3
+      CHARACTER*55 PATH1,PATH2,PATH3
+      CHARACTER*11 CFORM
+      CHARACTER*10 FM1,FM2,FM3
+C
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,
+     *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,
+     *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,
+     *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,
+     *              EXTID(10)
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+C
+C           123456789-123456789-123456789-123456789-123456789-1234567
+      DATA FILE1 /
+     *     '                                                         '/,
+     *     FILE2 /
+     *     '                                                         '/,
+     *     FILE3 /
+     *     '                                                         '/
+      DATA CFORM / 'UNFORMATTED' /
+C
+      INQUIRE (UNIT=LFILE,OPENED=OP)
+      IF (OP) CLOSE (LFILE)
+      WRITE(FILE1,FM1) PATH1,L1
+      OPEN(UNIT=LFILE,FILE=FILE1,FORM=CFORM,STATUS='OLD')
+C
+      IF (L2.NE.L1) THEN
+         INQUIRE (UNIT=KFILE,OPENED=OP)
+         IF (OP) CLOSE (KFILE)
+         WRITE(FILE2,FM2) PATH2,L2
+         OPEN(UNIT=KFILE,FILE=FILE2,FORM=CFORM,STATUS='OLD')
+      ELSE
+         FILE2 = 'NO FILE USED'
+      ENDIF
+C
+      INQUIRE (UNIT=MFILE,OPENED=OP)
+      IF (OP) CLOSE (MFILE)
+      WRITE(FILE3,FM3) PATH3,L2
+      OPEN(UNIT=MFILE,FILE=FILE3,FORM=CFORM,STATUS='UNKNOWN')
+C
+C     Write procedure
+C
+      WRITE(IPR,900) FILE1,FILE2,FILE3
+C
+      RETURN
+C
+ 900  FORMAT ('     Merged file:  ',A57,/,
+     *        '       With file:  ',A57,/,
+     *        '  To obtain file:  ',A57,/)
+C
+      END
 C
 C     ----------------------------------------------------------------
 C
@@ -950,6 +1043,123 @@ C                                                                         H08900
       RETURN                                                              H08910
 C                                                                         H08920
       END                                                                 H08930
+C
+C     ---------------------------------------------------------------
+C
+      FUNCTION BBAD(BBVAL,VI,DVI,V2I,XKT,VDNEW,BBADDL,BBADOL)
+C                                                                     
+      IMPLICIT DOUBLE PRECISION (V)                                   
+C                                                                     
+C     FUNCTION BBAD calculates the derivative of the black body fn
+C     analytically for wavenumber value VI 
+C                                                                     
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                     
+C                  IMPLEMENTATION:    P.D. Brown
+C                                                                      
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.      
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139       
+C                                                                      
+C----------------------------------------------------------------------
+C                                                                      
+C               WORK SUPPORTED BY:    THE ARM PROGRAM                  
+C                                     OFFICE OF ENERGY RESEARCH        
+C                                     DEPARTMENT OF ENERGY             
+C                                                                      
+C                                                                      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2        
+C                                                                      
+      DATA FACTOR / 0.003 /                                            
+C                                                                      
+      XVI = VI
+      XVIOKT = XVI/XKT
+      EXPNEG = EXP(-XVIOKT)
+      GNU2 = XVI*XVI
+      BG2  = XVIOKT*XVIOKT
+      TKELV  = XKT*RADCN2
+C
+C     If first call, initialize BBADOL
+C
+C     For linear approximation,
+C
+C       BBFN{prime} = -BBFN/(t*(1 + 0.5*(planck*clight*gnu/boltz*t)))
+C
+C     Using the exact function,
+C
+C       BBFN{prime} = BBFN*(planck*clight*gnu/(boltz*t*t))*
+C                     1/[1-exp(-planck*clight*gnu/(boltz*t))]
+C     where
+C                   planck*clight/boltz = RADCN2
+C               boltz*t/(planck*clight) = XKT
+C             planck*clight*gnu/boltz*t = XVIOKT
+C
+C     and we can solve easily for t:
+C                                     t = XKT*RADCN2.
+C
+      IF (BBADOL.LT.0.) THEN
+         IF (XKT.GT.0.0) THEN                                          
+            IF (XVIOKT.LE.0.01) THEN                                   
+               BBADOL = BBVAL/(-TKELV*(1.+0.5*XVIOKT))
+            ELSEIF (XVIOKT.LE.80.0) THEN                               
+               BBADOL = BBVAL*XVIOKT/(TKELV*(1-EXPNEG))
+            ELSE                                                       
+               BBADOL = 0.                                             
+            ENDIF                                                      
+         ELSE                                                          
+            BBADOL = 0.                                                
+         ENDIF                                               
+      ENDIF
+C                                                                      
+C     Set BBAD equal to black body function derivative
+C
+C     BBADOL is BBAD(VI) for each subsequent call
+C
+      BBAD = BBADOL
+C
+      INTVLS = 1
+      DELTAV2 = V2I - VI
+      IF (XKT.GT.0.0) THEN                                             
+C                                                                      
+         IF (XVIOKT.LE.0.01) THEN                                      
+            XDELT = (GNU2 * (4.+4.*XVIOKT + BG2))/
+     *        (10.*BG2 - 24.*XVIOKT + 8.)
+            DELTAV = SQRT(ABS(FACTOR*XDELT))
+            IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
+            INTVLS = (DELTAV)/DVI
+            INTVLS = MAX(INTVLS,1)
+            VDNEW = VI+DVI*FLOAT(INTVLS)
+            XVDNEW = VDNEW
+            BBAD = BBVAL/(-TKELV*(1.+0.5*XVDNEW/XKT))
+         ELSEIF (XVIOKT.LE.80.0) THEN                                  
+            FRONT  = XVIOKT/(1.-EXPNEG)
+            BOX    = 3.- FRONT
+            DELT2C = (1./GNU2)*(2.*BOX-FRONT*(1.+BOX-FRONT*EXPNEG))
+            DELTAV = SQRT(ABS(FACTOR/DELT2C))
+            IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
+            INTVLS = (DELTAV)/DVI
+            INTVLS = MAX(INTVLS,1)
+            VDNEW = VI+DVI*FLOAT(INTVLS)
+            XVDNEW = VDNEW
+            BBAD = BBVAL*(XVDNEW/XKT)/(TKELV*(1-EXP(-XVDNEW/XKT)))
+         ELSE                                                          
+            BBAD = 0.                                                
+            VDNEW = 9.0E+9                                             
+         ENDIF                                                         
+      ELSE                                                             
+         BBAD = 0.                                                   
+         VDNEW = 9.0E+9                                                
+      ENDIF                                                            
+C                                                                      
+      BBADDL = (BBAD-BBADOL)/FLOAT(INTVLS)                              
+C                                                                      
+      VDNEW = VDNEW-DVI+0.00001                                        
+      BBADOL = BBAD                                                  
+C
+      RETURN                                                           
+C                                                                      
+      END
 C
 C     ----------------------------------------------------------------
 C
@@ -1923,9 +2133,12 @@ C                                                                         H18210
          ENDIF
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18230
 C                                                                         H18240
+c         write(*,*) '  -- EMINIT --'
          DO 50 J = NLIM1, NLIM2                                           H18250
             V=VI+FLOAT(J-1)*DVPO
             NEWEM(J) = EMLAYR(J)+TRLAYR(J)*BB*EMISIV                      H18260
+c            vpat = v1po+dvpo*(j-1)
+c            write(*,*) j,vpat, newem(j)
 C
 C           Increment interpolation value
 C
@@ -2533,7 +2746,6 @@ C                                                                         H23950
      *                        A3N*RADO(IPL+1)+A4N*RADO(IPL+2))+           H23970
      *                        RADLYR(I)+RADLYB(I)*TRAOI*TRTEMP*REFLCT     H23980
                   TRALYR(I) = TRTEMP                                      H23990
-                     
 C
 C           Increment interpolation values
 C
@@ -3022,7 +3234,7 @@ C                                                                         H28630
 C
 C     ---------------------------------------------------------------
 C
-      SUBROUTINE OPNODF(NLAYER,LAYER,PTHODL,HFMODL)
+      SUBROUTINE OPNODF(NLAYER,LAYER,PTHODL,HFMODL,IEMIT)
 C
 C     This subroutine opens file for calculating the radiance using
 C     precalculated optical depths
@@ -3034,6 +3246,12 @@ C
       CHARACTER*11 CFORM
       CHARACTER*10 HFMODL
 C
+C     -------------------------
+C     Common block for analytic derivative
+C     -------------------------
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
+C     -------------------------
+C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
@@ -3043,11 +3261,21 @@ C           123456789-123456789-123456789-123456789-123456789-1234567
      *     '                                                         '/
       DATA CFORM / 'UNFORMATTED' /
 C
+C     For calculation of analytic derivative, open previously
+C     calculated optical depth files as unit KODFIL.  Otherwise,
+C     open as KFILE.
+C
+      IF (IEMIT.EQ.3) THEN
+         KOPEN = KODFIL
+      ELSE
+         KOPEN = KFILE
+      ENDIF
+C
       WRITE(IPR,910) LAYER,NLAYER
-      INQUIRE (UNIT=KFILE,OPENED=OP)
-      IF (OP) CLOSE (KFILE)
+      INQUIRE (UNIT=KOPEN,OPENED=OP)
+      IF (OP) CLOSE (KOPEN)
       WRITE(FILE1,HFMODL) PTHODL,LAYER
-      OPEN(UNIT=KFILE,FILE=FILE1,FORM=CFORM,STATUS='OLD')
+      OPEN(UNIT=KOPEN,FILE=FILE1,FORM=CFORM,STATUS='OLD')
 C
 C     Write procedure
 C
@@ -3060,7 +3288,7 @@ C
 C
       END
 C
-C     ----------------------------------------------------------------
+C     ---------------------------------------------------------------
 C
       SUBROUTINE OPNRAD(NLAYER,LAYER)
 C
@@ -3104,6 +3332,2078 @@ C
       END
 C
 C     ---------------------------------------------------------------
+C
+      SUBROUTINE OPNDRV(NLAYER,LAYER,LAYTOT)
+C
+C     This subroutine opens file for calculating the layer derivatives
+C     (IEMIT = 3)
+C
+      LOGICAL OP
+      CHARACTER*57 FILE1,FILE2,FILE3
+      CHARACTER*11 CFORM
+      CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR
+      CHARACTER*10 HFMODI,HFMODT,HFMRDR
+C
+C     Common block for analytic derivatives
+C     -------------------------
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODT,PTHRDR
+      COMMON /ADRFRM/ HFMODI,HFMODT,HFMRDR
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
+C     -------------------------
+C
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+C
+C           123456789-123456789-123456789-123456789-123456789-1234567
+      DATA FILE1 /
+     *     '                                                         '/,
+     *     FILE2 /
+     *     '                                                         '/,
+     *     FILE3 /
+     *     '                                                         '/
+      DATA CFORM / 'UNFORMATTED' /
+C
+      WRITE(IPR,910) LAYER,NLAYER
+      INQUIRE (UNIT=KODFIL,OPENED=OP)
+      IF (OP) CLOSE (KODFIL)
+      WRITE(FILE1,HFMODI) PTHODI,LAYER
+      OPEN(UNIT=KODFIL,FILE=FILE1,FORM=CFORM,STATUS='OLD')
+C
+      IF (LAYER.NE.NLAYER) THEN
+         INQUIRE (UNIT=KODTOT,OPENED=OP)
+         IF (OP) CLOSE (KODTOT)
+         WRITE(FILE2,HFMODT) PTHODT,LAYTOT
+         OPEN(UNIT=KODTOT,FILE=FILE2,FORM=CFORM,STATUS='OLD')
+      ELSE
+         FILE2 = 'NOT USED'
+      ENDIF
+C
+      INQUIRE (UNIT=KTEMP,OPENED=OP)
+      IF (OP) CLOSE (KTEMP)
+      OPEN(UNIT=KTEMP,FILE='mono_ad.TMP',FORM=CFORM,STATUS='unknown')
+C
+      INQUIRE (UNIT=KFILAD,OPENED=OP)
+      IF (OP) CLOSE (KFILAD)
+      WRITE(FILE3,HFMRDR) PTHRDR,LAYER
+      OPEN(UNIT=KFILAD,FILE=FILE3,FORM=CFORM,STATUS='UNKNOWN')
+C
+C     Write procedure
+C
+      WRITE(IPR,900) FILE1,FILE2,FILE3
+C
+      RETURN
+C
+ 900  FORMAT ('          Opened layer optical depth file:  ',A57,/,
+     *        '    Opened accumulated optical depth file:  ',A57,/,
+     *        '    Opened layer analytic derivative file:  ',A57)
+ 910  FORMAT ('LAYER ',I5,' OF ',I5,':')
+C
+      END
+C
+C     ----------------------------------------------------------------
+C
+      SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)      H10630
+C                                                                         H10640
+      IMPLICIT DOUBLE PRECISION (V)                                     ! H10650
+C                                                                         H10660
+C     SUBROUTINE EMDM INPUTS OPTICAL DEPTH VALUES FROM KFILE AND          H10670
+C       CALCULATES SOURCE FUNCTION FOR THE LAYER.                         H10680
+C       THIS VERSION WORKS FOR AEROSOLS AND NLTE.                         H10690
+C                                                                         H10700
+C                                                                         H10710
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10720
+C                                                                         H10730
+C               LAST MODIFICATION:    14 AUGUST 1991                      H10740
+C                                                                         H10750
+C                  IMPLEMENTATION:    R.D. WORSHAM                        H10760
+C                                                                         H10770
+C             ALGORITHM REVISIONS:    S.A. CLOUGH                         H10780
+C                                     R.D. WORSHAM                        H10790
+C                                     J.L. MONCET                         H10800
+C                                                                         H10810
+C                                                                         H10820
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         H10830
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139          H10840
+C                                                                         H10850
+C----------------------------------------------------------------------   H10860
+C                                                                         H10870
+C               WORK SUPPORTED BY:    THE ARM PROGRAM                     H10880
+C                                     OFFICE OF ENERGY RESEARCH           H10890
+C                                     DEPARTMENT OF ENERGY                H10900
+C                                                                         H10910
+C                                                                         H10920
+C      SOURCE OF ORIGINAL ROUTINE:    AFGL LINE-BY-LINE MODEL             H10930
+C                                                                         H10940
+C                                             FASCOD3                     H10950
+C                                                                         H10960
+C                                                                         H10970
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10980
+C                                                                         H10990
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H11000
+C                                                                         H11010
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H11020
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H11030
+     *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF    H11040
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H11050
+     *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        H11060
+     *              NLTEFL,LNFIL4,LNGTH4                                  H11070
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           H11080
+      COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF                            H11090
+      COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H11100
+      COMMON /EMDMSV/ BBSAV(2410),BBASAV(2410),XXSAV(2410)
+C                                                                         H11110
+      DIMENSION PNLHDR(2),EM(*),EMB(*),TR(*)                              H11120
+C                                                                         H11130
+      EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4)                 H11140
+      EQUIVALENCE (PNLHDR(1),V1PBF)                                       H11150
+      EQUIVALENCE (FSCDID(4),IAERSL)                                      H11160
+C                                                                         H11170
+      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H11180
+      
+      IF (KEOF.LE.0) RETURN                                               H11190
+      CALL BUFIN (KFILE,KEOF,TR(1),NLIMBF)                                H11200
+C                                                                         H11210
+C     TR CONTAINS THE OPTICAL DEPTHS AT THIS STAGE                        H11220
+C                                                                         H11230
+      IF (IHIRAC.EQ.4) CALL BUFIN (KFILE,KEOF,EM(1),NLIMBF)               H11240
+C                                                                         H11250
+C     EM CONTAINS THE OPTICAL DEPTH CORRECTIONS FOR NLTE AT THIS STAGE    H11260
+C                                                                         H11270
+      IF (NPANLS.LT.1.AND.IAERSL.EQ.0) WRITE (IPR,900)                    H11280
+      IF (NPANLS.LT.1.AND.IAERSL.NE.0) WRITE (IPR,905)                    H11290
+C                                                                         H11300
+      EXT = 0.                                                            H11310
+      ADEL = 0.                                                           H11320
+      RADFN0 = 0.                                                         H11330
+      RDEL = 0.                                                           H11340
+      BB = 0.                                                             H11350
+      BBDEL = 0.                                                          H11360
+      BBA = 0.                                                            H11370
+      BBDLA = 0.                                                          H11380
+      BBB = 0.                                                            H11390
+      BBDLB = 0.                                                          H11400
+C                                                                         H11410
+      V1P = V1PBF                                                         H11420
+      V2P = V2PBF                                                         H11430
+      DVP = DVPBF                                                         H11440
+      NLIM = NLIMBF                                                       H11450
+      VI = V1P-DVP                                                        H11460
+      VIDV = VI                                                           H11470
+      VIBB = VI                                                           H11480
+      VAER = VI                                                           H11490
+      VDUM = VI                                                           H11500
+      BBLAST = -1.                                                        H11510
+      BBLXTA = -2.                                                        H11520
+      BBLXTB = -3.                                                        H11530
+      RDLAST = -1.                                                        H11540
+      BBDUM = -4.                                                         H11550
+      RDDUM = -1.                                                         H11560
+      NLIM1 = 0                                                           H11570
+      NLIM2 = 0                                                           H11580
+C                                                                         H11590
+      AA = 0.2                                                            H11600
+C                                                                         H11610
+      IF (IAERSL.NE.0) THEN                                               H11630
+         BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       
+         RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDDUM)                     H11640
+         EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H11650
+         IAFBB = 0                                                        H11660
+         IF (VITST.LT.VAER.AND.VITST.LT.VIBB) IAFBB = 1                   H11670
+         IF (VAER.LT.VITST.AND.VAER.LT.VIBB) IAFBB = 2                    H11680
+      ELSE                                                                H11690
+         IAFBB = -1                                                       H11700
+      ENDIF                                                               H11710
+C                                                                         H11720
+C     - THIS SECTION TREATS THE CASE WHERE THE LAYER CONTRIBUTES          H11730
+C       TO THE RADIATIVE TRANSFER ONLY ONCE                               H11740
+C                                                                         H11750
+C     - WITH XKTA=0 THIS ALGORITHM REVERTS TO THE ORIGINAL                H11760
+C                                                                         H11770
+      IF (XKTB.LE.0.) THEN                                                H11780
+C                                                                         H11790
+C     - THIS SECTION TREATS THE LTE CASE                                  H11800
+C                                                                         H11810
+         IF (IHIRAC.NE.4) THEN                                            H11820
+C                                                                         H11830
+   10       NLIM1 = NLIM2+1                                               H11840
+C                                                                         H11850
+            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H11860
+            IF (IAFBB.EQ.-1) THEN                                         H11870
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H11880
+               IF (XKTA.GT.0.) THEN                                       H11890
+                  VIBB = -VIDV                                            H11900
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H11910
+               ELSE                                                       H11920
+                  BBA = BB                                                H11930
+                  BBDLA = BBDEL                                           H11940
+               ENDIF                                                      H11950
+            ELSEIF (IAFBB.EQ.0) THEN                                      H11980
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H11990
+               IF (XKTA.GT.0.) THEN                                       H12000
+                  VIBB = -VIDV                                            H12010
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12020
+               ELSE                                                       H12030
+                  BBA = BB                                                H12040
+                  BBDLA = BBDEL                                           H12050
+               ENDIF                                                      H12060
+               VITST = -VIDV                                              H12090
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H12100
+               VAER = -VIDV                                               H12120
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H12130
+            ELSEIF (IAFBB.EQ.1) THEN                                      H12150
+               RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H12160
+               VIBB = -VIDV                                               H12180
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H12190
+               IF (XKTA.GT.0.) THEN                                       H12200
+                  VIBB = -VIDV                                            H12210
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12220
+               ELSE                                                       H12230
+                  BBA = BB                                                H12240
+                  BBDLA = BBDEL                                           H12250
+               ENDIF                                                      H12260
+               VAER = -VIDV                                               H12290
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H12300
+            ELSEIF (IAFBB.EQ.2) THEN                                      H12320
+               EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H12330
+               VIBB = -VIDV                                               H12350
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H12360
+               IF (XKTA.GT.0.) THEN                                       H12370
+                  VIBB = -VIDV                                            H12380
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12390
+               ELSE                                                       H12400
+                  BBA = BB                                                H12410
+                  BBDLA = BBDEL                                           H12420
+               ENDIF                                                      H12430
+               VITST = -VIDV                                              H12460
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H12470
+            ENDIF                                                         H12490
+C                                                                         H12500
+            NLIM2 = (VIDV-V1P)/DVP+1.001                                  H12510
+            NLIM2 = MIN(NLIM2,NLIM)                                       H12520
+C                                                                         H12530
+            DO 20 I = NLIM1, NLIM2                                        H12540
+               ODVI = TR(I)+EXT*RADFN0                                    H12550
+               XX = AA*ODVI                                               H12560
+C                                                                         H12570
+               TR(I) = EXP(-ODVI)                                         H12580
+               EM(I) = (1.-TR(I))*(BB+XX*BBA)/(1.+XX)                     H12590
+C
+C              Store BB, BBA, and XX for derivative source term
+C
+               XXSAV(I)  = XX
+               BBSAV(I)  = BB
+               BBASAV(I) = BBA
+C                                                                         H12600
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H12610
+               RADFN0 = RADFN0+RDEL                                       H12620
+               BB = BB+BBDEL                                              H12630
+               BBA = BBA+BBDLA                                            H12640
+   20       CONTINUE                                                      H12660
+C                                                                         H12670
+            IF (NLIM2.LT.NLIM) GO TO 10                                   H12680
+         ELSE                                                             H12690
+C                                                                         H12700
+C     - THIS SECTION TREATS THE NLTE CASE                                 H12710
+C                                                                         H12720
+   30       NLIM1 = NLIM2+1                                               H12730
+C                                                                         H12740
+            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H12750
+            IF (IAFBB.EQ.-1) THEN                                         H12760
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H12770
+               IF (XKTA.GT.0.) THEN                                       H12780
+                  VIBB = -VIDV                                            H12790
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12800
+               ELSE                                                       H12810
+                  BBA = BB                                                H12820
+                  BBDLA = BBDEL                                           H12830
+               ENDIF                                                      H12840
+            ELSEIF (IAFBB.EQ.0) THEN                                      H12870
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H12880
+               IF (XKTA.GT.0.) THEN                                       H12890
+                  VIBB = -VIDV                                            H12900
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12910
+               ELSE                                                       H12920
+                  BBA = BB                                                H12930
+                  BBDLA = BBDEL                                           H12940
+               ENDIF                                                      H12950
+               VITST = -VIDV                                              H12980
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H12990
+               VAER = -VIDV                                               H13010
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H13020
+            ELSEIF (IAFBB.EQ.1) THEN                                      H13040
+               RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H13050
+               VIBB = -VIDV                                               H13070
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H13080
+               IF (XKTA.GT.0.) THEN                                       H13090
+                  VIBB = -VIDV                                            H13100
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H13110
+               ELSE                                                       H13120
+                  BBA = BB                                                H13130
+                  BBDLA = BBDEL                                           H13140
+               ENDIF                                                      H13150
+               VAER = -VIDV                                               H13180
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H13190
+            ELSEIF (IAFBB.EQ.2) THEN                                      H13210
+               EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H13220
+               VIBB = -VIDV                                               H13240
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H13250
+               IF (XKTA.GT.0.) THEN                                       H13260
+                  VIBB = -VIDV                                            H13270
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H13280
+               ELSE                                                       H13290
+                  BBA = BB                                                H13300
+                  BBDLA = BBDEL                                           H13310
+               ENDIF                                                      H13320
+               VITST = -VIDV                                              H13350
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H13360
+            ENDIF                                                         H13380
+C                                                                         H13390
+            NLIM2 = (VIDV-V1P)/DVP+1.001                                  H13400
+            NLIM2 = MIN(NLIM2,NLIM)                                       H13410
+C                                                                         H13420
+            DO 40 I = NLIM1, NLIM2                                        H13430
+               ODVI = TR(I)+EXT*RADFN0                                    H13450
+               XX = AA*ODVI                                               H13460
+C                                                                         H13470
+               TR(I) = EXP(-ODVI)                                         H13480
+               EM(I) = (1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)    H13490
+C                                                                         H13500
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H13510
+               RADFN0 = RADFN0+RDEL                                       H13520
+               BB = BB+BBDEL                                              H13530
+               BBA = BBA+BBDLA                                            H13540
+   40       CONTINUE                                                      H13550
+C                                                                         H13560
+            IF (NLIM2.LT.NLIM) GO TO 30                                   H13570
+C                                                                         H13580
+         ENDIF                                                            H13590
+      ELSE                                                                H13600
+C                                                                         H13610
+C     - THIS SECTION TREATS THE CASE WHERE THE LAYER CONTRIBUTES          H13620
+C       TO THE RADIATIVE TRANSFER TWICE:                                  H13630
+C                                                                         H13640
+C     - FOR TANGENT PATHS AND FOR THE CASE OF THE REFLECTED ATMOSPHERE    H13650
+C                                                                         H13660
+         IF (IHIRAC.NE.4) THEN                                            H13670
+C                                                                         H13680
+C     - THIS SECTION TREATS THE LTE CASE                                  H13690
+C                                                                         H13700
+   50       NLIM1 = NLIM2+1                                               H13710
+C                                                                         H13720
+            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H13730
+            IF (IAFBB.EQ.-1) THEN                                         H13740
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H13750
+               IF (XKTA.GT.0.) THEN                                       H13760
+                  VIBB = -VIDV                                            H13770
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H13780
+               ELSE                                                       H13790
+                  BBA = BB                                                H13800
+                  BBDLA = BBDEL                                           H13810
+               ENDIF                                                      H13820
+               IF (XKTB.GT.0.) THEN                                       H13830
+                  VIBB = -VIDV                                            H13840
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H13850
+               ELSE                                                       H13860
+                  BBB = BB                                                H13870
+                  BBDLB = BBDEL                                           H13880
+               ENDIF                                                      H13890
+            ELSEIF (IAFBB.EQ.0) THEN                                      H13930
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H13940
+               IF (XKTA.GT.0.) THEN                                       H13950
+                  VIBB = -VIDV                                            H13960
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H13970
+               ELSE                                                       H13980
+                  BBA = BB                                                H13990
+                  BBDLA = BBDEL                                           H14000
+               ENDIF                                                      H14010
+               IF (XKTB.GT.0.) THEN                                       H14020
+                  VIBB = -VIDV                                            H14030
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H14040
+               ELSE                                                       H14050
+                  BBB = BB                                                H14060
+                  BBDLB = BBDEL                                           H14070
+               ENDIF                                                      H14080
+               VITST = -VIDV                                              H14120
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H14130
+               VAER = -VIDV                                               H14150
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H14160
+            ELSEIF (IAFBB.EQ.1) THEN                                      H14180
+               RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H14190
+               VIBB = -VIDV                                               H14210
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H14220
+               IF (XKTA.GT.0.) THEN                                       H14230
+                  VIBB = -VIDV                                            H14240
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H14250
+               ELSE                                                       H14260
+                  BBA = BB                                                H14270
+                  BBDLA = BBDEL                                           H14280
+               ENDIF                                                      H14290
+               IF (XKTB.GT.0.) THEN                                       H14300
+                  VIBB = -VIDV                                            H14310
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H14320
+               ELSE                                                       H14330
+                  BBB = BB                                                H14340
+                  BBDLB = BBDEL                                           H14350
+               ENDIF                                                      H14360
+               VAER = -VIDV                                               H14400
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H14410
+            ELSEIF (IAFBB.EQ.2) THEN                                      H14430
+               EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H14440
+               VIBB = -VIDV                                               H14460
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H14470
+               IF (XKTA.GT.0.) THEN                                       H14480
+                  VIBB = -VIDV                                            H14490
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H14500
+               ELSE                                                       H14510
+                  BBA = BB                                                H14520
+                  BBDLA = BBDEL                                           H14530
+               ENDIF                                                      H14540
+               IF (XKTB.GT.0.) THEN                                       H14550
+                  VIBB = -VIDV                                            H14560
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H14570
+               ELSE                                                       H14580
+                  BBB = BB                                                H14590
+                  BBDLB = BBDEL                                           H14600
+               ENDIF                                                      H14610
+               VITST = -VIDV                                              H14650
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H14660
+            ENDIF                                                         H14680
+C                                                                         H14690
+            NLIM2 = (VIDV-V1P)/DVP+1.001                                  H14700
+            NLIM2 = MIN(NLIM2,NLIM)                                       H14710
+C                                                                         H14720
+            DO 60 I = NLIM1, NLIM2                                        H14730
+               ODVI = TR(I)+EXT*RADFN0                                    H14740
+               XX = AA*ODVI                                               H14750
+C                                                                         H14760
+               TR(I) = EXP(-ODVI)                                         H14770
+               EMX = (1.-TR(I))/(1.+XX)                                   H14780
+               EM(I) = EMX*(BB+XX*BBA)                                    H14790
+               EMB(I) = EMX*(BB+XX*BBB)                                   H14800
+C                                                                         H14810
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H14820
+               RADFN0 = RADFN0+RDEL                                       H14830
+               BB = BB+BBDEL                                              H14840
+               BBA = BBA+BBDLA                                            H14850
+               BBB = BBB+BBDLB                                            H14860
+   60       CONTINUE                                                      H14880
+C                                                                         H14890
+            IF (NLIM2.LT.NLIM) GO TO 50                                   H14900
+C                                                                         H14910
+         ELSE                                                             H14920
+C                                                                         H14930
+C     - THIS SECTION TREATS THE CASE OF NLTE                              H14940
+C                                                                         H14950
+   70       NLIM1 = NLIM2+1                                               H14960
+C                                                                         H14970
+            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H14980
+            IF (IAFBB.EQ.-1) THEN                                         H14990
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H15000
+               IF (XKTA.GT.0.) THEN                                       H15010
+                  VIBB = -VIDV                                            H15020
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H15030
+               ELSE                                                       H15040
+                  BBA = BB                                                H15050
+                  BBDLA = BBDEL                                           H15060
+               ENDIF                                                      H15070
+               IF (XKTB.GT.0.) THEN                                       H15080
+                  VIBB = -VIDV                                            H15090
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H15100
+               ELSE                                                       H15110
+                  BBB = BB                                                H15120
+                  BBDLB = BBDEL                                           H15130
+               ENDIF                                                      H15140
+            ELSEIF (IAFBB.EQ.0) THEN                                      H15180
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H15190
+               IF (XKTA.GT.0.) THEN                                       H15200
+                  VIBB = -VIDV                                            H15210
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H15220
+               ELSE                                                       H15230
+                  BBA = BB                                                H15240
+                  BBDLA = BBDEL                                           H15250
+               ENDIF                                                      H15260
+               IF (XKTB.GT.0.) THEN                                       H15270
+                  VIBB = -VIDV                                            H15280
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H15290
+               ELSE                                                       H15300
+                  BBB = BB                                                H15310
+                  BBDLB = BBDEL                                           H15320
+               ENDIF                                                      H15330
+               VITST = -VIDV                                              H15370
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H15380
+               VAER = -VIDV                                               H15400
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H15410
+            ELSEIF (IAFBB.EQ.1) THEN                                      H15430
+               RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H15440
+               VIBB = -VIDV                                               H15460
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H15470
+               IF (XKTA.GT.0.) THEN                                       H15480
+                  VIBB = -VIDV                                            H15490
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H15500
+               ELSE                                                       H15510
+                  BBA = BB                                                H15520
+                  BBDLA = BBDEL                                           H15530
+               ENDIF                                                      H15540
+               IF (XKTB.GT.0.) THEN                                       H15550
+                  VIBB = -VIDV                                            H15560
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H15570
+               ELSE                                                       H15580
+                  BBB = BB                                                H15590
+                  BBDLB = BBDEL                                           H15600
+               ENDIF                                                      H15610
+               VAER = -VIDV                                               H15650
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H15660
+            ELSEIF (IAFBB.EQ.2) THEN                                      H15680
+               EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H15690
+               VIBB = -VIDV                                               H15710
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H15720
+               IF (XKTA.GT.0.) THEN                                       H15730
+                  VIBB = -VIDV                                            H15740
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H15750
+               ELSE                                                       H15760
+                  BBA = BB                                                H15770
+                  BBDLA = BBDEL                                           H15780
+               ENDIF                                                      H15790
+               IF (XKTB.GT.0.) THEN                                       H15800
+                  VIBB = -VIDV                                            H15810
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H15820
+               ELSE                                                       H15830
+                  BBB = BB                                                H15840
+                  BBDLB = BBDEL                                           H15850
+               ENDIF                                                      H15860
+               VITST = -VIDV                                              H15900
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H15910
+            ENDIF                                                         H15930
+C                                                                         H15940
+            NLIM2 = (VIDV-V1P)/DVP+1.001                                  H15950
+            NLIM2 = MIN(NLIM2,NLIM)                                       H15960
+C                                                                         H15970
+            DO 80 I = NLIM1, NLIM2                                        H15980
+               ODVI = TR(I)+EXT*RADFN0                                    H15990
+               XX = AA*ODVI                                               H16000
+C                                                                         H16010
+               TR(I) = EXP(-ODVI)                                         H16020
+               EMX = (1.-TR(I))*(1.0-EM(I)/ODVI)/(1.+XX)                  H16030
+               EM(I) = EMX*(BB+XX*BBA)                                    H16040
+               EMB(I) = EMX*(BB+XX*BBB)                                   H16050
+C                                                                         H16060
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H16070
+               RADFN0 = RADFN0+RDEL                                       H16080
+               BB = BB+BBDEL                                              H16090
+               BBA = BBA+BBDLA                                            H16100
+               BBB = BBB+BBDLB                                            H16110
+   80       CONTINUE                                                      H16130
+C                                                                         H16140
+            IF (NLIM2.LT.NLIM) GO TO 70                                   H16150
+C                                                                         H16160
+         ENDIF                                                            H16170
+      ENDIF                                                               H16180
+C                                                                         H16190
+      RETURN                                                              H16200
+C                                                                         H16210
+  900 FORMAT ('0EMISSION AND TRANSMISSION  (MOLECULAR) ')                 H16220
+  905 FORMAT ('0EMISSION AND TRANSMISSION (AEROSOLS EFFECTS INCLUDED)')   H16230
+C                                                                         H16240
+      END                                                                 H16250
+C
+C     ---------------------------------------------------------------
+      SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)      H10630
+C                                                                         H10640
+      IMPLICIT DOUBLE PRECISION (V)                                     ! H10650
+C                                                                         H10660
+C     SUBROUTINE EMDT inputs optical depth values from kfile and          H10670
+C       calculates source function for the layer.                         H10680
+C
+C       This version is used for analytic temperature derivatives.        H10690
+C       Non-LTE and limb not yet implemented.
+C                                                                         H10700
+C                                                                         H10710
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10720
+C                                                                         H10730
+C                  IMPLEMENTATION:    P.D. Brown
+C                                                                         H10770
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         H10830
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139          H10840
+C                                                                         H10850
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10980
+C                                                                         H10990
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H11000
+C                                                                         H11010
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H11020
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H11030
+     *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF    H11040
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H11050
+     *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        H11060
+     *              NLTEFL,LNFIL4,LNGTH4                                  H11070
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           H11080
+      COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF                            H11090
+      COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H11100
+      COMMON /EMDMSV/ BBSAV(2410),BBASAV(2410),XXSAV(2410)
+      COMMON /EMDTSV/ BBDSAV(2410)
+C                                                                         H11110
+      DIMENSION PNLHDR(2),EM(*),EMB(*),TR(*)                              H11120
+C                                                                         H11130
+      EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4)                 H11140
+      EQUIVALENCE (PNLHDR(1),V1PBF)                                       H11150
+      EQUIVALENCE (FSCDID(4),IAERSL)                                      H11160
+C                                                                         H11170
+      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H11180
+      IF (KEOF.LE.0) RETURN                                               H11190
+      CALL BUFIN (KFILE,KEOF,TR(1),NLIMBF)                                H11200
+C                                                                         H11210
+C     TR contains the optical depths at this stage                        H11220
+C                                                                         H11230
+      IF (IHIRAC.EQ.4) CALL BUFIN (KFILE,KEOF,EM(1),NLIMBF)               H11240
+C                                                                         H11250
+C     EM contains the optical depth corrections for nlte at this stage    H11260
+C                                                                         H11270
+      IF (NPANLS.LT.1.AND.IAERSL.EQ.0) WRITE (IPR,900)                    H11280
+      IF (NPANLS.LT.1.AND.IAERSL.NE.0) WRITE (IPR,905)                    H11290
+C                                                                         H11300
+      EXT = 0.                                                            H11310
+      ADEL = 0.                                                           H11320
+      RADFN0 = 0.                                                         H11330
+      RDEL = 0.                                                           H11340
+      BB = 0.                                                             H11350
+      BBDEL = 0.                                                          H11360
+      BBA = 0.                                                            H11370
+      BBDLA = 0.                                                          H11380
+      BBB = 0.                                                            H11390
+      BBDLB = 0.                                                          H11400
+      BBD = 0.
+      BBADDL = 0.
+C                                                                         H11410
+      V1P = V1PBF                                                         H11420
+      V2P = V2PBF                                                         H11430
+      DVP = DVPBF                                                         H11440
+      NLIM = NLIMBF                                                       H11450
+      VI = V1P-DVP                                                        H11460
+      VIDV = VI                                                           H11470
+      VIBB = VI                                                           H11480
+      VAER = VI                                                           H11490
+      VDUM = VI                                                           H11500
+      BBLAST = -1.                                                        H11510
+      BBLXTA = -2.                                                        H11520
+      BBLXTB = -3.                                                        H11530
+      RDLAST = -1.                                                        H11540
+      BBDUM = -4.                                                         H11550
+      RDDUM = -1.                                                         H11560
+      NLIM1 = 0                                                           H11570
+      NLIM2 = 0                                                           H11580
+C                                                                         H11590
+      AA = 0.2                                                            H11600
+C                                                                         H11610
+      IF (IAERSL.NE.0) THEN                                               H11630
+         BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       
+         RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDDUM)                     H11640
+         EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H11650
+         IAFBB = 0                                                        H11660
+         IF (VITST.LT.VAER.AND.VITST.LT.VIBB) IAFBB = 1                   H11670
+         IF (VAER.LT.VITST.AND.VAER.LT.VIBB) IAFBB = 2                    H11680
+      ELSE                                                                H11690
+         IAFBB = -1                                                       H11700
+      ENDIF                                                               H11710
+C                                                                         H11720
+C     - THIS SECTION TREATS THE CASE WHERE THE LAYER CONTRIBUTES          H11730
+C       TO THE RADIATIVE TRANSFER ONLY ONCE                               H11740
+C                                                                         H11750
+C     - WITH XKTA=0 THIS ALGORITHM REVERTS TO THE ORIGINAL                H11760
+C                                                                         H11770
+      IF (XKTB.LE.0.) THEN                                                H11780
+C                                                                         H11790
+C     - THIS SECTION TREATS THE LTE CASE                                  H11800
+C                                                                         H11810
+         IF (IHIRAC.NE.4) THEN                                            H11820
+C                                                                         H11830
+   10       NLIM1 = NLIM2+1                                               H11840
+C                                                                         H11850
+            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H11860
+            IF (IAFBB.EQ.-1) THEN                                         H11870
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H11880
+               BBD = BBAD(BB,VI,DVP,V2P,XKT,VIDD,BBADDL,BBADOL)
+               IF (XKTA.GT.0.) THEN                                       H11890
+                  VIBB = -VIDV                                            H11900
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H11910
+               ELSE                                                       H11920
+                  BBA = BB                                                H11930
+                  BBDLA = BBDEL                                           H11940
+               ENDIF                                                      H11950
+            ELSEIF (IAFBB.EQ.0) THEN                                      H11980
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H11990
+               BBD = BBAD(BB,VI,DVP,V2P,XKT,VIDD,BBADDL,BBADOL)
+               IF (XKTA.GT.0.) THEN                                       H12000
+                  VIBB = -VIDV                                            H12010
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12020
+               ELSE                                                       H12030
+                  BBA = BB                                                H12040
+                  BBDLA = BBDEL                                           H12050
+               ENDIF                                                      H12060
+               VITST = -VIDV                                              H12090
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H12100
+               VAER = -VIDV                                               H12120
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H12130
+            ELSEIF (IAFBB.EQ.1) THEN                                      H12150
+               RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H12160
+               VIBB = -VIDV                                               H12180
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H12190
+               BBD = BBAD(BB,VI,DVP,V2P,XKT,VIDD,BBADDL,BBADOL)
+               IF (XKTA.GT.0.) THEN                                       H12200
+                  VIBB = -VIDV                                            H12210
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12220
+               ELSE                                                       H12230
+                  BBA = BB                                                H12240
+                  BBDLA = BBDEL                                           H12250
+               ENDIF                                                      H12260
+               VAER = -VIDV                                               H12290
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H12300
+            ELSEIF (IAFBB.EQ.2) THEN                                      H12320
+               EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H12330
+               VIBB = -VIDV                                               H12350
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H12360
+               BBD = BBAD(BB,VI,DVP,V2P,XKT,VIDD,BBADDL,BBADOL)
+               IF (XKTA.GT.0.) THEN                                       H12370
+                  VIBB = -VIDV                                            H12380
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12390
+               ELSE                                                       H12400
+                  BBA = BB                                                H12410
+                  BBDLA = BBDEL                                           H12420
+               ENDIF                                                      H12430
+               VITST = -VIDV                                              H12460
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H12470
+            ENDIF                                                         H12490
+C                                                                         H12500
+            NLIM2 = (VIDV-V1P)/DVP+1.001                                  H12510
+            NLIM2 = MIN(NLIM2,NLIM)                                       H12520
+C                                                                         H12530
+            DO 20 I = NLIM1, NLIM2                                        H12540
+               ODVI = TR(I)+EXT*RADFN0                                    H12550
+C                                                                         H12560
+               XX = AA*ODVI                                               H12570
+C                                                                         H12580
+               TR(I) = EXP(-ODVI)                                         H12590
+               EM(I) = (1.-TR(I))*(BB+XX*BBA)/(1.+XX)                     H12600
+C
+C              Store BB, BBA, BBD, and XX for derivative source term
+C
+               XXSAV(I)  = XX
+               BBSAV(I)  = BB
+               BBASAV(I) = BBA
+               BBDSAV(I) = BBD
+C                                                                         H12610
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H12620
+               RADFN0 = RADFN0+RDEL                                       H12630
+               BB = BB+BBDEL                                              H12640
+               BBA = BBA+BBDLA                                            H12650
+               BBD = BBD+BBADDL
+   20       CONTINUE                                                      H12660
+C                                                                         H12670
+            IF (NLIM2.LT.NLIM) GO TO 10                                   H12680
+         ELSE                                                             H12690
+C                                                                         H12700
+C     - THIS SECTION TREATS THE NLTE CASE                                 H12710
+C                                                                         H12720
+   30       NLIM1 = NLIM2+1                                               H12730
+C                                                                         H12740
+            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H12750
+            IF (IAFBB.EQ.-1) THEN                                         H12760
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H12770
+               IF (XKTA.GT.0.) THEN                                       H12780
+                  VIBB = -VIDV                                            H12790
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12800
+               ELSE                                                       H12810
+                  BBA = BB                                                H12820
+                  BBDLA = BBDEL                                           H12830
+               ENDIF                                                      H12840
+            ELSEIF (IAFBB.EQ.0) THEN                                      H12870
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H12880
+               IF (XKTA.GT.0.) THEN                                       H12890
+                  VIBB = -VIDV                                            H12900
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12910
+               ELSE                                                       H12920
+                  BBA = BB                                                H12930
+                  BBDLA = BBDEL                                           H12940
+               ENDIF                                                      H12950
+               VITST = -VIDV                                              H12980
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H12990
+               VAER = -VIDV                                               H13010
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H13020
+            ELSEIF (IAFBB.EQ.1) THEN                                      H13040
+               RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H13050
+               VIBB = -VIDV                                               H13070
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H13080
+               IF (XKTA.GT.0.) THEN                                       H13090
+                  VIBB = -VIDV                                            H13100
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H13110
+               ELSE                                                       H13120
+                  BBA = BB                                                H13130
+                  BBDLA = BBDEL                                           H13140
+               ENDIF                                                      H13150
+               VAER = -VIDV                                               H13180
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H13190
+            ELSEIF (IAFBB.EQ.2) THEN                                      H13210
+               EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H13220
+               VIBB = -VIDV                                               H13240
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H13250
+               IF (XKTA.GT.0.) THEN                                       H13260
+                  VIBB = -VIDV                                            H13270
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H13280
+               ELSE                                                       H13290
+                  BBA = BB                                                H13300
+                  BBDLA = BBDEL                                           H13310
+               ENDIF                                                      H13320
+               VITST = -VIDV                                              H13350
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H13360
+            ENDIF                                                         H13380
+C                                                                         H13390
+            NLIM2 = (VIDV-V1P)/DVP+1.001                                  H13400
+            NLIM2 = MIN(NLIM2,NLIM)                                       H13410
+C                                                                         H13420
+            DO 40 I = NLIM1, NLIM2                                        H13430
+               ODVI = TR(I)+EXT*RADFN0                                    H13440
+C                                                                         H13450
+               XX = AA*ODVI                                               H13460
+C                                                                         H13470
+               TR(I) = EXP(-ODVI)                                         H13480
+               EM(I) = (1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)    H13490
+C                                                                         H13500
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H13510
+               RADFN0 = RADFN0+RDEL                                       H13520
+               BB = BB+BBDEL                                              H13530
+               BBA = BBA+BBDLA                                            H13540
+   40       CONTINUE                                                      H13550
+C                                                                         H13560
+            IF (NLIM2.LT.NLIM) GO TO 30                                   H13570
+C                                                                         H13580
+         ENDIF                                                            H13590
+      ELSE                                                                H13600
+C                                                                         H13610
+C     - THIS SECTION TREATS THE CASE WHERE THE LAYER CONTRIBUTES          H13620
+C       TO THE RADIATIVE TRANSFER TWICE:                                  H13630
+C                                                                         H13640
+C     - FOR TANGENT PATHS AND FOR THE CASE OF THE REFLECTED ATMOSPHERE    H13650
+C                                                                         H13660
+         IF (IHIRAC.NE.4) THEN                                            H13670
+C                                                                         H13680
+C     - THIS SECTION TREATS THE LTE CASE                                  H13690
+C                                                                         H13700
+   50       NLIM1 = NLIM2+1                                               H13710
+C                                                                         H13720
+            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H13730
+            IF (IAFBB.EQ.-1) THEN                                         H13740
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H13750
+               IF (XKTA.GT.0.) THEN                                       H13760
+                  VIBB = -VIDV                                            H13770
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H13780
+               ELSE                                                       H13790
+                  BBA = BB                                                H13800
+                  BBDLA = BBDEL                                           H13810
+               ENDIF                                                      H13820
+               IF (XKTB.GT.0.) THEN                                       H13830
+                  VIBB = -VIDV                                            H13840
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H13850
+               ELSE                                                       H13860
+                  BBB = BB                                                H13870
+                  BBDLB = BBDEL                                           H13880
+               ENDIF                                                      H13890
+            ELSEIF (IAFBB.EQ.0) THEN                                      H13930
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H13940
+               IF (XKTA.GT.0.) THEN                                       H13950
+                  VIBB = -VIDV                                            H13960
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H13970
+               ELSE                                                       H13980
+                  BBA = BB                                                H13990
+                  BBDLA = BBDEL                                           H14000
+               ENDIF                                                      H14010
+               IF (XKTB.GT.0.) THEN                                       H14020
+                  VIBB = -VIDV                                            H14030
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H14040
+               ELSE                                                       H14050
+                  BBB = BB                                                H14060
+                  BBDLB = BBDEL                                           H14070
+               ENDIF                                                      H14080
+               VITST = -VIDV                                              H14120
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H14130
+               VAER = -VIDV                                               H14150
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H14160
+            ELSEIF (IAFBB.EQ.1) THEN                                      H14180
+               RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H14190
+               VIBB = -VIDV                                               H14210
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H14220
+               IF (XKTA.GT.0.) THEN                                       H14230
+                  VIBB = -VIDV                                            H14240
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H14250
+               ELSE                                                       H14260
+                  BBA = BB                                                H14270
+                  BBDLA = BBDEL                                           H14280
+               ENDIF                                                      H14290
+               IF (XKTB.GT.0.) THEN                                       H14300
+                  VIBB = -VIDV                                            H14310
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H14320
+               ELSE                                                       H14330
+                  BBB = BB                                                H14340
+                  BBDLB = BBDEL                                           H14350
+               ENDIF                                                      H14360
+               VAER = -VIDV                                               H14400
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H14410
+            ELSEIF (IAFBB.EQ.2) THEN                                      H14430
+               EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H14440
+               VIBB = -VIDV                                               H14460
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H14470
+               IF (XKTA.GT.0.) THEN                                       H14480
+                  VIBB = -VIDV                                            H14490
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H14500
+               ELSE                                                       H14510
+                  BBA = BB                                                H14520
+                  BBDLA = BBDEL                                           H14530
+               ENDIF                                                      H14540
+               IF (XKTB.GT.0.) THEN                                       H14550
+                  VIBB = -VIDV                                            H14560
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H14570
+               ELSE                                                       H14580
+                  BBB = BB                                                H14590
+                  BBDLB = BBDEL                                           H14600
+               ENDIF                                                      H14610
+               VITST = -VIDV                                              H14650
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H14660
+            ENDIF                                                         H14680
+C                                                                         H14690
+            NLIM2 = (VIDV-V1P)/DVP+1.001                                  H14700
+            NLIM2 = MIN(NLIM2,NLIM)                                       H14710
+C                                                                         H14720
+            DO 60 I = NLIM1, NLIM2                                        H14730
+               ODVI = TR(I)+EXT*RADFN0                                    H14740
+               XX = AA*ODVI                                               H14750
+C                                                                         H14760
+               TR(I) = EXP(-ODVI)                                         H14770
+               EMX = (1.-TR(I))/(1.+XX)                                   H14780
+               EM(I) = EMX*(BB+XX*BBA)                                    H14790
+               EMB(I) = EMX*(BB+XX*BBB)                                   H14800
+C                                                                         H14810
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H14820
+               RADFN0 = RADFN0+RDEL                                       H14830
+               BB = BB+BBDEL                                              H14840
+               BBA = BBA+BBDLA                                            H14850
+               BBB = BBB+BBDLB                                            H14860
+   60       CONTINUE                                                      H14870
+C                                                                         H14890
+            IF (NLIM2.LT.NLIM) GO TO 50                                   H14900
+C                                                                         H14910
+         ELSE                                                             H14920
+C                                                                         H14930
+C     - THIS SECTION TREATS THE CASE OF NLTE                              H14940
+C                                                                         H14950
+   70       NLIM1 = NLIM2+1                                               H14960
+C                                                                         H14970
+            VI = V1P+FLOAT(NLIM1-1)*DVP                                   H14980
+            IF (IAFBB.EQ.-1) THEN                                         H14990
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H15000
+               IF (XKTA.GT.0.) THEN                                       H15010
+                  VIBB = -VIDV                                            H15020
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H15030
+               ELSE                                                       H15040
+                  BBA = BB                                                H15050
+                  BBDLA = BBDEL                                           H15060
+               ENDIF                                                      H15070
+               IF (XKTB.GT.0.) THEN                                       H15080
+                  VIBB = -VIDV                                            H15090
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H15100
+               ELSE                                                       H15110
+                  BBB = BB                                                H15120
+                  BBDLB = BBDEL                                           H15130
+               ENDIF                                                      H15140
+            ELSEIF (IAFBB.EQ.0) THEN                                      H15180
+               BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H15190
+               IF (XKTA.GT.0.) THEN                                       H15200
+                  VIBB = -VIDV                                            H15210
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H15220
+               ELSE                                                       H15230
+                  BBA = BB                                                H15240
+                  BBDLA = BBDEL                                           H15250
+               ENDIF                                                      H15260
+               IF (XKTB.GT.0.) THEN                                       H15270
+                  VIBB = -VIDV                                            H15280
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H15290
+               ELSE                                                       H15300
+                  BBB = BB                                                H15310
+                  BBDLB = BBDEL                                           H15320
+               ENDIF                                                      H15330
+               VITST = -VIDV                                              H15370
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H15380
+               VAER = -VIDV                                               H15400
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H15410
+            ELSEIF (IAFBB.EQ.1) THEN                                      H15430
+               RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H15440
+               VIBB = -VIDV                                               H15460
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H15470
+               IF (XKTA.GT.0.) THEN                                       H15480
+                  VIBB = -VIDV                                            H15490
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H15500
+               ELSE                                                       H15510
+                  BBA = BB                                                H15520
+                  BBDLA = BBDEL                                           H15530
+               ENDIF                                                      H15540
+               IF (XKTB.GT.0.) THEN                                       H15550
+                  VIBB = -VIDV                                            H15560
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H15570
+               ELSE                                                       H15580
+                  BBB = BB                                                H15590
+                  BBDLB = BBDEL                                           H15600
+               ENDIF                                                      H15610
+               VAER = -VIDV                                               H15650
+               EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H15660
+            ELSEIF (IAFBB.EQ.2) THEN                                      H15680
+               EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H15690
+               VIBB = -VIDV                                               H15710
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H15720
+               IF (XKTA.GT.0.) THEN                                       H15730
+                  VIBB = -VIDV                                            H15740
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H15750
+               ELSE                                                       H15760
+                  BBA = BB                                                H15770
+                  BBDLA = BBDEL                                           H15780
+               ENDIF                                                      H15790
+               IF (XKTB.GT.0.) THEN                                       H15800
+                  VIBB = -VIDV                                            H15810
+                  BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)           H15820
+               ELSE                                                       H15830
+                  BBB = BB                                                H15840
+                  BBDLB = BBDEL                                           H15850
+               ENDIF                                                      H15860
+               VITST = -VIDV                                              H15900
+               RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H15910
+            ENDIF                                                         H15930
+C                                                                         H15940
+            NLIM2 = (VIDV-V1P)/DVP+1.001                                  H15950
+            NLIM2 = MIN(NLIM2,NLIM)                                       H15960
+C                                                                         H15970
+            DO 80 I = NLIM1, NLIM2                                        H15980
+               ODVI = TR(I)+EXT*RADFN0                                    H15990
+C                                                                         H16000
+               XX = AA*ODVI                                               H16010
+C                                                                         H16020
+               TR(I) = EXP(-ODVI)                                         H16030
+               EMX = (1.-TR(I))*(1.0-EM(I)/ODVI)/(1.+XX)                  H16040
+               EM(I) = EMX*(BB+XX*BBA)                                    H16050
+               EMB(I) = EMX*(BB+XX*BBB)                                   H16060
+C                                                                         H16070
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H16080
+               RADFN0 = RADFN0+RDEL                                       H16090
+               BB = BB+BBDEL                                              H16100
+               BBA = BBA+BBDLA                                            H16110
+               BBB = BBB+BBDLB                                            H16120
+   80       CONTINUE                                                      H16130
+C                                                                         H16140
+            IF (NLIM2.LT.NLIM) GO TO 70                                   H16150
+C                                                                         H16160
+         ENDIF                                                            H16170
+      ENDIF                                                               H16180
+C                                                                         H16190
+      RETURN                                                              H16200
+C                                                                         H16210
+  900 FORMAT ('0EMISSION AND TRANSMISSION  (MOLECULAR) ')                 H16220
+  905 FORMAT ('0EMISSION AND TRANSMISSION (AEROSOLS EFFECTS INCLUDED)')   H16230
+C                                                                         H16240
+      END                                                                 H16250
+C
+C     ---------------------------------------------------------------
+C
+      SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)                          H16260
+C                                                                         H16270
+      IMPLICIT DOUBLE PRECISION (V)                                     ! H16280
+C
+C     Calculates radiance and radiance derivative for first layer
+C                                                                         H16290
+C                                                                         H16300
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H16310
+C                                                                         H16320
+C                  IMPLEMENTATION:    P.D. Brown                          H16350
+C                                                                         H16410
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         H16420
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139          H16430
+C                                                                         H16440
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H16570
+C                                                                         H16580
+      COMMON NEWEM(2410),NEWTR(2410)                                      H16590
+      COMMON /MANE/ P0,TEMP0,NLAYER,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   H16600
+     *              AVFIX,LAYER,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,        H16610
+     *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H16620
+     *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H16630
+     *              EXTID(10)                                             H16640
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H16650
+C                                                                         H16660
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H16670
+C                                                                         H16680
+      COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H16690
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H16700
+     *                EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF    H16710
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H16720
+      COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H16730
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H16740
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        H16750
+     *              NLTEFL,LNFIL4,LNGTH4                                  H16760
+      COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H16770
+      COMMON /ADRLYR/ KSUBL(0:5000),OPDT(0:5000)
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
+      COMMON /IADFLG/ IANDER,NSPCRT
+C                                                                         H16780
+      CHARACTER*40 CEXT,CYID                                              H16790
+C                                                                         H16800
+      DIMENSION EMLAYB(2410)                                              H16810
+      DIMENSION XFILHD(2),OPNLHD(2),XFHDUM(2)                             H16820
+      DIMENSION EMLAYR(2),TRLAYR(2)
+      DIMENSION XKMOLC(2),ODACUM(2)
+      DIMENSION RPRIME(2410),OLDEM(0:5000)                                H16830
+C                                                                         H16840
+      EQUIVALENCE (XFILHD(1),XID(1)) , (OPNLHD(1),V1PO)                   H16850
+      EQUIVALENCE (NEWEM(1),EMLAYR(1)) , (NEWTR(1),TRLAYR(1)),            H16860
+     *            (KSUBL(1),XKMOLC(1)) , (OPDT(1),ODACUM(1)),
+     *            (FSCDID(4),IAERSL) , (FSCDID(5),IEMIT),                 H16870
+     *            (FSCDID(7),IPLOT) , (FSCDID(8),IPATHL),                 H16880
+     *            (FSCDID(16),LAYR1)                                      H16890
+C                                                                         H16900
+      REAL NEWEM,NEWTR                                                    H16910
+C                                                                         H16920
+      DATA NDIM / 2410 /,ND2 / 5000 /                                     H16930
+C                                                                         H16970
+C     TBND IS THE BOUNDARY BLACK BODY TEMPERATUE                          H16980
+C                                                                         H16990
+C     IPATHL =-1 IS FOR THE LOOKING DOWN CASE WITH REFLECTED ATMOSPHERE   H17000
+C     IPATHL = 0 IS FOR THE HORIZONTAL PATH CASE (HOMOGENEOUS LAYER)      H17010
+C     IPATHL = 1 IS FOR THE LOOKING DOWN CASE (TO DENSER LAYERS)          H17020
+C     IPATHL = 2 IS FOR THE SYMMETRIC TANGENT PATH CASE                   H17030
+C     IPATHL = 3 IS FOR THE LOOKING UP CASE (TO LESS DENSE LAYERS         H17040
+C                                                                         H17050
+      CALL CPUTIM (TIME)                                                  H17060
+C                                                                         H17070
+C      ** NOTE ON IPATHL =2                                               H17080
+C           THE TANGENT MERGE ROUTINES ARE DIVIDED INTO ANTERIOR (1ST)    H17090
+C           AND POSTERIOR (2ND) LAYER CROSSINGS.  THIS RECOGNITION IS     H17100
+C           TRIGGERED BY THE VALUE OF "IANT"                              H17110
+C                                                                         H17120
+C          IF  IANT.EQ. 1  THEN POSTERIOR MERGE                           H17130
+C          IF  IANT.EQ. 0  THEN NORMAL MERGE                              H17140
+C          IF  IANT.EQ.-1  THEN ANTERIOR MERGE                            H17150
+C                                                                         H17160
+      WRITE (IPR,900) TIME                                                H17170
+      NPANLS = 0                                                          H17180
+C
+C     Read in file headers for layer absorptance coefficients and
+C     layer optical depths and total optical depths (if there is more than
+C     one layer between the present layer and the observer)
+C
+      CALL BUFIN (KFILE,KEOF,XFHDUM(1),NFHDRF)
+      IF (LAYER.LT.NLAYER) CALL BUFIN (KODTOT,KEOF,XFILHD(1),NFHDRF)
+      CALL BUFIN (KODFIL,KEOF,XFILHD(1),NFHDRF)                           H17190
+C
+      IF (JPATHL.GE.1) IPATHL = JPATHL                                    H17200
+      PLAY = PAVE                                                         H17210
+      TLAY = TAVE                                                         H17220
+C                                                                         H17230
+C     FOR AEROSOL RUNS, MOVE EXTID INTO YID                               H17240
+C                                                                         H17250
+      IF (IAERSL.GT.0) THEN                                               H17260
+         WRITE (CEXT,'(10A4)') EXTID                                      H17270
+         WRITE (CYID,'(5A8)') (YID(I),I=3,7)                              H17280
+         CYID(19:40) = CEXT(19:40)                                        H17290
+         READ (CYID,'(5A8)') (YID(I),I=3,7)                               H17300
+      ENDIF                                                               H17310
+C                                                                         H17320
+C     IF BOUNDARY PROPERTIES ARE SUPPLIED, AND DOWNWARD LOOKING           H17330
+C     CASE; SET IPATHL TO REFLECTED ATMOSPHERE CASE                       H17340
+C                                                                         H17350
+      IF (IBPROP.EQ.1.AND.IPATHL.EQ.1) IPATHL = -1                        H17360
+      IEMIT = 1                                                           H17370
+      FACT = 1.                                                           H17380
+      TIMEM = 0.0                                                         H17390
+      IF (IPATHL.EQ.2.AND.IANT.EQ.0) FACT = 2.                            H17400
+      DO 10 MOL = 1, NMOL                                                 H17410
+         WK(MOL) = WK(MOL)*FACT                                           H17420
+   10 CONTINUE                                                            H17430
+      WBROAD = WBROAD*FACT                                                H17440
+      LAYR1 = LAYER                                                       H17450
+      WRITE (IPR,905) LAYR1,LAYER,KFILE,MFILE                             H17460
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H17470
+      CALL BUFOUT (KTEMP,XFILHD(1),NFHDRF)
+      DVXM = DV                                                           H17480
+      XKT = TAVE/RADCN2                                                   H17490
+      XKTBND = TBND/RADCN2                                                H17500
+      IF (IPATHL.EQ.-1) THEN                                              H17510
+         XKTA = TZU/RADCN2                                                H17520
+         XKTB = TZL/RADCN2                                                H17530
+      ENDIF                                                               H17540
+      IF (IPATHL.EQ.0) THEN                                               H17550
+         XKTA = 0.                                                        H17560
+         XKTB = 0.                                                        H17570
+      ENDIF                                                               H17580
+      IF (IPATHL.EQ.1) THEN                                               H17590
+         XKTA = TZU/RADCN2                                                H17600
+         XKTB = 0.                                                        H17610
+      ENDIF                                                               H17620
+      IF (IPATHL.EQ.2) THEN                                               H17630
+         XKTA = TZU/RADCN2                                                H17640
+         XKTB = TZL/RADCN2                                                H17650
+      ENDIF                                                               H17660
+      IF (IPATHL.EQ.3) THEN                                               H17670
+         XKTA = TZL/RADCN2                                                H17680
+         XKTB = 0.                                                        H17690
+      ENDIF                                                               H17700
+      WRITE (IPR,910) IPATHL,IANT                                         H17710
+C                                                                         H17720
+   20 CONTINUE                                                            H17730
+C                                                                         H17740
+C
+C     Input emission and transmission, and calculate layer
+C     source function
+C
+C     Call EMDT for temperature retrieval
+C     Call EMDM for molecular retrieval
+C
+C
+      CALL CPUTIM (TIMEM1)                                                H17750
+      IF (NSPCRT.EQ.29) THEN
+         CALL EMDT (V1PO,V2PO,DVPO,NLIMO,KODFIL,EMLAYR,EMLAYB,
+     *        TRLAYR,KEOF,NPANLS)
+      ELSEIF (NSPCRT.GT.0) THEN
+         CALL EMDM (V1PO,V2PO,DVPO,NLIMO,KODFIL,EMLAYR,EMLAYB,
+     *        TRLAYR,KEOF,NPANLS)                                         H17770
+      ENDIF
+      CALL CPUTIM (TIMEM2)                                                H17780
+      TIMEM = TIMEM+TIMEM2-TIMEM1                                         H17790
+      IF (KEOF.LE.0) GO TO 80                                             H17800
+      VI = V1PO-DVPO                                                      H17810
+      VIDVBD = VI                                                         H17820
+      VIDVEM = VI                                                         H17830
+      VIDVRF = VI                                                         H17840
+      BBLAST = -1.                                                        H17850
+      EMLAST = -1.                                                        H17860
+      RFLAST = -1.                                                        H17870
+      IF (IPATHL.EQ.2.AND.IANT.EQ.0) THEN                                 H17880
+         DO 30 J = 1, NLIMO                                               H17890
+            TRJ = TRLAYR(J)                                               H17900
+            NEWEM(J) = EMLAYR(J)+EMLAYB(J)*TRJ                            H17910
+            TRLAYR(J) = TRLAYR(J)*TRJ                                     H17920
+   30    CONTINUE                                                         H17930
+      ELSEIF (((IPATHL.EQ.1).AND.(TBND.GT.0.)).OR.(IPATHL.EQ.3)) THEN     H17940
+C                                                                         H17950
+         NLIM1 = 0                                                        H17960
+         NLIM2 = 0                                                        H17970
+         EMDUM = 0.                                                       H17980
+         BBDUM = 0.                                                       H17990
+         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)                      H18000
+         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)                H18010
+         IEMBB = 0                                                        H18020
+         IF (VIDVBD.GT.VIDVEM) IEMBB = 1                                  H18030
+C                                                                         H18040
+   40    NLIM1 = NLIM2+1                                                  H18050
+C                                                                         H18060
+         VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18070
+         IF (IEMBB.EQ.0) THEN                                             H18080
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18090
+            VIDVEM = -VIDV                                                H18110
+            EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H18120
+         ELSE                                                             H18140
+            EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)                    H18150
+            VIDVBD = -VIDV                                                H18170
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H18180
+         ENDIF                                                            H18200
+C                                                                         H18210
+         IF (VIDV.GE.9.E+4) THEN 
+            NLIM2 = NLIMO+1
+         ELSE
+            NLIM2 = (VIDV-V1PO)/DVPO+1.001                                H18220
+         ENDIF
+         NLIM2 = MIN(NLIM2,NLIMO)                                         H18230
+C                                                                         H18240
+c         write(*,*) '  -- EMADL1 --'
+         DO 50 J = NLIM1, NLIM2                                           H18250
+            OLDEM(J) = BB*EMISIV
+            NEWEM(J) = EMLAYR(J)+TRLAYR(J)*OLDEM(J)                       H18280
+c            vpat = v1po+dvpo*(j-1)
+c            write(*,*) j,vpat, newem(j)
+C
+C           Increment interpolation values
+C
+            EMISIV = EMISIV+EMDEL                                         H18260
+            BB = BB+BBDEL                                                 H18270
+   50    CONTINUE                                                         H18290
+C                                                                         H18300
+         IF (NLIM2.LT.NLIMO) GO TO 40                                     H18310
+C                                                                         H18320
+      ELSEIF ((IPATHL.EQ.-1).AND.(TBND.GT.0.)) THEN                       H18330
+C                                                                         H18340
+         NLIM1 = 0                                                        H18350
+         NLIM2 = 0                                                        H18360
+         EMDUM = 0.                                                       H18370
+         RFDUM = 0.                                                       H18380
+         BBDUM = 0.                                                       H18390
+         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)                      H18400
+         REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFDUM)                      H18410
+         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)                H18420
+         IEMBB = 0                                                        H18430
+         IF (VIDVEM.LT.VIDVRF.AND.VIDVEM.LT.VIDVBD) IEMBB = 1             H18440
+         IF (VIDVRF.LT.VIDVEM.AND.VIDVRF.LT.VIDVBD) IEMBB = 2             H18450
+C                                                                         H18460
+   60    NLIM1 = NLIM2+1                                                  H18470
+C                                                                         H18480
+         VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18490
+         IF (IEMBB.EQ.0) THEN                                             H18500
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18510
+            VIDVEM = -VIDV                                                H18530
+            EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H18540
+            VIDVRF = -VIDV                                                H18560
+            REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)                  H18570
+         ELSEIF (IEMBB.EQ.1) THEN                                         H18590
+            EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)                    H18600
+            VIDVBD = -VIDV                                                H18620
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H18630
+            VIDVRF = -VIDV                                                H18650
+            REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)                  H18660
+         ELSE                                                             H18680
+            REFLCT = REFLFN(VI,DVPO,VIDV,RFDEL,RFLAST)                    H18690
+            VIDVBD = -VIDV                                                H18710
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H18720
+            VIDVEM = -VIDV                                                H18740
+            EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H18750
+         ENDIF                                                            H18770
+C                                                                         H18780
+         IF (VIDV.GE.9.E+4) THEN 
+            NLIM2 = NLIMO+1
+         ELSE
+            NLIM2 = (VIDV-V1PO)/DVPO+1.001                                H18790
+         ENDIF
+         NLIM2 = MIN(NLIM2,NLIMO)                                         H18800
+C                                                                         H18810
+         DO 70 J = NLIM1, NLIM2                                           H18820
+            NEWEM(J) = EMLAYR(J)+EMLAYB(J)*REFLCT*TRLAYR(J)+              H18860
+     *                 TRLAYR(J)*BB*EMISIV                                H18870
+C
+C           Increment interpolation values
+C
+            BB = BB+BBDEL                                                 H18850
+            EMISIV = EMISIV+EMDEL                                         H18830
+            REFLCT = REFLCT+RFDEL                                         H18840
+   70    CONTINUE                                                         H18880
+C                                                                         H18890
+         IF (NLIM2.LT.NLIMO) GO TO 60                                     H18900
+C                                                                         H18910
+      ENDIF                                                               H18920
+C
+C     Output radiance to MFILE
+C
+      CALL EMOUT (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,MFILE,NPTS,NPANLS)     H18930
+C
+C     Combine terms of analytic layer radiance derivative
+C
+C     -------------------------------
+C     Analytic Derivative calculation
+C     -------------------------------
+C
+C
+C     Call TDERIV for temperature retrieval
+C     Call ADERIV for molecular retrieval
+C
+C     If molecular retrieval:
+C     Input layer absorptance coefficients and accumulated
+C     transmittances and calculate layer derivatives
+C
+C     If temperature retrieval:
+C     Input Planck function derivative and layer
+C     transmittances and calculate layer derivatives
+C
+      IF (NSPCRT.EQ.29) THEN
+         CALL TDERIV (KFILE,KODTOT,RPRIME,OLDEM,TRLAYR,KSUBL,XKMOLC,
+     *        OPDT,ODACUM,NLIMO,NDIM,ND2,IPATHL,LAYER,NLAYER,
+     *        v1po,dvpo)
+      ELSEIF (NSPCRT.GT.0) THEN
+         CALL ADERIV (KFILE,KODTOT,RPRIME,OLDEM,TRLAYR,KSUBL,XKMOLC,
+     *        OPDT,ODACUM,NLIMO,NDIM,ND2,IPATHL,LAYER,NLAYER,
+     *        v1po,dvpo)
+      ENDIF
+C
+C     Output monochromatic radiance derivative to KTEMP
+C
+      CALL EMOUT (V1PO,V2PO,DVPO,NLIMO,RPRIME,NEWTR,KTEMP,NPTS,NPANLS)
+C
+      GO TO 20                                                            H18940
+   80 CALL CPUTIM (TIME1)                                                 H18950
+      TIME = TIME1-TIME                                                   H18960
+      WRITE (IPR,915) TIME,TIMEM                                          H18970
+C                                                                         H18980
+      RETURN                                                              H18990
+C                                                                         H19000
+  900 FORMAT (' TIME AT THE START OF --EMADL1-- ',F10.3)                  H19010
+  905 FORMAT ('0 INITIAL LAYER',I5,'  FINAL LAYER',I5,/,                  H19020
+     *        '0 INPUT FILE =',I5,' OUTPUT FILE =',I5)                    H19030
+  910 FORMAT ('0 IPATHL AND IANT',2I5)                                    H19040
+  915 FORMAT (' TIME REQUIRED FOR --EMADL1-- ',F10.3,                     H19050
+     *        ' --EMDM-- ',F10.3)                                         H19060
+C                                                                         H19070
+      END                                                                 H19080
+C
+C     ---------------------------------------------------------------
+C
+      SUBROUTINE EMADMG (NPTS,LFILE,MFILE,JPATHL,TBND)                    H19090
+C                                                                         H19100
+      IMPLICIT DOUBLE PRECISION (V)                                     ! H19110
+C
+C     Merges layer radiances when calculating layer
+C     radiance derivatives.
+C                                                                         H19120
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H19130
+C                                                                         H19160
+C                  IMPLEMENTATION:    R.D. WORSHAM                        H19170
+C                                                                         H19230
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         H19240
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139          H19250
+C                                                                         H19260
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H19390
+C                                                                         H19400
+      COMMON RADN(2410),TRAN(2410),RADO(0:5000)                           H19410
+      COMMON /MANE/ P0,TEMP0,NLAYER,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   H19420
+     *              AVFIX,LAYER,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,        H19430
+     *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H19440
+     *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H19450
+     *              EXTID(10)                                             H19460
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H19470
+C                                                                         H19480
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H19490
+C                                                                         H19500
+      COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H19510
+     *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H19520
+     *               EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF     H19530
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H19540
+      COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H19550
+      COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTSS      H19560
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H19570
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        H19580
+     *              NLTEFL,LNFIL4,LNGTH4                                  H19590
+      COMMON /XME/ TRAO(0:5000)                                           H19600
+      COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H19610
+      COMMON /ADRLYR/ KSUBL(0:5000),OPDT(0:5000)
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
+      COMMON /IADFLG/ IANDER,NSPCRT
+C                                                                         H19620
+      DIMENSION RADLYB(2410)                                              H19630
+      DIMENSION XFILHD(2),PNLHDR(2),OPNLHD(2)                             H19640
+      DIMENSION A1(10),A2(10),A3(10),A4(10)                               H19650
+      DIMENSION RADLYR(2),TRALYR(2),RADOI(2),TRAOI(2)                     H19660
+      DIMENSION WKSAV(35)                                                 H19670
+      DIMENSION XKMOLC(2),ODACUM(2)
+      DIMENSION RPRIME(2410)
+C                                                                         H19680
+      CHARACTER*40 CYID                                                   H19690
+C                                                                         H19700
+      EQUIVALENCE (XFILHD(1),XID(1)) , (PNLHDR(1),V1P),                   H19710
+     *            (OPNLHD(1),V1PO)                                        H19720
+      EQUIVALENCE (RADO(1),RADOI(1)) , (TRAO(1),TRAOI(1)),                H19730
+     *            (KSUBL(1),XKMOLC(1)) , (OPDT(1),ODACUM(1)),
+     *            (RADN(1),RADLYR(1)) , (TRAN(1),TRALYR(1)),              H19740
+     *            (FSCDID(4),IAERSL) , (FSCDID(5),IEMIT),                 H19750
+     *            (FSCDID(7),IPLOT) , (FSCDID(8),IPATHL),                 H19760
+     *            (FSCDID(16),LAYR1)                                      H19770
+C                                                                         H19780
+      DATA A1 /10*0.0/, A2 /10*0.0/, A3 /10*0.0/, A4 /10*0.0/
+      DATA NDIM / 2410 /,ND2 / 5000 /                                     H19790
+C                                                                         H19800
+C                                                                         H19810
+C     IPATHL =-1 IS FOR THE LOOKING DOWN CASE FOR REFLECTED ATMOSPHERE    H19870
+C     IPATHL = 1 IS FOR THE LOOKING DOWN CASE (TO DENSER LAYERS)          H19880
+C     IPATHL = 2 IS FOR THE SYMMETRIC TANGENT PATH CASE                   H19890
+C     IPATHL = 3 IS FOR THE LOOKING UP CASE (TO LESS DENSE LAYERS)        H19900
+C                                                                         H19910
+C                                                                         H19920
+C      ** NOTE ON IPATHL = 2                                              H19930
+C            THE TANGENT MERGE ROUTINES ARE DIVIDED INTO ANTERIOR (1ST)   H19940
+C            AND POSTERIOR (2ND) LAYER CROSSINGS   THIS RECOGNITION IS    H19950
+C            TRIGGERED BY THE VALUE OF "IANT"                             H19960
+C                                                                         H19970
+C          IF  IANT.EQ. 1  THEN POSTERIOR MERGE                           H19980
+C          IF  IANT.EQ. 0  THEN NORMAL MERGE                              H19990
+C          IF  IANT.EQ.-1  THEN ANTERIOR MERGE                            H20000
+C                                                                         H20010
+      CALL CPUTIM (TIME)                                                  H20020
+      WRITE (IPR,900) TIME                                                H20030
+      NPANLS = 0                                                          H20040
+      TIMEM = 0.0                                                         H20050
+      TIMRD = 0.0                                                         H20060
+      TIMOT = 0.0                                                         H20070
+C                                                                         H20080
+      CALL BUFIN (LFILE,LEOF,XFILHD(1),NFHDRF)                            H20090
+      LAY1SV = LAYR1                                                      H20100
+      DVL = DV                                                            H20110
+      PL = PAVE                                                           H20120
+      TL = TAVE                                                           H20130
+      WTOTL = 0.                                                          H20140
+C                                                                         H20150
+      DO 10 MOL = 1, NMOL                                                 H20160
+         WTOTL = WTOTL+WK(MOL)                                            H20170
+         WKSAV(MOL) = WK(MOL)                                             H20180
+   10 CONTINUE                                                            H20190
+C                                                                         H20200
+      WTOTL = WTOTL+WBROAD                                                H20210
+      WN2SAV = WBROAD                                                     H20220
+C                                                                         H20230
+C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H20240
+C                                                                         H20250
+      IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H20260
+C
+C     Read in file headers for layer absorptance coefficients, layer
+C     optical depths, and total optical depths (if there is more than
+C     one layer between the present layer and the observer)
+C
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)
+      IF (LAYER.LT.NLAYER) CALL BUFIN (KODTOT,KEOF,XFILHD(1),NFHDRF)
+      CALL BUFIN (KODFIL,KEOF,XFILHD(1),NFHDRF)                           H20270
+C
+      IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H20280
+C                                                                         H20290
+      IF (JPATHL.GE.1) IPATHL = JPATHL                                    H20300
+      PLAY = PAVE                                                         H20310
+      TLAY = TAVE                                                         H20320
+C                                                                         H20330
+C     IF BOUNDARY PROPERTIES ARE SUPPLIED, AND DOWNWARD LOOKING           H20340
+C     CASE; SET IPATHL TO REFLECTED ATMOSPHERE CASE                       H20350
+C                                                                         H20360
+      IF (IBPROP.EQ.1.AND.IPATHL.EQ.1) IPATHL = -1                        H20370
+      TAVK = TAVE                                                         H20380
+      DVK = DV                                                            H20390
+      FACT = 1.                                                           H20400
+      IF (IPATHL.EQ.2.AND.IANT.EQ.0) FACT = 2.                            H20410
+C                                                                         H20420
+      IF (DVL.EQ.DVK) THEN                                                H20430
+         ITYPE = 0                                                        H20440
+      ELSEIF (DVL.GT.DVK) THEN                                            H20450
+         ITYPE = DVK/(DVL-DVK)+0.5                                        H20460
+      ELSE                                                                H20470
+C                                                                         H20480
+C     DVL.LT.DVK                                                          H20490
+C                                                                         H20500
+         ITYPE = -INT(DVL/(DVK-DVL)+0.5)                                  H20510
+      ENDIF                                                               H20520
+      IF (ITYPE.LT.0) STOP ' EMADMG; ITYPE LT 0 '                         H20530
+C                                                                         H20540
+      WTOTK = 0.                                                          H20550
+      LAYR1 = LAY1SV                                                      H20560
+      WRITE (IPR,905) LAYR1,LAYER,KODFIL,LFILE,MFILE                      H20570
+      IEMIT = 1                                                           H20580
+      DO 20 MOL = 1, NMOL                                                 H20590
+         WTOTK = WTOTK+WK(MOL)*FACT                                       H20600
+         WK(MOL) = WK(MOL)*FACT+WKSAV(MOL)                                H20610
+   20 CONTINUE                                                            H20620
+      WTOTK = WTOTK+WBROAD*FACT                                           H20630
+      WBROAD = WBROAD*FACT+WN2SAV                                         H20640
+      PAVE = (PL*WTOTL+PAVE*WTOTK)/(WTOTL+WTOTK)                          H20650
+      TAVE = (TL*WTOTL+TAVE*WTOTK)/(WTOTL+WTOTK)                          H20660
+      SECANT = 0.                                                         H20670
+C                                                                         H20680
+C     WK IS NOW THE ACCUMULATED SUM OF THE COLUMN DENSITIES               H20690
+C                                                                         H20700
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H20710
+      CALL BUFOUT (KTEMP,XFILHD(1),NFHDRF)
+      DVXM = DV                                                           H20720
+      XKT = TAVK/RADCN2                                                   H20730
+C                                                                         H20740
+      WRITE (IPR,910) IPATHL,IANT                                         H20750
+C                                                                         H20760
+      IF (IPATHL.EQ.-1) THEN                                              H20770
+         XKTA = TZU/RADCN2                                                H20780
+         XKTB = TZL/RADCN2                                                H20790
+      ELSEIF (IPATHL.EQ.1) THEN                                           H20800
+         XKTA = TZU/RADCN2                                                H20810
+         XKTB = 0.                                                        H20820
+      ELSEIF (IPATHL.EQ.2) THEN                                           H20830
+         XKTA = TZU/RADCN2                                                H20840
+         XKTB = TZL/RADCN2                                                H20850
+      ELSEIF (IPATHL.EQ.3) THEN                                           H20860
+         XKTA = TZL/RADCN2                                                H20870
+         XKTB = 0.                                                        H20880
+      ELSE                                                                H20890
+         STOP ' EMADMG; IPATHL '                                          H20900
+      ENDIF                                                               H20910
+C                                                                         H20920
+      ATYPE = ITYPE                                                       H20930
+      LL = ITYPE+1                                                        H20940
+      AP = 1.0/(ATYPE+1.0)                                                H20950
+C                                                                         H20960
+C     *** BEGINNING OF LOOP THAT DOES MERGE ***                           H21100
+C                                                                         H21110
+      NPE = 0                                                             H21120
+      RADO(0) = 0.0                                                       H21130
+      TRAO(0) = 0.0                                                       H21140
+      V1PO = 0.0                                                          H21150
+      V2PO = 0.0                                                          H21160
+      DVPO = 0.0                                                          H21170
+C                                                                         H21180
+   40 CONTINUE                                                            H21190
+C                                                                         H21200
+C
+C     Input emission and transmission, and calculate layer
+C     source function
+C
+      CALL CPUTIM (TIMEM1)                                                H21210
+      CALL EMDM (V1P,V2P,DVP,NLIM,KODFIL,RADLYR,RADLYB,TRALYR,KEOF,
+     *           NPANLS)                                                  H21230
+      CALL CPUTIM (TIMEM2)                                                H21240
+      TIMEM = TIMEM+TIMEM2-TIMEM1                                         H21250
+      IF (KEOF.LE.0) GO TO 80                                             H21260
+C
+      II = 1                                                              H21270
+C                                                                         H21280
+      IF (V2PO.LE.V2P+DVPO) THEN                                          H21290
+   50    CALL CPUTIM (TIMEM1)                                             H21300
+         CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                         H21310
+         IF (LEOF.LE.0) GO TO 60                                          H21320
+         CALL BUFIN (LFILE,LEOF,RADOI(NPE+1),NLIMO)                       H21330
+         CALL BUFIN (LFILE,LEOF,TRAOI(NPE+1),NLIMO)                       H21340
+         CALL CPUTIM (TIMEM2)                                             H21350
+         TIMRD = TIMRD+TIMEM2-TIMEM1                                      H21360
+         NPE = NLIMO+NPE                                                  H21370
+         IF (V2PO.LE.V2P+DVPO) GO TO 50                                   H21380
+      ENDIF                                                               H21390
+C                                                                         H21400
+C     ZERO POINT OF FIRST PANEL                                           H21410
+C                                                                         H21420
+   60 IF (RADO(0).EQ.0.0.AND.TRAO(0).EQ.0.0) THEN                         H21430
+         RADO(0) = RADO(1)                                                H21440
+         TRAO(0) = TRAO(1)                                                H21450
+      ENDIF                                                               H21460
+C                                                                         H21470
+C     END POINT OF LAST PANEL                                             H21480
+C                                                                         H21490
+      IF (V2PO+DVPO.GE.V2) THEN                                           H21500
+         RADO(NPE+1) = RADO(NPE)                                          H21510
+         RADO(NPE+2) = RADO(NPE)                                          H21520
+         TRAO(NPE+1) = TRAO(NPE)                                          H21530
+         TRAO(NPE+2) = TRAO(NPE)                                          H21540
+      ENDIF                                                               H21550
+C                                                                         H21560
+C     -------------------------------
+C     Analytic Derivative calculation
+C     -------------------------------
+C
+C     Call TDERIV for temperature retrieval
+C     Call ADERIV for molecular retrieval
+C
+C     If molecular retrieval:
+C     Input layer absorptance coefficients and accumulated
+C     transmittances and calculate layer derivatives
+C
+C     If temperature retrieval:
+C     Input Planck function derivative and layer
+C     transmittances and calculate layer derivatives
+C
+      IF (NSPCRT.EQ.29) THEN
+         CALL TDERIV (KFILE,KODTOT,RPRIME,RADO,TRALYR,KSUBL,XKMOLC,
+     *        OPDT,ODACUM,NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,
+     *        v1p,dvp)
+      ELSEIF (NSPCRT.GT.0) THEN
+         CALL ADERIV (KFILE,KODTOT,RPRIME,RADO,TRALYR,KSUBL,XKMOLC,
+     *        OPDT,ODACUM,NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,
+     *        v1p,dvp)
+      ENDIF
+C
+C     Output monochromatic radiance derivatives to KTEMP
+C
+      CALL EMOUT (V1P,V2P,DVP,NLIM,RPRIME,TRAN,KTEMP,NPTS,NPANLS)
+C
+C     --------------------------
+C     Layer Radiance Calculation
+C     --------------------------
+C
+      NPL = 1                                                             H21570
+C                                                                         H21580
+C     NPL IS LOCATION OF FIRST ELEMENT ON ARRAYS RADO AND TRAO            H21590
+C     Combine terms of layer radiative transfer
+C                                                                         H21600
+      CALL RADNN (RADN,TRAN,RADO,TRAO,RADLYB,NLIM,NDIM,ND2,V1P,DVP,       H21610
+     *           IPATHL,A1,A2,A3,A4,LL,NPL)                               H21620
+C                                                                         H21630
+      CALL CPUTIM (TIMEM1)                                                H21640
+C                                                                         H21650
+      IF (TBND.GT.0.) CALL EMBND (V1P,V2P,DVP,NLIM,RADN,TRAN,TBND)        H21660
+C                                                                         H21670
+C     Output radiance to MFILE
+C
+      CALL EMOUT (V1P,V2P,DVP,NLIM,RADN,TRAN,MFILE,NPTS,NPANLS)           H21680
+C
+      CALL CPUTIM (TIMEM2)                                                H21690
+      TIMOT = TIMOT+TIMEM2-TIMEM1                                         H21700
+C                                                                         H21710
+C     NPL IS NOW LOCATION OF FIRST ELEMENT TO BE USED FOR NEXT PASS       H21720
+C                                                                         H21730
+      IPL = -1                                                            H21740
+      DO 70 NL = NPL, NPE                                                 H21750
+         IPL = IPL+1                                                      H21760
+         RADO(IPL) = RADO(NL)                                             H21770
+         TRAO(IPL) = TRAO(NL)                                             H21780
+   70 CONTINUE                                                            H21790
+C                                                                         H21800
+      NPE = IPL                                                           H21810
+C                                                                         H21820
+      GO TO 40                                                            H21830
+C
+C     End of loop over panels
+C
+   80 CONTINUE                                                            H21840
+C                                                                         H21850
+      CALL CPUTIM (TIME1)                                                 H21860
+      TIM = TIME1-TIME                                                    H21870
+      WRITE (IPR,915) TIME1,TIM,TIMEM,TIMRD,TIMOT                         H21880
+C                                                                         H21890
+      RETURN                                                              H21900
+C                                                                         H21910
+C                                                                         H21920
+  900 FORMAT ('0 THE TIME AT THE START OF EMADMG IS ',F12.3)              H21930
+  905 FORMAT ('0 INITIAL LAYER',I5,'  FINAL LAYER',I5,/,'0 FILE ',I5,     H21940
+     *        ' MERGED WITH FILE ',I5,' ONTO FILE',I5)                    H21950
+  910 FORMAT ('0 IPATHL AND IANT',2I5)                                    H21960
+  915 FORMAT ('0 THE TIME AT THE END OF EMADMG IS ',F12.3/F12.3,          H21970
+     *        ' SECS WERE REQUIRED FOR THIS MERGE  - EMDM - ',            H21980
+     *        F12.3,' - READ - ',F12.3,' - EMOUT - ',F12.3)               H21990
+C                                                                         H22000
+      END                                                                 H22010
+C
+C     ---------------------------------------------------------------
+C
+      SUBROUTINE ADERIV (KFILE,KODTOT,RPRIME,RADO,TRALYR,KSUBL,XKMOLC,
+     *                  OPDT,ODACUM,NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,
+     *     v1po,dvpo)
+C                                                                    
+C     This subroutine inputs abosrption coefficient values from
+C     KFILE and total transmittance from KODTOT (if there is more
+C     than one layer between the present layer and the observer),
+C     and then calculates the radiance derivatives
+C
+      IMPLICIT DOUBLE PRECISION (V)
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      &
+C
+      REAL KSUBL(0:ND2)
+C
+      DIMENSION RADO(0:ND2),OPDT(0:ND2)
+      DIMENSION RPRIME(NDIM)
+      DIMENSION TRALYR(*)
+      DIMENSION PNLHDR(2),XKMOLC(2),ODACUM(2)
+C
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,
+     *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF
+      COMMON /BUFPNL/ V1P,V2P,DVP,NLIMP
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+      COMMON /EMDMSV/ BBSAV(2410),BBASAV(2410),XXSAV(2410)
+C
+      EQUIVALENCE (PNLHDR(1),V1P)
+C
+      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
+      IF (KEOF.LE.0) THEN
+         WRITE(*,*) 'End of KFILE ',KFILE
+         GOTO 10
+      ENDIF
+C
+C     Set number of words to be input as 2400 or the number of
+C     points between the absolute end point V2 and the panel
+C     starting point V1P, whichever is smaller.  If you already
+C     have the point (from a previous panel), then skip over
+C     remaining panels.
+C
+      XLIMP = (V2-V1P)/DVP + 1.00001
+      IF (XLIMP.GT.2400) THEN
+         NLIMP = 2400
+      ELSEIF (XLIMP.LT.1.) THEN
+         GOTO 10
+      ELSE
+         NLIMP = XLIMP
+      ENDIF
+C
+C     Read in absorptance coefficients
+C
+      CALL BUFIN (KFILE,KEOF,XKMOLC(1),NLIMP)
+C
+C     Read in total optical depths if LAYER < NLAYER
+C
+      IF (LAYER.LT.NLAYER) THEN
+         CALL BUFIN (KODTOT,KEOF,PNLHDR(1),NPHDRF)
+         IF (KEOF.LE.0) THEN
+            WRITE(IPR,900) KODTOT,KFILE
+            STOP 'IN SUBROUTINE ADERIV: SEE OUTPUT FILE'
+         ENDIF
+C
+C        Set number of words to be input as 2400 or the number of
+C        points between the absolute end point V2 and the panel
+C        starting point V1P, whichever is smaller.  If you already
+C        have the point (from a previous panel), then skip over
+C        remaining panels.
+C
+         XLIMP = (V2-V1P)/DVP + 1.00001
+         IF (XLIMP.GT.2400) THEN
+            NLIMP = 2400
+         ELSEIF (XLIMP.LT.1.) THEN
+            GOTO 10
+         ELSE
+            NLIMP = XLIMP
+         ENDIF
+C
+C        Read in total optical depths
+C
+         CALL BUFIN (KODTOT,KEOF,ODACUM(1),NLIMP)
+      ENDIF
+C                                                                        
+C     Calculate layer derivatives, 
+C
+C     dR/du = T{n-1}*[d{nonsource]/du + d{source}/du], where
+C
+C             d{nonsource}/du = -Km*exp{-tau}*Rn,
+C
+C             and
+C
+C             d{source}/du = (Km/(1+a*tau)) *
+C                            [exp{-tau} *
+C                            (Bbar + B*a*tau + a*(B-Bbar)/(1+a*tau)) +
+C                            a*(B-Bbar)/(1+a*tau)],
+C
+C             such that
+C                  Km is layer absorbtance coefficients
+C                  tau is layer optical depths
+C                  Rn is the radiance of the layer
+C                     previously done
+C
+C     Numerical substitutions:
+C
+C               Y = 1/(1+a*tau)
+C              YZ = a*(B-Bbar)/(1+a*tau)
+C              AA = a
+C           XXSAV = a*tau
+C           BBSAV = Bbar
+C          BBASAV = B
+C
+C
+C     When calculating the derivative of the layer nearest the observer,
+C     omit the total accumulated transmittance, TRACCM
+C
+ 10   AA = 0.2
+c      write(*,*) 'ipathl = ',ipathl
+      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3) THEN
+c         write(*,*) 'layer = ',layer,'  nlayer = ',nlayer
+         IF (LAYER.NE.NLAYER) THEN
+            DO 20 I = 1, NLIM
+               vtest = v1po + dvpo*(i-1)
+               Y  = 1./(1.+XXSAV(I))
+               YZ = Y*AA*(BBASAV(I)-BBSAV(I))
+               TRACCM = EXP(-OPDT(I))
+               SOURCE = Y*KSUBL(I)*
+     *                  (TRALYR(I)*(BBSAV(I)+BBASAV(I)*XXSAV(I)-YZ)+YZ)
+               SRCNON = KSUBL(I)*TRALYR(I)*RADO(I)
+               RPRIME(I) = TRACCM*(SOURCE - SRCNON)
+c               if ((i.le.10).and.(layer.eq.1)) then
+c                  write(*,*) '#1  i, gnu = ',i,vtest
+c                  write(*,*) '  y = ',y
+c                  write(*,*) '  yz = ',yz
+c                  write(*,*) '  traccm = ',traccm
+c                  write(*,*) '  source = ',source
+c                  write(*,*) '       ksubl = ',ksubl(i)
+c                  write(*,*) '       tralyr = ',tralyr(i)
+c                  write(*,*) '       xxsav = ',xxsav(i)
+c                  write(*,*) '  srcnon = ',srcnon
+c                  write(*,*) '       ksubl = ',ksubl(i)
+c                  write(*,*) '       tralyr = ',tralyr(i)
+c                  write(*,*) '       rado = ',rado(i)
+c                  write(*,*) '  rprime = ',rprime(i)
+c               endif
+ 20         CONTINUE
+         ELSE
+            DO 30 I = 1, NLIM
+               vtest = v1po + dvpo*(i-1)
+               Y  = 1./(1.+XXSAV(I))
+               YZ = Y*AA*(BBASAV(I)-BBSAV(I))
+               SOURCE = Y*KSUBL(I)*
+     *                  (TRALYR(I)*(BBSAV(I)+BBASAV(I)*XXSAV(I)-YZ)+YZ)
+               SRCNON = KSUBL(I)*TRALYR(I)*RADO(I)
+               RPRIME(I) = SOURCE - SRCNON
+c               if ((i.le.10).and.(layer.eq.1)) then
+c                  write(*,*) '#2  i, gnu = ',i,vtest
+c                  write(*,*) '  y = ',y
+c                  write(*,*) '  yz = ',yz
+c                  write(*,*) '  source = ',source
+c                  write(*,*) '       ksubl = ',ksubl(i)
+c                  write(*,*) '       tralyr = ',tralyr(i)
+c                  write(*,*) '       xxsav = ',xxsav(i)
+c                  write(*,*) '  srcnon = ',srcnon
+c                  write(*,*) '       ksubl = ',ksubl(i)
+c                  write(*,*) '       tralyr = ',tralyr(i)
+c                  write(*,*) '       rado = ',rado(i)
+c                  write(*,*) '  rprime = ',rprime(i)
+c               endif
+ 30         CONTINUE
+         ENDIF
+c        write(*,*) '**************************'
+      ELSEIF (IPATHL.EQ.2) THEN
+         STOP 'ADERIV NOT SET FOR IPATHL = 2'
+c      ELSEIF (IPATHL.EQ.3) THEN
+c         STOP 'ADERIV NOT SET FOR IPATHL = 3'
+      ELSEIF (IPATHL.EQ.-1) THEN
+         STOP 'ADERIV NOT SET FOR IPATHL = -1'
+      ENDIF
+C
+      RETURN
+C
+ 900  FORMAT ('KODTOT, ',I2.2,', reached end prior to end of KFILE, ',
+     *        I2.2)
+C
+      END
+C
+C     ---------------------------------------------------------------
+C
+      SUBROUTINE TDERIV (KFILE,KODTOT,RPRIME,RADO,TRALYR,KSUBL,XKMOLC,
+     *                  OPDT,ODACUM,NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,
+     *     v1po,dvpo)
+C                                                                    
+C     This subroutine combines the Planck function derivative
+C     (calculated in SUBROUTINE EMDT) and the layer transmittance
+C     and then calculates the radiance derivatives with respect to
+C     temperature
+C
+      IMPLICIT DOUBLE PRECISION (V)
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      &
+C
+      REAL KSUBL(0:ND2)
+C
+      DIMENSION RADO(0:ND2),OPDT(0:ND2)
+      DIMENSION RPRIME(NDIM)
+      DIMENSION TRALYR(*)
+      DIMENSION PNLHDR(2),XKMOLC(2),ODACUM(2)
+C
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,
+     *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF
+      COMMON /BUFPNL/ V1P,V2P,DVP,NLIMP
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+      COMMON /EMDMSV/ BBSAV(2410),BBASAV(2410),XXSAV(2410)
+      COMMON /EMDTSV/ BBDSAV(2410)
+C
+      EQUIVALENCE (PNLHDR(1),V1P)
+C
+c      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
+c      IF (KEOF.LE.0) THEN
+c         WRITE(*,*) 'End of KFILE ',KFILE
+c         GOTO 10
+c      ENDIF
+C
+C     Set number of words to be input as 2400 or the number of
+C     points between the absolute end point V2 and the panel
+C     starting point V1P, whichever is smaller.  If you already
+C     have the point (from a previous panel), then skip over
+C     remaining panels.
+C
+      XLIMP = (V2-V1P)/DVP + 1.00001
+      IF (XLIMP.GT.2400) THEN
+         NLIMP = 2400
+      ELSEIF (XLIMP.LT.1.) THEN
+         GOTO 10
+      ELSE
+         NLIMP = XLIMP
+      ENDIF
+C
+C     Read in absorptance coefficients
+C
+c      CALL BUFIN (KFILE,KEOF,XKMOLC(1),NLIMP)
+C
+C     Read in total optical depths if LAYER < NLAYER
+C
+      IF (LAYER.LT.NLAYER) THEN
+         CALL BUFIN (KODTOT,KEOF,PNLHDR(1),NPHDRF)
+         IF (KEOF.LE.0) THEN
+            WRITE(IPR,900) KODTOT,KFILE
+            STOP 'IN SUBROUTINE ADERIV: SEE OUTPUT FILE'
+         ENDIF
+C
+C        Set number of words to be input as 2400 or the number of
+C        points between the absolute end point V2 and the panel
+C        starting point V1P, whichever is smaller.  If you already
+C        have the point (from a previous panel), then skip over
+C        remaining panels.
+C
+         XLIMP = (V2-V1P)/DVP + 1.00001
+         IF (XLIMP.GT.2400) THEN
+            NLIMP = 2400
+         ELSEIF (XLIMP.LT.1.) THEN
+            GOTO 10
+         ELSE
+            NLIMP = XLIMP
+         ENDIF
+C
+C        Read in total optical depths
+C
+         CALL BUFIN (KODTOT,KEOF,ODACUM(1),NLIMP)
+      ENDIF
+C                                                                        
+C     Calculate layer derivatives, 
+C
+C     dR/dt = Tt*[(1-T)*dB/dt], where
+C
+C             dB/dt = (h*c*gnu)/(k*t*t) * 1/(1-exp{-beta*gnu})*B(gnu,t)
+C
+C
+C     When calculating the derivative of the layer nearest the observer,
+C     omit the total accumulated transmittance, TRACCM
+C
+ 10   AA = 0.2
+      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3) THEN
+         IF (LAYER.NE.NLAYER) THEN
+            DO 20 I = 1, NLIM
+               vtest = v1po + dvpo*(i-1)
+c               Y  = 1./(1.+XXSAV(I))
+c               YZ = Y*AA*(BBASAV(I)-BBSAV(I))
+               TRACCM = EXP(-OPDT(I))
+               SOURCE = BBDSAV(I)*(1.-TRALYR(I))
+c               SRCNON = 
+               RPRIME(I) = TRACCM*SOURCE
+ 20         CONTINUE
+         ELSE
+            DO 30 I = 1, NLIM
+               vtest = v1po + dvpo*(i-1)
+c               Y  = 1./(1.+XXSAV(I))
+c               YZ = Y*AA*(BBASAV(I)-BBSAV(I))
+               SOURCE = BBDSAV(I)*(1.-TRALYR(I))
+c               SRCNON = 
+               RPRIME(I) = SOURCE
+ 30         CONTINUE
+         ENDIF
+      ELSEIF (IPATHL.EQ.2) THEN
+         STOP 'TDERIV NOT SET FOR IPATHL = 2'
+c      ELSEIF (IPATHL.EQ.3) THEN
+c         STOP 'TDERIV NOT SET FOR IPATHL = 3'
+      ELSEIF (IPATHL.EQ.-1) THEN
+         STOP 'TDERIV NOT SET FOR IPATHL = -1'
+      ENDIF
+C
+      RETURN
+C
+ 900  FORMAT ('KODTOT, ',I2.2,', reached end prior to end of KFILE, ',
+     *        I2.2)
+C
+      END
+C
+C     ----------------------------------------------------------------
 C
       SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)         H28650
 C                                                                         H28660
