@@ -16,7 +16,7 @@ C                                                                         F00100
       CHARACTER*8      XID,       HMOLID,      YID 
       REAL*8               SECANT,       XALTZ
 C                                                                         F00120
-      COMMON /CVRCNT/ HVRCNT
+      COMMON /CVRCNT/ HNAMCNT,HVRCNT
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       F00130
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   F00140
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    F00150
@@ -35,7 +35,7 @@ c
 C
       REAL ABSBSV(5050)
 C                                                                         F00230
-      CHARACTER*15 HVRCNT
+      CHARACTER*18 HNAMCNT,HVRCNT
 c
       equivalence (fscdid(4), iaersl)
 c
@@ -66,7 +66,7 @@ C           5            yes       yes         no          yes
 C           6   READ IN XSELF, XFRGN, XCO2C, XO3CN, XO2CN, XN2CN, 
 C               and XRAYL in Record 1.2a
 C
-C     ASSIGN CVS  VERSION NUMBER TO MODULE 
+C     ASSIGN CVS VERSION NUMBER TO MODULE 
 c
       HVRCNT = '$Revision$'
 C
@@ -692,7 +692,7 @@ c           123456789-123456789-123456789-123456789-123456789-1
      2     '                                                   ',
      3     '                                                   ',
      4     '                                                   ',
-     5     '0  *****  CONTINUA mt_ckd_1.0                       ',
+     5     '0  *****  CONTINUA mt_ckd_1.00                     ',
      6     '                                                   ',
      7     '                                                   ',
      8     '                                                   ',
