@@ -28,7 +28,7 @@ C                                                                         F00230
       EQUIVALENCE (C0,SH2OT0,CN2T0,FCO2) , (C1,SH2OT1,CT1),               F00240
      *            (C2,FH2O,CT2)                                           F00250
 C                                                                         F00260
-      DATA P0 / 1013. /,T0 / 296. /,CF1 / 3.159E-08 /,CF2 / 2.75E-04 /    F00270
+      DATA P0 / 1013. /,T0 / 296. /                                       F00270
       DATA XLOSMT / 2.68675E+19 /                                         F00280
 C                                                                         F00290
       RHOAVE = (PAVE/P0)*(T0/TAVE)                                        F00300
@@ -56,28 +56,28 @@ C                                                                         F00480
       RFRGN = PFRGN*(T0/TAVE)                                             F00520
       XKT = TAVE/RADCN2                                                   F00530
       TFAC = (TAVE-T0)/(260.-T0)                                          F00540
-c
-c--------------------------------------------------------------------
-c                             Self
+C
+C--------------------------------------------------------------------
+C                             SELF
 
       ALPHA2 = 200.**2                                                    F00550
-c
-      Alphs2= 120.**2
-      v0s=1310.
-      factrs= 0.6
-c     xfact= 1.-factrs
-c     print *, ' xfact,  v0s,  alphs, ns  ',  xfact ,v0s,alphs,ns
-c
-c--------------------------------------------------------------------
-c                             Foreign
-      Alphf2= 330.**2
-      v0f =1130.
-      factrf = 0.97
-c     xfact= 1.- factrf
-c     print *, ' xfact,  v0,  alphf, nf  ',  xfact ,v0,alphf,nf
-c     scal=1.e-20
-c--------------------------------------------------------------------
-c
+C
+      ALPHS2= 120.**2
+      V0S=1310.
+      FACTRS= 0.6
+C     XFACT= 1.-FACTRS
+C     PRINT *, ' XFACT,  V0S,  ALPHS, NS  ',  XFACT ,V0S,ALPHS,NS
+C
+C--------------------------------------------------------------------
+C                             FOREIGN
+      ALPHF2= 330.**2
+      V0F =1130.
+      FACTRF = 0.97
+C     XFACT= 1.- FACTRF
+C     PRINT *, ' XFACT,  V0,  ALPHF, NF  ',  XFACT ,V0,ALPHF,NF
+C     SCAL=1.E-20
+C--------------------------------------------------------------------
+C
       DO 20 J = 1, NPTC                                                   F00560
          VJ = V1C+DVC*FLOAT(J-1)                                          F00570
          SH2O = 0.                                                        F00580
@@ -85,16 +85,16 @@ c
             SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC                  F00600
 C                                                                         F00610
 C     CORRECTION TO SELF CONTINUUM (1 SEPT 85); FACTOR OF 0.78 AT 1000    F00620
-c                             and  .......
+C                             AND  .......
 C                                                                         F00630
             SH2O = SH2O*(1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *     F00640
-     c                  (1.-factrs*(ALPHs2/((VJ-v0s  )**2+ALPHs2))) 
+     C                  (1.-FACTRS*(ALPHS2/((VJ-V0S  )**2+ALPHS2))) 
          ENDIF                                                            F00650
 C                                                                         F00660
 C     CORRECTION TO FOREIGN CONTINUUM                                     F00670
 C                                                                         F00680
-          fH2O(j)=fH2O(j)* (1.-factrf*(ALPHf2/((VJ-v0f)**2+ALPHf2)))
-c                                                                         F00700
+          FH2O(J)=FH2O(J)* (1.-FACTRF*(ALPHF2/((VJ-V0F)**2+ALPHF2)))
+C                                                                         F00700
          C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)                              F00710
 C                                                                         F00720
 C     RADIATION FIELD                                                     F00730
