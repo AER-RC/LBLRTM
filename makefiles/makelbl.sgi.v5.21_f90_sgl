@@ -45,8 +45,8 @@ OBJFIL = $(CLBL).o \
          $(CPLT).o \
          $(CUTL).o \
          $(CDUM).o \
-         $(CNLT).o \
-         $(CSOL).o
+         $(CSOL).o \
+         $(CNLT).o 
 
 OBPATH = $(CDOTO)/$(CLBL).o \
          $(CDOTO)/$(COPR).o \
