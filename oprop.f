@@ -4527,7 +4527,7 @@ C                                                                         E02610
       COMMON /XSHEAD/ HEADT1(35)                                          E02770
       COMMON /XSTMPR/ PF,TF,PDX(6,5,35),DVXPR(5,35),IXBIN(5,35),          E02780
      *                IXSBN(5,35)                                         E02790
-      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(3000)                          E02800
+      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(24000)                         E02800
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E02810
       COMMON /XSECTF/ XSFILE(6,5,35),XSNAME(35),ALIAS(4,35)               E02820
       COMMON /XSECTR/ V1FX(5,35),V2FX(5,35),DVFX(5,35),WXM(35),           E02830
@@ -4573,7 +4573,7 @@ C     NSPECR(NXS) IS THE NUMBER OF SPECTRAL REGIONS FOR THE MOLECULE NX   E03220
 C**********************************************************************   E03230
 C                                                                         E03240
       NLIMX = 510                                                         E03250
-      LIMOUT = 3000                                                       E03260
+      LIMOUT = 24000                                                      E03260
       IRPEAT = 0                                                          E03270
 C                                                                         E03280
       PF = PAVE                                                           E03290
@@ -4947,7 +4947,7 @@ C                                                                         E06830
      *                W1(60),P1L,P1U,T1L,T1U,WBROA1,DVB,V1B,V2B,TBOUN1,   E06850
      *                EMISI1,FSCDI1(17),NMO1,LAYER1,Y11,YID1(10),LSTWD1   E06860
       COMMON /PXSHDR/ V1PX,V2PX,DVPX,NLIMPX,RBX(2050)                     E06870
-      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(3000)                          E06880
+      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(24000)                         E06880
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E06890
       COMMON /XSECTF/ XSFILE(6,5,35),XSNAME(35),ALIAS(4,35)               E06900
       COMMON /XSECTR/ V1FX(5,35),V2FX(5,35),DVFX(5,35),WXM(35),           E06910
@@ -5254,7 +5254,7 @@ C                                                                         E09670
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E09740
      *              EXTID(10)                                             E09750
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           E09760
-      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(3000)                          E09770
+      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(24000)                         E09770
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E09780
       COMMON /XSECTF/ XSFILE(6,5,35),XSNAME(35),ALIAS(4,35)               E09790
       COMMON /XSECTR/ V1FX(5,35),V2FX(5,35),DVFX(5,35),WXM(35),           E09800
@@ -5354,7 +5354,7 @@ C                                                                         E10530
       COMMON /XSCINF/ HWHM,JEMIT,JFN,SAMPLE,SCANID,NPTS,XF(851)           E10690
 C                                                                         E10700
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           E10710
-      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(3000)                          E10720
+      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(24000)                         E10720
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E10730
       COMMON /XSECTF/ XSFILE(6,5,35),XSNAME(35),ALIAS(4,35)               E10740
       COMMON /XSECTR/ V1FX(5,35),V2FX(5,35),DVFX(5,35),WXM(35),           E10750
