@@ -69,8 +69,8 @@ C                                                                         H00520
          IF (IAERSL.GE.1) CALL GETEXT (IEXFIL,LAYER,IEMIT)                H00550
 C                                                                         H00560
          TBND = 0.                                                        H00570
-         IF (LAYER.EQ.1.AND.IANT.EQ.0) TBND = TMPBND                      H00580
-         IF (LAYER.EQ.LH2.AND.IANT.EQ.-1) TBND = TMPBND                   H00590
+         IF (IPATHL.EQ.1.AND.LAYER.EQ.1)   TBND = TMPBND                  H00580
+         IF (IPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND                  H00590
          IF (LAYER.EQ.1) THEN                                             H00600
             IF (IMRG.NE.36) THEN                                          H00610
                CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                       H00620
@@ -152,8 +152,8 @@ C                                                                         H01290
 C                                                                         H01340
       TBND = 0.                                                           H01350
 C                                                                         H01360
-      IF (LAYER.EQ.1.AND.IANT.EQ.0) TBND = TMPBND                         H01370
-      IF (LAYER.EQ.LH2.AND.IANT.EQ.-1) TBND = TMPBND                      H01380
+      IF (JPATHL.EQ.1.AND.LAYER.EQ.1)   TBND = TMPBND                     H01370
+      IF (JPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND                     H01380
       IF (LAYER.EQ.LH1.AND.IANT.NE.-1) THEN                               H01390
          IF (IMRG.NE.35) THEN                                             H01400
             CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                          H01410
