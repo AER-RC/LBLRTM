@@ -34,6 +34,22 @@ C                                                                         F00230
 C                                                                         F00260
       DATA P0 / 1013. /,T0 / 296. /                                       F00270
       DATA XLOSMT / 2.68675E+19 /                                         F00280
+c     
+c     these are self-continuum modification factors from 700-1200 cm-1
+      dimension xfac(0:50)
+      DATA (XFAC(I),I=0,50)/
+     1    1.00000,1.02000,1.04000,1.06000,1.08000,1.10000,
+     2    1.10800,1.11600,1.12400,1.13200,1.14000,1.14800,
+     3    1.15600,1.16400,1.17200,1.18000,1.19400,1.20800,
+     4    1.22200,1.23600,1.25000,1.27500,1.30000,1.29375,
+     5    1.28750,1.28125,1.27500,1.26875,1.26250,1.25625,
+     6    1.25000,1.23600,1.22200,1.20800,1.19400,1.18000,
+     7    1.17400,1.16800,1.16200,1.15600,1.15000,1.14000,
+     8    1.13000,1.12000,1.11000,1.10000,1.08000,1.06000,
+     9    1.04000,1.02000,1.00000/
+c
+      data s260/-12345678./, s296/-12345678./
+      save s260, s296, vfac, sfac, wdth 
 C                                                                         F00290
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
@@ -88,17 +104,33 @@ C     PRINT *, ' XFACT,  V0,  ALPHF, NF  ',  XFACT ,V0,ALPHF,NF
 C     SCAL=1.E-20
 C--------------------------------------------------------------------
 C
+c     
+cc      if (s260 .le. 0.) then
+cc      print *, '  sfac '
+cc      read *,  sfac
+cc      endif
+cc      s260 = 1.
+C
+C--------------------------------------------------------------------
+C
       DO 20 J = 1, NPTC                                                   F00560
          VJ = V1C+DVC*FLOAT(J-1)                                          F00570
          VS2 = (VJ-V0S)**2
          SH2O = 0.                                                        F00580
          IF (SH2OT0(J).GT.0.) THEN                                        F00590
             SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC                  F00600
+c
+         sfac = 1.
+         if (vj.ge.700. .and.  vj.le.1200.) then 
+            jfac = (vj-700.)/10. + 0.00001
+            sfac = xfac(jfac)
+c           print *, '   vj,  jfac,  sfac  ',vj,jfac,sfac
+         endif
 C                                                                         F00610
 C     CORRECTION TO SELF CONTINUUM (1 SEPT 85); FACTOR OF 0.78 AT 1000    F00620
 C                             AND  .......
 C                                                                         F00630
-            SH2O = SH2O*(1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *     F00640
+      SH2O = sfac * SH2O*(1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *     F00640
      C                  (1.-FACTRS*(ALPHS2/(VS2+(BETAS*VS2**2)+ALPHS2))) 
          ENDIF                                                            F00650
 C                                                                         F00660
