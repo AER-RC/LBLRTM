@@ -1857,29 +1857,14 @@ C                                                                         H17740
 C                                                                         H17950
          NLIM1 = 0                                                        H17960
          NLIM2 = 0                                                        H17970
-         EMDUM = 0.                                                       H17980
          BBDUM = 0.                                                       H17990
-         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)                      H18000
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)                H18010
-         IEMBB = 0                                                        H18020
-         IF (VIDVBD.GT.VIDVEM) IEMBB = 1                                  H18030
 C                                                                         H18040
    40    NLIM1 = NLIM2+1                                                  H18050
 C                                                                         H18060
          VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18070
-         IF (IEMBB.EQ.0) THEN                                             H18080
-            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18090
-            BB = BB-BBDEL                                                 H18100
-            VIDVEM = -VIDV                                                H18110
-            EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H18120
-            EMISIV = EMISIV-EMDEL                                         H18130
-         ELSE                                                             H18140
-            EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)                    H18150
-            EMISIV = EMISIV-EMDEL                                         H18160
-            VIDVBD = -VIDV                                                H18170
-            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H18180
-            BB = BB-BBDEL                                                 H18190
-         ENDIF                                                            H18200
+         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)                 H18090
+         BB = BB-BBDEL                                                    H18100
 C                                                                         H18210
          IF (VIDV.GE.9.E+4) THEN 
             NLIM2 = NLIMO+1
@@ -1889,7 +1874,8 @@ C                                                                         H18210
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18230
 C                                                                         H18240
          DO 50 J = NLIM1, NLIM2                                           H18250
-            EMISIV = EMISIV+EMDEL                                         H18260
+            V=VI+FLOAT(J-1)*DVPO
+            EMISIV = BNDEMI(1)+V*(BNDEMI(2)+V*BNDEMI(3))
             BB = BB+BBDEL                                                 H18270
             NEWEM(J) = EMLAYR(J)+TRLAYR(J)*BB*EMISIV                      H18280
    50    CONTINUE                                                         H18290
@@ -1900,47 +1886,14 @@ C                                                                         H18320
 C                                                                         H18340
          NLIM1 = 0                                                        H18350
          NLIM2 = 0                                                        H18360
-         EMDUM = 0.                                                       H18370
-         RFDUM = 0.                                                       H18380
          BBDUM = 0.                                                       H18390
-         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)                      H18400
-         REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFDUM)                      H18410
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)                H18420
-         IEMBB = 0                                                        H18430
-         IF (VIDVEM.LT.VIDVRF.AND.VIDVEM.LT.VIDVBD) IEMBB = 1             H18440
-         IF (VIDVRF.LT.VIDVEM.AND.VIDVRF.LT.VIDVBD) IEMBB = 2             H18450
 C                                                                         H18460
    60    NLIM1 = NLIM2+1                                                  H18470
 C                                                                         H18480
          VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18490
-         IF (IEMBB.EQ.0) THEN                                             H18500
-            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18510
-            BB = BB-BBDEL                                                 H18520
-            VIDVEM = -VIDV                                                H18530
-            EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H18540
-            EMISIV = EMISIV-EMDEL                                         H18550
-            VIDVRF = -VIDV                                                H18560
-            REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)                  H18570
-            REFLCT = REFLCT-RFDEL                                         H18580
-         ELSEIF (IEMBB.EQ.1) THEN                                         H18590
-            EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)                    H18600
-            EMISIV = EMISIV-EMDEL                                         H18610
-            VIDVBD = -VIDV                                                H18620
-            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H18630
-            BB = BB-BBDEL                                                 H18640
-            VIDVRF = -VIDV                                                H18650
-            REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)                  H18660
-            REFLCT = REFLCT-RFDEL                                         H18670
-         ELSE                                                             H18680
-            REFLCT = REFLFN(VI,DVPO,VIDV,RFDEL,RFLAST)                    H18690
-            REFLCT = REFLCT-RFDEL                                         H18700
-            VIDVBD = -VIDV                                                H18710
-            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H18720
-            BB = BB-BBDEL                                                 H18730
-            VIDVEM = -VIDV                                                H18740
-            EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H18750
-            EMISIV = EMISIV-EMDEL                                         H18760
-         ENDIF                                                            H18770
+         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)                 H18510
+         BB = BB-BBDEL                                                    H18520
 C                                                                         H18780
          IF (VIDV.GE.9.E+4) THEN 
             NLIM2 = NLIMO+1
@@ -1950,8 +1903,9 @@ C                                                                         H18780
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18800
 C                                                                         H18810
          DO 70 J = NLIM1, NLIM2                                           H18820
-            EMISIV = EMISIV+EMDEL                                         H18830
-            REFLCT = REFLCT+RFDEL                                         H18840
+            V=VI+FLOAT(J-1)*DVPO
+            EMISIV = BNDEMI(1)+V*(BNDEMI(2)+V*BNDEMI(3))
+            REFLCT = BNDRFL(1)+V*(BNDRFL(2)+V*BNDRFL(3))
             BB = BB+BBDEL                                                 H18850
             NEWEM(J) = EMLAYR(J)+EMLAYB(J)*REFLCT*TRLAYR(J)+              H18860
      *                 TRLAYR(J)*BB*EMISIV                                H18870
