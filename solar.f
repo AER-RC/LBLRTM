@@ -76,10 +76,16 @@ C
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2
 C
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID
+      DOUBLE PRECISION XIDS,SECNTS,HMLIDS,XALTZS,YIDS
 C
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,
      *               EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF
+      COMMON /SLHDR/ XIDS(10),SECNTS,PAVES,TAVES,HMLIDS(60),XALTZS(4),
+     *               WKS(60),PZLS,PZUS,TZLS,TZUS,WBRODS,DVS,V1S,V2S,
+     *               TBONDS,
+     *               EMSIVS,FSCDDS(17),NMOLS,LAYERS,YI1S,YIDS(10),
+     *               LSTWDS
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTSS
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
@@ -87,7 +93,17 @@ C
      *              NLTEFL,LNFIL4,LNGTH4
       COMMON /ARMCM1/ HVRSOL
 C
-      DIMENSION XFILHD(2),PNLHDR(2),OPNLHD(2)
+C     ----------------------------------------------------------------
+C     Parameter and common blocks for direct input of emission and
+C     reflection function values
+C
+      PARAMETER (NMAXCO=4040)
+      COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
+      COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP
+C     ----------------------------------------------------------------
+C
+      DIMENSION XFILHD(2),XSOLHD(2),PNLHDR(2),OPNLHD(2)
       DIMENSION A1(0:100),A2(0:100),A3(0:100),A4(0:100)
       DIMENSION A1T2(0:100),A2T2(0:100),A3T2(0:100),A4T2(0:100)
       DIMENSION A1RF(0:100),A2RF(0:100),A3RF(0:100),A4RF(0:100)
@@ -104,6 +120,7 @@ C
       CHARACTER*40 CYID
       CHARACTER*8 HVRSOL
 C
+      EQUIVALENCE (XSOLHD(1),XIDS(1))
       EQUIVALENCE (XFILHD(1),XID(1)),(PNLHDR(1),V1P),
      *            (OPNLHD(1),V1PO)
       EQUIVALENCE (TRAN(1),TRAO(1)),(RADN(1),RADO(1)),
@@ -175,24 +192,89 @@ C
          ISLTRN = 20
          OPEN(UNIT=ISLTRN,FILE='SOL.PATH.T2',FORM='UNFORMATTED',
      *        STATUS='OLD')
-         CALL BUFIN (ISLTRN,ITEOF,XFILHD(1),NFHDRF)
-         DVT2 = DV
+         CALL BUFIN (ISLTRN,ITEOF,XSOLHD(1),NFHDRF)
+         DVT2 = DVS
          ISLRFL = 21
          OPEN(UNIT=ISLRFL,FILE='SOL.REFLECTANCE',FORM='UNFORMATTED',
      *        STATUS='OLD')
-         CALL BUFIN (ISLRFL,IREOF,XFILHD(1),NFHDRF)
-         DVRF = DV
+         CALL BUFIN (ISLRFL,IREOF,XSOLHD(1),NFHDRF)
+         DVRF = DVS
+C
+C        **************************************************************
+C
+C        Read Record 1.4 from TAPE5
+C
+         READ (IRD,970,END=80) TMPBND,(BNDEMI(IBND),IBND=1,3),
+     *                         (BNDRFL(IBND),IBND=1,3)
+C
+         BNDTST = ABS(BNDRFL(1))+ABS(BNDRFL(2))+ABS(BNDRFL(3))
+         IF (BNDTST.NE.0.) IBPROP = 1
+C
+C        If BNDEMI(1) < 0, read in coefficients from file 'EMISSION'
+C        If BNDEMI(1) > 0, check to see if emissivity is reasonable
+C
+C        UNIT ICOEF used for input files
+C
+         ICOEF = 14
+C         
+         IF (BNDEMI(1).LT.0) THEN
+            OPEN (UNIT=ICOEF,FILE='EMISSION',STATUS='OLD')
+            CALL READEM(ICOEF)
+            CLOSE (ICOEF)
+         ELSE
+            XVMID = (V1+V2)/2.
+            EMITST = BNDEMI(1)+BNDEMI(2)*XVMID+BNDEMI(3)*XVMID*XVMID
+            IF (EMITST.LT.0..OR.EMITST.GT.1.) THEN
+               WRITE (IPR,975) XVMID,EMITST
+               STOP 'BNDEMI'
+            ENDIF
+         ENDIF
+C
+C        ------------------------------------------------------------
+C        *** NOTE: REFLECTION FUNCTION NOT CURRENTLY INCORPORATED ***
+C        *** INTO SOLAR RADIATIVE TRANSFER CALCULATION            ***
+C
+C        If BNDRFL(1) < 0, read in coefficients from file 'REFLECTION'
+C        If BNDRFL(1) > 0, check to see if reflectivity is reasonable
+C     
+         IF (BNDRFL(1).LT.0) THEN
+            OPEN (UNIT=ICOEF,FILE='REFLECTION',STATUS='OLD')
+            CALL READRF(ICOEF)
+            CLOSE (ICOEF)
+         ELSE
+            REFTST = BNDRFL(1)+BNDRFL(2)*XVMID+BNDRFL(3)*XVMID*XVMID
+            IF (REFTST.LT.0..OR.REFTST.GT.1.) THEN
+               WRITE (IPR,980) XVMID,REFTST
+               STOP 'BNDRFL'
+            ENDIF
+            DVEMIS = MIN(DVL,DVK,DVT2,DVRF)
+         ENDIF
+C        ------------------------------------------------------------
+C
+C        TBOUND is the boundary temperature. TBOUND=0. for no boundary
+C        EMISIV is the boundary emissivity
+C        Set default for EMISIV
+C
+         EMITST = ABS(BNDEMI(1))+ABS(BNDEMI(2))+ABS(BNDEMI(3))
+         IF ((TMPBND.GT.0.).AND.(EMITST.EQ.0.)) BNDEMI(1) = 1.
+         EMISIV = BNDEMI(1)
+         TBOUND = TMPBND
+         XKTBND = TBOUND/RADCN2
+         WRITE (IPR,985) V1,V2,TBOUND,(BNDEMI(IBND),IBND=1,3),
+     *                   (BNDRFL(IBND),IBND=1,3)
+C
+C     **************************************************************
 C
 C        Determine the minimum and maximum DV of all files and reset
 C        ATYPE (-1. is only a flag for nonzero ATYPE)
 C     
-         DVMIN = MIN(DVL,DVK,DVT2,DVRF)
-         DVMAX = MAX(DVL,DVK,DVT2,DVRF)
-         IF (DVMAX.EQ.DVMIN) THEN
-            ATYPE = 0.0
-         ELSE
+         DVMIN = MIN(DVL,DVK,DVT2,DVRF,DVEMIS)
+         DVMAX = MAX(DVL,DVK,DVT2,DVRF,DVEMIS)
+c         IF (DVMAX.EQ.DVMIN) THEN
+c            ATYPE = 0.0
+c         ELSE
             ATYPE = -1.
-         ENDIF
+c         ENDIF
          WRITE(IPR,927) IFILE,ISLTRN,ISLRFL
          WRITE(IPR,941) DVT2,DVRF
 C
@@ -231,7 +313,9 @@ C        1/1 ratio only
 C     ======================================
 C
          WRITE(IPR,950) DVMIN
+         IPANEM = 0
    30    CONTINUE
+         IPANEM = IPANEM+1
          CALL CPUTIM (TIMSL1)
          CALL SOLIN (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(1),LSEOF)
          CALL CPUTIM (TIMSL2)
@@ -285,10 +369,22 @@ C
                SOLRAD(I) = SOLAR(I)*TRAN(I)+RADN(I)
  41         CONTINUE
          ELSEIF (IOTFLG.EQ.2) THEN
-            DO 42 I = 1, NLIM
-               SOLRAD(I) = SOLAR(I)*TRAN2(I)*XRFLT(I)*TRAN(I)+
-     *              RADN(I)
- 42         CONTINUE
+            IF (TBOUND.EQ.0) THEN
+               DO 42 I = 1, NLIM
+                  SOLRAD(I) = SOLAR(I)*TRAN2(I)*XRFLT(I)*
+     *                 TRAN(I)+RADN(I)
+ 42            CONTINUE
+            ELSE
+               DO 43 I = 1, NLIM
+                  EMDUM = -1.
+                  BBDUM = -1.
+                  VBND = V1PO+(I-1)*DVPO
+                  ZEMSV = EMISFN(VBND,DVPO,VINEM,EMDEL,EMDUM)
+                  BBND = BBFN(VBND,DVPO,VBND,XKTBND,VINEW,BBDEL,BBDUM)
+                  SOLRAD(I) = (SOLAR(I)*TRAN2(I)*XRFLT(I)+ZEMSV*BBND)*
+     *                 TRAN(I)+RADN(I)
+ 43            CONTINUE
+            ENDIF
          ENDIF
 C
          CALL CPUTIM (TIMSL2)
@@ -351,8 +447,10 @@ C
 C
 C     ============================================================
 C
+      IPANEM = 0
    60 CONTINUE
-C
+      IPANEM = IPANEM+1
+C     
 C     If INFLAG = 0, then read radiance and tranmittance
 C     If INFLAG = 1, then read optical depth
 C     If INFLAG = 2, then read radiance and tranmittance
@@ -547,28 +645,59 @@ c
      *           RADN(II)
  91      CONTINUE
       ELSEIF (IOTFLG.EQ.2) THEN
-         DO 92 II = 1, NLIMO
-            FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
-            FJJT2 = FJDFT2+RTDVT2*FLOAT(II-1)
-            FJJRF = FJDFRF+RTDVRF*FLOAT(II-1)
-            JJ = IFIX(FJJ)-2
-            JJT2 = IFIX(FJJT2)-2
-            JJRF = IFIX(FJJRF)-2
-            JP = (FJJ-FLOAT(JJ))*100.-199.5
-            JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
-            JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
-            ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
+         IF (TBOUND.EQ.0.) THEN
+            DO 92 II = 1, NLIMO
+               FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
+               FJJT2 = FJDFT2+RTDVT2*FLOAT(II-1)
+               FJJRF = FJDFRF+RTDVRF*FLOAT(II-1)
+               JJ = IFIX(FJJ)-2
+               JJT2 = IFIX(FJJT2)-2
+               JJRF = IFIX(FJJRF)-2
+               JP = (FJJ-FLOAT(JJ))*100.-199.5
+               JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
+               JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
+               ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
      *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))
-            ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
+               ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
      *              A2T2(JPT2)*TRAN2(JJT2)+
      *              A3T2(JPT2)*TRAN2(JJT2+1)+
      *              A4T2(JPT2)*TRAN2(JJT2+2))
-            ZRFL = (A1RF(JPRF)*XRFLT(JJRF-1)+
+               ZRFL = (A1RF(JPRF)*XRFLT(JJRF-1)+
      *              A2RF(JPRF)*XRFLT(JJRF)+
      *              A3RF(JPRF)*XRFLT(JJRF+1)+
      *              A4RF(JPRF)*XRFLT(JJRF+2))
-            SOLRAD(II) = ZSOL*ZTR2*ZRFL*TRAN(II)+RADN(II)
- 92      CONTINUE
+               SOLRAD(II) = ZSOL*ZTR2*ZRFL*TRAN(II)+RADN(II)
+ 92            CONTINUE
+         ELSE
+            DO 93 II = 1, NLIMO
+               FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
+               FJJT2 = FJDFT2+RTDVT2*FLOAT(II-1)
+               FJJRF = FJDFRF+RTDVRF*FLOAT(II-1)
+               JJ = IFIX(FJJ)-2
+               JJT2 = IFIX(FJJT2)-2
+               JJRF = IFIX(FJJRF)-2
+               JP = (FJJ-FLOAT(JJ))*100.-199.5
+               JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
+               JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
+               ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
+     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))
+               ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
+     *              A2T2(JPT2)*TRAN2(JJT2)+
+     *              A3T2(JPT2)*TRAN2(JJT2+1)+
+     *              A4T2(JPT2)*TRAN2(JJT2+2))
+               ZRFL = (A1RF(JPRF)*XRFLT(JJRF-1)+
+     *              A2RF(JPRF)*XRFLT(JJRF)+
+     *              A3RF(JPRF)*XRFLT(JJRF+1)+
+     *              A4RF(JPRF)*XRFLT(JJRF+2))
+               EMDUM = -1.
+               BBDUM = -1.
+               VBND = V1PO+(II-1)*DVPO
+               ZEMSV = EMISFN(VBND,DVPO,VINEM,EMDEL,EMDUM)
+               BBND = BBFN(VBND,DVPO,VBND,XKTBND,VINEW,BBDEL,BBDUM)
+               SOLRAD(II) = (ZSOL*ZTR2*ZRFL+ZEMSV*BBND)*
+     *              TRAN(II)+RADN(II)
+ 93         CONTINUE
+         ENDIF
       ENDIF
 C
       NPL = JJ-1
@@ -602,7 +731,7 @@ C
       V1P = V1P+FLOAT(NPL+1)*DVP
       NPE = IPL
 C
-C     -------------------------------------------------------------
+C     ------------------------------------------------------------
 C     NPLT2 is now location of first element in the array TRAN2 to
 C     be used for next pass.
 C
@@ -665,6 +794,17 @@ C
      *        '0       Reflection function spacing = ',E10.5)
  950  FORMAT ('0 No interpolation needed: using DV = ',E10.5,//)
  951  FORMAT ('0 Interpolating to spectral spacing = ',E10.5,//)
+ 970  FORMAT (7E10.3)
+ 975  FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,
+     *        ' AND IS NOT BOUNDED BY (0.,1.) ')
+ 980  FORMAT ('0 FOR VNU = ',F10.3,' THE REFLECTIVITY = ',E10.3,
+     *        ' AND IS NOT BOUNDED BY (0.,1.) ')
+ 985  FORMAT (5(/),'0*********** BOUNDARY PROPERTIES ***********',/,
+     *        '0 V1(CM-1) = ',F12.4,/,'0 V2(CM-1) = ',F12.4,/,
+     *        '0 TBOUND   = ',F12.4,5X,'BOUNDARY EMISSIVITY   = ',
+     *        3(1PE11.3),/,'0',29X,'BOUNDARY REFLECTIVITY = ',
+     *        3(1PE11.3))
+
 C
       END
 C
