@@ -2,23 +2,22 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
-      SUBROUTINE BUFIN (IFILE,IEOF,ILO,IWORDS,IARRAY)                     A10770
+      SUBROUTINE BUFIN (IFILE,IEOF,IARRAY,IWORDS)                         A10770
 C                                                                         A10780
 C     THIS SUBROUTINE BUFFERS IN (READS) IWORDS INTO  IARRAY STARTING     A10790
-C     AT LOCATION ILO                                                     A10800
+C     AT LOCATION IWORDS                                                  A10800
 C                                                                         A10810
 C     IFILE IS THE FILE DESIGNATION                                       A10820
 C                                                                         A10830
-      DIMENSION IARRAY(*)                                                 A10840
+      DIMENSION IARRAY(IWORDS)                                            A10840
 C                                                                         A10850
       IEOF = 1                                                            A10860
-      IHI = ILO+IWORDS-1                                                  A10870
 C                                                                         A10880
 C#    BUFFER IN (IFILE,1) (IARRAY(ILO),IARRAY(IHI))                       A10890
 C#    IF (UNIT(IFILE).EQ.0.) GO TO 10                                     A10900
 C                                                                         A10910
-      READ (IFILE,END=10) (IARRAY(I),I=ILO,IHI)                           A10920
-      ITEST = MIN(IWORDS,ILO+3)                                           A10930
+      READ (IFILE,END=10) IARRAY                                          A10920
+      ITEST = MIN(IWORDS,4)                                               A10930
       IF (IARRAY(ITEST).EQ.-99) IEOF = -99                                A10940
 C                                                                         A10950
       RETURN                                                              A10960
@@ -28,20 +27,19 @@ C                                                                         A10990
       RETURN                                                              A11000
 C                                                                         A11010
       END                                                                 A11020
-      SUBROUTINE BUFOUT (IFILE,ILO,IWORDS,IARRAY)                         A11030
+      SUBROUTINE BUFOUT (IFILE,IARRAY,IWORDS)                             A11030
 C                                                                         A11040
 C     THIS SUBROUTINE BUFFERS OUT (WRITES) IWORDS FROM IARRAY STARTING    A11050
-C     AT LOCATION ILO                                                     A11060
+C     AT LOCATION IARRAY                                                  A11060
 C                                                                         A11070
 C     IFILE IS THE FILE DESIGNATION                                       A11080
 C                                                                         A11090
-      DIMENSION IARRAY(*)                                                 A11100
-      IHI = ILO+IWORDS-1                                                  A11110
+      DIMENSION IARRAY(IWORDS)                                            A11100
 C                                                                         A11120
 C#    BUFFER OUT (IFILE,1) (IARRAY(ILO),IARRAY(IHI))                      A11130
 C#    IF (UNIT(IFILE).EQ.0.) STOP ' ERROR IN BUFOUT '                     A11140
 C                                                                         A11150
-      WRITE (IFILE) (IARRAY(I),I=ILO,IHI)                                 A11160
+      WRITE (IFILE) IARRAY                                                A11160
 C                                                                         A11170
       RETURN                                                              A11180
 C                                                                         A11190
