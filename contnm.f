@@ -3155,6 +3155,8 @@ C
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
       V2C = V1C+DVS*FLOAT(NPTC-1)       
 c
+c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2 
+c
       DO 10 J = 1, NPTC
          I = I1+J
          C(J) = 0.
@@ -3170,7 +3172,7 @@ C
 C
       IMPLICIT REAL*8           (V)
 C
-C               UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)
+c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2 
 C
 C           THESE DATA ARE FOR 296K
 C
@@ -3199,6 +3201,12 @@ C
 C
       SUBROUTINE N2R220 (V1C,V2C,DVC,NPTC,C)
 C
+C     Model used:
+C      Borysow, A, and L. Frommhold, "Collision-induced
+C         rototranslational absorption spectra of N2-N2
+C         pairs for temperatures from 50 to 300 K", The
+C         Astrophysical Journal, 311, 1043-1057, 1986.
+C
       IMPLICIT REAL*8           (V)
 C
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
@@ -3218,6 +3226,8 @@ C
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
       V2C = V1C+DVS*FLOAT(NPTC-1)       
 c
+c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2 
+c
       DO 10 J = 1, NPTC
          I = I1+J
          C(J) = 0.
@@ -3233,7 +3243,7 @@ C
 C
       IMPLICIT REAL*8           (V)
 C
-C               UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)
+c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2 
 C
 C         THESE DATA ARE FOR 220K
 C
