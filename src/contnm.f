@@ -125,8 +125,6 @@ c zero derivative arrays and initialize panel information
           dvabsc=dvabs
           nptabsc=nptabs
       endif
-          
-
 C                                                                         F00380
 C=======================================================================
 
@@ -135,7 +133,7 @@ C                                                                         F00400
 C=======================================================================
 c
       h2o_fac = WK(1)/Wtot
-      Rh2o    =     h2o_fac  * RHOave * 1.e-20 * xself
+      Rself   =     h2o_fac  * RHOave * 1.e-20 * xself
       Rfrgn   = (1.-h2o_fac) * RHOave * 1.e-20 * xfrgn
 C
 C=======================================================================
@@ -151,15 +149,15 @@ c field) for derivative calculation
       endif
 
 
-C        Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
+C     Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
 c
-         if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
+      if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
 c
-             if ((icflg.eq.1).or.(icflg.eq.0)) then
-                 do j=1,ipts
-                     cself(j)=0.0
-                 enddo
-             endif
+            if ((icflg.eq.1).or.(icflg.eq.0)) then
+               do j=1,ipts
+                  cself(j)=0.0
+               enddo
+            endif
 
             CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0)                          F00410
             CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1)                          F00420
@@ -187,7 +185,7 @@ C              ---------------------------------------------------------
                ENDIF
 c
 c
-               C(J) = WK(1)*(SH2O*RH2O)
+               C(J) = WK(1)*(SH2O*Rself)
 C                                                                         F00720
                ctmp(j)=sh2o*xself
                ctmp3(j)=c(j)
@@ -217,21 +215,39 @@ C=======================================================================
 C                             FOREIGN
 C
 C--------------------------------------------------------------------
-
-C        ------------------------------------------------------------
-
+C
 C        Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
 c
          if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
 
-             do j=1,ipts
-                 cforeign(j)=0.0
-             enddo
+C--------------------------------------------------------------------
+C     *****    Continuum Correction Patches    ********
+C--------------------------------------------------------------------
+
+            V0F1 = 370.
+            HWSQF1 = 190.**2
+            BETAF1 = 1.e-08 
+            FACTRF1 = -0.25
+C
+            do j=1,ipts
+               cforeign(j)=0.0
+            enddo
 
             CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O)         
 C                                                               
             DO 24 J = 1, NPTC                                         
                VJ = V1C+DVC* REAL(J-1)                                    F00570
+               VJ = V1C+DVC* REAL(J-1)                                    F00570
+C
+C              CORRECTION TO FOREIGN CONTINUUM
+C
+               VF2 = (VJ-V0F1)**2
+               VF6 = VF2 * VF2 * VF2
+               FSCAL = (1.+FACTRF1*(HWSQF1/(VF2+(BETAF1*VF6)+HWSQF1)))
+C
+C     
+C     
+               FH2O(J)=FH2O(J)*FSCAL
 C     
                C(J) = WK(1)*(FH2O(J)*RFRGN)
 C                                          
@@ -334,7 +350,6 @@ C                                                                         F00900
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F00930
 
          endif
-
 
 c derivative calculations...
          if ((V2.gt.-20.0).and.(V1.lt.10000.)) then
@@ -1209,20 +1224,24 @@ C
 C                                                                         A10280
 C     THIS SUBROUTINE PRINTS THE CONTINUUM INFORMATION TO FILE IPR        A10290
 C                                                                         A10300
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,14)
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A10310
      *              NLNGTH,KFILE,KPANEL,LINFIL,NDFLE,IAFIL,IEXFIL,        A10320
      *              NLTEFL,LNFIL4,LNGTH4                                  A10330
-      COMMON /CNTPR/ CINFO1,CINFO2,CINFO3,CINFO4
+C
+      COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
+C
+      CHARACTER*18 cnam3(9),cnam4(15)
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,15)
 C                                                                         A10340
       WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,9)
       WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11)
-      WRITE (IPR,910) ((CINFO3(I,J),I=1,2),J=1,9)
-      WRITE (IPR,910) ((CINFO4(I,J),I=1,2),J=1,14)
+      WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
+      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,15)
 C                                                                         A10360
       RETURN                                                              A10370
 C                                                                         A10380
- 910  FORMAT (2A51)
+ 910  FORMAT (18x,2A51)
+ 915  FORMAT (a18,2A51)
 C                                                                         A10580
 
       END                                                                 A10590
@@ -1232,23 +1251,54 @@ C     --------------------------------------------------------------
 C
 C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 C
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,14)
-      COMMON /CNTPR/ CINFO1,CINFO2,CINFO3,CINFO4
+      CHARACTER*18 cnam3(9),cnam4(15)
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,15)
+      COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
+      DATA cnam3/
+c           123456789-123456789-123456789-123456789-123456789-1
+     1     '                 ',
+     2     '                 ',
+     3     '                 ',
+     4     ' ckd_1.0     2.2 ',
+     5     '     "           ',
+     6     ' ckd_2.1     3.3 ',
+     7     '     "           ',
+     8     ' ckd_2.2     3.7 ',
+     9     '     "           '/
+c
+      DATA cnam4/
+c           123456789-123456789-123456789-123456789-123456789-1
+     1     '     "           ',
+     2     ' ckd_2.2.2   3.12',
+     3     ' ckd_2.4.1   5.12',
+     4     '     "           ',
+     5     '     "           ',
+     6     '     "           ',
+     7     '     "           ',
+     8     '     "           ',
+     9     '     "           ',
+     *     ' ckd_2.4.2   5.17',
+     1     '     "           ',
+     2     ' mt_ckd_1.00 1.00',
+     3     '     "           ',
+     4     ' mt_ckd_1.1      ',
+     5     '                 '/
+c
       DATA CINFO1/
 c           123456789-123456789-123456789-123456789-123456789-1
      1     '                                                   ',
      2     '                                                   ',
      3     '                                                   ',
      4     '                                                   ',
-     5     '0  *****  CONTINUA mt_ckd_1.00                     ',
+     5     '0  *****  CONTINUA mt_ckd_1.1                      ',
      6     '                                                   ',
      7     '                                                   ',
      8     '                                                   ',
      9     '                     H2O   SELF  (T)      0 - 20000',
      *     ' CM-1    mt_ckd_1.0                (December 2002) ',
      1     '                           AIR   (T)      0 - 20000',
-     2     ' CM-1    mt_ckd_1.0                (December 2002) ',
+     2     ' CM-1    mt_ckd_1.1                  (August 2004) ',
      3     '                     CO2   AIR            0 - 20000',
      4     ' CM-1    co2 nu2 increased * 7         (July 2002) ',
      5     '                     N2    SELF           0 -   350',
@@ -1257,43 +1307,43 @@ c           123456789-123456789-123456789-123456789-123456789-1
      8     ' CM-1                                 (March 1998) ' /
 C
       DATA CINFO2/
-     *     '                     O2    AIR   (T)   1340 -  1850',
-     *     ' CM-1                                 (March 1998) ',
-     *     '                           O2/N2       7550 -  8486',
-     *     ' CM-1                              (February 2000) ',
-     *     '                           AIR         9100 - 11000',
-     *     ' CM-1                                (August 1999) ',
-     *     '                           O2         15000 - 29870',
-     *     ' CM-1                                  (May  2000) ',
-     *     '                           O2/N2      36000 -  >>>>',
-     *     ' CM-1    HERZBERG                                  ',
-     *     '                     O3    AIR         9170 - 24565',
-     *     ' CM-1    CHAPPUIS / WULF                           ',
-     *     '                                 (T)  27370 - 40800',
-     *     ' CM-1    HARTLEY HUGGINS                           ',
-     *     '                                      40800 - 54000',
-     *     ' CM-1    HARTLEY HUGGINS                           ',
-     *     6*'                                                 ' /
+     1     '                     O2    AIR   (T)   1340 -  1850',
+     1     ' CM-1                                 (March 1998) ',
+     2     '                           O2/N2       7550 -  8486',
+     2     ' CM-1                              (February 2000) ',
+     3     '                           AIR         9100 - 11000',
+     3     ' CM-1                                (August 1999) ',
+     4     '                           O2         15000 - 29870',
+     4     ' CM-1                                  (May  2000) ',
+     5     '                           O2/N2      36000 -  >>>>',
+     5     ' CM-1    HERZBERG                                  ',
+     6     '                     O3    AIR         9170 - 24565',
+     6     ' CM-1    CHAPPUIS / WULF                           ',
+     7     '                                 (T)  27370 - 40800',
+     7     ' CM-1    HARTLEY HUGGINS                           ',
+     8     '                                      40800 - 54000',
+     8     ' CM-1    HARTLEY HUGGINS                           ',
+     9     6*'                                                 ' /
 C
       DATA CINFO3/
-     *     '  H2O SELF HAS BEEN REDUCED IN THE 800-1200 CM-1 RE',
-     *     'GION                                 (01 SEPT 1985)',
-     *     '  03       TEMPERATURE DEPENDENCE HAS BEEN CORRECTE',
-     *     'D                                     (01 MAY 1987)',
-     *     '  02       (1390-1760) HAS BEEN REDUCED (FACTOR = 0',
-     *     '.78)                                (07 MARCH 1990)',
-     *     '  H2O SELF HAS BEEN REDUCED IN THE 1100-1500 CM-1 R',
-     *     'EGION                               (01 APRIL 1993)',
-     *     '  H2O FOREIGN HAS BEEN REDUCED AT ~1300 CM-1 AND IN',
-     *     ' ALL THE WINDOW REGIONS             (01 APRIL 1993)',
-     *     '  H2O SELF HAS BEEN MODIFIED IN THE 700-1500 CM-1 R',
-     *     'EGION                                 (01 MAY 1994)',
-     *     '  H2O FOREIGN HAS BEEN MODIFIED IN THE ENTIRE 1200-',
-     *     '2200 CM-1 SPECTRAL RANGE              (01 MAY 1994)',
-     *     '  H2O SELF HAS BEEN INCREASED 30% IN THE MICROWAVE ',
-     *     'REGION                                (09 FEB 1996)',
-     *     '  N2 COLLISION INDUCED PURE ROTATION BAND ADDED    ',
-     *     '                                      (09 FEB 1996)'/
+     1     '  H2O SELF HAS BEEN REDUCED IN THE 800-1200 CM-1 RE',
+     1     'GION                                 (01 SEPT 1985)',
+     2     '  03       TEMPERATURE DEPENDENCE HAS BEEN CORRECTE',
+     2     'D                                     (01 MAY 1987)',
+     3     '  02       (1390-1760) HAS BEEN REDUCED (FACTOR = 0',
+     3     '.78)                                (07 MARCH 1990)',
+     4     '  H2O SELF HAS BEEN REDUCED IN THE 1100-1500 CM-1 R',
+     4     'EGION                               (01 APRIL 1993)',
+     5     '  H2O FOREIGN HAS BEEN REDUCED AT ~1300 CM-1 AND IN',
+     5     ' ALL THE WINDOW REGIONS             (01 APRIL 1993)',
+     6     '  H2O SELF HAS BEEN MODIFIED IN THE 700-1500 CM-1 R',
+     6     'EGION                                 (01 MAY 1994)',
+     7     '  H2O FOREIGN HAS BEEN MODIFIED IN THE ENTIRE 1200-',
+     7     '2200 CM-1 SPECTRAL RANGE              (01 MAY 1994)',
+     8     '  H2O SELF HAS BEEN INCREASED 30% IN THE MICROWAVE ',
+     8     'REGION                                (09 FEB 1996)',
+     9     '  N2 COLLISION INDUCED PURE ROTATION BAND ADDED    ',
+     9     '                                      (09 FEB 1996)'/
 
       DATA CINFO4/
      1     '  O3 CHAPPUIS CHANGED TO VALUES FROM MODTRAN3      ',
@@ -1322,8 +1372,10 @@ C
      2     'been revised   *********            (December 2002)',
      3     '  *********   This continuum is based on a new line',
      3     ' shape/collision induced formulation, mt_ckd  *** )',
-     4     '  -------------------------------------------------',
-     4     '------------------------------------------         '/
+     4     '  H2O foreign modified in the 250-550 cm-1 region; ',
+     4     'results now consistent with ckd_2.4.1 (August 2004)',
+     5     '  -------------------------------------------------',
+     5     '---------------------------------------------------'/
 C
       END
 C

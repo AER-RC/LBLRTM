@@ -2167,6 +2167,7 @@ C
          MMFILE = KTEMP
          REWIND MMFILE
          CALL COPYFL (NPTS,MMFILE,KFILAD) ! move from KTEMP to KFILAD
+         call endfil (kfilad)      ! puts -99 in last line of file
 
 c check to see if this is first of 2 passes (for upwelling derivatives)
 c and return to the appropriate location if this is the last layer
@@ -5081,6 +5082,9 @@ c end loop over panels
 
 c done with all panels
   20  continue
+
+      call endfil (iu1)         ! puts -99 in last line of file
+      if (iflg.eq.1) call endfil (iu2) ! puts -99 in last line of file
 
 c close/rewind files
       close(iu1)

@@ -162,7 +162,7 @@ C     presently: %H%  %T%
           IEMIT   (0,1,2,3)
  
                      = 0  optical depth only
-                     = 1  radiance and transmittance
+                     = 1  radiance and transmittance (Radiance Units: W / cm^2 sr^-1 cm^-1
                      = 2  solar radiance (requires previously calculated optical depths or transmittances and binary
                                solar radiation file SOLAR.RAD)
                      = 3  radiance analytic Jacobian/derivative
@@ -170,6 +170,9 @@ C     presently: %H%  %T%
                                - requires a subdirectory named "AJ" to contain the analytic Jacobian/derivative files 	
                                  Note: - requires previously calculated optical depths files 
                                          (created by setting IEMIT=0, IMRG=10, IOD=3)
+                               - units (dR/dx): molecules:     [ W / (cm^2 sr cm^-1) ] / [log(volume mixing ratio)]
+                                                temperature:   [ W / (cm^2 sr cm^-1) ] / [K]
+
                                      
  
           ISCAN   (0,1,2,3) flag for SCANFN    1 = scanning function
@@ -2681,7 +2684,7 @@ C     presently: %H%  %T%
                     = 1  plots optical depth for JEMIT = 0
                     = 2  plots attenuation in decibels for JEMIT = 0
  
-                    = 0  plots radiance in watts/(cm**2 sr cm - 1) for JEMIT = 1
+                    = 0  plots radiance in watts/(cm^2 sr cm^-1) for JEMIT = 1
                          (if YMIN and YMAX.GT.1, these values are interpreted as
                          brightness temperatures from which minimum and maximum
                          values of radiance are assigned).

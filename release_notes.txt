@@ -1,3 +1,10 @@
+LBLRTM_v9.1
+
+1)The foreign water vapor continuum has been modified in the 250 - 500 cm-1 region to 
+  provide improved agreement with AERI_extended_range measurements from SHEBA and 
+  North Slope of Alaska (NSA).  The consequence is that in this spectral region, 
+  the mt_ckd_1.1 foreign continuum provides results similar to those previously 
+  obtained with ckd_2.4.1.
 
 LBLRTM_v9.0
 
