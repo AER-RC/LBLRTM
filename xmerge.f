@@ -1017,7 +1017,8 @@ C                                                                         H09540
       EMISFN = EMLAST                                                     H09550
 C                                                                         H09560
       IF (VINEM.GE.0.0) THEN                                              H09570
-         XVNEXT = XVI+FACTOR/(B+2.*C*XVI)                                 H09580
+         XVNEXT = XVI+FACTOR/ABS((B+2.*C*XVI))                            H09580
+         XVNEXT = MIN(XVNEXT,(XVI+DVI*2400))
          INTVLS = (XVNEXT-XVI)/DVI                                        H09590
          INTVLS = MAX(INTVLS,1)                                           H09600
          XVNEXT = XVI+DVI*FLOAT(INTVLS)                                   H09610
@@ -1105,7 +1106,8 @@ C                                                                         H10390
       REFLFN = RFLAST                                                     H10400
 C                                                                         H10410
       IF (VINRF.GE.0.0) THEN                                              H10420
-         XVNEXT = XVI+FACTOR/(B+2.*C*XVI)                                 H10430
+         XVNEXT = XVI+FACTOR/ABS((B+2.*C*XVI))                            H10430
+         XVNEXT = MIN(XVNEXT,(XVI+DVI*2400))
          INTVLS = (XVNEXT-XVI)/DVI                                        H10440
          INTVLS = MAX(INTVLS,1)                                           H10450
          XVNEXT = XVI+DVI*FLOAT(INTVLS)                                   H10460
