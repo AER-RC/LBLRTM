@@ -4058,7 +4058,7 @@ C                                                                         D03610
             ALFAD(J) = ALFAD(I)                                           D03670
             SPP(J) = SPP(I)                                               D03680
             MOL(J) = MOL(I)                                               D03690
-            IF (MOL(J).NE.2) MOL(J) = 0                                   D03700
+c
             GO TO 10                                                      D03710
          ENDIF                                                            D03720
 C                                                                         D03730
@@ -4439,7 +4439,17 @@ C                                                                         D07220
          ALFVI2 = ALFAVI*ALFAVI                                           D07300
          XJJ = FLOAT(JMIN-1)*DVR4                                         D07310
          F4BND = SIL/(ALFLI2+BNDSQ)                                       D07320
-         IF (SPP(I).NE.0.) F4BNDX = SILX/(ALFLI2+BNDSQ)                   D07330
+c
+c     set value at 25 cm-1 for line coupling 'pedestal'
+c           note there is no continuum for oxygen (mol=7)
+c
+         IF (SPP(I).NE.0.) then
+            F4BNDX = SILX/(ALFLI2+BNDSQ)
+            IF (MOL(I) .EQ. 7) THEN
+               F4BND = 0.
+               F4BNDX = 0.
+            ENDIF
+         ENDIF
 C                                                                         D07340
 C                FOURTH FUNCTION CONVOLUTION                              D07350
 C                                                                         D07360
