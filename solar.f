@@ -111,10 +111,10 @@ C
       DIMENSION RADO(2),RADN(2410)
       DIMENSION OPTO(2),OPTN(2410)
 C
-      DIMENSION SOLAR(-1:4818)
-      DIMENSION TRAN2(-1:4818)
-      DIMENSION RAD2(-1:4818)
-      DIMENSION XRFLT(-1:4818)
+      DIMENSION SOLAR(-1:3000001)
+      DIMENSION TRAN2(-1:3000001)
+      DIMENSION RAD2(-1:3000001)
+      DIMENSION XRFLT(-1:3000001)
       DIMENSION SOLRAD(2410)
 C
       CHARACTER*40 CYID
@@ -576,8 +576,10 @@ C     coding where it is not assumed that RADN & TRAN have the
 C     smallest spacing).
 C
       RATDVR = DVMIN/DVK
-      RTDVT2 = DVMIN/DVT2
-      RTDVRF = DVMIN/DVRF
+      IF (INFLAG.EQ.2) THEN
+         RTDVT2 = DVMIN/DVT2
+         RTDVRF = DVMIN/DVRF
+      ENDIF
 C
 C     Test for ratios of 1 (no need for interpolation).  Reset
 C     interpolation coefficients if necessary.
@@ -590,21 +592,23 @@ C
             A4(JP) = 0.0
  82      CONTINUE
       ENDIF
-      IF (RTDVT2.EQ.1) THEN
-         DO 84 JP = 0,100
-            A1T2(JP) = 0.0
-            A2T2(JP) = 1.0
-            A3T2(JP) = 0.0
-            A4T2(JP) = 0.0
- 84      CONTINUE
-      ENDIF
-      IF (RTDVRF.EQ.1) THEN
-         DO 86 JP = 0,100
-            A1RF(JP) = 0.0
-            A2RF(JP) = 1.0
-            A3RF(JP) = 0.0
-            A4RF(JP) = 0.0
- 86      CONTINUE
+      IF (INFLAG.EQ.2) THEN
+         IF (RTDVT2.EQ.1) THEN
+            DO 84 JP = 0,100
+               A1T2(JP) = 0.0
+               A2T2(JP) = 1.0
+               A3T2(JP) = 0.0
+               A4T2(JP) = 0.0
+ 84         CONTINUE
+         ENDIF
+         IF (RTDVRF.EQ.1) THEN
+            DO 86 JP = 0,100
+               A1RF(JP) = 0.0
+               A2RF(JP) = 1.0
+               A3RF(JP) = 0.0
+               A4RF(JP) = 0.0
+ 86         CONTINUE
+         ENDIF
       ENDIF
 C
 C     -----------------------------------------------------
@@ -612,8 +616,10 @@ C
 C     FJJ is offset by 2. (for rounding purposes)
 C
       FJ1DIF = (V1PO-V1P)/DVP+1.+2.
-      FJDFT2 = (V1PO-V1T2)/DVT2+1.+2.
-      FJDFRF = (V1PO-V1RF)/DVRF+1.+2.
+      IF (INFLAG.EQ.2) THEN
+         FJDFT2 = (V1PO-V1T2)/DVT2+1.+2.
+         FJDFRF = (V1PO-V1RF)/DVRF+1.+2.
+      ENDIF
 C
 C     ============================================================
 C
@@ -731,31 +737,34 @@ C
       V1P = V1P+FLOAT(NPL+1)*DVP
       NPE = IPL
 C
-C     ------------------------------------------------------------
-C     NPLT2 is now location of first element in the array TRAN2 to
-C     be used for next pass.
+      IF (IOTFLG.EQ.2) THEN
 C
-      IPL = -2
-      DO 102 NL = NPLT2, NPT2
-         IPL = IPL+1
-         TRAN2(IPL) = TRAN2(NL)
- 102  CONTINUE
+C        ------------------------------------------------------------
+C        NPLT2 is now location of first element in the array TRAN2 to
+C        be used for next pass.
 C
-      V1T2 = V1T2+FLOAT(NPLT2+1)*DVT2
-      NPT2 = IPL
+         IPL = -2
+         DO 102 NL = NPLT2, NPT2
+            IPL = IPL+1
+            TRAN2(IPL) = TRAN2(NL)
+ 102     CONTINUE
+C     
+         V1T2 = V1T2+FLOAT(NPLT2+1)*DVT2
+         NPT2 = IPL
+C     
+C        -------------------------------------------------------------
+C        NPLRF is now location of first element in the array XRFLT to
+C        be used for next pass.
 C
-C     -------------------------------------------------------------
-C     NPLRF is now location of first element in the array XRFLT to
-C     be used for next pass.
-C
-      IPL = -2
-      DO 104 NL = NPLRF, NPRF
-         IPL = IPL+1
-         XRFLT(IPL) = XRFLT(NL)
- 104  CONTINUE
-C
-      V1RF = V1RF+FLOAT(NPLRF+1)*DVRF
-      NPRF = IPL
+         IPL = -2
+         DO 104 NL = NPLRF, NPRF
+            IPL = IPL+1
+            XRFLT(IPL) = XRFLT(NL)
+ 104     CONTINUE
+C     
+         V1RF = V1RF+FLOAT(NPLRF+1)*DVRF
+         NPRF = IPL
+      ENDIF
 C     ============================================================
 C
       GO TO 60
