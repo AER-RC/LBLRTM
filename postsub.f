@@ -3234,12 +3234,14 @@ C                                                                         L00470
       ENDIF
 
       JFILE = junit
-      inquire(jfile,opened=op)
-      if (op) close(jfile)
+      if (jfile.ne.0) then
+         inquire(jfile,opened=op)
+         if (op) close(jfile)
 
-      fltout = 'FLT_OUT'
-      OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
-      rewind jfile
+         fltout = 'FLT_OUT'
+         OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
+         rewind jfile
+      endif
 
       IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  L00500
       IEOFSC = 0                                                          L00510
@@ -3324,7 +3326,9 @@ C                                                                         L01000
       GO TO 110                                                           L01300
   100 RFILTR = RFILTR*DVC                                                 L01310
       WRITE (IPR,965) RFILTR,SUMFLT                                       L01320
-      write(JFILE,975) RFILTR
+      if (jfile.ne.0) then
+         write(JFILE,975) RFILTR
+      endif
   110 IF (IEOFSC.EQ.1) CALL SKIPFL (1,IFILE,IEOFSC)                       L01330
       IEOFT = IEOFT+1                                                     L01340
       IF (IEOFT.GT.NIFILS) GO TO 10                                       L01350
