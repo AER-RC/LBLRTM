@@ -3,6 +3,7 @@ C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
 C
+C     --------------------------------------------------------------
       SUBROUTINE SCANFN (IFILE,JFILE)                                     I00010
 C                                                                         I00020
       IMPLICIT DOUBLE PRECISION (V)                                     ! I00030
@@ -473,6 +474,9 @@ C                                                                         I04240
   980 FORMAT ('0    SUMOUT =',1P,E16.9,'  MIN =',E16.9,'  MAX =',E16.9)   I04500
 C                                                                         I04510
       END                                                                 I04520
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE SCANRD (DVINT,IEMIT)                                     I04530
 C                                                                         I04540
       IMPLICIT DOUBLE PRECISION (V)                                     ! I04550
@@ -657,6 +661,9 @@ C                                                                         I06160
   930 FORMAT (' END OF FILE TAPE5',/,' (NOTE TAPE10 ALREADY CREATED )')   I06280
 C                                                                         I06290
       END                                                                 I06300
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE SCNINT (IFILE,JFILE,DVINT,JEMIT,NPTS,IBUF)               I06310
 C                                                                         I06320
       IMPLICIT DOUBLE PRECISION (V)                                     ! I06330
@@ -864,6 +871,9 @@ C                                                                         I08190
   935 FORMAT (/,5X,'SCNINT- ERROR: DVINT .LT. ZERO ; DVINT =',F12.4,/)    I08320
 C                                                                         I08330
       END                                                                 I08340
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE SCNMRG (IFILE,JFILE)                                     I08350
 C                                                                         I08360
       IMPLICIT DOUBLE PRECISION (V)                                     ! I08370
@@ -1089,6 +1099,9 @@ C                                                                         I10290
   950 FORMAT ('0    SUMOUT =',1P,E16.9,'  MIN =',E16.9,'  MAX =',E16.9)   I10490
 C                                                                         I10500
       END                                                                 I10510
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE SHRKSC (INIT,HWHM)                                       I10520
 C                                                                         I10530
       IMPLICIT DOUBLE PRECISION (V)                                     ! I10540
@@ -1183,6 +1196,9 @@ C                                                                         I11390
   910 FORMAT ('   ILO =',I4,'  IHI =',I4)                                 I11430
 C                                                                         I11440
       END                                                                 I11450
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE SHAPET (XF)                                              I11460
 C                                                                         I11470
 C     SUBROUTINE SHAPET SETS UP THE TRIANGULAR SCANNING FUNCTION          I11480
@@ -1214,6 +1230,9 @@ C                                                                         I11730
   900 FORMAT ('0',5X,'NF =',I5,',  DXF =',F7.5,',    SUM =',F18.15)       I11740
 C                                                                         I11750
       END                                                                 I11760
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE RDSCAN (S,JTREM,IFILE,ISCAN,IPRT)                        I11770
 C                                                                         I11780
       IMPLICIT DOUBLE PRECISION (V)                                     ! I11790
@@ -1313,6 +1332,9 @@ C                                                                         I12627
   920 FORMAT(' ERROR IN INPUT',/,'  JTREM =',I2,'  ISCAN=',I5)            I12685
 C                                                                         I12690
       END                                                                 I12700
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE CONVSC (S,HWHMV1,R1,XF)                                  I12710
 C                                                                         I12720
       IMPLICIT DOUBLE PRECISION (V)                                     ! I12730
@@ -1390,6 +1412,9 @@ C                                                                         I13440
   900 FORMAT ('0 AVE PANEL WAVENUMBER = ',F12.4,5X,'HWHM = ',F10.5)       I13450
 C                                                                         I13460
       END                                                                 I13470
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE PANLSC (R1,JFILE,SUMR,NPTS)                              I13480
 C                                                                         I13490
       IMPLICIT DOUBLE PRECISION (V)                                     ! I13500
@@ -1475,6 +1500,9 @@ C                                                                         I14280
   910 FORMAT (I5,0PF12.5,1PE12.5,I15,0PF12.5,1PE12.5)                     I14320
 C                                                                         I14330
       END                                                                 I14340
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE PNLRCT (R1,JFILE,SUMR,NPTS)                              I14350
       IMPLICIT DOUBLE PRECISION (V)                                       I14360
 C                                                                         I14370
@@ -1560,6 +1588,9 @@ C                                                                         I15060
   910    FORMAT(I5,0PF12.5,1PE12.5,I15,0PF12.5,1PE12.5)                   I15100
 C                                                                         I15110
       END                                                                 I15120
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE CNVRCT (S,HWHM,R1,XF)                                    I15130
       IMPLICIT DOUBLE PRECISION (V)                                       I15140
 C                                                                         I15150
@@ -1670,6 +1701,9 @@ C                                                                         I16170
 C                                                                         I16200
       RETURN                                                              I16210
       END                                                                 I16220
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE SINCSQ (XF,XSCALE)                                       I16230
 C                                                                         I16240
 C     SUBROUTINE SINCSQ SETS UP THE SINCSQ SCANNING FUNCTION              I16250
@@ -1708,6 +1742,9 @@ C                                                                         I16570
   900 FORMAT ('0',5X,'NF =',I5,',  DXF =',F7.5,',    SUM =',F18.15)       I16580
 C                                                                         I16590
       END                                                                 I16600
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE SINC (XF,XSCALE)                                         I16610
 C                                                                         I16620
 C     SUBROUTINE SINC SETS UP THE SINC SCANNING FUNCTION                  I16630
@@ -1746,6 +1783,9 @@ C                                                                         I16950
   900 FORMAT ('0',5X,'NF =',I5,',  DXF =',F7.5,',    SUM =',F18.15)       I16960
 C                                                                         I16970
       END                                                                 I16980
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE INTRPL (IFILE,JFILE)                                     J00010
 C                                                                         J00020
       IMPLICIT DOUBLE PRECISION (V)                                     ! J00030
@@ -1985,6 +2025,9 @@ C                                                                         J02000
   970 FORMAT (/,5X,' INTRP - ERROR: EOF ON STANDARD INPUT, UNIT = ',I4)   J02230
 C                                                                         J02240
       END                                                                 J02250
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE RDPANL (S,JTREM,IFILE,ISCAN,JEMIT,ICNVRT)                J02260
 C                                                                         J02270
       IMPLICIT DOUBLE PRECISION (V)                                     ! J02280
@@ -2096,6 +2139,9 @@ C                                                                         J03310
   910 FORMAT (' ERROR IN INPUT',/,'  JTREM =',I2,'  ISCAN=',I5)           J03340
 C                                                                         J03350
       END                                                                 J03360
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE OTPANL (R1,JFILE,NPTS)                                   J03370
 C                                                                         J03380
       IMPLICIT DOUBLE PRECISION (V)                                     ! J03390
@@ -2145,6 +2191,9 @@ C                                                                         J03790
   910 FORMAT (I5,0PF12.5,1PE12.5,I15,0PF12.5,1PE12.5)                     J03830
 C                                                                         J03840
       END                                                                 J03850
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE INTERP (IFILE,JFILE,I4PT,IBOUND,NPTS,JTREM,ISCAN,        J03860
      *                   JEMIT,RSTAT,ICNVRT)                              J03870
 C                                                                         J03880
@@ -2180,18 +2229,18 @@ C                                                                         J04100
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J04180
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J04190
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J04200
-      DIMENSION C1(201),C2(201),C3(201),C4(201),RSTAT(3)                  J04210
+      DIMENSION C1(0:202),C2(0:202),C3(0:202),C4(0:202),RSTAT(3)          J04210
 C                                                                         J04220
       DATA NUMCOF / 201 /                                                 J04230
 C                                                                         J04240
       CALL CPUTIM (TIME1)                                                 J04250
 C                                                                         J04260
 C     SET UP FOUR POINT INTERPOLATION COEFICIENTS FOR P FOR 201           J04270
-C     POINTS BETWEEN 0 AND 1.0                                            J04280
+C     POINTS BETWEEN 0 AND 1.0, with an extra point at each end           J04280
 C                                                                         J04290
       IF (I4PT.NE.0) THEN                                                 J04300
          XNUMCF = FLOAT(NUMCOF)
-         DO 10 IP = 1, NUMCOF                                             J04310
+         DO 10 IP = 0, NUMCOF+1                                           J04310
             P = (FLOAT(IP)-1.0)/(XNUMCF-1.0)                              J04320
             PP = P**2                                                     J04330
             C1(IP) = -P/2.0*(1-P)**2                                      J04340
@@ -2426,6 +2475,9 @@ C                                                                         J06660
       RETURN                                                              J06670
 C                                                                         J06680
       END                                                                 J06690
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE FLTRFN (IFILE)                                           L00010
 C                                                                         L00020
       IMPLICIT DOUBLE PRECISION (V)                                     ! L00030
@@ -2604,6 +2656,9 @@ C                                                                         L01380
      *        '  NORMALIZATION OF THE',' FILTER = ',E14.5)                L01670
 C                                                                         L01680
       END                                                                 L01690
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE FLTRRD (IFILE)                                           L01700
 C                                                                         L01710
       IMPLICIT DOUBLE PRECISION (V)                                     ! L01720
@@ -2707,6 +2762,9 @@ C                                                                         L02620
   920 FORMAT (A80)                                                        L02700
 C                                                                         L02710
       END                                                                 L02720
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE FLTMRG (IFILE,JFILE)                                     L02730
 C                                                                         L02740
       IMPLICIT DOUBLE PRECISION (V)                                     ! L02750
@@ -2869,6 +2927,9 @@ C                                                                         L04100
      *        '  NORMALIZATION OF THE    FILTER = ',E14.5)                L04320
 C                                                                         L04330
       END                                                                 L04340
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE CNVFLT (S,RFILTR,XF)                                     L04350
 C                                                                         L04360
       IMPLICIT DOUBLE PRECISION (V)                                     ! L04370
@@ -2902,6 +2963,9 @@ C                                                                         L04640
       RETURN                                                              L04650
 C                                                                         L04660
       END                                                                 L04670
+C
+C     --------------------------------------------------------------
+C
       SUBROUTINE FLTPRT (IFILE)                                           L04680
 C                                                                         L04690
       IMPLICIT DOUBLE PRECISION (V)                                     ! L04700
