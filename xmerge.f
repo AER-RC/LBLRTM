@@ -4159,7 +4159,7 @@ C                                                                         H41440
 C                                                                         H41470
       IMPLICIT DOUBLE PRECISION (V)                                     ! H41480
 C                                                                         H41490
-C     THIS FUNCTION CORRELATES THE AEROSOL FREQ. WITH THE FASCODE         H41500
+C     THIS FUNCTION CORRELATES THE AEROSOL FREQ. WITH THE LBLRTM          H41500
 C     FREQ.  AND ADDS THE ABSORPTION TO THE                               H41510
 C     SCATTERING TO PRODUCE THE EXTINCTION                                H41520
 C                                                                         H41530

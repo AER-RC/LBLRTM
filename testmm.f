@@ -91,7 +91,7 @@ C                                                                         N00700
          IF (IFLG(K).GE.0) THEN                                           N00870
             MOL(K) = XLIND(1,I)                                           N00880
 C                                                                         N00890
-C     ADD ISOTOPE TO MOLECULE FOR USE BY FASCODE                          N00900
+C     ADD ISOTOPE TO MOLECULE FOR USE BY LBLRTM                           N00900
 C                                                                         N00910
             MOL(K) = MOL(K)+ISO*100                                       N00920
          ELSE                                                             N00930
@@ -157,7 +157,7 @@ C                                                                         N01320
   900 FORMAT (A6)                                                         N01330
   905 FORMAT (10A8)                                                       N01340
   910 FORMAT ('0',/' **************    TEST     ********************',    N01350
-     *        /,'0 LINES FOR TESTING FASCOD3 IN THE 0-50 CM-1 ',          N01360
+     *        /,'0 LINES FOR TESTING LBLRTM IN THE 0-50 CM-1 ',           N01360
      *        'SPECTRAL REGION',/,'0 INCLUDES THE MOST IMPORTANT ',       N01370
      *        'H2O,O3,N2O AND O2 LINES',' BASED ON AN OPTICAL DEPTH ',    N01380
      *        'CUTOFF FOR A LIMB ATMOSPHERIC PATH',/,'0 FOR ',            N01390
@@ -287,7 +287,7 @@ C                                                                         N02610
 C                                                                         N02630
       DATA CHMOL / '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ',          N02640
      *             '  CH4 ','   O2 ',57*'      ' /                        N02650
-      DATA CHID / ' LINES FOR FASCODE3 IN THE 0-50 CM-1 SPE',             N02660
+      DATA CHID / ' LINES FOR LBLRTM IN THE 0-50 CM-1 SPE',               N02660
      *            'CTRAL REGION:   TESTMM          TSTMM86I' /            N02670
       DATA CHID1 / '03/22/88','16.09.41' /                                N02680
       DATA NMOL,ILIN,ILINLC,ILINNL,IREC,IRECTL / 7,1277,41,0,1318,1318/   N02690

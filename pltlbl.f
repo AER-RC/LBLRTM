@@ -2,7 +2,7 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
-      SUBROUTINE PLTFAS (IENDPL)                                          M00010
+      SUBROUTINE PLTLBL (IENDPL)                                          M00010
 C                                                                         M00020
       IMPLICIT DOUBLE PRECISION (V)                                     ! M00030
 C                                                                         M00040
@@ -58,7 +58,7 @@ C                                                                         M00396
       DATA TAPEST/99*'                         '/                         M00423
       DATA BLNKNM/'                         '/                            M00424
 C                                                                         M00430
-C                  PROGRAM TO PLOT FASCODE RESULTS.                       M00440
+C                  PROGRAM TO PLOT LBLRTM RESULTS.                        M00440
 C                                                                         M00450
 C     CARD 1: NAME, PHONE EXTENSION, ID                                   M00460
 C       FORMAT (A30)                                                      M00470
@@ -110,7 +110,7 @@ C          ** IS A NUMBER DESCRIBING THE SYMBOL TO BE USED ON THE   **    M00920
 C          ** OVERLAYED PLOT.  FOR A LIST OF SYMBOLS SEE THE AFGL   **    M00930
 C          ** CYBER PLOTTER HANDOUT, APPENDIX B.                    **    M00940
 C                                                                         M00950
-C       LFILE IS THE TAPE NUMBER OF FILE TO BE READ FROM FASCODE.         M00960
+C       LFILE IS THE TAPE NUMBER OF FILE TO BE READ FROM LBLRTM.          M00960
 C                                                                         M00970
 C       LSKIPF IS THE NUMBER OF FILES TO BE SKIPPED IN TAPE LFILE         M00980
 C            (NUMBER OF FILE TO BE PLOTTED WILL BE LSKIPF + 1).           M00990
@@ -185,9 +185,9 @@ C     CARD 2B: V1,V2,JFILE,JSKIPF,LFILE,LSKIPF,IOPT,MFILE                 M01670
 C       FORMAT (2F10.4,20X,4I5,10X,I2,3X,I5)                              M01680
 C                                                                         M01690
 C       SUBROUTINE FILOPT WILL DIFFERENCE OR RATIO                        M01700
-C         TWO FASCODE OUTPUT FILES.                                       M01710
+C         TWO LBLRTM OUTPUT FILES.                                        M01710
 C                                                                         M01720
-C              FILES MUST BE 1) UNFORMATTED FASCODE FILES                 M01730
+C              FILES MUST BE 1) UNFORMATTED LBLRTM FILES                  M01730
 C                                                                         M01740
 C                            2) SINGLE QUANTITY FILES                     M01750
 C                                  I.E. CONTAIN ONLY ONE                  M01760
@@ -198,7 +198,7 @@ C                                        B) TRANSMITTANCE                 M01800
 C                                        C) RADIANCE                      M01810
 C                                        D) TEMPERATURE                   M01820
 C                                                                         M01830
-C                  *** NOTE: STANDARD FASCODE OUTPUT FILES USUALLY        M01840
+C                  *** NOTE: STANDARD LBLRTM OUTPUT FILES USUALLY         M01840
 C                            CONTAIN BOTH TRANSMITTANCE AND RADIANCE.     M01850
 C                            THE USER MUST EITHER SCAN OR PLOT THE        M01860
 C                            DESIRED QUANTITY TO A FILE FOR USE AS        M01870
@@ -209,13 +209,13 @@ C       V2 IS THE FINAL WAVENUMBER OF THE DIFFERENCE OR RATIO             M01910
 C                                                                         M01920
 C            A NEGATIVE NUMBER FOR V1 WILL TERMINATE PLOTTING SEQUENCE.   M01930
 C                                                                         M01940
-C       JFILE IS THE TAPE NUMBER OF FILE TO BE READ FROM FASCODE.         M01950
+C       JFILE IS THE TAPE NUMBER OF FILE TO BE READ FROM LBLRTM.          M01950
 C                    (NO DEFAULT)                                         M01960
 C                                                                         M01970
 C       JSKIPF IS THE NUMBER OF FILES TO BE SKIPPED IN TAPE JFILE         M01980
 C            (NUMBER OF FILE TO BE USED WILL BE JSKIPF + 1).              M01990
 C                                                                         M02000
-C       LFILE IS THE TAPE NUMBER OF FILE TO BE READ FROM FASCODE.         M02010
+C       LFILE IS THE TAPE NUMBER OF FILE TO BE READ FROM LBLRTM.          M02010
 C                                                                         M02020
 C       LSKIPF IS THE NUMBER OF FILES TO BE SKIPPED IN TAPE LFILE         M02030
 C            (NUMBER OF FILE TO BE USED WILL BE LSKIPF + 1).              M02040
@@ -741,9 +741,9 @@ C             JANUARY 1990                                                M06120
 C----------------------------------------------------------------------   M06130
 C                                                                         M06140
 C     THIS SUBROUTINE WILL DIFFERENCE OR RATIO TWO                        M06150
-C          FASCODE OUTPUT OR PLOT FILES                                   M06160
+C          LBLRTM OUTPUT OR PLOT FILES                                    M06160
 C                                                                         M06170
-C          FILES MUST BE    1) UNFORMATTED FASCODE FILES                  M06180
+C          FILES MUST BE    1) UNFORMATTED LBLRTM FILES                   M06180
 C                                                                         M06190
 C                           2) SINGLE QUANTITY FILES                      M06200
 C                              I.E. CONTAIN ONLY ONE OF THE FOLLOWING:    M06210
@@ -756,7 +756,7 @@ C                                                                         M06270
 C                           3) THE DIFFERENCE IN DV BETWEEN THE FILES     M06280
 C                              MUST BE LESS THAN 1.E-8                    M06290
 C                                                                         M06300
-C               *** NOTE: STANDARD FASCODE OUTPUT FILES USUALLY           M06310
+C               *** NOTE: STANDARD LBLRTM OUTPUT FILES USUALLY            M06310
 C                         CONTAIN BOTH TRANSMITTANCE AND RADIANCE         M06320
 C                         THE USER MUST CREATE EITHER SCANNED OR          M06330
 C                         PLOT FILES FOR USE AS INPUT TO THIS ROUTINE     M06340
@@ -1389,7 +1389,7 @@ C                                                                         M12540
 C                                                                         M12610
       RETURN                                                              M12620
 C                                                                         M12630
-  900 FORMAT (10X,'PLOT REQUEST INCOMPATIBLE WITH FASCODE, IGO =',I2)     M12640
+  900 FORMAT (10X,'PLOT REQUEST INCOMPATIBLE WITH LBLRMT, IGO =',I2)      M12640
 C                                                                         M12650
       END                                                                 M12660
       SUBROUTINE BBSCLE                                                   M12670

@@ -76,7 +76,7 @@ C                                                                         I00710
 C----------------------------------------------------------------------   I00720
 C                                                                         I00730
 C    ADDITIONAL SCANNING FUNCTIONS MAY READILY BE ADDED TO THOSE          I00740
-C      CURRENTLY IMPLEMENTED IN THIS VERSION OF FASCODE:                  I00750
+C      CURRENTLY IMPLEMENTED IN THIS VERSION OF LBLRTM:                   I00750
 C                                                                         I00760
 C    A SHAPE SUBROUTINE FOR THE DESIRED FUNCTION MUST BE CREATED-         I00770
 C     THIS SUBROUTINE PRECALCULATES THE FUNCTION FOR SUBSEQUENT           I00780
@@ -1206,7 +1206,7 @@ C                                                                         I11780
       IMPLICIT DOUBLE PRECISION (V)                                     ! I11790
 C                                                                         I11800
 C     SUBROUTINE RDSCAN INPUTS PANELS FROM IFILE RESULTING                I11810
-C     FROM THE FASCODE CALCULATION FOR CONVOLUTION                        I11820
+C     FROM THE LBLRTM CALCULATION FOR CONVOLUTION                         I11820
 C     WITH THE SELECTED SCANNING FUNCTION                                 I11830
 C                                                                         I11840
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           I11850
@@ -1558,7 +1558,7 @@ C                                                                         I15180
       COMMON /RCTSV/ JJ,SUMJ,JFLG,NJ                                      I15280
       DIMENSION S(*),R1(*),XF(*)                                          I15290
 C                                                                         I15300
-C     FASCOD3 flags                                                       I15310
+C     LBLRTM flags                                                        I15310
 C     JFLG = -1:  first time through; increment jj when box is full       I15320
 C     JFLG =  0:  subsequent calls:increment jj when box full             I15330
 C     JFLG =  1:  out of data, return for more; do not increment jj       I15340
@@ -1961,7 +1961,7 @@ C                                                                         J02270
       IMPLICIT DOUBLE PRECISION (V)                                     ! J02280
 C                                                                         J02290
 C     SUBROUTINE RDPANL INPUTS PANELS FROM IFILE RESULTING FROM THE       J02300
-C     FASCODE CALCULATION                                                 J02310
+C     LBLRTM CALCULATION                                                  J02310
 C                                                                         J02320
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           J02330
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   J02340
