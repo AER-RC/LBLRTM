@@ -5,7 +5,7 @@ C     presently: %H%  %T%
 C
 C     --------------------------------------------------------------
 C
-      SUBROUTINE CONTNM (JRAD)                                            F00010
+      SUBROUTINE CONTNM(JRAD,XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL)   F00010
 C                                                                         F00020
       IMPLICIT REAL*8           (V)                                     ! F00030
 C                                                                         F00040
@@ -60,6 +60,20 @@ c
 C                                                                         F00290
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
+C     Continuum calculation flags:
+C     ---------------------------
+C     ICNTNM Value      Self     Foreign    Rayleigh     Others
+C           0            no        no          no          no
+C           1            yes       yes         yes         yes
+C           2            no        yes         yes         yes
+C           3            yes       no          yes         yes
+C           4            no        no          yes         yes
+C           5            yes       yes         no          yes
+C           6   READ IN XSELF, XFRGN, XCO2C, XO3CN, XO2CN, XN2CN, 
+C               and XRAYL in Record 1.2a
+C
+
+
       HVRCNT = '$Revision$'
 C
 c
@@ -79,182 +93,185 @@ C                                                                         F00400
 C=======================================================================
 C                             SELF
 
-C     Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
+
+
+C        Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
 c
-      if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
+         if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
 c
-         CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0)                             F00410
-         CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1)                             F00420
+            CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0)                          F00410
+            CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1)                          F00420
 C                                                                         F00440
-         W1 = WK(1)*1.0E-20                                                  F00450
+            W1 = WK(1)*1.0E-20                                            F00450
 C                                                                         F00460
-C        The factor of 1.e-20 is handled this way to avoid underflows     F00470
+C           The factor of 1.e-20 is handled this way to avoid underflows  F00470
 C                                                                         F00480
-         PH2O = PATM*(W1/WTOT)                                            F00490
-         RH2O = PH2O*(T0/TAVE)                                            F00500
-         XKT = TAVE/RADCN2                                                F00530
-         TFAC = (TAVE-T0)/(260.-T0)                                       F00540
+            PH2O = PATM*(W1/WTOT)                                         F00490
+            RH2O = PH2O*(T0/TAVE)                                         F00500
+            XKT = TAVE/RADCN2                                             F00530
+            TFAC = (TAVE-T0)/(260.-T0)                                    F00540
 
 
-         ALPHA2 = 200.**2
-         ALPHS2= 120.**2
-         BETAS = 5.E-06
-         V0S=1310.
-         FACTRS= 0.15
+            ALPHA2 = 200.**2
+            ALPHS2= 120.**2
+            BETAS = 5.E-06
+            V0S=1310.
+            FACTRS= 0.15
 C
-c        Loop calculating self continuum optical depth
+c           Loop calculating self continuum optical depth
 
-         DO 20 J = 1, NPTC                                                F00560
-            VJ = V1C+DVC*FLOAT(J-1)                                       F00570
-            VS2 = (VJ-V0S)**2
-            SH2O = 0.                                                     F00580
-            IF (SH2OT0(J).GT.0.) THEN                                     F00590
-               SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC               F00600
+            DO 20 J = 1, NPTC                                             F00560
+               VJ = V1C+DVC*FLOAT(J-1)                                    F00570
+               VS2 = (VJ-V0S)**2
+               SH2O = 0.                                                  F00580
+               IF (SH2OT0(J).GT.0.) THEN                                  F00590
+                  SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC            F00600
 C     
-               SFAC = 1.
-               IF (VJ.GE.700. .AND.  VJ.LE.1200.) THEN 
-                  JFAC = (VJ-700.)/10. + 0.00001
-                  SFAC = XFAC(JFAC)
-               ENDIF
+                  SFAC = 1.
+                  IF (VJ.GE.700. .AND.  VJ.LE.1200.) THEN 
+                     JFAC = (VJ-700.)/10. + 0.00001
+                     SFAC = XFAC(JFAC)
+                  ENDIF
 C     
-C           ------------------------------------------------------------
-C           Correction to self continuum (1 SEPT 85); factor of    
-C              0.78 at 1000 and  .......
+C              ---------------------------------------------------------
+C              Correction to self continuum (1 SEPT 85); factor of    
+C                 0.78 at 1000 and  .......
 C                                                                         F00630
 c
-c           The self continuum associated with Vres=0. has been
-c              changed to reflect the analysis of Rosenkranz.
+c              The self continuum associated with Vres=0. has been
+c                 changed to reflect the analysis of Rosenkranz.
 c
 
-               SFAC = SFAC*
-     *              (1.+2.02  *(1.E+04/((VJ)**2+1.e-04*VJ**4+1.E+04))) *   
-     *              (1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *   
-     *              (1.-FACTRS*(ALPHS2/(VS2+(BETAS*VS2**2)+ALPHS2))) 
+                  SFAC = SFAC*
+     *                 (1.+2.02*(1.E+04/((VJ)**2+1.e-04*VJ**4+1.E+04)))*   
+     *                 (1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *   
+     *                 (1.-FACTRS*(ALPHS2/(VS2+(BETAS*VS2**2)+ALPHS2))) 
 c
-               SH2O = SFAC * SH2O
+                  SH2O = SFAC * SH2O
 c
-C           ------------------------------------------------------------
+C              ---------------------------------------------------------
 
-            ENDIF
+               ENDIF
 c
-            C(J) = W1*(SH2O*RH2O)
+               C(J) = W1*(SH2O*RH2O)*XSELF
 C                                                                         F00720
-C           ------------------------------------------------------------
-C           Radiation field                                               F00730
+C              ---------------------------------------------------------
+C              Radiation field                                            F00730
 C                                                                         F00740
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F00750
-C           ------------------------------------------------------------
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F00750
+C              ---------------------------------------------------------
 
- 20      CONTINUE                                                         F00760
+ 20         CONTINUE                                                      F00760
 C
-c        Interpolate to total optical depth grid
+c           Interpolate to total optical depth grid
 
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F00770
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F00770
 
-      endif
+         endif
 C                                                                         F00780
 C=======================================================================
 C                             FOREIGN
 
 C
-      PFRGN = PATM-PH2O
-      RFRGN = PFRGN*(T0/TAVE)
+         PFRGN = PATM-PH2O
+         RFRGN = PFRGN*(T0/TAVE)
 
-C     ------------------------------------------------------------
+C        ------------------------------------------------------------
 
-      FSCAL  = 1.
+         FSCAL  = 1.
 
-C     ------------------------------------------------------------
+C        ------------------------------------------------------------
 c
 C                                                                         F00780
-c     New foreign continuum from 0 - 2200 cm-1;  CKD_2.3
+c        New foreign continuum from 0 - 2200 cm-1;  CKD_2.3
 c
-      if (v1abs.lt.2200.) then
+         if (v1abs.lt.2200.) then
 c        
-         CALL FRN296a (V1C,V2C,DVC,NPTC,FH2O)
+            CALL FRN296a (V1C,V2C,DVC,NPTC,FH2O)
 C
 
-         DO 22 J = 1, NPTC                                          
-            VJ = V1C+DVC*FLOAT(J-1)                                 
+            DO 22 J = 1, NPTC                                          
+               VJ = V1C+DVC*FLOAT(J-1)                                 
 C     
-            FH2O(J)=FH2O(J)*FSCAL
+               FH2O(J)=FH2O(J)*FSCAL
 C     
-            C(J) = W1*(FH2O(J)*RFRGN)
+               C(J) = W1*(FH2O(J)*RFRGN)*XFRGN
 C                                         
-C           ------------------------------------------------------------
-C           Radiation field 
+C              ---------------------------------------------------------
+C              Radiation field 
 C                                                     
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                
+C              ---------------------------------------------------------
+C
+ 22         CONTINUE
+C
+
+
 C           ------------------------------------------------------------
+c           Interpolate to total optical depth grid
+
+            npts_hi = nptabs
+
+c           If spectral range covers the CKD_2.2 10 cm-1 H2O continuum
+c           as well, then stop interpolation at 2200 cm-1.
+
+            if (v2abs .ge. 2200.) then
+
+c           The following is reversed because of the rounding direction
+               npts_hi = 0.0001 +  (v1abs-2200.)/dvabs
+               npts_hi = - npts_hi + 1
+
+            endif
 C
- 22      CONTINUE
-C
-
-
-C        ------------------------------------------------------------
-c        Interpolate to total optical depth grid
-
-         npts_hi = nptabs
-
-c        If spectral range covers the CKD_2.2 10 cm-1 H2O continuum
-c        as well, then stop interpolation at 2200 cm-1.
-
-         if (v2abs .ge. 2200.) then
-
-c        The following is reversed because of the rounding direction
-            npts_hi = 0.0001 +  (v1abs-2200.)/dvabs
-            npts_hi = - npts_hi + 1
-
-         endif
-C
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,npts_hi)  
-C        ------------------------------------------------------------
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,npts_hi)  
+C           ------------------------------------------------------------
 C                                                                         F00780
-      endif
+         endif
 c
-c     - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+c        - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 C
-c     CKD_2.2 Continuum retained above 2200.cm-1
+c        CKD_2.2 Continuum retained above 2200.cm-1
 c
-      if (v2abs .ge. 2200.) then
+         if (v2abs .ge. 2200.) then
 c
-         CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O)         
+            CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O)         
 C                                                               
-         DO 24 J = 1, NPTC                                         
-            VJ = V1C+DVC*FLOAT(J-1)                                  
+            DO 24 J = 1, NPTC                                         
+               VJ = V1C+DVC*FLOAT(J-1)                                  
 C     
-            FH2O(J)=FH2O(J)*FSCAL
+               FH2O(J)=FH2O(J)*FSCAL
 C     
-            C(J) = W1*(FH2O(J)*RFRGN)
+               C(J) = W1*(FH2O(J)*RFRGN)*XFRGN
 
 C                                          
-C           ------------------------------------------------------------
-C           Radiation field                                                  
+C              ---------------------------------------------------------
+C              Radiation field                                                  
 C                                                                    
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)               
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)               
+C              ---------------------------------------------------------
+C
+ 24         CONTINUE                                                  
+C
 C           ------------------------------------------------------------
-C
- 24      CONTINUE                                                  
-C
-C        ------------------------------------------------------------
-c        Interpolate to total optical depth grid
+c           Interpolate to total optical depth grid
 
-c        If spectral range covers the CKD_2.3 1 cm-1 H2O continuum
-c        as well, then stop interpolation at 2200 cm-1.
+c           If spectral range covers the CKD_2.3 1 cm-1 H2O continuum
+c           as well, then stop interpolation at 2200 cm-1.
 
-         npts_lo = 1
-         if (v1abs .lt. 2200.) then
-            npts_lo =  npts_hi + 1
-c            v1c = v1c+npts_hi
-         endif
+            npts_lo = 1
+            if (v1abs .lt. 2200.) then
+               npts_lo =  npts_hi + 1
+c              v1c = v1c+npts_hi
+            endif
 c
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,npts_lo,NPTABS)
-C        ------------------------------------------------------------
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,npts_lo,
+     *                 NPTABS)
+C           ------------------------------------------------------------
 C                                                                         F00780
 
 
 C                                                                   
-      endif
+         endif
 
 C=======================================================================
 
@@ -263,24 +280,25 @@ C=======================================================================
 C     ********    CARBON DIOXIDE   ********                               F00790
 C                                                                         F00800
 C                                                                         F00810
-C     Only calculate if V2 > -20. cm-1 and V1 <  10000. cm-1
+C        Only calculate if V2 > -20. cm-1 and V1 <  10000. cm-1
 c
-      if ((V2.gt.-20.0).and.(V1.lt.10000.)) then
+         if ((V2.gt.-20.0).and.(V1.lt.10000.)) then
 c
-         WCO2 = WK(2)*RHOAVE*1.0E-20                                      F00820
+            WCO2 = WK(2)*RHOAVE*1.0E-20                                   F00820
 C                                                                         F00830
-         CALL FRNCO2 (V1C,V2C,DVC,NPTC,FCO2)                              F00840
-         DO 30 J = 1, NPTC                                                F00850
-            VJ = V1C+DVC*FLOAT(J-1)                                       F00860
-            C(J) = FCO2(J)*WCO2                                           F00870
+            CALL FRNCO2 (V1C,V2C,DVC,NPTC,FCO2)                           F00840
+            DO 30 J = 1, NPTC                                             F00850
+               VJ = V1C+DVC*FLOAT(J-1)                                    F00860
+               C(J) = FCO2(J)*WCO2*XCO2C                                  F00870
 C                                                                         F00880
-C           Radiation field                                               F00890
+C              Radiation field                                            F00890
 C                                                                         F00900
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F00910
- 30      CONTINUE                                                         F00920
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F00930
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F00910
+ 30         CONTINUE                                                      F00920
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F00930
 
-      endif
+         endif
+
 C                                                                         F00940
 C     ********    DIFFUSE OZONE  ********                                 F01180
 C                                                                         F01190
@@ -288,94 +306,96 @@ C     Smoothing coefficients from 8920.0-9165.0 cm-1 and from
 C     24570.0-24665.0 cm-1.  Data covers 9170.0-24565.0 cm-1
 C     region.
 C
-      IF (V2.GT.8920.0.AND.V1.LE.24665.0) THEN                            F01200
-         WO3 = WK(3)*1.0E-20                                              F01210
-         CALL XO3CHP (V1C,V2C,DVC,NPTO3,CCH0,CCH1,CCH2)                   F01220
+         IF (V2.GT.8920.0.AND.V1.LE.24665.0) THEN                         F01200
+            WO3 = WK(3)*1.0E-20                                           F01210
+            CALL XO3CHP (V1C,V2C,DVC,NPTO3,CCH0,CCH1,CCH2)                F01220
 C                                                                         F01230
-         DT=TAVE-273.15
-         DO 50 J = 1, NPTO3                                               F01240
-             CCH0(J)=(CCH0(J)+(CCH1(J)+CCH2(J)*DT)*DT)*WO3
-             VJ = V1C+DVC*FLOAT(J-1)                                      F01260
-             IF (JRAD.EQ.1) CCH0(J) = CCH0(J)*RADFN(VJ,XKT)               F01270
-  50     CONTINUE                                                         F01280
-         CALL XINT (V1C,V2C,DVC,CCH0,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01290
-      ENDIF
+            DT=TAVE-273.15
+            DO 50 J = 1, NPTO3                                            F01240
+               CCH0(J)=(CCH0(J)+(CCH1(J)+CCH2(J)*DT)*DT)*WO3*XO3CN
+               VJ = V1C+DVC*FLOAT(J-1)                                    F01260
+               IF (JRAD.EQ.1) CCH0(J) = CCH0(J)*RADFN(VJ,XKT)             F01270
+ 50         CONTINUE                                                      F01280
+            CALL XINT (V1C,V2C,DVC,CCH0,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)   F01290
+         ENDIF
 C                                                                         F01300
-      IF (V2.GT.27370..AND.V1.LT.40800.) THEN                             F01310
-         WO3 = WK(3)*1.E-20                                               F01320
-         TC = TAVE-273.15                                                 F01330
-         CALL O3HHT0 (V1C,V2C,DVC,NPTO3,C0)                               F01340
-         CALL O3HHT1 (V1T1,V2T1,DVT1,NPT1,CT1)                            F01350
-         CALL O3HHT2 (V1T2,V2T2,DVT2,NPT2,CT2)                            F01360
+         IF (V2.GT.27370..AND.V1.LT.40800.) THEN                          F01310
+            WO3 = WK(3)*1.E-20                                            F01320
+            TC = TAVE-273.15                                              F01330
+            CALL O3HHT0 (V1C,V2C,DVC,NPTO3,C0)                            F01340
+            CALL O3HHT1 (V1T1,V2T1,DVT1,NPT1,CT1)                         F01350
+            CALL O3HHT2 (V1T2,V2T2,DVT2,NPT2,CT2)                         F01360
 C                                                                         F01370
-         DO 60 J = 1, NPTO3                                               F01380
-            C(J) = C0(J)*WO3                                              F01390
+            DO 60 J = 1, NPTO3                                            F01380
+               C(J) = C0(J)*WO3*XO3CN                                     F01390
 C                                                                         F01400
-            VJ = V1C+DVC*FLOAT(J-1)                                       F01410
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01420
-            C(J) = C(J)*(1.+CT1(J)*TC+CT2(J)*TC*TC)                       F01430
-   60    CONTINUE                                                         F01440
+               VJ = V1C+DVC*FLOAT(J-1)                                    F01410
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01420
+               C(J) = C(J)*(1.+CT1(J)*TC+CT2(J)*TC*TC)                    F01430
+ 60         CONTINUE                                                      F01440
 C
-C        Save non-Hartley Huggins optical depth contribution to prevent
-C        double counting for wavenumber region beyond 40800 cm-1.
+C           Save non-Hartley Huggins optical depth contribution to 
+C           prevent double counting for wavenumber region beyond 
+C           40800 cm-1.
 C
-         IF ((VJ.GT.40815.).AND.(V2.GT.40800)) THEN
-            IFIX = (40800.-V1ABS)/DVABS+1.001
-            DO 62 I=IFIX,NPTABS
-               ABSBSV(I) = ABSRB(I)
- 62         CONTINUE
+            IF ((VJ.GT.40815.).AND.(V2.GT.40800)) THEN
+               IFIX = (40800.-V1ABS)/DVABS+1.001
+               DO 62 I=IFIX,NPTABS
+                  ABSBSV(I) = ABSRB(I)
+ 62            CONTINUE
+            ENDIF
+C
+C           Combine Hartley Huggins with previous optical depths
+C
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01450
+C
+C           If V2 > 40800 cm-1, replace points with previously
+C           saved values (non-Hartley Huggins contribution)
+C
+            IF ((VJ.GT.40815.).AND.(V2.GT.40800)) THEN
+               DO 64 I=IFIX,NPTABS
+                  ABSRB(I) = ABSBSV(I)
+ 64            CONTINUE
+            ENDIF
          ENDIF
 C
-C        Combine Hartley Huggins with previous optical depths
+C        If V2 > 40800 cm-1, add UV Hartley Huggins contribution
 C
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01450
-C
-C        If V2 > 40800 cm-1, replace points with previously
-C        saved values (non-Hartley Huggins contribution)
-C
-         IF ((VJ.GT.40815.).AND.(V2.GT.40800)) THEN
-            DO 64 I=IFIX,NPTABS
-               ABSRB(I) = ABSBSV(I)
- 64         CONTINUE
-         ENDIF
-      ENDIF
-C
-C     If V2 > 40800 cm-1, add UV Hartley Huggins contribution
-C
-      IF (V2.GT.40800..AND.V1.LT.54000.) THEN
-         WO3 = WK(3)                                                      F01470
-         CALL O3HHUV (V1C,V2C,DVC,NPTO3,C0)                               F01480
+         IF (V2.GT.40800..AND.V1.LT.54000.) THEN
+            WO3 = WK(3)                                                   F01470
+            CALL O3HHUV (V1C,V2C,DVC,NPTO3,C0)                            F01480
 C                                                                         F01490
-         DO 70 J = 1, NPTO3                                               F01500
-            C(J) = C0(J)*WO3                                              F01510
-            VJ = V1C+DVC*FLOAT(J-1)                                       F01520
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01530
-   70    CONTINUE                                                         F01540
+            DO 70 J = 1, NPTO3                                            F01500
+               C(J) = C0(J)*WO3*XO3CN                                     F01510
+               VJ = V1C+DVC*FLOAT(J-1)                                    F01520
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01530
+ 70         CONTINUE                                                      F01540
 C
-C        Save non-Hartley Huggins UV optical depth contribution to
-C        prevent double counting for wavenumber region before 40800 cm-1.
+C           Save non-Hartley Huggins UV optical depth contribution to
+C           prevent double counting for wavenumber region before 
+C           40800 cm-1.
 C
-         IF (V1.LT.40800) THEN
-            IFIX = (40800.-V1ABS)/DVABS+1.001
-            DO 72 I=1,IFIX-1
-               ABSBSV(I) = ABSRB(I)
- 72         CONTINUE
-         ENDIF
+            IF (V1.LT.40800) THEN
+               IFIX = (40800.-V1ABS)/DVABS+1.001
+               DO 72 I=1,IFIX-1
+                  ABSBSV(I) = ABSRB(I)
+ 72            CONTINUE
+            ENDIF
 C
-C        Combine UV Hartley Huggins with previous optical depths
+C           Combine UV Hartley Huggins with previous optical depths
 C
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01550
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01550
 C
-C        If V1 < 40800 cm-1, replace points with previously
-C        saved values (non-Hartley Huggins UV contribution)
+C           If V1 < 40800 cm-1, replace points with previously
+C           saved values (non-Hartley Huggins UV contribution)
 C
-         IF (V1.LT.40800) THEN
-            DO 74 I=1,IFIX-1
-               ABSRB(I) = ABSBSV(I)
- 74         CONTINUE
-         ENDIF
+            IF (V1.LT.40800) THEN
+               DO 74 I=1,IFIX-1
+                  ABSRB(I) = ABSBSV(I)
+ 74            CONTINUE
+            ENDIF
 C                                                                         F01560
-      ENDIF                                                               F01570
+         ENDIF                                                            F01570
 C                                                                         F01580
 
 
@@ -384,129 +404,130 @@ c
 c     version_1 of the Oxygen Collision Induced Fundamental
 c
 c     F. Thibault, V. Menoux, R. Le Doucen, L. Rosenman, J.-M. Hartmann,
-c                                                         and Ch. Boulet
+c        and Ch. Boulet,
 c        Infrared collision-induced absorption by O2 near 6.4 microns for
 c        atmospheric applications: measurements and emprirical modeling, 
-c         Appl. Optics, 35, 5911-5917, (1996).
+c        Appl. Optics, 35, 5911-5917, (1996).
+
 c
-C     Only calculate if V2 > 1340. cm-1 and V1 <  1850. cm-1
+C        Only calculate if V2 > 1340. cm-1 and V1 <  1850. cm-1
 
-      if (((V2.gt.1340.0).and.(V1.lt.1850.))) then
-
-         rhofac = (Pave/P0)*(273./Tave)
+         if (((V2.gt.1340.0).and.(V1.lt.1850.))) then
+            
+            rhofac = (Pave/P0)*(273./Tave)
 c     
-         tau_fac = Wk(7) * 1.e-20 * rhofac 
+            tau_fac = Wk(7) * 1.e-20 * rhofac 
 c
-c        Wk(7) is the oxygen column amount in units of molec/cm2
-c        rhofac is in units of amagats (air)
+c           Wk(7) is the oxygen column amount in units of molec/cm2
+c           rhofac is in units of amagats (air)
 c
-c        The temperature correction is done in the subroutine o2_ver_1:
+c           The temperature correction is done in the subroutine o2_ver_1:
 c
-         call o2_ver_1 (v1c,v2c,dvc,nptc,c0,tave)
+            call o2_ver_1 (v1c,v2c,dvc,nptc,c0,tave)
 C
-c        c0 are the oxygen absorption coefficients at temperature tave 
-c           - these absorption coefficients are in units of
-c                [(cm^2/molec) 10^20)]/(cm-1  amagat) 
-c           - cm-1 in the denominator arises through the removal
-c                of the radiation field
-c           - for this case, an amagat is interpreted as one
-c                loshmidt of air (273K)
+c           c0 are the oxygen absorption coefficients at temperature tave 
+c              - these absorption coefficients are in units of
+c                   [(cm^2/molec) 10^20)]/(cm-1  amagat) 
+c              - cm-1 in the denominator arises through the removal
+c                   of the radiation field
+c              - for this case, an amagat is interpreted as one
+c                   loshmidt of air (273K)
 c
-         DO 80 J = 1, NPTC
-            VJ = V1C+DVC*FLOAT(J-1)
-            C(J) = tau_fac * c0(J)
+            DO 80 J = 1, NPTC
+               VJ = V1C+DVC*FLOAT(J-1)
+               C(J) = tau_fac * c0(J) * XO2CN
 C
-C           Radiation field
+C              Radiation field
 C
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)
 c
- 80      CONTINUE
+ 80         CONTINUE
 
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
-      endif
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
+         endif
 
 
-C     ********    O2 DIFFUSE   ********                                   F01590
+C        ********    O2 DIFFUSE   ********                                F01590
 C
-C     O2 continuum formulated by Mlawer over the spectral region
-C     7500-8300 cm-1. Refer to the paper "Observed  Atmospheric
-C     Collision Induced Absorption in Near Infrared Oxygen Bands",
-C     Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
-C     Journal of Geophysical Research (1997).
+C        O2 continuum formulated by Mlawer over the spectral region
+C        7500-8300 cm-1. Refer to the paper "Observed  Atmospheric
+C        Collision Induced Absorption in Near Infrared Oxygen Bands",
+C        Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
+C        Journal of Geophysical Research (1997).
 C
-C     Only calculate if V2 > 7500. cm-1 and V1 <  8300. cm-1
+C        Only calculate if V2 > 7500. cm-1 and V1 <  8300. cm-1
 
-c      if (((V2.gt.7500.0).and.(V2.lt.8300.)).or.
-c     *    ((V1.gt.7500.0).and.(V1.lt.8300.))) then
-      if (((V2.gt.7500.0).and.(V1.lt.8300.))) then
+c         if (((V2.gt.7500.0).and.(V2.lt.8300.)).or.
+c        *    ((V1.gt.7500.0).and.(V1.lt.8300.))) then
+         if (((V2.gt.7500.0).and.(V1.lt.8300.))) then
 
-         WO2 = RHOAVE*WK(7)
-         CHIO2 = (WK(7)*1.E-20)/WTOT 
-         CHIN2 = (WBROAD*1.E-20)/WTOT 
-         ADJFAC = (CHIO2+0.3*CHIN2)/0.446
-         ADJWO2 = ADJFAC * WO2
-         CALL O2INF1 (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      
-         o2_scale = 0.8
+            WO2 = RHOAVE*WK(7)
+            CHIO2 = (WK(7)*1.E-20)/WTOT 
+            CHIN2 = (WBROAD*1.E-20)/WTOT 
+            ADJFAC = (CHIO2+0.3*CHIN2)/0.446
+            ADJWO2 = ADJFAC * WO2
+            CALL O2INF1 (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      
+            o2_scale = 0.8
 
-         DO 92 J = 1, NPTC                                                
-            C(J) = C0(J)*ADJWO2*o2_scale
-            VJ = V1C+DVC*FLOAT(J-1)                                       
+            DO 92 J = 1, NPTC                                                
+               C(J) = C0(J)*ADJWO2*o2_scale*XO2CN
+               VJ = V1C+DVC*FLOAT(J-1)                                       
 C                                                                      
-C           Radiation field
+C              Radiation field
 C                                                                      
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      
- 92      CONTINUE                                                         
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      
+ 92         CONTINUE                                                         
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
 
-      endif
+         endif
 
 C
-C     O2 continuum formulated by Mlawer over the spectral region
-C     9100-11000 cm-1. Refer to the paper "Observed  Atmospheric
-C     Collision Induced Absorption in Near Infrared Oxygen Bands",
-C     Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
-C     Journal of Geophysical Research (1997).
+C        O2 continuum formulated by Mlawer over the spectral region
+C        9100-11000 cm-1. Refer to the paper "Observed  Atmospheric
+C        Collision Induced Absorption in Near Infrared Oxygen Bands",
+C        Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
+C        Journal of Geophysical Research (1997).
 C
-C     Only calculate if V2 > 9100. cm-1 and V1 <  11000. cm-1
+C        Only calculate if V2 > 9100. cm-1 and V1 <  11000. cm-1
 
-c      if (((V2.gt.9100.0).and.(V2.lt.11000.)).or.
-c     *    ((V1.gt.9100.0).and.(V1.lt.11000.))) then
-      if (((V2.gt.9100.0).and.(V1.lt.11000.))) then
-         CALL O2INF2 (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      
-         WO2 = RHOAVE*WK(7)
-         CHIO2 = (WK(7)*1.E-20)/WTOT 
-         ADJFAC = CHIO2/0.209
-         ADJWO2 = ADJFAC * WO2
+c         if (((V2.gt.9100.0).and.(V2.lt.11000.)).or.
+c        *    ((V1.gt.9100.0).and.(V1.lt.11000.))) then
+         if (((V2.gt.9100.0).and.(V1.lt.11000.))) then
+            CALL O2INF2 (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      
+            WO2 = RHOAVE*WK(7)
+            CHIO2 = (WK(7)*1.E-20)/WTOT 
+            ADJFAC = CHIO2/0.209
+            ADJWO2 = ADJFAC * WO2
 
-         DO 93 J = 1, NPTC                                                
-            C(J) = C0(J)*ADJWO2                                              
-            VJ = V1C+DVC*FLOAT(J-1)                                       
+            DO 93 J = 1, NPTC                                                
+               C(J) = C0(J)*ADJWO2*XO2CN
+               VJ = V1C+DVC*FLOAT(J-1)                                       
 C                                                                      
-C           Radiation field
+C              Radiation field
 C                                                                      
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      
- 93      CONTINUE                                                         
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      
+ 93         CONTINUE                                                         
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
 
-      endif
+         endif
 
 C
-C     Only calculate if V2 > 36000. cm-1
+C        Only calculate if V2 > 36000. cm-1
 
-      if (V2.gt.36000.0) then
+         if (V2.gt.36000.0) then
 
-         CALL O2HERZ (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      F01820
-         DO 90 J = 1, NPTC                                                F01830
-            C(J) = C0(J)*WK(7)                                            F01840
-            VJ = V1C+DVC*FLOAT(J-1)                                       F01850
+            CALL O2HERZ (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                   F01820
+            DO 90 J = 1, NPTC                                             F01830
+               C(J) = C0(J)*WK(7)*XO2CN                                   F01840
+               VJ = V1C+DVC*FLOAT(J-1)                                    F01850
 C                                                                         F01860
-C           Radiation field                                               F01870
+C              Radiation field                                            F01870
 C                                                                         F01880
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01890
- 90      CONTINUE                                                         F01900
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01910
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01890
+ 90         CONTINUE                                                      F01900
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01910
 
-      endif
+         endif
 
 C     *********************  NITROGEN CONTINUA  ********************
 c
@@ -519,92 +540,94 @@ C                                                                         F00460
 C                                                                         F00940
 C     ******** NITROGEN COLLISION INDUCED PURE ROTATION BAND  ********
 C
-C     Model used:
-C      Borysow, A, and L. Frommhold, "Collision-induced
-C         rototranslational absorption spectra of N2-N2
-C         pairs for temperatures from 50 to 300 K", The
-C         Astrophysical Journal, 311, 1043-1057, 1986.
+C        Model used:
+C         Borysow, A, and L. Frommhold, "Collision-induced
+C            rototranslational absorption spectra of N2-N2
+C            pairs for temperatures from 50 to 300 K", The
+C            Astrophysical Journal, 311, 1043-1057, 1986.
 C
 C                                                                         F00960
-C     THIS NITROGEN CONTINUUM IS IN UNITS OF 1./(CM AMAGAT^2)
+C        THIS NITROGEN CONTINUUM IS IN UNITS OF 1./(CM AMAGAT^2)
 C
-C     Only calculate if V2 > -10. cm-1 and V1 <  350. cm-1
+C        Only calculate if V2 > -10. cm-1 and V1 <  350. cm-1
 c
-      if ((V2.gt.-10.0).and.(V1.lt.350.)) then
+         if ((V2.gt.-10.0).and.(V1.lt.350.)) then
 c
-C        The following puts WXN2 units in 1./(CM AMAGAT)
+C           The following puts WXN2 units in 1./(CM AMAGAT)
 C
-         WXN2 = WN2/XLOSMT
+            WXN2 = WN2/XLOSMT
 C                                                                         F00480
-C        RHOFAC units are AMAGATS
+C           RHOFAC units are AMAGATS
 C
-         RHOFAC = ((WN2*1.e-20)/WTOT)*(PAVE/P0)*(273./TAVE)
-C
-         TFAC = (TAVE-T0)/(220.-T0)
+            RHOFAC = ((WN2*1.e-20)/WTOT)*(PAVE/P0)*(273./TAVE)
+C     
+            TFAC = (TAVE-T0)/(220.-T0)
 
-         CALL N2R296 (V1C,V2C,DVC,NPTC,C0)
-         CALL N2R220 (V1C,V2C,DVC,NPTC,C1)
+            CALL N2R296 (V1C,V2C,DVC,NPTC,C0)
+            CALL N2R220 (V1C,V2C,DVC,NPTC,C1)
 C
-         DO 40 J = 1, NPTC                                                F01080
-            VJ = V1C+DVC*FLOAT(J-1)                                       F01090
+            DO 40 J = 1, NPTC                                             F01080
+               VJ = V1C+DVC*FLOAT(J-1)                                    F01090
 C
-            C(J) = 0.
-            IF (C0(J).GT.0. .AND. C1(J).GT.0.)
-     *           C(J) = WXN2*RHOFAC*C0(J)*(C1(J)/C0(J))**TFAC  
+               C(J) = 0.
+               IF (C0(J).GT.0. .AND. C1(J).GT.0.)
+     *            C(J) = (WXN2*RHOFAC*C0(J)*(C1(J)/C0(J))**TFAC)*XN2CN
 C                                                                         F01110
-C           Radiation field                                               F01120
+C              Radiation field                                            F01120
 C                                                                         F01130
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01140
- 40      CONTINUE                                                         F01150
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01160
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01140
+ 40         CONTINUE                                                      F01150
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01160
 
-      endif
+         endif
 C                                                                         F01170
 C                                                                         F00940
-C     ********    NITROGEN COLLISION INDUCED FUNDAMENTAL ********         F00950
+C        ********    NITROGEN COLLISION INDUCED FUNDAMENTAL ********      F00950
 C                                                                         F00960
-c     version_1 of the Nitrogen Collision Induced Fundamental
+c        version_1 of the Nitrogen Collision Induced Fundamental
 c
-c     Lafferty, W.J., A.M. Solodov,A. Weber, W.B. Olson and J._M. Hartmann,
-c        Infrared collision-induced absorption by N2 near 4.3 microns for
-c        atmospheric applications: measurements and emprirical modeling, 
-c         Appl. Optics, 35, 5911-5917, (1996).
+c        Lafferty, W.J., A.M. Solodov,A. Weber, W.B. Olson and 
+c        J._M. Hartmann, Infrared collision-induced absorption by 
+c        N2 near 4.3 microns for atmospheric applications: 
+c        Measurements and emprirical modeling, Appl. Optics, 35, 
+c        5911-5917, (1996).
 c
-C     Only calculate if V2 > 2085. cm-1 and V1 <  2670. cm-1
+C        Only calculate if V2 > 2085. cm-1 and V1 <  2670. cm-1
 C
-      if ((V2.gt.2085.0).and.(V1.lt.2670.)) then
+         if ((V2.gt.2085.0).and.(V1.lt.2670.)) then
 
-         rhofac = (Pave/P0)*(273./Tave)
+            rhofac = (Pave/P0)*(273./Tave)
 c     
-         tau_fac = Wn2 * 1.e-20 * rhofac 
+            tau_fac = Wn2 * 1.e-20 * rhofac 
 c
-c        Wn2 is in units of molec/cm2
-c        rhofac is in units of amagats (air)
+c           Wn2 is in units of molec/cm2
+c           rhofac is in units of amagats (air)
 c
-c        The temperature correction is done in the subroutine n2_ver_1:
+c           The temperature correction is done in subroutine n2_ver_1:
 c
-         call n2_ver_1 (v1c,v2c,dvc,nptc,c0,tave)
+            call n2_ver_1 (v1c,v2c,dvc,nptc,c0,tave)
 C
-c        c0 are the nitrogen absorption coefficients at temperature tave 
-c           - these absorption coefficients are in units of
-c                [(cm^2/molec) 10^20)]/(cm-1  amagat) 
-c           - cm-1 in the denominator arises through the removal
-c                of the radiation field
-c           - for this case, an amagat is interpreted as one
-c                loshmidt of air (273K)
+c           c0 are the nitrogen absorption coefficients at 
+c           temperature tave 
+c              - these absorption coefficients are in units of
+c                   [(cm^2/molec) 10^20)]/(cm-1  amagat) 
+c              - cm-1 in the denominator arises through the removal
+c                   of the radiation field
+c              - for this case, an amagat is interpreted as one
+c                   loshmidt of air (273K)
 c
-         DO 45 J = 1, NPTC
-            VJ = V1C+DVC*FLOAT(J-1)
-            C(J) = tau_fac * c0(J)
+            DO 45 J = 1, NPTC
+               VJ = V1C+DVC*FLOAT(J-1)
+               C(J) = tau_fac * c0(J) * XN2CN
 C
-C           Radiation field
+C              Radiation field
 C
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)
- 45      CONTINUE
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)
+ 45         CONTINUE
 C
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
 c
-      endif
+         endif
 c
 
 C     ********** Rayleigh Scattering calculation **********
@@ -636,28 +659,28 @@ c
 c     Rayleigh scattering in the direct beam is only calculated for
 c     model runs > 3100 cm-1.
 c
-      If (v2.lt.3100.) goto 100
+         If (v2.lt.3100.) goto 100
 c
-c     Thus the current formulation is
+c        Thus the current formulation is
 
-      conv_cm2mol = 1./(2.68675e-1*1.e5)
+         conv_cm2mol = 1./(2.68675e-1*1.e5)
+         
+         do 95 i=1,nptabs
+            vrayleigh = v1abs+(i-1)*dvabs
+            xvrayleigh = vrayleigh/1.e4
+            ray_abs = (xvrayleigh**3/(9.38076E2-10.8426*xvrayleigh**2))
+     *           *wtot*conv_cm2mol*XRAYL
 
-      do 95 i=1,nptabs
-         vrayleigh = v1abs+(i-1)*dvabs
-         xvrayleigh = vrayleigh/1.e4
-         ray_abs = (xvrayleigh**3/(9.38076E2-1.08426*xvrayleigh**2))
-     *        *wtot*conv_cm2mol
+C           Radiation field
 
-C        Radiation field
+            IF (JRAD.EQ.1) ray_abs = ray_abs*xvrayleigh
 
-         IF (JRAD.EQ.1) ray_abs = ray_abs*xvrayleigh
-
-         absrb(i) = absrb(i)+ray_abs
- 95   continue
+            absrb(i) = absrb(i)+ray_abs
+ 95      continue
 
 
 C                                                                         F01920
- 100  continue
+ 100     continue
       RETURN                                                              F01930
 C                                                                         F01940
  900  FORMAT (/,'0    *********************************************',/,

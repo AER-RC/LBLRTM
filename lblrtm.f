@@ -368,6 +368,7 @@ C
       COMMON /RCNTRL/ ILNFLG
       COMMON /FLFORM/ CFORM                                               A03270
       COMMON /IODFLG/ DVOUT
+      COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
       COMMON COMSTR(250,9)                                                A02950
       COMMON R1(3600),R2(900),R3(225)                                     A02960
       EQUIVALENCE (FSCDID(1),IFSDID(1),IHIRAC) , (FSCDID(2),ILBLF4),      A03300
@@ -505,6 +506,78 @@ C                                                                         A04280
      *                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,      A04300
      *                      IOD,IXSECT,IRAD,MPTS,NPTS                     A04310
 C                                                                         A04320
+C     Set continuum flags as needed
+
+C     Continuum calculation flags:
+C     ---------------------------
+C     ICNTNM Value      Self     Foreign    Rayleigh     Others
+C           0            no        no          no          no
+C           1            yes       yes         yes         yes
+C           2            no        yes         yes         yes
+C           3            yes       no          yes         yes
+C           4            no        no          yes         yes
+C           5            yes       yes         no          yes
+C           6   READ IN XSELF, XFRGN, XCO2C, XO3CN, XO2CN, XN2CN,
+C               and XRAYL in Record 1.2a
+C
+C
+      IF (ICNTNM.EQ.0) THEN
+         XSELF = 0.0
+         XFRGN = 0.0
+         XCO2C = 0.0
+         XO3CN = 0.0
+         XO2CN = 0.0
+         XN2CN = 0.0
+         XRAYL = 0.0
+      ELSEIF (ICNTNM.EQ.1) THEN
+         XSELF = 1.0
+         XFRGN = 1.0
+         XCO2C = 1.0
+         XO3CN = 1.0
+         XO2CN = 1.0
+         XN2CN = 1.0
+         XRAYL = 1.0
+      ELSEIF (ICNTNM.EQ.2) THEN
+         XSELF = 0.0
+         XFRGN = 1.0
+         XCO2C = 1.0
+         XO3CN = 1.0
+         XO2CN = 1.0
+         XN2CN = 1.0
+         XRAYL = 1.0
+         ICNTNM = 1
+      ELSEIF (ICNTNM.EQ.3) THEN
+         XSELF = 1.0
+         XFRGN = 0.0
+         XCO2C = 1.0
+         XO3CN = 1.0
+         XO2CN = 1.0
+         XN2CN = 1.0
+         XRAYL = 1.0
+         ICNTNM = 1
+      ELSEIF (ICNTNM.EQ.4) THEN
+         XSELF = 0.0
+         XFRGN = 0.0
+         XCO2C = 1.0
+         XO3CN = 1.0
+         XO2CN = 1.0
+         XN2CN = 1.0
+         XRAYL = 1.0
+         ICNTNM = 1
+      ELSEIF (ICNTNM.EQ.5) THEN
+         XSELF = 1.0
+         XFRGN = 1.0
+         XCO2C = 1.0
+         XO3CN = 1.0
+         XO2CN = 1.0
+         XN2CN = 1.0
+         XRAYL = 0.0
+         ICNTNM = 1
+      ELSEIF (ICNTNM.EQ.6) THEN
+         READ(IRD,*) XSELF, XFRGN, XCO2C, XO3CN, XO2CN, XN2CN, XRAYL
+         ICNTNM = 1
+      ENDIF
+
       IXSCNT = IXSECT*10+ICNTNM                                           A04330
 C
 C     *********************** SOLAR RADIANCE ***********************
@@ -906,6 +979,7 @@ C                                                                         A07580
       COMMON /ARMCM1/ HVRSOL
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A07640
       COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODT,PTHRDR
+      COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
 C                                                                         A07650
       CHARACTER CFORM*11                                                  A03430
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
@@ -926,6 +1000,9 @@ C
      *     MSPANL /MXLAY*0/,MSPNL1 /MXLAY*0/,ISFILE / 0 /,JSFILE / 0 /,
      *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
      *     JEFILE / 0 /,KEFILE / 0 /,MSLAY1 / 0 /                         A07700
+
+      DATA XSELF / 1 /,XFRGN / 1 /, XCO2C / 1 /, XO3CN / 1 /, 
+     *     XO2CN / 1 /,XN2CN / 1 /, XRAYL / 1 /
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULES
 C
@@ -3598,6 +3675,8 @@ C                                                                         A24660
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A24710
       COMMON /CONVF/ CHI(251),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4            A24720
 C                                                                         A24730
+      COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
+
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),                A24740
      *            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),                A24750
      *            (FSCDID(5),IEMIT) , (FSCDID(7),IPLOT),                  A24760
@@ -3648,7 +3727,7 @@ C                                                                         A25110
          DO 10 I = 1, 2030                                                A25210
             ABSRB(I) = 0.                                                 A25220
    10    CONTINUE                                                         A25230
-         CALL CONTNM (JRAD)                                               A25240
+         CALL CONTNM (JRAD,XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL)     A25240
       ENDIF                                                               A25250
       DVR4 = 0.                                                           A25260
 C                                                                         A25270
