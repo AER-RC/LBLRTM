@@ -305,7 +305,7 @@ C
       CHARACTER*1 CONE,CTWO,CTHREE,CFOUR,CA,CB,CC,CDOL,CPRCNT,CBLNK       A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,
      *                MXTRAC=22,MXSPC=3)
 C
@@ -803,9 +803,10 @@ C                                                                         A07280
 C                                                                         A07580
       END                                                                 A07590
       BLOCK DATA                                                          A07600
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3)
       COMMON /FLFORM/ CFORM                                               A03270
-      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(3403),             A07610
-     *                MSPNL1(3403),MSLAY1,ISFILE,JSFILE,KSFILE,           A07620
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),            A07610
+     *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,          A07620
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                  A07630
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -821,7 +822,7 @@ C
       DATA PLANCK / 6.626176E-27 /,BOLTZ / 1.380662E-16 /,                A07660
      *     CLIGHT / 2.99792458E10 /,AVOG / 6.022045E23 /                  A07670
       DATA IOD / 0 /,IDIR / 0 /,ITOP / 0 /,ISURF / 0 /,MSPTS / 0 /,       A07680
-     *     MSPANL /3403*0 /,MSPNL1 /3403*0 /,ISFILE / 0 /,JSFILE / 0 /,
+     *     MSPANL /MXLAY*0/,MSPNL1 /MXLAY*0/,ISFILE / 0 /,JSFILE / 0 /,
      *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
      *     JEFILE / 0 /,KEFILE / 0 /,MSLAY1 / 0 /                         A07700
 C
@@ -1078,7 +1079,7 @@ C**********************************************************************
 C     XLAYER CONTROLS LAYER BY LAYER CALCULATION                          A11250
 C**********************************************************************
 C                                                                         A11260
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
      *                MXMOL=35,MXTRAC=22)
 C
@@ -1866,7 +1867,7 @@ C                                                                         A16880
 C                                                                         A16900
 C     OPPATH CALLS LBLATM AND CALLS PATH FIRST                            A16910
 C                                                                         A11260
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
      *                MXMOL=35,MXTRAC=22)
 C                                                                         A16920
@@ -2116,7 +2117,7 @@ C     SUBROUTINE PATH INITIALIZES LINFIL AND INPUTS LAYER PARAMETERS      A19220
 C     SUBROUTINE PATH INPUTS AND OUTPUTS HEADER FROM LINFIL AND           A19230
 C     INPUTS AND OUTPUTS PATH PARAMETERS FOR EACH LAYER                   A19240
 C                                                                         A19250
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
      *                MXMOL=35,MXTRAC=22)
 C
