@@ -540,6 +540,8 @@ C        RHOFAC units are AMAGATS
 C
          RHOFAC = ((WN2*1.e-20)/WTOT)*(PAVE/P0)*(273./TAVE)
 C
+         TFAC = (TAVE-T0)/(220.-T0)
+
          CALL N2R296 (V1C,V2C,DVC,NPTC,C0)
          CALL N2R220 (V1C,V2C,DVC,NPTC,C1)
 C
