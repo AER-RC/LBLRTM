@@ -730,7 +730,7 @@ C     presently: %H%  %T%
                       (8E10.3)
  
  
-              WKL(M,L)   column densities or mixing ratios for 7 molecular species (molecules/cm**2)
+              WKL(M,L)   column densities (molecules/cm**2) or mixing ratios (ppv) for 7 molecular species 
  
             WBROADL(L)   column density for broadening gases (molecules/cm**2)
 
@@ -885,7 +885,7 @@ C     presently: %H%  %T%
                       (8E10.3)
  
  
-            XAMNT(I,L)   column densities or mixing ratios for 7 cross-section molecules (molecules/cm**2)
+            XAMNT(I,L)   column densities (molecules/cm**2) or mixing ratios (ppv) for 7 cross-section molecules 
  
             WBROADX(L)   column density for broadening gases (molecules/cm**2),                    ** information only **
                          should be the same as WBROADL, on Record 2.1.2
