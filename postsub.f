@@ -3154,7 +3154,7 @@ C                                                                         L00080
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       character ctape*4,fltinf*7,fltout*7
-      integer*4 itest
+      integer*4 itest,itest2
 C                                                                         L00250
       EQUIVALENCE (FILHDR(1),XID(1)) , (FSCDID(5),IEMIT),                 L00260
      *            (FSCDID(6),ISCAN) , (FSCDID(7),IPLOT),                  L00270
@@ -3165,8 +3165,9 @@ C                                                                         L00250
 
       DATA FLTINF / '       '/,FLTOUT / '       ' /,
      *     CTAPE / 'TAPE'/
-      data itest / 0 /
+      data itest / 0 /, itest2 / 0 /
       save itest
+      save itest2
 
 C                                                                         L00310
 C
@@ -3289,6 +3290,7 @@ C                                                                         L00760
       IF (MOD(ISCAN,1000).EQ.0) GO TO 70                                  L00870
       JEMSCN = SCNID/100.                                                 L00880
       IF (JEMIT.EQ.JEMSCN) GO TO 70                                       L00890
+      WRITE (*,920)
       WRITE (IPR,920)                                                     L00900
       CALL SKIPFL (1,IFILE,IEOF)                                          L00910
       IF (IEOF.EQ.0) GO TO 10                                             L00920
@@ -3313,6 +3315,13 @@ C                                                                         L01000
       WRITE (IPR,940) WBROAD,(HMOLID(M),WK(M),M=1,NMOL)                   L01110
       WRITE (IPR,945) V1F,V2F,DVF,NPTF,IEMIT,JEMIT,JABS,IUNIT,IFILST,     L01120
      *   NIFILS,HEDDR                                                     L01130
+      if ((jfile.ne.0).and.(itest2.eq.0)) then
+            WRITE (jfile,925) XID,(YID(M),M=1,2)
+            WRITE (jfile,935) SECANT,PAVE,TAVE,DVC,V1C,V2C
+            WRITE (jfile,940) WBROAD,(HMOLID(M),WK(M),M=1,NMOL)
+            WRITE(jfile,980)
+            itest2 = 1
+      endif
       IDATA = -1                                                          L01140
    80 CALL CPUTIM (TIMEO)                                                 L01150
       CALL RDSCAN (S,JTREM,IFILE,ISCAN,IPRT)                              L01160
@@ -3329,6 +3338,9 @@ C                                                                         L01000
       RFILTR = RFILTR*DVC/SUMFLT                                          L01270
       IF (JABS.EQ.0) WRITE (IPR,955) RFILTR,SUMFLT,TRNSM                  L01280
       IF (JABS.EQ.1) WRITE (IPR,960) RFILTR,SUMFLT,TRNSM                  L01290
+      if (jfile.ne.0) then
+         write(JFILE,975) RFILTR
+      endif
       GO TO 110                                                           L01300
   100 RFILTR = RFILTR*DVC                                                 L01310
       WRITE (IPR,965) RFILTR,SUMFLT                                       L01320
@@ -3372,6 +3384,7 @@ C                                                                         L01380
      *        '  NORMALIZATION OF THE',' FILTER = ',E14.5)                L01670
  970  format (a4,i2.2)
  975  format (1p,e14.5,0p)
+ 980  format (' Filter output:')
 C                                                                         L01680
       END                                                                 L01690
 C
@@ -3554,6 +3567,7 @@ C                                                                         L03260
       IF (MOD(ISCAN,1000).EQ.0) GO TO 20                                  L03310
       JEMSCN = SCNID/100.                                                 L03320
       IF (JEMIT.EQ.JEMSCN) GO TO 20                                       L03330
+      WRITE (*,900)
       WRITE (IPR,900)                                                     L03340
       CALL SKIPFL (1,IFILE,IEOF)                                          L03350
 C                                                                         L03360
@@ -3678,15 +3692,31 @@ C                                                                         L04470
       DIMENSION XF(*),S(*)                                                L04480
 C                                                                         L04490
       CALL CPUTIM (TIMEO)                                                 L04500
-      IMIN = (V1F-V1I)/DVI+1.5                                            L04510
+      IMIN = (V1F-V1I)/DVI+1.0001
+c      IMIN = (V1F-V1I)/DVI+1.5                                            L04510
       IMIN = MAX(IMIN,ILO)                                                L04520
-      IMAX = (V2F+V1F-V1I)/DVI+1.5                                        L04530
+      IMAX = (V2F+V1F-V1I)/DVI+1.0001
+c      IMAX = (V2F+V1F-V1I)/DVI+1.5                                        L04530
       IMAX = MIN(IMAX,IHI)                                                L04540
-      XIF0 = (V1I-V1F)/DVF+1.5                                            L04550
+      XIF0 = (V1I-V1F)/DVF+1.0001
+c      XIF0 = (V1I-V1F)/DVF+1.5                                            L04550
       XDVIF = DVI/DVF                                                     L04560
       DO 10 I = IMIN, IMAX                                                L04570
-         IFL = XIF0+XDVIF*FLOAT(I-1)                                      L04580
-         RFILTR = RFILTR+S(I)*XF(IFL)                                     L04590
+         IFL = XIF0+XDVIF*FLOAT(I)
+c         IFL = XIF0+XDVIF*FLOAT(I-1)                                      L04580
+c
+c        Linearly interpolate filter function XF to avoid
+c        discontinuities in output spectrum
+c
+         v1s = v1i+(i-1)*dvi
+         v2s = v1i+i*dvi
+         vxf1 = v1f + (ifl-1)*dvf
+         vxf2 = v1f + (ifl)*dvf
+         p = (vxf2-v2s)/(vxf2-vxf1)
+         RFILTR = RFILTR+S(I)*(p*XF(IFL)+(1.-p)*xf(IFL+1))                L04590
+c         write(88,*) v1s,xf(ifl),(p*XF(IFL)+(1.-p)*xf(IFL+1))
+c         write(89,*) i,v1i,dvi,v2s,xif0
+c         write(89,*) ifl,v1f,dvf,vxf1,vxf2,p
    10 CONTINUE                                                            L04600
       IF (IMAX.LT.IHI) VFT = VFT+((FLOAT(IHI)-FLOAT(ILO))+1.0)*DVI        L04610
       CALL CPUTIM (TIME)                                                  L04620
