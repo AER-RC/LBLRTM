@@ -1930,6 +1930,7 @@ C                                                                         A20120
          ENDIF                                                            A20280
       ELSE                                                                A20290
          WRITE (IPR,907) SECNT0                                           A20300
+         JTYPE = 0                                                         PDB
          GO TO 50                                                         A20310
       ENDIF                                                               A20320
 C                                                                         A20330
