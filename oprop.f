@@ -598,11 +598,15 @@ C                                                                         B04040
      *              NLTEFL,LNFIL4,LNGTH4                                  B04120
       COMMON /IOU/ IOUT(250)                                              B04130
       common /eppinfo/ negepp_flag
+      common /bufid2/ n_negepp(64),n_resetepp(64),xspace(4096),lstwdl2
+      integer *4 negepp_flag,n_negepp,n_resetepp
+      real *4 xspace
 C                                                                         B04150
 
 *****************************************************************************
 c
       data n_one/ 1/ npnlhd/ 6/
+
 
       lnfl = linfil
 C                                                                         B04170
@@ -3895,6 +3899,9 @@ C                                                                         A09600
       real *4 sumstr,flinlo,flinhi
       integer *4 lnfil,molcnt,mcntlc,mcntnl,linmol,
      *     lincnt,ilinlc,ilinnl,irec,irectl,lnfil4
+
+      integer *4 negepp_flag,n_negepp,n_resetepp
+      real *4 xspace
 C                                                                         A09640
       lnfil = linfil
       lnfil4= linfil4
@@ -4304,6 +4311,7 @@ C                                                                         D05730
      *              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,        D05830
      *              NLTEFL,LNFIL4,LNGTH4                                  D05840
       common /eppinfo/ negepp_flag
+      integer*4 negepp_flag
 
       DIMENSION DUM(2),LINPNL(2)                                          D05850
 C                                                                         D05860
