@@ -12,10 +12,11 @@ C                                                                         A00080
 C             ALGORITHM REVISIONS:    S.A. CLOUGH                         A00090
 C                                     R.D. WORSHAM                        A00100
 C                                     J.L. MONCET                         A00110
+C                                     M.W. SHEPHARD                       A00110
 C                                                                         A00120
 C                                                                         A00130
 C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         A00140
-C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139          A00150
+C                     131 Hartwell Ave, Lexington, MA, 02421
 C                                                                         A00160
 C----------------------------------------------------------------------   A00170
 C                                                                         A00180
@@ -166,6 +167,14 @@ C*                                                                        A01630
 C*                                                                        A01640
 C*               GENERAL LBLRTM  REFERENCES -                             A01650
 C*                                                                        A01660
+C*    Clough, S.A., and M.J. Iacono, Line-by-line calculations of
+C*      atmospheric fluxes and cooling rates II: Application to carbon
+C*      dioxide, ozone, methane, nitrous oxide, and the halocarbons. J.
+C*      Geophys. Res., 100, 16,519-16,535, 1995.
+C*
+C*    Clough, S.A., M.J. Iacono, and J.-L. Moncet, Line-by-line
+C*      calculation of atmospheric fluxes and cooling rates:  Application
+C*      to water vapor. J. Geophys. Res., 97, 15761-15785, 1992.
 C*                                                                        A01670
 C*    ATMOSPHERIC RADIANCE AND TRANSMITTANCE: FASCOD2                     A01680
 C*        S. A. CLOUGH, F. X. KNEIZYS, E. P. SHETTLE AND G. P. ANDERSON   A01690
@@ -186,7 +195,11 @@ C*    ATMOSPHERIC SPECTRAL TRANSMITTANCE AND RADIANCE-FASCOD1B            A01830
 C*        S. A. CLOUGH, F. X. KNEIZYS, L. S. ROTHMAN AND W. O. GALLERY    A01840
 C*        PROC. OF SPIE VOL.277 ATMOSPERIC TRANSMISSION(1981) P152        A01850
 C*                                                                        A01860
-C*                                                                        A01870
+C*    Clough, S.A., F.X. Kneizys, R. Davis, R. Gamache and R. Tipping
+C*      (1980): Theoretical line shape for H2O vapor:  Application to the
+C*      continuum.  Atmospheric Water Vapor, edited by A. Deepak, T.D.
+C*      Wilkerson and L.H. Ruhnke, 52,  Academic Press, New York.
+C*
 C*    CONVOLUTION ALGORITHM FOR THE LORENTZ FUNCTION                      A01880
 C*        S. A. CLOUGH AND F. X. KNEIZYS, APPLIED OPTICS 18, 2329(1979)   A01890
 C*                                                                        A01900
@@ -298,6 +311,7 @@ C
       real*8               SECANT,       XALTZ
 c
       LOGICAL OP
+c%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
       CHARACTER*55 PTHT3M,PTHODI,PTHODT,PTHRDR,CTAPE3
       CHARACTER*10 HFMODI,HFMODT,HFMRDR
@@ -323,6 +337,7 @@ C     ----------------------------------------------------------------
 C
 C     -------------------------
       CHARACTER*6  CMOL(MXMOL),CSPC(MXSPC),SPCRT
+      CHARACTER*1  surf_refl
 C
 C     -------------------------
 C     Common blocks for analytic derivative
@@ -359,7 +374,7 @@ C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A03070
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A03080
      *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF    A03090
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   A03100
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A03110
      *                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      A03120
      *                NLTEFL,LNFIL4,LNGTH4                                A03130
@@ -684,8 +699,7 @@ C                                                                         A04660
       IF (IRAD.NE.0) JRAD = -1                                            A04680
       WRITE (IPR,935) (IDCNTL(I),I=1,14)                                  A04690
       WRITE (IPR,940) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,ISCAN,IFILTR,     A04700
-     *                IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT               A04710
-
+     *    IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT                           A04710
 C                                                                         A04720
       IF (IHIRAC.EQ.4) THEN                                               A04800
          IF (IEMIT.NE.1) THEN                                             A04810
@@ -762,12 +776,18 @@ C                                                                         A05970
 C     OPEN LINE REJECTION FILES IF ILNFLG IS ONE OR TWO
 C
       IF (ILNFLG.EQ.1) THEN
-         OPEN(15,FILE='REJ1',STATUS='NEW',FORM='UNFORMATTED')
+         OPEN(15,FILE='REJ1',STATUS='NEW',FORM='UNFORMATTED',
+     *        IOSTAT=iostat)
+         if (IOSTAT.gt.0) stop 'REJ1 file is already created'
          OPEN(16,FILE='REJ4',STATUS='NEW',FORM='UNFORMATTED')
       ENDIF
       IF (ILNFLG.EQ.2) THEN
-         OPEN(15,FILE='REJ1',STATUS='OLD',FORM='UNFORMATTED')
-         OPEN(16,FILE='REJ4',STATUS='OLD',FORM='UNFORMATTED')
+         OPEN(15,FILE='REJ1',STATUS='OLD',FORM='UNFORMATTED',
+     *        IOSTAT=iostat)
+         if (IOSTAT.gt.0) stop 'REJ1 file does not exist'
+         OPEN(16,FILE='REJ4',STATUS='OLD',FORM='UNFORMATTED',
+     *        IOSTAT=iostat)
+         if (IOSTAT.gt.0) stop 'REJ4 file does not exist'
       ENDIF
 C
 C     IF DPTMIN < 0. SET TO DEFAULT (.0002)                               A05980
@@ -792,8 +812,8 @@ C                                                                         A06000
       BNDRFL(3) = 0.                                                      A06170
       IBPROP = 0                                                          A06180
       IF (IEMIT.GT.0) THEN                                                A06190
-         READ (IRD,970,END=80) TMPBND,(BNDEMI(IBND),IBND=1,3),            A06200
-     *                         (BNDRFL(IBND),IBND=1,3)                    A06210
+         READ (IRD,971,END=80) TMPBND,(BNDEMI(IBND),IBND=1,3),            A06200
+     *                         (BNDRFL(IBND),IBND=1,3), surf_refl
 C                                                                         A06220
          BNDTST = ABS(BNDRFL(1))+ABS(BNDRFL(2))+ABS(BNDRFL(3))            A06230
          IF (BNDTST.NE.0.) IBPROP = 1                                     A06240
@@ -848,16 +868,21 @@ C     **************************************************************
 C                                                                         A06390
 C     TBOUND IS THE BOUNDARY TEMPERATURE. TBOUND=0. FOR NO BOUNDARY       A06400
 C     EMISIV IS THE BOUNDARY EMISSIVITY                                   A06410
-C     SET DEFAULT FOR EMISIV                                              A06420
+C     SET DEFAULT FOR EMISIV and Surface Reflection
 C                                                                         A06430
+
          EMITST = ABS(BNDEMI(1))+ABS(BNDEMI(2))+ABS(BNDEMI(3))            A06440
          IF ((TMPBND.GT.0.).AND.(EMITST.EQ.0.)) BNDEMI(1) = 1.            A06450
          EMISIV = BNDEMI(1)                                               A06460
          TBOUND = TMPBND                                                  A06470
+c        set default reflection setting to specular
+         IF (surf_refl .eq. ' ') surf_refl = 's'
+c
          WRITE (IPR,985) V1,V2,TBOUND,(BNDEMI(IBND),IBND=1,3),            A06480
-     *                   (BNDRFL(IBND),IBND=1,3)                          A06490
+     *                   (BNDRFL(IBND),IBND=1,3), surf_refl
 C                                                                         A06500
       ENDIF                                                               A06510
+c
       ILASRD = 0                                                          A06520
    40 CONTINUE                                                            A06530
 C                                                                         A06540
@@ -975,7 +1000,8 @@ C                                                                         A07280
   940 FORMAT (1X,I4,13I9)                                                 A07370
   950 FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,                 A07400
      *        '  CHANGE IEMIT TO 1 OR IHIRAC TO 1 ')                      A07410
-  970 FORMAT (8E10.3,4X,I1,5x,e10.3)                                      A07460
+  970 FORMAT (8E10.3,4X,I1,5x,e10.3,4X,A1)
+  971 FORMAT (7E10.3,4X,A1)
   975 FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,            A07470
      *        ' AND IS NOT BOUNDED BY (0.,1.) ')                          A07480
   980 FORMAT ('0 FOR VNU = ',F10.3,' THE REFLECTIVITY = ',E10.3,          A07490
@@ -984,7 +1010,7 @@ C                                                                         A07280
      *        '0 V1(CM-1) = ',F12.4,/,'0 V2(CM-1) = ',F12.4,/,            A07520
      *        '0 TBOUND   = ',F12.4,5X,'BOUNDARY EMISSIVITY   = ',        A07530
      *        3(1PE11.3),/,'0',29X,'BOUNDARY REFLECTIVITY = ',            A07540
-     *        3(1PE11.3))                                                 A07550
+     *        3(1PE11.3), ' SURFACE REFLECTIVITY = ', A1)
   990 FORMAT (F20.8)                                                      A07560
   995 FORMAT ('0 TIME LEAVING LBLRTM ',F15.4,' TOTAL',F15.4)              A07570
  1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,5X,
@@ -1014,7 +1040,7 @@ c
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2
 c
-      DATA PI / 3.1415927410125732 /
+      DATA PI /3.1415926535898 /
 c
 c    Constants from NIST 01/11/2002
 c
@@ -1026,7 +1052,7 @@ c
 c
 c     Pi was obtained from   PI = 2.*ASIN(1.)                             A03980
 c
-c     units are genrally cgs
+c     units are generally cgs
 c
 c     The first and second radiation constants are taken from NIST.
 c     They were previously obtained from the relations:
@@ -1076,7 +1102,7 @@ c
      *     MSPANL /MXLAY*0/,MSPNL1 /MXLAY*0/,ISFILE / 0 /,JSFILE / 0 /,
      *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
      *     JEFILE / 0 /,KEFILE / 0 /,MSLAY1 / 0 /                         A07700
-
+C
       DATA XSELF / 1 /,XFRGN / 1 /, XCO2C / 1 /, XO3CN / 1 /,
      *     XO2CN / 1 /,XN2CN / 1 /, XRAYL / 1 /
 C
@@ -1507,7 +1533,7 @@ C                                                                         A11560
       COMMON /FILHD1/ XI1(10),SECAN1,PAV1,TAV1,HMOLI1(60),XALT1(4),       A11570
      *                W1(60),PDL,PDU,TDL,TDU,W12   ,D1 ,VD1,VD2,TBOUN1,   A11580
      *                EMISI1,FSCDI1(17),NMO1,LAYHD1,YD1,Y1D(10),LSTWDD    A11590
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   A11600
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
 
 c****************
 
@@ -2501,7 +2527,7 @@ C                                                                         A11260
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
      *                MXMOL=35,MXTRAC=22)
 C                                                                         A16920
-      COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(35,MXLAY),
+      COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(MXMOL,MXLAY),
      *               WBRODL(MXLAY),DVL(MXLAY),                            A16930
      *               WTOTL(MXLAY),ALBL(MXLAY),ADBL(MXLAY),
      *               AVBL(MXLAY),H2OSL(MXLAY),                            A16940
@@ -2536,7 +2562,7 @@ C                                                                         A17190
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A17200
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A17210
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    A17220
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   A17230
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl
 C                                                                         A17240
       CHARACTER*8       HLINID,BMOLID,HID1                              & A17250
 C                                                                         A17260
@@ -2662,7 +2688,7 @@ C                                                                         A18310
 C                                                                         A18330
 C  SAVE AIRMASS FACTORS FOR USE WITH MULTIPLE SCATTERING                  A18340
 C                                                                         A18350
-            DO 10 IAIR = 1, 67                                            A18360
+            DO 10 IAIR = 1, MXLAY
                AIRMAS(IAIR) = SECNTA(IAIR)                                A18370
  10         CONTINUE                                                      A18380
          ENDIF                                                            A18390
@@ -2684,7 +2710,7 @@ C                                                                         A18530
       IF (ILAS.GT.0) THEN                                                 A18540
          DVI = XDV*DVL(1)                                                 A18550
          MM = 64                                                          A18560
-         DVC = FLOAT(MM)*DVL(LAYER)                                       A18570
+         DVC =  REAL(MM)*DVL(LAYER)                                       A18570
          V2 = VLAS+DVC                                                    A18580
          V1 = VLAS-DVC                                                    A18590
 C                                                                         A18600
@@ -2789,7 +2815,7 @@ C                                                                         A19360
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A19370
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A19380
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    A19390
-      COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(35,MXLAY),
+      COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(MXMOL,MXLAY),
      *               WBRODL(MXLAY),DVL(MXLAY),                            A19400
      *               WTOTL(MXLAY),ALBL(MXLAY),ADBL(MXLAY),
      *               AVBL(MXLAY),H2OSL(MXLAY),                            A19410
@@ -2828,7 +2854,7 @@ C                                                                         A19630
       CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,  ht1,ht2
       CHARACTER*3 CINP,CINPX,CBLNK                                        A19680
       DIMENSION FILHDR(2),AMOUNT(2),AMTSTR(2)                             A19690
-      DIMENSION HEDXS(15),WMT(35),SECL(64),WXT(35),WTOTX(67)              A19700
+      DIMENSION HEDXS(15),WMT(35),SECL(MXFSC),WXT(35),WTOTX(MXLAY)
       DIMENSION WDRAIR(MXLAY)
 C                                                                         A19710
       EQUIVALENCE (XID(1),FILHDR(1))                                      A19720
@@ -3042,7 +3068,6 @@ C
          DO 25 M = 1,NMOL
             IF (WKL(M,L).LT.1) WKL(M,L) = WKL(M,L)*WDRAIR(L)
  25      CONTINUE
-
 C
 C     --------------------------------------------------------------
 C
@@ -3110,7 +3135,6 @@ C
 C     NOTE that if XAMNT is greater than one, then column density
 C               if XAMNT is less than one, then mixing ratio
 C
-
          DO 35 M = 1,IXMOL
             IF (WDRAIR(L).EQ.0.0 .AND. XAMNT(M,L).LT.1 .AND.
      *           XAMNT(M,L).NE.0.0) THEN
@@ -3327,7 +3351,7 @@ C                                                                         A22380
 C     SET IDV TO BE EVEN                                                  A22390
 C                                                                         A22400
             IF (MOD(IDV,2).GT.0) IDV = IDV+1                              A22410
-            DV = SCAL*FLOAT(IDV)                                          A22420
+            DV = SCAL* REAL(IDV)                                          A22420
 C                                                                         A22430
          ELSE                                                             A22440
 C                                                                         A22450
@@ -3344,7 +3368,7 @@ C                                                                         A22550
                DV = OLDDV                                                 A22560
                ITYPE = 1./(TYPE-1.)+0.5                                   A22570
                IF (ITYPE.EQ.3) ITYPE = 2                                  A22580
-               DV = OLDDV*FLOAT(ITYPE)/FLOAT(ITYPE+1)                     A22590
+               DV = OLDDV* REAL(ITYPE)/ REAL(ITYPE+1)                     A22590
             ELSEIF (TYPE.GE.0.8) THEN                                     A22600
 C                                                                         A22610
 C     TYPE IS BETWEEN 0.8 AND 1.2 (SET TO 1.0)                            A22620
@@ -3359,7 +3383,7 @@ C                                                                         A22690
                ITYPE = 0                                                  A22710
                IF (IEMIT.EQ.0) THEN                                       A22720
                   ITYPE = TYPE/(1.-TYPE)+0.5                              A22730
-                  DV = DV*FLOAT(ITYPE+1)/FLOAT(ITYPE)                     A22740
+                  DV = DV* REAL(ITYPE+1)/ REAL(ITYPE)                     A22740
                   ITYPE = -ITYPE                                          A22750
                ENDIF                                                      A22760
             ENDIF                                                         A22770
@@ -3375,7 +3399,7 @@ C                                                                         A22860
                IF (ITYL(L).EQ.0) THEN                                     A22870
                   DV = OLDDV                                              A22880
                ELSE                                                       A22890
-                  DV = OLDDV*FLOAT(ITYL(L))/FLOAT(ITYL(L)+1)              A22900
+                  DV = OLDDV* REAL(ITYL(L))/ REAL(ITYL(L)+1)              A22900
                ENDIF                                                      A22910
                DVL(L) = DV                                                A22920
 C                                                                         A22930
@@ -3510,8 +3534,6 @@ C
 C     Write out column densities for molecules to TAPE6
 C
 C
-
-
       IF (IFORM.EQ.1) THEN                                                A23490
          WRITE (IPR,974) (HMOLID(I),I=1,7),HOLN2                          A23500
          DO 150 L = 1, NLAYRS
@@ -3857,6 +3879,7 @@ C                                                                         A24590
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                A24640
       COMMON /SCATTR/ V1SC,V2SC,DVSC,NPTSC,SCTTR(2025)                    A24650
 C                                                                         A24660
+      COMMON /RCNTRL/ ILNFLG
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        A24670
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A24680
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        A24690
@@ -3924,7 +3947,14 @@ C                                                                         A25270
       IF (ILBLF4.GE.1) THEN                                               A25280
          ALFAV = SAMPLE*DV                                                A25290
          ALFAV4 = 64.*ALFAV                                               A25300
-         DVR4 = ALFAV4/SAMPLE                                             A25310
+C     Read in DVR4 from REJ file
+         IF (ILNFLG.EQ.2) THEN
+             READ(16) LAYRS, DVR4
+         ELSE
+C     Compute DVR4
+             DVR4 = ALFAV4/SAMPLE                                         A25310
+             IF (ILNFLG.EQ.1) WRITE(16) LAYRS, DVR4
+         ENDIF
          BOUND4 = 25.                                                     A25320
          IF (ILBLF4.EQ.2.AND.IPFLAG.EQ.1) BOUND4 = 5.                     A25330
          IPTS4 = BOUND4/DVR4                                              A25340
@@ -3940,6 +3970,11 @@ C                                                                         A25370
          IF ((IHIRAC.EQ.1).OR.(IHIRAC.EQ.9)) CALL LINF4 (V1L4,V2L4)       A25440
       ENDIF                                                               A25450
 C                                                                         A25460
+C    Write out DV to REJ1 file
+      IF (ILNFLG.EQ.1) WRITE(15) LAYRS, DV
+C    Read in DV from  REJ1 file
+      IF (ILNFLG.EQ.2) READ(15) LAYRS,DV
+C
       IF (IHIRAC.EQ.1) CALL HIRAC1 (MPTS)                                 A25470
       IF (IHIRAC.EQ.4) CALL NONLTE (MPTS)                                 A25480
       IF (IHIRAC.EQ.9) CALL HIRAC1 (MPTS)                                 A25490
@@ -3969,7 +4004,7 @@ C     -------------------------------------------------------------
 C
       SUBROUTINE READEM(ICOEF)
 C
-C     Reads in emission function values directly from file "EMISSION"
+C     Reads in emission function values directly from file "EMISSIVITY"
 C
       IMPLICIT REAL*8           (V)
 C
@@ -4003,7 +4038,7 @@ C     -------------------------------------------------------------
 C
       SUBROUTINE READRF(ICOEF)
 C
-C     Reads in reflection function values directly from file "REFLECTION"
+C     Reads in reflection function values directly from file "REFLECTIVITY"
 C
       IMPLICIT REAL*8           (V)
 C
