@@ -313,8 +313,8 @@ C                                                                         A02940
      *                MXTRAC=22,MXSPC=3)
 C
 C     ----------------------------------------------------------------
-C     Parameter and common blocks for direct input of emission and
-C     reflection function values
+C     Parameter and common blocks for direct input of emissivity and
+C     reflectivity function values
 C
       PARAMETER (NMAXCO=4040)
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
@@ -783,7 +783,7 @@ C                                                                         A06220
          IF (BNDTST.NE.0.) IBPROP = 1                                     A06240
 C                                                                         A06250
 C     **************************************************************
-C        If BNDEMI(1) < 0, read in coefficients from file 'EMISSION'
+C        If BNDEMI(1) < 0, read in coefficients from file 'EMISSIVITY'
 C        If BNDEMI(1) > 0, check to see if emissivity is reasonable       A06260
 C                                                                         A06270
 C        UNIT ICOEF used for input files
@@ -791,9 +791,10 @@ C
          ICOEF = 13
 C
          IF (BNDEMI(1).LT.0) THEN
-            OPEN (UNIT=ICOEF,FILE='EMISSION',STATUS='OLD')
+            OPEN (UNIT=ICOEF,FILE='EMISSIVITY',STATUS='OLD',ERR=34)
             CALL READEM(ICOEF)
             CLOSE (ICOEF)
+ 34         STOP  "FILE 'EMISSIVITY' FOR PATH BOUNDARY NOT FOUND"
          ELSE
             XVMID = (V1+V2)/2.                                            A06280
             EMITST = BNDEMI(1)+BNDEMI(2)*XVMID+BNDEMI(3)*XVMID*XVMID      A06290
@@ -803,13 +804,14 @@ C
             ENDIF                                                         A06330
          ENDIF
 C
-C        If BNDRFL(1) < 0, read in coefficients from file 'REFLECTION'
+C        If BNDRFL(1) < 0, read in coefficients from file 'REFLECTIVITY'
 C        If BNDRFL(1) > 0, check to see if reflectivity is reasonable
 C
          IF (BNDRFL(1).LT.0) THEN
-            OPEN (UNIT=ICOEF,FILE='REFLECTION',STATUS='OLD')
+            OPEN (UNIT=ICOEF,FILE='REFLECTIVITY',STATUS='OLD',ERR=36)
             CALL READRF(ICOEF)
             CLOSE (ICOEF)
+ 36         STOP   "FILE 'REFLECTIVITY' FOR PATH BOUNDARY NOT FOUND"
          ELSE
             REFTST = BNDRFL(1)+BNDRFL(2)*XVMID+BNDRFL(3)*XVMID*XVMID      A06340
             IF (REFTST.LT.0..OR.REFTST.GT.1.) THEN                        A06350
