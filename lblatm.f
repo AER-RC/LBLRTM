@@ -5850,7 +5850,7 @@ C                                                                        FX06810
      *                AMOL31(MXZMD), AMOL32(MXZMD), AMOL33(MXZMD),       FX06930
      *                AMOL34(MXZMD), AMOL35(MXZMD)                       FX06940
 C                                                                        FX06950
-      DATA LAYXMX / 50 /                                                 FX06960
+      DATA LAYXMX / 3400 /                                               FX06960
 C                                                                        FX06970
       DATA ALTX /                                                        FX06980
      *       0.0,       1.0,       2.0,       3.0,       4.0,            FX06990
