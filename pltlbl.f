@@ -1,8 +1,8 @@
-C     path:      %P%
+C     path:      $Source$
+C     author:    $Author$
 C     revision:  $Revision$
-C     created:   $Date$  
-C     presently: %H%  %T%
-      SUBROUTINE PLTLBL (IENDPL)                                          M00010
+C     created:   $Date$
+C
 C                                                                         M00020
       IMPLICIT REAL*8           (V)                                     ! M00030
 C                                                                         M00040
@@ -240,7 +240,7 @@ C                                                                         M02170
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRPLT = '$Revision$' 
+      HVRPLT =  '$RCSfile$ $Revision$'
 C
       IENDPL = 0                                                          M02180
       JHDR = 0                                                            M02200
@@ -1900,13 +1900,20 @@ C                                                                         M17490
      *                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                      M17580
 C                                                                         M17590
       EQUIVALENCE (PNLHDR(1),V1P) , (JPLT,NUMSBX) , (LPLT,NOENDX)         M17600
+      save dvp_save
 C                                                                         M17610
       YYSTOR = YY(NPTS)                                                   M17620
 C                                                                         M17630
+      
       IF (JOUT.GE.1) THEN                                                 M17640
          V1P = XX(NLO)                                                    M17650
          V2P = XX(NPTS)                                                   M17660
-         DVP = (V2P-V1P)/FLOAT(NPTS-NLO)                                  M17670
+         if (npts .eq. nlo) then
+            dvp = dvp_save
+         else 
+            DVP = (V2P-V1P)/FLOAT(NPTS-NLO)   
+            dvp_save = dvp
+         endif
          NLOW = NLO-1                                                     M17680
          NLIM = NPTS-NLOW                                                 M17690
          IF (JOUT.LE.2) THEN                                              M17700
