@@ -1392,12 +1392,14 @@ C
                LH1 = MAX(LH1,LH2)
                LH2 = 1
             ENDIF
+            IPATHL = 1
             JPATHL = 1
          ELSE
             IF (LH1.NE.1) THEN
                LH2 = MAX(LH1,LH2)
                LH1 = 1
             ENDIF
+            IPATHL = 3
             JPATHL = 3
          ENDIF
 C
