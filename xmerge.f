@@ -1022,6 +1022,18 @@ C                                                                         H08590
                VINEW = VI+DVI*FLOAT(INTVLS)
             ELSE
                VINEW = ABS(VINEW)
+C
+C              The following IF test added for cases where
+C              XVIOKT > 80 on one call, and XVIOKT < 80 on
+C              the next call (numerical artifact causing
+C              the change over the XVIOKT = 80 boundary)
+C
+               IF (VINEW.EQ.6.0E+05) THEN
+                   BBNEXT=0.
+                   BBDEL = (BBNEXT-BBFN)/FLOAT(INTVLS)
+                   BBLAST = BBNEXT
+                   RETURN
+               ENDIF
                INTVLS = (VINEW-VI)/DVI
                INTVLS = MAX(INTVLS,1)
             ENDIF
@@ -1030,11 +1042,11 @@ C                                                                         H08750
             BBNEXT = RADCN1*(XVINEW**3)/(EXP(XVINEW/XKT)-1.)              H08760
          ELSE                                                             H08770
             BBNEXT = 0.                                                   H08780
-            VINEW = 9.0E+9                                                H08790
+            VINEW = 6.0E+5                                                H08790
          ENDIF                                                            H08800
       ELSE                                                                H08810
          BBNEXT = 0.                                                      H08820
-         VINEW = 9.0E+9                                                   H08830
+         VINEW = 6.0E+5                                                   H08830
       ENDIF                                                               H08840
 C                                                                         H08850
       BBDEL = (BBNEXT-BBFN)/FLOAT(INTVLS)                                 H08860
@@ -1123,33 +1135,58 @@ C
       IF (XKT.GT.0.0) THEN                                             
 C                                                                      
          IF (XVIOKT.LE.0.01) THEN                                      
-            XDELT = (GNU2 * (4.+4.*XVIOKT + BG2))/
-     *        (10.*BG2 - 24.*XVIOKT + 8.)
-            DELTAV = SQRT(ABS(FACTOR*XDELT))
-            IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
-            INTVLS = (DELTAV)/DVI
-            INTVLS = MAX(INTVLS,1)
-            VDNEW = VI+DVI*FLOAT(INTVLS)
+            IF (VDNEW.GE.0.0) THEN
+               XDELT = (GNU2 * (4.+4.*XVIOKT + BG2))/
+     *              (10.*BG2 - 24.*XVIOKT + 8.)
+               DELTAV = SQRT(ABS(FACTOR*XDELT))
+               IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
+               INTVLS = (DELTAV)/DVI
+               INTVLS = MAX(INTVLS,1)
+               VDNEW = VI+DVI*FLOAT(INTVLS)
+            ELSE
+               VDNEW = ABS(VDNEW)
+               INTVLS = (VDNEW-VI)/DVI
+               INTVLS = MAX(INTVLS,1)
+            ENDIF
             XVDNEW = VDNEW
             BBAD = BBVAL/(-TKELV*(1.+0.5*XVDNEW/XKT))
          ELSEIF (XVIOKT.LE.80.0) THEN                                  
-            FRONT  = XVIOKT/(1.-EXPNEG)
-            BOX    = 3.- FRONT
-            DELT2C = (1./GNU2)*(2.*BOX-FRONT*(1.+BOX-FRONT*EXPNEG))
-            DELTAV = SQRT(ABS(FACTOR/DELT2C))
-            IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
-            INTVLS = (DELTAV)/DVI
-            INTVLS = MAX(INTVLS,1)
-            VDNEW = VI+DVI*FLOAT(INTVLS)
+            IF (VDNEW.GE.0.0) THEN
+               FRONT  = XVIOKT/(1.-EXPNEG)
+               BOX    = 3.- FRONT
+               DELT2C = (1./GNU2)*(2.*BOX-FRONT*(1.+BOX-FRONT*EXPNEG))
+               DELTAV = SQRT(ABS(FACTOR/DELT2C))
+               IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
+               INTVLS = (DELTAV)/DVI
+               INTVLS = MAX(INTVLS,1)
+               VDNEW = VI+DVI*FLOAT(INTVLS)
+            ELSE
+               VDNEW = ABS(VDNEW)
+C
+C              The following IF test added for cases where
+C              XVIOKT > 80 on one call, and XVIOKT < 80 on
+C              the next call (numerical artifact causing
+C              the change over the XVIOKT = 80 boundary)
+C
+               IF (VDNEW.EQ.6.0E+05) THEN
+                   BBAD=0.
+                   VDNEW = VDNEW-DVI+0.00001
+                   BBADDL = (BBAD-BBADOL)/FLOAT(INTVLS)
+                   BBADOL = BBAD
+                   RETURN
+               ENDIF
+               INTVLS = (VDNEW-VI)/DVI
+               INTVLS = MAX(INTVLS,1)
+            ENDIF
             XVDNEW = VDNEW
             BBAD = BBVAL*(XVDNEW/XKT)/(TKELV*(1-EXP(-XVDNEW/XKT)))
          ELSE                                                          
             BBAD = 0.                                                
-            VDNEW = 9.0E+9                                             
+            VDNEW = 6.0E+5                                             
          ENDIF                                                         
       ELSE                                                             
          BBAD = 0.                                                   
-         VDNEW = 9.0E+9                                                
+         VDNEW = 6.0E+5                                                
       ENDIF                                                            
 C                                                                      
       BBADDL = (BBAD-BBADOL)/FLOAT(INTVLS)                              
