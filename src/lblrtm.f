@@ -302,9 +302,9 @@ c
       CHARACTER*55 PTHT3M,PTHODI,PTHODT,PTHRDR,CTAPE3
       CHARACTER*10 HFMODI,HFMODT,HFMRDR
       CHARACTER*9 CT6FIL
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
-      CHARACTER*8 HVRSOL
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      CHARACTER*15 HVRSOL
       CHARACTER*1 CONE,CTWO,CTHREE,CFOUR,CA,CB,CC,CDOL,CPRCNT,CBLNK       A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
@@ -341,7 +341,7 @@ C
      *                ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    A03000
      *                EXTID(10)                                           A03010
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
       COMMON /ARMCM1/ HVRSOL
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A03070
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A03080
@@ -396,6 +396,10 @@ C                                                                         A03560
 C     DATA CFORM / 'BUFFERED   '/                                       # A03570
 C     DATA CFORM / 'UNFORMATTED'/                                         A03580
 C                                                                         A03590
+c     set the cvs version number
+c
+      HVRLBL = '$Revision$'
+c
 C     Set ILNFLG to default (no line rejection files kept)
 C
       ILNFLG = 0
@@ -410,7 +414,7 @@ C
       DATA CMOL   /
      *     '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ','  CH4 ',
      *     '   O2 ','   NO ','  SO2 ','  NO2 ','  NH3 ','  HNO3',
-     *     '    OH','    HF','  HCL ','  HBR ','   HI ','  CLO ',
+     *     '   OH ','   HF ','  HCL ','  HBR ','   HI ','  CLO ',
      *     '  OCS ',' H2CO ',' HOCL ','   N2 ','  HCN ','CH3CL ',
      *     ' H2O2 ',' C2H2 ',' C2H6 ','  PH3 ',' COF2 ','  SF6 ',
      *     '  H2S ','HCOOH ','      ','      ','      ' /
@@ -791,10 +795,14 @@ C
          ICOEF = 13
 C
          IF (BNDEMI(1).LT.0) THEN
-            OPEN (UNIT=ICOEF,FILE='EMISSIVITY',STATUS='OLD',ERR=34)
+            OPEN (UNIT=ICOEF,FILE='EMISSIVITY',
+     *           STATUS='OLD',IOSTAT=iostat)
+
+            if ( iostat .gt. 0)
+     *           stop "FILE 'EMISSIVITY' FOR PATH BOUNDARY NOT FOUND"
+c
             CALL READEM(ICOEF)
             CLOSE (ICOEF)
- 34         STOP  "FILE 'EMISSIVITY' FOR PATH BOUNDARY NOT FOUND"
          ELSE
             XVMID = (V1+V2)/2.                                            A06280
             EMITST = BNDEMI(1)+BNDEMI(2)*XVMID+BNDEMI(3)*XVMID*XVMID      A06290
@@ -808,10 +816,14 @@ C        If BNDRFL(1) < 0, read in coefficients from file 'REFLECTIVITY'
 C        If BNDRFL(1) > 0, check to see if reflectivity is reasonable
 C
          IF (BNDRFL(1).LT.0) THEN
-            OPEN (UNIT=ICOEF,FILE='REFLECTIVITY',STATUS='OLD',ERR=36)
+            OPEN (UNIT=ICOEF,FILE='REFLECTIVITY',
+     *           STATUS='OLD',IOSTAT=iostat)
+
+            if ( iostat .gt. 0)
+     *           stop "FILE 'REFLECTIVITY' FOR PATH BOUNDARY NOT FOUND"
+c
             CALL READRF(ICOEF)
             CLOSE (ICOEF)
- 36         STOP   "FILE 'REFLECTIVITY' FOR PATH BOUNDARY NOT FOUND"
          ELSE
             REFTST = BNDRFL(1)+BNDRFL(2)*XVMID+BNDRFL(3)*XVMID*XVMID      A06340
             IF (REFTST.LT.0..OR.REFTST.GT.1.) THEN                        A06350
@@ -936,7 +948,7 @@ C                                                                         A07120
 C                                                                         A07240
    90 CONTINUE                                                            A07250
       WRITE(IPR,1000) HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *                HVRPST,HVRPLT,HVRTST,HVRXMR,HVRUTL,HVRSOL
+     *                HVRPST,HVRPLT,HVRTST,HVRXMR,HVRUTL,HVRSOL,hvnlte
       IF (IENDPL.EQ.1) CALL ENDPLT                                        A07260
       STOP ' LBLRTM EXIT '                                                A07270
 C                                                                         A07280
@@ -964,13 +976,13 @@ C                                                                         A07280
   990 FORMAT (F20.8)                                                      A07560
   995 FORMAT ('0 TIME LEAVING LBLRTM ',F15.4,' TOTAL',F15.4)              A07570
  1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,5X,
-     *         'lblrtm.f: ',6X,A8,10X, '  contnm.f: ',6X,A8,/,5X,
-     *         'fftscn.f: ',6X,A8,10X, '  lblatm.f: ',6X,A8,/,5X,
-     *         'lbllow.f: ',6X,A8,10X, ' ncargks.f: ',6X,A8,/,5X,
-     *         ' oprop.f: ',6X,A8,10X, ' postsub.f: ',6X,A8,/,5X,
-     *         'pltlbl.f: ',6X,A8,10X, '  testmm.f: ',6X,A8,/,5X,
-     *         'xmerge.f: ',6X,A8,10X, 'util_xxx.f: ',6X,A8,/,5X,
-     *         ' solar.f: ',6X,A8,10X, '            ',6X,8X,/)
+     *         'lblrtm.f: ',4X,A15,10X, '  contnm.f: ',4X,A15,/,5X,
+     *         'fftscn.f: ',4X,A15,10X, '  lblatm.f: ',4X,A15,/,5X,
+     *         'lbllow.f: ',4X,A15,10X, ' ncargks.f: ',4X,A15,/,5X,
+     *         ' oprop.f: ',4X,A15,10X, ' postsub.f: ',4X,A15,/,5X,
+     *         'pltlbl.f: ',4X,A15,10X, '  testmm.f: ',4X,A15,/,5X,
+     *         'xmerge.f: ',4X,A15,10X, 'util_xxx.f: ',4X,A15,/,5X,
+     *         ' solar.f: ',4X,A15,10X, '  nonlte.f: ',4X,a15,/)
  1010 FORMAT (2I5,2X,I3)
  1015 FORMAT (I5)
  1020 FORMAT (/,'  The continuum scale factors are as follows: ',
@@ -991,16 +1003,16 @@ C                                                                         A07580
      *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,          A07620
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                  A07630
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
       COMMON /ARMCM1/ HVRSOL
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A07640
       COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODT,PTHRDR
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
 C                                                                         A07650
       CHARACTER CFORM*11                                                  A03430
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
-      CHARACTER*8 HVRSOL
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      CHARACTER*15 HVRSOL
 C
       CHARACTER*55 PTHT3M,PTHODI,PTHODT,PTHRDR
 
@@ -1022,14 +1034,20 @@ C
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULES
 C
-      DATA HVRLBL / '$RCSfile$ $Revision' /,
-     *     HVRCNT / 'NOT USED' /,
-     *     HVRFFT / 'NOT USED' /, HVRATM / 'NOT USED' /,
-     *     HVRLOW / 'NOT USED' /, HVRNCG / 'NOT USED' /,
-     *     HVROPR / 'NOT USED' /, HVRPST / 'NOT USED' /,
-     *     HVRPLT / 'NOT USED' /, HVRTST / 'NOT USED' /,
-     *     HVRUTL / 'NOT USED' /, HVRXMR / 'NOT USED' /
-      DATA HVRSOL / 'NOT USED' /
+      DATA HVRLBL / 'NOT USED       ' /,
+     *     HVRCNT / 'NOT USED       ' /,
+     *     HVRFFT / 'NOT USED       ' /,
+     *     HVRATM / 'NOT USED       ' /,
+     *     HVRLOW / 'NOT USED       ' /,
+     *     HVRNCG / 'NOT USED       ' /,
+     *     HVROPR / 'NOT USED       ' /,
+     *     HVRPST / 'NOT USED       ' /,
+     *     HVRPLT / 'NOT USED       ' /,
+     *     HVRTST / 'NOT USED       ' /,
+     *     HVRUTL / 'NOT USED       ' /,
+     *     HVRXMR / 'NOT USED       ' /,
+     *     hvnlte / 'NOT USED       ' /
+      DATA HVRSOL / 'NOT USED       ' /
 C                                                                         A07710
       END                                                                 A07720
       FUNCTION NWDL (IWD,ILAST)                                           A08590
@@ -1437,6 +1455,14 @@ C                                                                         A11560
      *                W1(60),PDL,PDU,TDL,TDU,W12   ,D1 ,VD1,VD2,TBOUN1,   A11580
      *                EMISI1,FSCDI1(17),NMO1,LAYHD1,YD1,Y1D(10),LSTWDD    A11590
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   A11600
+
+c****************
+
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
 C                                                                         A11610
       DIMENSION FILDUM(2),FILDU1(2)                                       A11620
       DIMENSION NTAN(160)                                                 A11630
