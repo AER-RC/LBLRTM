@@ -236,12 +236,12 @@ C                                                                         B02210
          DVSAV = DV                                                       B02280
          DVOUT = 0.003328                                                 B02290
          DV = DVOUT                                                       B02300
-         CALL BUFOUT (KFILE,1,NFHDRF,FILHDR)                              B02310
+         CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02310
          DV = DVSAV                                                       B02320
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3                B02330
       ELSE                                                                B02340
          DVOUT = 0.0                                                      B02350
-         CALL BUFOUT (KFILE,1,NFHDRF,FILHDR)                              B02360
+         CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02360
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02370
       ENDIF                                                               B02380
 C                                                                         B02390
@@ -433,11 +433,10 @@ C     BUFFER PAST FILE HEADER                                             B04240
 C                                                                         B04250
       IF (ILO.LE.0) THEN                                                  B04260
          REWIND LINFIL                                                    B04270
-CSAC     CALL BUFIN (LINFIL,LEOF,1,2,DUM)                                 B04280
-         CALL BUFIN (LINFIL,LEOF,1,1,DUM)                                 B04280
+         CALL BUFIN (LINFIL,LEOF,DUM(1),1)                                B04280
       ENDIF                                                               B04290
 C                                                                         B04300
-   10 CALL BUFIN (LINFIL,LEOF,1,NPHDRL,LINPNL)                            B04310
+   10 CALL BUFIN (LINFIL,LEOF,LINPNL(1),NPHDRL)                           B04310
       IF (LEOF.EQ.0) THEN                                                 B04320
          IF (NOPR.EQ.0) WRITE (IPR,900)                                   B04330
          IEOF = 1                                                         B04340
@@ -446,11 +445,10 @@ C                                                                         B04300
 C                                                                         B04370
       IF (NREC.GT.LIMIN) STOP 'RDLIN; NREC GT LIMIN'                      B04380
       IF (VMAX.LT.VBOT) THEN                                              B04390
-CSAC     CALL BUFIN (LINFIL,LEOF,1,2,DUM)                                 B04400
-         CALL BUFIN (LINFIL,LEOF,1,1,DUM)                                 B04400
+         CALL BUFIN (LINFIL,LEOF,DUM(1),1)                                B04400
          GO TO 10                                                         B04410
       ENDIF                                                               B04420
-      CALL BUFIN (LINFIL,LEOF,1,NWDS,VNU)                                 B04430
+      CALL BUFIN (LINFIL,LEOF,VNU(1),NWDS)                                B04430
       IF ((ILO.EQ.0).AND.(VMIN.GT.VBOT)) WRITE (IPR,905)                  B04440
       ILO = 1                                                             B04450
 C                                                                         B04460
@@ -1018,8 +1016,8 @@ C     V1P IS FIRST FREQ OF PANEL                                          B11270
 C     V2P IS LAST FREQ OF PANEL                                           B11280
 C                                                                         B11290
       IF (DVOUT.EQ.0.) THEN                                               B11300
-         CALL BUFOUT (KFILE,1,NPHDRF,PNLHDR)                              B11310
-         CALL BUFOUT (KFILE,NLO,NLIM,R1)                                  B11320
+         CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B11310
+         CALL BUFOUT (KFILE,R1(NLO),NLIM)                                 B11320
 C                                                                         B11330
          IF (NPTS.GT.0) CALL R1PRNT (R1,NLO,KFILE,IENTER)                 B11340
       ELSE                                                                B11350
@@ -1119,8 +1117,8 @@ C                                                                         B12350
 C     1/1 RATIO ONLY                                                      B12360
 C                                                                         B12370
          CALL PMNMX (R1,NLIM,RMIN,RMAX)                                   B12380
-         CALL BUFOUT (KFILE,1,NPHDRF,PNLHDR)                              B12390
-         CALL BUFOUT (KFILE,1,NLIM,R1)                                    B12400
+         CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B12390
+         CALL BUFOUT (KFILE,R1(1),NLIM)                                   B12400
 C                                                                         B12410
          IF (NPTS.GT.0) CALL R1PRNT (R1,1,KFILE,IENTER)                   B12420
 C                                                                         B12430
@@ -1206,8 +1204,8 @@ C                                                                         B13160
          NLIM = NLIM2                                                     B13210
 C                                                                         B13220
          CALL PMNMX (R1OUT,NLIM,RMIN,RMAX)                                B13230
-         CALL BUFOUT (KFILE,1,NPHDRF,PNLHDR)                              B13240
-         CALL BUFOUT (KFILE,1,NLIM,R1OUT)                                 B13250
+         CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B13240
+         CALL BUFOUT (KFILE,R1OUT(1),NLIM)                                B13250
 C                                                                         B13260
          IF (NPTS.GT.0) CALL R1PRNT (R1OUT,1,KFILE,IENTER)                B13270
 C                                                                         B13280
@@ -3267,7 +3265,7 @@ C                                                                         D00820
 C                                                                         D00850
       NWDLIN = NWDL(IWD,LSTWDL)                                           D00860
       REWIND LINFIL                                                       D00870
-      CALL BUFIN (LINFIL,LEOF,1,NWDLIN,HLINHD)                            D00880
+      CALL BUFIN (LINFIL,LEOF,HLINHD(1),NWDLIN)                           D00880
       IF (LEOF.EQ.0) STOP 'RDLNFL; TAPE3 EMPTY'                           D00890
 C                                                                         D00900
 C     CHECK FOR INTERSECTION OF LINEFIL AND VNU LIMITS                    D00910
@@ -3278,7 +3276,7 @@ C                                                                         D00930
          WRITE (IPR,900) V1,V2,FLINLO,FLINHI                              D00960
          RETURN                                                           D00970
       ENDIF                                                               D00980
-      CALL BUFOUT (LNFIL4,1,NWDLIN,HLINHD)                                D00990
+      CALL BUFOUT (LNFIL4,HLINHD(1),NWDLIN)                               D00990
 C                                                                         D01000
 C       TEMPERATURE CORRECTION TO INTENSITY                               D01010
 C       TEMPERATURE AND PRESSURE CORRECTION TO HALF-WIDTH                 D01020
@@ -3414,8 +3412,8 @@ C                                                                         D02290
       JLIN = IHI                                                          D02320
 C                                                                         D02330
       IF (JLIN.GT.0) THEN                                                 D02340
-         CALL BUFOUT (LNFIL4,1,NPHDRL,RCDHDR)                             D02350
-         CALL BUFOUT (LNFIL4,1,NLNGT4,VNU)                                D02360
+         CALL BUFOUT (LNFIL4,RCDHDR(1),NPHDRL)                            D02350
+         CALL BUFOUT (LNFIL4,VNU(1),NLNGT4)                               D02360
       ENDIF                                                               D02370
       NLINS = NLINS+IHI-IST+1                                             D02380
 C                                                                         D02390
@@ -3476,14 +3474,13 @@ C                                                                         D02930
       IEOF = 0                                                            D02940
       ILO = 1                                                             D02950
       IHI = 0                                                             D02960
-   10 CALL BUFIN (LINFIL,LEOF,1,NPHDRL,LINPNL)                            D02970
+   10 CALL BUFIN (LINFIL,LEOF,LINPNL(1),NPHDRL)                           D02970
       IF (LEOF.EQ.0) GO TO 30                                             D02980
       IF (VMAX.LT.VLO) THEN                                               D02990
-CSAC     CALL BUFIN (LINFIL,LEOF,1,2,DUM)                                 D03000
-         CALL BUFIN (LINFIL,LEOF,1,1,DUM)                                 D03000
+         CALL BUFIN (LINFIL,LEOF,DUM(1),1)                                D03000
          GO TO 10                                                         D03010
       ELSE                                                                D03020
-         CALL BUFIN (LINFIL,LEOF,1,NWDS,VNUB)                             D03030
+         CALL BUFIN (LINFIL,LEOF,VNUB(1),NWDS)                            D03030
       ENDIF                                                               D03040
       IF ((IPASS.EQ.1).AND.(VNUB(1).GT.VLO)) WRITE (IPR,900)              D03050
 C                                                                         D03060
@@ -3775,8 +3772,7 @@ C     BUFFER PAST FILE HEADER                                             D05910
 C                                                                         D05920
          REWIND LNFIL4                                                    D05930
          ILIN4T = 0                                                       D05940
-CSAC     CALL BUFIN (LNFIL4,LEOF,1,2,DUM)                                 D05950
-         CALL BUFIN (LNFIL4,LEOF,1,1,DUM)                                 D05950
+         CALL BUFIN (LNFIL4,LEOF,DUM(1),1)                                D05950
          IF (LEOF.EQ.0) STOP 'RDLIN4; TAPE9 EMPTY'                        D05960
          IF (LEOF.EQ.-99) THEN                                            D05970
             IEOF = 2                                                      D05980
@@ -3789,15 +3785,14 @@ C                                                                         D06010
       ILO = 1                                                             D06050
       IHI = 0                                                             D06060
 C                                                                         D06070
-   10 CALL BUFIN (LNFIL4,LEOF,1,NPHDRL,LINPNL)                            D06080
+   10 CALL BUFIN (LNFIL4,LEOF,LINPNL(1),NPHDRL)                           D06080
       IF (LEOF.EQ.0) GO TO 20                                             D06090
       ILIN4T = ILIN4T+NREC                                                D06100
       IF (VMAX.LT.VLO) THEN                                               D06110
-CSAC     CALL BUFIN (LNFIL4,LEOF,1,2,DUM)                                 D06120
-         CALL BUFIN (LNFIL4,LEOF,1,1,DUM)                                 D06120
+         CALL BUFIN (LNFIL4,LEOF,DUM(1),1)                                D06120
          GO TO 10                                                         D06130
       ELSE                                                                D06140
-         CALL BUFIN (LNFIL4,LEOF,1,NWDS,VNU)                              D06150
+         CALL BUFIN (LNFIL4,LEOF,VNU(1),NWDS)                             D06150
       ENDIF                                                               D06160
       IHI = NREC                                                          D06170
       IF (VNU(NREC).GT.VHI) GO TO 20                                      D06180
@@ -4287,7 +4282,6 @@ C                                                                         E02610
      *                XSMASS(35),XDOPLR(5,35),NUMXS,IXSBIN                E02845
       COMMON /XSECTI/ XSMAX(6,5,35),XSTEMP(6,5,35),NPTSFX(5,35),          E02850
      *                NFILEX(5,35),NLIMX                                  E02860
-CSAC  COMMON /XSECTS/ JINPUT,NMODES,NPANEL,V1XS,V2XS,DVXS,NPTSXS          E02870
       COMMON /XSECTS/ JINPUT,NMODES,NPANEL,NDUM,V1XS,V2XS,DVXS,NPTSXS     E02870
       CHARACTER*10 XSFILE,XSNAME,ALIAS                                    E02880
       CHARACTER HEADT1*100                                                E02890
@@ -4441,7 +4435,6 @@ C                                                                         E04293
             V1X = MAX(VFT,V1XMIN)                                         E04320
             V1X = V1X-2.*DVX                                              E04330
             V2X = V1X+FLOAT(LIMOUT-1)*DVX                                 E04340
-Csac        V2X = V1X+FLOAT(LIMOUT)*DVX                                   E04340
             IF (V2X.GT.V2) V2X = V1X+FLOAT(INT((V2-V1X)/DVX)+2)*DVX       E04350
             NPTSX = (V2X-V1X)/DVX+1                                       E04360
             V1XS = V1X                                                    E04370
@@ -4842,12 +4835,12 @@ C                                                                         E08260
             IF (ISFORM.GT.0) THEN                                         E08270
                READ (IFILE,915,END=30) HEADER,(RDXX1(J),J=1,500)          E08280
             ELSE                                                          E08290
-               CALL BUFIN (IFILE,IEOF,1,NFHDRF,FILHDR)                    E08300
+               CALL BUFIN (IFILE,IEOF,FILHDR(1),NFHDRF)                   E08300
                IF (IEOF.LE.0) GO TO 30                                    E08310
                WRITE (HEADER,'(10A8)') XI1                                E08320
-               CALL BUFIN (IFILE,IEOF,1,NPHDRF,PNLHDR)                    E08330
+               CALL BUFIN (IFILE,IEOF,PNLHDR(1),NPHDRF)                   E08330
                IF (IEOF.LE.0) GO TO 30                                    E08340
-               CALL BUFIN (IFILE,IEOF,1,NLIMPX,RDXH1)                     E08350
+               CALL BUFIN (IFILE,IEOF,RDXH1(1),NLIMPX)                    E08350
             ENDIF                                                         E08360
             HEADT1(NI) = HEADER                                           E08370
             IF (IMFORM.EQ.86) THEN                                        E08380
@@ -4871,12 +4864,12 @@ C                                                                         E08260
                IF (ISFORM.GT.0) THEN                                      E08560
                   READ (JFILE,915,END=30) HEADER,(RDXX2(J),J=1,500)       E08570
                ELSE                                                       E08580
-                  CALL BUFIN (JFILE,JEOF,1,NFHDRF,FILHDR)                 E08590
+                  CALL BUFIN (JFILE,JEOF,FILHDR(1),NFHDRF)                E08590
                   IF (JEOF.LE.0) GO TO 30                                 E08600
                   WRITE (HEADER,'(10A8)') XI1                             E08610
-                  CALL BUFIN (JFILE,JEOF,1,NPHDRF,PNLHDR)                 E08620
+                  CALL BUFIN (JFILE,JEOF,PNLHDR(1),NPHDRF)                E08620
                   IF (JEOF.LE.0) GO TO 30                                 E08630
-                  CALL BUFIN (JFILE,JEOF,1,NLIMPX,RDXH2)                  E08640
+                  CALL BUFIN (JFILE,JEOF,RDXH2(1),NLIMPX)                 E08640
                ENDIF                                                      E08650
                IF (IMFORM.EQ.86) THEN                                     E08660
                   READ (HEADER,905) AMOL,V1DX,V2DX,NPTSDX,BMOL,PRES,      E08670
@@ -4914,15 +4907,13 @@ C                                                                         E08960
                   READ (IFILE,920,END=30) CI                              E08990
                   IF (NXMODE.EQ.2) READ (JFILE,920,END=30) CI             E09000
                ELSE                                                       E09010
-                  CALL BUFIN (IFILE,IEOF,1,NPHDRF,PNLHDR)                 E09020
+                  CALL BUFIN (IFILE,IEOF,PNLHDR(1),NPHDRF)                E09020
                   IF (IEOF.LE.0) GO TO 30                                 E09030
-CSAC              CALL BUFIN (IFILE,IEOF,1,2,DUM)                         E09040
-                  CALL BUFIN (IFILE,IEOF,1,1,DUM)                         E09040
+                  CALL BUFIN (IFILE,IEOF,DUM(1),1)                        E09040
                   IF (NXMODE.EQ.2) THEN                                   E09050
-                     CALL BUFIN (JFILE,JEOF,1,NPHDRF,PNLHDR)              E09060
+                     CALL BUFIN (JFILE,JEOF,PNLHDR(1),NPHDRF)             E09060
                      IF (JEOF.LE.0) GO TO 30                              E09070
-CSAC                 CALL BUFIN (JFILE,JEOF,1,2,DUM)                      E09080
-                     CALL BUFIN (JFILE,JEOF,1,1,DUM)                      E09080
+                     CALL BUFIN (JFILE,JEOF,DUM(1),1)                     E09080
                   ENDIF                                                   E09090
                ENDIF                                                      E09100
    10       CONTINUE                                                      E09110
@@ -4939,13 +4930,13 @@ C                                                                         E09160
             IF (NXMODE.EQ.2)                                              E09220
      *         READ (JFILE,BFRM,END=30) (RDXX2(J),J=1,NMAX)               E09230
          ELSE                                                             E09240
-            CALL BUFIN (IFILE,IEOF,1,NPHDRF,PNLHDR)                       E09250
+            CALL BUFIN (IFILE,IEOF,PNLHDR(1),NPHDRF)                      E09250
             IF (IEOF.LE.0) GO TO 30                                       E09260
-            CALL BUFIN (IFILE,IEOF,1,NLIMPX,RDXA1)                        E09270
+            CALL BUFIN (IFILE,IEOF,RDXA1(1),NLIMPX)                       E09270
             IF (NXMODE.EQ.2) THEN                                         E09280
-               CALL BUFIN (JFILE,JEOF,1,NPHDRF,PNLHDR)                    E09290
+               CALL BUFIN (JFILE,JEOF,PNLHDR(1),NPHDRF)                   E09290
                IF (JEOF.LE.0) GO TO 30                                    E09300
-               CALL BUFIN (JFILE,JEOF,1,NLIMPX,RDXA2)                     E09310
+               CALL BUFIN (JFILE,JEOF,RDXA2(1),NLIMPX)                    E09310
             ENDIF                                                         E09320
          ENDIF                                                            E09330
       ENDIF                                                               E09340
@@ -5064,7 +5055,6 @@ C                                                                         E10420
 C     THIS SUBROUTINE PERFORMS A TEMPERATURE DEPENDENT CONVOLUTION        E10430
 C     ON THE CROSS-SECTIONS PRODUCING A BINARY INTERMEDIATE FILE          E10440
 C                                                                         E10450
-CSAC  DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & E10460
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & E10460
 C                                                                         E10470
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E10480
@@ -5082,7 +5072,6 @@ C                                                                         E10530
      *              NLTEFL,LNFIL4,LNGTH4                                  E10600
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   E10610
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       E10620
-CSAC *               DVSC,V1SHFT                                          E10630
      *               DVSC,XDUM,V1SHFT                                     E10630
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,         E10640
      *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL                      E10650
@@ -5178,9 +5167,9 @@ C                                                                         E11480
          IF (OPCL) CLOSE (IFILEO)                                         E11520
          OPEN (IFILEO,FILE='TMPXBIN',STATUS='UNKNOWN',FORM=CFORM)         E11530
          REWIND IFILEO                                                    E11540
-         CALL BUFOUT (IFILEO,1,NFHDRF,FILHDS)                             E11550
+         CALL BUFOUT (IFILEO,FILHDS(1),NFHDRF)                            E11550
          REWIND IFILEO                                                    E11560
-         CALL BUFIN (IFILEO,IEOF,1,NFHDRF,FILHDR)                         E11570
+         CALL BUFIN (IFILEO,IEOF,FILHDR(1),NFHDRF)                        E11570
          READ (HEADT1(NI),'(10A8)') XI1                                   E11580
       ENDIF                                                               E11590
       REWIND IFILEO                                                       E11600
@@ -5227,15 +5216,15 @@ C                                                                         E11960
             XSCID = -99                                                   E12010
             ISCHDR = 0                                                    E12020
             IEMIT = 0                                                     E12030
-            CALL BUFOUT (IFILEO,1,NFHDRF,FILHDR)                          E12040
+            CALL BUFOUT (IFILEO,FILHDR(1),NFHDRF)                         E12040
          ENDIF                                                            E12050
 C                                                                         E12060
          IF (IOTPAN.EQ.5.OR.NP.EQ.NPAN) THEN                              E12070
             IOTPAN = 1                                                    E12080
             DVPX = DVFX(NS,NI)                                            E12090
             NLIMPX = LPMAX                                                E12100
-            CALL BUFOUT (IFILEO,1,NPHDRF,PNLHDR)                          E12110
-            CALL BUFOUT (IFILEO,1,NLIMPX,RBX)                             E12120
+            CALL BUFOUT (IFILEO,PNLHDR(1),NPHDRF)                         E12110
+            CALL BUFOUT (IFILEO,RBX(1),NLIMPX)                            E12120
             LPMAX = 0                                                     E12130
             V1PX = V2PX+DVFX(NS,NI)                                       E12140
          ENDIF                                                            E12150
@@ -5301,7 +5290,6 @@ C                                                                         E12750
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    E12780
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   E12790
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       E12800
-CSAC *               DVSC,V1SHFT                                          E12810
      *               DVSC,XDUM,V1SHFT                                     E12810
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 E12820
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            E12830
@@ -5350,7 +5338,7 @@ C                                                                         E13180
       SUMR(4) = DVOSAV                                                    E13260
 C                                                                         E13270
       REWIND IUNIT                                                        E13280
-      CALL BUFIN (IUNIT,IEOF,1,NFHDRF,FILHDR)                             E13290
+      CALL BUFIN (IUNIT,IEOF,FILHDR(1),NFHDRF)                            E13290
       IF (IEOF.EQ.0) GO TO 50                                             E13300
 C                                                                         E13310
       DVSAV = DV                                                          E13320
@@ -5372,7 +5360,7 @@ C                                                                         E13440
       V2C = V2                                                            E13480
       XHWHM = HWHM                                                        E13490
       IEMIT = 0                                                           E13500
-      CALL BUFOUT (JUNIT,1,NFHDRF,FILHDR)                                 E13510
+      CALL BUFOUT (JUNIT,FILHDR(1),NFHDRF)                                E13510
       NBOUND = (2.*HWF)*SAMPLE+0.01                                       E13520
 C                                                                         E13530
 C     BOUND AT THIS POINT IS THE WAVENUMBER VALUE                         E13540
@@ -5451,7 +5439,6 @@ C                                                                         E14240
      *              NLTEFL,LNFIL4,LNGTH4                                  E14270
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   E14280
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       E14290
-CSAC *               DVSC,V1SHFT                                          E14300
      *               DVSC,XDUM,V1SHFT                                     E14300
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 E14310
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            E14320
@@ -5484,8 +5471,8 @@ C                                                                         E14580
 C     V1P IS FIRST FREQ OF PANEL                                          E14590
 C     V2P IS LAST  FREQ OF PANEL                                          E14600
 C                                                                         E14610
-      CALL BUFOUT (JFILE,1,NPHDRF,PNLHDR)                                 E14620
-      CALL BUFOUT (JFILE,NLO,NLIM,R1)                                     E14630
+      CALL BUFOUT (JFILE,PNLHDR(1),NPHDRF)                                E14620
+      CALL BUFOUT (JFILE,R1(NLO),NLIM)                                    E14630
 C                                                                         E14640
       VFT = VFT+FLOAT(NLIMF-1)*DV                                         E14650
       DVXPR(NS,NI) = DV                                                   E14660
