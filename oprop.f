@@ -480,7 +480,7 @@ C                                                                         B03550
          IF (ILBLF4.GE.1) WRITE (IPR,905) DVR4,BOUND4                     B03570
          IF (NMINUS.GT.0) WRITE (IPR,910) NMINUS                          B03580
          IF (NPLUS.GT.0) WRITE (IPR,915) NPLUS                            B03590
-         TOTHHI = TLNCOR+TXINT+TSHAPE+TLOOPS+TODFIL+TMOLEC
+         TOTHHI = TLNCOR+TXNIT+TSHAPE+TLOOPS+TODFIL+TMOLEC
          WRITE (IPR,920) L4TIM,L4TMR,L4TMS,LOTHER,L4NLN,L4NLS,
      *                   TXS,TXSRDF,TXSCNV,TXSPNL,                        B03600
      *                   TF4,TF4RDF,TF4CNV,TF4PNL,ILIN4T,ILIN4,           B03610
@@ -4229,8 +4229,8 @@ C**********************************************************************   E00090
 C                                                                         E00100
 C     IFIL CARRIES FILE INFORMATION                                       E00110
 C                                                                         E00120
-      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
-     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         E00130
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        E00140
