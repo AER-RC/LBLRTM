@@ -9,7 +9,7 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
-C               LAST MODIFICATION:    3 April 1994                   
+C               LAST MODIFICATION:    1 November 1995
 C                                                                      
 C                  IMPLEMENTATION:    P.D. Brown
 C                                                                      
@@ -38,10 +38,31 @@ C
 C       INFLAG = 0   => input transmittance from TAPE12 (default).
 C              = 1   => input optical depths from TAPE10 and
 C                       convert to transmittance.
+C              = 2   => input R1, T1, T2, r1,  where
+C
+C                           _
+C                           |
+C                Observer |-O-|
+C                           |
+C                           -      \|/ Sun
+C                          /|\    --O--
+C                           |      /|\
+C                           |   S2,/  /
+C                           |   T2/  /
+C                      R1,T1|    / |/_ R3
+C                           |   /  /
+C                           |  /  /
+C                         r1||/_|/_r3
+C            Ground    ---------------------------
+C                     ///////////////////////////
+C
+C
 C
 C       IOTFLG = 0   => attenuate w/transmittance & output (default).
 C              = 1   => attenuate and add to radiance from TAPE12
 C                       (requires INFLAG = 1).
+C              = 2   => Calculate solar contribution Rs = S2*T2*r1*T1
+C                       and add to thermal contribution R1.
 C
 C     Output radiance goes to TAPE13.
 C
@@ -68,11 +89,16 @@ C
 C
       DIMENSION XFILHD(2),PNLHDR(2),OPNLHD(2)
       DIMENSION A1(0:100),A2(0:100),A3(0:100),A4(0:100)
+      DIMENSION A1T2(0:100),A2T2(0:100),A3T2(0:100),A4T2(0:100)
+      DIMENSION A1RF(0:100),A2RF(0:100),A3RF(0:100),A4RF(0:100)
       DIMENSION TRAO(2),TRAN(2410)
       DIMENSION RADO(2),RADN(2410)
       DIMENSION OPTO(2),OPTN(2410)
 C
       DIMENSION SOLAR(-1:4818)
+      DIMENSION TRAN2(-1:4818)
+      DIMENSION RAD2(-1:4818)
+      DIMENSION XRFLT(-1:4818)
       DIMENSION SOLRAD(2410)
 C
       CHARACTER*40 CYID
@@ -125,6 +151,7 @@ C     Read in file header of transmittance/optical depth file
 C
       CALL BUFIN (IFILE,LEOF,XFILHD(1),NFHDRF)
       DVL = DV
+      DVMIN = DVL
 C
       ATYPE = 9.999E09
       IF (DVK.EQ.DVL) ATYPE = 0.
@@ -135,21 +162,53 @@ C     IF (ATYPE .GT. 0) STOP  ' SOLINT; ATYPE GT 0 '
 C
 C
 C     Write file information out to TAPE6
+C     If INFLAG = 2, then also open files and read headers
+C     for downward transmittance from solar path and solar
+C     reflectance at the ground.
 C
       WRITE (IPR,905) ISOLFL,IFILE,LFILE,ATYPE,INFLAG,IOTFLG
       IF (INFLAG.EQ.0) THEN
          WRITE(IPR,920) IFILE
-      ELSE
+      ELSEIF (INFLAG.EQ.1) THEN
          WRITE(IPR,925) IFILE
-      ENDIF
+      ELSEIF (INFLAG.EQ.2) THEN
+         ISLTRN = 20
+         OPEN(UNIT=ISLTRN,FILE='SOL.PATH.T2',FORM='UNFORMATTED',
+     *        STATUS='OLD')
+         CALL BUFIN (ISLTRN,ITEOF,XFILHD(1),NFHDRF)
+         DVT2 = DV
+         ISLRFL = 21
+         OPEN(UNIT=ISLRFL,FILE='SOL.REFLECTANCE',FORM='UNFORMATTED',
+     *        STATUS='OLD')
+         CALL BUFIN (ISLRFL,IREOF,XFILHD(1),NFHDRF)
+         DVRF = DV
 C
-C     Test for INFLAG=0, that atmospheric radiance is to be read
+C        Determine the minimum and maximum DV of all files and reset
+C        ATYPE (-1. is only a flag for nonzero ATYPE)
+C     
+         DVMIN = MIN(DVL,DVK,DVT2,DVRF)
+         DVMAX = MAX(DVL,DVK,DVT2,DVRF)
+         IF (DVMAX.EQ.DVMIN) THEN
+            ATYPE = 0.0
+         ELSE
+            ATYPE = -1.
+         ENDIF
+         WRITE(IPR,927) IFILE,ISLTRN,ISLRFL
+         WRITE(IPR,941) DVT2,DVRF
+C
+      ENDIF
+      WRITE(IPR,906) DVL,DVK
+C
+C     Test for INFLAG and IOTFLG compatibility
 C
       IF (IOTFLG.EQ.0) THEN
          WRITE(IPR,930) LFILE
-      ELSE
+      ELSEIF (IOTFLG.EQ.1) THEN
          IF (INFLAG.EQ.1) STOP 'ERROR: INFLAG=1, IOTFLG=1'
          WRITE(IPR,935) LFILE
+      ELSEIF (IOTFLG.EQ.2) THEN
+         IF (INFLAG.NE.2) STOP 'ERROR: INFLAG not 2, IOTFLG=2'
+         WRITE(IPR,940) LFILE
       ENDIF
       IEMIT = 1
       SECANT = 0.
@@ -167,30 +226,45 @@ C
 C
       IF (ATYPE.EQ.0.) THEN
 C
+C     ======================================
 C        1/1 ratio only
+C     ======================================
 C
+         WRITE(IPR,950) DVMIN
    30    CONTINUE
          CALL CPUTIM (TIMSL1)
-         CALL SOLIN (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(1),LSEOF,NPANLS)
+         CALL SOLIN (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(1),LSEOF)
          CALL CPUTIM (TIMSL2)
          TIMRD = TIMRD+TIMSL2-TIMSL1
          IF (LSEOF.LE.0) GO TO 110
 C
-C        Read file header from transmittance/optical depth file
-C
-         CALL BUFIN (IFILE,LEOF,OPNLHD(1),NPHDRF)
 C
 C        If INFLAG = 0, then read radiance and tranmittance
 C        If INFLAG = 1, then read optical depth
+C        If INFLAG = 2, then read radiance and tranmittance
+C                       and call SOLIN to read in r1 and T2
 C
          IF (INFLAG.EQ.0) THEN
-            CALL BUFIN (IFILE,LEOF,RADO(1),NLIMO)
-            CALL BUFIN (IFILE,LEOF,TRAO(1),NLIMO)
-         ELSE
-            CALL BUFIN (IFILE,LEOF,OPTO(1),NLIMO)
+            CALL SOLIN2 (V1PO,V2PO,DVPO,NLIMO,IFILE,RADO(1),
+     *           TRAO(1),LEOF)
+         ELSEIF (INFLAG.EQ.1) THEN
+            CALL SOLIN (V1PO,V2PO,DVPO,NLIMO,IFILE,OPTO(1),
+     *           LEOF)
             DO 35 I = 1,NLIMO
                TRAN(I) = EXP(-OPTN(I))
  35         CONTINUE
+         ELSEIF (INFLAG.EQ.2) THEN
+            CALL SOLIN2 (V1PO,V2PO,DVPO,NLIMO,IFILE,RADO(1),
+     *           TRAO(1),LEOF)
+            CALL SOLIN2 (V1T2,V2T2,DVT2,NLIMT2,ISLTRN,RAD2(1),
+     *           TRAN2(1),LSEOF)
+            CALL SOLIN (V1RF,V2RF,DVRF,NLIMRF,ISLRFL,XRFLT(1),
+     *           LSEOF)
+            IF (ABS(V1T2-V1RF).GT.0.001) THEN 
+               WRITE(IPR,*) 'SOLINT: PANELS DO NOT MATCH:'
+               WRITE(IPR,*) '  V1T2 = ',V1T2,'  V1RF = ',V1RF
+               STOP 'SOLINT: PANELS DO NOT MATCH: SEE TAPE6'
+            ENDIF
          ENDIF
          CALL CPUTIM (TIMSL3)
          TIMRD = TIMRD+TIMSL3-TIMSL2
@@ -198,15 +272,23 @@ C
 C        If IOTFLG = 0, then calculate attenuated solar radiance
 C        If IOTFLG = 1, then calculate attenuated solar radiance
 C                       plus atmospheric radiance
+C        If IOTFLG = 2, then calculate attenuated solar radiance
+C                       through the reflected atmosphere plus
+C                       atmospheric radiance
 C
          IF (IOTFLG.EQ.0) THEN
             DO 40 I = 1, NLIM
                SOLRAD(I) = SOLAR(I)*TRAN(I)
  40         CONTINUE
-         ELSE
+         ELSEIF (IOTFLG.EQ.1) THEN
             DO 41 I = 1, NLIM
                SOLRAD(I) = SOLAR(I)*TRAN(I)+RADN(I)
  41         CONTINUE
+         ELSEIF (IOTFLG.EQ.2) THEN
+            DO 42 I = 1, NLIM
+               SOLRAD(I) = SOLAR(I)*TRAN2(I)*XRFLT(I)*TRAN(I)+
+     *              RADN(I)
+ 42         CONTINUE
          ENDIF
 C
          CALL CPUTIM (TIMSL2)
@@ -217,8 +299,11 @@ C
 C
       ENDIF
 C
+C     ======================================
 C     All ratios except 1/1
+C     ======================================
 C
+      WRITE(IPR,951) DVMIN
       DO 50 JP = 0,100
          APG = JP
          P = 0.01*APG
@@ -230,44 +315,125 @@ C
          A2(JP) = (P**2-1.0)*(P-2.0)*0.5
          A3(JP) = -P*(P+1.0)*(P-2.0)*0.5
          A4(JP) = P*(P**2-1.0)/6.0
+         A1T2(JP) = A1(JP)
+         A2T2(JP) = A2(JP)
+         A3T2(JP) = A3(JP)
+         A4T2(JP) = A4(JP)
+         A1RF(JP) = A1(JP)
+         A2RF(JP) = A2(JP)
+         A3RF(JP) = A3(JP)
+         A4RF(JP) = A4(JP)
    50 CONTINUE
 C
 C     *** Beginning of loop that does merge  ***
 C
       NPE = 0
-      SOLAR(0) = 0.0
       V1P = 0.0
       V2P = 0.0
       DVP = 0.0
+      SOLAR(0) = 0.0
+      LSEOF = 1
+      NPT2 = 0
+      V1T2 = 0.0
+      V2T2 = 0.0
+      DVT2 = 0.0
+      TRAN2(0) = 0.0
+      LT2EOF = 1
+      NPRF = 0
+      V1RF = 0.0
+      V2RF = 0.0
+      DVRF = 0.0
+      XRFLT(0) = 0.0
+      LRFEOF = 1
       V1PO = 0.0
       V2PO = 0.0
       DVPO = 0.0
-      LSEOF = 1
 C
-      ip = 0
+C     ============================================================
+C
    60 CONTINUE
-      ip = ip+1
-C
-C     Read file header from transmittance/optical depth file
-C
-      CALL CPUTIM(TIMSL1)
-      CALL BUFIN(IFILE,LEOF,OPNLHD(1),NPHDRF)
-      CALL CPUTIM(TIMSL2)
-      TIMRD = TIMRD+TIMSL2-TIMSL1
-      IF (LEOF.LE.0) GO TO 110
 C
 C     If INFLAG = 0, then read radiance and tranmittance
 C     If INFLAG = 1, then read optical depth
+C     If INFLAG = 2, then read radiance and tranmittance
+C                    and call SOLIN to read in r1 and T2
 C
       IF (INFLAG.EQ.0) THEN
-         CALL BUFIN (IFILE,LEOF,RADO(1),NLIMO)
-         CALL BUFIN (IFILE,LEOF,TRAO(1),NLIMO)
-      ELSE
-         CALL BUFIN (IFILE,LEOF,OPTO(1),NLIMO)
+         CALL SOLIN2 (V1PO,V2PO,DVPO,NLIMO,IFILE,RADO(1),
+     *        TRAO(1),LEOF)
+         IF (LEOF.LE.0) GO TO 110
+      ELSEIF (INFLAG.EQ.1) THEN
+         CALL SOLIN (V1PO,V2PO,DVPO,NLIMO,IFILE,OPTO(1),
+     *        LEOF)
+         IF (LEOF.LE.0) GO TO 110
          DO 65 I = 1,NLIMO
             TRAN(I) = EXP(-OPTN(I))
  65      CONTINUE
+      ELSEIF (INFLAG.EQ.2) THEN
+         CALL SOLIN2 (V1PO,V2PO,DVPO,NLIMO,IFILE,RADO(1),
+     *        TRAO(1),LEOF)
+         IF (LEOF.LE.0) GO TO 110
+C
+C        -----------------------------------------------------
+C        TRAN2 and RAD2 read in
+C
+         IF (V2T2.LE.V2PO+DVT2.AND.LT2EOF.GT.0) THEN
+ 66         CALL CPUTIM(TIMSL2)
+            CALL SOLIN2 (V1T2,V2T2,DVT2,NLIMT2,ISLTRN,RAD2(npt2+1),
+     *           TRAN2(npt2+1),LT2EOF)
+            CALL CPUTIM(TIMSL3)
+            TIMRD = TIMRD+TIMSL3-TIMSL2
+            IF (LT2EOF.LE.0) GO TO 67
+            V1T2 = V1T2-FLOAT(NPT2)*DVT2
+ 1          NPT2 = NLIMT2+NPT2
+            IF (V2T2.LE.V2PO+DVT2) GO TO 66
+         ENDIF
+C
+C        Zero point of first panel
+C
+ 67      IF (TRAN2(0).EQ.0.0) THEN
+            TRAN2(-1) = TRAN2(1)
+            TRAN2(0) = TRAN2(1)
+         ENDIF
+C
+C        End point of last panel
+C
+         IF (V2T2+DVT2.GE.V2) THEN
+            TRAN2(NPT2+1) = TRAN2(NPT2)
+            TRAN2(NPT2+2) = TRAN2(NPT2)
+         ENDIF
+C
+C        -----------------------------------------------------
+C        XRFLT read in
+C
+         IF (V2RF.LE.V2PO+DVRF.AND.LRFEOF.GT.0) THEN
+ 68         CALL CPUTIM(TIMSL2)
+            CALL SOLIN (V1RF,V2RF,DVRF,NLIMRF,ISLRFL,XRFLT(nprf+1),
+     *           LRFEOF)
+            CALL CPUTIM(TIMSL3)
+            TIMRD = TIMRD+TIMSL3-TIMSL2
+            IF (LRFEOF.LE.0) GO TO 69
+            V1RF = V1RF-FLOAT(NPRF)*DVRF 
+            NPRF = NLIMRF+NPRF
+            IF (V2RF.LE.V2PO+DVRF) GO TO 68
+         ENDIF
+C
+C        Zero point of first panel
+C
+ 69      IF (XRFLT(0).EQ.0.0) THEN
+            XRFLT(-1) = XRFLT(1)
+            XRFLT(0) = XRFLT(1)
+         ENDIF
+C
+C        End point of last panel
+C
+         IF (V2RF+DVRF.GE.V2) THEN
+            XRFLT(NPRF+1) = XRFLT(NPRF)
+            XRFLT(NPRF+2) = XRFLT(NPRF)
+         ENDIF
       ENDIF
+C     -----------------------------------------------------
+C
       CALL CPUTIM(TIMSL3)
       TIMRD = TIMRD+TIMSL3-TIMSL2
       II = 1
@@ -276,7 +442,7 @@ C     Buffer in panels from solar radiance file
 C
       IF (V2P.LE.V2PO+DVP .AND.LSEOF.GT.0) THEN
    70    CALL CPUTIM(TIMSL2)
-         CALL SOLIN(V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(NPE+1),LSEOF,NPANLS)
+         CALL SOLIN(V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(NPE+1),LSEOF,1)
          CALL CPUTIM(TIMSL3)
          TIMRD = TIMRD+TIMSL3-TIMSL2
          IF (LSEOF.LE.0) GO TO 80
@@ -299,45 +465,119 @@ C
          SOLAR(NPE+2) = SOLAR(NPE)
       ENDIF
 C
+C     -----------------------------------------------------
+C
 C     NPL is the location of first element on arrays RADO and TRAO
 C
       NPL = 1
+      NPLT2 = 1
+      NPLRF = 1
 C
-      RATDV = DVL/DVK
+C     Set spectral spacing ratios (uses DVMIN instead of DVL, for
+C     coding where it is not assumed that RADN & TRAN have the
+C     smallest spacing).
+C
+      RATDVR = DVMIN/DVK
+      RTDVT2 = DVMIN/DVT2
+      RTDVRF = DVMIN/DVRF
+C
+C     Test for ratios of 1 (no need for interpolation).  Reset
+C     interpolation coefficients if necessary.
+C
+      IF (RATDVR.EQ.1) THEN
+         DO 82 JP = 0,100
+            A1(JP) = 0.0
+            A2(JP) = 1.0
+            A3(JP) = 0.0
+            A4(JP) = 0.0
+ 82      CONTINUE
+      ENDIF
+      IF (RTDVT2.EQ.1) THEN
+         DO 84 JP = 0,100
+            A1T2(JP) = 0.0
+            A2T2(JP) = 1.0
+            A3T2(JP) = 0.0
+            A4T2(JP) = 0.0
+ 84      CONTINUE
+      ENDIF
+      IF (RTDVRF.EQ.1) THEN
+         DO 86 JP = 0,100
+            A1RF(JP) = 0.0
+            A2RF(JP) = 1.0
+            A3RF(JP) = 0.0
+            A4RF(JP) = 0.0
+ 86      CONTINUE
+      ENDIF
+C
+C     -----------------------------------------------------
 C
 C     FJJ is offset by 2. (for rounding purposes)
 C
       FJ1DIF = (V1PO-V1P)/DVP+1.+2.
+      FJDFT2 = (V1PO-V1T2)/DVT2+1.+2.
+      FJDFRF = (V1PO-V1RF)/DVRF+1.+2.
+C
+C     ============================================================
 C
 C     ***** Beginning of loop that does merge  *****
 C
 C     If IOTFLG = 0, then calculate attenuated solar radiance
 C     If IOTFLG = 1, then calculate attenuated solar radiance
 C                    plus atmospheric radiance
+C     If IOTFLG = 2, then calculate attenuated solar radiance
+C                    through the reflected atmosphere plus
+C                    atmospheric radiance
 C
       IF (IOTFLG.EQ.0) THEN
          DO 90 II = 1, NLIMO
-            FJJ = FJ1DIF+RATDV*FLOAT(II-1)
+            FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
             JJ = IFIX(FJJ)-2
             JP = (FJJ-FLOAT(JJ))*100.-199.5
             SOLRAD(II) = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
      *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*TRAN(II)
 c
  90      CONTINUE
-      ELSE
+      ELSEIF (IOTFLG.EQ.1) THEN
          DO 91 II = 1, NLIMO
-            FJJ = FJ1DIF+RATDV*FLOAT(II-1)
+            FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
             JJ = IFIX(FJJ)-2
             JP = (FJJ-FLOAT(JJ))*100.-199.5
             SOLRAD(II) = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
      *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*TRAN(II)+
      *           RADN(II)
  91      CONTINUE
+      ELSEIF (IOTFLG.EQ.2) THEN
+         DO 92 II = 1, NLIMO
+            FJJ = FJ1DIF+RATDVR*FLOAT(II-1)
+            FJJT2 = FJDFT2+RTDVT2*FLOAT(II-1)
+            FJJRF = FJDFRF+RTDVRF*FLOAT(II-1)
+            JJ = IFIX(FJJ)-2
+            JJT2 = IFIX(FJJT2)-2
+            JJRF = IFIX(FJJRF)-2
+            JP = (FJJ-FLOAT(JJ))*100.-199.5
+            JPT2 = (FJJT2-FLOAT(JJT2))*100.-199.5
+            JPRF = (FJJRF-FLOAT(JJRF))*100.-199.5
+            ZSOL = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
+     *              A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))
+            ZTR2 = (A1T2(JPT2)*TRAN2(JJT2-1)+
+     *              A2T2(JPT2)*TRAN2(JJT2)+
+     *              A3T2(JPT2)*TRAN2(JJT2+1)+
+     *              A4T2(JPT2)*TRAN2(JJT2+2))
+            ZRFL = (A1RF(JPRF)*XRFLT(JJRF-1)+
+     *              A2RF(JPRF)*XRFLT(JJRF)+
+     *              A3RF(JPRF)*XRFLT(JJRF+1)+
+     *              A4RF(JPRF)*XRFLT(JJRF+2))
+            SOLRAD(II) = ZSOL*ZTR2*ZRFL*TRAN(II)+RADN(II)
+ 92      CONTINUE
       ENDIF
 C
       NPL = JJ-1
+      NPLT2 = JJT2-1
+      NPLRF = JJRF-1
 C
       CALL CPUTIM (TIMSL1)
+C
+C     ============================================================
 C
 C     Output attenuated radiance
 C
@@ -345,7 +585,13 @@ C
       CALL CPUTIM (TIMSL2)
       TIMOT = TIMOT+TIMSL2-TIMSL1
 C
-C     NPL is now location of first element to be used for next pass
+C     ============================================================
+C
+C     Reset element locations for each array
+C
+C     ============================================================
+C     NPL is now location of first element in the array SOLAR to
+C     be used for next pass.
 C
       IPL = -2
       DO 100 NL = NPL, NPE
@@ -356,6 +602,33 @@ C
       V1P = V1P+FLOAT(NPL+1)*DVP
       NPE = IPL
 C
+C     -------------------------------------------------------------
+C     NPLT2 is now location of first element in the array TRAN2 to
+C     be used for next pass.
+C
+      IPL = -2
+      DO 102 NL = NPLT2, NPT2
+         IPL = IPL+1
+         TRAN2(IPL) = TRAN2(NL)
+ 102  CONTINUE
+C
+      V1T2 = V1T2+FLOAT(NPLT2+1)*DVT2
+      NPT2 = IPL
+C
+C     -------------------------------------------------------------
+C     NPLRF is now location of first element in the array XRFLT to
+C     be used for next pass.
+C
+      IPL = -2
+      DO 104 NL = NPLRF, NPRF
+         IPL = IPL+1
+         XRFLT(IPL) = XRFLT(NL)
+ 104  CONTINUE
+C
+      V1RF = V1RF+FLOAT(NPLRF+1)*DVRF
+      NPRF = IPL
+C     ============================================================
+C
       GO TO 60
   110 CONTINUE
 C
@@ -363,28 +636,45 @@ C
       TIM = TIME1-TIME
       WRITE (IPR,910) TIME1,TIM,TIMRD,TIMOT
 C
+      RETURN
+C
   900 FORMAT ('0 THE TIME AT THE START OF SOLINT IS ',F12.3)
   905 FORMAT ('0 FILE ',I5,' MERGED WITH FILE ',I5,' ONTO FILE',
      *        I5,'  WITH XTYPE=',G15.5,/,'0 INFLAG = ',I5,4X,
      *        'IOTFLG = ',I5)
+ 906  FORMAT ('0          Thermal spectrum spacing = ',E10.5,/,
+     *        '0   Solar radiance spectral spacing = ',E10.5,/)
   910 FORMAT ('0 THE TIME AT THE END OF SOLINT IS ',F12.3/F12.3,
      *        ' SECS WERE REQUIRED FOR THIS SOLAR MERGE',F12.3,
      *        ' - READ - ',F12.3,' - SOLOUT - ',F12.3)
  920  FORMAT ('0 Radiance and Transmittance read in from unit',I5)
  925  FORMAT ('0 Optical Depths read in from unit',I5)
+ 927  FORMAT ('0 Thermal upwelling Radiance & Transmittance',
+     *        ' read in from unit',I5,/,
+     *        '  Solar reflectance function read in from unit',
+     *        I5,/,
+     *        '  Thermal downwelling Radiance & Transmittance',
+     *        ' read in from unit',I5,/)
  930  FORMAT ('0 Attenuated solar radiance output to unit',I5,/)
  935  FORMAT ('0 Attenuated solar radiance + atmospheric radiance',
      *        1x,'output to unit',I5,/)
+ 940  FORMAT ('0 Attenuated solar radiance + atmospheric radiance',
+     *        1x,'(including effects of reflection) output to unit',
+     *        I5,/)
+ 941  FORMAT ('0       Thermal downwelling spacing = ',E10.5,/,
+     *        '0       Reflection function spacing = ',E10.5)
+ 950  FORMAT ('0 No interpolation needed: using DV = ',E10.5,//)
+ 951  FORMAT ('0 Interpolating to spectral spacing = ',E10.5,//)
 C
       END
 C
 C     ----------------------------------------------------------------
 C
-      SUBROUTINE SOLIN (V1P,V2P,DVP,NLIM,KFILE,SOLAR,KEOF)
+      SUBROUTINE SOLIN (V1P,V2P,DVP,NLIM,KFILE,XARRAY,KEOF)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
-C               LAST MODIFICATION:    3 April 1994                   
+C               LAST MODIFICATION:    1 November 1995
 C                                                                      
 C                  IMPLEMENTATION:    P.D. Brown
 C                                                                      
@@ -406,8 +696,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
       IMPLICIT DOUBLE PRECISION (V)
 C
-C     SUBROUTINE SOLIN inputs solar radiation from the file "SOLAR.RAD"
-C     for interpolation in SOLINT.
+C     SUBROUTINE SOLIN inputs files for use with solar radiation
+C     calculations for interpolation in SOLINT.  Reads files with
+C     one record per panel.
 C
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID
 C
@@ -419,13 +710,73 @@ C
      *              NLTEFL,LNFIL4,LNGTH4
       COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF
 C
-      DIMENSION PNLHDR(2),SOLAR(*)
+      DIMENSION PNLHDR(2),XARRAY(*)
 C
       EQUIVALENCE (PNLHDR(1),V1PBF)
 C
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
       IF (KEOF.LE.0) RETURN
-      CALL BUFIN (KFILE,KEOF,SOLAR(1),NLIMBF)
+      CALL BUFIN (KFILE,KEOF,XARRAY(1),NLIMBF)
+C
+      V1P = V1PBF
+      V2P = V2PBF
+      DVP = DVPBF
+      NLIM = NLIMBF
+C
+      RETURN
+C
+      END
+C
+C     ----------------------------------------------------------------
+C
+      SUBROUTINE SOLIN2 (V1P,V2P,DVP,NLIM,KFILE,XARAY1,XARAY2,KEOF)
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      
+C               LAST MODIFICATION:    1 November 1995
+C                                                                      
+C                  IMPLEMENTATION:    P.D. Brown
+C                                                                      
+C             ALGORITHM REVISIONS:    S.A. Clough
+C                                     P.D. Brown
+C                                                                      
+C                                                                      
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.      
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139       
+C                                                                      
+C----------------------------------------------------------------------
+C                                                                      
+C               WORK SUPPORTED BY:    THE ARM PROGRAM                  
+C                                     OFFICE OF ENERGY RESEARCH        
+C                                     DEPARTMENT OF ENERGY             
+C                                                                      
+C                                                                      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+      IMPLICIT DOUBLE PRECISION (V)
+C
+C     SUBROUTINE SOLIN inputs files for use with solar radiation
+C     calculations for interpolation in SOLINT.  Reads files with
+C     two records per panel.
+C
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID
+C
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,
+     *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+      COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF
+C
+      DIMENSION PNLHDR(2),XARAY1(*),XARAY2(2)
+C
+      EQUIVALENCE (PNLHDR(1),V1PBF)
+C
+      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
+      IF (KEOF.LE.0) RETURN
+      CALL BUFIN (KFILE,KEOF,XARAY1(1),NLIMBF)
+      CALL BUFIN (KFILE,KEOF,XARAY2(1),NLIMBF)
 C
       V1P = V1PBF
       V2P = V2PBF
@@ -442,7 +793,7 @@ C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
-C               LAST MODIFICATION:    3 April 1994                   
+C               LAST MODIFICATION:    3 April 1994          
 C                                                                      
 C                  IMPLEMENTATION:    P.D. Brown
 C                                                                      
