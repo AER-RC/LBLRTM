@@ -228,7 +228,7 @@ C                                                                         I02180
 C                                                                         I02210
 C     READ FILE HEADER FOR SELECTED 'FILE'                                I02220
 C                                                                         I02230
-   20 CALL BUFIN (IFILE,IEOF,1,NFHDRF,FILHDR)                             I02240
+   20 CALL BUFIN (IFILE,IEOF,FILHDR(1),NFHDRF)                            I02240
       IF (IEOF.EQ.0) GO TO 10                                             I02250
       IDABS = IDABST                                                      I02260
 C                                                                         I02270
@@ -266,7 +266,7 @@ C                                                                         I02570
          WRITE (IPR,935)                                                  I02590
          IFILE = JFILE                                                    I02600
          REWIND IFILE                                                     I02610
-         CALL BUFIN (IFILE,IEOF,1,NFHDRF,FILHDR)                          I02620
+         CALL BUFIN (IFILE,IEOF,FILHDR(1),NFHDRF)                         I02620
          JFILE = JFLSAV                                                   I02630
       ELSE                                                                I02640
          IFLSAV = 0                                                       I02650
@@ -321,7 +321,7 @@ C                                                                         I03060
       SCIND = JVAR+10*(JFN+10*(JEMIT))                                    I03110
       XSCID = SCIND+0.01                                                  I03120
       XHWHM = HWHM                                                        I03130
-      CALL BUFOUT (JFILE,1,NFHDRF,FILHDR)                                 I03140
+      CALL BUFOUT (JFILE,FILHDR(1),NFHDRF)                                I03140
       WRITE (IPR,955) HWHM,BOUND,JFILE,V1,V2,DVO                          I03150
       NBOUND = (2.*HWF)*SAMPLE+0.01                                       I03160
 C                                                                         I03170
@@ -729,7 +729,7 @@ C     BUFFER IN THE FILE HEADER ON UNIT (IFILE)                           I07120
 C     BUFFER OUT ON UNIT (JFILE)                                          I07130
 C                                                                         I07140
       IF (IBUF.EQ.1) THEN                                                 I07150
-         CALL BUFIN (IFILE,IEOF,1,NFHDRF,FILHDR)                          I07160
+         CALL BUFIN (IFILE,IEOF,FILHDR(1),NFHDRF)                         I07160
          IF (IEOF.EQ.0) GO TO 30                                          I07170
          JABS = 0                                                         I07180
          IDABS = 0                                                        I07190
@@ -761,7 +761,7 @@ C                                                                         I07440
       SCNID = 100*JEMIT                                                   I07450
       XSCID = SCNID+0.01                                                  I07460
 C                                                                         I07470
-      CALL BUFOUT (JFILE,1,NFHDRF,FILHDR)                                 I07480
+      CALL BUFOUT (JFILE,FILHDR(1),NFHDRF)                                I07480
 C                                                                         I07490
       JTREM = -1                                                          I07500
       IF ((IEMIT.EQ.0).AND.(JEMIT.EQ.0)) JTREM = 0                        I07510
@@ -919,7 +919,7 @@ C                                                                         I08910
       SUMR(4) = DVOSAV                                                    I08990
 C                                                                         I09000
       REWIND IUNIT                                                        I09010
-      CALL BUFIN (IUNIT,IEOF,1,NFHDRF,FILHDR)                             I09020
+      CALL BUFIN (IUNIT,IEOF,FILHDR(1),NFHDRF)                            I09020
       IF (IEOF.EQ.0) GO TO 50                                             I09030
 C                                                                         I09040
       DVSAV = DV                                                          I09050
@@ -966,7 +966,7 @@ C                                                                         I09360
       SCIND = JVAR+10*(JFN+10*(JEMIT))                                    I09410
       XSCID = SCIND+0.01                                                  I09420
       XHWHM = HWHM                                                        I09430
-      CALL BUFOUT (JUNIT,1,NFHDRF,FILHDR)                                 I09440
+      CALL BUFOUT (JUNIT,FILHDR(1),NFHDRF)                                I09440
       WRITE (IPR,925) HWHM,BOUND,JUNIT,V1,V2,DVO                          I09450
       NBOUND = (2.*HWF)*SAMPLE+0.01                                       I09460
 C                                                                         I09470
@@ -1232,7 +1232,7 @@ C                                                                         I12000
          IF (JTREM.EQ.1) IDUM1 = 1                                        I12050
          IF (JTREM.EQ.2) IDUM2 = 1                                        I12060
       ENDIF                                                               I12070
-   10 CALL BUFIN (IFILE,IEOFSC,1,NPHDRF,PNLHDR)                           I12080
+   10 CALL BUFIN (IFILE,IEOFSC,PNLHDR(1),NPHDRF)                          I12080
       IF (IEOFSC.LE.0) GO TO 50                                           I12090
       NLOW = NREN+1                                                       I12100
       IF (NREN.LE.0) NLOW = 1                                             I12110
@@ -1243,12 +1243,12 @@ C                                                                         I12000
      *     WRITE (IPR,905)                                                I12160
       IDATA = 0                                                           I12170
       IF (VMAX.GE.VBOT) GO TO 20                                          I12180
-      IF (IDUM2.EQ.1) CALL BUFIN (IFILE,IEOFSC,1,1,DUMMY)                 I12190
-      CALL BUFIN (IFILE,IEOFSC,1,2,DUMMY)                                 I12200
-      IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,1,1,DUMMY)                 I12210
+      IF (IDUM2.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),1)                I12190
+      CALL BUFIN (IFILE,IEOFSC,DUMMY(1),2)                                I12200
+      IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),1)                I12210
       GO TO 10                                                            I12220
    20 IF (JTREM.EQ.0) THEN                                                I12230
-         CALL BUFIN (IFILE,IEOFSC,NLOW,NNB,S)                             I12240
+         CALL BUFIN (IFILE,IEOFSC,S(NLOW),NNB)                            I12240
          DO 30 I = NLOW, NNI                                              I12250
             SI = S(I)                                                     I12260
             S(I) = 1.                                                     I12270
@@ -1264,9 +1264,9 @@ C                                                                         I12000
    30    CONTINUE                                                         I12370
       ELSE                                                                I12380
 C                                                                         I12390
-         IF (IDUM2.EQ.1) CALL BUFIN (IFILE,IEOFSC,1,1,DUMMY)              I12400
-         CALL BUFIN (IFILE,IEOFSC,NLOW,NNB,S)                             I12410
-         IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,1,1,DUMMY)              I12420
+         IF (IDUM2.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),1)             I12400
+         CALL BUFIN (IFILE,IEOFSC,S(NLOW),NNB)                            I12410
+         IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),1)             I12420
       ENDIF                                                               I12430
 C                                                                         I12440
 CPRT  WRITE(IPR,910) VMIN,VMAX,DVI,NLOW,NNI                               I12450
@@ -1414,8 +1414,8 @@ C                                                                         I13820
 C     V1P IS FIRST FREQ OF PANEL                                          I13830
 C     V2P IS LAST  FREQ OF PANEL                                          I13840
 C                                                                         I13850
-      CALL BUFOUT (JFILE,1,NPHDRF,PNLHDR)                                 I13860
-      CALL BUFOUT (JFILE,NLO,NLIM,R1)                                     I13870
+      CALL BUFOUT (JFILE,PNLHDR(1),NPHDRF)                                I13860
+      CALL BUFOUT (JFILE,R1(NLO),NLIM)                                    I13870
       VFT = VFT+FLOAT(NLIMF-1)*DV                                         I13880
       IF (NPTS.GT.0) THEN                                                 I13890
          WRITE (IPR,900) V1P,V2P,DVO,NLIM                                 I13900
@@ -1498,8 +1498,8 @@ C                                                                         I14680
 C     V1P IS FIRST FREQ OF PANEL                                          I14690
 C     V2P IS LAST  FREQ OF PANEL                                          I14700
 C                                                                         I14710
-      CALL BUFOUT (JFILE,1,NPHDRF,PNLHDR)                                 I14720
-      CALL BUFOUT (JFILE,NLO,NLIM,R1)                                     I14730
+      CALL BUFOUT (JFILE,PNLHDR(1),NPHDRF)                                I14720
+      CALL BUFOUT (JFILE,R1(NLO),NLIM)                                    I14730
       VFT = VFT+FLOAT(NLIMF-1)*DV                                         I14740
       IF (NPTS.GT.0) THEN                                                 I14750
          WRITE (IPR,900) V1P,V2P,DVO,NLIM                                 I14760
@@ -1825,7 +1825,7 @@ C                                                                         J00970
 C     BUFFER IN THE FILE HEADER ON UNIT (IFILE)                           J00980
 C     BUFFER OUT ON UNIT (JFILE)                                          J00990
 C                                                                         J01000
-      CALL BUFIN (IFILE,IEOF,1,NFHDRF,FILHDR)                             J01010
+      CALL BUFIN (IFILE,IEOF,FILHDR(1),NFHDRF)                             J01010
       IF (IEOF.EQ.0) GO TO 10                                             J01020
 C                                                                         J01030
       WRITE (IPR,915) XID,(YID(M),M=1,2)                                  J01040
@@ -1852,7 +1852,7 @@ C                                                                         J01240
       SCNID = 100*JEMIT                                                   J01250
       XSCID = SCNID+0.01                                                  J01260
 C                                                                         J01270
-      CALL BUFOUT (JFILE,1,NFHDRF,FILHDR)                                 J01280
+      CALL BUFOUT (JFILE,FILHDR(1),NFHDRF)                                J01280
 C                                                                         J01290
       ICNVRT = 0                                                          J01300
       JTREM = -1                                                          J01310
@@ -1984,7 +1984,7 @@ C                                                                         J02500
          IF (JTREM.EQ.1) IDUM1 = 1                                        J02570
          IF (JTREM.EQ.2) IDUM2 = 1                                        J02580
       ENDIF                                                               J02590
-   10 CALL BUFIN (IFILE,IEOFSC,1,NPHDRF,PNLHDR)                           J02600
+   10 CALL BUFIN (IFILE,IEOFSC,PNLHDR(1),NPHDRF)                          J02600
       IF (IEOFSC.LE.0) THEN                                               J02610
          WRITE (IPR,900)                                                  J02620
          GO TO 60                                                         J02630
@@ -1998,13 +1998,13 @@ C                                                                         J02700
       IF ((IDATA.EQ.-1).AND.(VMIN.GT.VBOT)) WRITE (IPR,905)               J02710
       IDATA = 0                                                           J02720
       IF (VMAX.GE.VBOT) GO TO 20                                          J02730
-      IF (IDUM2.EQ.1) CALL BUFIN (IFILE,IEOFSC,1,2,DUMMY)                 J02740
-      CALL BUFIN (IFILE,IEOFSC,1,2,DUMMY)                                 J02750
-      IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,1,2,DUMMY)                 J02760
+      IF (IDUM2.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),2)                J02740
+      CALL BUFIN (IFILE,IEOFSC,DUMMY(1),2)                                J02750
+      IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),2)                J02760
       GO TO 10                                                            J02770
 C                                                                         J02780
    20 IF (JTREM.EQ.0) THEN                                                J02790
-         CALL BUFIN (IFILE,IEOFSC,1,NNI,S)                                J02800
+         CALL BUFIN (IFILE,IEOFSC,S(1),NNI)                               J02800
          IF (JEMIT.NE.2.AND.ICNVRT.EQ.0) THEN                             J02810
             DO 30 I = 1, NNI                                              J02820
                SI = S(I)                                                  J02830
@@ -2020,9 +2020,9 @@ C                                                                         J02780
          ENDIF                                                            J02930
       ELSE                                                                J02940
 C                                                                         J02950
-         IF (IDUM2.EQ.1) CALL BUFIN (IFILE,IEOFSC,1,2,DUMMY)              J02960
-         CALL BUFIN (IFILE,IEOFSC,1,NNI,S)                                J02970
-         IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,1,2,DUMMY)              J02980
+         IF (IDUM2.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),2)             J02960
+         CALL BUFIN (IFILE,IEOFSC,S(1),NNI)                               J02970
+         IF (IDUM1.EQ.1) CALL BUFIN (IFILE,IEOFSC,DUMMY(1),2)             J02980
       ENDIF                                                               J02990
 C                                                                         J03000
       IF (JABS.EQ.1.AND.ICNVRT.EQ.0) THEN                                 J03010
@@ -2082,8 +2082,8 @@ C                                                                         J03540
       CALL CPUTIM (TIME1)                                                 J03550
       IF (NLIM.LE.0) GO TO 20                                             J03560
 C                                                                         J03570
-      CALL BUFOUT (JFILE,1,NPHDRF,PNLHDR)                                 J03580
-      CALL BUFOUT (JFILE,1,NLIM,R1)                                       J03590
+      CALL BUFOUT (JFILE,PNLHDR(1),NPHDRF)                                J03580
+      CALL BUFOUT (JFILE,R1(1),NLIM)                                      J03590
 C                                                                         J03600
       IF (NPTS.GT.0) THEN                                                 J03610
          WRITE (IPR,900) V1P,V2P,DVP,NLIM                                 J03620
@@ -2476,7 +2476,7 @@ C                                                                         L00760
       VTOP = V2                                                           L00800
       TIMRDF = 0.0                                                        L00810
       TIMCNV = 0.0                                                        L00820
-      CALL BUFIN (IFILE,IEOF,1,NFHDRF,FILHDR)                             L00830
+      CALL BUFIN (IFILE,IEOF,FILHDR(1),NFHDRF)                            L00830
       ISCHDR = ISCAN                                                      L00840
       IF (ISCAN.LE.0.OR.SCNID.EQ.-99.) ISCAN = 0                          L00850
       IF (ISCHDR.GE.1000.AND.ISCAN.EQ.0) ISCAN = ISCHDR                   L00860
@@ -2718,7 +2718,7 @@ C                                                                         L03170
       TIMRDF = 0.0                                                        L03220
       TIMCNV = 0.0                                                        L03230
 C                                                                         L03240
-      CALL BUFIN (IFILE,IEOF,1,NFHDRF,FILHDR)                             L03250
+      CALL BUFIN (IFILE,IEOF,FILHDR(1),NFHDRF)                            L03250
 C                                                                         L03260
       ISCAN = ISCNHD                                                      L03270
       IF (ISCAN.LE.0.OR.SCNID.EQ.-99.) ISCAN = 0                          L03280
@@ -2760,7 +2760,7 @@ C                                                                         L03630
       XSCID = 100*JEMIT                                                   L03640
       SCNID = XSCID+0.01                                                  L03650
 C                                                                         L03660
-      CALL BUFOUT (JFILE,1,NFHDRF,FILHDR)                                 L03670
+      CALL BUFOUT (JFILE,FILHDR(1),NFHDRF)                                L03670
       IDATA = -1                                                          L03680
    30 CALL CPUTIM (TIMEO)                                                 L03690
       CALL RDSCAN (S,JTREM,IFILE,ISCAN,IPRT)                              L03700
@@ -2790,8 +2790,8 @@ C                                                                         L03920
       V2P = V2F                                                           L03940
       DVP = DVF                                                           L03950
       NLIM = 4                                                            L03960
-      CALL BUFOUT (JFILE,1,NPHDRF,PNLHDR)                                 L03970
-      CALL BUFOUT (JFILE,1,NLIM,RF)                                       L03980
+      CALL BUFOUT (JFILE,PNLHDR(1),NPHDRF)                                L03970
+      CALL BUFOUT (JFILE,RF(1),NLIM)                                      L03980
       GO TO 60                                                            L03990
 C                                                                         L04000
    50 RFILTR = RFILTR*DVC                                                 L04010
@@ -2910,12 +2910,12 @@ C                                                                         L05110
       TIMRDF = 0.0                                                        L05140
       CALL CPUTIM (TIMEO)                                                 L05150
    10 CONTINUE                                                            L05160
-      CALL BUFIN (IFILE,IEOF,1,NFHDRF,FILHDR)                             L05170
+      CALL BUFIN (IFILE,IEOF,FILHDR(1),NFHDRF)                            L05170
       IF (IEOF.EQ.-99) GO TO 10                                           L05180
       IF (IEOF.EQ.0) GO TO 20                                             L05190
 C                                                                         L05200
-      CALL BUFIN (IFILE,IEOF,1,NPHDRF,PNLHDR)                             L05210
-      CALL BUFIN (IFILE,IEOF,1,NLIM,RF)                                   L05220
+      CALL BUFIN (IFILE,IEOF,PNLHDR(1),NPHDRF)                            L05210
+      CALL BUFIN (IFILE,IEOF,RF(1),NLIM)                                  L05220
 C                                                                         L05230
       RFILTR = RF(1)                                                      L05240
       SUMFLT = RF(2)                                                      L05250

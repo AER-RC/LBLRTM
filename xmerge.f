@@ -203,7 +203,7 @@ C                                                                         H01970
       WRITE (IPR,900) TIME                                                H01990
       NPANLS = 0                                                          H02000
 C                                                                         H02010
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             H02020
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H02020
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H02030
       PLAY = PAVE                                                         H02040
       TLAY = TAVE                                                         H02050
@@ -227,14 +227,14 @@ C                                                                         H02150
       LAYR1 = LAYER                                                       H02230
       WRITE (IPR,905) LAYR1,KFILE,MFILE                                   H02240
 C                                                                         H02250
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 H02260
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H02260
       DVXM = DV                                                           H02270
 C                                                                         H02280
    20 CONTINUE                                                            H02290
 C                                                                         H02300
-      CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHDR)                             H02310
+      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H02310
       IF (KEOF.LE.0) GO TO 40                                             H02320
-      CALL BUFIN (KFILE,KEOF,1,NLIM,ODLAYR)                               H02330
+      CALL BUFIN (KFILE,KEOF,ODLAYR(1),NLIM)                              H02330
 C                                                                         H02340
       IF (FACT.EQ.2.) THEN                                                H02350
          DO 30 I = 1, NLIM                                                H02360
@@ -298,7 +298,7 @@ C                                                                         H02930
       CALL CPUTIM (TIME)                                                  H02940
       NPANLS = 0                                                          H02950
       IF (NOPR.EQ.0) WRITE (IPR,900) TIME                                 H02960
-      CALL BUFIN (LFILE,LEOF,1,NFHDRF,XFILHD)                             H02970
+      CALL BUFIN (LFILE,LEOF,XFILHD(1),NFHDRF)                            H02970
       DVL = DV                                                            H02980
       LAY1SV = LAYR1                                                      H02990
       PL = PAVE                                                           H03000
@@ -314,7 +314,7 @@ C                                                                         H03090
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H03100
 C                                                                         H03110
       IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H03120
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             H03130
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H03130
       IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H03140
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H03150
       PLAY = PAVE                                                         H03160
@@ -347,7 +347,7 @@ C                                                                         H03280
 C                                                                         H03430
 C     WK IS NOW THE ACCUMULATED SUM OF THE COLUMN DENSITIES               H03440
 C                                                                         H03450
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 H03460
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H03460
       DVXM = DV                                                           H03470
       DO 30 K = 1, 5                                                      H03480
          SAVOR1(K) = 0.                                                   H03490
@@ -359,12 +359,12 @@ C                                                                         H03540
 C     1/1 RATIO ONLY                                                      H03550
 C                                                                         H03560
    40 CONTINUE                                                            H03570
-      CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                             H03580
+      CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                            H03580
       IF (LEOF.LE.0) GO TO 50                                             H03590
-      CALL BUFIN (LFILE,LEOF,1,NLIMO,OLDR1)                               H03600
-   50 CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHDR)                             H03610
+      CALL BUFIN (LFILE,LEOF,OLDR1(1),NLIMO)                              H03600
+   50 CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H03610
       IF (KEOF.LE.0) GO TO 250                                            H03620
-      CALL BUFIN (KFILE,KEOF,1,NLIM,R1)                                   H03630
+      CALL BUFIN (KFILE,KEOF,R1(1),NLIM)                                  H03630
 C                                                                         H03640
       IF (FACT.EQ.1) THEN                                                 H03650
          DO 60 KOD = 1, NLIM                                              H03660
@@ -399,12 +399,12 @@ C                                                                         H03890
 C                                                                         H03950
 C     ********  BEGINNING OF LOOP THAT DOES INTERPOLATION  *********      H03960
 C                                                                         H03970
-      CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                             H03980
-      CALL BUFIN (LFILE,LEOF,1,NLIMO,OLDR1)                               H03990
+      CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                            H03980
+      CALL BUFIN (LFILE,LEOF,OLDR1(1),NLIMO)                              H03990
       MAXLF = NLIMO                                                       H04000
       NVS = 1                                                             H04010
-      CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHDR)                             H04020
-      CALL BUFIN (KFILE,KEOF,1,NLIM,R1)                                   H04030
+      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H04020
+      CALL BUFIN (KFILE,KEOF,R1(1),NLIM)                                  H04030
       IF (KEOF.LE.0) GO TO 250                                            H04040
       II = 1                                                              H04050
       DIF = DVP*0.01                                                      H04060
@@ -460,10 +460,10 @@ C                                                                         H04270
          SAVOR1(2) = OLDR1(NVS)                                           H04560
          SAVOR1(3) = OLDR1(NVS+1)                                         H04570
          SAVOR1(4) = OLDR1(NVS-2)                                         H04580
-         CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                          H04590
+         CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                         H04590
          IF (LEOF.LE.0) GO TO 210                                         H04600
          MAXLF = NLIMO+3                                                  H04610
-         CALL BUFIN (LFILE,LEOF,4,NLIMO,OLDR1)                            H04620
+         CALL BUFIN (LFILE,LEOF,OLDR1(4),NLIMO)                           H04620
          OLDR1(1) = SAVOR1(1)                                             H04630
          OLDR1(2) = SAVOR1(2)                                             H04640
          OLDR1(3) = SAVOR1(3)                                             H04650
@@ -482,9 +482,9 @@ C     WRITE OUTPUT FILE                                                   H04770
 C                                                                         H04780
   230    CALL ABSOUT (V1P,V2P,DVP,NLIM,1,MFILE,NPTS,R1,NPANLS)            H04790
 C                                                                         H04800
-         CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHDR)                          H04810
+         CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                         H04810
          IF (KEOF.LE.0) GO TO 250                                         H04820
-         CALL BUFIN (KFILE,KEOF,1,NLIM,R1)                                H04830
+         CALL BUFIN (KFILE,KEOF,R1(1),NLIM)                               H04830
          II = 1                                                           H04840
   240 CONTINUE                                                            H04850
       NVS = NVS-1                                                         H04860
@@ -550,7 +550,7 @@ C                                                                         H05440
       WRITE (IPR,900) TIME                                                H05460
       NPANLS = 0                                                          H05470
 C                                                                         H05480
-      CALL BUFIN (LFILE,LEOF,1,NFHDRF,XFILHD)                             H05490
+      CALL BUFIN (LFILE,LEOF,XFILHD(1),NFHDRF)                            H05490
       DVL = DV                                                            H05500
       LAY1SV = LAYR1                                                      H05510
       PL = PAVE                                                           H05520
@@ -566,7 +566,7 @@ C                                                                         H05610
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H05620
 C                                                                         H05630
       IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H05640
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             H05650
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H05650
       IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H05660
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H05670
       PLAY = PAVE                                                         H05680
@@ -599,7 +599,7 @@ C                                                                         H05750
 C                                                                         H05950
 C     WK IS NOW THE ACCUMULATED SUM OF THE COLUMN DENSITIES               H05960
 C                                                                         H05970
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 H05980
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H05980
       DVXM = DV                                                           H05990
 C                                                                         H06000
       IF (ATYPE.EQ.0.) THEN                                               H06010
@@ -608,12 +608,12 @@ C     1/1 RATIO ONLY                                                      H06030
 C                                                                         H06040
    30    CONTINUE                                                         H06050
 C                                                                         H06060
-         CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHDR)                          H06070
+         CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                         H06070
          IF (KEOF.LE.0) GO TO 90                                          H06080
-         CALL BUFIN (KFILE,KEOF,1,NLIM,ODLAYR)                            H06090
+         CALL BUFIN (KFILE,KEOF,ODLAYR(1),NLIM)                           H06090
 C                                                                         H06100
-         CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                          H06110
-         CALL BUFIN (LFILE,LEOF,1,NLIMO,OLDOD)                            H06120
+         CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                         H06110
+         CALL BUFIN (LFILE,LEOF,OLDOD(1),NLIMO)                           H06120
 C                                                                         H06130
          DO 40 I = 1, NLIM                                                H06140
             NEWOD(I) = ODLAYR(I)+OLDOD(I)                                 H06150
@@ -638,9 +638,9 @@ C                                                                         H06300
          A4(JP) = P*(P**2-1.0)/6.0                                        H06340
    50 CONTINUE                                                            H06350
 C                                                                         H06360
-      CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHDR)                             H06370
+      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H06370
       IF (KEOF.LE.0) GO TO 90                                             H06380
-      CALL BUFIN (KFILE,KEOF,1,NLIM,ODLAYR)                               H06390
+      CALL BUFIN (KFILE,KEOF,ODLAYR(1),NLIM)                              H06390
 C                                                                         H06400
       ODLAY(-2) = ODLAY(1)                                                H06410
       ODLAY(-1) = ODLAY(1)                                                H06420
@@ -650,9 +650,9 @@ C                                                                         H06440
 C                                                                         H06460
    60 CONTINUE                                                            H06470
 C                                                                         H06480
-      CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                             H06490
+      CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                            H06490
       IF (LEOF.LE.0) GO TO 90                                             H06500
-      CALL BUFIN (LFILE,LEOF,1,NLIMO,OLDOD)                               H06510
+      CALL BUFIN (LFILE,LEOF,OLDOD(1),NLIMO)                              H06510
 C                                                                         H06520
 C     FJJ IS OFFSET BY 2. FOR ROUNDING PURPOSES                           H06530
 C                                                                         H06540
@@ -676,7 +676,7 @@ C                                                                         H06660
             V2PST = V2P                                                   H06720
             NLIMST = NLIM                                                 H06730
 C                                                                         H06740
-            CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHDR)                       H06750
+            CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                      H06750
 C                                                                         H06760
             IF (KEOF.LE.0) THEN                                           H06770
                V1P = V1PST                                                H06780
@@ -686,7 +686,7 @@ C                                                                         H06760
                ODLAY(NLIM-1) = ODLAY(NLIM-2)                              H06820
                ODLAY(NLIM) = ODLAY(NLIM-2)                                H06830
             ELSE                                                          H06840
-               CALL BUFIN (KFILE,KEOF,1,NLIM,ODLAYR)                      H06850
+               CALL BUFIN (KFILE,KEOF,ODLAYR(1),NLIM)                     H06850
             ENDIF                                                         H06860
 C                                                                         H06870
             FJ1DIF = (V1PO-V1P)/DVP+1.+2.                                 H06880
@@ -752,8 +752,8 @@ C                                                                         H07440
       NLIM = NLIMO                                                        H07480
 C                                                                         H07490
       NPANLS = NPANLS+1                                                   H07500
-      CALL BUFOUT (MFILE,1,NPHDRF,PNLHDR)                                 H07510
-      CALL BUFOUT (MFILE,JLO,NLIM,R1)                                     H07520
+      CALL BUFOUT (MFILE,PNLHDR(1),NPHDRF)                                H07510
+      CALL BUFOUT (MFILE,R1(JLO),NLIM)                                    H07520
       IF (NPTS.LE.0) GO TO 20                                             H07530
       IF (NPANLS.EQ.1) WRITE (IPR,900)                                    H07540
       WRITE (IPR,905)                                                     H07550
@@ -1119,13 +1119,13 @@ C                                                                         H11130
       EQUIVALENCE (PNLHDR(1),V1PBF)                                       H11150
       EQUIVALENCE (FSCDID(4),IAERSL)                                      H11160
 C                                                                         H11170
-      CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHDR)                             H11180
+      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H11180
       IF (KEOF.LE.0) RETURN                                               H11190
-      CALL BUFIN (KFILE,KEOF,1,NLIMBF,TR)                                 H11200
+      CALL BUFIN (KFILE,KEOF,TR(1),NLIMBF)                                H11200
 C                                                                         H11210
 C     TR CONTAINS THE OPTICAL DEPTHS AT THIS STAGE                        H11220
 C                                                                         H11230
-      IF (IHIRAC.EQ.4) CALL BUFIN (KFILE,KEOF,1,NLIMBF,EM)                H11240
+      IF (IHIRAC.EQ.4) CALL BUFIN (KFILE,KEOF,EM(1),NLIMBF)               H11240
 C                                                                         H11250
 C     EM CONTAINS THE OPTICAL DEPTH CORRECTIONS FOR NLTE AT THIS STAGE    H11260
 C                                                                         H11270
@@ -1720,7 +1720,7 @@ C          IF  IANT.EQ.-1  THEN ANTERIOR MERGE                            H17150
 C                                                                         H17160
       WRITE (IPR,900) TIME                                                H17170
       NPANLS = 0                                                          H17180
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             H17190
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H17190
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H17200
       PLAY = PAVE                                                         H17210
       TLAY = TAVE                                                         H17220
@@ -1748,7 +1748,7 @@ C                                                                         H17350
       WBROAD = WBROAD*FACT                                                H17440
       LAYR1 = LAYER                                                       H17450
       WRITE (IPR,905) LAYR1,LAYER,KFILE,MFILE                             H17460
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 H17470
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H17470
       DVXM = DV                                                           H17480
       XKT = TAVE/RADCN2                                                   H17490
       XKTBND = TBND/RADCN2                                                H17500
@@ -2010,7 +2010,7 @@ C                                                                         H20010
       TIMRD = 0.0                                                         H20060
       TIMOT = 0.0                                                         H20070
 C                                                                         H20080
-      CALL BUFIN (LFILE,LEOF,1,NFHDRF,XFILHD)                             H20090
+      CALL BUFIN (LFILE,LEOF,XFILHD(1),NFHDRF)                            H20090
       LAY1SV = LAYR1                                                      H20100
       DVL = DV                                                            H20110
       PL = PAVE                                                           H20120
@@ -2028,7 +2028,7 @@ C                                                                         H20230
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H20240
 C                                                                         H20250
       IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H20260
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             H20270
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H20270
       IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H20280
 C                                                                         H20290
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H20300
@@ -2072,7 +2072,7 @@ C                                                                         H20540
 C                                                                         H20680
 C     WK IS NOW THE ACCUMULATED SUM OF THE COLUMN DENSITIES               H20690
 C                                                                         H20700
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 H20710
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H20710
       DVXM = DV                                                           H20720
       XKT = TAVK/RADCN2                                                   H20730
 C                                                                         H20740
@@ -2132,10 +2132,10 @@ C                                                                         H21200
 C                                                                         H21280
       IF (V2PO.LE.V2P+DVPO) THEN                                          H21290
    50    CALL CPUTIM (TIMEM1)                                             H21300
-         CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                          H21310
+         CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                         H21310
          IF (LEOF.LE.0) GO TO 60                                          H21320
-         CALL BUFIN (LFILE,LEOF,NPE+1,NLIMO,RADOI)                        H21330
-         CALL BUFIN (LFILE,LEOF,NPE+1,NLIMO,TRAOI)                        H21340
+         CALL BUFIN (LFILE,LEOF,RADOI(NPE+1),NLIMO)                       H21330
+         CALL BUFIN (LFILE,LEOF,TRAOI(NPE+1),NLIMO)                       H21340
          CALL CPUTIM (TIMEM2)                                             H21350
          TIMRD = TIMRD+TIMEM2-TIMEM1                                      H21360
          NPE = NLIMO+NPE                                                  H21370
@@ -2499,7 +2499,7 @@ C                                                                         H24890
       TIMTB = 0.0                                                         H24950
       TIMOT = 0.0                                                         H24960
 C                                                                         H24970
-      CALL BUFIN (LFILE,LEOF,1,NFHDRF,XFILHD)                             H24980
+      CALL BUFIN (LFILE,LEOF,XFILHD(1),NFHDRF)                            H24980
       DVL = DV                                                            H24990
       LAY1SV = LAYR1                                                      H25000
       PL = PAVE                                                           H25010
@@ -2515,7 +2515,7 @@ C                                                                         H25100
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H25110
 C                                                                         H25120
       IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H25130
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             H25140
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H25140
       IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H25150
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H25160
       PLAY = PAVE                                                         H25170
@@ -2550,7 +2550,7 @@ C                                                                         H25320
 C                                                                         H25460
 C     WK IS NOW THE ACCUMULATED SUM OF THE COLUMN DENSITIES               H25470
 C                                                                         H25480
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 H25490
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H25490
       DVXM = DV                                                           H25500
 C                                                                         H25510
       IF (ATYPE.EQ.0.) THEN                                               H25520
@@ -2564,9 +2564,9 @@ C                                                                         H25550
          CALL CPUTIM (TIMEM2)                                             H25600
          TIMEM = TIMEM+TIMEM2-TIMEM1                                      H25610
          IF (KEOF.LE.0) GO TO 110                                         H25620
-         CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                          H25630
-         CALL BUFIN (LFILE,LEOF,1,NLIMO,RADO)                             H25640
-         CALL BUFIN (LFILE,LEOF,1,NLIMO,TRAO)                             H25650
+         CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                         H25630
+         CALL BUFIN (LFILE,LEOF,RADO(1),NLIMO)                            H25640
+         CALL BUFIN (LFILE,LEOF,TRAO(1),NLIMO)                            H25650
          CALL CPUTIM (TIMEM3)                                             H25660
          TIMRD = TIMRD+TIMEM3-TIMEM2                                      H25670
          DO 40 I = 1, NLIM                                                H25680
@@ -2616,10 +2616,10 @@ C                                                                         H26100
    60 CONTINUE                                                            H26110
 C                                                                         H26120
       CALL CPUTIM (TIMEM1)                                                H26130
-      CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                             H26140
+      CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                            H26140
       IF (LEOF.LE.0) GO TO 110                                            H26150
-      CALL BUFIN (LFILE,LEOF,1,NLIMO,RADO)                                H26160
-      CALL BUFIN (LFILE,LEOF,1,NLIMO,TRAO)                                H26170
+      CALL BUFIN (LFILE,LEOF,RADO(1),NLIMO)                               H26160
+      CALL BUFIN (LFILE,LEOF,TRAO(1),NLIMO)                               H26170
       CALL CPUTIM (TIMEM2)                                                H26180
       TIMRD = TIMRD+TIMEM2-TIMEM1                                         H26190
       II = 1                                                              H26200
@@ -2839,9 +2839,9 @@ C                                                                         H28300
       DVPBF = DVP                                                         H28340
       NLIMBF = NLIM                                                       H28350
 C                                                                         H28360
-      CALL BUFOUT (MFILE,1,NPHDRF,PNLHDR)                                 H28370
-      CALL BUFOUT (MFILE,1,NLIMBF,NEWEM)                                  H28380
-      CALL BUFOUT (MFILE,1,NLIMBF,NEWTR)                                  H28390
+      CALL BUFOUT (MFILE,PNLHDR(1),NPHDRF)                                H28370
+      CALL BUFOUT (MFILE,NEWEM(1),NLIMBF)                                 H28380
+      CALL BUFOUT (MFILE,NEWTR(1),NLIMBF)                                 H28390
 C                                                                         H28400
       IF (NPTS.GT.0) THEN                                                 H28410
          IF (NPANLS.EQ.1) WRITE (IPR,900)                                 H28420
@@ -2921,9 +2921,9 @@ C                                                                         H29140
       EQUIVALENCE (PNLHDR(1),V1PBF)                                       H29160
       EQUIVALENCE (FSCDID(4),IAERSL)                                      H29170
 C                                                                         H29180
-      CALL BUFIN (KFILE,KEOF,1,NPHDRF,PNLHDR)                             H29190
+      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H29190
       IF (KEOF.LE.0) RETURN                                               H29200
-      CALL BUFIN (KFILE,KEOF,1,NLIMBF,TR)                                 H29210
+      CALL BUFIN (KFILE,KEOF,TR(1),NLIMBF)                                H29210
 C                                                                         H29220
 C     TR CONTAINS THE OPTICAL DEPTHS AT THIS STAGE                        H29230
 C                                                                         H29240
@@ -3153,7 +3153,7 @@ C                                                                         H31460
 C                                                                         H31480
       WRITE (IPR,900) TIME                                                H31490
       NPANLS = 0                                                          H31500
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             H31510
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H31510
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H31520
       PLAY = PAVE                                                         H31530
       TLAY = TAVE                                                         H31540
@@ -3189,7 +3189,7 @@ C                                                                         H31750
       WBROAD = WBROAD*FACT                                                H31840
       LAYR1 = LAYER                                                       H31850
       WRITE (IPR,915) LAYR1,LAYER,KFILE,MFILE                             H31860
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 H31870
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H31870
       DVXM = DV                                                           H31880
       XKT = TAVE/RADCN2                                                   H31890
       XKTBND = TBND/RADCN2                                                H31900
@@ -3364,7 +3364,7 @@ C                                                                         H33540
       TIMRD = 0.0                                                         H33590
       TIMOT = 0.0                                                         H33600
 C                                                                         H33610
-      CALL BUFIN (LFILE,LEOF,1,NFHDRF,XFILHD)                             H33620
+      CALL BUFIN (LFILE,LEOF,XFILHD(1),NFHDRF)                            H33620
       SECNT = SECANT                                                      H33630
       LAY1SV = LAYR1                                                      H33640
       DVL = DV                                                            H33650
@@ -3383,7 +3383,7 @@ C                                                                         H33770
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H33780
 C                                                                         H33790
       IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H33800
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             H33810
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H33810
       IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H33820
 C                                                                         H33830
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H33840
@@ -3421,7 +3421,7 @@ C                                                                         H34020
 C                                                                         H34160
 C     WK IS NOW THE ACCUMULATED SUM OF THE COLUMN DENSITIES               H34170
 C                                                                         H34180
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 H34190
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H34190
       DVXM = DV                                                           H34200
       XKT = TAVK/RADCN2                                                   H34210
 C                                                                         H34220
@@ -3471,10 +3471,10 @@ C                                                                         H34590
 C                                                                         H34660
       IF (V2PO.LE.V2P+DVPO) THEN                                          H34670
    50    CALL CPUTIM (TIMEM1)                                             H34680
-         CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                          H34690
+         CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                         H34690
          IF (LEOF.LE.0) GO TO 60                                          H34700
-         CALL BUFIN (LFILE,LEOF,NPE+1,NLIMO,RADOI)                        H34710
-         CALL BUFIN (LFILE,LEOF,NPE+1,NLIMO,TRAOI)                        H34720
+         CALL BUFIN (LFILE,LEOF,RADOI(NPE+1),NLIMO)                       H34710
+         CALL BUFIN (LFILE,LEOF,TRAOI(NPE+1),NLIMO)                       H34720
          CALL CPUTIM (TIMEM2)                                             H34730
          TIMRD = TIMRD+TIMEM2-TIMEM1                                      H34740
          NPE = NLIMO+NPE                                                  H34750
@@ -3709,7 +3709,7 @@ C                                                                         H36980
       TIMTB = 0.0                                                         H37040
       TIMOT = 0.0                                                         H37050
 C                                                                         H37060
-      CALL BUFIN (LFILE,LEOF,1,NFHDRF,XFILHD)                             H37070
+      CALL BUFIN (LFILE,LEOF,XFILHD(1),NFHDRF)                            H37070
       SECNT = SECANT                                                      H37080
       DVL = DV                                                            H37090
       LAY1SV = LAYR1                                                      H37100
@@ -3726,7 +3726,7 @@ C                                                                         H37200
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H37210
 C                                                                         H37220
       IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H37230
-      CALL BUFIN (KFILE,KEOF,1,NFHDRF,XFILHD)                             H37240
+      CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H37240
       IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H37250
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H37260
       PLAY = PAVE                                                         H37270
@@ -3764,7 +3764,7 @@ C                                                                         H37450
 C                                                                         H37590
 C     WK IS NOW THE ACCUMULATED SUM OF THE COLUMN DENSITIES               H37600
 C                                                                         H37610
-      CALL BUFOUT (MFILE,1,NFHDRF,XFILHD)                                 H37620
+      CALL BUFOUT (MFILE,XFILHD(1),NFHDRF)                                H37620
       DVXM = DV                                                           H37630
 C                                                                         H37640
       IF (ATYPE.EQ.0.) THEN                                               H37650
@@ -3779,9 +3779,9 @@ C                                                                         H37690
          CALL CPUTIM (TIMEM2)                                             H37740
          TIMEM = TIMEM+TIMEM2-TIMEM1                                      H37750
          IF (KEOF.LE.0) GO TO 110                                         H37760
-         CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                          H37770
-         CALL BUFIN (LFILE,LEOF,1,NLIMO,RADO)                             H37780
-         CALL BUFIN (LFILE,LEOF,1,NLIMO,TRAO)                             H37790
+         CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                         H37770
+         CALL BUFIN (LFILE,LEOF,RADO(1),NLIMO)                            H37780
+         CALL BUFIN (LFILE,LEOF,TRAO(1),NLIMO)                            H37790
          CALL CPUTIM (TIMEM3)                                             H37800
          TIMRD = TIMRD+TIMEM3-TIMEM2                                      H37810
          DO 40 I = 1, NLIM                                                H37820
@@ -3832,10 +3832,10 @@ C                                                                         H38250
    60 CONTINUE                                                            H38260
 C                                                                         H38270
       CALL CPUTIM (TIMEM1)                                                H38280
-      CALL BUFIN (LFILE,LEOF,1,NPHDRF,OPNLHD)                             H38290
+      CALL BUFIN (LFILE,LEOF,OPNLHD(1),NPHDRF)                            H38290
       IF (LEOF.LE.0) GO TO 110                                            H38300
-      CALL BUFIN (LFILE,LEOF,1,NLIMO,RADO)                                H38310
-      CALL BUFIN (LFILE,LEOF,1,NLIMO,TRAO)                                H38320
+      CALL BUFIN (LFILE,LEOF,RADO(1),NLIMO)                               H38310
+      CALL BUFIN (LFILE,LEOF,TRAO(1),NLIMO)                               H38320
       CALL CPUTIM (TIMEM2)                                                H38330
       TIMRD = TIMRD+TIMEM2-TIMEM1                                         H38340
       II = 1                                                              H38350
@@ -3984,7 +3984,7 @@ C                                                                         H39770
       EQUIVALENCE (APNLHD(1),V1P) , (AFILHD(1),XID(1))                    H39780
 C                                                                         H39790
       IF (IEMITT.EQ.0) THEN                                               H39800
-         CALL BUFIN (IEXFIL,IEOF,1,NFHDRF,AFILHD)                         H39810
+         CALL BUFIN (IEXFIL,IEOF,AFILHD(1),NFHDRF)                        H39810
 C                                                                         H39820
 C     MOVE YID INTO EXTID                                                 H39830
 C                                                                         H39840
@@ -3994,7 +3994,7 @@ C                                                                         H39840
 C                                                                         H39880
       IF (LYRNOW.EQ.1.AND.IEMITT.EQ.1) THEN                               H39890
          REWIND IEXFIL                                                    H39900
-         CALL BUFIN (IEXFIL,IEOF,1,NFHDRF,AFILHD)                         H39910
+         CALL BUFIN (IEXFIL,IEOF,AFILHD(1),NFHDRF)                        H39910
 C                                                                         H39920
 C     MOVE YID INTO EXTID                                                 H39930
 C                                                                         H39940
@@ -4005,7 +4005,7 @@ C                                                                         H39980
       LAYER = 0                                                           H39990
       IF (IMS.EQ.-1) THEN                                                 H40000
          REWIND IEXFIL                                                    H40010
-         CALL BUFIN (IEXFIL,IEOF,1,NFHDRF,AFILHD)                         H40020
+         CALL BUFIN (IEXFIL,IEOF,AFILHD(1),NFHDRF)                        H40020
 C                                                                         H40030
 C     MOVE YID INTO EXTID                                                 H40040
 C                                                                         H40050
@@ -4019,14 +4019,14 @@ C                                                                         H40090
          ASYMT(I) = 0.                                                    H40130
    20 CONTINUE                                                            H40140
 C                                                                         H40150
-      CALL BUFIN (IEXFIL,IEOF,1,NPHDRF,APNLHD)                            H40160
+      CALL BUFIN (IEXFIL,IEOF,APNLHD(1),NPHDRF)                           H40160
 C                                                                         H40170
       LAYER = LAYER+1                                                     H40180
       IF (IEOF.LE.0) STOP 'GETEXT; IEXFIL EMPTY'                          H40190
 C                                                                         H40200
-      CALL BUFIN (IEXFIL,IEOF,1,NLIM,ABSRB)                               H40210
-      CALL BUFIN (IEXFIL,IEOF,1,NLIM,SCTTR)                               H40220
-      CALL BUFIN (IEXFIL,IEOF,1,NLIM,ASYMT)                               H40230
+      CALL BUFIN (IEXFIL,IEOF,ABSRB(1),NLIM)                              H40210
+      CALL BUFIN (IEXFIL,IEOF,SCTTR(1),NLIM)                              H40220
+      CALL BUFIN (IEXFIL,IEOF,ASYMT(1),NLIM)                              H40230
 C                                                                         H40240
       IF (IMS.EQ.-1.AND.LAYER.NE.LYRNOW) GO TO 10                         H40250
       V1ABS = V1P                                                         H40260
@@ -4082,7 +4082,7 @@ C                                                                         H40740
 C                                                                         H40760
       XKT0 = 0.6951*296.                                                  H40770
       CALL GETEXT (IEXFIL,LAYRS,IEMIT,IMS)                                H40780
-      CALL BUFIN (MFILE,IEOF,1,NFHDRF,XFILHD)                             H40790
+      CALL BUFIN (MFILE,IEOF,XFILHD(1),NFHDRF)                            H40790
 C                                                                         H40800
 C     FOR AEROSOL RUNS, MOVE EXTID INTO YID                               H40810
 C                                                                         H40820
@@ -4091,12 +4091,12 @@ C                                                                         H40820
       CYID(19:40) = CEXT(19:40)                                           H40850
       READ (CYID,'(5A8)') (YID(I),I=3,7)                                  H40860
 C                                                                         H40870
-      CALL BUFOUT (IAFIL,1,NFHDRF,XFILHD)                                 H40880
+      CALL BUFOUT (IAFIL,XFILHD(1),NFHDRF)                                H40880
       NPANLS = 0                                                          H40890
       IF (NOPR.EQ.0) WRITE (IPR,900) XID,(YID(N),N=1,2)                   H40900
-   10 CALL BUFIN (MFILE,IEOF,1,NPHDRF,PNLHD)                              H40910
+   10 CALL BUFIN (MFILE,IEOF,PNLHD(1),NPHDRF)                             H40910
       IF (IEOF.LE.0) GO TO 40                                             H40920
-      CALL BUFIN (MFILE,IEOF,1,NLIM,R1)                                   H40930
+      CALL BUFIN (MFILE,IEOF,R1(1),NLIM)                                  H40930
       IF (NPANLS.EQ.0) VIDV = V1P-DVP                                     H40940
       VAER = VIDV                                                         H40950
       VITST = VIDV                                                        H40960
