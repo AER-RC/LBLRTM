@@ -13,9 +13,9 @@ PLATFORM = SGI
 FC = f90
 #FCFLAG = -mips4 -r10000 -lfastm -O3 -64 -TENV:X=0
 FCFLAG = -mips4 -r10000 -lfastm -O3 -TENV:X=0
-OUTPUT = lblrtm_v7.00_f90_sgi_sgl
+OUTPUT = lblrtm_v7.01_f90_sgi_sgl
 CPATH = src
-CDOTO = sgl.o
+CDOTO = sgi_sgl.o
 
 CLBL = lblrtm
 COPR = oprop
