@@ -7,16 +7,16 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE CONTNM (JRAD)                                            F00010
 C                                                                         F00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F00030
+      IMPLICIT REAL*8           (V)                                     ! F00030
 C                                                                         F00040
 C     SUBROUTINE CONTNM CONTAINS THE CONTINUUM DATA                       F00050
 C     WHICH IS INTERPOLATED INTO THE ARRAY ABSRB                          F00060
 C                                                                         F00070
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F00080
-c      COMMON /XCONT/ V1C,V2C,DVC,NPTC,C( 411)
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F00080
       COMMON /XCONT/ V1C,V2C,DVC,NPTC,C(6000)
 C                                                                         F00100
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & F00110
+      CHARACTER*8      XID,       HMOLID,      YID 
+      REAL*8               SECANT,       XALTZ
 C                                                                         F00120
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -28,12 +28,12 @@ C                                                                         F00120
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        F00180
      *              NLTEFL,LNFIL4,LNGTH4                                  F00190
 c
-      DIMENSION C0(2050),C1(2050),C2(2050)
-      DIMENSION SH2OT0( 2 ),SH2OT1( 2 ),FH2O( 2 ),      
-     *          CN2T0( 2 ),FCO2( 2 ),CT1( 2 ),CT2( 2 ) 
-      DIMENSION CCH0(3150),CCH1(3150),CCH2(3150)
+      DIMENSION C0(5050),C1(5050),C2(5050)
+      DIMENSION SH2OT0(5050),SH2OT1(5050),FH2O(5050),      
+     *          CN2T0(5050),FCO2(5050),CT1(5050),CT2(5050) 
+      DIMENSION CCH0(5150),CCH1(5150),CCH2(5150)
 C
-      REAL ABSBSV(2030)
+      REAL ABSBSV(5050)
 C                                                                         F00230
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
@@ -60,7 +60,7 @@ c
 C                                                                         F00290
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRCNT = '$Revision$' 
+      HVRCNT = '$Revision$'
 C
 c
       RHOAVE = (PAVE/P0)*(T0/TAVE)                                        F00300
@@ -72,52 +72,38 @@ c
       WTOT = WTOT*1.E-20                                                  F00360
       PATM = PAVE/P0                                                      F00370
 C                                                                         F00380
-C     ********    WATER    ********                                       F00390
+C=======================================================================
+
+C               ********    WATER VAPOR   ********                        F00390
 C                                                                         F00400
+C=======================================================================
+C                             SELF
+
 C     Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
-
-c      if (((V2.gt.-20.0).and.(V2.lt.20000.)).or.
-c     *    ((V1.gt.-20.0).and.(V1.lt.20000.))) then
+c
       if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
-
+c
          CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0)                             F00410
          CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1)                             F00420
-         CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O)                              F00430
 C                                                                         F00440
-         W1 = WK(1)*1.0E-20                                               F00450
+         W1 = WK(1)*1.0E-20                                                  F00450
 C                                                                         F00460
 C        The factor of 1.e-20 is handled this way to avoid underflows     F00470
 C                                                                         F00480
          PH2O = PATM*(W1/WTOT)                                            F00490
          RH2O = PH2O*(T0/TAVE)                                            F00500
-         PFRGN = PATM-PH2O                                                F00510
-         RFRGN = PFRGN*(T0/TAVE)                                          F00520
          XKT = TAVE/RADCN2                                                F00530
          TFAC = (TAVE-T0)/(260.-T0)                                       F00540
-C
-C--------------------------------------------------------------------
-C                             SELF
 
-         ALPHA2 = 200.**2                                                 F00550
-C
+
+         ALPHA2 = 200.**2
          ALPHS2= 120.**2
          BETAS = 5.E-06
          V0S=1310.
          FACTRS= 0.15
 C
-C--------------------------------------------------------------------
-C                             FOREIGN
-         HWSQF= 330.**2
-         BETAF = 8.  E-11
-         V0F =1130.
-         FACTRF = 0.97
-C
-         V0F2 =1900.
-         HWSQF2 = 150.**2
-         BETA2 = 3.E-06
-C
-C--------------------------------------------------------------------
-C
+c        Loop calculating self continuum optical depth
+
          DO 20 J = 1, NPTC                                                F00560
             VJ = V1C+DVC*FLOAT(J-1)                                       F00570
             VS2 = (VJ-V0S)**2
@@ -130,47 +116,157 @@ C
                   JFAC = (VJ-700.)/10. + 0.00001
                   SFAC = XFAC(JFAC)
                ENDIF
-C                                                                         F00610
-C              Correction to self continuum (1 SEPT 85); factor of        F00620
+C     
+C           ------------------------------------------------------------
+C           Correction to self continuum (1 SEPT 85); factor of    
 C              0.78 at 1000 and  .......
 C                                                                         F00630
-               SFAC = SFAC*(1.+0.3   *(1.E+04/((VJ      )**2+1.E+04))) *   
+c
+c           The self continuum associated with Vres=0. has been
+c              changed to reflect the analysis of Rosenkranz.
+c
+
+               SFAC = SFAC*
+     *              (1.+2.02  *(1.E+04/((VJ)**2+1.e-04*VJ**4+1.E+04))) *   
      *              (1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *   
      *              (1.-FACTRS*(ALPHS2/(VS2+(BETAS*VS2**2)+ALPHS2))) 
+c
                SH2O = SFAC * SH2O
+c
+C           ------------------------------------------------------------
+
             ENDIF
-C                                                                         F00660
-C           Correction to foreign continuum                               F00670
-C                                                                         F00680
-            VF2 = (VJ-V0F)**2
-            VF6 = VF2 * VF2 * VF2
-            FSCAL  = (1.-FACTRF*(HWSQF/(VF2+(BETAF*VF6)+HWSQF)))
-            VF2 = (VJ-V0F2)**2
-            VF4 = VF2*VF2
-            FSCAL = FSCAL* (1.- 0.6*(HWSQF2/(VF2 + BETA2*VF4 + HWSQF2)))
-C     
-            FH2O(J)=FH2O(J)*FSCAL
-C                                                                         F00700
-            C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)                           F00710
+c
+            C(J) = W1*(SH2O*RH2O)
 C                                                                         F00720
+C           ------------------------------------------------------------
 C           Radiation field                                               F00730
 C                                                                         F00740
             IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F00750
+C           ------------------------------------------------------------
+
  20      CONTINUE                                                         F00760
 C
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)            F00770
+c        Interpolate to total optical depth grid
+
+         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F00770
 
       endif
 C                                                                         F00780
+C=======================================================================
+C                             FOREIGN
+
+C
+      PFRGN = PATM-PH2O
+      RFRGN = PFRGN*(T0/TAVE)
+
+C     ------------------------------------------------------------
+
+      FSCAL  = 1.
+
+C     ------------------------------------------------------------
+c
+C                                                                         F00780
+c     New foreign continuum from 0 - 2200 cm-1;  CKD_2.3
+c
+      if (v1abs.lt.2200.) then
+c        
+         CALL FRN296a (V1C,V2C,DVC,NPTC,FH2O)
+C
+
+         DO 22 J = 1, NPTC                                          
+            VJ = V1C+DVC*FLOAT(J-1)                                 
+C     
+            FH2O(J)=FH2O(J)*FSCAL
+C     
+            C(J) = W1*FH2O(J)
+C                                         
+C           ------------------------------------------------------------
+C           Radiation field 
+C                                                     
+            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                
+C           ------------------------------------------------------------
+C
+ 22      CONTINUE
+C
+
+
+C        ------------------------------------------------------------
+c        Interpolate to total optical depth grid
+
+         npts_hi = nptabs
+
+c        If spectral range covers the CKD_2.2 10 cm-1 H2O continuum
+c        as well, then stop interpolation at 2200 cm-1.
+
+         if (v2abs .ge. 2200.) then
+
+c        The following is reversed because of the rounding direction
+            npts_hi = 0.0001 +  (v1abs-2200.)/dvabs
+            npts_hi = - npts_hi + 1
+
+         endif
+C
+         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,npts_hi)  
+C        ------------------------------------------------------------
+C                                                                         F00780
+      endif
+c
+c     - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+C
+c     CKD_2.2 Continuum retained above 2200.cm-1
+c
+      if (v2abs .ge. 2200.) then
+c
+         CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O)         
+C                                                               
+         DO 24 J = 1, NPTC                                         
+            VJ = V1C+DVC*FLOAT(J-1)                                  
+C     
+            FH2O(J)=FH2O(J)*FSCAL
+C     
+            C(J) = W1*(FH2O(J)*RFRGN)
+
+C                                          
+C           ------------------------------------------------------------
+C           Radiation field                                                  
+C                                                                    
+            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)               
+C           ------------------------------------------------------------
+C
+ 24      CONTINUE                                                  
+C
+C        ------------------------------------------------------------
+c        Interpolate to total optical depth grid
+
+c        If spectral range covers the CKD_2.3 1 cm-1 H2O continuum
+c        as well, then stop interpolation at 2200 cm-1.
+
+         npts_lo = 1
+         if (v1abs .lt. 2200.) then
+            npts_lo =  npts_hi + 1
+c            v1c = v1c+npts_hi
+         endif
+c
+         CALL XINT_2(V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,npts_lo,NPTABS)  
+C        ------------------------------------------------------------
+C                                                                         F00780
+
+
+C                                                                   
+      endif
+
+C=======================================================================
+
+
+
 C     ********    CARBON DIOXIDE   ********                               F00790
 C                                                                         F00800
 C                                                                         F00810
 C     Only calculate if V2 > -20. cm-1 and V1 <  10000. cm-1
-
-c      if (((V2.gt.-20.0).and.(V2.lt.10000.)).or.
-c     *    ((V1.gt.-20.0).and.(V1.lt.10000.))) then
+c
       if ((V2.gt.-20.0).and.(V1.lt.10000.)) then
-
+c
          WCO2 = WK(2)*RHOAVE*1.0E-20                                      F00820
 C                                                                         F00830
          CALL FRNCO2 (V1C,V2C,DVC,NPTC,FCO2)                              F00840
@@ -186,88 +282,6 @@ C                                                                         F00900
 
       endif
 C                                                                         F00940
-C                                                                         F00940
-C     *********************  NITROGEN CONTINUA  ********************
-c
-         IF (NMOL.GE.22) THEN                                             F01000
-            WN2 = WK(22)                                                  F01010
-         ELSE                                                             F01020
-            WN2 = WBROAD                                                  F01030
-         ENDIF                                                            F01040
-C                                                                         F00460
-C
-C     ******** NITROGEN COLLISION INDUCED PURE ROTATION BAND  ********
-C
-C     Model used:
-C      Borysow, A, and L. Frommhold, "Collision-induced
-C         rototranslational absorption spectra of N2-N2
-C         pairs for temperatures from 50 to 300 K", The
-C         Astrophysical Journal, 311, 1043-1057, 1986.
-C
-C                                                                         F00960
-C     THIS NITROGEN CONTINUUM IS IN UNITS OF 1./(CM AMAGAT^2)
-C
-C     Only calculate if V2 > -10. cm-1 and V1 <  350. cm-1
-
-c      if (((V2.gt.-10.0).and.(V2.lt.350.)).or.
-c     *    ((V1.gt.-10.0).and.(V1.lt.350.))) then
-      if ((V2.gt.-10.0).and.(V1.lt.350.)) then
-
-C        The following puts WXN2 units in 1./(CM AMAGAT)
-C
-         WXN2 = WN2/XLOSMT
-C                                                                         F00480
-C        RHOFAC units are AMAGATS
-C
-         RHOFAC = ((WN2*1.e-20)/WTOT)*(PAVE/P0)*(273./TAVE)
-C
-         CALL N2R296 (V1C,V2C,DVC,NPTC,C0)
-         CALL N2R220 (V1C,V2C,DVC,NPTC,C1)
-C
-         DO 40 J = 1, NPTC                                                F01080
-            VJ = V1C+DVC*FLOAT(J-1)                                       F01090
-C
-            C(J) = 0.
-            IF (C0(J).GT.0. .AND. C1(J).GT.0.)
-     *           C(J) = WXN2*RHOFAC*C0(J)*(C0(J)/C1(J))**TFAC  
-C                                                                         F01110
-C           Radiation field                                               F01120
-C                                                                         F01130
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01140
- 40      CONTINUE                                                         F01150
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01160
-
-      endif
-C                                                                         F01170
-C                                                                         F00940
-C     ********    NITROGEN COLLISION INDUCED FUNDAMENTAL ********         F00950
-C                                                                         F00960
-C     THE NITROGEN CONTINUUM IS IN UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)  F00970
-C                                                                         F00980
-C     Only calculate if V2 > 2020. cm-1 and V1 <  2800. cm-1
-
-c      if (((V2.gt.2020.0).and.(V2.lt.2800.)).or.
-c     *    ((V1.gt.2020.0).and.(V1.lt.2800.))) then
-      if ((V2.gt.2020.0).and.(V1.lt.2800.)) then
-
-         UNITN2 = 1.0E-05                                                 F00990
-C
-         WXN2 = (WN2)*RHOAVE*UNITN2                                       F01050
-C                                                                         F01060
-         CALL N2F (V1C,V2C,DVC,NPTC,CN2T0)  
-
-         DO 45 J = 1, NPTC                                                F01080
-            VJ = V1C+DVC*FLOAT(J-1)                                       F01090
-            C(J) = CN2T0(J)*WXN2                                          F01100
-C                                                                         F01110
-C           Radiation field                                               F01120
-C                                                                         F01130
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01140
- 45      CONTINUE                                                         F01150
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01160
-
-      endif
-C                                                                         F01170
 C     ********    DIFFUSE OZONE  ********                                 F01180
 C                                                                         F01190
 C     Smoothing coefficients from 8920.0-9165.0 cm-1 and from
@@ -363,49 +377,56 @@ C
 C                                                                         F01560
       ENDIF                                                               F01570
 C                                                                         F01580
-C     Skip to Herzberg if TAVE is greater than 350.0 K.  Values greater
-C     than 350 introduce large error into the Drayson derived O2
-C     coefficients, which are calculated using a temperature dependent
-C     quadratic.
+
+
+C     ********    O2 OXYGEN COLLISION INDUCED FUNDAMENTAL  ***********  
+c
+c     version_1 of the Oxygen Collision Induced Fundamental
+c
+c     F. Thibault, V. Menoux, R. Le Doucen, L. Rosenman, J.-M. Hartmann,
+c                                                         and Ch. Boulet
+c        Infrared collision-induced absorption by O2 near 6.4 microns for
+c        atmospheric applications: measurements and emprirical modeling, 
+c         Appl. Optics, 35, 5911-5917, (1996).
+c
+C     Only calculate if V2 > 1340. cm-1 and V1 <  1850. cm-1
+
+      if (((V2.gt.1340.0).and.(V1.lt.1850.))) then
+
+         rhofac = (Pave/P0)*(273./Tave)
+c     
+         tau_fac = Wk(7) * 1.e-20 * rhofac 
+c
+c        Wk(7) is the oxygen column amount in units of molec/cm2
+c        rhofac is in units of amagats (air)
+c
+c        The temperature correction is done in the subroutine o2_ver_1:
+c
+         call o2_ver_1 (v1c,v2c,dvc,nptc,c0,tave)
 C
-      IF (TAVE.GT.350.) THEN
-         WRITE(IPR,900)
-         GOTO 85
-      ENDIF
+c        c0 are the oxygen absorption coefficients at temperature tave 
+c           - these absorption coefficients are in units of
+c                [(cm^2/molec) 10^20)]/(cm-1  amagat) 
+c           - cm-1 in the denominator arises through the removal
+c                of the radiation field
+c           - for this case, an amagat is interpreted as one
+c                loshmidt of air (273K)
+c
+         DO 80 J = 1, NPTC
+            VJ = V1C+DVC*FLOAT(J-1)
+            C(J) = tau_fac * c0(J)
 C
-C     ********    O2 DIFFUSE   ********                                   F01590
-C                                                                         F01600
-C    CONTINUUM COEFFICIENTS ARE IN UNITS OF PRESSURE:                     F01610
-C                                                                         F01620
-C     Only calculate if V2 > 1395. cm-1 and V1 <  1760. cm-1
+C           Radiation field
+C
+            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)
+c
+ 80      CONTINUE
 
-c      if (((V2.gt.1395.0).and.(V2.lt.1760.)).or.
-c     *    ((V1.gt.1395.0).and.(V1.lt.1760.))) then
-      if ((V2.gt.1395.0).and.(V1.lt.1760.)) then
-
-         WO2 = (PAVE/P0)*WK(7)/XLOSMT                                     F01630
-         CALL O2CONT (V1C,V2C,DVC,NPTC,C0,TAVE)                           F01640
-C                                                                         F01650
-C                                                                         F01660
-C        The coefficients for O2 have been multiplied by a factor of      F01670
-C        0.78; Rinsland et al, 1989: JGR 94; 16,303 - 16,322.             F01680
-C                                                                         F01690
-         O2FAC = 0.78                                                     F01700
-C                                                                         F01710
-         DO 80 J = 1, NPTC                                                F01720
-            C(J) = O2FAC*C0(J)*WO2                                        F01730
-            VJ = V1C+DVC*FLOAT(J-1)                                       F01740
-C                                                                         F01750
-C           Radiation field                                               F01760
-C                                                                         F01770
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01780
- 80      CONTINUE                                                         F01790
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01800
-
+         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
       endif
-C                                                                         F01810
-C     Skip to here for TAVE > 350. 
- 85   CONTINUE
+
+
+C     ********    O2 DIFFUSE   ********                                   F01590
 C
 C     O2 continuum formulated by Mlawer over the spectral region
 C     7500-8300 cm-1. Refer to the paper "Observed  Atmospheric
@@ -486,6 +507,102 @@ C                                                                         F01880
 
       endif
 
+C     *********************  NITROGEN CONTINUA  ********************
+c
+         IF (NMOL.GE.22) THEN                                             F01000
+            WN2 = WK(22)                                                  F01010
+         ELSE                                                             F01020
+            WN2 = WBROAD                                                  F01030
+         ENDIF                                                            F01040
+C                                                                         F00460
+C                                                                         F00940
+C     ******** NITROGEN COLLISION INDUCED PURE ROTATION BAND  ********
+C
+C     Model used:
+C      Borysow, A, and L. Frommhold, "Collision-induced
+C         rototranslational absorption spectra of N2-N2
+C         pairs for temperatures from 50 to 300 K", The
+C         Astrophysical Journal, 311, 1043-1057, 1986.
+C
+C                                                                         F00960
+C     THIS NITROGEN CONTINUUM IS IN UNITS OF 1./(CM AMAGAT^2)
+C
+C     Only calculate if V2 > -10. cm-1 and V1 <  350. cm-1
+c
+      if ((V2.gt.-10.0).and.(V1.lt.350.)) then
+c
+C        The following puts WXN2 units in 1./(CM AMAGAT)
+C
+         WXN2 = WN2/XLOSMT
+C                                                                         F00480
+C        RHOFAC units are AMAGATS
+C
+         RHOFAC = ((WN2*1.e-20)/WTOT)*(PAVE/P0)*(273./TAVE)
+C
+         CALL N2R296 (V1C,V2C,DVC,NPTC,C0)
+         CALL N2R220 (V1C,V2C,DVC,NPTC,C1)
+C
+         DO 40 J = 1, NPTC                                                F01080
+            VJ = V1C+DVC*FLOAT(J-1)                                       F01090
+C
+            C(J) = 0.
+            IF (C0(J).GT.0. .AND. C1(J).GT.0.)
+     *           C(J) = WXN2*RHOFAC*C0(J)*(C0(J)/C1(J))**TFAC  
+C                                                                         F01110
+C           Radiation field                                               F01120
+C                                                                         F01130
+            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01140
+ 40      CONTINUE                                                         F01150
+         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01160
+
+      endif
+C                                                                         F01170
+C                                                                         F00940
+C     ********    NITROGEN COLLISION INDUCED FUNDAMENTAL ********         F00950
+C                                                                         F00960
+c     version_1 of the Nitrogen Collision Induced Fundamental
+c
+c     Lafferty, W.J., A.M. Solodov,A. Weber, W.B. Olson and J._M. Hartmann,
+c        Infrared collision-induced absorption by N2 near 4.3 microns for
+c        atmospheric applications: measurements and emprirical modeling, 
+c         Appl. Optics, 35, 5911-5917, (1996).
+c
+C     Only calculate if V2 > 2085. cm-1 and V1 <  2670. cm-1
+C
+      if ((V2.gt.2085.0).and.(V1.lt.2670.)) then
+
+         rhofac = (Pave/P0)*(273./Tave)
+c     
+         tau_fac = Wn2 * 1.e-20 * rhofac 
+c
+c        Wn2 is in units of molec/cm2
+c        rhofac is in units of amagats (air)
+c
+c        The temperature correction is done in the subroutine n2_ver_1:
+c
+         call n2_ver_1 (v1c,v2c,dvc,nptc,c0,tave)
+C
+c        c0 are the nitrogen absorption coefficients at temperature tave 
+c           - these absorption coefficients are in units of
+c                [(cm^2/molec) 10^20)]/(cm-1  amagat) 
+c           - cm-1 in the denominator arises through the removal
+c                of the radiation field
+c           - for this case, an amagat is interpreted as one
+c                loshmidt of air (273K)
+c
+         DO 45 J = 1, NPTC
+            VJ = V1C+DVC*FLOAT(J-1)
+            C(J) = tau_fac * c0(J)
+C
+C           Radiation field
+C
+            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)
+ 45      CONTINUE
+C
+         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
+c
+      endif
+c
 
 C     ********** Rayleigh Scattering calculation **********
 c
@@ -579,6 +696,7 @@ C
       COMMON /CNTPR/ CINFO1,CINFO2,CINFO3,CINFO4
 C
       DATA CINFO1/
+c           123456789-123456789-123456789-123456789-123456789-1
      *     '                                                   ',
      *     '                                                   ',
      *     '                                                   ',
@@ -588,19 +706,19 @@ C
      *     '                                                   ',
      *     '                                                   ',
      *     '                     H2O   SELF  (T)      0 - 20000',
-     *     ' CM-1    ckd_2.2                                   ',
+     *     ' CM-1    ckd_2.3                                   ',
      *     '                           AIR   (T)      0 - 20000',
-     *     ' CM-1    ckd_2.2                                   ',
+     *     ' CM-1    ckd_2.3                                   ',
      *     '                     CO2   AIR            0 - 20000',
      *     ' CM-1                                              ',
      *     '                     N2    SELF           0 -   350',
      *     ' CM-1    BORYSOW FORMMHOLD                         ',
-     *     '                           AIR         2020 -  2800',
-     *     ' CM-1                      (01 JULY  1982)         ' /
+     *     '                           AIR         2085 -  2670',
+     *     ' CM-1                        (March 1998)          ' /
 C
       DATA CINFO2/
-     *     '                     O2    AIR   (T)   1390 -  1760',
-     *     ' CM-1                                              ',
+     *     '                     O2    AIR   (T)   1340 -  1850',
+     *     ' CM-1                        (March 1998)          ',
      *     '                           O2/N2      36000 -  >>>>',
      *     ' CM-1    HERZBERG                                  ',
      *     '                     O3    AIR         9170 - 24565',
@@ -613,44 +731,82 @@ C
 C
       DATA CINFO3/
      *     '  H2O SELF HAS BEEN REDUCED IN THE 800-1200 CM-1 RE',
-     *     'GION                        (01 SEPT 1985)         ',
+     *     'GION                                 (01 SEPT 1985)',
      *     '  03       TEMPERATURE DEPENDENCE HAS BEEN CORRECTE',
-     *     'D                            (01 MAY 1987)         ',
+     *     'D                                     (01 MAY 1987)',
      *     '  02       (1390-1760) HAS BEEN REDUCED (FACTOR = 0',
-     *     '.78)                       (07 MARCH 1990)         ',
+     *     '.78)                                (07 MARCH 1990)',
      *     '  H2O SELF HAS BEEN REDUCED IN THE 1100-1500 CM-1 R',
-     *     'EGION                      (01 APRIL 1993)         ',
+     *     'EGION                               (01 APRIL 1993)',
      *     '  H2O FOREIGN HAS BEEN REDUCED AT ~1300 CM-1 AND IN',
-     *     ' ALL THE WINDOW REGIONS    (01 APRIL 1993)         ',
+     *     ' ALL THE WINDOW REGIONS             (01 APRIL 1993)',
      *     '  H2O SELF HAS BEEN MODIFIED IN THE 700-1500 CM-1 R',
-     *     'EGION                        (01 MAY 1994)         ',
+     *     'EGION                                 (01 MAY 1994)',
      *     '  H2O FOREIGN HAS BEEN MODIFIED IN THE ENTIRE 1200-',
-     *     '2200 CM-1 SPECTRAL RANGE     (01 MAY 1994)         ',
+     *     '2200 CM-1 SPECTRAL RANGE              (01 MAY 1994)',
      *     '  H2O SELF HAS BEEN INCREASED 30% IN THE MICROWAVE ',
-     *     'REGION                       (09 FEB 1996)         ',
+     *     'REGION                                (09 FEB 1996)',
      *     '  N2 COLLISION INDUCED PURE ROTATION BAND ADDED    ',
-     *     '                             (09 FEB 1996)         ' /
+     *     '                                      (09 FEB 1996)'/
 
       DATA CINFO4/
      *     '  O3 CHAPPUIS CHANGED TO VALUES FROM MODTRAN3      ',
-     *     '                             (09 FEB 1996)         ',
+     *     '                                      (09 FEB 1996)',
      *     '  INTERPOLATION EFFECTS BETWEEN HARTLEY HUGGINS DAT',
-     *     'A AROUND 40800 CM-1         (18 SEPT 1996)'         ,
+     *     'A AROUND 40800 CM-1                  (18 SEPT 1996)',
+     *     '  O2 COLLISION INDUCED FUNDAMENTAL BAND (1340-1850 ',
+     *     'CM-1) CHANGED TO THIBAULT ET AL., 1996 (MARCH 1998)',
+     *     '  N2 COLLISION INDUCED FUNDAMENTAL BAND (2085-2670 ',
+     *     'CM-1) CHANGED TO LAFFERTY ET AL., 1996 (MARCH 1998)',
+     *     '  H2O FOREIGN HAS BEEN MODIFIED IN THE 0-800 CM-1 A',
+     *     'ND 1200-2200 CM-1 RANGE BASED ON                   ',
+     *     '      AERI-ER FROM SHEBA, TOBIN ET AL., 1998 & ANAL',
+     *     'YSIS OF MLAWER ET AL., 1998            (MARCH 1998)',
      *     '                                                   ',
      *     '                                                   ',
      *     '  -------------------------------------------------',
      *     '------------------------------------------         ',
-     *     10*' ' /
+     *     2*' ' /
 C
       END
 C
 C     --------------------------------------------------------------
 C
+      SUBROUTINE XINT_2 (V1A,V2A,DVA,A,AFACT,VFT,DVR3,R3,N1R3,N2R3)  
+C                                                                         B17530
+      IMPLICIT REAL*8           (V)                                     ! B17540
+C                                                                         B17550
+C     THIS SUBROUTINE INTERPOLATES THE A ARRAY STORED                     B17560
+C     FROM V1A TO V2A IN INCREMENTS OF DVA USING A MULTIPLICATIVE         B17570
+C     FACTOR AFACT, INTO THE R3 ARRAY FROM LOCATION N1R3 TO N2R3 IN       B17580
+C     INCREMENTS OF DVR3                                                  B17590
+C                                                                         B17600
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           B17610
+      DIMENSION A(*),R3(*)                                                B17620
+C                                                                         B17630
+      RECDVA = 1./DVA                                                     B17640
+      ILO = (V1A+DVA-VFT)/DVR3+1.+ONEMI                                   B17650
+      ILO = MAX(ILO,N1R3)                                                 B17660
+      IHI = (V2A-DVA-VFT)/DVR3+ONEMI                                      B17670
+      IHI = MIN(IHI,N2R3)                                                 B17680
+C                                                                         B17690
+      DO 10 I = ILO, IHI                                                  B17700
+         VI = VFT+DVR3*FLOAT(I-1)                                         B17710
+         J = (VI-V1A)*RECDVA+ONEPL                                        B17720
+         VJ = V1A+DVA*FLOAT(J-1)                                          B17730
+         P = RECDVA*(VI-VJ)                                               B17740
+         CONTI = A(J)*(1.-p) +A(J+1)*p
+         R3(I) = R3(I)+CONTI*AFACT                                        B17800
+   10 CONTINUE                                                            B17810
+C                                                                         B17820
+      RETURN                                                              B17830
+C                                                                         B17840
+      END                                                                 B17850
       SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                               F02220
 C                                                                         F02230
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F02240
+      IMPLICIT REAL*8           (V)                                     ! F02240
 C                                                                         F02250
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F02260
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F02260
       COMMON /SH2O/ V1S,V2S,DVS,NPTS,S(2003)                              F02270
       DIMENSION C(*)                                                      F02280
 C                                                                         F02290
@@ -682,7 +838,7 @@ C     --------------------------------------------------------------
 C
       BLOCK DATA BS296                                                    F02510
 C                                                                         F02520
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F02530
+      IMPLICIT REAL*8           (V)                                     ! F02530
 C                                                                         F02540
 C               06/28/82                                                  F02550
 C               UNITS OF (CM**3/MOL) * 1.E-20                             F02560
@@ -1151,9 +1307,9 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE SL260 (V1C,V2C,DVC,NPTC,C)                               F07170
 C                                                                         F07180
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F07190
+      IMPLICIT REAL*8           (V)                                     ! F07190
 C                                                                         F07200
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F07210
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F07210
       COMMON /S260/ V1S,V2S,DVS,NPTS,S(2003)                              F07220
       DIMENSION C(*)                                                      F07230
 C                                                                         F07240
@@ -1185,7 +1341,7 @@ C     --------------------------------------------------------------
 C
       BLOCK DATA BS260                                                    F07460
 C                                                                         F07470
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F07480
+      IMPLICIT REAL*8           (V)                                     ! F07480
 C                                                                         F07490
 C               06/28/82                                                  F07500
 C               UNITS OF (CM**3/MOL) * 1.E-20                             F07510
@@ -1653,11 +1809,560 @@ C                                                                         F12110
 C
 C     --------------------------------------------------------------
 C
+      SUBROUTINE FRN296a (V1C,V2C,DVC,NPTC,C)
+C
+      IMPLICIT REAL*8           (V)
+C
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
+      COMMON /FH2Oa/ V1S,V2S,DVS,NPTS,S(2221)
+      DIMENSION C(*)
+C
+      DVC = DVS
+      V1C = V1ABS-DVC
+      V2C = V2ABS+DVC
+C
+      I1 = (V1C-V1S)/DVS
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
+      DO 10 J = 1, NPTC
+         I = I1+J
+         C(J) = 0.
+         IF ((I.GE.1).AND.(I.LE.NPTS)) THEN
+            C(J) = S(I)
+         ENDIF
+   10 CONTINUE
+C
+      RETURN
+C
+      END
+C
+C     --------------------------------------------------------------
+      BLOCK DATA bfh2oa                                                 
+                                                                        
+      IMPLICIT REAL*8 (V)                                               
+                                                                        
+                                                                        
+                                                                        
+      COMMON /FH2Oa/ V1,V2,DV,NPT,                                      
+     *          f0000(20),f0001(50),f0051(50),f0101(50),f0151(50),      
+     *          f0201(50),f0251(50),f0301(50),f0351(50),f0401(50),      
+     *          f0451(50),f0501(50),f0551(50),f0601(50),f0651(50),      
+     *          f0701(50),f0751(50),f0801(50),f0851(50),f0901(50),      
+     *          f0951(50),f1001(50),f1051(50),f1101(50),f1151(50),      
+     *          f1201(50),f1251(50),f1301(50),f1351(50),f1401(50),      
+     *          f1451(50),f1501(50),f1551(50),f1601(50),f1651(50),      
+     *          f1701(50),f1751(50),f1801(50),f1851(50),f1901(50),      
+     *          f1951(50),f2001(50),f2051(50),f2101(50),f2151(50),      
+     *          f2201(01)                                               
+                                                                        
+      DATA V1,V2,DV,NPT / -20.000,2200.000,   1.000, 2221/              
+                                                                        
+      DATA f0000/                                                       
+     *     1.6078E-02, 1.5843E-02, 1.5706E-02, 1.5616E-02, 1.5182E-02,  
+     *     1.2376E-02, 1.1107E-02, 1.0414E-02, 9.9406E-03, 9.5934E-03,  
+     *     9.3349E-03, 9.1084E-03, 8.9610E-03, 8.8397E-03, 8.7490E-03,  
+     *     8.6715E-03, 8.6189E-03, 8.5612E-03, 8.5216E-03, 8.4830E-03/  
+      DATA f0001/                                                       
+     *     8.4820E-03, 8.4830E-03, 8.5216E-03, 8.5612E-03, 8.6189E-03,  
+     *     8.6715E-03, 8.7490E-03, 8.8397E-03, 8.9610E-03, 9.1084E-03,  
+     *     9.3349E-03, 9.5934E-03, 9.9406E-03, 1.0414E-02, 1.1107E-02,  
+     *     1.2376E-02, 1.5182E-02, 1.5616E-02, 1.5706E-02, 1.5843E-02,  
+     *     1.6078E-02, 1.6471E-02, 1.4351E-02, 1.3901E-02, 1.3368E-02,  
+     *     1.3159E-02, 1.3138E-02, 1.3257E-02, 1.2941E-02, 1.2623E-02,  
+     *     1.2994E-02, 1.3640E-02, 1.4394E-02, 1.5824E-02, 1.8890E-02,  
+     *     2.0862E-02, 2.2839E-02, 2.3986E-02, 2.4807E-02, 2.5200E-02,  
+     *     2.2784E-02, 2.1378E-02, 1.8778E-02, 1.7248E-02, 1.6212E-02,  
+     *     1.5907E-02, 1.5503E-02, 1.5377E-02, 1.5472E-02, 1.5824E-02/  
+      DATA f0051/                                                       
+     *     1.6008E-02, 1.6772E-02, 1.8339E-02, 2.2179E-02, 2.4180E-02,  
+     *     2.6286E-02, 2.6417E-02, 2.6277E-02, 2.6228E-02, 2.3054E-02,  
+     *     2.1060E-02, 1.8598E-02, 1.7579E-02, 1.6749E-02, 1.6311E-02,  
+     *     1.6084E-02, 1.5828E-02, 1.5557E-02, 1.5457E-02, 1.6038E-02,  
+     *     1.7308E-02, 1.8237E-02, 1.8811E-02, 1.9554E-02, 1.9629E-02,  
+     *     1.9434E-02, 1.8992E-02, 1.8659E-02, 1.8333E-02, 1.7409E-02,  
+     *     1.7391E-02, 1.7150E-02, 1.6959E-02, 1.6383E-02, 1.6625E-02,  
+     *     1.7875E-02, 1.9440E-02, 1.9500E-02, 1.9773E-02, 2.0591E-02,  
+     *     2.2807E-02, 2.1228E-02, 1.9315E-02, 1.8526E-02, 1.8478E-02,  
+     *     1.8724E-02, 1.7428E-02, 1.8106E-02, 1.9809E-02, 1.9567E-02/  
+      DATA f0101/                                                       
+     *     1.9270E-02, 1.9385E-02, 1.9414E-02, 1.8954E-02, 1.6377E-02,  
+     *     1.5026E-02, 1.4331E-02, 1.3967E-02, 1.3177E-02, 1.2538E-02,  
+     *     1.1872E-02, 1.1393E-02, 1.1105E-02, 1.0951E-02, 1.0568E-02,  
+     *     1.0181E-02, 1.0187E-02, 1.0524E-02, 1.1207E-02, 1.2140E-02,  
+     *     1.2909E-02, 1.2905E-02, 1.3005E-02, 1.3103E-02, 1.3717E-02,  
+     *     1.3383E-02, 1.2397E-02, 1.1943E-02, 1.1830E-02, 1.2076E-02,  
+     *     1.1873E-02, 1.1070E-02, 1.0517E-02, 1.0237E-02, 1.0136E-02,  
+     *     1.0171E-02, 9.6196E-03, 9.7153E-03, 9.6979E-03, 9.5807E-03,  
+     *     9.4305E-03, 9.3513E-03, 8.8237E-03, 8.1656E-03, 7.6933E-03,  
+     *     7.7092E-03, 8.3381E-03, 9.5564E-03, 1.1611E-02, 1.1873E-02/  
+      DATA f0151/                                                       
+     *     1.2012E-02, 1.2482E-02, 1.2020E-02, 1.1534E-02, 9.2659E-03,  
+     *     8.3248E-03, 7.8122E-03, 6.8545E-03, 6.3431E-03, 6.0212E-03,  
+     *     5.7943E-03, 5.2884E-03, 4.9362E-03, 4.7848E-03, 4.7881E-03,  
+     *     4.8369E-03, 5.0214E-03, 5.5298E-03, 6.6422E-03, 6.6174E-03,  
+     *     6.5748E-03, 6.7043E-03, 6.7091E-03, 6.5555E-03, 5.6461E-03,  
+     *     5.4999E-03, 5.2199E-03, 4.8447E-03, 4.6602E-03, 4.4976E-03,  
+     *     4.2751E-03, 3.7515E-03, 3.4779E-03, 3.3280E-03, 3.2370E-03,  
+     *     3.1647E-03, 3.2222E-03, 3.1214E-03, 3.0533E-03, 3.0082E-03,  
+     *     2.9870E-03, 2.9098E-03, 2.7659E-03, 2.6963E-03, 2.6842E-03,  
+     *     2.7227E-03, 2.8012E-03, 2.9288E-03, 3.2004E-03, 3.8210E-03/  
+      DATA f0201/                                                       
+     *     5.3178E-03, 5.8323E-03, 5.8317E-03, 5.8623E-03, 5.9441E-03,  
+     *     6.1394E-03, 5.0718E-03, 4.1212E-03, 3.6467E-03, 3.3772E-03,  
+     *     3.2173E-03, 3.0801E-03, 2.4728E-03, 2.1812E-03, 2.0104E-03,  
+     *     1.9075E-03, 1.8410E-03, 1.7940E-03, 1.7965E-03, 1.9236E-03,  
+     *     1.9773E-03, 2.0319E-03, 2.1190E-03, 2.2947E-03, 2.6318E-03,  
+     *     2.8777E-03, 3.0266E-03, 2.9327E-03, 2.8693E-03, 2.7516E-03,  
+     *     2.5464E-03, 1.9783E-03, 1.5874E-03, 1.3824E-03, 1.2539E-03,  
+     *     1.1654E-03, 1.1021E-03, 1.0550E-03, 1.0228E-03, 1.0038E-03,  
+     *     9.9890E-04, 1.0147E-03, 1.0672E-03, 1.1856E-03, 1.2668E-03,  
+     *     1.4298E-03, 1.5679E-03, 1.5892E-03, 1.6152E-03, 1.6089E-03/  
+      DATA f0251/                                                       
+     *     1.7326E-03, 1.9243E-03, 2.0959E-03, 2.0078E-03, 1.9486E-03,  
+     *     1.9056E-03, 1.8731E-03, 1.4407E-03, 1.0599E-03, 8.7152E-04,  
+     *     7.6304E-04, 6.9562E-04, 6.5252E-04, 6.2983E-04, 6.2272E-04,  
+     *     6.0126E-04, 5.8412E-04, 5.7075E-04, 5.6144E-04, 5.4553E-04,  
+     *     5.2587E-04, 5.2273E-04, 5.3349E-04, 5.6490E-04, 6.2294E-04,  
+     *     7.2019E-04, 9.0488E-04, 9.1976E-04, 9.5231E-04, 9.8205E-04,  
+     *     1.0271E-03, 9.5712E-04, 7.7079E-04, 6.8258E-04, 6.2349E-04,  
+     *     5.6037E-04, 4.8970E-04, 4.9331E-04, 4.6319E-04, 4.4234E-04,  
+     *     4.2710E-04, 4.1578E-04, 4.0248E-04, 3.4450E-04, 3.1837E-04,  
+     *     3.0662E-04, 3.0448E-04, 3.1137E-04, 3.3154E-04, 3.7780E-04/  
+      DATA f0301/                                                       
+     *     4.6811E-04, 5.5574E-04, 5.5072E-04, 5.4604E-04, 5.4016E-04,  
+     *     5.2242E-04, 4.2226E-04, 3.2092E-04, 2.7022E-04, 2.4069E-04,  
+     *     2.2210E-04, 2.1031E-04, 2.0496E-04, 2.0104E-04, 1.9453E-04,  
+     *     1.8934E-04, 1.8545E-04, 1.8336E-04, 1.7858E-04, 1.7788E-04,  
+     *     1.8767E-04, 2.1829E-04, 2.2994E-04, 2.3298E-04, 2.4215E-04,  
+     *     2.6730E-04, 2.7183E-04, 2.3598E-04, 2.1470E-04, 2.0296E-04,  
+     *     1.9707E-04, 1.6858E-04, 1.6140E-04, 1.6554E-04, 1.5778E-04,  
+     *     1.5224E-04, 1.4836E-04, 1.4614E-04, 1.3534E-04, 1.1740E-04,  
+     *     1.0824E-04, 1.0288E-04, 9.9101E-05, 9.6792E-05, 9.1748E-05,  
+     *     8.9821E-05, 9.0542E-05, 9.5951E-05, 9.9507E-05, 1.0263E-04/  
+      DATA f0351/                                                       
+     *     1.0454E-04, 1.0551E-04, 1.0853E-04, 1.0224E-04, 1.0079E-04,  
+     *     1.0076E-04, 9.4764E-05, 8.9628E-05, 8.3408E-05, 7.9685E-05,  
+     *     7.3838E-05, 6.3745E-05, 5.8353E-05, 5.5111E-05, 5.3051E-05,  
+     *     5.1883E-05, 5.1677E-05, 5.3310E-05, 5.5126E-05, 5.4309E-05,  
+     *     5.3781E-05, 5.3763E-05, 5.4908E-05, 5.1794E-05, 4.8747E-05,  
+     *     4.6716E-05, 4.5271E-05, 4.4104E-05, 4.1378E-05, 3.9538E-05,  
+     *     3.8149E-05, 3.7867E-05, 3.9215E-05, 4.1128E-05, 4.0087E-05,  
+     *     3.9165E-05, 3.8372E-05, 3.7649E-05, 3.5090E-05, 3.1347E-05,  
+     *     2.9642E-05, 2.8934E-05, 2.8996E-05, 2.9657E-05, 3.1954E-05,  
+     *     3.3271E-05, 3.2896E-05, 3.2461E-05, 3.1851E-05, 3.1114E-05/  
+      DATA f0401/                                                       
+     *     2.8263E-05, 2.5279E-05, 2.3483E-05, 2.2232E-05, 2.1293E-05,  
+     *     2.0616E-05, 2.0100E-05, 1.9699E-05, 1.9395E-05, 1.9175E-05,  
+     *     1.9052E-05, 1.9034E-05, 1.9203E-05, 1.9672E-05, 2.0676E-05,  
+     *     2.2787E-05, 2.7701E-05, 3.0991E-05, 3.3229E-05, 3.3040E-05,  
+     *     3.2837E-05, 3.2609E-05, 2.8882E-05, 2.3564E-05, 1.9887E-05,  
+     *     1.7860E-05, 1.6629E-05, 1.5861E-05, 1.5486E-05, 1.5324E-05,  
+     *     1.4789E-05, 1.4405E-05, 1.4112E-05, 1.3876E-05, 1.3420E-05,  
+     *     1.2881E-05, 1.2618E-05, 1.2538E-05, 1.2688E-05, 1.3325E-05,  
+     *     1.3889E-05, 1.3728E-05, 1.3584E-05, 1.3450E-05, 1.3294E-05,  
+     *     1.2289E-05, 1.1291E-05, 1.0749E-05, 1.0402E-05, 1.0150E-05/  
+      DATA f0451/                                                       
+     *     9.9945E-06, 9.9236E-06, 9.9636E-06, 1.0209E-05, 1.0889E-05,  
+     *     1.2306E-05, 1.2934E-05, 1.2790E-05, 1.2662E-05, 1.2550E-05,  
+     *     1.2216E-05, 1.0451E-05, 9.2675E-06, 8.6588E-06, 8.3057E-06,  
+     *     8.0925E-06, 7.9811E-06, 7.9703E-06, 8.0946E-06, 8.5110E-06,  
+     *     9.4102E-06, 9.5217E-06, 9.4271E-06, 9.3404E-06, 9.2666E-06,  
+     *     8.9748E-06, 7.9092E-06, 7.3419E-06, 7.0717E-06, 6.9649E-06,  
+     *     7.0289E-06, 7.3988E-06, 7.7702E-06, 7.6610E-06, 7.5362E-06,  
+     *     7.4267E-06, 7.3310E-06, 6.7445E-06, 6.1891E-06, 5.9251E-06,  
+     *     5.7795E-06, 5.6383E-06, 5.5296E-06, 5.4383E-06, 5.3602E-06,  
+     *     5.2525E-06, 5.1489E-06, 5.0919E-06, 5.0671E-06, 5.0964E-06/  
+      DATA f0501/                                                       
+     *     5.2080E-06, 5.1868E-06, 5.2008E-06, 5.2940E-06, 5.5825E-06,  
+     *     5.7446E-06, 5.5369E-06, 5.4162E-06, 5.3316E-06, 5.2668E-06,  
+     *     4.8406E-06, 4.4802E-06, 4.2960E-06, 4.1993E-06, 4.1777E-06,  
+     *     4.2037E-06, 4.1881E-06, 4.1636E-06, 4.1251E-06, 4.0899E-06,  
+     *     4.0282E-06, 3.9195E-06, 3.8988E-06, 3.9849E-06, 4.0808E-06,  
+     *     4.0226E-06, 3.9732E-06, 3.9293E-06, 3.8843E-06, 3.6486E-06,  
+     *     3.4340E-06, 3.3203E-06, 3.2549E-06, 3.2262E-06, 3.2359E-06,  
+     *     3.1893E-06, 3.1503E-06, 3.1199E-06, 3.1032E-06, 3.0678E-06,  
+     *     2.9889E-06, 2.9594E-06, 2.9730E-06, 3.0409E-06, 3.0602E-06,  
+     *     3.0044E-06, 2.9591E-06, 2.9225E-06, 2.8671E-06, 2.7440E-06/  
+      DATA f0551/                                                       
+     *     2.6185E-06, 2.5521E-06, 2.5192E-06, 2.4724E-06, 2.4266E-06,  
+     *     2.3894E-06, 2.3568E-06, 2.3285E-06, 2.2754E-06, 2.2448E-06,  
+     *     2.2361E-06, 2.2486E-06, 2.2362E-06, 2.2389E-06, 2.2738E-06,  
+     *     2.3456E-06, 2.3408E-06, 2.3402E-06, 2.3038E-06, 2.2759E-06,  
+     *     2.2144E-06, 2.1206E-06, 2.0532E-06, 1.9890E-06, 1.9688E-06,  
+     *     1.9303E-06, 1.9006E-06, 1.8798E-06, 1.8736E-06, 1.8323E-06,  
+     *     1.7767E-06, 1.7405E-06, 1.7131E-06, 1.6904E-06, 1.6511E-06,  
+     *     1.6230E-06, 1.6059E-06, 1.5989E-06, 1.6076E-06, 1.6541E-06,  
+     *     1.6636E-06, 1.6520E-06, 1.6475E-06, 1.6409E-06, 1.6231E-06,  
+     *     1.5372E-06, 1.4794E-06, 1.4430E-06, 1.4023E-06, 1.3665E-06/  
+      DATA f0601/                                                       
+     *     1.3401E-06, 1.3176E-06, 1.2962E-06, 1.2752E-06, 1.2556E-06,  
+     *     1.2380E-06, 1.2216E-06, 1.2059E-06, 1.1921E-06, 1.1817E-06,  
+     *     1.1778E-06, 1.1759E-06, 1.1728E-06, 1.1849E-06, 1.2019E-06,  
+     *     1.1863E-06, 1.1625E-06, 1.1394E-06, 1.1191E-06, 1.0754E-06,  
+     *     1.0287E-06, 1.0015E-06, 9.8719E-07, 9.8375E-07, 9.6463E-07,  
+     *     9.4702E-07, 9.3003E-07, 9.1393E-07, 8.9197E-07, 8.6158E-07,  
+     *     8.4163E-07, 8.2644E-07, 8.1362E-07, 8.0521E-07, 7.9496E-07,  
+     *     7.8778E-07, 7.7928E-07, 7.6525E-07, 7.5149E-07, 7.3475E-07,  
+     *     7.1969E-07, 7.0248E-07, 6.8694E-07, 6.7289E-07, 6.5898E-07,  
+     *     6.4560E-07, 6.3280E-07, 6.1943E-07, 6.0446E-07, 5.8968E-07/  
+      DATA f0651/                                                       
+     *     5.7678E-07, 5.6448E-07, 5.5275E-07, 5.4166E-07, 5.3129E-07,  
+     *     5.2186E-07, 5.1424E-07, 5.1034E-07, 5.0032E-07, 4.9074E-07,  
+     *     4.8217E-07, 4.7362E-07, 4.6365E-07, 4.4933E-07, 4.3945E-07,  
+     *     4.3299E-07, 4.3080E-07, 4.2736E-07, 4.1736E-07, 4.0809E-07,  
+     *     3.9931E-07, 3.9126E-07, 3.7371E-07, 3.5806E-07, 3.4658E-07,  
+     *     3.3704E-07, 3.2831E-07, 3.1941E-07, 3.1119E-07, 3.0349E-07,  
+     *     2.9612E-07, 2.8895E-07, 2.8156E-07, 2.7458E-07, 2.6813E-07,  
+     *     2.6224E-07, 2.5628E-07, 2.4978E-07, 2.4333E-07, 2.3694E-07,  
+     *     2.3076E-07, 2.2388E-07, 2.1737E-07, 2.1132E-07, 2.0583E-07,  
+     *     1.9989E-07, 1.9412E-07, 1.8835E-07, 1.8267E-07, 1.7711E-07/  
+      DATA f0701/                                                       
+     *     1.7158E-07, 1.6646E-07, 1.6184E-07, 1.5774E-07, 1.5375E-07,  
+     *     1.5052E-07, 1.4608E-07, 1.4173E-07, 1.3742E-07, 1.3299E-07,  
+     *     1.2860E-07, 1.2375E-07, 1.1949E-07, 1.1559E-07, 1.1183E-07,  
+     *     1.0812E-07, 1.0449E-07, 1.0089E-07, 9.7290E-08, 9.3694E-08,  
+     *     9.0050E-08, 8.8010E-08, 8.5880E-08, 8.3670E-08, 8.1400E-08,  
+     *     7.9100E-08, 7.6770E-08, 7.4440E-08, 7.2120E-08, 6.9840E-08,  
+     *     6.7620E-08, 6.5390E-08, 6.3110E-08, 6.0810E-08, 5.8510E-08,  
+     *     5.6230E-08, 5.4010E-08, 5.1880E-08, 4.9850E-08, 4.7960E-08,  
+     *     4.6230E-08, 4.4670E-08, 4.3230E-08, 4.1920E-08, 4.0710E-08,  
+     *     3.9590E-08, 3.8550E-08, 3.7580E-08, 3.6650E-08, 3.5770E-08/  
+      DATA f0751/                                                       
+     *     3.4900E-08, 3.4090E-08, 3.3360E-08, 3.2690E-08, 3.2090E-08,  
+     *     3.1530E-08, 3.1010E-08, 3.0520E-08, 3.0050E-08, 2.9590E-08,  
+     *     2.9120E-08, 2.8670E-08, 2.8270E-08, 2.7890E-08, 2.7540E-08,  
+     *     2.7210E-08, 2.6880E-08, 2.6550E-08, 2.6210E-08, 2.5860E-08,  
+     *     2.5470E-08, 2.5070E-08, 2.4650E-08, 2.4210E-08, 2.3770E-08,  
+     *     2.3320E-08, 2.2880E-08, 2.2440E-08, 2.2000E-08, 2.1570E-08,  
+     *     2.1160E-08, 2.0760E-08, 2.0360E-08, 1.9960E-08, 1.9560E-08,  
+     *     1.9170E-08, 1.8800E-08, 1.8430E-08, 1.8080E-08, 1.7740E-08,  
+     *     1.7420E-08, 1.7130E-08, 1.6850E-08, 1.6600E-08, 1.6360E-08,  
+     *     1.6130E-08, 1.5910E-08, 1.5690E-08, 1.5470E-08, 1.5240E-08/  
+      DATA f0801/                                                       
+     *     1.5000E-08, 1.4750E-08, 1.4490E-08, 1.4240E-08, 1.3980E-08,  
+     *     1.3720E-08, 1.3470E-08, 1.3210E-08, 1.2950E-08, 1.2690E-08,  
+     *     1.2440E-08, 1.2190E-08, 1.1940E-08, 1.1700E-08, 1.1450E-08,  
+     *     1.1210E-08, 1.0960E-08, 1.0710E-08, 1.0460E-08, 1.0210E-08,  
+     *     9.9450E-09, 9.6760E-09, 9.3990E-09, 9.1150E-09, 8.8270E-09,  
+     *     8.5390E-09, 8.2520E-09, 7.9700E-09, 7.6950E-09, 7.4290E-09,  
+     *     7.1750E-09, 6.9310E-09, 6.6900E-09, 6.4530E-09, 6.2230E-09,  
+     *     5.9990E-09, 5.7830E-09, 5.5760E-09, 5.3780E-09, 5.1910E-09,  
+     *     5.0160E-09, 4.8530E-09, 4.7020E-09, 4.5620E-09, 4.4320E-09,  
+     *     4.3110E-09, 4.1960E-09, 4.0880E-09, 3.9840E-09, 3.8840E-09/  
+      DATA f0851/                                                       
+     *     3.7860E-09, 3.6920E-09, 3.6060E-09, 3.5270E-09, 3.4530E-09,  
+     *     3.3830E-09, 3.3170E-09, 3.2530E-09, 3.1900E-09, 3.1280E-09,  
+     *     3.0640E-09, 3.0020E-09, 2.9410E-09, 2.8830E-09, 2.8260E-09,  
+     *     2.7710E-09, 2.7170E-09, 2.6640E-09, 2.6110E-09, 2.5590E-09,  
+     *     2.5070E-09, 2.4560E-09, 2.4060E-09, 2.3580E-09, 2.3110E-09,  
+     *     2.2630E-09, 2.2160E-09, 2.1690E-09, 2.1210E-09, 2.0710E-09,  
+     *     2.0200E-09, 1.9660E-09, 1.9080E-09, 1.8490E-09, 1.7890E-09,  
+     *     1.7290E-09, 1.6700E-09, 1.6120E-09, 1.5570E-09, 1.5070E-09,  
+     *     1.4610E-09, 1.4190E-09, 1.3820E-09, 1.3480E-09, 1.3160E-09,  
+     *     1.2870E-09, 1.2590E-09, 1.2320E-09, 1.2060E-09, 1.1790E-09/  
+      DATA f0901/                                                       
+     *     1.1520E-09, 1.1240E-09, 1.0970E-09, 1.0710E-09, 1.0450E-09,  
+     *     1.0200E-09, 9.9470E-10, 9.7040E-10, 9.4640E-10, 9.2300E-10,  
+     *     8.9980E-10, 8.7690E-10, 8.5410E-10, 8.3160E-10, 8.0940E-10,  
+     *     7.8790E-10, 7.6700E-10, 7.4690E-10, 7.2780E-10, 7.0990E-10,  
+     *     6.9320E-10, 6.7800E-10, 6.6430E-10, 6.5190E-10, 6.4060E-10,  
+     *     6.2990E-10, 6.1980E-10, 6.0990E-10, 6.0010E-10, 5.8990E-10,  
+     *     5.7920E-10, 5.6810E-10, 5.5690E-10, 5.4560E-10, 5.3440E-10,  
+     *     5.2330E-10, 5.1240E-10, 5.0190E-10, 4.9170E-10, 4.8200E-10,  
+     *     4.7290E-10, 4.6450E-10, 4.5680E-10, 4.4960E-10, 4.4290E-10,  
+     *     4.3650E-10, 4.3010E-10, 4.2370E-10, 4.1720E-10, 4.1020E-10/  
+      DATA f0951/                                                       
+     *     4.0280E-10, 3.9470E-10, 3.8600E-10, 3.7700E-10, 3.6770E-10,  
+     *     3.5840E-10, 3.4930E-10, 3.4050E-10, 3.3210E-10, 3.2450E-10,  
+     *     3.1760E-10, 3.1170E-10, 3.0640E-10, 3.0160E-10, 2.9740E-10,  
+     *     2.9350E-10, 2.8980E-10, 2.8640E-10, 2.8300E-10, 2.7950E-10,  
+     *     2.7590E-10, 2.7230E-10, 2.6870E-10, 2.6510E-10, 2.6160E-10,  
+     *     2.5830E-10, 2.5510E-10, 2.5200E-10, 2.4910E-10, 2.4640E-10,  
+     *     2.4380E-10, 2.4160E-10, 2.3960E-10, 2.3780E-10, 2.3620E-10,  
+     *     2.3470E-10, 2.3340E-10, 2.3200E-10, 2.3070E-10, 2.2930E-10,  
+     *     2.2780E-10, 2.2630E-10, 2.2490E-10, 2.2350E-10, 2.2220E-10,  
+     *     2.2080E-10, 2.1950E-10, 2.1800E-10, 2.1650E-10, 2.1490E-10/  
+      DATA f1001/                                                       
+     *     2.1320E-10, 2.1130E-10, 2.0910E-10, 2.0680E-10, 2.0450E-10,  
+     *     2.0210E-10, 1.9970E-10, 1.9740E-10, 1.9530E-10, 1.9340E-10,  
+     *     1.9180E-10, 1.9050E-10, 1.8930E-10, 1.8820E-10, 1.8730E-10,  
+     *     1.8650E-10, 1.8590E-10, 1.8530E-10, 1.8490E-10, 1.8460E-10,  
+     *     1.8440E-10, 1.8440E-10, 1.8450E-10, 1.8480E-10, 1.8520E-10,  
+     *     1.8560E-10, 1.8620E-10, 1.8690E-10, 1.8760E-10, 1.8830E-10,  
+     *     1.8900E-10, 1.8990E-10, 1.9100E-10, 1.9230E-10, 1.9360E-10,  
+     *     1.9490E-10, 1.9620E-10, 1.9730E-10, 1.9830E-10, 1.9900E-10,  
+     *     1.9930E-10, 1.9920E-10, 1.9890E-10, 1.9820E-10, 1.9740E-10,  
+     *     1.9640E-10, 1.9540E-10, 1.9430E-10, 1.9330E-10, 1.9240E-10/  
+      DATA f1051/                                                       
+     *     1.9170E-10, 1.9110E-10, 1.9040E-10, 1.8970E-10, 1.8900E-10,  
+     *     1.8830E-10, 1.8780E-10, 1.8740E-10, 1.8710E-10, 1.8710E-10,  
+     *     1.8720E-10, 1.8760E-10, 1.8820E-10, 1.8900E-10, 1.8990E-10,  
+     *     1.9100E-10, 1.9220E-10, 1.9350E-10, 1.9490E-10, 1.9640E-10,  
+     *     1.9790E-10, 1.9950E-10, 2.0150E-10, 2.0350E-10, 2.0570E-10,  
+     *     2.0800E-10, 2.1020E-10, 2.1240E-10, 2.1450E-10, 2.1640E-10,  
+     *     2.1810E-10, 2.1950E-10, 2.2080E-10, 2.2190E-10, 2.2300E-10,  
+     *     2.2390E-10, 2.2480E-10, 2.2570E-10, 2.2650E-10, 2.2740E-10,  
+     *     2.2820E-10, 2.2890E-10, 2.2940E-10, 2.2970E-10, 2.2990E-10,  
+     *     2.3020E-10, 2.3060E-10, 2.3120E-10, 2.3220E-10, 2.3370E-10/  
+      DATA f1101/                                                       
+     *     2.3570E-10, 2.3840E-10, 2.4180E-10, 2.4580E-10, 2.5010E-10,  
+     *     2.5460E-10, 2.5920E-10, 2.6360E-10, 2.6780E-10, 2.7160E-10,  
+     *     2.7490E-10, 2.7750E-10, 2.7960E-10, 2.8130E-10, 2.8280E-10,  
+     *     2.8420E-10, 2.8550E-10, 2.8700E-10, 2.8880E-10, 2.9100E-10,  
+     *     2.9380E-10, 2.9680E-10, 3.0000E-10, 3.0340E-10, 3.0700E-10,  
+     *     3.1080E-10, 3.1490E-10, 3.1940E-10, 3.2440E-10, 3.2980E-10,  
+     *     3.3570E-10, 3.4180E-10, 3.4810E-10, 3.5450E-10, 3.6130E-10,  
+     *     3.6860E-10, 3.7650E-10, 3.8520E-10, 3.9480E-10, 4.0550E-10,  
+     *     4.1740E-10, 4.3050E-10, 4.4470E-10, 4.6000E-10, 4.7610E-10,  
+     *     4.9300E-10, 5.1060E-10, 5.2890E-10, 5.4770E-10, 5.6690E-10/  
+      DATA f1151/                                                       
+     *     5.8640E-10, 6.0650E-10, 6.2710E-10, 6.4830E-10, 6.7010E-10,  
+     *     6.9240E-10, 7.1530E-10, 7.3860E-10, 7.6240E-10, 7.8670E-10,  
+     *     8.1130E-10, 8.3580E-10, 8.5980E-10, 8.8370E-10, 9.0800E-10,  
+     *     9.3300E-10, 9.5910E-10, 9.8690E-10, 1.0170E-09, 1.0490E-09,  
+     *     1.0830E-09, 1.1200E-09, 1.1570E-09, 1.1960E-09, 1.2360E-09,  
+     *     1.2790E-09, 1.3240E-09, 1.3720E-09, 1.4230E-09, 1.4790E-09,  
+     *     1.5390E-09, 1.6030E-09, 1.6710E-09, 1.7420E-09, 1.8170E-09,  
+     *     1.8950E-09, 1.9760E-09, 2.0600E-09, 2.1460E-09, 2.2350E-09,  
+     *     2.3260E-09, 2.4190E-09, 2.5160E-09, 2.6150E-09, 2.7170E-09,  
+     *     2.8220E-09, 2.9280E-09, 3.0370E-09, 3.1470E-09, 3.2580E-09/  
+      DATA f1201/                                                       
+     *     3.3710E-09, 3.4810E-09, 3.5860E-09, 3.6900E-09, 3.7950E-09,  
+     *     3.9030E-09, 4.0170E-09, 4.1390E-09, 4.2730E-09, 4.4200E-09,  
+     *     4.5840E-09, 4.7600E-09, 4.9410E-09, 5.1310E-09, 5.3300E-09,  
+     *     5.5400E-09, 5.7640E-09, 6.0030E-09, 6.2590E-09, 6.5330E-09,  
+     *     6.8280E-09, 7.1360E-09, 7.4490E-09, 7.7720E-09, 8.1110E-09,  
+     *     8.4680E-09, 8.8500E-09, 9.2590E-09, 9.7000E-09, 1.0180E-08,  
+     *     1.0700E-08, 1.1260E-08, 1.1870E-08, 1.2510E-08, 1.3180E-08,  
+     *     1.3880E-08, 1.4600E-08, 1.5350E-08, 1.6110E-08, 1.6880E-08,  
+     *     1.7660E-08, 1.8440E-08, 1.9240E-08, 2.0050E-08, 2.0880E-08,  
+     *     2.1720E-08, 2.2590E-08, 2.3480E-08, 2.4298E-08, 2.4571E-08/  
+      DATA f1251/                                                       
+     *     2.5187E-08, 2.5858E-08, 2.6716E-08, 2.7726E-08, 2.8984E-08,  
+     *     3.0566E-08, 3.2827E-08, 3.6935E-08, 4.4212E-08, 4.5431E-08,  
+     *     4.6821E-08, 4.8416E-08, 5.0394E-08, 5.1223E-08, 4.6895E-08,  
+     *     4.6701E-08, 4.8830E-08, 5.1824E-08, 5.7072E-08, 6.7301E-08,  
+     *     7.3629E-08, 7.5054E-08, 7.5829E-08, 7.6998E-08, 7.8543E-08,  
+     *     6.9460E-08, 6.4269E-08, 6.2789E-08, 6.3216E-08, 6.4675E-08,  
+     *     6.6845E-08, 6.9844E-08, 7.3760E-08, 7.6988E-08, 8.0461E-08,  
+     *     8.4404E-08, 8.8188E-08, 9.1501E-08, 9.4333E-08, 9.7801E-08,  
+     *     1.0168E-07, 1.0545E-07, 1.0980E-07, 1.1449E-07, 1.1965E-07,  
+     *     1.2406E-07, 1.2827E-07, 1.3258E-07, 1.3702E-07, 1.4179E-07/  
+      DATA f1301/                                                       
+     *     1.4674E-07, 1.5230E-07, 1.5856E-07, 1.6570E-07, 1.7372E-07,  
+     *     1.8269E-07, 1.9288E-07, 2.0264E-07, 2.1391E-07, 2.2708E-07,  
+     *     2.4458E-07, 2.6901E-07, 2.8217E-07, 2.9835E-07, 3.1913E-07,  
+     *     3.4570E-07, 3.8208E-07, 4.0856E-07, 4.2608E-07, 4.3462E-07,  
+     *     4.4247E-07, 4.5181E-07, 4.3966E-07, 4.2086E-07, 4.1224E-07,  
+     *     4.1547E-07, 4.2476E-07, 4.3769E-07, 4.5295E-07, 4.7051E-07,  
+     *     4.9082E-07, 5.1324E-07, 5.3883E-07, 5.6995E-07, 6.1131E-07,  
+     *     6.5722E-07, 7.2417E-07, 7.8647E-07, 8.6793E-07, 8.9294E-07,  
+     *     9.0967E-07, 9.3253E-07, 9.3406E-07, 9.3788E-07, 9.0850E-07,  
+     *     9.1961E-07, 9.5626E-07, 1.0233E-06, 1.0547E-06, 1.0903E-06/  
+      DATA f1351/                                                       
+     *     1.1276E-06, 1.1680E-06, 1.2112E-06, 1.2214E-06, 1.2511E-06,  
+     *     1.2968E-06, 1.3570E-06, 1.4368E-06, 1.5388E-06, 1.6870E-06,  
+     *     1.8881E-06, 2.0889E-06, 2.1540E-06, 2.2241E-06, 2.2711E-06,  
+     *     2.3310E-06, 2.3246E-06, 2.2573E-06, 2.2838E-06, 2.3784E-06,  
+     *     2.5450E-06, 2.8571E-06, 3.0903E-06, 3.3098E-06, 3.3616E-06,  
+     *     3.4209E-06, 3.4908E-06, 3.3662E-06, 3.1712E-06, 3.0088E-06,  
+     *     2.9919E-06, 3.0413E-06, 3.1471E-06, 3.3248E-06, 3.6517E-06,  
+     *     4.3027E-06, 4.4421E-06, 4.5772E-06, 4.7499E-06, 4.9675E-06,  
+     *     5.2618E-06, 5.2073E-06, 6.0105E-06, 6.2633E-06, 6.5361E-06,  
+     *     6.8263E-06, 7.3527E-06, 8.0890E-06, 7.3738E-06, 6.9395E-06/  
+      DATA f1401/                                                       
+     *     6.7672E-06, 6.7782E-06, 6.6482E-06, 6.2641E-06, 6.0431E-06,  
+     *     5.9852E-06, 6.0066E-06, 6.0859E-06, 5.9740E-06, 5.9113E-06,  
+     *     6.0096E-06, 6.1923E-06, 6.4637E-06, 6.8238E-06, 7.3722E-06,  
+     *     8.2646E-06, 9.7581E-06, 1.2661E-05, 1.2865E-05, 1.3080E-05,  
+     *     1.3356E-05, 1.3717E-05, 1.3597E-05, 1.1033E-05, 1.0087E-05,  
+     *     9.7797E-06, 9.8607E-06, 1.0055E-05, 1.0401E-05, 1.0532E-05,  
+     *     1.0826E-05, 1.1288E-05, 1.1984E-05, 1.2633E-05, 1.4582E-05,  
+     *     1.5654E-05, 1.5697E-05, 1.5788E-05, 1.5937E-05, 1.6096E-05,  
+     *     1.3944E-05, 1.2626E-05, 1.2163E-05, 1.2112E-05, 1.2370E-05,  
+     *     1.2967E-05, 1.3597E-05, 1.3904E-05, 1.4300E-05, 1.4835E-05/  
+      DATA f1451/                                                       
+     *     1.5522E-05, 1.5989E-05, 1.7074E-05, 1.9494E-05, 2.4264E-05,  
+     *     2.7782E-05, 2.9518E-05, 3.0238E-05, 3.0494E-05, 3.0713E-05,  
+     *     2.6922E-05, 2.4283E-05, 2.3365E-05, 2.3206E-05, 2.2625E-05,  
+     *     2.2520E-05, 2.2755E-05, 2.3355E-05, 2.2760E-05, 2.3669E-05,  
+     *     2.5943E-05, 2.8012E-05, 2.8314E-05, 2.8932E-05, 2.9881E-05,  
+     *     2.8468E-05, 2.6935E-05, 2.4340E-05, 2.3433E-05, 2.2896E-05,  
+     *     2.2177E-05, 2.2089E-05, 2.2326E-05, 2.2793E-05, 2.3663E-05,  
+     *     2.5216E-05, 2.5906E-05, 2.7200E-05, 2.8829E-05, 2.9879E-05,  
+     *     3.0231E-05, 2.9943E-05, 3.0767E-05, 3.2310E-05, 3.4548E-05,  
+     *     3.4689E-05, 3.6133E-05, 3.7286E-05, 3.7878E-05, 3.7472E-05/  
+      DATA f1501/                                                       
+     *     3.5889E-05, 3.6584E-05, 3.7879E-05, 4.3644E-05, 4.7950E-05,  
+     *     5.1930E-05, 5.2979E-05, 5.3512E-05, 5.4066E-05, 4.9524E-05,  
+     *     4.4554E-05, 4.0229E-05, 3.7897E-05, 3.7371E-05, 3.8362E-05,  
+     *     4.0287E-05, 4.0718E-05, 4.2351E-05, 4.5601E-05, 5.0230E-05,  
+     *     5.1421E-05, 5.0544E-05, 5.0699E-05, 5.2098E-05, 5.0140E-05,  
+     *     4.6796E-05, 4.4084E-05, 4.2642E-05, 4.2219E-05, 4.0735E-05,  
+     *     4.1222E-05, 4.3221E-05, 4.4000E-05, 4.4575E-05, 4.6028E-05,  
+     *     4.8812E-05, 5.4095E-05, 5.9457E-05, 6.3324E-05, 6.5316E-05,  
+     *     6.8426E-05, 6.8776E-05, 6.5284E-05, 6.0279E-05, 5.4237E-05,  
+     *     4.9152E-05, 4.4699E-05, 4.2486E-05, 4.0863E-05, 3.9466E-05/  
+      DATA f1551/                                                       
+     *     3.9398E-05, 4.0599E-05, 4.3524E-05, 4.4665E-05, 4.7392E-05,  
+     *     5.3861E-05, 6.2411E-05, 6.6247E-05, 6.9243E-05, 6.8133E-05,  
+     *     6.7560E-05, 6.4310E-05, 5.6696E-05, 5.0038E-05, 4.2801E-05,  
+     *     3.9662E-05, 3.8792E-05, 3.9910E-05, 3.9448E-05, 3.8396E-05,  
+     *     3.8045E-05, 3.8354E-05, 3.9289E-05, 4.0185E-05, 4.4069E-05,  
+     *     4.2847E-05, 4.1976E-05, 4.1311E-05, 4.0779E-05, 3.7021E-05,  
+     *     3.0900E-05, 2.7909E-05, 2.6187E-05, 2.5057E-05, 2.4214E-05,  
+     *     2.3542E-05, 2.2966E-05, 2.2510E-05, 2.2135E-05, 2.1842E-05,  
+     *     2.1601E-05, 2.1436E-05, 2.1414E-05, 2.1186E-05, 2.1023E-05,  
+     *     2.0810E-05, 2.0636E-05, 2.0519E-05, 2.0287E-05, 2.0203E-05/  
+      DATA f1601/                                                       
+     *     2.0127E-05, 2.0178E-05, 2.0123E-05, 2.0132E-05, 2.0215E-05,  
+     *     2.0379E-05, 2.0536E-05, 2.0870E-05, 2.1078E-05, 2.1434E-05,  
+     *     2.1912E-05, 2.2633E-05, 2.3919E-05, 2.6156E-05, 3.1693E-05,  
+     *     3.3893E-05, 3.4126E-05, 3.4475E-05, 3.4998E-05, 3.5802E-05,  
+     *     3.1373E-05, 3.0645E-05, 2.9593E-05, 2.9157E-05, 2.9270E-05,  
+     *     3.0112E-05, 3.0618E-05, 2.8562E-05, 2.7960E-05, 2.8058E-05,  
+     *     2.8737E-05, 2.9297E-05, 3.1752E-05, 3.7047E-05, 3.8568E-05,  
+     *     3.9652E-05, 3.9937E-05, 4.0286E-05, 3.9677E-05, 3.4707E-05,  
+     *     3.2707E-05, 3.1477E-05, 3.2133E-05, 3.5027E-05, 3.8455E-05,  
+     *     4.0508E-05, 4.2290E-05, 4.3796E-05, 4.6449E-05, 4.8684E-05/  
+      DATA f1651/                                                       
+     *     5.6257E-05, 6.1072E-05, 6.0922E-05, 6.0033E-05, 5.9587E-05,  
+     *     5.8425E-05, 5.0107E-05, 4.1502E-05, 3.6079E-05, 3.3989E-05,  
+     *     3.4060E-05, 3.4038E-05, 3.3508E-05, 3.3338E-05, 3.3530E-05,  
+     *     3.4223E-05, 3.4176E-05, 3.6111E-05, 3.6148E-05, 3.7234E-05,  
+     *     3.7622E-05, 3.8420E-05, 3.9382E-05, 3.9682E-05, 3.8612E-05,  
+     *     3.7165E-05, 3.6717E-05, 3.6904E-05, 3.6486E-05, 3.4597E-05,  
+     *     3.5594E-05, 3.9193E-05, 4.4971E-05, 4.8124E-05, 4.7759E-05,  
+     *     4.7699E-05, 4.7188E-05, 4.5713E-05, 3.9072E-05, 3.4659E-05,  
+     *     3.3110E-05, 3.3205E-05, 3.5007E-05, 4.0161E-05, 4.3860E-05,  
+     *     4.4914E-05, 4.6889E-05, 5.1536E-05, 5.7575E-05, 5.3047E-05/  
+      DATA f1701/                                                       
+     *     4.8863E-05, 4.6966E-05, 4.6952E-05, 4.3249E-05, 3.7372E-05,  
+     *     3.3551E-05, 3.1537E-05, 3.0392E-05, 2.8835E-05, 2.7760E-05,  
+     *     2.6356E-05, 2.6192E-05, 2.7162E-05, 2.8816E-05, 3.0526E-05,  
+     *     3.4995E-05, 3.6068E-05, 3.5853E-05, 3.4607E-05, 3.3170E-05,  
+     *     3.1792E-05, 2.7275E-05, 2.3565E-05, 2.1587E-05, 2.0514E-05,  
+     *     1.9922E-05, 1.9652E-05, 1.9650E-05, 2.0103E-05, 2.0785E-05,  
+     *     2.2477E-05, 2.6216E-05, 2.9669E-05, 3.0003E-05, 2.9679E-05,  
+     *     2.9727E-05, 2.9776E-05, 2.8837E-05, 2.5001E-05, 2.2527E-05,  
+     *     2.1371E-05, 2.0835E-05, 2.0405E-05, 1.8411E-05, 1.7198E-05,  
+     *     1.6958E-05, 1.7137E-05, 1.7049E-05, 1.7299E-05, 1.8188E-05/  
+      DATA f1751/                                                       
+     *     1.7670E-05, 1.7150E-05, 1.6149E-05, 1.5612E-05, 1.5283E-05,  
+     *     1.3992E-05, 1.3289E-05, 1.3015E-05, 1.3142E-05, 1.3954E-05,  
+     *     1.3865E-05, 1.3332E-05, 1.3058E-05, 1.2958E-05, 1.3039E-05,  
+     *     1.2263E-05, 1.2109E-05, 1.2243E-05, 1.3160E-05, 1.5225E-05,  
+     *     1.7956E-05, 1.8662E-05, 1.8170E-05, 1.8051E-05, 1.7487E-05,  
+     *     1.6330E-05, 1.2681E-05, 1.0672E-05, 9.8981E-06, 9.0672E-06,  
+     *     8.5000E-06, 8.1578E-06, 7.9730E-06, 7.8442E-06, 7.3054E-06,  
+     *     7.0423E-06, 6.9868E-06, 7.1175E-06, 7.4724E-06, 8.2679E-06,  
+     *     1.0104E-05, 1.0547E-05, 1.0486E-05, 1.0501E-05, 1.0345E-05,  
+     *     1.0220E-05, 8.2360E-06, 7.6649E-06, 7.1501E-06, 6.7036E-06/  
+      DATA f1801/                                                       
+     *     6.4227E-06, 6.1742E-06, 6.0010E-06, 5.2006E-06, 4.7643E-06,  
+     *     4.5251E-06, 4.3203E-06, 4.2852E-06, 4.5062E-06, 4.4577E-06,  
+     *     4.3629E-06, 4.2488E-06, 4.1613E-06, 4.0938E-06, 3.6450E-06,  
+     *     3.4049E-06, 3.2673E-06, 3.1935E-06, 3.1601E-06, 3.1608E-06,  
+     *     3.2110E-06, 3.3463E-06, 3.6835E-06, 4.2362E-06, 4.3422E-06,  
+     *     4.5640E-06, 5.0379E-06, 5.9233E-06, 6.4629E-06, 5.9487E-06,  
+     *     5.7108E-06, 5.5863E-06, 5.3276E-06, 4.4756E-06, 3.5849E-06,  
+     *     3.2409E-06, 3.0520E-06, 3.0024E-06, 3.0745E-06, 3.3095E-06,  
+     *     3.7930E-06, 4.8865E-06, 6.7456E-06, 6.7111E-06, 6.6942E-06,  
+     *     6.7133E-06, 6.7047E-06, 5.8126E-06, 3.9498E-06, 3.1035E-06/  
+      DATA f1851/                                                       
+     *     2.6513E-06, 2.3024E-06, 2.0723E-06, 1.9213E-06, 1.8172E-06,  
+     *     1.7395E-06, 1.6749E-06, 1.6244E-06, 1.5922E-06, 1.5776E-06,  
+     *     1.5839E-06, 1.6206E-06, 1.6974E-06, 1.8618E-06, 2.1956E-06,  
+     *     2.6371E-06, 3.2265E-06, 4.0274E-06, 4.0061E-06, 3.9615E-06,  
+     *     3.8090E-06, 3.4593E-06, 2.9839E-06, 2.0553E-06, 1.6228E-06,  
+     *     1.3813E-06, 1.2314E-06, 1.1320E-06, 1.0635E-06, 1.0169E-06,  
+     *     9.8719E-07, 9.7922E-07, 1.0069E-06, 1.0150E-06, 1.0399E-06,  
+     *     1.1021E-06, 1.2413E-06, 1.5920E-06, 1.5881E-06, 1.5695E-06,  
+     *     1.5691E-06, 1.5892E-06, 1.6469E-06, 1.3696E-06, 1.1864E-06,  
+     *     1.0844E-06, 1.0194E-06, 9.7558E-07, 8.9207E-07, 7.7447E-07/  
+      DATA f1901/                                                       
+     *     7.1849E-07, 6.9367E-07, 6.9425E-07, 6.8812E-07, 6.9736E-07,  
+     *     7.3356E-07, 7.8510E-07, 8.4883E-07, 8.9694E-07, 8.9906E-07,  
+     *     9.1408E-07, 9.1493E-07, 9.4157E-07, 9.5193E-07, 1.0556E-06,  
+     *     1.3971E-06, 1.7782E-06, 1.7744E-06, 1.7847E-06, 1.8186E-06,  
+     *     1.9034E-06, 1.6204E-06, 1.2151E-06, 1.0228E-06, 9.1549E-07,  
+     *     8.4143E-07, 7.1373E-07, 5.8209E-07, 5.1335E-07, 4.7219E-07,  
+     *     4.4612E-07, 4.2886E-07, 4.1660E-07, 4.0964E-07, 4.0720E-07,  
+     *     4.1056E-07, 4.1949E-07, 4.4095E-07, 4.8675E-07, 5.8370E-07,  
+     *     8.1694E-07, 8.5231E-07, 8.7223E-07, 9.1551E-07, 9.4315E-07,  
+     *     9.3406E-07, 6.9056E-07, 5.7309E-07, 5.0339E-07, 4.2820E-07/  
+      DATA f1951/                                                       
+     *     3.5501E-07, 3.1653E-07, 2.9619E-07, 2.8440E-07, 2.7251E-07,  
+     *     2.6194E-07, 2.5434E-07, 2.4970E-07, 2.4303E-07, 2.3888E-07,  
+     *     2.3363E-07, 2.3406E-07, 2.4106E-07, 2.5956E-07, 2.9484E-07,  
+     *     3.4295E-07, 3.3807E-07, 3.3463E-07, 3.2971E-07, 3.1710E-07,  
+     *     2.9120E-07, 2.2456E-07, 1.9342E-07, 1.7626E-07, 1.6610E-07,  
+     *     1.5743E-07, 1.5095E-07, 1.4605E-07, 1.4244E-07, 1.3878E-07,  
+     *     1.3524E-07, 1.3356E-07, 1.3362E-07, 1.3567E-07, 1.4055E-07,  
+     *     1.5098E-07, 1.7134E-07, 1.8561E-07, 2.1367E-07, 2.7652E-07,  
+     *     3.2957E-07, 3.3217E-07, 3.1927E-07, 3.1290E-07, 3.0954E-07,  
+     *     2.4636E-07, 1.9183E-07, 1.6363E-07, 1.4492E-07, 1.3317E-07/  
+      DATA f2001/                                                       
+     *     1.2522E-07, 1.1958E-07, 1.0837E-07, 9.9283E-08, 9.4319E-08,  
+     *     9.1828E-08, 9.0672E-08, 9.1160E-08, 9.0040E-08, 8.9547E-08,  
+     *     8.9892E-08, 9.0803E-08, 9.3416E-08, 9.8786E-08, 1.1557E-07,  
+     *     1.2654E-07, 1.2889E-07, 1.2957E-07, 1.2746E-07, 1.2544E-07,  
+     *     1.0468E-07, 8.9530E-08, 7.8616E-08, 7.2112E-08, 7.0377E-08,  
+     *     6.8159E-08, 6.5295E-08, 6.2986E-08, 6.1153E-08, 5.9642E-08,  
+     *     5.5062E-08, 5.1899E-08, 5.0047E-08, 4.8828E-08, 4.8033E-08,  
+     *     4.7717E-08, 4.7730E-08, 4.8472E-08, 5.0751E-08, 5.5673E-08,  
+     *     5.6697E-08, 5.9323E-08, 6.1515E-08, 6.0479E-08, 5.8297E-08,  
+     *     5.2714E-08, 4.9787E-08, 4.4448E-08, 3.9982E-08, 3.7396E-08/  
+      DATA f2051/                                                       
+     *     3.5595E-08, 3.4322E-08, 3.3370E-08, 3.2645E-08, 3.2171E-08,  
+     *     3.1993E-08, 3.2251E-08, 3.3355E-08, 3.6534E-08, 3.6699E-08,  
+     *     3.7332E-08, 3.8915E-08, 4.2857E-08, 4.5631E-08, 4.2351E-08,  
+     *     4.0748E-08, 3.9777E-08, 3.9009E-08, 3.4146E-08, 3.0205E-08,  
+     *     2.8451E-08, 2.7682E-08, 2.7803E-08, 2.6950E-08, 2.6265E-08,  
+     *     2.5701E-08, 2.4867E-08, 2.3737E-08, 2.2149E-08, 2.1320E-08,  
+     *     2.0769E-08, 2.0325E-08, 1.9968E-08, 1.9702E-08, 1.9528E-08,  
+     *     1.9408E-08, 1.9390E-08, 1.9751E-08, 2.0316E-08, 2.0087E-08,  
+     *     1.9854E-08, 1.9433E-08, 1.9044E-08, 1.8157E-08, 1.7198E-08,  
+     *     1.6896E-08, 1.6460E-08, 1.6192E-08, 1.6137E-08, 1.5861E-08/  
+      DATA f2101/                                                       
+     *     1.5534E-08, 1.4992E-08, 1.4736E-08, 1.4706E-08, 1.4606E-08,  
+     *     1.4254E-08, 1.3982E-08, 1.3757E-08, 1.3559E-08, 1.3170E-08,  
+     *     1.2593E-08, 1.2297E-08, 1.2140E-08, 1.2012E-08, 1.1824E-08,  
+     *     1.1655E-08, 1.1428E-08, 1.1240E-08, 1.1034E-08, 1.0916E-08,  
+     *     1.0764E-08, 1.0709E-08, 1.0843E-08, 1.0906E-08, 1.0696E-08,  
+     *     1.0428E-08, 1.0236E-08, 1.0079E-08, 9.6142E-09, 9.2404E-09,  
+     *     9.0264E-09, 8.8988E-09, 8.8446E-09, 8.9040E-09, 9.1354E-09,  
+     *     9.3366E-09, 9.2991E-09, 9.2137E-09, 9.1194E-09, 8.9622E-09,  
+     *     8.5882E-09, 8.1414E-09, 7.8769E-09, 7.7885E-09, 7.6310E-09,  
+     *     7.5195E-09, 7.4099E-09, 7.3188E-09, 7.2460E-09, 7.0957E-09/  
+      DATA f2151/                                                       
+     *     7.1319E-09, 7.0086E-09, 6.9009E-09, 6.8172E-09, 6.7657E-09,  
+     *     6.6868E-09, 6.4171E-09, 6.2567E-09, 6.1449E-09, 6.0628E-09,  
+     *     5.9463E-09, 5.8532E-09, 5.7596E-09, 5.6649E-09, 5.5768E-09,  
+     *     5.4789E-09, 5.3971E-09, 5.3425E-09, 5.3369E-09, 5.3910E-09,  
+     *     5.3102E-09, 5.2280E-09, 5.1465E-09, 5.0670E-09, 4.9319E-09,  
+     *     4.7268E-09, 4.5984E-09, 4.5021E-09, 4.4255E-09, 4.3684E-09,  
+     *     4.2953E-09, 4.2307E-09, 4.1787E-09, 4.1383E-09, 4.0665E-09,  
+     *     3.9804E-09, 3.9087E-09, 3.8407E-09, 3.7567E-09, 3.6626E-09,  
+     *     3.5859E-09, 3.5190E-09, 3.4601E-09, 3.4012E-09, 3.3462E-09,  
+     *     3.2950E-09, 3.2488E-09, 3.2086E-09, 3.1765E-09, 3.1252E-09/  
+      DATA f2201/                                                       
+     *     3.2331E-09/                                                  
+
+      END
+C     --------------------------------------------------------------
+C
       SUBROUTINE FRN296 (V1C,V2C,DVC,NPTC,C)                              F12130
 C                                                                         F12140
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F12150
+      IMPLICIT REAL*8           (V)                                     ! F12150
 C                                                                         F12160
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F12170
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F12170
       COMMON /FH2O/ V1S,V2S,DVS,NPTS,S(2003)                              F12180
       DIMENSION C(*)                                                      F12190
 C                                                                         F12200
@@ -1677,7 +2382,11 @@ c
       DO 10 J = 1, NPTC                                                   F12320
          I = I1+J                                                         F12330
          C(J) = 0.                                                        F12340
-         IF ((I.GE.1).AND.(I.LE.NPTS)) THEN                               F12350
+c
+c     This has been changed to have this foreign continuum only 
+c     contribute above 800 cm-1
+c
+         IF ((I.GE.82).AND.(I.LE.NPTS)) THEN 
             C(J) = S(I)                                                   F12360
          ENDIF                                                            F12370
    10 CONTINUE                                                            F12380
@@ -1690,7 +2399,11 @@ C     --------------------------------------------------------------
 C
       BLOCK DATA BFH2O                                                    F12430
 C                                                                         F12440
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F12450
+
+c     Adjustments made to coefficients from 780 - 900 cm-1 to match
+c     foreign component of CKD_2.3 (as listed in block data BFH2Oa).
+
+      IMPLICIT REAL*8           (V)                                     ! F12450
 C                                                                         F12460
 C               06/28/82                                                  F12470
 C               UNITS OF (CM**3/MOL)*1.E-20                               F12480
@@ -1727,9 +2440,21 @@ C                                                                         F12620
      *     1.0333E-06, 8.4484E-07, 6.7195E-07, 5.0947E-07, 4.2343E-07,    F12790
      *     3.4453E-07, 2.7830E-07, 2.3063E-07, 1.9951E-07, 1.7087E-07,    F12800
      *     1.4393E-07, 1.2575E-07, 1.0750E-07, 8.2325E-08, 5.7524E-08,    F12810
-     *     4.4482E-08, 3.8106E-08, 3.4315E-08, 2.9422E-08, 2.5069E-08,    F12820
-     *     2.2402E-08, 1.9349E-08, 1.6152E-08, 1.2208E-08, 8.9660E-09,    F12830
-     *     7.1322E-09, 6.1028E-09, 5.2938E-09, 4.5350E-09, 3.4977E-09,    F12840
+c
+c     Old coefficients have been changed to match foreign component of
+c     CKD2.3, from -20 cm-1 to 800 cm-1.
+c
+c    *     4.4482E-08, 3.8106E-08, 3.4315E-08, 2.9422E-08, 2.5069E-08,    F12820
+c    *     2.2402E-08, 1.9349E-08, 1.6152E-08, 1.2208E-08, 8.9660E-09,    F12830
+c    *     7.1322E-09, 6.1028E-09, 5.2938E-09, 4.5350E-09, 3.4977E-09,    F12840
+c    *     2.9511E-09, 2.4734E-09, 2.0508E-09, 1.8507E-09, 1.6373E-09,    F12850
+c
+c     Adjusted coefficients to match CKD2.3. Adjustments start at 
+c     780 cm-1 and end at 890 cm-1.
+c
+     *     4.4482E-08, 3.8106E-08, 3.4315E-08, 7.5446E-08, 6.2986E-08,    F12820
+     *     5.5794E-08, 4.5288E-08, 3.5382E-08, 2.4911E-08, 1.6951E-09,    F12830
+     *     1.2414E-09, 9.7070E-09, 7.6261E-09, 5.8528E-09, 3.9894E-09,    F12840
      *     2.9511E-09, 2.4734E-09, 2.0508E-09, 1.8507E-09, 1.6373E-09,    F12850
      *     1.5171E-09, 1.3071E-09, 1.2462E-09, 1.2148E-09, 1.2590E-09/    F12860
       DATA F0101/                                                         F12870
@@ -2159,9 +2884,9 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE FRNCO2 (V1C,V2C,DVC,NPTC,C)                              F17090
 C                                                                         F17100
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F17110
+      IMPLICIT REAL*8           (V)                                     ! F17110
 C                                                                         F17120
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F17130
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F17130
       COMMON /FCO2/ V1S,V2S,DVS,NPTS,S(1003)                              F17140
       DIMENSION C(*)                                                      F17150
 C                                                                         F17160
@@ -2194,7 +2919,7 @@ C     --------------------------------------------------------------
 C
       BLOCK DATA BFCO2                                                    F17390
 C                                                                         F17400
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F17410
+      IMPLICIT REAL*8           (V)                                     ! F17410
 C                                                                         F17420
 C     CO2 CONTINUUM RIDGEWAY 1982                                         F17430
 C               UNITS OF (CM**3/MOL)*1.E-20                               F17440
@@ -2440,9 +3165,9 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE N2R296 (V1C,V2C,DVC,NPTC,C)
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
       COMMON /N2RT0/ V1S,V2S,DVS,NPTS,S(73)
       DIMENSION C(*)
 C
@@ -2472,7 +3197,7 @@ C
 C
       BLOCK DATA BN2T0
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
 C               UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)
 C
@@ -2503,9 +3228,9 @@ C
 C
       SUBROUTINE N2R220 (V1C,V2C,DVC,NPTC,C)
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
       COMMON /N2RT1/ V1S,V2S,DVS,NPTS,S(73)
       DIMENSION C(*)
 C
@@ -2535,7 +3260,7 @@ C
 C
       BLOCK DATA BN2T1
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
 C               UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)
 C
@@ -2567,19 +3292,43 @@ C
 C
 C     --------------------------------------------------------------
 C
-      SUBROUTINE N2F (V1C,V2C,DVC,NPTC,C) 
-C                                                                         F19830
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F19840
-C                                                                         F19850
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F19860
-      COMMON /CN2F/ V1S,V2S,DVS,NPTS,S(157)                 
-      DIMENSION C(*)                                                      F19880
-C                                                                         F19890
-      DVC = DVS                                                           F19900
-      V1C = V1ABS-DVC                                                     F19910
-      V2C = V2ABS+DVC                                                     F19920
-C                                                                         F19930
-      I1 = (V1C-V1S)/DVS                                                  F19940
+      subroutine n2_ver_1 (v1c,v2c,dvc,nptc,c,T)
+c
+      IMPLICIT REAL*8 (v)                                                    
+c
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
+c
+      COMMON /n2_f/ V1S,V2S,DVS,NPTS,xn2(118),xn2t(118)
+c
+      dimension c(*)
+c
+c     Nitrogen Collision Induced Fundamental
+
+c     Lafferty, W.J., A.M. Solodov,A. Weber, W.B. Olson and J._M. Hartmann,
+c        Infrared collision-induced absorption by N2 near 4.3 microns for
+c        atmospheric applications: measurements and emprirical modeling, 
+c         Appl. Optics, 35, 5911-5917, (1996).
+c
+      DATA  To/ 296./, xlosmt/ 2.68675e+19/, vmr_n2/ 0.78 /
+c
+      xktfac = (1./To)-(1./T)
+c     
+      a1 = 0.8387
+      a2 = 0.0754
+c
+c     correct formulation for consistency with LBLRTM:
+c
+      factor = (1.e+20 /xlosmt) * (1./vmr_n2) * (a1-a2*(T/To))
+c
+c     Lafferty et al. reference  assumes that the
+c     column amount is that for air 
+
+C                           
+      DVC = DVS             
+      V1C = V1ABS-DVC       
+      V2C = V2ABS+DVC       
+C                           
+      I1 = (V1C-V1S)/DVS    
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
       V1C = V1S+DVS*FLOAT(I1)        
@@ -2588,70 +3337,97 @@ C
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
       V2C = V1C+DVS*FLOAT(NPTC-1)       
 c
-      DO 10 J = 1, NPTC                                                   F20010
-         I = I1+J                                                         F20020
-         C(J) = 0.                                                        F20030
-         IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F20040
-         C(J) = S(I)                                                      F20050
-   10 CONTINUE                                                            F20060
-C                                                                         F20070
-      RETURN                                                              F20080
-C                                                                         F20090
-      END                                                                 F20100
-C
-C     --------------------------------------------------------------
-C
-      BLOCK DATA BN2F                                                     F20110
-C                                                                         F20120
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F20130
-C                                                                         F20140
-C               UNITS OF (CM**2/MOLEC)*(1/CM-1)*(CM/KM) 
-C       
-C       THESE DATA ARE TREATED AS TEMPERATURE INDEPENDENT
-C                                                                         F20160
-      COMMON /CN2F/ V1N2,V2N2,DVN2,NPTN2,CN2001(102),CN2103(55)           F20170
-C                                                                         F20180
-      DATA V1N2,V2N2,DVN2,NPTN2 / 2020., 2800., 5.0, 157 /                F20190
-C                                                                         F20200
-      DATA CN2001/                                                        F20210
-     + 0.       , 2.859E-30, 5.718E-30, 1.144E-29, 2.288E-29, 4.573E-29,  F20220
-     + 9.011E-29, 1.803E-28, 3.605E-28, 7.210E-28, 1.442E-27, 2.884E-27,  F20230
-     A 5.683E-27, 7.491E-27, 9.876E-27, 1.273E-26, 1.717E-26, 2.057E-26,  F20240
-     B 2.506E-26, 3.309E-26, 4.342E-26, 5.223E-26, 6.427E-26, 7.555E-26,  F20250
-     C 1.030E-25, 1.356E-25, 1.697E-25, 2.131E-25, 2.565E-25, 3.131E-25,  F20260
-     D 3.645E-25, 4.017E-25, 4.389E-25, 4.890E-25, 5.392E-25, 5.857E-25,  F20270
-     E 6.237E-25, 6.714E-25, 7.191E-25, 7.814E-25, 8.437E-25, 9.082E-25,  F20280
-     F 9.592E-25, 1.022E-24, 1.086E-24, 1.140E-24, 1.194E-24, 1.247E-24,  F20290
-     G 1.282E-24, 1.320E-24, 1.357E-24, 1.400E-24, 1.443E-24, 1.498E-24,  F20300
-     H 1.533E-24, 1.609E-24, 1.685E-24, 1.903E-24, 2.115E-24, 2.397E-24,  F20310
-     I 2.644E-24, 2.783E-24, 2.940E-24, 2.783E-24, 2.627E-24, 2.383E-24,  F20320
-     J 2.112E-24, 2.043E-24, 1.992E-24, 1.957E-24, 1.923E-24, 1.923E-24,  F20330
-     K 1.882E-24, 1.882E-24, 1.899E-24, 1.933E-24, 1.916E-24, 1.899E-24,  F20340
-     L 1.825E-24, 1.792E-24, 1.708E-24, 1.658E-24, 1.591E-24, 1.507E-24,  F20350
-     M 1.431E-24, 1.356E-24, 1.265E-24, 1.166E-24, 1.075E-24, 1.009E-24,  F20360
-     N 8.988E-25, 8.089E-25, 7.352E-25, 6.534E-25, 6.126E-25, 5.717E-25,  F20370
-     O 5.004E-25, 4.276E-25, 4.036E-25, 3.551E-25, 3.148E-25, 2.825E-25/  F20380
-      DATA CN2103  /                                                      F20390
-     P 2.552E-25, 2.233E-25, 1.914E-25, 1.675E-25, 1.515E-25, 1.436E-25,  F20400
-     Q 1.261E-25, 1.104E-25, 1.025E-25, 9.457E-26, 8.672E-26, 7.488E-26,  F20410
-     R 6.232E-26, 5.842E-26, 5.452E-26, 4.676E-26, 3.896E-26, 3.506E-26,  F20420
-     S 3.081E-26, 2.850E-26, 2.618E-26, 2.465E-26, 2.310E-26, 2.310E-26,  F20430
-     T 2.345E-26, 2.284E-26, 2.239E-26, 2.041E-26, 1.903E-26, 1.614E-26,  F20440
-     U 1.364E-26, 1.134E-26, 9.653E-27, 7.664E-27, 6.082E-27, 5.060E-27,  F20450
-     V 4.258E-27, 3.455E-27, 2.889E-27, 2.338E-27, 1.951E-27, 1.519E-27,  F20460
-     W 1.189E-27,                                                         F20470
-     + 5.877E-28, 2.940E-28, 1.470E-28, 7.289E-29, 3.675E-29, 1.837E-29,  F20480
-     + 9.086E-30, 4.543E-30, 2.271E-30, 1.136E-30, 5.679E-31, 0.       /  F20490
-C                                                                         F20500
-      END                                                                 F20510
+      do 10 j=1,nptc
+         i = i1+j
+         C(J) = 0.                                                        F41620
+         IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F41630
+         VJ = V1C+DVC*FLOAT(J-1)                                          F41640
+c     the radiation field is removed with 1/vj
+c
+         c(j) = factor * xn2(i)* exp(xn2t(i)*xktfac) / vj
+c
+ 10   end do
+ 920  format (f10.2,1p,e12.2,0p,f10.2,1p2e12.2)
+      return
+
+      end
+
+      BLOCK DATA bn2f                                                   
+                                                                        
+      IMPLICIT REAL*8 (v)                                                    
+                                                                        
+      COMMON /n2_f/ V1n2f,V2n2f,DVn2f,NPTn2f,                                      
+     *          xn0001(50),xn0051(50),xn0101(18),
+     *          xnt0001(50),xnt0051(50),xnt0101(18)
+                                                                        
+      DATA V1n2f,V2n2f,DVn2f,NPTn2f /2085.000,2670.000, 5.000, 118/              
+      DATA xn0001/                                                       
+     *      0.000E+00,  2.000E-10,  5.200E-09,  1.020E-08,  1.520E-08,  
+     *      2.020E-08,  2.520E-08,  3.020E-08,  4.450E-08,  5.220E-08,  
+     *      6.460E-08,  7.750E-08,  9.030E-08,  1.060E-07,  1.210E-07,  
+     *      1.370E-07,  1.570E-07,  1.750E-07,  2.010E-07,  2.300E-07,  
+     *      2.590E-07,  2.950E-07,  3.260E-07,  3.660E-07,  4.050E-07,  
+     *      4.470E-07,  4.920E-07,  5.340E-07,  5.840E-07,  6.240E-07,  
+     *      6.670E-07,  7.140E-07,  7.260E-07,  7.540E-07,  7.840E-07,  
+     *      8.090E-07,  8.420E-07,  8.620E-07,  8.870E-07,  9.110E-07,  
+     *      9.360E-07,  9.760E-07,  1.030E-06,  1.110E-06,  1.230E-06,  
+     *      1.390E-06,  1.610E-06,  1.760E-06,  1.940E-06,  1.970E-06/  
+      DATA xn0051/                                                       
+     *      1.870E-06,  1.750E-06,  1.560E-06,  1.420E-06,  1.350E-06,  
+     *      1.320E-06,  1.290E-06,  1.290E-06,  1.290E-06,  1.300E-06,  
+     *      1.320E-06,  1.330E-06,  1.340E-06,  1.350E-06,  1.330E-06,  
+     *      1.310E-06,  1.290E-06,  1.240E-06,  1.200E-06,  1.160E-06,  
+     *      1.100E-06,  1.040E-06,  9.960E-07,  9.380E-07,  8.630E-07,  
+     *      7.980E-07,  7.260E-07,  6.550E-07,  5.940E-07,  5.350E-07,  
+     *      4.740E-07,  4.240E-07,  3.770E-07,  3.330E-07,  2.960E-07,  
+     *      2.630E-07,  2.340E-07,  2.080E-07,  1.850E-07,  1.670E-07,  
+     *      1.470E-07,  1.320E-07,  1.200E-07,  1.090E-07,  9.850E-08,  
+     *      9.080E-08,  8.180E-08,  7.560E-08,  6.850E-08,  6.140E-08/  
+      DATA xn0101/                                                       
+     *      5.830E-08,  5.770E-08,  5.000E-08,  4.320E-08,  3.140E-08,  
+     *      2.890E-08,  2.640E-08,  2.390E-08,  2.140E-08,  1.890E-08,  
+     *      1.640E-08,  1.390E-08,  1.140E-08,  8.900E-09,  6.400E-09,  
+     *      3.900E-09,  1.400E-09,  0.000E+00/                          
+                                                                        
+c     temperature coefficients:
+
+      DATA xnt0001/                                                       
+     *      1.040E+03,  1.010E+03,  9.800E+02,  9.500E+02,  9.200E+02,  
+     *      8.900E+02,  8.600E+02,  8.300E+02,  8.020E+02,  7.610E+02,  
+     *      7.220E+02,  6.790E+02,  6.460E+02,  6.090E+02,  5.620E+02,  
+     *      5.110E+02,  4.720E+02,  4.360E+02,  4.060E+02,  3.770E+02,  
+     *      3.550E+02,  3.380E+02,  3.190E+02,  2.990E+02,  2.780E+02,  
+     *      2.550E+02,  2.330E+02,  2.080E+02,  1.840E+02,  1.490E+02,  
+     *      1.070E+02,  6.600E+01,  2.500E+01, -1.300E+01, -4.900E+01,  
+     *     -8.200E+01, -1.040E+02, -1.190E+02, -1.300E+02, -1.390E+02,  
+     *     -1.440E+02, -1.460E+02, -1.460E+02, -1.470E+02, -1.480E+02,  
+     *     -1.500E+02, -1.530E+02, -1.600E+02, -1.690E+02, -1.810E+02/  
+      DATA xnt0051/                                                       
+     *     -1.890E+02, -1.950E+02, -2.000E+02, -2.050E+02, -2.090E+02,  
+     *     -2.110E+02, -2.100E+02, -2.100E+02, -2.090E+02, -2.050E+02,  
+     *     -1.990E+02, -1.900E+02, -1.800E+02, -1.680E+02, -1.570E+02,  
+     *     -1.430E+02, -1.260E+02, -1.080E+02, -8.900E+01, -6.300E+01,  
+     *     -3.200E+01,  1.000E+00,  3.500E+01,  6.500E+01,  9.500E+01,  
+     *      1.210E+02,  1.410E+02,  1.520E+02,  1.610E+02,  1.640E+02,  
+     *      1.640E+02,  1.610E+02,  1.550E+02,  1.480E+02,  1.430E+02,  
+     *      1.370E+02,  1.330E+02,  1.310E+02,  1.330E+02,  1.390E+02,  
+     *      1.500E+02,  1.650E+02,  1.870E+02,  2.130E+02,  2.480E+02,  
+     *      2.840E+02,  3.210E+02,  3.720E+02,  4.490E+02,  5.140E+02/  
+      DATA xnt0101/                                                       
+     *      5.690E+02,  6.090E+02,  6.420E+02,  6.730E+02,  7.000E+02,  
+     *      7.300E+02,  7.600E+02,  7.900E+02,  8.200E+02,  8.500E+02,  
+     *      8.800E+02,  9.100E+02,  9.400E+02,  9.700E+02,  1.000E+03,  
+     *      1.030E+03,  1.060E+03,  1.090E+03/                          
+
+      END
 C
 C     --------------------------------------------------------------
 C
       SUBROUTINE XO3CHP (V1C,V2C,DVC,NPTC,C0,C1,C2)                       F20520
 C                                                                         F20530
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F20540
+      IMPLICIT REAL*8           (V)                                     ! F20540
 C                                                                         F20550
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F20560
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F20560
       COMMON /O3CHAP/ V1S,V2S,DVS,NPTS,X(3150),Y(3150),Z(3150)            F20570
       DIMENSION C0(*),C1(*),C2(*)                                         F20580
 C                                                                         F20590
@@ -2715,7 +3491,7 @@ C     CROSS-SECTIONS IN CM^2 TIMES 1.0E20
 C     FORMULA FOR CROSS SECTION:  X+Y*DT+Z*DT*DT, DT=T-273.15
 C     THE OUTPUT OF THIS ROUTINE IS C0=X, CT1=Y AND CT2=Z.
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
       COMMON /O3CHAP/VBEG,VEND,DVINCR,NMAX,X(3150),Y(3150),Z(3150)
 C
       DATA VBEG, VEND, DVINCR, NMAX /8920.0, 24665.0, 5.0, 3150/
@@ -4807,9 +5583,9 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE O3HHT0 (V1C,V2C,DVC,NPTC,C)                              F21120
 C                                                                         F21130
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F21140
+      IMPLICIT REAL*8           (V)                                     ! F21140
 C                                                                         F21150
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F21160
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F21160
       COMMON /O3HH0/ V1S,V2S,DVS,NPTS,S(2687)                             F21170
       DIMENSION C(*)                                                      F21180
 C                                                                         F21190
@@ -4845,7 +5621,7 @@ C     --------------------------------------------------------------
 C
       BLOCK DATA BO3HH0                                                   F21450
 C                                                                         F21460
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F21470
+      IMPLICIT REAL*8           (V)                                     ! F21470
 C                                                                         F21480
 C     O3HH0 CONTAINS O3 HARTLEY HUGGINS CROSS SECTIONS FOR 273K           F21490
 C               UNITS OF (CM**2/MOL)*1.E-20                               F21500
@@ -5489,9 +6265,9 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE O3HHT1 (V1C,V2C,DVC,NPTC,C)                              F27830
 C                                                                         F27840
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F27850
+      IMPLICIT REAL*8           (V)                                     ! F27850
 C                                                                         F27860
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F27870
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F27870
       COMMON /O3HH1/ V1S,V2S,DVS,NPTS,S(2687)                             F27880
       DIMENSION C(*)                                                      F27890
 C                                                                         F27900
@@ -5523,7 +6299,7 @@ C     --------------------------------------------------------------
 C
       BLOCK DATA BO3HH1                                                   F28120
 C                                                                         F28130
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F28140
+      IMPLICIT REAL*8           (V)                                     ! F28140
 C                                                                         F28150
 C     RATIO (C1/C0)                                                       F28160
 C     DATA FROM BASS 1985                                                 F28170
@@ -6129,9 +6905,9 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE O3HHT2 (V1C,V2C,DVC,NPTC,C)                              F34120
 C                                                                         F34130
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F34140
+      IMPLICIT REAL*8           (V)                                     ! F34140
 C                                                                         F34150
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F34160
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F34160
       COMMON /O3HH2/ V1S,V2S,DVS,NPTS,S(2687)                             F34170
       DIMENSION C(*)                                                      F34180
 C                                                                         F34190
@@ -6163,7 +6939,7 @@ C     --------------------------------------------------------------
 C
       BLOCK DATA BO3HH2                                                   F34410
 C                                                                         F34420
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F34430
+      IMPLICIT REAL*8           (V)                                     ! F34430
 C                                                                         F34440
 C     RATIO (C2/C0)                                                       F34450
 C     DATA FROM BASS 1985                                                 F34460
@@ -6769,9 +7545,9 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE O3HHUV (V1C,V2C,DVC,NPTC,C)                              F40410
 C                                                                         F40420
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F40430
+      IMPLICIT REAL*8           (V)                                     ! F40430
 C                                                                         F40440
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F40450
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F40450
       COMMON /O3HUV/ V1S,V2S,DVS,NPTS,S(133)                              F40460
       DIMENSION C(*)                                                      F40470
 C                                                                         F40480
@@ -6807,7 +7583,7 @@ C     --------------------------------------------------------------
 C
       BLOCK DATA BO3HUV                                                   F40740
 C                                                                         F40750
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F40760
+      IMPLICIT REAL*8           (V)                                     ! F40760
 C                                                                         F40770
 C     DATA DERIVED FROM MOLINA & MOLINA, JGR,91,14501-14508,1986.         F40780
 C     VALUES BETWEEN 245 AND 185NM (40800 AND 54054CM-1) USED AS          F40790
@@ -6851,43 +7627,42 @@ C                                                                         F41160
       END                                                                 F41170
 C
 C     --------------------------------------------------------------
-C
-      SUBROUTINE O2CONT (V1C,V2C,DVC,NPTC,C,T)                            F41180
-C                                                                         F41190
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F41200
-C                                                                         F41210
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F41220
-      DIMENSION C(*)                                                      F41230
-C                                                                         F41240
-      COMMON /O2C/ O2DRAY(74),O2C001(74),O2S0(74),O2A(74),O2B(74),V1S,    F41250
-     *             V2S,DVS,NPTS                                           F41260
-C                                                                         F41270
-C     THIS SUBROUTINE CONTAINS THE ROGERS AND WALSHAW                     F41280
-C     EQUIVALENT COEFFICIENTS DERIVED FROM THE THEORETICAL                F41290
-C     VALUES SUPPLIED BY ROLAND DRAYSON. THESE VALUES USE                 F41300
-C     THE SAME DATA AS TIMOFEYEV AND AGREE WITH TIMOFEYEV'S RESULTS.      F41310
-C     THE DATA ARE IN THE FORM OF STRENGTHS(O2SO) AND TWO                 F41320
-C     COEFFICIENTS (O2A & O2B),  WHICH ARE USED TO CORRECT FOR            F41330
-C     TEMPERATURE. THE DEPENDENCY ON PRESSURE SQUARED                     F41340
-C     IS CONTAINED IN THE P*WO2 PART OF THE CONSTANT.                     F41350
-C     NOTE THAT SINCE THE COEFFICIENTS ARE FOR AIR, THE                   F41360
-C     THE STRENGTHS ARE DIVIDED BY THE O2 MIXING RATIO FOR                F41370
-C     DRY AIR OF 0.20946 (THIS IS ASSUMED CONSTANT).                      F41380
-C     ORIGINAL FORMULATION OF THE COEFFICIENTS WAS BY LARRY GORDLEY.      F41390
-C     THIS VERSION WRITTEN BY EARL THOMPSON, JULY 1984.                   F41400
-C                                                                         F41410
-C     THE VALUES FOR O2S0 ARE IN UNITS OF ATM-1 (ATM CM @ 273)-1          F41420
-C                                                                         F41430
-C     NOTE VALUES FOR LOS. # AND O2 MIXING RATIO                          F41440
-C                                                                         F41450
-      DATA XLOSMT / 2.68675E+19 /,RO2 / 0.20946 /                         F41460
-C                                                                         F41470
-      TD = T-220.00                                                       F41480
-      DVC = DVS                                                           F41490
-      V1C = V1ABS-DVC                                                     F41500
-      V2C = V2ABS+DVC                                                     F41510
-C                                                                         F41520
-      I1 = (V1C-V1S)/DVS                                                  F41530
+
+      subroutine o2_ver_1 (v1c,v2c,dvc,nptc,c,T)
+c
+      IMPLICIT REAL*8 (v)                                                    
+
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
+
+      COMMON /o2_f  / V1S,V2S,DVS,NPTS,xo2(103),xo2t(103)
+
+      dimension c(*)
+
+c
+c     Oxygen Collision Induced Fundamental
+
+c     F. Thibault, V. Menoux, R. Le Doucen, L. Rosenman, J.-M. Hartmann,
+c                                                         and Ch. Boulet
+c        Infrared collision-induced absorption by O2 near 6.4 microns for
+c        atmospheric applications: measurements and emprirical modeling, 
+c         Appl. Optics, 35, 5911-5917, (1996).
+
+      DATA To/ 296./, xlosmt/ 2.68675e+19/
+c
+      xktfac = (1./To)-(1./T)
+c     
+c     correct formulation for consistency with LBLRTM:
+c
+      factor = (1.e+20 /xlosmt) 
+c
+c     A factor of 0.21, the mixing ration of oxygen, in the Thibault et al.
+c     formulation is not included here.  This factor is in the column amount.
+C                           
+      DVC = DVS             
+      V1C = V1ABS-DVC       
+      V2C = V2ABS+DVC       
+C                           
+      I1 = (V1C-V1S)/DVS        
       IF (V1C.LT.V1S) I1 = -1 
 C                                    
       V1C = V1S+DVS*FLOAT(I1)        
@@ -6896,84 +7671,91 @@ C
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
       V2C = V1C+DVS*FLOAT(NPTC-1)       
 c
-      DO 10 J = 1, NPTC                                                   F41600
-         I = I1+J                                                         F41610
+      do 10 j=1,nptc
+         i = i1+j
          C(J) = 0.                                                        F41620
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F41630
          VJ = V1C+DVC*FLOAT(J-1)                                          F41640
-         C(J) = O2S0(I)*EXP(O2A(I)*TD+O2B(I)*TD*TD)/(RO2*VJ)              F41650
-   10 CONTINUE                                                            F41660
-C                                                                         F41670
-      RETURN                                                              F41680
-C                                                                         F41690
-      END                                                                 F41700
-C
-C     --------------------------------------------------------------
-C
-      BLOCK DATA BO2C                                                     F41710
-C                                                                         F41720
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F41730
-C                                                                         F41740
-      COMMON/O2C/ O2DRAY(74),O2C001(74),O2S0(74),O2A(74),O2B(74),         F41750
-     *            V1O2,V2O2,DVO2,NPTO2                                    F41760
-C                                                                         F41770
-      DATA V1O2,V2O2,DVO2,NPTO2 /1395.0,1760.0,5.0,74/                    F41780
-C                                                                         F41790
-      DATA O2S0/                                                          F41800
-     A 0.      ,                                                          F41810
-     *  .110E-8, .220E-8, .440E-8, .881E-8, .176E-7, .353E-7, .705E-7,    F41820
-     B .141E-06, .158E-06, .174E-06, .190E-06, .207E-06, .253E-06,        F41830
-     B .307E-06, .357E-06, .401E-06, .445E-06, .508E-06, .570E-06,        F41840
-     B .599E-06, .627E-06, .650E-06, .672E-06, .763E-06, .873E-06,        F41850
-     B .101E-05, .109E-05, .121E-05, .133E-05, .139E-05, .145E-05,        F41860
-     B .148E-05, .140E-05, .134E-05, .126E-05, .118E-05, .114E-05,        F41870
-     B .109E-05, .105E-05, .105E-05, .105E-05, .104E-05, .103E-05,        F41880
-     B .992E-06, .945E-06, .876E-06, .806E-06, .766E-06, .726E-06,        F41890
-     B .640E-06, .555E-06, .469E-06, .416E-06, .364E-06, .311E-06,        F41900
-     B .266E-06, .222E-06, .177E-06, .170E-06, .162E-06, .155E-06,        F41910
-     B .143E-06, .130E-06, .118E-06, .905E-07, .629E-07,                  F41920
-     * .316E-7, .157E-7, .786E-8, .393E-8, .196E-8, .982E-9,              F41930
-     * 0./                                                                F41940
-      DATA O2A /                                                          F41950
-     A 0.       ,                                                         F41960
-     *   .147E-3, .147E-3, .147E-3,  .147E-3, .147E-3, .147E-3, .147E-3,  F41970
-     B  .147E-03,  .122E-02,  .204E-02,  .217E-02,  .226E-02,  .126E-02,  F41980
-     B  .362E-03, -.198E-02, -.545E-02, -.786E-02, -.624E-02, -.475E-02,  F41990
-     B -.506E-02, -.533E-02, -.586E-02, -.635E-02, -.644E-02, -.679E-02,  F42000
-     B -.741E-02, -.769E-02, -.780E-02, -.788E-02, -.844E-02, -.894E-02,  F42010
-     B -.899E-02, -.922E-02, -.892E-02, -.857E-02, -.839E-02, -.854E-02,  F42020
-     B -.871E-02, -.889E-02, -.856E-02, -.823E-02, -.796E-02, -.768E-02,  F42030
-     B -.715E-02, -.638E-02, -.570E-02, -.491E-02, -.468E-02, -.443E-02,  F42040
-     B -.333E-02, -.184E-02,  .313E-03, -.164E-04, -.417E-03, -.916E-03,  F42050
-     B -.206E-02, -.343E-02, -.515E-02, -.365E-02, -.172E-02,  .926E-03,  F42060
-     B  .168E-02,  .262E-02,  .380E-02,  .551E-02,  .889E-02,             F42070
-     * .889E-2,  .889E-2, .889E-2, .889E-2, .889E-2, .889E-2,             F42080
-     *  0./                                                               F42090
-      DATA O2B  /                                                         F42100
-     A 0.       ,                                                         F42110
-     * .306E-4,-.306E-4,-.306E-4,-.306E-4,-.306E-4,-.306E-4,-.306E-4,     F42120
-     B -.306E-04, -.218E-04, -.159E-04, -.346E-05,  .642E-05,  .360E-05,  F42130
-     B -.140E-05,  .157E-04,  .471E-04,  .656E-04,  .303E-04, -.192E-05,  F42140
-     B  .705E-05,  .149E-04,  .200E-04,  .245E-04,  .158E-04,  .841E-05,  F42150
-     B  .201E-05,  .555E-05,  .108E-04,  .150E-04,  .193E-04,  .230E-04,  F42160
-     B  .243E-04,  .226E-04,  .184E-04,  .157E-04,  .169E-04,  .197E-04,  F42170
-     B  .226E-04,  .258E-04,  .235E-04,  .212E-04,  .185E-04,  .156E-04,  F42180
-     B  .125E-04,  .872E-05,  .760E-05,  .577E-05,  .334E-07, -.652E-05,  F42190
-     B -.977E-05, -.157E-04, -.273E-04, -.180E-04, -.641E-05,  .817E-05,  F42200
-     B  .326E-04,  .626E-04,  .101E-03,  .755E-04,  .430E-04, -.113E-05,  F42210
-     B -.578E-05, -.120E-04, -.208E-04, -.235E-04, -.364E-04,             F42220
-     * .364E-4, -.364E-4,-.364E-4,-.364E-4,-.364E-4,-.364E-4,             F42230
-     * 0./                                                                F42240
-C                                                                         F42250
-      END                                                                 F42260
-C
+c     the radiation field is removed with 1/vj
+c
+         c(j) = factor * xo2(i)* exp(xo2t(i)*xktfac) / vj
+c
+ 10   end do
+c
+ 920  format (f10.2,1p,e12.2,0p,f10.2,1p2e12.2)
+c
+      return
+      end
+
+      BLOCK DATA bo2f                                                   
+                                                                        
+      IMPLICIT REAL*8 (V)                                               
+                                                                        
+      COMMON /o2_f  / V1S,V2S,DVS,NPTS,
+     *          o0001(50),o0051(50),o0101(03),
+     *          ot0001(50),ot0051(50),ot0101(03)
+                                                                        
+      DATA V1S,V2S,DVS,NPTS /1340.000,1850.000,   5.000,  103/              
+                                                                        
+      DATA o0001/                                                       
+     *      0.000E+00,  9.744E-09,  2.256E-08,  3.538E-08,  4.820E-08,  
+     *      6.100E-08,  7.400E-08,  8.400E-08,  9.600E-08,  1.200E-07,  
+     *      1.620E-07,  2.080E-07,  2.460E-07,  2.850E-07,  3.140E-07,  
+     *      3.800E-07,  4.440E-07,  5.000E-07,  5.710E-07,  6.730E-07,  
+     *      7.680E-07,  8.530E-07,  9.660E-07,  1.100E-06,  1.210E-06,  
+     *      1.330E-06,  1.470E-06,  1.590E-06,  1.690E-06,  1.800E-06,  
+     *      1.920E-06,  2.040E-06,  2.150E-06,  2.260E-06,  2.370E-06,  
+     *      2.510E-06,  2.670E-06,  2.850E-06,  3.070E-06,  3.420E-06,  
+     *      3.830E-06,  4.200E-06,  4.450E-06,  4.600E-06,  4.530E-06,  
+     *      4.280E-06,  3.960E-06,  3.680E-06,  3.480E-06,  3.350E-06/  
+      DATA o0051/                                                       
+     *      3.290E-06,  3.250E-06,  3.230E-06,  3.230E-06,  3.210E-06,  
+     *      3.190E-06,  3.110E-06,  3.030E-06,  2.910E-06,  2.800E-06,  
+     *      2.650E-06,  2.510E-06,  2.320E-06,  2.130E-06,  1.930E-06,  
+     *      1.760E-06,  1.590E-06,  1.420E-06,  1.250E-06,  1.110E-06,  
+     *      9.900E-07,  8.880E-07,  7.910E-07,  6.780E-07,  5.870E-07,  
+     *      5.240E-07,  4.640E-07,  4.030E-07,  3.570E-07,  3.200E-07,  
+     *      2.900E-07,  2.670E-07,  2.420E-07,  2.150E-07,  1.820E-07,  
+     *      1.600E-07,  1.460E-07,  1.280E-07,  1.030E-07,  8.700E-08,  
+     *      8.100E-08,  7.100E-08,  6.400E-08,  5.807E-08,  5.139E-08,  
+     *      4.496E-08,  3.854E-08,  3.212E-08,  2.569E-08,  1.927E-08/  
+      DATA o0101/                                                       
+     *      1.285E-08,  6.423E-09,  0.000E+00/                          
+
+      DATA ot0001/                                                       
+     *      4.000E+02,  4.000E+02,  4.000E+02,  4.000E+02,  4.000E+02,  
+     *      4.670E+02,  4.000E+02,  3.150E+02,  3.790E+02,  3.680E+02,  
+     *      4.750E+02,  5.210E+02,  5.310E+02,  5.120E+02,  4.420E+02,  
+     *      4.440E+02,  4.300E+02,  3.810E+02,  3.350E+02,  3.240E+02,  
+     *      2.960E+02,  2.480E+02,  2.150E+02,  1.930E+02,  1.580E+02,  
+     *      1.270E+02,  1.010E+02,  7.100E+01,  3.100E+01, -6.000E+00,  
+     *     -2.600E+01, -4.700E+01, -6.300E+01, -7.900E+01, -8.800E+01,  
+     *     -8.800E+01, -8.700E+01, -9.000E+01, -9.800E+01, -9.900E+01,  
+     *     -1.090E+02, -1.340E+02, -1.600E+02, -1.670E+02, -1.640E+02,  
+     *     -1.580E+02, -1.530E+02, -1.510E+02, -1.560E+02, -1.660E+02/  
+      DATA ot0051/                                                       
+     *     -1.680E+02, -1.730E+02, -1.700E+02, -1.610E+02, -1.450E+02,  
+     *     -1.260E+02, -1.080E+02, -8.400E+01, -5.900E+01, -2.900E+01,  
+     *      4.000E+00,  4.100E+01,  7.300E+01,  9.700E+01,  1.230E+02,  
+     *      1.590E+02,  1.980E+02,  2.200E+02,  2.420E+02,  2.560E+02,  
+     *      2.810E+02,  3.110E+02,  3.340E+02,  3.190E+02,  3.130E+02,  
+     *      3.210E+02,  3.230E+02,  3.100E+02,  3.150E+02,  3.200E+02,  
+     *      3.350E+02,  3.610E+02,  3.780E+02,  3.730E+02,  3.380E+02,  
+     *      3.190E+02,  3.460E+02,  3.220E+02,  2.910E+02,  2.900E+02,  
+     *      3.500E+02,  3.710E+02,  5.040E+02,  4.000E+02,  4.000E+02,  
+     *      4.000E+02,  4.000E+02,  4.000E+02,  4.000E+02,  4.000E+02/  
+      DATA ot0101/                                                       
+     *      4.000E+02,  4.000E+02,  4.000E+02/                          
+
+      END
+
 C     --------------------------------------------------------------
 C
       SUBROUTINE O2INF1 (V1C,V2C,DVC,NPTC,C,T,P)                         
 C                                                                        
-      IMPLICIT DOUBLE PRECISION (V)                                     
+      IMPLICIT REAL*8           (V)                                     
 C                                                                        
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)               
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)               
       DIMENSION C(*)                                                     
 C                                                                        
       V1S = 7600.                                                        
@@ -7007,9 +7789,9 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE O2INF2 (V1C,V2C,DVC,NPTC,C,T,P)                         
 C                                                                        
-      IMPLICIT DOUBLE PRECISION (V)                                     
+      IMPLICIT REAL*8           (V)                                     
 C                                                                        
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)               
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)               
       DIMENSION C(*)                                                     
 C                                                                        
 C                                                                        
@@ -7044,7 +7826,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE INFRD1 (O2INF,V)                                         
 C                                                                        
-      IMPLICIT DOUBLE PRECISION (V)                                     
+      IMPLICIT REAL*8           (V)                                     
 C                                                                        
       O2INF = 0.0                                                         
       IF (V.LE.7500.00) RETURN                                           
@@ -7064,7 +7846,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE INFRD2 (O2INF,V)                                         
 C                                                                        
-      IMPLICIT DOUBLE PRECISION (V)                                     
+      IMPLICIT REAL*8           (V)                                     
 C                                                                        
       DATA V1 /9375./, HW1 /58.96/, V2 /9439./, HW2 /45.04/
       DATA S1 /1.166E-24/, S2 /3.086E-25/
@@ -7096,9 +7878,9 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE O2HERZ (V1C,V2C,DVC,NPTC,C,T,P)                          F42270
 C                                                                         F42280
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F42290
+      IMPLICIT REAL*8           (V)                                     ! F42290
 C                                                                         F42300
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F42310
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)                F42310
       DIMENSION C(*)                                                      F42320
 C                                                                         F42330
       V1S = 36000.                                                        F42340
@@ -7133,7 +7915,7 @@ C     --------------------------------------------------------------
 C
       SUBROUTINE HERTDA (HERZ,V)                                          F42610
 C                                                                         F42620
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F42630
+      IMPLICIT REAL*8           (V)                                     ! F42630
 C                                                                         F42640
 C     HERZBERG O2 ABSORPTION                                              F42650
 C     HALL,1987 PRIVATE COMMUNICATION, BASED ON:                          F42660
