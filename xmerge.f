@@ -989,11 +989,59 @@ C                                                                         H09260
 C                                                                         H09270
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H09280
 C                                                                         H09290
+C     ----------------------------------------------------------------
+C     Parameter and common block for direct input of emission function
+C     values
+C
+      PARAMETER (NMAXCO=4040)
+      COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
+C     ----------------------------------------------------------------
+C
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H09300
       EQUIVALENCE (BNDEMI(1),A) , (BNDEMI(2),B) , (BNDEMI(3),C)           H09310
 C                                                                         H09320
       DATA FACTOR / 0.001 /                                               H09330
 C                                                                         H09340
+C     ***************************************************
+C     Check for A < 0.  If so, use input values read in from file
+C     "EMISSION"
+C     ***************************************************
+C
+      IF (A.LT.0.) THEN
+C     
+C        Loop through input emissivities to determine correct frequency
+C        and interpolate
+C
+         DO 10 NGNU = 2,NLIMEM
+            VIEMIS = V1EMIS+DVEMIS*(NGNU-1)
+            IF (VI.GE.(VIEMIS-DVEMIS).AND.(VI.LT.VIEMIS)) THEN
+               CALL LINTCO(VIEMIS-DVEMIS,ZEMIS(NGNU-1),
+     *                     VIEMIS,ZEMIS(NGNU),VI,ZINT,ZDEL)
+               EMISFN = ZINT
+               VINEM = VIEMIS
+               EMDEL = ZDEL
+               RETURN
+            ENDIF
+ 10      CONTINUE
+C
+C        Test for last emissivity input
+C
+         IF (VI.EQ.VIEMIS) THEN
+            EMISFN = ZEMIS(NLIMEM)
+            VINEM = VIEMIS+DVEMIS
+            EMDEL = 0.0
+            RETURN
+         ELSE
+            WRITE(*,*) 'Frequency range of calculation exceeded',
+     *                 ' emissivity input.'
+            STOP 'ERROR IN EMISFN'
+         ENDIF
+      ENDIF
+C
+C     ***************************************************
+C     The following uses a quadratic formula for emission
+C     ***************************************************
+C
 C     CHECK FOR CONSTANT E (INDEPENDENT OF VI)                            H09350
 C     IF CONSTANT RETURN LARGE VALUE FOR VINEM                            H09360
 C                                                                         H09370
@@ -1078,10 +1126,58 @@ C                                                                         H10110
 C                                                                         H10120
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10130
 C                                                                         H10140
+C     ----------------------------------------------------------------
+C     Parameter and common block for direct input of reflection
+C     function values
+C
+      PARAMETER (NMAXCO=4040)
+      COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
+C     ----------------------------------------------------------------
+C
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   H10150
       EQUIVALENCE (BNDRFL(1),A) , (BNDRFL(2),B) , (BNDRFL(3),C)           H10160
 C                                                                         H10170
       DATA FACTOR / 0.001 /                                               H10180
+C
+C     ***************************************************
+C     Check for A < 0.  If so, use input values read in from file
+C     "REFLECTION"
+C     ***************************************************
+C
+      IF (A.LT.0.) THEN
+C     
+C        Loop through input reflectivities to determine correct frequency
+C        and interpolate
+C
+         DO 10 NGNU = 2,NLIMRF
+            VIRFLT = V1RFLT+DVRFLT*(NGNU-1)
+            IF (VI.GE.(VIRFLT-DVEMIS).AND.(VI.LT.VIRFLT)) THEN
+               CALL LINTCO(VIRFLT-DVRFLT,ZRFLT(NGNU-1),
+     *                     VIRFLT,ZRFLT(NGNU),VI,ZINT,ZDEL)
+               REFLFN = ZINT
+               RFNEXT = VIRFLT
+               RFDEL = ZDEL
+               RETURN
+            ENDIF
+ 10      CONTINUE
+C
+C        Test for last reflectivity input
+C
+         IF (VI.EQ.VIRFLT) THEN
+            REFLFN = ZRFLT(NLIMRF)
+            RFNEXT = VIRFLT+DVRFLT
+            RFDEL = 0.0
+            RETURN
+         ELSE
+            WRITE(*,*) 'Frequency range of calculation exceeded',
+     *                 ' reflectivity input.'
+            STOP 'ERROR IN REFLFN'
+         ENDIF
+      ENDIF
+C
+C     ***************************************************
+C     The following uses a quadratic formula for emission
+C     ***************************************************
 C                                                                         H10190
 C     CHECK FOR CONSTANT R (INDEPENDENT OF VI)                            H10200
 C     IF CONSTANT RETURN LARGE VALUE FOR VINRF                            H10210
@@ -4331,4 +4427,30 @@ C                                                                         H42010
       RETURN                                                              H42020
 C                                                                         H42030
       END                                                                 H42040
+C
+C     ----------------------------------------------------------------
+C
+      SUBROUTINE LINTCO(V1,Z1,V2,Z2,VINT,ZINT,ZDEL)
+C
+C     Linearly interpolates emission and reflection values which
+C     are directly read in from ASCII files
+C
+      IMPLICIT DOUBLE PRECISION (V)
+C
+C     ZDEL is the slope of the line
+C
+      ZDEL = (Z2-Z1)/(V2-V1)
+C
+C     ZCEPT is the intercept for V = 0.0
+C
+      ZCEPT = Z1 - ZDEL*V1
+C
+C     Calculate ZINT value at VINT
+C
+      ZINT = ZDEL*VINT + ZCEPT
+C
+      RETURN
+C
+      END
+C     ----------------------------------------------------------------
 
