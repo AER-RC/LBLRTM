@@ -2792,8 +2792,8 @@ C        WBROAD is always listed in column density, so the sum of
 C        the given mixing ratios must always be less than one.
 C
          IF (WDNSTY.EQ.0.0) THEN
-            WRITE(IPR,1010) L
-            WRITE(*,1010) L
+            WRITE(IPR,920) L
+            WRITE(*,920) L
             STOP 'WDNSTY ERROR IN PATH'
          ENDIF
          IF (WMXRAT.LT.1.0) THEN
