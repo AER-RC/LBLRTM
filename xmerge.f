@@ -854,13 +854,9 @@ C                                                                         H08400
       IF (XKT.GT.0.0) THEN                                                H08420
 C                                                                         H08430
          IF (XVIOKT.LE.0.01) THEN                                         H08470
-            IF (VINEW.GE.0.0) THEN                                        H08480
-               XDELT = (GNU2 * (4.+4.*XVIOKT + BG2))/
-     *                 (10.*BG2 - 24.*XVIOKT + 8.)
-               DELTAV = SQRT(ABS(FACTOR*XDELT))
-            ELSE                                                          H08530
-               DELTAV = ABS(VINEW)+DVI-0.00001 - VI                       H08540
-            ENDIF                                                         H08570
+            XDELT = (GNU2 * (4.+4.*XVIOKT + BG2))/
+     *        (10.*BG2 - 24.*XVIOKT + 8.)
+            DELTAV = SQRT(ABS(FACTOR*XDELT))
             IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
             INTVLS = (DELTAV)/DVI
             INTVLS = MAX(INTVLS,1)
@@ -869,14 +865,10 @@ C                                                                         H08430
 C                                                                         H08590
             BBNEXT = RADCN1*(XVINEW**2)*XKT/(1.+0.5*XVINEW*XKT)           H08600
          ELSEIF (XVIOKT.LE.80.0) THEN                                     H08610
-            IF (VINEW.GE.0.0) THEN                                        H08630
-               FRONT  = XVIOKT/(1.-EXPNEG)
-               BOX    = 3.- FRONT
-               DELT2C = (1./GNU2)*(2.*BOX-FRONT*(1.+BOX-FRONT*EXPNEG))
-               DELTAV = SQRT(ABS(FACTOR/DELT2C))
-            ELSE                                                          H08690
-               DELTAV = ABS(VINEW)+DVI-0.00001 - VI                       H08700
-            ENDIF                                                         H08730
+            FRONT  = XVIOKT/(1.-EXPNEG)
+            BOX    = 3.- FRONT
+            DELT2C = (1./GNU2)*(2.*BOX-FRONT*(1.+BOX-FRONT*EXPNEG))
+            DELTAV = SQRT(ABS(FACTOR/DELT2C))
             IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
             INTVLS = (DELTAV)/DVI
             INTVLS = MAX(INTVLS,1)
@@ -897,9 +889,6 @@ C                                                                         H08850
 C                                                                         H08870
       VINEW = VINEW-DVI+0.00001                                           H08880
       BBLAST = BBNEXT                                                     H08890
-      write(*,*) 'xviokt = ',xviokt
-      write(99,*) 'bbdel, vinew'
-      write(99,*)  bbdel, vinew
 C                                                                         H08900
       RETURN                                                              H08910
 C                                                                         H08920
