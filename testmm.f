@@ -8,6 +8,8 @@ C                                                                         N00020
 C                                                                         N00040
       COMMON VNU(250),STR(250),ALF(250),EPP(250),MOL(250),HWHMS(250),     N00050
      *       TMPALF(250),PSHIFT(250),IFLG(250)                            N00060
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /LINES/ XLINC(5,1318),XLIND(6,1318)                          N00070
 C                                                                         N00080
       DOUBLE PRECISION   HID,HMOLID,HID1,HLINHD                         & N00090
@@ -26,6 +28,9 @@ C                                                                         N00210
       EQUIVALENCE (VNULO,RCDHDR(1)) , (MOL(1),AMOL(1)),                   N00220
      *            (HLINHD(1),HID(1),IWD(1))                               N00230
 C                                                                         N00240
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+C
 C     LINCPL - IS THE FLAG FOR LINE COUPLING --- 0 = OFF; 1 = ON          N00250
 C                                                                         N00260
       DATA LINCPL / 1 /                                                   N00270
@@ -39,6 +44,10 @@ C**********************************************************************   N00340
 C                                                                         N00350
       DATA ISO / 1 /                                                      N00360
 C                                                                         N00370
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRTST = '$Revision$' 
+C
       NWDLIN = NWDL(IWD,LSTWDL)                                           N00380
       ILNGTH = NLNGTH*250                                                 N00390
       DO 10 M = 1, 64                                                     N00400

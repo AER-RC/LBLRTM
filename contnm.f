@@ -14,6 +14,8 @@ C                                                                         F00070
 C                                                                         F00100
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & F00110
 C                                                                         F00120
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       F00130
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   F00140
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    F00150
@@ -25,12 +27,18 @@ C                                                                         F00120
       DIMENSION SH2OT0(411),SH2OT1(411),FH2O(411),CN2T0(411),FCO2(411),   F00210
      *          CT1(411),CT2(411)                                         F00220
 C                                                                         F00230
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       EQUIVALENCE (C0,SH2OT0,CN2T0,FCO2) , (C1,SH2OT1,CT1),               F00240
      *            (C2,FH2O,CT2)                                           F00250
 C                                                                         F00260
       DATA P0 / 1013. /,T0 / 296. /                                       F00270
       DATA XLOSMT / 2.68675E+19 /                                         F00280
 C                                                                         F00290
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRCNT = '$Revision$' 
+C
       RHOAVE = (PAVE/P0)*(T0/TAVE)                                        F00300
       XKT = TAVE/RADCN2                                                   F00310
       WTOT = WBROAD                                                       F00320

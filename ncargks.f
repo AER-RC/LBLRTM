@@ -36,15 +36,24 @@ C----------------------------------------------------------------------   NC0310
 C                                                                         NC0320
       IMPLICIT DOUBLE PRECISION (V)                                     [ NC0330
 C                                                                         NC0340
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       NC0350
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     NC0360
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      NC0370
      *                JOUT,JPLTFL,JHDR,IFUNCT                             NC0380
 C                                                                         NC0390
       COMMON /NCARID/ IFIRST                                              NC0400
+C
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+C
       LOGICAL IFIRST                                                      NC0410
       DIMENSION PROGID(*)                                                 NC0420
 C                                                                         NC0430
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRNCG = '$Revision$' 
 C                                                                         NC0450
 C     THIS ROUTINE DOES THE INITIALIZATION FOR THE NCAR ROUTINES.         NC0460
 C                                                                         NC0470

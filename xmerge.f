@@ -20,6 +20,8 @@ C                                                                         H00100
 C                                                                         H00160
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H00170
 C                                                                         H00180
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H00190
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H00200
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    H00210
@@ -35,6 +37,13 @@ C                                                                         H00260
      *            (FSCDID(11),IMRG) , (FSCDID(16),LAYR1),                 H00310
      *            (FSCDID(17),NLAYHD)                                     H00320
 C                                                                         H00330
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRXMR = '$Revision$' 
+C
       IOD = 0                                                             H00340
 C                                                                         H00350
       IEXFIL = 20                                                         H00360

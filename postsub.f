@@ -13,6 +13,8 @@ C                                                                         I00070
 C                                                                         I00090
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & I00100
 C                                                                         I00110
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       I00120
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,   I00130
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    I00140
@@ -33,6 +35,8 @@ C                                                                         I00280
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               I00290
       CHARACTER*11 CFORM                                                  I00300
       CHARACTER*8 HSCNID(0:4)                                             I00310
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       CHARACTER SCNOUT*7,SCNINF*7,CTAPE*4                                 I00320
       LOGICAL OP                                                          I00330
 C                                                                         I00340
@@ -119,6 +123,11 @@ C                                                               SAC       I01140
 C                                                                         I01150
 C----------------------------------------------------------------------   I01160
 C                                                                         I01170
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRPST = '$Revision$' 
+C
       PI = 2.*ASIN(1.)                                                    I01180
 C                                                                         I01190
 C  SET THE MAXIMIM NUMBER OF AVAILABLE FUNCTIONS:                         I01200
@@ -1758,6 +1767,8 @@ C                                                                         J00190
 C                                                                         J00230
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & J00240
 C                                                                         J00250
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       J00260
      *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1C,V2C,TBOUND,   J00270
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    J00280
@@ -1782,6 +1793,8 @@ C                                                                         J00420
 C                                                                         J00470
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               J00480
       CHARACTER CFORM*11,SCNOUT*6,CTAPE*4                                 J00490
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       LOGICAL OP                                                          J00500
 C                                                                         J00510
       DATA HTRANS / 'TRANSMISSION'/,HABSRB / ' ABSORPTION '/,             J00520
@@ -1795,6 +1808,11 @@ C     JEMIT=1   INTERPOLATE EMISSION                                      J00590
 C     JEMIT=2   INTERPOLATE OPTICAL DEPTH                                 J00600
 C----------------------------------------------------------------------   J00610
 C                                                                         J00620
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRPST = '$Revision$' 
+C
    10 CONTINUE                                                            J00630
       CALL CPUTIM (TIME1)                                                 J00640
       TIMRDF = 0.0                                                        J00650
@@ -2411,6 +2429,8 @@ C                                                                         L00040
 C                                                                         L00060
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & L00070
 C                                                                         L00080
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       L00090
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DVC,V1C,V2C,TBOUND,   L00100
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    L00110
@@ -2427,6 +2447,8 @@ C                                                                         L00080
      *              NLTEFL,LNFIL4,LNGTH4                                  L00220
       DIMENSION FILHDR(2)                                                 L00230
       CHARACTER*80 CVAR                                                   L00240
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
 C                                                                         L00250
       EQUIVALENCE (FILHDR(1),XID(1)) , (FSCDID(5),IEMIT),                 L00260
      *            (FSCDID(6),ISCAN) , (FSCDID(7),IPLOT),                  L00270
@@ -2434,6 +2456,11 @@ C                                                                         L00250
      *            (FSCDID(12),SCNID) , (FSCDID(13),HWHM),                 L00290
      *            (FSCDID(16),LAYR1)                                      L00300
 C                                                                         L00310
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRPST = '$Revision$' 
+C
       NLIMF = 2401                                                        L00320
       NREN = 0                                                            L00330
       IPRT = 1                                                            L00340

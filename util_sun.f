@@ -8,8 +8,18 @@ C     THIS SUBROUTINE BUFFERS IN (READS) IWORDS INTO  IARRAY STARTING
 C     AT LOCATION IARRAY
 C
 C     IFILE IS THE FILE DESIGNATION
+C                                                                         A10830
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+C
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
 C                                  
       DIMENSION IARRAY(IWORDS)
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRUTL = '$Revision$' 
 C                          
       IEOF = 1             
 C                          

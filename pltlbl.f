@@ -10,6 +10,8 @@ C                                                                         M00040
 C                                                                         M00060
       DOUBLE PRECISION XID,SEC   ,HMOL  ,XALTZ,YID,PROGID               & M00070
 C                                                                         M00080
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /PLTHDR/ XID(10),SEC,P0,T0,HMOL(60),XALTZ(4),                M00090
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVT,V1V,V2V,TBOUND,    M00100
      *                EMISIV,FSCDID(17),NMOL,NLAYER,YID1,YID(10),LSTWDF   M00110
@@ -28,6 +30,8 @@ C                                                                         M00080
 C                                                                         M00240
       CHARACTER*8 FSTAT,NSTAT,OSTAT                                       M00245
       CHARACTER*8 COPT,CDIF,CRAT                                          M00250
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       CHARACTER*11 CFORM,BFORM,FFORM                                      M00253
       CHARACTER*25 TAPEJJ,TAPELL,TAPEMM,TAPE29,TAPEST(99),                M00256
      *             JFILEN,LFILEN,MFILEN,JOUTNM,CFILEN(3),BLNKNM           M00260
@@ -232,6 +236,11 @@ C       ** REPEAT CARDS 2A & 3A, OR CARD 2B **                            M02140
 C                                                                         M02150
 C**********************************************************************   M02160
 C                                                                         M02170
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRPLT = '$Revision$' 
+C
       IENDPL = 0                                                          M02180
       JHDR = 0                                                            M02200
       JOUT = 0                                                            M02210

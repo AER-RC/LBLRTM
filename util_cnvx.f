@@ -9,7 +9,17 @@ C     AT LOCATION IWORDS                                                  A10800
 C                                                                         A10810
 C     IFILE IS THE FILE DESIGNATION                                       A10820
 C                                                                         A10830
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+C
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+C
       DIMENSION IARRAY(IWORDS)                                            A10840
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRUTL = '$Revision$' 
 C                                                                         A10850
       IEOF = 1                                                            A10860
 C                                                                         A10880

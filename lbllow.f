@@ -347,6 +347,8 @@ C
       COMMON /LCRD4/ V1,V2,DV                                            FL03250
       DOUBLE PRECISION V1P,V2P                                           FL03260
       DOUBLE PRECISION  XID,SECANT,HMOLID,XALTZ,YID                      FL03270
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      FL03280
      *     WK(60),PZL,PZU,TZL,TZU,WN2   ,DVP,V1P,V2P,TBOUNF,EMISIV,      FL03290
      *     FSCDID(17),NMOL,LAYER,YI1,YID(10) ,LSTWDF                     FL03300
@@ -361,6 +363,8 @@ C
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL03380
       CHARACTER*20 HHAZE,HSEASN,HVULCN,HMET,HMODEL,BLANK                 FL03390
       CHARACTER*24 HTRRAD                                                FL03400
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       COMMON /TITL/ HHAZE(16),HSEASN(2),HVULCN(8),BLANK,                 FL03410
      * HMET(2),HMODEL(8),HTRRAD(4)                                       FL03420
       COMMON /VSBD/ VSB(10)                                              FL03430
@@ -377,6 +381,10 @@ C                                                                        FL03520
 C                                                                        FL03540
       DATA MAXATM,MAXGEO   /70, 64/                                      FL03550
       IEMSCT = IEMS                                                      FL03560
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRLOW = '$Revision$' 
 C                                                                        FL03570
 C     ALTITUDE PARAMETERS                                                FL03580
 C                                                                        FL03590

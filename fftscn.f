@@ -135,6 +135,10 @@ C*****Frequency variables start with V
 C*****Blank Common carries the spectral data
       COMMON S(2450),R1(2650),XF(251)
 
+C*****HVERSN carries the module SCCS version numbers
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+
 C*****SCNHRD carries the header information for the scanned file
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,
@@ -206,6 +210,8 @@ C*****Following line for computers with 64 bit words where the blocksize is
 C*****measured in bytes, e.g. CRAY
 C     PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 
+      Character*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       Character*16 SFNAME,ANAMES(0:JFNMAX)
       Dimension C(0:JFNMAX),CRATIO(0:JFNMAX),CLIMIT(0:JFNMAX)
 
@@ -255,6 +261,9 @@ C*****MRATIO is the minimum ratio of the HWHM of the scanning function
 C*****to the width of the boxcar used to prescan the spectrum.  MRATDF
 C*****is the default value of this parameter.
       Data MRATDF/12/
+
+C*****Assign SCCS version number to module fftscn.f
+      HVRFFT = '$Revision$' 
 
       Write(IPR,'(''1FFTSCN: SPECTRAL SMOOTHING IN THE '',
      1            ''FOURIER DOMAIN*****'')')
