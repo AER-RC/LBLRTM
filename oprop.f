@@ -1160,8 +1160,8 @@ C     COMPILER WARNINGS 'CONSTANT SUBSCRIPT IS OUT OF BOUNDS'
 C     
       DATA NM1/-1/,N0/0/
 C
-      CALL CPUTIM (TIME)                                                  B12200
-      WRITE (IPR,900) TIME                                                B12210
+C      CALL CPUTIM (TIME)                                                 B12200
+C      WRITE (IPR,900) TIME                                               B12210
       NPANLS = 0                                                          B12220
       V1PS = V1P                                                          B12230
       V2PS = V2P                                                          B12240
@@ -1290,15 +1290,15 @@ C                                                                         B13420
       NPPANL = 1                                                          B13450
    40 CONTINUE                                                            B13460
 C                                                                         B13470
-      CALL CPUTIM (TIME1)                                                 B13480
-      TIM = TIME1-TIME                                                    B13490
-      WRITE (IPR,905) TIME1,TIM                                           B13500
+C      CALL CPUTIM (TIME1)                                                B13480
+C      TIM = TIME1-TIME                                                   B13490
+C      WRITE (IPR,905) TIME1,TIM                                          B13500
 C                                                                         B13510
       RETURN                                                              B13520
 C                                                                         B13530
-  900 FORMAT ('0 THE TIME AT THE START OF PNLINT IS ',F12.3)              B13540
-  905 FORMAT ('0 THE TIME AT THE END OF PNLINT IS ',F12.3/F12.3,          B13550
-     *   ' SECS WERE REQUIRED FOR THIS INTERPOLATION ')                   B13560
+C  900 FORMAT ('0 THE TIME AT THE START OF PNLINT IS ',F12.3)             B13540
+C  905 FORMAT ('0 THE TIME AT THE END OF PNLINT IS ',F12.3/F12.3,         B13550
+C     *   ' SECS WERE REQUIRED FOR THIS INTERPOLATION ')                  B13560
 C                                                                         B13570
       END                                                                 B13580
       BLOCK DATA BPLINT                                                   B03920
