@@ -111,7 +111,9 @@ C                                                                         B00890
       COMMON /IODFLG/ DVOUT
 C                                                                         B00970
       REAL L4TIM,L4TMR,L4TMS
-      CHARACTER CFORM*11,KFILYR*6,CKFIL*4,KDFLYR*6,KDFIL*4                B00980
+      CHARACTER*55 PTHODI
+      CHARACTER*10 HFMODL
+      CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       LOGICAL OP                                                          B00990
@@ -137,7 +139,12 @@ C
 C                                                                         B01120
       DATA MEFDP / 64*0 /                                                 B01130
 C                                                                         B01140
-      DATA CKFIL / 'ODDV'/,KDFIL / 'ODKD'/                                B01150
+      DATA PTHODI / 'ODint_'/
+      DATA PTHODE / 'ODexact_'/                                           B01150
+      DATA PTHODD / 'ODdeflt_'/
+      DATA KODLYR /
+     *     '                                                         '/
+      DATA HFMODL /'         '/
 C                                                                         B01160
       CALL CPUTIM (TIMEH0)                                                B01170
 C                                                                         B01180
@@ -248,34 +255,77 @@ C                                                                         B01990
 C                                                                         B02190
       IF (IATM.GE.1.AND.IATM.LE.5) CALL YDIH1 (H1F,H2F,ANGLEF,YID)        B02200
 C                                                                         B02210
-C     If IOD = 1 and IMERGE = 1 then calculate optical depths
-C     for each layer with DV = DVOUT (from DVSET in TAPE5, carried
-C     in by COMMON BLOCK /IODFLG/) and maintain separately
+C     ---------------------------------------------------------------
 C
-C     If IOD = 2 and IMERGE = 1 then calculate optical depths
-C     for each layer using the exact DV of each layer
+C     - If IOD = 1 and IMERGE = 1 then calculate optical depths
+C       for each layer with DV = DVOUT (from DVSET in TAPE5, carried
+C       in by COMMON BLOCK /IODFLG/) and maintain separately.
+C       Use PTHODI as the name of the optical depth files.
+C       This requires the format HFMODL, which is produced by
+C       calling the SUBROUTINE QNTIFY.
+C
+C     - If IOD = 2 and IMERGE = 1 then calculate optical depths
+C       for each layer using the exact DV of each layer
+C       Use PTHODE as the name of the optical depth files.
+C       This requires the format HFMODL, which is produced by
+C       calling the SUBROUTINE QNTIFY.
+C
+C     - If calculating layer optical depths using DVSET as last
+C       layer spacing, and then interpolating (IOD=3, IMRG=1),
+C       then use PTHODI as the name of the optical depth files.
+C       This requires the format HFMODL, which is produced by
+C       calling the SUBROUTINE QNTIFY.
+C
+C     - If calculating optical depths using the default procedure,
+C       sending output to a different file for each layer (IEMIT=0,
+C       IOD=0, and IMRG=1), then use PTHODI for the optical depth
+C       pathnames.
+C
+C     - Otherwise, use TAPE10.
 C
       IF (IOD.EQ.1.AND.IMRG.EQ.1) THEN                                    B02220
-         WRITE (KFILYR,'(A4,I2.2)') CKFIL,LAYER                           B02230
+         CALL QNTIFY(PTHODI,HFMODL)
+         WRITE (KODLYR,HFMODL) PTHODI,LAYER                               B02230
          INQUIRE (UNIT=KFILE,OPENED=OP)                                   B02240
          IF (OP) CLOSE (KFILE)                                            B02250
-         OPEN (KFILE,FILE=KFILYR,FORM=CFORM,STATUS='UNKNOWN')             B02260
+         OPEN (KFILE,FILE=KODLYR,FORM=CFORM,STATUS='UNKNOWN')             B02260
          REWIND KFILE                                                     B02270
          DVSAV = DV
-         DV = DVOUT
+         IF (DVOUT.NE.0.) DV = DVOUT
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02310
          DV = DVSAV
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02320
       ELSEIF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
-         WRITE(KDFLYR,'(A4,I2.2)') KDFIL,LAYER
+         CALL QNTIFY(PTHODE,HFMODL)
+         WRITE(KODLYR,HFMODL) PTHODE,LAYER
          INQUIRE (UNIT=KFILE,OPENED=OP)
          IF (OP) CLOSE (KFILE)
-         OPEN (KFILE,FILE=KDFLYR,FORM=CFORM,STATUS='UNKNOWN')
+         OPEN (KFILE,FILE=KODLYR,FORM=CFORM,STATUS='UNKNOWN')
          REWIND KFILE
          DVOUT = DV
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3
+      ELSEIF (IOD.EQ.3) THEN
+         CALL QNTIFY(PTHODI,HFMODL)
+         WRITE (KODLYR,HFMODL) PTHODI,LAYER
+         INQUIRE (UNIT=KFILE,OPENED=OP)
+         IF (OP) CLOSE (KFILE)
+         OPEN (KFILE,FILE=KODLYR,FORM=CFORM,STATUS='UNKNOWN')
+         REWIND KFILE
+         DVSAV = DV
+         DV = DVOUT
+         CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
+         DV = DVSAV
+         IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3
       ELSE
+         IF (IMRG.EQ.1) THEN
+            CALL QNTIFY(PTHODD,HFMODL)
+            WRITE (KODLYR,HFMODL) PTHODD,LAYER
+            INQUIRE (UNIT=KFILE,OPENED=OP)
+            IF (OP) CLOSE (KFILE)
+            OPEN (KFILE,FILE=KODLYR,FORM=CFORM,STATUS='UNKNOWN')
+            REWIND KFILE
+         ENDIF
          DVOUT = 0.0                                                      B02350
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02360
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02370
@@ -286,6 +336,8 @@ C                                                                         B02390
             WK(M) = 0.                                                    B02420
    50    CONTINUE                                                         B02430
       ENDIF                                                               B02440
+C     
+C     ---------------------------------------------------------------
 C                                                                         B02450
       VFT = V1-FLOAT(NSHIFT)*DV                                           B02460
       VBOT = V1-BOUND                                                     B02470

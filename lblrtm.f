@@ -6,9 +6,6 @@ C     presently: %H%  %T%
 C                                                                         A00020
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   A00030
 C                                                                         A00040
-C               LAST MODIFICATION:                                        A00050
-C                                     17 JULY   1991     sac              A00050
-C                                     14 AUGUST 1991                      A00050
 C                                                                         A00060
 C                  IMPLEMENTATION:    R.D. WORSHAM                        A00070
 C                                                                         A00080
@@ -300,14 +297,18 @@ C                                                                         A02920
 C
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & A03050
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
+      CHARACTER*55 CTAPE3
+      CHARACTER*9 CT6FIL
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       CHARACTER*8 HVRSOL
-      CHARACTER*1 CONE,CTWO,CTHREE,CA,CB,CC,CDOL,CPRCNT,CBLNK             A03440
+      CHARACTER*1 CONE,CTWO,CTHREE,CFOUR,CA,CB,CC,CDOL,CPRCNT,CBLNK       A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
       PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
      *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C     -------------------------
 C
       DIMENSION IDCNTL(14),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2)      A03280
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A02970
@@ -362,7 +363,7 @@ C                                                                         A03480
       DATA IDCNTL / ' HIRAC',' LBLF4',' CNTNM',' AERSL',' EMISS',         A03500
      *              ' SCNFN',' FILTR','  PLOT','  TEST','  IATM',         A03510
      *              '  IMRG','  ILAS',' OPDEP',' XSECT' /                 A03520
-      DATA CONE / '1'/,CTWO / '2'/,CTHREE / '3'/,                         A03530
+      DATA CONE / '1'/,CTWO / '2'/,CTHREE / '3'/,CFOUR / '4'/,            A03530
      *     CA / 'A'/,CB / 'B'/,CC / 'C'/                                  A03540
       DATA CDOL / '$'/,CPRCNT / '%'/,CBLNK / ' '/,CXIDA / 80*' '/         A03550
       DATA XID8 / ' LBLRTM '/                                             A03490
@@ -370,16 +371,23 @@ C                                                                         A03560
 C     DATA CFORM / 'BUFFERED   '/                                       # A03570
 C     DATA CFORM / 'UNFORMATTED'/                                         A03580
 C                                                                         A03590
-C      SET ILNFLG TO DEFAULT (NO LINE REJECTION FILES KEPT)
+C     Set ILNFLG to default (no line rejection files kept)
 C
       ILNFLG = 0
 C
-C      FILE ASSIGNMENTS                                                   A03600
+C     Set name of output TAPE6, depending upon type calculation
+C
+      CT6FIL = 'TAPE6    '
+      CTAPE3 = 'TAPE3'
+C
+C     -------------------------
+C
+C     FILE ASSIGNMENTS                                                    A03600
 C                                                                         A03610
       IRD = 55                                                            A03620
       OPEN (IRD,FILE='TAPE5',STATUS='UNKNOWN')                            A03630
       IPR = 66                                                            A03640
-      OPEN (IPR,FILE='TAPE6',STATUS='UNKNOWN')                            A03650
+      OPEN (IPR,FILE=CT6FIL,STATUS='UNKNOWN')                             A03650
       IPU = 7                                                             A03660
       LNFIL4 = 9                                                          A03670
       OPEN (LNFIL4,FILE='TAPE9',STATUS='UNKNOWN',FORM=CFORM)              A03680
@@ -473,17 +481,17 @@ C
          CALL SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG)
          GOTO 60
       ENDIF
-C
-C     **************************************************************
 C                                                                         A04340
 C    OPEN LINFIL DEPENDENT UPON IHIRAC AND ITEST                          A04350
 C                                                                         A04360
+C     Linefile name specified by CTAPE3
+C
       LINFIL = 3                                                          A04370
       IF (IHIRAC.GT.0) THEN                                               A04380
          IF (ITEST.EQ.1) THEN                                             A04390
-            OPEN (LINFIL,FILE='TAPE3',STATUS='NEW',FORM=CFORM)            A04400
+            OPEN (LINFIL,FILE=CTAPE3,STATUS='NEW',FORM=CFORM)             A04400
          ELSE                                                             A04410
-            OPEN (LINFIL,FILE='TAPE3',STATUS='OLD',FORM=CFORM)            A04420
+            OPEN (LINFIL,FILE=CTAPE3,STATUS='OLD',FORM=CFORM)             A04420
          ENDIF                                                            A04430
       ENDIF                                                               A04440
 C                                                                         A04450
@@ -501,6 +509,7 @@ C                                                                         A04480
          IF (CMRG(1).EQ.CONE) IMRG = IMRG+10                              A04570
          IF (CMRG(1).EQ.CTWO) IMRG = IMRG+20                              A04580
          IF (CMRG(1).EQ.CTHREE) IMRG = IMRG+30                            A04590
+         IF (CMRG(1).EQ.CFOUR) IMRG = IMRG+40
       ENDIF                                                               A04600
       IF (IPLOT.GT.0) IENDPL = 1                                          A04610
 C                                                                         A04620
@@ -517,7 +526,7 @@ C                                                                         A04720
       IF (IHIRAC.EQ.4) THEN                                               A04800
          IF (IEMIT.NE.1) THEN                                             A04810
             WRITE (IPR,950)                                               A04820
-            STOP ' IEMIT=0 FOR NLTE '                                     A04830
+            STOP ' IEMIT NE 1 FOR NLTE '                                  A04830
          ENDIF                                                            A04840
       ENDIF                                                               A04850
 C
@@ -663,14 +672,35 @@ C                                                                         A06540
       ENDIF                                                               A06600
       IF (ILAS.EQ.2) ILASRD = 1                                           A06610
 C                                                                         A06620
-C     If IOD = 1 and IMRG = 1, then set DVOUT to DVSET as flag for
-C     interpolation in PNLINT, and reset DVSET to zero to avoid ratio
-C     error message in SUBROUTINE PATH.
+C     If IOD = 1, then set DVOUT to DVSET as flag for interpolation
+C     in PNLINT, and reset DVSET to zero to avoid ratio error message
+C     in SUBROUTINE PATH.
 C
       IF (IOD.EQ.1) THEN
          DVOUT = ABS(DVSET)
          DVSET = 0.0
       ENDIF
+C
+C     If IOD = 3, then set DVOUT to DVSET as flag for interpolation
+C     in PNLINT, and preserve value of DVSET for use in
+C     SUBROUTINE PATH.
+C
+      IF (IOD.EQ.3) THEN
+         IF (DVSET.EQ.0.) STOP 'DVSET MUST BE NONZERO FOR IOD=3'
+         DVOUT = ABS(DVSET)
+      ENDIF
+C
+C     -------------------------------------------------------------
+C                              CALL TREE
+C     XLAYER                   ---------
+C          \_ OPPATH
+C                  \_ LBLATM, PATH, & LOWTRAN
+C          \_ OPDPTH
+C                  \_ CONTNM, LINF4, & HIRAC1
+C          \_ SCNMRG
+C                  \_ RDSCAN, SHRKSC, CNVRCT,
+C                     CONVSC, PNLRCT,  & PANLSC
+C     -------------------------------------------------------------
 C
       IF (IHIRAC+IATM+IMRG.GT.0)                                          A06630
      *    CALL XLAYER (MPTS,NPTS,LFILE,MFILE,NFILE)                       A06640
@@ -768,6 +798,7 @@ C                                                                         A07280
      *         'xmerge.f: ',6X,A8,10X, 'util_xxx.f: ',6X,A8,/,5X,
      *         ' solar.f: ',6X,A8,10X, '            ',6X,8X,/)
  1010 FORMAT (2I5)
+ 1015 FORMAT (I5)
 C                                                                         A07580
       END                                                                 A07590
       BLOCK DATA                                                          A07600
@@ -888,12 +919,61 @@ C                                                                         A09380
   905 FORMAT (' TIME REQUIRED FOR --COPYFL -- ',F10.3)                    A09400
 C                                                                         A09410
       END                                                                 A09420
+C
+C     -------------------------------------------------------------
+C
+      SUBROUTINE QNTIFY (CNAME,CFORM)
+C
+C     This subroutine counts the number of nonblank characters in
+C     a string, and creates a format to add two digits to the end
+C     of the nonblank string.
+C
+      CHARACTER*(*) CNAME
+      CHARACTER*55 CTEMP
+      CHARACTER*10 CFORM
+      CHARACTER*1  CTEMP1(55),BLANK
+C
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *                NLTEFL,LNFIL4,LNGTH4
+C
+      EQUIVALENCE (CTEMP,CTEMP1(1))
+C
+      DATA BLANK / ' ' /
+C
+      CTEMP = CNAME
+      NCHAR=0
+      DO 10 J = 1, 55
+         IF (CTEMP1(J).EQ.BLANK) THEN
+            NCHAR = J-1
+            IF (NCHAR.EQ.1) THEN
+               WRITE(IPR,900) CNAME
+               STOP 'PATH NOT LEFT JUSTIFIED'
+            ENDIF
+            GOTO 20
+         ENDIF
+ 10   CONTINUE
+C
+ 20   CONTINUE
+      WRITE(CFORM,910) NCHAR
+C
+      RETURN
+C
+ 900  FORMAT (' QNTIFY: PATH NOT LEFT JUSTIFIED: ',A55)
+ 910  FORMAT ('(A',I2.2,',I2.2)')
+C
+      END
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE PRLNHD                                                   A09430
 C                                                                         A09440
       IMPLICIT DOUBLE PRECISION (V)                                     ! A09450
 C                                                                         A09460
 C     PRLNHD PRINTS OUT LINE FILE HEADER                                  A09470
 C                                                                         A09480
+      PARAMETER (MXMOL=35)
+C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A09490
      *              NLNGTH,KFILE,KPANEL,LINFIL,NDFLE,IAFIL,IEXFIL,        A09500
      *              NLTEFL,LNFIL4,LNGTH4                                  A09510
@@ -945,7 +1025,7 @@ C                                                                         A09950
 C                                                                         A09970
 C     CHECK HEADER FOR FLAG INDICATING COMPATIBILITY WITH ISOTOPES        A09980
 C                                                                         A09990
-      WRITE (CHID10,925) HLINID(10)                                       A10000
+ 30   WRITE (CHID10,925) HLINID(10)                                       A10000
       READ (CHID10,930) CHARID,CHARDT,CHTST                               A10010
       IF (CHTST.NE.CHARI) THEN                                            A10020
          WRITE (IPR,935) CHARID,CHARDT,CHTST                              A10030
@@ -993,10 +1073,15 @@ C                                                                         A10750
 C                                                                         A11220
       IMPLICIT DOUBLE PRECISION (V)                                     ! A11230
 C                                                                         A11240
+C**********************************************************************
 C     XLAYER CONTROLS LAYER BY LAYER CALCULATION                          A11250
+C**********************************************************************
 C                                                                         A11260
       PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
      *                IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+      CHARACTER*55 PATH1
+      CHARACTER*10 HFORM1
 C
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         A11270
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         A11280
@@ -1074,7 +1159,12 @@ C                                                                         A11980
 C     IMRG = 0 AND IMRG > 10 ONLY LAST LAYER OPTICAL DEPTH ON KFILE       A11990
 C       (EXCEPT 12, 22 AND 32 WHICH ARE SEQUENTIAL FROM PRESTORE)         A12000
 C                                                                         A12010
-C     0 < IMRG < 10 OPTICAL DEPTHS ARE SEQUENTIAL ON KFILE BY LAYER       A12020
+C     1 < IMRG < 10 OPTICAL DEPTHS ARE SEQUENTIAL ON KFILE BY LAYER       A12020
+C
+C     IMRG = 1 Optical Depths are stored on different files by layer
+C
+C     IMRG = 40/41 RADIANCE and TRANSMITTANCE are calculated from
+C               multiple optical depth files by layer
 C                                                                         A12030
 C**********************************************************************   A12040
 C                                                                         A12050
@@ -1128,27 +1218,166 @@ C                                                                         A12520
 C      IMRG=35 --- SPACE TO GROUND FROM PRESTORED OPTICAL DEPTHS          A12530
 C      IMRG=36 --- GROUND TO SPACE FROM PRESTORED OPTICAL DEPTHS          A12540
 C                                                                         A12550
+C        ****  RADIANCE CALCULATIONS  **** 
+C                                                                         A12520
+C      IMRG=40 --- Downward radiance from prestored optical depths,
+C                  monochromatic
+C      IMRG=41 --- Upward radiance from prestored optical depths,
+C                  monochromatic
+C                                                                         A12550
 C      WEIGHTING FUNCTION RESULTS ARE ON NFILE SEPARATED BY               A12560
 C      INTERNAL 'EOF'                                                     A12570
 C                                                                         A12580
 C**********************************************************************   A12590
 C                                                                         A12600
+C     ---------------------
+C     Special Merge Options
+C     ---------------------
+C
+C     If IMRG = 1, then calculate optical depths in standard fashion,
+C     but output to different files for each layer.
+C
+C                                            SPECIAL CASE -> IMRG=1
+C
+C     Start loop over layers
+C
+      IF (IMRG.EQ.1) THEN
+C
+C        -----------------------------
+C        Initial call to OPPATH, which calls PATH
+C        -----------------------------
+C
+         LAYHDR = LAYER
+         CALL OPPATH
+         IF (IHIRAC.EQ.0) RETURN
+C
+C        -----------------------------
+C        Begin loop over layers
+C        -----------------------------
+C
+ 1       LAYER = LAYER+1
+         LAYHDR = LAYER
+         CALL OPPATH
+         NLAYHD = NLAYER
+         CALL OPDPTH (MPTS)
+         CALL ENDFIL (KFILE)
+         REWIND MFILE
+         REWIND LFILE
+         IF (LAYER.EQ.NLAYER) RETURN
+         GO TO 1
+      ENDIF
+C
+C     ---------------------
+C
+C     For IMRG = 35,36,40,41 (those options which use
+C     precalculated layer optical depths stored on different
+C     files for radiative transfer), read in the pathname of
+C     the layer optical depths and determine format for the
+C     addition of the layer number suffix.
+C
+      IF (IMRG.GE.35) THEN
+         READ (IRD,945) PATH1
+         CALL QNTIFY(PATH1,HFORM1)
+      ENDIF
+C
+C     ---------------------
+C
+C     If IMRG = 40 and IEMIT = 1, then precalculated optical depths
+C     on multiple files are combined to produce total downwelling radiance
+C     (from space to ground), written to TAPE12.  The results are
+C     monochromatic.
+C
+C     If IMRG = 41 and IEMIT = 1, then precalculated optical depths
+C     on multiple files are combined to produce total upwelling radiance
+C     (from ground to space), written to TAPE12.  The results are
+C     monochromatic.
+C
+C                                     SPECIAL CASE -> IMRG=40/41, IEMIT=1
+C
+      IF ((IMRG.GE.40).AND.(IEMIT.EQ.1)) THEN
+C
+C        -----------------------------
+C        Obtain information from KFILE
+C        -----------------------------
+C
+         CALL OPNRAD(1,1,PATH1,HFORM1)
+         REWIND KFILE
+         CALL BUFIN (KFILE,KEOF,FILDU1(1),NFHDRF)
+         LTGNT = LTNSAV
+         TBOUND = TMPBND
+         EMISIV = BNDEMI(1)
+         LH1 = LH1SAV
+         LH2 = LH2SAV
+         IPATHL = IPTHD1
+         NLAYER = NLAYD1
+C
+C        Check for forced IPATHL, and set layer boundaries as needed
+C
+         IF (IMRG.EQ.40) THEN
+            IF (LH2.NE.1) THEN
+               LH1 = MAX(LH1,LH2)
+               LH2 = 1
+            ENDIF
+            JPATHL = 1
+         ELSE
+            IF (LH1.NE.1) THEN
+               LH2 = MAX(LH1,LH2)
+               LH1 = 1
+            ENDIF
+            JPATHL = 3
+         ENDIF
+C
+C        Start of loop over layers
+C
+         IF (2*(NLAYER/2).NE.NLAYER) GO TO 10
+         MSTOR = MFILE
+         MFILE = LFILE
+         LFILE = MSTOR
+ 10      LAYER = 0
+ 11      LAYER = LAYER+1
+         REWIND MFILE
+         REWIND LFILE
+         WRITE (IPR,900)
+         WRITE (IPR,905)
+         CALL OPNRAD(NLAYER,LAYER,PATH1,HFORM1)
+         WRITE (IPR,905)
+         CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
+         IF (LAYER.EQ.NLAYER) RETURN
+         MSTOR = MFILE
+         MFILE = LFILE
+         LFILE = MSTOR
+C
+C        END OF LOOP OVER LAYERS
+C
+         GO TO 11
+      ENDIF
+C
+C     ---------------------
+C
       MMRG = MOD(IMRG,10)                                                 A12610
 C                                                                         A12620
 C      TESTS FOR PRESTORE                                                 A12630
 C                                                                         A12640
-      IF (MMRG.EQ.2) GO TO 10                                             A12650
-      IF (MMRG.EQ.5) GO TO 10                                             A12660
-      IF (MMRG.EQ.6) GO TO 10                                             A12670
-      IF (MMRG.EQ.8) GO TO 10                                             A12680
-      IF (MMRG.EQ.9) GO TO 10                                             A12690
+      IF (MMRG.EQ.2) GO TO 18                                             A12650
+      IF (MMRG.EQ.5) GO TO 18                                             A12660
+      IF (MMRG.EQ.6) GO TO 18                                             A12670
+      IF (MMRG.EQ.8) GO TO 18                                             A12680
+      IF (MMRG.EQ.9) GO TO 18                                             A12690
 C                                                                         A12700
+C     -------------------------------
+C     Call OPPATH, which calls PATH
+C     -------------------------------
+C
       LAYHDR = LAYER                                                      A12710
       CALL OPPATH                                                         A12720
       IF (IHIRAC.EQ.0) GO TO 170                                          A12730
       GO TO 20                                                            A12740
+C
+C     -----------------------------
+C     Obtain information from KFILE
+C     -----------------------------
 C                                                                         A12750
-   10 REWIND KFILE                                                        A12760
+ 18   REWIND KFILE                                                        A12760
       CALL BUFIN (KFILE,KEOF,FILDU1(1),NFHDRF)                            A12770
       LTGNT = LTNSAV                                                      A12780
       TBOUND = TMPBND                                                     A12790
@@ -1157,6 +1386,10 @@ C                                                                         A12750
       LH2 = LH2SAV                                                        A12820
       IPATHL = IPTHD1                                                     A12830
       NLAYER = NLAYD1                                                     A12840
+C
+C     -----------------------------
+C     Standard Merge Options Follow
+C     -----------------------------
 C                                                                         A12850
 C     CHECK FOR FORCED IPATHL, AND SET LAYER BOUNDARIES AS NEEDED         A12860
 C                                                                         A12870
@@ -1216,7 +1449,7 @@ C    END OF LOOP OVER LAYERS                                              A13440
 C                                                                         A13450
       GO TO 30                                                            A13460
 C                                                                         A13470
-C     START LOOP OVER LAYERS                      IMRG=1,3,4,7            A13480
+C     START LOOP OVER LAYERS                      IMRG=3,4,7              A13480
 C     OPTICAL DEPTH STRUNG OUT ON TAPE10                                  A13490
 C                                                                         A13500
    40 LAYER = LAYER+1                                                     A13510
@@ -1285,6 +1518,7 @@ C                                                                         A13850
          CALL OPDPTH (MPTS)                                               A14140
          REWIND KFILE                                                     A14150
       ENDIF                                                               A14160
+      IF (IMRG.EQ.36) CALL OPNRAD(NLAYER,LAYER,PATH1,HFORM1)
       CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)                               A14170
       NNTAN = NNTAN+1                                                     A14180
       NTAN(NNTAN) = NTAN(NNTAN-1)+1                                       A14190
@@ -1356,7 +1590,9 @@ C                                                                         A14710
          NLAYHD = NLAYER                                                  A14850
          CALL OPDPTH (MPTS)                                               A14860
          REWIND KFILE                                                     A14870
-      ELSE                                                                A14880
+      ELSEIF (IMRG.EQ.35) THEN
+         CALL OPNRAD(1,LAYER,PATH1,HFORM1)
+      ELSE
          CALL SKIPFL (ISKIP,KFILE,IEOF)                                   A14890
       ENDIF                                                               A14900
       CALL XMERGI (NPTS,LFILE,MFILE,JPATHL)                               A14910
@@ -1553,6 +1789,8 @@ C                                                                         A16720
      *        ' TO LAYER',I3)                                             A16820
   930 FORMAT (/,'  TANGENT WEIGHTING FUNCTION, LAYER',I3,' TO LAYER',     A16830
      *        I3)                                                         A16840
+  940 FORMAT ('TAPE5: IPATHL',I5,', IMRG = ',I5)
+  945 FORMAT (A55)
 C                                                                         A16850
       END                                                                 A16860
       SUBROUTINE OPPATH                                                   A16870
@@ -1815,6 +2053,7 @@ C                                                                         A19250
 C
       COMMON COMSTR(250,9)                                                A19260
       COMMON R1(3600),R2(900),R3(225)                                     A19270
+C
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A19280
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       A19290
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A19300
@@ -2114,9 +2353,10 @@ C                                                                         A21110
          WRITE (IPR,951)
       ENDIF
 C                                                                         A21140
+C     --------------------------------------------------------------
+C
       DO 80 L = 1, NLAYRS                                                 A21150
          IF (IATM.GT.0.) SECL(L) = 1.0                                    A21160
-C                                                                         A21170
          DO 60 M = 1, NMOL                                                A21180
             WKL(M,L) = WKL(M,L)*SECL(L)                                   A21190
    60    CONTINUE                                                         A21200
@@ -2128,6 +2368,8 @@ C                                                                         A21170
          WBRODL(L) = WBRODL(L)*SECL(L)                                    A21260
          SECL(L) = 1.0                                                    A21270
    80 CONTINUE                                                            A21280
+C
+C     --------------------------------------------------------------
 C                                                                         A21290
 C     LTGNT = TOP ANTERIOR LAYER FOR TANGENT VIEWING CASE                 A21300
 C     LTGNT = NLAYER FOR SPACE-TO-SPACE PATH OR IPATHL = 1 OR 3           A21310
@@ -2297,7 +2539,7 @@ C     TYPE IS LESS THAN 0.8                                               A22680
 C                                                                         A22690
                DV = OLDDV                                                 A22700
                ITYPE = 0                                                  A22710
-               IF (IEMIT.NE.1) THEN                                       A22720
+               IF (IEMIT.EQ.0) THEN                                       A22720
                   ITYPE = TYPE/(1.-TYPE)+0.5                              A22730
                   DV = DV*FLOAT(ITYPE+1)/FLOAT(ITYPE)                     A22740
                   ITYPE = -ITYPE                                          A22750
@@ -2362,10 +2604,8 @@ C
       IF (DVOUT.GT.0.) THEN
          RATOUT = 1.
          RATOUT = DVOUT/DV
-         write(*,*) 'dvout,dv = ',dvout,dv
          IF (RATOUT.GT.1.2) THEN
             WRITE (IPR,968) RATOUT,DVOUT,DV
-            write(*,*) 'dvout,dv = ',dvout,dv
             STOP 'PATH; DVOUT ERROR, SEE TAPE6'
          ENDIF
       ENDIF
@@ -2669,10 +2909,10 @@ C                                                                         A24050
   962 FORMAT (20X,'  DV RATIO  .GT. ',F10.2)                              A24330
   965 FORMAT (/,20X,'  TYPE GT 2.5')                                      A24340
   967 FORMAT ('  RATIO ERROR ',F10.3,'  DVSET = ',F10.4,'  DV=',F10.4)    A24350
- 968  FORMAT ('  RATOUT ERROR ',F10.3,'  DVOUT = ',E10.4,'  DV=',E10.4)
+  968 FORMAT ('  RATOUT ERROR ',F10.3,'  DVOUT = ',E10.4,'  DV=',E10.4)
   970 FORMAT (////)                                                       A24360
-  974 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,32X,    A24370
-     *        'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(A10,4X))                  A24380
+  974 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,32X,
+     *        'P(MB)',6X,'T(K)',3X,'IPATH',5X,5(A10,4X),/,60X,3(A10,4X))
   975 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,29X,    A24370
      *        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,A6,3X))
   976 FORMAT (/,'1',54X,'----------------------------------',
@@ -2681,10 +2921,12 @@ C                                                                         A24050
   977 FORMAT (/,'1',54X,'----------------------------------',
      *         /,'0',60X,'MIXING RATIOS BY LAYER ',/,29X,
      *        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,A6,3X))
-  980 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,I5,2X,1P,8E15.7,0P)
+  980 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,I5,2X,1P,5E15.7,0P,/,
+     *         54X,1P,3E15.7,0P)
   982 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,I5,2X,1P,8E10.3,0P)            A24390
   985 FORMAT ('0',54X,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH')     A24400
-  990 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,7X,1P,8E15.7,0P)               A24410
+  990 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,7X,1P,5E15.7,0P,/,
+     *         54X,1P,3E15.7,0P)
   991 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,7X,1P,8E10.3,0P)               A24410
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                    A24420
      *        '     *****  CROSS SECTIONS  *****      ')                  A24430
