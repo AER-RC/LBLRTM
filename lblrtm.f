@@ -2754,16 +2754,14 @@ C
       IF (ISTOP.EQ.1) STOP 'PATH; ISTOP EQ 1'                             A23120
 C
 C     If DVOUT is nonzero (IOD=1,IMRG=1 -> interpolate optical depths to
-C     value of DVOUT), then test to be sure that DVOUT is not more than
-C     20% larger than the monochromatic DV (and thus ensuring enough
-C     monochromatic points are available to reach the V2 endpoint for
-C     the interpolated spectrum).
+C     value of DVOUT), then test to be sure that DVOUT is finer than
+C     the monochromatic DV (and thus ensuring enough monochromatic points
+C     are available to reach the V2 endpoint for the interpolated
+C     spectrum).
 C
       IF (DVOUT.GT.0.) THEN
-         RATOUT = 1.
-         RATOUT = DVOUT/DV
-         IF (RATOUT.GT.1.2) THEN
-            WRITE (IPR,968) RATOUT,DVOUT,DV
+         IF (DV.LT.DVOUT) THEN
+            WRITE (IPR,968) DVOUT,DV
             STOP 'PATH; DVOUT ERROR, SEE TAPE6'
          ENDIF
       ENDIF
@@ -2771,6 +2769,10 @@ C
 C     If DVSET is nonzero (set the final layer DV to the value of
 C     DVSET), then test to be sure that DVSET is not more than
 C     20% different than the monochromatic DV.
+C
+C     First, test if, for IOD=1 (interpolation of monchromatic optical
+C     depths without forcing smallest DV to DVSET), the monochromatic
+C     DV is coarser than outgoing interpolation DV.
 C
       IF (DVSET.GT.0.) THEN                                               A23130
          RATIO = 1.                                                       A23140
@@ -3068,7 +3070,7 @@ C                                                                         A24050
   962 FORMAT (20X,'  DV RATIO  .GT. ',F10.2)                              A24330
   965 FORMAT (/,20X,'  TYPE GT 2.5')                                      A24340
   967 FORMAT ('  RATIO ERROR ',F10.3,'  DVSET = ',F10.4,'  DV=',F10.4)    A24350
-  968 FORMAT ('  RATOUT ERROR ',F10.3,'  DVOUT = ',E10.4,'  DV=',E10.4)
+  968 FORMAT ('  DVOUT MUST BE < DV ','  DVOUT = ',E10.4,'  DV=',E10.4)
   970 FORMAT (////)                                                       A24360
   974 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,32X,
      *        'P(MB)',6X,'T(K)',3X,'IPATH',5X,5(A10,4X),/,60X,3(A10,4X))
