@@ -26,8 +26,8 @@ C                                                                         I00110
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I00180
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I00190
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I00200
-      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,               I00210
-     *                HWF3,DXF3,NX3,N3MAX                                 I00220
+      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
+     *                HWF3,DXF3,NX3,N3MAX
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I00230
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I00240
      *              NLTEFL,LNFIL4,LNGTH4                                  I00250
@@ -496,8 +496,9 @@ C                                                                         I04620
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I04690
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I04700
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I04710
-      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,               I04720
-     *                HWF3,DXF3,NX3,N3MAX                                 I04730
+      COMMON /SCSHAP/ HWFS,DXFS,NFS,NFMAXS
+      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
+     *                HWF3,DXF3,NX3,N3MAX
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I04740
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I04750
      *              NLTEFL,LNFIL4,LNGTH4                                  I04760
@@ -591,6 +592,15 @@ C                                                                         I05540
       NFMAX = NJMX(IFN)                                                   I05580
       SAMPLE = SMPLJ(IFN)                                                 I05590
       XSCALE = XSCAL(IFN)                                                 I05600
+C
+C     Set values of HWFS, DXFS, NFS, & NFMAXS to HWF, DXF, NF,
+C     & NFMAX for use when entering HIRAC1 between SCANRD and
+C     SCNMRG.
+C
+      HWFS = HWF
+      DXFS = DXF
+      NFS = NFS
+      NFMAXS = NFMAX
 C                                                                         I05610
 C     CHECK FOR NEGATIVE JFN OR NEGATIVE SAMPL                            I05620
 C                                                                         I05630
@@ -894,8 +904,8 @@ C                                                                         I08450
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I08520
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I08530
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I08540
-      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,               I08550
-     *                HWF3,DXF3,NX3,N3MAX                                 I08560
+      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
+     *                HWF3,DXF3,NX3,N3MAX
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I08570
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I08580
      *              NLTEFL,LNFIL4,LNGTH4                                  I08590
@@ -1203,8 +1213,8 @@ C
 C                                                                         I11470
 C     SUBROUTINE SHAPET SETS UP THE TRIANGULAR SCANNING FUNCTION          I11480
 C                                                                         I11490
-      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,               I11500
-     *                HWF3,DXF3,NX3,N3MAX                                 I11510
+      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
+     *                HWF3,DXF3,NX3,N3MAX
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I11520
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I11530
      *              NLTEFL,LNFIL4,LNGTH4                                  I11540
@@ -1348,8 +1358,8 @@ C                                                                         I12770
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I12810
       COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I12820
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I12830
-      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,               I12840
-     *                HWF3,DXF3,NX3,N3MAX                                 I12850
+      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
+     *                HWF3,DXF3,NX3,N3MAX
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I12860
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I12870
      *              NLTEFL,LNFIL4,LNGTH4                                  I12880
@@ -1708,8 +1718,8 @@ C
 C                                                                         I16240
 C     SUBROUTINE SINCSQ SETS UP THE SINCSQ SCANNING FUNCTION              I16250
 C                                                                         I16260
-      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,               I16270
-     *                HWF3,DXF3,NX3,N3MAX                                 I16280
+      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
+     *                HWF3,DXF3,NX3,N3MAX
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I16290
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I16300
      *              NLTEFL,LNFIL4,LNGTH4                                  I16310
@@ -1749,8 +1759,8 @@ C
 C                                                                         I16620
 C     SUBROUTINE SINC SETS UP THE SINC SCANNING FUNCTION                  I16630
 C                                                                         I16640
-      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,               I16650
-     *                HWF3,DXF3,NX3,N3MAX                                 I16660
+      COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
+     *                HWF3,DXF3,NX3,N3MAX
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I16670
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I16680
      *              NLTEFL,LNFIL4,LNGTH4                                  I16690
