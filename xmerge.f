@@ -1576,7 +1576,7 @@ C                                                                         H11410
       NLIM1 = 0                                                           H11570
       NLIM2 = 0                                                           H11580
 C                                                                         H11590
-      AA = 0.2                                                            H11600
+      AA = 0.278                                                          H11600
 C                                                                         H11610
       IF (IAERSL.EQ.0) THEN                                               H11620
          IAFBB = -1                                                       H11630
@@ -3546,7 +3546,7 @@ C                                                                         H11410
       NLIM1 = 0                                                           H11570
       NLIM2 = 0                                                           H11580
 C                                                                         H11590
-      AA = 0.2                                                            H11600
+      AA = 0.278                                                          H11600
 C                                                                         H11610
       IF (IAERSL.NE.0) THEN                                               H11630
          BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       
@@ -4045,7 +4045,7 @@ C                                                                         H11410
       NLIM1 = 0                                                           H11570
       NLIM2 = 0                                                           H11580
 C                                                                         H11590
-      AA = 0.2                                                            H11600
+      AA = 0.278                                                          H11600
 C                                                                         H11610
       IF (IAERSL.NE.0) THEN                                               H11630
          BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       
@@ -5243,7 +5243,7 @@ C
 C     When calculating the derivative of the layer nearest the observer,
 C     omit the total accumulated transmittance, TRACCM
 C
- 10   AA = 0.2
+ 10   AA = 0.278
 c      write(*,*) 'ipathl = ',ipathl
       IF (IPATHL.EQ.1.OR.IPATHL.EQ.3) THEN
 c         write(*,*) 'layer = ',layer,'  nlayer = ',nlayer
@@ -5412,7 +5412,7 @@ C
 C     When calculating the derivative of the layer nearest the observer,
 C     omit the total accumulated transmittance, TRACCM
 C
- 10   AA = 0.2
+ 10   AA = 0.278
       IF (IPATHL.EQ.1.OR.IPATHL.EQ.3) THEN
          IF (LAYER.NE.NLAYER) THEN
             DO 20 I = 1, NLIM
@@ -5545,7 +5545,7 @@ C                                                                         H29400
       NLIM1 = 0                                                           H29550
       NLIM2 = 0                                                           H29560
 C                                                                         H29570
-      AA = 0.2                                                            H29580
+      AA = 0.278                                                          H29580
 C                                                                         H29590
       BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                          H29600
       IF (IAERSL.NE.0) THEN                                               H29610
