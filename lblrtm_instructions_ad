@@ -2,2072 +2,2075 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
-1
-0
-0
-0
-                                     PRELIMINARY
-                            USER INSTRUCTIONS FOR FASCOD3
-  
-                                    7 October 1991
-  
-  
-  
-1
- RECORD 1.1
-  
-  
-       CXID:  80 characters of user identification  (80A1)
-  
-             CXID(1) is the flag which determines program initialization and termination.  The actual input data
-                     stream for FASCOD3 commences with the record containing a '$' in CXID(1).  Any record that are
-                     read prior to a record containing a '$' in CXID(1) are ignored.  Since FASCOD3 automatically
-                     recycles and reads Record 1.1 at the end of each run (this allows the stacking of multiple
-                     runs), each subsequent run of FASCOD3 must also have a '$' in CXID(1) on Record 1.1.  In order
-                     to effect a normal termination of FASCOD3, CXID(1) must be set to '%', on the final record of
-                     the input file.  Thus a standard FASCOD3 input file would begin with a '$' and end with a '%'.
-                     Records on the input file following the record with CXID(1) = '%' are ignored by FASCOD3.
-  
-                     Note:  FASCOD3 will internally set CXID(1) = ' ' for all output.
-  
-  
- RECORD 1.2
-  
-  
-       IHIRAC, ILBLF4, ICNTNM, IAERSL,  IEMIT,  ISCAN, IFILTR, IPLOT, ITEST,  IATM,  IMRG,  ILAS,   IMS, IXSECT,  MPTS,  NPTS
-  
-            5,     10,     15,     20,     25,     30,     35,    40,    45,    50, 54-55,    60,    65,     70, 72-75, 77-80
-  
-        4X,I1,  4X,I1,  4X,I1,  4X,I1,  4X,I1,  4X,I1,  4X,I1, 4X,I1, 4X,I1, 4X,I1, 3X,A2, 4X,I1, 4X,I1,  4X,I1, 1X,I4, 1X,I4
-  
-  
-          IHIRAC   (0,1,2,3,4,9) selects desired version of HIRAC
-  
-                      = 0  HIRAC   HIRAC not activated; line-by-line calculation is bypassed
-                                                        (skips to selected function)
-                      = 1  HIRAC1  (Voigt profile)
-                      = 2  HIRACL  (Lorentz profile, not available in FASCOD3)
-                      = 3  HIRACD  (Doppler profile, not available in FASCOD3)
-                      = 4  NLTE Option (Non Local Thermodynamic Equilibrium)
-                                -state populations as a function of altitude required on TAPE4
-                      = 9  central line contribution omitted (functions 1-3)
-  
-          ILBLF4   (0,1,2) flag for LBLF4 (Line-By-Line Function 4)
-  
-                           (LBLF4 extends bound of line by line calculation beyond 64 halfwidths from line center)
-  
-                      = 0  LBLF4 not activated (line by line bound is 64 halfwidths)
-                      = 1  line by line bound is 25 cm-1 for all layer pressures (altitudes)
-                      = 2  line by line bound is 25 cm-1 for layers with pressures .GT. 0.5 mb
-                                              and 5 cm-1 for layers with pressures .LE. 0.5 mb
-                           (ILBLF4 = 2 saves computational time above 50 km with minimal loss of accuracy for most cases)
-  
-          ICNTNM   (0,1) flag for continuum (CONTNM)  1 = yes
-                            should be set to 1 for atmospheric calculations
-  
-          IAERSL   (0,1,7,9) flag for aerosols (LOWTRN)
-  
-                      = 0  no aerosols used
-                      = 1  internal LOWTRAN aerosol models
-                      = 7  user defined aerosol models
-                      = 9  use precalculated aerosols (TAPE20 from a previous aerosol run)
-1
-  RECORD 1.2 (Continued)
-  
-  
-           IEMIT   (0,1)
-  
-                      = 0  optical depth only
-                      = 1  radiance and transmittance
-  
-           ISCAN   (0,1,2) flag for SCANFN    1 = scanning function
-                                 or INTRPL    2 = interpolating procedure
-  
-          IFILTR   (0,1)   flag for FILTR     1 = yes
-  
-            IPLT   (0,1)   flag for PLOT      1 = yes
-  
-           ITEST   (0,1)   flag for TEST      1 = yes
-  
-            IATM   (0,1)   flag for FSCATM    1 = yes
-  
-            --------------------------------------------------------
-            |                                                      |
-            |    INPUT FOR RECORD 1.2 IS CONTINUED ON NEXT PAGE    |
-            |                                                      |
-            --------------------------------------------------------
-  
-1 RECORD 1.2 (Continued)
-  
-            IMRG   (0 to 9; 12-18; 22-28; 32) selects merge option
-  
-                                    IMRG = 0 KFILE rewound after each layer
-                                         > 1 KFILE not rewound after each layer
-  
-                    = 0  normal merge; result on MFILE; last layer optical depth on KFILE
-                    = 1  optical depths only; results for all layers on KFILE (no merging)
-                    = 2  optical depths from precalculated KFILE merged sequentially onto MFILE
-                           ** uses merge path as defined by precalculated KFILE **
-                    = 9  radiance merge with aerosols; precalculated KFILE
-                           ** uses merge path as defined by precalculated KFILE **
-                          ---------------------------------------------------------
-                          |                                                       |
-                          | NOTE:  KFILE usually maps to TAPE10                   |
-                          |        MFILE    "      "   " TAPE12                   |
-                          |        LFILE alternates with MFILE, mapping to TAPE11 |
-                          |        NFILE usually maps to TAPE13                   |
-                          ---------------------------------------------------------
-  
-                                                         IMRG OPTIONS FOR MERGED OUTPUT
-                                                         ==============================
-  
-                   Monochromatic Input, on precalculated KFILE.  Output is determined by IEMIT.
-                   ____________________________________________________________________________
-                                                                                 IMRG =                             Final
-                                                             -----------------------------------------------       Results
-                                            TYPE OF PATH:    space to ground     ground to space     tangent       on file
-                                                             ---------------     ---------------     -------       -------
-                            monochromatic (total merged)            A                   C               B           MFILE
-                                                                  (12)                (32)            (22)
-  
-  
-                                                     IMRG OPTIONS FOR SEQUENTIAL OUTPUT
-                                                     ==================================
-  
-                   Monochromatic Input, calculated in current run.
-                   _______________________________________________
-                                                                                 IMRG =
-                                                             -----------------------------------------------       Results
-                                            TYPE OF PATH:    space to ground     ground to space     tangent       on file
-                                                             ---------------     ---------------     -------       -------
-                            monochromatic                           3                   4               7           NFILE
-                            scanned results                        13                  14              17           NFILE
-                            filtered results                       23                  24              27           NFILE
-  
-  
-                   Monochromatic Input, on precalculated KFILE.
-                   ____________________________________________
-                                                                                 IMRG =
-                                                             -----------------------------------------------       Results
-                                            TYPE OF PATH:    space to ground     ground to space     tangent       on file
-                                                             ---------------     ---------------     -------       -------
-                            monochromatic                           5                   6               8           NFILE
-                            scanned results                        15                  16              18           NFILE
-                            filtered results                       25                  26              28           NFILE
-  
-  
-            IMRG options are continued on next page.
-            ----------------------------------------
-1
-  RECORD 1.2 (Continued)
-  
-            IMRG (Continued)
-  
-  
-                     The actual results produced on MFILE or NFILE are determined by both IEMIT on Record 1.2 and JEMIT on either
-                     Record 6 (scanned results) or Record 7.1 (filtered results).  The following table describes the options: 
-  
-  
-                                                                  RESULTS PRODUCED ON MFILE OR NFILE
-                                                              ------------------------------------------
-                                     TYPE OF RESULT                IEMIT=0                  IEMIT=1
-                                   ------------------         -----------------        -----------------
-                                   monochromatic                optical depths         transmittance & radiance
-                                   scanned  (JEMIT=0)           transmittance          transmittance
-                                   scanned  (JEMIT=1)                n/a               radiance
-                                   filtered (JEMIT=0)           transmittance          transmittance
-                                   filtered (JEMIT=1)                n/a               radiance
-  
-                  In the context of FASCODE calculations, weighting functions are readily obtained from the
-                               NFILE sequential transmittances by "subtracting" adjacent files (dT or dR), and
-                               employing the stored layer boundary definitions for P or z, i.e. (dlnP or dz).
-                               ( Use Option IOPT = 2 in PLTFAS for subtraction of FASCODE files )
-  
-                  For the filter option (IMRG.ge.23 .and. IMRG.le.28), the results, including the differences
-                               of the total transmittances or radiances, are also printed on unit IPR (TAPE6)
-  
-  
-                  "SEQUENTIAL" is defined at the total optical depth, transmittance, or radiance from H1 to
-                               each layer boundary (Ln), always beginning at H1: 
-  
-                                    H1    L1   L2   L3
-                                     *
-                                     *---->
-                                     *----|---->
-                                     *----|----|---->
-                                            etc...
-  
-  
-            --------------------------------------------------------
-            |                                                      |
-            |    INPUT FOR RECORD 1.2 IS CONTINUED ON NEXT PAGE    |
-            |                                                      |
-            --------------------------------------------------------
-1
-  
-  RECORD 1.2 (Continued)
-  
-  
-            ILAS    (0,1,2) flag for laser options
-  
-                    = 0  no
-                    = 1  single laser frequency selected (V1 on record 1.3)
-                    = 2  multiple laser frequency selected
-                           (first laser frequency is V1 on record 1.3;
-                            subsequent laser frequencies are on records 5.1 ... 5.N)
-  
-             IMS    (0,1) flag for multiple scattering of thermal radiation
-  
-                    = 0  no multiple scattering
-                    = 1  multiple scattering
-                            (following conditions must be set: IAERSL = 1 or 7
-                                                               IEMIT  = 1
-                                                               IATM   = 1
-                                                               IMRG   = 0      )
-  
-          IXSECT    (0,1) flag for cross-sections
-  
-                    = 0  no cross-sections included in calculation
-                    = 1  cross-sections included in calculation
-                            (input file FSCDXS containing the cross-section file information must be provided.
-                             See Table II following Record 3.7.1 for a description of file FSCDXS)
-  
-            MPTS         number of optical depth values printed for the beginning and
-                         ending of each panel as a result of convolution for current layer
-                         (for laser option ILAS > 1, MPTS should be set to 0)
-                         (for MPTS < O, output printing is suppressed)
-  
-            NPTS          number of values printed for the beginning and ending of each panel
-                          as result of merge of current layer with previous layers
-                          (optical depth for IEMIT=0; radiance and transmission for IEMIT=1)
-                          (for laser option ILAS > 1, NPTS should be set to 0)
-  
-  
-  
- RECORD 1.2.1  (required if IMS = 1; otherwise omit)
-  
-             TGRND, SEMIS(1), SEMIS(2), SEMIS(3),  RMINMS,  RMAXMS
-  
-              1-10,    11-20,    21-30,    31-40,   41-50,   51-60  71-80
-  
-             F10.3,    F10.3,    F10.3,    F10.3,   F10.3,   F10.3  F10.3
-  
-  
-                   TGRND       temperature of surface (K)
-  
-                   SEMIS(I)    surface emissivity coefficients (I = 1,2,3)
-                                  EMISSIVITY = SEMIS(1) + SEMIS(2)*V + SEMIS(3)*(V**2)
-  
-                   RMINMS      minimum altitude for multiple scattering (default =  0 km)
-  
-                   RMAXMS      maximum altitude for multiple scattering (default = 15 km)
-  
-1
-  
- RECORD 1.3    (required if IHIRAC > 0, IAERSL > 0, IEMIT = 1, IATM = 1, or ILAS > 0; otherwise omit)
-  
-  
-  
-              V1,     V2,   SAMPLE,   DVSET,   ALFAO,   AVMASS,   DPTMIN,   DPTFAC
-  
-            1-10,  11-20,    21-30,   31-40,   41-50,    51-60,    61-70,    71-80
-  
-           E10.3,  E10.3,    E10.3,   E10.3,   E10.3,    E10.3,    E10.3,    E10.3
-  
-  
-  
-                   V1    beginning wavenumber value for the calculation
-                                   (VLAS = V1 for ILAS = 1,2)
-  
-                   V2    ending wavenumber value for the calculation
-                                 ( (V2-V1) must be less than 525 cm - 1 )
-  
-               SAMPLE    number of sample points per mean halfwidth (between 1. and 4.)
-                         (default = 4.)
-  
-                DVSET    selected DV for the final monochromatic calculation
-                         if positive, must be within 20% of DV for final
-                         monochromatic calculation determined by FASCODE
-  
-                         If negative, final DV = abs(DVSET).  However, this option causes
-                         line width readjustment which may effect the validity of the
-                         reults. Use with extreme caution.
-  
-                ALFA0    average collision broadened halfwidth (cm - 1/atm) (default = 0.08)
-                            (for cases with line coupling set ALFA0 = 0.04)
-  
-               AVMASS    average molecular mass (amu) for Doppler halfwidth (default = 36)
-  
-               DPTMIN    minimum molecular optical depth below which lines will be rejected
-                                 (negative value defaults to DPTMIN = 0.0002)
-  
-               DPTFAC    factor multiplying molecular continuum optical depth to
-                         determine optical depth below which lines will be rejected
-                                 (negative value defaults to DPTFAC = 0.001)
-  
-  
-  
-  
-1
-  
-  
- RECORD 1.4    (required if IEMIT > 0; otherwise omit)
-  
-  
-  
-          TBOUND, SREMIS(1), SREMIS(2), SREMIS(3), SRREFL(1), SRREFL(2), SRREFL(3)
-  
-            1-10,     11-20,     21-30,     31-40,     41-50,     51-60,     61-70
-  
-           E10.3,     E10.3,     E10.3,     E10.3,     E10.3,     E10.3,     E10.3
-  
-  
-  
-          temperature, emissivitiy and reflectivity parameters for boundary at H1
-                     (applicable to looking down case only, IPATH = 1)
-  
-          effect of reflected atmospheric radiance above H1 included for SRREFL(I) > 0.
-  
-  
-  
-               TBOUND       temperature of boundary (K)
-  
-               SREMIS(I)    frequency dependent boundary emissivity coefficients (I = 1,2,3)
-  
-                              EMISSIVITY   = SREMIS(1) + SREMIS(2)*V + SREMIS(3)*(V**2)
-  
-               SRREFL(I)    frequency dependent boundary reflectivity coefficients (I = 1,2,3)
-  
-                              REFLECTIVITY = SRREFL(1) + SRREFL(2)*V + SRREFL(3)*(V**2)
-  
-  
-1*****************************************************************************
- ******  these records applicable only if FSCATM not selected (IATM=0)  ******
-  
-                        LAYER INPUT  (MOLECULES ONLY)
-  
- RECORD 2.1
-  
-           NLAYRS, NMOL, SECNTO, HEDDR
-  
-                5,   10,  11-20, 21-80
-  
-               I5,   I5,  F10.2,  15A4
-  
-  
-               NLAYRS      number of layers (maximum of 67)
-  
-                 NMOL      number of molecules (default = 7; maximum of 28)
-  
-               SECNTO      user entered scale factor for the column amount for the layers defined by NLAYRS
-                                  if positive, looking up
-                                  if negative, looking down
-                           normal value = 1.0
-  
-                HEDDR      60 character user identification
-  
-  
- RECORD 2.1.1
-  
-  
-           PAVE,  TAVE,  SECNTK,  ITYL(L),  IPATH,  ALTZ(L-1),  PZ(L-1),  TZ(L-1),  ATLZ(L),  PZ(L),  TZ(L)
-  
-           1-10, 11-20,   21-30,    31-33,  34-35,      37-43,    44-51,    52-58,    59-65,  66-73,  74-80
-  
-          F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
-  
-  
-                 PAVE   ave. pressure of layer (millibars)
-  
-                 TAVE   ave. temperature of layer (K)
-  
-               SECNTK   if SECNTK .ne. 0, it is the value of the column amount
-                        scale factor that will be used in the calculation for this layer
-  
-                        a non-zero value for SECNTK will override the scale factor
-                        value, SECNTO .
-  
-              ITYL(L)   overrides the FASCODE internal calulation of ITYPE for the layer L.
-                        ITYPE controls the DV ratio of the previous layer to the current layer.
-                        A blank defaults to the internal calulation.
-                      = 0 specifies 1/1
-                        1 specifies 2/1
-                        2 specifies 3/2
-                        4 specifies 5/4
-                        5 specifies 6/5
-                       99 specifies first layer (i.e. no ratio)
-1
- RECORD 2.1.1 (Continued)
-  
-                IPATH = 0 determined by sign of SECNTO
-                        1 looking down merge
-                        2 tangent layer merge
-                        3 looking up merge
-  
-            ALTZ(L-1)   altitude for bottom of current layer (information only)
-  
-              PZ(L-1)   pressure at ALTZ(L-1)  (information only)
-  
-              TZ(L-1)   temperature at ALTZ(L-1)  -  used by FASCODE for Planck Function Calculation
-  
-                        ** NOTE **  ALTZ(L-1), PZ(L-1) and TZ(L-1) are only required for the first layer.
-                                    FASCODE assumes that these quantites are equal to the top of the previous
-                                    layer for L > 1.
-  
-              ALTZ(L)   altitude for top of current layer (information only)
-  
-                PZ(L)   pressure at ALTZ(L)  (information only)
-  
-                TZ(L)   temperature at ALTZ(L)  -  used by FASCODE for Planck Function Calculation
-  
-  
- RECORD 2.1.2
-  
-  
-           (WKL(M,L), M=1, 7), WBROADL(L)
-  
-                       (8E10.3)
-  
-  
-               WKL(M,L)   column densities for 7 molecular species (molecules/cm**2)
-  
-             WBROADL(L)   column density for broadening gases (molecules/cm**2)
-  
-  
-  
- RECORD 2.1.3     only if (NMOL  .GT . 7)         # records depends on NMOL
-  
-  
-           (WKL(M,L), M=8, NMOL)
-  
-                 (8E10.3)
-  
-  
-                 NMOL is set from LINFIL (TAPE3)
-  
-                      (NMOL limited to 28 in FASCOD3)
-  
-  
-  
- REPEAT RECORDS 2.1.1 through 2.1.3 for the remaining layers (up to NLAYRS)
-  
-  
-1*****************************************************************************
- ******  these records applicable only if FSCATM not selected (IATM=0)  ******
- ****************  and cross-sections ARE selected (IXSECT=1)  ***************
-  
-                     LAYER INPUT  (CROSS-SECTIONS ONLY)
-  
- RECORD 2.2
-  
-           IXMOLS,        IXSBIN
-  
-                5,            15
-  
-               I5,     5X,    I5
-  
-  
-               IXMOLS      number of cross-section molecules to be inputed (maximum of 35)
-  
-               IXSBIN   (0,1) flag to deselect pressure convolution of cross-sections
-  
-                         = 0 cross-sections convolued with pressure
-                         = 1 cross-sections not convolved with pressure
-  
- RECORD 2.2.1
-  
-           XSNAME(I), I=1, IXMOLS
-  
-           (7A10,(/,8A10))
-  
-  
-               XSNAME      name of the cross-section molecules to be used
-                           (Note: the cross-sections specified here must also appear in the
-                            cross-section input file FSCDXS.  See Table II after Record 3.7.1)
-  
- RECORD 2.2.2
-  
-           NLAYXS, IXMOL, SECNTX, HEDXS
-  
-                5,    10,  11-20, 21-80
-  
-               I5,    I5,  F10.2,  15A4
-  
-  
-               NLAYXS      number of layers (maximum of 67), should be the same as NLAYRS on Record 2.1
-  
-                IXMOL      number of cross-sections (maximum of 35), should be the same as IXMOLS on Record 2.2
-  
-               SECNTX      user entered scale factor for the column amount for the layers defined by NLAYXS
-                                  if positive, looking up
-                                  if negative, looking down
-                           normal value = 1.0
-  
-                           *** Note: this quantity is for information only, SECNTX should be the same as
-                                     SECNT0 on Record 2.1, which is used instead of this quantity.
-  
-                HEDXS      60 character user identification
-  
-1
-           ****************************************************************************************************************
-           ****  Note: all the quantites on this Record, are for information only, FASCODE will use the corresponding  ****
-           ****        values from Record 2.1.1.    This record is retained to maintain compatibility with 2.1.1 and   ****
-           ****        is consistent with the output from FSCATM with IPU = 1; this provides the flexibility of        ****
-           ****        independent utilization of this data with external programs.                                    ****
-           ****************************************************************************************************************
-  
- RECORD 2.2.3
-  
-  
-           PAVX,  TAVX,  SECKXS,  ITYX(L),  IPATX,  ALTX(L-1),  PX(L-1),  TX(L-1),  ATLX(L),  PX(L),  TX(L)
-  
-           1-10, 11-20,   21-30,    31-33,  34-35,      37-43,    44-51,    52-58,    59-65,  66-73,  74-80
-  
-          F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
-  
-  
-                 PAVX   ave. pressure of layer (millibars)
-  
-                 TAVX   ave. temperature of layer (K)
-  
-               SECKXS   if SECKXS .ne. 0, it is the value of the column amount
-                        scale factor that will be used in the calculation for this layer
-  
-                        a non-zero value for SECKXS will override the scale factor
-                        value, SECNTX .
-  
-              ITYX(L)   overrides the FASCODE internal calulation of ITYPE for the layer L.
-                        ITYPE controls the DV ratio of the previous layer to the current layer.
-                        A blank defaults to the internal calulation.
-                      = 0 specifies 1/1
-                        1 specifies 2/1
-                        2 specifies 3/2
-                        4 specifies 5/4
-                        5 specifies 6/5
-                       99 specifies first layer (i.e. no ratio)
-  
-                IPATX = 0 determined by sign of SECNTX
-                        1 looking down merge
-                        2 tangent layer merge
-                        3 looking up merge
-  
-            ALTX(L-1)   altitude for bottom of current layer
-  
-              PX(L-1)   pressure at ALTX(L-1)
-  
-              TX(L-1)   temperature at ALTX(L-1)
-  
-                        ** NOTE **  ALTX(L-1), PX(L-1) and TX(L-1) are only required for the first layer.
-                                    FASCODE assumes that these quantites are equal to the top of the previous
-                                    layer for L > 1.
-  
-              ALTX(L)   altitude for top of current layer
-  
-                PX(L)   pressure at ALTZ(L)
-  
-                TX(L)   temperature at ALTZ(L)
-  
-1
-  
-  
- RECORD 2.2.4
-  
-  
-           (XAMNT(I,L), I=1, 7), WBROADX(L)
-  
-                       (8E10.3)
-  
-  
-             XAMNT(M,L)   column densities for 7 cross-section molecules (molecules/cm**2)
-  
-             WBROADX(L)   column density for broadening gases (molecules/cm**2),                    ** information only **
-                          should be the same as WBROADL, on Record 2.1.2
-  
-  
-  
- RECORD 2.2.5     only if (IXMOL  .GT . 7)         # records depends on IXMOL
-  
-  
-           (XAMNT(I,L), I=8, IXMOL)
-  
-                 (8E10.3)
-  
-  
-  
-  
- REPEAT RECORDS 2.2.3 through 2.2.5 for the remaining layers (up to NLAYXS)
-  
-1
-  
-  *****************************************************************************
-  ********     these records applicable if FSCATM selected (IATM=1)    ********
-  
-                                      FSCATM
- RECORD 3.1
-  
-  
-       MODEL,  ITYPE, IBMAX,  NOZERO,  NOPRNT,  NMOL, IPUNCH,       RE, HSPACE,  VBAR, CO2MX
-  
-           5,     10,    15,      20,      25,    30,     35,    41-50,  51-60, 61-70, 71-80
-  
-          I5,     I5,    I5,      I5,      I5,    I5,     I5, 5X,F10.3,  F10.3, F10.3, F10.3
-  
-  
-            MODEL   selects atmospheric profile
-  
-                      = 0  user supplied atmospheric profile
-                      = 1  tropical model
-                      = 2  midlatitude summer model
-                      = 3  midlatitude winter model
-                      = 4  subarctic summer model
-                      = 5  subarctic winter model
-                      = 6  U.S. standard 1976
-  
-            ITYPE   selects type of path
-  
-                      = 1  horizontal path (constant pressure, temperature)
-                      = 2  slant path from H1 to H2
-                      = 3  slant path from H1 to space (see HSPACE)
-  
-            IBMAX     selects layering for FASCOD3
-  
-                      = 0  FASCOD3 layers are generated internally (default)
-                      > 0  IBMAX is the number of layer boundaries read in on Record 3.3B which are
-                                  used to define the layers used in FASCODE calculation
-  
-            NOZERO    = 0  zeroes absorber amounts which are less than 0.1 percent of total (default)
-                      = 1  suppresses zeroing of small amounts
-  
-            NOPRNT    = 0  full printout
-                      = 1  selects short printout
-  
-            NMOL      number of molecular species (default = 7; maximum value is 28)
-  
-            IPUNCH    = 0  layer data not written (default)
-                      = 1  layer data written to unit IPU (TAPE7)
-  
-            RE        radius of earth (km)
-                      defaults for RE=0: 
-  
-                      a)  MODEL 0,2,3,6    RE = 6371.23 km
-                      b)        1          RE = 6378.39 km
-                      c)        4,5        RE = 6356.91 km
-  
-            HSPACE    altitude definition for space (default = 100 km)
-                      internal models defined to 120 km
-1
-  
-  RECORD 3.1 (Continued)
-  
-            VBAR      frequency for refractive geometry calculation
-  
-                        (default:  VBAR = (V1+V2) / 2 )     (V1,V2 from Record 1.3)
-  
-  
-            CO2MX     mixing ratio for CO2 (ppm).  Default is 330 ppm.
-  
-  
-1
-  
- -----------------------------------------------------------------------------
-  
- ------------------  SLANT PATH (ITYPE = 2,3) (MODEL = 0-6) ------------------
-  
-  
- RECORD 3.2
-  
-  
-          H1,    H2,   ANGLE,   RANGE,   BETA,   LEN
-  
-        1-10, 11-20,   21-30,   31-40,  41-50, 51-55
-  
-       F10.3, F10.3,   F10.3,   F10.3,  F10.3,    I5
-  
-  
-           H1     observer altitude (km)
-  
-           H2     for ITYPE = 2, H2 is the end pont altitude (km)
-                      ITYPE = 3, H2 is the tangent height (km) for H2 .GT. 0.
-                                       if H2 = 0. ANGLE determines tangent height
-  
-           ANGLE  zenith angle at H1 (degrees)
-  
-           RANGE  length of a straight path from H1 to H2 (km)
-  
-           BETA   earth centered angle from H1 to H2 (degrees)
-  
-           LEN    = 0  short path (default)
-                  = 1  long path through a tangent height
-  
-                  LEN is only used for H1 > H2 (ANGLE > 90`)
-  
-                  for ITYPE = 2, only 3 of the first 5 parameters are required to specify
-                                 the path, e.g., H1, H2, ANGLE or H1, H2 and RANGE
-  
-                  for ITYPE = 3, H1 = observer altitude must be specified. Either
-                                 H2 = tangent height or ANGLE must be specified.
-                                 Other parameters are ignored.
-  
-  
-1
-  
-  
-                 RECORD 3.3  options
-  
-  
- RECORD 3.3A        For IBMAX  = 0 (from RECORD 3.1)
-  
-  
-                AVTRAT, TDIFF1, TDIFF2, ALTD1, ALTD2
-  
-                  1-10,  11-20,  21-30, 31-40, 41-50
-  
-                 F10.3,  F10.3,  F10.3, F10.3, F10.3
-  
-  
-           AVTRAT  maximum Voigt width ratio across a layer
-                   (if zero, default = 2.0)
-  
-           TDIFF1  maximum layer temperature difference at
-                   ALTD1 (if zero, default =  8 K)
-  
-           TDIFF2  maximum layer temperature difference at
-                   ALTD2 (if zero, default = 12 K)
-  
-           ALTD1   altitude of TDIFF1 (if zero, default = 0 Km)
-  
-           ALTD2   altitude of TDIFF2 (if zero, default = 100 Km)
-  
-  
-  
-  
- RECORD 3.3B        For IBMAX > 0  (from RECORD 3.1)
-  
-                 ZBND(I), I=1, IBMAX   altitudes of FASCOD3 layer boundaries
-  
-                (8F10.3)
-  
- --------------------------------------------------------------------------------
-  
-  
-  
-  
-  
-1
- -----------------------------------------------------------------------------
-                      User Defined Atmospheric Profile
-  
- -------------------------------- (MODEL = 0) --------------------------------
-  
-  
- RECORD 3.4
-  
-  
-            IMMAX,   HMOD
-  
-                5,   6-29
-  
-               I5,    3A8
-  
-  
-            IMMAX    number of atmospheric profile boundaries
-  
-             HMOD    24 character description of profile
-  
- RECORD 3.5
-  
-  
-        ZM,    PM,    TM,    JCHARP, JCHART,   (JCHAR(K),K =1,28)
-  
-      1-10, 11-20, 21-30,        36,     37,     41  through  68
-  
-     E10.3, E10.3, E10.3,   5x,  A1,     A1,    3X,    28A1
-  
-  
-           ZM       boundary altitude (km)
-  
-           PM       pressure (units and input options set by JCHARP)
-  
-           TM       temperature (units and input options set by JCHART)
-  
-       JCHARP       flag for units and input options for pressure (see Table I)
-  
-       JCHART       flag for units and input options for temperature (see Table I)
-  
-       JCHAR(K)     flag for units and input options for
-                    the K'th molecule (see Table I)
-  
-  
- RECORD 3.6.1 ... 3.6.N
-  
-           VMOL(K), K=1, NMOL
-  
-           8E10.3
-  
-           VMOL(K) density of the K'th molecule in units set by JCHAR(K)
-  
- repeat records 3.5 and 3.6.1 to 3.6.N for each of the remaining IMMAX boundaries
-  
- ----------------------------------------------------------------------------
-  
- ****************************************************************************
-1
-  TABLE I. Units and input options for the K'th molecule
-  
-  
-  
-  
-                                              TABLE I
-  
-  
-  
-  
-        USER OPTIONS FOR PRESSURE, TEMPERATURE, AND MOLECULAR DENSITY
-  
-  
-  
-                     JCHARP
-  
-         PRESSURE      1-6         default to value for specified model atmosphere
-         (JCHARP)    " ",A         pressure in (mb)
-                         B            "     "  (atm)
-                         C            "     "  (torr)
-  
-  
-                     JCHART
-  
-      TEMPERATURE      1-6         default to value for specified model atmospher)
-         (JCHART)    " ",A         ambient temperature in deg (K)
-                         B            "     "   "   "   "  "  (C)
-  
-  
-                     JCHAR(M)
-  
- (M):  AVAILABLE       ( 1)  H2O   ( 2)  CO2   ( 3)  O3  ( 4)  N2O  ( 5)  CO   ( 6)  CH4   ( 7)  O2
- MOLECULAR SPECIES     ( 8)   NO   ( 9)  SO2   (10) NO2  (11)  NH3  (12) HNO3  (13)   OH   (14)  HF
-                       (15)  HCL   (16)  HBR   (17)  HI  (18)  CLO  (19)  OCS  (20) H2CO   (21) HOCL
-                       (22)   N2   (23)  HCN   (24)CH3CL (25) H2O2  (26) C2H2  (27) C2H6   (28)  PH3
-  
-  
-                            potential choice of units for above species: 
-  
-         JCHAR = 1-6           - default to value for specified model atmosphere
-               = " ",A         - volume mixing ratio (ppmv)
-               = B             - number density (cm-3)
-               = C             - mass mixing ratio (gm/kg)
-               = D             - mass density (gm m-3)
-               = E             - partial pressure (mb)
-               = F             - dew point temp (K) *H2O only*
-               = G             - dew point temp (C) *H2O only*
-               = H             - relative humidity (percent) *H2O only*
-               = I             - available for user definition
-  
-         JCHAR must be less than "J"
-  
-  
-  
-1
-  
-  
- ----------------------------------------------------------------------------
-  
- ----------------  HORIZONTAL PATH (ITYPE = 1) (MODEL = 0-6)  ---------------
-  
-  
-  
- RECORD 3.2H
-  
-  
-              H1,      ,      ,  RANGEF
-  
-            1-10,                31-40
-  
-           F10.3,   10X,   10X,  F10.3
-  
-  
-                 H1     =  observer altitude (km)
-  
-                 RANGEF =  path length (km)
-  
-  
-  
-  
- RECORD 3.3  not used for this case
-  
-  
-  
-  
- RECORD 3.4                 records included for MODEL = 0 only
-        3.5                   (see MODEL = 0 input records)
-        3.6
-  
- ----------------------------------------------------------------------------
- -----------------------------------------------------------------------------
-  
-  
-  
-1*****************************************************************************
- **********  these records applicable if FSCATM selected (IATM=1)  ***********
- ****************  and cross-sections ARE selected (IXSECT=1)  ***************
-  
-                              XAMNTS
-  
- RECORD 3.7
-  
-           IXMOLS,  IPRFL, IXSBIN
-  
-                5,     10,     15
-  
-               I5,     I5,     I5
-  
-  
-               IXMOLS      number of cross-section molecules to be inputed (maximum of 35)
-  
-               IPRFL  (0,1)
-  
-                         = 0  user input profile
-                         = 1  standard profile as determined by FSCATM
-  
-               IXSBIN (0,1) flag to deselect pressure convolution of cross-sections
-  
-                         = 0 cross-sections convolved with pressure (default)
-                         = 1 cross-sections not convolved with pressure
-  
- RECORD 3.7.1
-  
-           XSNAME(I), I=1, IXMOLS
-  
-           (7A10,(/,8A10))
-  
-  
-               XSNAME      name of the cross-section molecules to be used
-                           (Note: the cross-sections specified here must also appear
-                            in the cross-section input file FSCDXS.  See Table II)
-1
-  TABLE II. Structure of file FSCDXS.
-  
-  
-  
-  
-                                             TABLE II
-  
-     Below is a sample file for FSCDXS.  The format for the fields of file FSCDXS is given below: 
-  
-                       XNAME, V1X, V2X, DVX, NTEMP, IFRM, CFRM, (XFILS(I),I=1,NTEMP)
-  
-                              FORMAT (A10,2F10.4,F10.7,I5,5X,I5,A1,4X,6A10)
-  
-  
-     Sample file FSCDXS: 
-     ------------------------------------------------------------------------------------------------------------------------
-     MOLECULE       V1        V2        DV     NTEMP    FORMAT    FILET1    FILET2    FILET3    FILET4    FILET5    FILET6
-  
-     CCL4        786.0010  805.9980 .01095126    1        86N    CCL4
-     F11         830.0090  859.9990 .01095325    4        90N    F11AT1    F11AT2    F11AT3    F11AT4
-     F11        1060.0040 1099.9980 .01095726    1        86N    F11BT1
-     F12         860.0080  939.9960 .01095576    6        90     F12AT1    F12AT2    F12AT3    F12AT4    F12AT5    F12AT6
-     F12        1070.0050 1179.9940 .01095726    4        90N    F12BT1    F12BT2    F12BT3    F12BT4
-     %%%
-     ------------------------------------------------------------------------------------------------------------------------
-  
-            XNAME     10 character cross-section name, left-justified, all CAPS,
-                      which matches an alias from the following table: 
-  
-                                       Cross-Section Molecules and Aliases   (Oct 1990)
-                                       ------------------------------------------------
-  
-                              Alias(1)           Alias(2)           Alias(3)           Alias(4)
-                             ----------         ----------         ----------         ----------
-                             CLONO2              CLNO3
-                             HNO4
-                             CHCL2F                                 CFC21              F21
-                             CCL4
-                             CCL3F               CFCL3              CFC11              F11
-                             CCL2F2              CF2CL2             CFC12              F12
-                             C2CL2F4             C2F4CL2            CFC114             F114
-                             C2CL3F3             C2F3CL3            CFC113             F113
-                             N2O5
-                             HNO3
-                             CF4                                    CFC14              F14
-                             CHCLF2              CHF2CL
-  
-                      Note: If a molecule has cross-section data in more than one spectral region,
-                            each region must have a separate entry in FSCDXS.
-  
-                      A '%' in column 1 will terminate the read of FSCDXS
-  
-1
-  TABLE II. Structure of file FSCDXS.  (Continued)
-  
-  
-              V1X     Beginning wavenumber for the cross-section data (cm-1)
-  
-              V2X     Ending wavenumber for the cross-section data (cm-1)
-  
-              DVX     Wavenumber spacing for the cross-section data (cm-1)     ** for information only **
-  
-            NTEMP     number of temperature dependent cross-section files to be read in.  '1' indicates no temperature
-                      dependence.  Maximum of '6' files (i.e. 6 temperatures) is allowed.       ***** no default *****
-  
-             IFRM     is the format specifier
-                      = 86  -  HITRAN 86 format
-                      = 90  -  HITRAN 90 format   ** default **
-  
-                      Note: the headers are different between HITRAN 86 and HITRAN 90
-  
-             CFRM     is the blocking specifier
-                      = 'N'  -  unblocked data (100 characters/record)
-                      = ' '  -  blocked data (51*100 characters/record)    ** default **
-  
-         XFILS(I)     10 character cross-section file name
-  
-1
- -----------------------------------------------------------------------------
-                      User Defined Atmospheric Profile
-  
- -------------------------------- (IPRFL = 0) --------------------------------
-  
-  
- RECORD 3.8
-  
-  
-             LAYX,  IZORP,  XTITLE
-  
-                5,     10,   11-60
-  
-               I5,     I5      A50
-  
-  
-            LAYX         number of atmospheric profile boundaries
-  
-            IZORP (0,1)  flag which determines value of ZORP on Record 3.8.1
-  
-                         = 0   ZORP is an altitude in KM
-                         = 1   ZORP is a pressure in millibars
-  
-            XTITLE       50 character description of profile
-  
- RECORD 3.8.1
-  
-  
-      ZORP,  (JCHAR(K),K =1,28)
-  
-      1-10,    16  through  50
-  
-     F10.3, 5X,           35A1
-  
-  
-         ZORP       boundary altitude (km) or pressure (millibars) as determined by IZORP on Record 3.8
-  
-       JCHAR(K)     flag for units and input options for
-                    the K'th cross-section
-  
-                        JCHAR = 1-1           - default to value for specified model atmosphere
-                              = " ",A         - volume mixing ratio (ppmv)
-  
-  
- RECORD 3.8.2 ... 3.8.N
-  
-           DENX(K), K=1, IXMOLS
-  
-           8E10.3
-  
-           DENX(K) density of the K'th cross-section in units set by JCHAR(K)
-  
- repeat records 3.8.1 to 3.8.N for each of the remaining LAYX boundaries
-  
- ----------------------------------------------------------------------------
-1
-     ******************************************************************************************
-  
-                                    AEROSOLS (IAERSL = 1,7)
-  
-     ------------------------------------------------------------------------------------------
-     Subroutine LOWTRN
-  
-     Stripped down version of LOWTRAN 7 run as a subroutine to supply
-     FASCOD3 with the attenuation due to aerosols, clouds, fogs, and rain.
-  
-     Further details of most of the aerosol parameters are contained in
-     the LOWTRAN7 User Guide (AFGL-TR-88-0177), the LOWTRAN6 Report (AFGL-TR-83-0187)
-     the LOWTRAN5 Report (AFGL-TR-80-0167) and the Millimeter Aerosol Report (AFGL-TR-79-0253)
-     ******************************************************************************************
-  
-     Activated by IAERSL = 1 or 7 (on record 1.2)
-  
-     ** Note:  MODEL is read in FSCATM                    **
-     **        M1, M2, and M3 are set depending on MODEL  **
-  
-     RECORD sequence as follows
-  
-     4.1    IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT
-  
-                                    Format (6I5,5F10.3)
-  
-     ***Optional RECORDS***
-  
-  (if ICLD = 18,19, or 20)     RECORD 4.2        CTHIK,CALT,CEXT,ISEED
-                                                 Format (3F10.3,I10)
-  
-  (if IVSA = 1)                RECORD 4.3        ZCVSA,ZTVSA,ZINVSA
-                                                 Format (3F10.3)
-  
-  (if IAERSL = 7)              RECORD 4.4        ML,TITLE
-                                                 Format (I5,18A4)
-  
-                               ** RECORD 4.5 is repeated ML times **
-  
-                               RECORD 4.5        ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,ISEA1,ICHR1
-                                                 Format (4F10.3,5I5)
-  
-  (if IHAZE = 7                RECORD 4.6.1      (IREG(I),I=1,4)
-   or ICLD  = 11)                                Format (4I5)
-  
-                               RECORD 4.6.2      AWCCON(N),TITLE(N)      ** Note: N = IREG(1)+IREG(2)+IREG(3)+IREG(4)
-                                                 Format (E10.3,18A4)
-  
-                               RECORD 4.6.3      (VX(I),EXTC(N,I),ABSC(N,I),ASYM(N,I),I=1,47)      ** 16 records **
-                                                 Format (3(F6.2,2F7.5,F6.4))
-  
-     ******************************************************************************************
-1
-  
- ***************************************************************************************
-  
- RECORD 4.1            IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT
-  
-                                FORMAT (6I5,5F10.3)
-  
- IHAZE selects the type of extinction and a default meteorological
-       range for the boundary-layer aerosol model
-       (0 to 2 km altitude)
-  
-      IHAZE = 0      no aerosol attenuation included in calculation
-            = 1      Rural extinction, (23 km VIS. default profile)
-            = 2      Rural extinction, (5 km VIS. default profile)
-            = 3      Navy Maritime extinction, sets own VIS.
-            = 4      Maritime extinction, 23 km VIS.  (LOWTRAN 5 Model)
-            = 5      Urban extinction,(5 km VIS. default profile)
-            = 6      Tropospheric extinction, (50 km VIS. default profile)
-            = 7      User defined aerosol extinction coefficients
-                     see Records 4.6.1 - 4.6.3
-            = 8      FOG1 (advection fog)  extinction, 0.2 km VIS.
-            = 9      FOG2 (radiation fog)  extinction, 0.5 km VIS.
-            = 10     DESERT extinction sets own visibility from wind speed (WSS).
-  
-            If VIS is also specified on Record 4.1 it will override the
-            default IHAZE value of VIS
-  
-  
- ISEASN selects the seasonal dependence of the vertical profiles
-        for both the tropospheric (2 to 10 km) and stratospheric
-        (10 to 30 km) aerosols.
-  
-     ISEASN = 0      Defaults to season of MODEL (see RECORD 3.1)
-                     (MODEL 0,1,2,4,6,7) summer
-                     (MODEL 3,5)         winter
-            = 1      spring-summer
-            = 2      fall-winter
-  
- IVULCN selects both the profile and extinction type for
-        the stratospheric aerosols and determines transition
-        profiles above the stratosphere to 100 km.
-  
-     IVULCN = 0      default to stratospheric background
-            = 1      stratospheric background
-            = 2      aged volcanic extinction; moderate volcanic profile
-            = 3      fresh volcanic extinction; high volcanic profile
-            = 4      aged volcanic extinction; high volcanic profile
-            = 5      fresh volcanic extinction; moderate volcanic profile
-            = 6      background stratospheric extinction; moderate volcanic profile
-            = 7      background stratospheric extinction; high volcanic profile
-            = 8      fresh volcanic extinction; extreme volcanic profile
-  
-  
-1
-  
- RECORD 4.1 (Continued)
-  
-  
-  
- ICSTL is the air mass character (1 to 10); only used with
-       Navy maritime model (IHAZE=3)             (default value = 3)
-  
-       ICSTL        = 1  open ocean
-                      .
-                      .
-                      .
-                     10  strong continental influence
-  
- ICLD determines the inclusion of cirrus cloud attenuation or gives
-      a choice of five cloud models and 5 rain models
-  
- ICLD for cloud and or rain
-  
-      ICLD           = 0   no clouds or rain
-  
-                     = 1   Cumulus cloud; base .66 km; top 3.0 km
-                     = 2   Altostratus cloud; base 2.4 km; top 3.0 km
-                     = 3   Stratus cloud; base .33 km; top 1.0 km
-                     = 4   Stratus; Strato Cumulus; base .66 km; top 2.0 km
-                     = 5   Nimbostratus cloud; base .16 km; top .66 km
-  
-                     = 6   2.0 mm/hr drizzle (modeled with cloud 3)
-                           rain 2.0 mm/hr at 0.0 km to 0.22 mm/hr at 1.5 km
-                     = 7   5.0 mm/hr light rain (modeled with cloud 5)
-                           rain 5.0 mm/hr at 0.0 km to 0.2 mm/hr at 2.0 km
-                     = 8   12.5 mm/hr moderate rain (modeled with cloud 5)
-                           rain 12.5 mm/hr at 0.0 km to 0.2 mm/hr at 2.0 km
-                     = 9   25.0 mm/hr heavy rain (modeled with cloud 1)
-                           rain 25.0 mm/hr at 0.0 km to 0.2 mm/hr at 3.0 km
-                     =10   75.0 mm/hr extreme rain (modeled with cloud 1)
-                           rain 75.0 mm/hr at 0.0 km to 0.2 mm/hr at 3.5 km
-  
-                     =11   read in user defined cloud extinction and absorption
-                           can only be used with IAERSL = 7
-  
-                     =18   Standard Cirrus Model
-                     =19   Sub-visual Cirrus Model
-                     =20   NOAA Cirrus model (LOWTRAN 6 Model)
-  
-1
-  
- RECORD 4.1 (Continued)
-  
-  
- IVSA determines the use of the Army Vertical Structure Algorithm
-      for aerosols in the boundary layer.
-  
-      IVSA           = 0   not used
-                     = 1   vertical structure algorithm
-  
-  
-      VIS            =     meterological range (km) (when specified, supersedes
-                           default value set by IHAZE)
-  
-      WSS            =     current wind speed (m/s)            only with (IHAZE=3, or IHAZE=10)
-  
-      WHH            =     24 hour average wind speed (m/s)    only with (IHAZE=3)
-  
-                           *** Note: For the Navy Maritime Model (IHAZE=3), if WSS=WHH=0.0,
-                                     default wind speeds are set as follows: 
-  
-                                                                                  WSS and WHH
-                                     MODEL           Model Atmosphere        Default Wind Speed (m/s)
-  
-                                       0             User-Defined (Horiz Path)        6.9
-                                       1             Tropical                         4.1
-                                       2             Midlatitude Summer               4.1
-                                       3             Midlatitude Winter              10.29
-                                       4             Subarctic Summer                 6.69
-                                       5             Subarctic Winter                12.35
-                                       6             U.S. Standard                    7.2
-                                       7             User-Defined                     6.9
-  
-                                     For the DESERT aerosol model (IHAZE=10), if WSS<0, the
-                                     default wind speed is 10.0 m/s.
-  
-      RAINRT         =     rain rate (mm/hr)        Default value is zero.
-                           Used to top of cloud when cloud is present, when no clouds, rain rate used to 6 km.
-  
-      GNDALT         =     altitude of surface relative to sea level (km)
-                           used to modify aerosol profiles below 6 km altitude
-  
-  
-  
- ************************************************************************************
-  
-  
-  
-1
-  
- Optional input records after Record 4.1
- Selected by parameters ICLD, IVSA, and IHAZE on Record 4.1
-  
- **********************************************************************************
-  
- RECORD 4.2   CTHIK,CALT,CEXT,ISEED               (if ICLD = 18, 19, or 20)
-  
-                  FORMAT (3F10.3,I10)
-  
-                Input record for cirrus altitude profile
-                subroutine when ICLD = 18, 19, or 20
-  
-      CTHIK     =   cirrus thickness (km)
-                    0 use thickness statistics
-                    > 0 user defined thickness
-  
-      CALT      =   cirrus base altitude (km)
-                    0 use calculated value
-                    > 0 user defined base altitude
-  
-      CEXT      =   extinction coefficient (km-1) at 0.55 microns
-                    0 use 0.14*CTHIK
-                    > 0 user defined extinction coefficient
-  
-      ISEED     =   random number initialization flag
-                    0 use default mean values for cirrus
-                    > 0 initial value of SEED for RANF function (machine dependent)
-  
- **********************************************************************************
-  
- RECORD 4.3   ZCVSA, ZTVSA, ZINVSA                (if IVSA = 1)
-  
-                  FORMAT (3F10.3)
-  
-                Input record for Army vertical structure
-                algorithm subroutine when IVSA = 1
-  
-      ZCVSA     =   cloud ceiling height (km)
-  
-                ZCVSA > 0  known cloud ceiling
-                ZCVSA = 0  unknown cloud ceiling height
-                           program calculates cloud height (default = 1.8 km)
-                ZCVSA < 0  no cloud ceiling
-  
-      ZTVSA     =   thickness of cloud or fog (km)
-                         = 0    defaults to 0.2 km
-  
-      ZINVSA    =   height of the inversion layer (km)
-                         = 0   defaults to 2 km (0.2 km for fog)
-                         < 0   no inversion layer
-  
-  
- **********************************************************************************
-  
-  
-1**********************************************************************************
-  
-  
- RECORD 4.4   ML,TITLE                         (if IAERSL = 7)
-  
-                  FORMAT (I5,18A4)
-  
-            Additional aerosol profile
-  
-           ML        =  number of aerosol profiles levels to be inserted  (maximum of 34)
-  
-           TITLE     =  identification of new model aerosol profile
-  
-  
- ** Note: RECORD 4.5 is repeated ML times **
-  
- RECORD 4.5                                     (if IAERSL = 7)
-  
-          ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,ISEA1,ICHR1
-  
-                      FORMAT (4F10.3,5I5)
-  
-           ZMDL      =  Altitude of layer boundary (km)
-  
-           AHAZE     =  aerosol visible extinction coef (km-1) at altitude ZMDL
-  
-           EQLWCZ    =  equivalent liquid water content (gm m-3) at alt ZMDL for the aerosol, cloud or fog models
-  
-      **** either AHAZE or EQLWCZ is allowed ****
-  
-           RRATZ     =  rain rate (mm/hr) at altitude ZMDL
-  
-           IHA1      =  aerosol model used for spectral dependence of extinction
-  
-           IVUL1     =  stratospheric aerosol model used for spectral dependence of extinction at altitude ZMDL
-  
-           ICLD1     =  cloud model to be used for spectral dependence of extinction at altitude Z
-  
-      **** only one of IHA1, ICLD1 or IVUL1 is allowed ****
-           IHA1.NE.0 others ignored
-           IHA1.EQ.0 and ICLD1.NE.0 use ICLD1
-  
-      **** if AHAZE and EQLWCZ are both zero, default profile loaded ****
-           according to IHAZ1,ICLD1,IVUL1
-  
-           ISEA1     =  aerosol season control for the altitude ZMDL
-                        (only used with IHA1 or IVUL1.NE.0)
-  
-           ICHR1     =  indicates a boundary change between two or more adjacent user defined aerosol or cloud
-                        regions at altitude ZMDL  (required for IHAZE=7 or ICLD=11)
-  
-                        ** Note: defaults to 0 for IHAZE.ne.7 or ICLD.ne.11 **
-  
-                        = 0  no boundary change
-  
-                        = 1  signifies boundary change
-  
- ***********************************************************************************
-  
-1***********************************************************************************
-  
- RECORDS 4.6.1 - 4.6.3 reads in the user defined cloud extinction and absorption
-                           (IHAZE = 7 or ICLD = 11)
-  
- RECORD 4.6.1
-  
-          (IREG(I),I=1,4)
-  
-             FORMAT (4I5)
-  
-           IREG      =  specifies which of the four altitude regions a user defined
-                        aerosol or clould model will use
-  
-                        ** Note: regions default to    1)   0 -   2 km
-                                                       2)   3 -  10 km
-                                                       3)  11 -  30 km
-                                                       4)  35 - 100 km
-                                 but can be overridden with 'IHA1' settings on Record 4.5  (IAERSL=7)
-  
-      *****  The following records (4.6.2 - 4.6.3) are repeated N times where N has the following value:   *****
-      *****                                                                                                *****
-      *****                      N = IREG(1) + IREG(2) + IREG(3) + IREG(4)                                 *****
-      *****                                                                                                *****
-  
- RECORD 4.6.2
-  
-          AWCCON(N),TITLE(N)
-  
-             FORMAT (E10.3,18A4)
-  
-           AWCCON(N) =  conversion factor from equivalent liquid water content (gm/m3)
-                        to extinction coefficient (km-1).  It is numerically equal to
-                        the equivalent liquid water content corresponding to an extinction
-                        coefficient of 1.0 km-1, at a wavelength of 0.55 microns.
-                        AWCCON has units of (km-gm/m3)
-  
-           TITLE(N)  =  for an aerosol or cloud region (up to 72 characters)
-  
- RECORD 4.6.3
-  
-          (VX(I),EXTC(N,I),ABSC(N,I),ASYM(N,I),I=1,47)
-  
-                 FORMAT (3(F6.2,2F7.5,F6.4))
-  
-                 *** Note: there are 16 records per region
-  
-           VX(I)     =  wavelength of aerosol coefficient
-                        (not used by program but must be the wavelengths
-                         defined in array VX2 in subroutine EXTDTA)
-  
-       EXTC(N,I)     =  aerosol extinction coefficient, normalized so that EXTC
-                        for a wavelength of 0.55 microns (I=4) is 1.0 km-1.
-  
-       ABSC(N,I)     =  aerosol absorption coefficient, normalized so that EXTC
-                        for a wavelength of 0.55 microns (I=4) is 1.0 km-1.
-  
-       ASYM(N,I)     =  aerosol asymmetry factor
-  
- ************************************************************************************
-1
-  
-  
-  
-                                LASER (ILAS > 2)
-  
-  
- RECORD 5.1 ... 5.N
-  
-      VLAS
-  
-      1-20
-  
-     F20.8
-  
-             VLAS  laser wavenumber value  (cm-1)
-                   (negative value terminates multiple LASER option)
-  
- REPEAT RECORD 5.1
-  
-  
-  
-  
-1
-  
-                                 SCNMRG     ( for scanned sequential results; IMRG between 13 and 18 )
-  
-  
-  
- RECORD 6
-  
-  
-      HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,       NNFILE,   NPTS
-  
-      1-10,  11-20,  21-30,  34-35,  39-40,  44-45,  46-55,        71-75,  76-80
-  
-      10.3,  F10.3,  F10.3,  3X,I2,  3X,I2,  3X,I2,  F10.4,   15X,    I5,     I5
-  
-  
-           HWHM   (Half Width Half Maximum)
-  
-                   Note: HWHM is first zero crossing of periodic functions for JFN < 0.
-                         HWHM is redefined as  HWHM=(FIRST ZERO)/(PI/SCALE)
-  
-             V1    beginning wavenumber value for performing SCAN
-  
-             V2    ending wavenumber value for performing SCAN
-  
-          JEMIT      =  0  SCAN convolved with transmission
-  
-                     =  1  SCAN convolved with radiance
-  
-            JFN    selects choice of scanning function
-  
-                       JFN    Function        Half-width Bound      Default Sample
-                       ---    --------        ----------------      --------------
-                     =  0     rectangular           1.0                  0.5
-  
-                     =  1     triangular            2.0                  2.0
-  
-                     =  2     gaussian              4.0                  4.0
-  
-                     =  3     sinc squared         54.1826               4.0
-  
-                     =  4     sinc                119.332818             4.0
-  
-                           Note: For each function BOUND = HWHM*(Half-width Bound).  BOUND represents the overlap
-                                 required before V1 and after V2 in the monochromatic calculation in order to obtain
-                                 a correct result from the scanning function.  ( see Record 1.3 )
-                           -------------------------------------------------------------------------------------------
-                           Note: If JFN < 0, HWHM contains the value for the first zero crossing of periodic function.
-  
-  
-           JVAR    flag for variable HWHM
-  
-                     =  0  no variation
-  
-                     =  1  HWHM(vi) = HWHM(v1) * (vi / v1)
-  
-  
-1                                           SCNMRG (Continued)
- RECORD 6  (Continued)
-  
-  
-          SAMPL    number of sample points per half width
-  
-                     =  0  gives default value for each function
-  
-                     <  0  this variable specifies the output spectral spacing (DELVO cm-1)
-                           The value of SAMPL is calculated internally as SAMPL = HWHM/DELVO
-  
-  
-         NNFILE    unit number for scanned sequential output
-  
-                     defaults to NFILE (= 13) or previous value of NNFILE if doing multiple FASCODE runs
-  
-  
-           NPTS    number of values to be printed for the beginning and ending of each panel
-                   for current scanned file
-  
-          ***** Note: if the DV of the data to be scanned is larger than DVINT = HWHM/8.,  *****
-          *****       the data is first interpolated to DVINT before it is scanned.        *****
-          *****       Four-point interpolation is used for this procedure.                 *****
-1
-  
-  
-                                   FLTMRG          ( for sequential results with filter; IMRG between 23 and 28 )
-  
-  
-  
- RECORD 7.1
-  
-  
-           V1F,     DVF,    NPTS,   JEMIT,   NNFILE,          HEDDR
-  
-          1-10,   11-20,   21-25,   26-30,    31-35,          46-80
-  
-         F10.3,   F10.4,      I5,      I5,       I5, 10X,    8A4,A3
-  
-  
-               V1F     wavenumber of initial filter value
-  
-               DVF     wavenumber increment between filter values
-  
-              NPTS     number of filter values
-  
-                       (if NPTS.LT.0, previous values of XF utilized)
-  
-              JEMIT      =  0  transmittance integrated over filter function
-  
-                         =  1  radiance integrated over filter function
-  
-            NNFILE    unit number for filtered sequential intermediate output
-  
-                          defaults to NFILE (= 13) or previous value of NNFILE if doing multiple FASCODE runs
-  
+
+
+
+
+
+
+
+                                    PRELIMINARY
+                           USER INSTRUCTIONS FOR FASCOD3
+ 
+                                   7 October 1991
+ 
+ 
+ 
+
+RECORD 1.1
+ 
+ 
+      CXID:  80 characters of user identification  (80A1)
+ 
+            CXID(1) is the flag which determines program initialization and termination.  The actual input data
+                    stream for FASCOD3 commences with the record containing a '$' in CXID(1).  Any record that are
+                    read prior to a record containing a '$' in CXID(1) are ignored.  Since FASCOD3 automatically
+                    recycles and reads Record 1.1 at the end of each run (this allows the stacking of multiple
+                    runs), each subsequent run of FASCOD3 must also have a '$' in CXID(1) on Record 1.1.  In order
+                    to effect a normal termination of FASCOD3, CXID(1) must be set to '%', on the final record of
+                    the input file.  Thus a standard FASCOD3 input file would begin with a '$' and end with a '%'.
+                    Records on the input file following the record with CXID(1) = '%' are ignored by FASCOD3.
+ 
+                    Note:  FASCOD3 will internally set CXID(1) = ' ' for all output.
+ 
+ 
+RECORD 1.2
+ 
+ 
+      IHIRAC, ILBLF4, ICNTNM, IAERSL,  IEMIT,  ISCAN, IFILTR, IPLOT, ITEST,  IATM,  IMRG,  ILAS,   IMS, IXSECT,  MPTS,  NPTS
+ 
+           5,     10,     15,     20,     25,     30,     35,    40,    45,    50, 54-55,    60,    65,     70, 72-75, 77-80
+ 
+       4X,I1,  4X,I1,  4X,I1,  4X,I1,  4X,I1,  4X,I1,  4X,I1, 4X,I1, 4X,I1, 4X,I1, 3X,A2, 4X,I1, 4X,I1,  4X,I1, 1X,I4, 1X,I4
+ 
+ 
+         IHIRAC   (0,1,2,3,4,9) selects desired version of HIRAC
+ 
+                     = 0  HIRAC   HIRAC not activated; line-by-line calculation is bypassed
+                                                       (skips to selected function)
+                     = 1  HIRAC1  (Voigt profile)
+                     = 2  HIRACL  (Lorentz profile, not available in FASCOD3)
+                     = 3  HIRACD  (Doppler profile, not available in FASCOD3)
+                     = 4  NLTE Option (Non Local Thermodynamic Equilibrium)
+                               -state populations as a function of altitude required on TAPE4
+                     = 9  central line contribution omitted (functions 1-3)
+ 
+         ILBLF4   (0,1,2) flag for LBLF4 (Line-By-Line Function 4)
+ 
+                          (LBLF4 extends bound of line by line calculation beyond 64 halfwidths from line center)
+ 
+                     = 0  LBLF4 not activated (line by line bound is 64 halfwidths)
+                     = 1  line by line bound is 25 cm-1 for all layer pressures (altitudes)
+                     = 2  line by line bound is 25 cm-1 for layers with pressures .GT. 0.5 mb
+                                             and 5 cm-1 for layers with pressures .LE. 0.5 mb
+                          (ILBLF4 = 2 saves computational time above 50 km with minimal loss of accuracy for most cases)
+ 
+         ICNTNM   (0,1) flag for continuum (CONTNM)  1 = yes
+                           should be set to 1 for atmospheric calculations
+ 
+         IAERSL   (0,1,7,9) flag for aerosols (LOWTRN)
+ 
+                     = 0  no aerosols used
+                     = 1  internal LOWTRAN aerosol models
+                     = 7  user defined aerosol models
+                     = 9  use precalculated aerosols (TAPE20 from a previous aerosol run)
+
+ RECORD 1.2 (Continued)
+ 
+ 
+          IEMIT   (0,1)
+ 
+                     = 0  optical depth only
+                     = 1  radiance and transmittance
+ 
+          ISCAN   (0,1,2) flag for SCANFN    1 = scanning function
+                                or INTRPL    2 = interpolating procedure
+ 
+         IFILTR   (0,1)   flag for FILTR     1 = yes
+ 
+           IPLT   (0,1)   flag for PLOT      1 = yes
+ 
+          ITEST   (0,1)   flag for TEST      1 = yes
+ 
+           IATM   (0,1)   flag for FSCATM    1 = yes
+ 
+           --------------------------------------------------------
+           |                                                      |
+           |    INPUT FOR RECORD 1.2 IS CONTINUED ON NEXT PAGE    |
+           |                                                      |
+           --------------------------------------------------------
+ 
+ RECORD 1.2 (Continued)
+ 
+           IMRG   (0 to 9; 12-18; 22-28; 32) selects merge option
+ 
+                                   IMRG = 0 KFILE rewound after each layer
+                                        > 1 KFILE not rewound after each layer
+ 
+                   = 0  normal merge; result on MFILE; last layer optical depth on KFILE
+                   = 1  optical depths only; results for all layers on KFILE (no merging)
+                   = 2  optical depths from precalculated KFILE merged sequentially onto MFILE
+                          ** uses merge path as defined by precalculated KFILE **
+                   = 9  radiance merge with aerosols; precalculated KFILE
+                          ** uses merge path as defined by precalculated KFILE **
+                         ---------------------------------------------------------
+                         |                                                       |
+                         | NOTE:  KFILE usually maps to TAPE10                   |
+                         |        MFILE    "      "   " TAPE12                   |
+                         |        LFILE alternates with MFILE, mapping to TAPE11 |
+                         |        NFILE usually maps to TAPE13                   |
+                         ---------------------------------------------------------
+ 
+                                                        IMRG OPTIONS FOR MERGED OUTPUT
+                                                        ==============================
+ 
+                  Monochromatic Input, on precalculated KFILE.  Output is determined by IEMIT.
+                  ____________________________________________________________________________
+                                                                                IMRG =                             Final
+                                                            -----------------------------------------------       Results
+                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                                            ---------------     ---------------     -------       -------
+                           monochromatic (total merged)            A                   C               B           MFILE
+                                                                 (12)                (32)            (22)
+ 
+ 
+                                                    IMRG OPTIONS FOR SEQUENTIAL OUTPUT
+                                                    ==================================
+ 
+                  Monochromatic Input, calculated in current run.
+                  _______________________________________________
+                                                                                IMRG =
+                                                            -----------------------------------------------       Results
+                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                                            ---------------     ---------------     -------       -------
+                           monochromatic                           3                   4               7           NFILE
+                           scanned results                        13                  14              17           NFILE
+                           filtered results                       23                  24              27           NFILE
+ 
+ 
+                  Monochromatic Input, on precalculated KFILE.
+                  ____________________________________________
+                                                                                IMRG =
+                                                            -----------------------------------------------       Results
+                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                                            ---------------     ---------------     -------       -------
+                           monochromatic                           5                   6               8           NFILE
+                           scanned results                        15                  16              18           NFILE
+                           filtered results                       25                  26              28           NFILE
+ 
+ 
+           IMRG options are continued on next page.
+           ----------------------------------------
+
+ RECORD 1.2 (Continued)
+ 
+           IMRG (Continued)
+ 
+ 
+                    The actual results produced on MFILE or NFILE are determined by both IEMIT on Record 1.2 and JEMIT on either
+                    Record 6 (scanned results) or Record 7.1 (filtered results).  The following table describes the options: 
+ 
+ 
+                                                                 RESULTS PRODUCED ON MFILE OR NFILE
+                                                             ------------------------------------------
+                                    TYPE OF RESULT                IEMIT=0                  IEMIT=1
+                                  ------------------         -----------------        -----------------
+                                  monochromatic                optical depths         transmittance & radiance
+                                  scanned  (JEMIT=0)           transmittance          transmittance
+                                  scanned  (JEMIT=1)                n/a               radiance
+                                  filtered (JEMIT=0)           transmittance          transmittance
+                                  filtered (JEMIT=1)                n/a               radiance
+ 
+                 In the context of FASCODE calculations, weighting functions are readily obtained from the
+                              NFILE sequential transmittances by "subtracting" adjacent files (dT or dR), and
+                              employing the stored layer boundary definitions for P or z, i.e. (dlnP or dz).
+                              ( Use Option IOPT = 2 in PLTFAS for subtraction of FASCODE files )
+ 
+                 For the filter option (IMRG.ge.23 .and. IMRG.le.28), the results, including the differences
+                              of the total transmittances or radiances, are also printed on unit IPR (TAPE6)
+ 
+ 
+                 "SEQUENTIAL" is defined at the total optical depth, transmittance, or radiance from H1 to
+                              each layer boundary (Ln), always beginning at H1: 
+ 
+                                   H1    L1   L2   L3
+                                    *
+                                    *---->
+                                    *----|---->
+                                    *----|----|---->
+                                           etc...
+ 
+ 
+           --------------------------------------------------------
+           |                                                      |
+           |    INPUT FOR RECORD 1.2 IS CONTINUED ON NEXT PAGE    |
+           |                                                      |
+           --------------------------------------------------------
+
+ 
+ RECORD 1.2 (Continued)
+ 
+ 
+           ILAS    (0,1,2) flag for laser options
+ 
+                   = 0  no
+                   = 1  single laser frequency selected (V1 on record 1.3)
+                   = 2  multiple laser frequency selected
+                          (first laser frequency is V1 on record 1.3;
+                           subsequent laser frequencies are on records 5.1 ... 5.N)
+ 
+            IMS    (0,1) flag for multiple scattering of thermal radiation
+ 
+                   = 0  no multiple scattering
+                   = 1  multiple scattering
+                           (following conditions must be set: IAERSL = 1 or 7
+                                                              IEMIT  = 1
+                                                              IATM   = 1
+                                                              IMRG   = 0      )
+ 
+         IXSECT    (0,1) flag for cross-sections
+ 
+                   = 0  no cross-sections included in calculation
+                   = 1  cross-sections included in calculation
+                           (input file FSCDXS containing the cross-section file information must be provided.
+                            See Table II following Record 3.7.1 for a description of file FSCDXS)
+ 
+           MPTS         number of optical depth values printed for the beginning and
+                        ending of each panel as a result of convolution for current layer
+                        (for laser option ILAS > 1, MPTS should be set to 0)
+                        (for MPTS < O, output printing is suppressed)
+ 
+           NPTS          number of values printed for the beginning and ending of each panel
+                         as result of merge of current layer with previous layers
+                         (optical depth for IEMIT=0; radiance and transmission for IEMIT=1)
+                         (for laser option ILAS > 1, NPTS should be set to 0)
+ 
+ 
+ 
+RECORD 1.2.1  (required if IMS = 1; otherwise omit)
+ 
+            TGRND, SEMIS(1), SEMIS(2), SEMIS(3),  RMINMS,  RMAXMS
+ 
+             1-10,    11-20,    21-30,    31-40,   41-50,   51-60  71-80
+ 
+            F10.3,    F10.3,    F10.3,    F10.3,   F10.3,   F10.3  F10.3
+ 
+ 
+                  TGRND       temperature of surface (K)
+ 
+                  SEMIS(I)    surface emissivity coefficients (I = 1,2,3)
+                                 EMISSIVITY = SEMIS(1) + SEMIS(2)*V + SEMIS(3)*(V**2)
+ 
+                  RMINMS      minimum altitude for multiple scattering (default =  0 km)
+ 
+                  RMAXMS      maximum altitude for multiple scattering (default = 15 km)
+ 
+
+ 
+RECORD 1.3    (required if IHIRAC > 0, IAERSL > 0, IEMIT = 1, IATM = 1, or ILAS > 0; otherwise omit)
+ 
+ 
+ 
+             V1,     V2,   SAMPLE,   DVSET,   ALFAO,   AVMASS,   DPTMIN,   DPTFAC
+ 
+           1-10,  11-20,    21-30,   31-40,   41-50,    51-60,    61-70,    71-80
+ 
+          E10.3,  E10.3,    E10.3,   E10.3,   E10.3,    E10.3,    E10.3,    E10.3
+ 
+ 
+ 
+                  V1    beginning wavenumber value for the calculation
+                                  (VLAS = V1 for ILAS = 1,2)
+ 
+                  V2    ending wavenumber value for the calculation
+                                ( (V2-V1) must be less than 525 cm - 1 )
+ 
+              SAMPLE    number of sample points per mean halfwidth (between 1. and 4.)
+                        (default = 4.)
+ 
+               DVSET    selected DV for the final monochromatic calculation
+                        if positive, must be within 20% of DV for final
+                        monochromatic calculation determined by FASCODE
+ 
+                        If negative, final DV = abs(DVSET).  However, this option causes
+                        line width readjustment which may effect the validity of the
+                        reults. Use with extreme caution.
+ 
+               ALFA0    average collision broadened halfwidth (cm - 1/atm) (default = 0.08)
+                           (for cases with line coupling set ALFA0 = 0.04)
+ 
+              AVMASS    average molecular mass (amu) for Doppler halfwidth (default = 36)
+ 
+              DPTMIN    minimum molecular optical depth below which lines will be rejected
+                                (negative value defaults to DPTMIN = 0.0002)
+ 
+              DPTFAC    factor multiplying molecular continuum optical depth to
+                        determine optical depth below which lines will be rejected
+                                (negative value defaults to DPTFAC = 0.001)
+ 
+ 
+ 
+ 
+
+ 
+ 
+RECORD 1.4    (required if IEMIT > 0; otherwise omit)
+ 
+ 
+ 
+         TBOUND, SREMIS(1), SREMIS(2), SREMIS(3), SRREFL(1), SRREFL(2), SRREFL(3)
+ 
+           1-10,     11-20,     21-30,     31-40,     41-50,     51-60,     61-70
+ 
+          E10.3,     E10.3,     E10.3,     E10.3,     E10.3,     E10.3,     E10.3
+ 
+ 
+ 
+         temperature, emissivitiy and reflectivity parameters for boundary at H1
+                    (applicable to looking down case only, IPATH = 1)
+ 
+         effect of reflected atmospheric radiance above H1 included for SRREFL(I) > 0.
+ 
+ 
+ 
+              TBOUND       temperature of boundary (K)
+ 
+              SREMIS(I)    frequency dependent boundary emissivity coefficients (I = 1,2,3)
+ 
+                             EMISSIVITY   = SREMIS(1) + SREMIS(2)*V + SREMIS(3)*(V**2)
+ 
+              SRREFL(I)    frequency dependent boundary reflectivity coefficients (I = 1,2,3)
+ 
+                             REFLECTIVITY = SRREFL(1) + SRREFL(2)*V + SRREFL(3)*(V**2)
+ 
+ 
+*****************************************************************************
+******  these records applicable only if FSCATM not selected (IATM=0)  ******
+ 
+                       LAYER INPUT  (MOLECULES ONLY)
+ 
+RECORD 2.1
+ 
+          NLAYRS, NMOL, SECNTO, HEDDR
+ 
+               5,   10,  11-20, 21-80
+ 
+              I5,   I5,  F10.2,  15A4
+ 
+ 
+              NLAYRS      number of layers (maximum of 67)
+ 
+                NMOL      number of molecules (default = 7; maximum of 28)
+ 
+              SECNTO      user entered scale factor for the column amount for the layers defined by NLAYRS
+                                 if positive, looking up
+                                 if negative, looking down
+                          normal value = 1.0
+ 
+               HEDDR      60 character user identification
+ 
+ 
+RECORD 2.1.1
+ 
+ 
+          PAVE,  TAVE,  SECNTK,  ITYL(L),  IPATH,  ALTZ(L-1),  PZ(L-1),  TZ(L-1),  ATLZ(L),  PZ(L),  TZ(L)
+ 
+          1-10, 11-20,   21-30,    31-33,  34-35,      37-43,    44-51,    52-58,    59-65,  66-73,  74-80
+ 
+         F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
+ 
+ 
+                PAVE   ave. pressure of layer (millibars)
+ 
+                TAVE   ave. temperature of layer (K)
+ 
+              SECNTK   if SECNTK .ne. 0, it is the value of the column amount
+                       scale factor that will be used in the calculation for this layer
+ 
+                       a non-zero value for SECNTK will override the scale factor
+                       value, SECNTO .
+ 
+             ITYL(L)   overrides the FASCODE internal calulation of ITYPE for the layer L.
+                       ITYPE controls the DV ratio of the previous layer to the current layer.
+                       A blank defaults to the internal calulation.
+                     = 0 specifies 1/1
+                       1 specifies 2/1
+                       2 specifies 3/2
+                       4 specifies 5/4
+                       5 specifies 6/5
+                      99 specifies first layer (i.e. no ratio)
+
+RECORD 2.1.1 (Continued)
+ 
+               IPATH = 0 determined by sign of SECNTO
+                       1 looking down merge
+                       2 tangent layer merge
+                       3 looking up merge
+ 
+           ALTZ(L-1)   altitude for bottom of current layer (information only)
+ 
+             PZ(L-1)   pressure at ALTZ(L-1)  (information only)
+ 
+             TZ(L-1)   temperature at ALTZ(L-1)  -  used by FASCODE for Planck Function Calculation
+ 
+                       ** NOTE **  ALTZ(L-1), PZ(L-1) and TZ(L-1) are only required for the first layer.
+                                   FASCODE assumes that these quantites are equal to the top of the previous
+                                   layer for L > 1.
+ 
+             ALTZ(L)   altitude for top of current layer (information only)
+ 
+               PZ(L)   pressure at ALTZ(L)  (information only)
+ 
+               TZ(L)   temperature at ALTZ(L)  -  used by FASCODE for Planck Function Calculation
+ 
+ 
+RECORD 2.1.2
+ 
+ 
+          (WKL(M,L), M=1, 7), WBROADL(L)
+ 
+                      (8E10.3)
+ 
+ 
+              WKL(M,L)   column densities for 7 molecular species (molecules/cm**2)
+ 
+            WBROADL(L)   column density for broadening gases (molecules/cm**2)
+ 
+ 
+ 
+RECORD 2.1.3     only if (NMOL  .GT . 7)         # records depends on NMOL
+ 
+ 
+          (WKL(M,L), M=8, NMOL)
+ 
+                (8E10.3)
+ 
+ 
+                NMOL is set from LINFIL (TAPE3)
+ 
+                     (NMOL limited to 28 in FASCOD3)
+ 
+ 
+ 
+REPEAT RECORDS 2.1.1 through 2.1.3 for the remaining layers (up to NLAYRS)
+ 
+ 
+*****************************************************************************
+******  these records applicable only if FSCATM not selected (IATM=0)  ******
+****************  and cross-sections ARE selected (IXSECT=1)  ***************
+ 
+                    LAYER INPUT  (CROSS-SECTIONS ONLY)
+ 
+RECORD 2.2
+ 
+          IXMOLS,        IXSBIN
+ 
+               5,            15
+ 
+              I5,     5X,    I5
+ 
+ 
+              IXMOLS      number of cross-section molecules to be inputed (maximum of 35)
+ 
+              IXSBIN   (0,1) flag to deselect pressure convolution of cross-sections
+ 
+                        = 0 cross-sections convolued with pressure
+                        = 1 cross-sections not convolved with pressure
+ 
+RECORD 2.2.1
+ 
+          XSNAME(I), I=1, IXMOLS
+ 
+          (7A10,(/,8A10))
+ 
+ 
+              XSNAME      name of the cross-section molecules to be used
+                          (Note: the cross-sections specified here must also appear in the
+                           cross-section input file FSCDXS.  See Table II after Record 3.7.1)
+ 
+RECORD 2.2.2
+ 
+          NLAYXS, IXMOL, SECNTX, HEDXS
+ 
+               5,    10,  11-20, 21-80
+ 
+              I5,    I5,  F10.2,  15A4
+ 
+ 
+              NLAYXS      number of layers (maximum of 67), should be the same as NLAYRS on Record 2.1
+ 
+               IXMOL      number of cross-sections (maximum of 35), should be the same as IXMOLS on Record 2.2
+ 
+              SECNTX      user entered scale factor for the column amount for the layers defined by NLAYXS
+                                 if positive, looking up
+                                 if negative, looking down
+                          normal value = 1.0
+ 
+                          *** Note: this quantity is for information only, SECNTX should be the same as
+                                    SECNT0 on Record 2.1, which is used instead of this quantity.
+ 
+               HEDXS      60 character user identification
+ 
+
+          ****************************************************************************************************************
+          ****  Note: all the quantites on this Record, are for information only, FASCODE will use the corresponding  ****
+          ****        values from Record 2.1.1.    This record is retained to maintain compatibility with 2.1.1 and   ****
+          ****        is consistent with the output from FSCATM with IPU = 1; this provides the flexibility of        ****
+          ****        independent utilization of this data with external programs.                                    ****
+          ****************************************************************************************************************
+ 
+RECORD 2.2.3
+ 
+ 
+          PAVX,  TAVX,  SECKXS,  ITYX(L),  IPATX,  ALTX(L-1),  PX(L-1),  TX(L-1),  ATLX(L),  PX(L),  TX(L)
+ 
+          1-10, 11-20,   21-30,    31-33,  34-35,      37-43,    44-51,    52-58,    59-65,  66-73,  74-80
+ 
+         F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
+ 
+ 
+                PAVX   ave. pressure of layer (millibars)
+ 
+                TAVX   ave. temperature of layer (K)
+ 
+              SECKXS   if SECKXS .ne. 0, it is the value of the column amount
+                       scale factor that will be used in the calculation for this layer
+ 
+                       a non-zero value for SECKXS will override the scale factor
+                       value, SECNTX .
+ 
+             ITYX(L)   overrides the FASCODE internal calulation of ITYPE for the layer L.
+                       ITYPE controls the DV ratio of the previous layer to the current layer.
+                       A blank defaults to the internal calulation.
+                     = 0 specifies 1/1
+                       1 specifies 2/1
+                       2 specifies 3/2
+                       4 specifies 5/4
+                       5 specifies 6/5
+                      99 specifies first layer (i.e. no ratio)
+ 
+               IPATX = 0 determined by sign of SECNTX
+                       1 looking down merge
+                       2 tangent layer merge
+                       3 looking up merge
+ 
+           ALTX(L-1)   altitude for bottom of current layer
+ 
+             PX(L-1)   pressure at ALTX(L-1)
+ 
+             TX(L-1)   temperature at ALTX(L-1)
+ 
+                       ** NOTE **  ALTX(L-1), PX(L-1) and TX(L-1) are only required for the first layer.
+                                   FASCODE assumes that these quantites are equal to the top of the previous
+                                   layer for L > 1.
+ 
+             ALTX(L)   altitude for top of current layer
+ 
+               PX(L)   pressure at ALTZ(L)
+ 
+               TX(L)   temperature at ALTZ(L)
+ 
+
+ 
+ 
+RECORD 2.2.4
+ 
+ 
+          (XAMNT(I,L), I=1, 7), WBROADX(L)
+ 
+                      (8E10.3)
+ 
+ 
+            XAMNT(M,L)   column densities for 7 cross-section molecules (molecules/cm**2)
+ 
+            WBROADX(L)   column density for broadening gases (molecules/cm**2),                    ** information only **
+                         should be the same as WBROADL, on Record 2.1.2
+ 
+ 
+ 
+RECORD 2.2.5     only if (IXMOL  .GT . 7)         # records depends on IXMOL
+ 
+ 
+          (XAMNT(I,L), I=8, IXMOL)
+ 
+                (8E10.3)
+ 
+ 
+ 
+ 
+REPEAT RECORDS 2.2.3 through 2.2.5 for the remaining layers (up to NLAYXS)
+ 
+
+ 
+ *****************************************************************************
+ ********     these records applicable if FSCATM selected (IATM=1)    ********
+ 
+                                     FSCATM
+RECORD 3.1
+ 
+ 
+      MODEL,  ITYPE, IBMAX,  NOZERO,  NOPRNT,  NMOL, IPUNCH,       RE, HSPACE,  VBAR, CO2MX
+ 
+          5,     10,    15,      20,      25,    30,     35,    41-50,  51-60, 61-70, 71-80
+ 
+         I5,     I5,    I5,      I5,      I5,    I5,     I5, 5X,F10.3,  F10.3, F10.3, F10.3
+ 
+ 
+           MODEL   selects atmospheric profile
+ 
+                     = 0  user supplied atmospheric profile
+                     = 1  tropical model
+                     = 2  midlatitude summer model
+                     = 3  midlatitude winter model
+                     = 4  subarctic summer model
+                     = 5  subarctic winter model
+                     = 6  U.S. standard 1976
+ 
+           ITYPE   selects type of path
+ 
+                     = 1  horizontal path (constant pressure, temperature)
+                     = 2  slant path from H1 to H2
+                     = 3  slant path from H1 to space (see HSPACE)
+ 
+           IBMAX     selects layering for FASCOD3
+ 
+                     = 0  FASCOD3 layers are generated internally (default)
+                     > 0  IBMAX is the number of layer boundaries read in on Record 3.3B which are
+                                 used to define the layers used in FASCODE calculation
+ 
+           NOZERO    = 0  zeroes absorber amounts which are less than 0.1 percent of total (default)
+                     = 1  suppresses zeroing of small amounts
+ 
+           NOPRNT    = 0  full printout
+                     = 1  selects short printout
+ 
+           NMOL      number of molecular species (default = 7; maximum value is 28)
+ 
+           IPUNCH    = 0  layer data not written (default)
+                     = 1  layer data written to unit IPU (TAPE7)
+ 
+           RE        radius of earth (km)
+                     defaults for RE=0: 
+ 
+                     a)  MODEL 0,2,3,6    RE = 6371.23 km
+                     b)        1          RE = 6378.39 km
+                     c)        4,5        RE = 6356.91 km
+ 
+           HSPACE    altitude definition for space (default = 100 km)
+                     internal models defined to 120 km
+
+ 
+ RECORD 3.1 (Continued)
+ 
+           VBAR      frequency for refractive geometry calculation
+ 
+                       (default:  VBAR = (V1+V2) / 2 )     (V1,V2 from Record 1.3)
+ 
+ 
+           CO2MX     mixing ratio for CO2 (ppm).  Default is 330 ppm.
+ 
+ 
+
+ 
+-----------------------------------------------------------------------------
+ 
+------------------  SLANT PATH (ITYPE = 2,3) (MODEL = 0-6) ------------------
+ 
+ 
+RECORD 3.2
+ 
+ 
+         H1,    H2,   ANGLE,   RANGE,   BETA,   LEN
+ 
+       1-10, 11-20,   21-30,   31-40,  41-50, 51-55
+ 
+      F10.3, F10.3,   F10.3,   F10.3,  F10.3,    I5
+ 
+ 
+          H1     observer altitude (km)
+ 
+          H2     for ITYPE = 2, H2 is the end pont altitude (km)
+                     ITYPE = 3, H2 is the tangent height (km) for H2 .GT. 0.
+                                      if H2 = 0. ANGLE determines tangent height
+ 
+          ANGLE  zenith angle at H1 (degrees)
+ 
+          RANGE  length of a straight path from H1 to H2 (km)
+ 
+          BETA   earth centered angle from H1 to H2 (degrees)
+ 
+          LEN    = 0  short path (default)
+                 = 1  long path through a tangent height
+ 
+                 LEN is only used for H1 > H2 (ANGLE > 90`)
+ 
+                 for ITYPE = 2, only 3 of the first 5 parameters are required to specify
+                                the path, e.g., H1, H2, ANGLE or H1, H2 and RANGE
+ 
+                 for ITYPE = 3, H1 = observer altitude must be specified. Either
+                                H2 = tangent height or ANGLE must be specified.
+                                Other parameters are ignored.
+ 
+ 
+
+ 
+ 
+                RECORD 3.3  options
+ 
+ 
+RECORD 3.3A        For IBMAX  = 0 (from RECORD 3.1)
+ 
+ 
+               AVTRAT, TDIFF1, TDIFF2, ALTD1, ALTD2
+ 
+                 1-10,  11-20,  21-30, 31-40, 41-50
+ 
+                F10.3,  F10.3,  F10.3, F10.3, F10.3
+ 
+ 
+          AVTRAT  maximum Voigt width ratio across a layer
+                  (if zero, default = 2.0)
+ 
+          TDIFF1  maximum layer temperature difference at
+                  ALTD1 (if zero, default =  8 K)
+ 
+          TDIFF2  maximum layer temperature difference at
+                  ALTD2 (if zero, default = 12 K)
+ 
+          ALTD1   altitude of TDIFF1 (if zero, default = 0 Km)
+ 
+          ALTD2   altitude of TDIFF2 (if zero, default = 100 Km)
+ 
+ 
+ 
+ 
+RECORD 3.3B        For IBMAX > 0  (from RECORD 3.1)
+ 
+                ZBND(I), I=1, IBMAX   altitudes of FASCOD3 layer boundaries
+ 
+               (8F10.3)
+ 
+--------------------------------------------------------------------------------
+ 
+ 
+ 
+ 
+ 
+
+-----------------------------------------------------------------------------
+                     User Defined Atmospheric Profile
+ 
+-------------------------------- (MODEL = 0) --------------------------------
+ 
+ 
+RECORD 3.4
+ 
+ 
+           IMMAX,   HMOD
+ 
+               5,   6-29
+ 
+              I5,    3A8
+ 
+ 
+           IMMAX    number of atmospheric profile boundaries
+ 
+            HMOD    24 character description of profile
+ 
+RECORD 3.5
+ 
+ 
+       ZM,    PM,    TM,    JCHARP, JCHART,   (JCHAR(K),K =1,28)
+ 
+     1-10, 11-20, 21-30,        36,     37,     41  through  68
+ 
+    E10.3, E10.3, E10.3,   5x,  A1,     A1,    3X,    28A1
+ 
+ 
+          ZM       boundary altitude (km)
+ 
+          PM       pressure (units and input options set by JCHARP)
+ 
+          TM       temperature (units and input options set by JCHART)
+ 
+      JCHARP       flag for units and input options for pressure (see Table I)
+ 
+      JCHART       flag for units and input options for temperature (see Table I)
+ 
+      JCHAR(K)     flag for units and input options for
+                   the K'th molecule (see Table I)
+ 
+ 
+RECORD 3.6.1 ... 3.6.N
+ 
+          VMOL(K), K=1, NMOL
+ 
+          8E10.3
+ 
+          VMOL(K) density of the K'th molecule in units set by JCHAR(K)
+ 
+repeat records 3.5 and 3.6.1 to 3.6.N for each of the remaining IMMAX boundaries
+ 
+----------------------------------------------------------------------------
+ 
+****************************************************************************
+
+ TABLE I. Units and input options for the K'th molecule
+ 
+ 
+ 
+ 
+                                             TABLE I
+ 
+ 
+ 
+ 
+       USER OPTIONS FOR PRESSURE, TEMPERATURE, AND MOLECULAR DENSITY
+ 
+ 
+ 
+                    JCHARP
+ 
+        PRESSURE      1-6         default to value for specified model atmosphere
+        (JCHARP)    " ",A         pressure in (mb)
+                        B            "     "  (atm)
+                        C            "     "  (torr)
+ 
+ 
+                    JCHART
+ 
+     TEMPERATURE      1-6         default to value for specified model atmospher)
+        (JCHART)    " ",A         ambient temperature in deg (K)
+                        B            "     "   "   "   "  "  (C)
+ 
+ 
+                    JCHAR(M)
+ 
+(M):  AVAILABLE       ( 1)  H2O   ( 2)  CO2   ( 3)  O3  ( 4)  N2O  ( 5)  CO   ( 6)  CH4   ( 7)  O2
+MOLECULAR SPECIES     ( 8)   NO   ( 9)  SO2   (10) NO2  (11)  NH3  (12) HNO3  (13)   OH   (14)  HF
+                      (15)  HCL   (16)  HBR   (17)  HI  (18)  CLO  (19)  OCS  (20) H2CO   (21) HOCL
+                      (22)   N2   (23)  HCN   (24)CH3CL (25) H2O2  (26) C2H2  (27) C2H6   (28)  PH3
+ 
+ 
+                           potential choice of units for above species: 
+ 
+        JCHAR = 1-6           - default to value for specified model atmosphere
+              = " ",A         - volume mixing ratio (ppmv)
+              = B             - number density (cm-3)
+              = C             - mass mixing ratio (gm/kg)
+              = D             - mass density (gm m-3)
+              = E             - partial pressure (mb)
+              = F             - dew point temp (K) *H2O only*
+              = G             - dew point temp (C) *H2O only*
+              = H             - relative humidity (percent) *H2O only*
+              = I             - available for user definition
+ 
+        JCHAR must be less than "J"
+ 
+ 
+ 
+
+ 
+ 
+----------------------------------------------------------------------------
+ 
+----------------  HORIZONTAL PATH (ITYPE = 1) (MODEL = 0-6)  ---------------
+ 
+ 
+ 
+RECORD 3.2H
+ 
+ 
+             H1,      ,      ,  RANGEF
+ 
+           1-10,                31-40
+ 
+          F10.3,   10X,   10X,  F10.3
+ 
+ 
+                H1     =  observer altitude (km)
+ 
+                RANGEF =  path length (km)
+ 
+ 
+ 
+ 
+RECORD 3.3  not used for this case
+ 
+ 
+ 
+ 
+RECORD 3.4                 records included for MODEL = 0 only
+       3.5                   (see MODEL = 0 input records)
+       3.6
+ 
+----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
+ 
+ 
+ 
+*****************************************************************************
+**********  these records applicable if FSCATM selected (IATM=1)  ***********
+****************  and cross-sections ARE selected (IXSECT=1)  ***************
+ 
+                             XAMNTS
+ 
+RECORD 3.7
+ 
+          IXMOLS,  IPRFL, IXSBIN
+ 
+               5,     10,     15
+ 
+              I5,     I5,     I5
+ 
+ 
+              IXMOLS      number of cross-section molecules to be inputed (maximum of 35)
+ 
+              IPRFL  (0,1)
+ 
+                        = 0  user input profile
+                        = 1  standard profile as determined by FSCATM
+ 
+              IXSBIN (0,1) flag to deselect pressure convolution of cross-sections
+ 
+                        = 0 cross-sections convolved with pressure (default)
+                        = 1 cross-sections not convolved with pressure
+ 
+RECORD 3.7.1
+ 
+          XSNAME(I), I=1, IXMOLS
+ 
+          (7A10,(/,8A10))
+ 
+ 
+              XSNAME      name of the cross-section molecules to be used
+                          (Note: the cross-sections specified here must also appear
+                           in the cross-section input file FSCDXS.  See Table II)
+
+ TABLE II. Structure of file FSCDXS.
+ 
+ 
+ 
+ 
+                                            TABLE II
+ 
+    Below is a sample file for FSCDXS.  The format for the fields of file FSCDXS is given below: 
+ 
+                      XNAME, V1X, V2X, DVX, NTEMP, IFRM, CFRM, (XFILS(I),I=1,NTEMP)
+ 
+                             FORMAT (A10,2F10.4,F10.7,I5,5X,I5,A1,4X,6A10)
+ 
+ 
+    Sample file FSCDXS: 
+    ------------------------------------------------------------------------------------------------------------------------
+    MOLECULE       V1        V2        DV     NTEMP    FORMAT    FILET1    FILET2    FILET3    FILET4    FILET5    FILET6
+ 
+    CCL4        786.0010  805.9980 .01095126    1        86N    CCL4
+    F11         830.0090  859.9990 .01095325    4        90N    F11AT1    F11AT2    F11AT3    F11AT4
+    F11        1060.0040 1099.9980 .01095726    1        86N    F11BT1
+    F12         860.0080  939.9960 .01095576    6        90     F12AT1    F12AT2    F12AT3    F12AT4    F12AT5    F12AT6
+    F12        1070.0050 1179.9940 .01095726    4        90N    F12BT1    F12BT2    F12BT3    F12BT4
+    %%%
+    ------------------------------------------------------------------------------------------------------------------------
+ 
+           XNAME     10 character cross-section name, left-justified, all CAPS,
+                     which matches an alias from the following table: 
+ 
+                                      Cross-Section Molecules and Aliases   (Oct 1990)
+                                      ------------------------------------------------
+ 
+                             Alias(1)           Alias(2)           Alias(3)           Alias(4)
+                            ----------         ----------         ----------         ----------
+                            CLONO2              CLNO3
+                            HNO4
+                            CHCL2F                                 CFC21              F21
+                            CCL4
+                            CCL3F               CFCL3              CFC11              F11
+                            CCL2F2              CF2CL2             CFC12              F12
+                            C2CL2F4             C2F4CL2            CFC114             F114
+                            C2CL3F3             C2F3CL3            CFC113             F113
+                            N2O5
+                            HNO3
+                            CF4                                    CFC14              F14
+                            CHCLF2              CHF2CL
+ 
+                     Note: If a molecule has cross-section data in more than one spectral region,
+                           each region must have a separate entry in FSCDXS.
+ 
+                     A '%' in column 1 will terminate the read of FSCDXS
+ 
+
+ TABLE II. Structure of file FSCDXS.  (Continued)
+ 
+ 
+             V1X     Beginning wavenumber for the cross-section data (cm-1)
+ 
+             V2X     Ending wavenumber for the cross-section data (cm-1)
+ 
+             DVX     Wavenumber spacing for the cross-section data (cm-1)     ** for information only **
+ 
+           NTEMP     number of temperature dependent cross-section files to be read in.  '1' indicates no temperature
+                     dependence.  Maximum of '6' files (i.e. 6 temperatures) is allowed.       ***** no default *****
+ 
+            IFRM     is the format specifier
+                     = 86  -  HITRAN 86 format
+                     = 90  -  HITRAN 90 format   ** default **
+ 
+                     Note: the headers are different between HITRAN 86 and HITRAN 90
+ 
+            CFRM     is the blocking specifier
+                     = 'N'  -  unblocked data (100 characters/record)
+                     = ' '  -  blocked data (51*100 characters/record)    ** default **
+ 
+        XFILS(I)     10 character cross-section file name
+ 
+
+-----------------------------------------------------------------------------
+                     User Defined Atmospheric Profile
+ 
+-------------------------------- (IPRFL = 0) --------------------------------
+ 
+ 
+RECORD 3.8
+ 
+ 
+            LAYX,  IZORP,  XTITLE
+ 
+               5,     10,   11-60
+ 
+              I5,     I5      A50
+ 
+ 
+           LAYX         number of atmospheric profile boundaries
+ 
+           IZORP (0,1)  flag which determines value of ZORP on Record 3.8.1
+ 
+                        = 0   ZORP is an altitude in KM
+                        = 1   ZORP is a pressure in millibars
+ 
+           XTITLE       50 character description of profile
+ 
+RECORD 3.8.1
+ 
+ 
+     ZORP,  (JCHAR(K),K =1,28)
+ 
+     1-10,    16  through  50
+ 
+    F10.3, 5X,           35A1
+ 
+ 
+        ZORP       boundary altitude (km) or pressure (millibars) as determined by IZORP on Record 3.8
+ 
+      JCHAR(K)     flag for units and input options for
+                   the K'th cross-section
+ 
+                       JCHAR = 1-1           - default to value for specified model atmosphere
+                             = " ",A         - volume mixing ratio (ppmv)
+ 
+ 
+RECORD 3.8.2 ... 3.8.N
+ 
+          DENX(K), K=1, IXMOLS
+ 
+          8E10.3
+ 
+          DENX(K) density of the K'th cross-section in units set by JCHAR(K)
+ 
+repeat records 3.8.1 to 3.8.N for each of the remaining LAYX boundaries
+ 
+----------------------------------------------------------------------------
+
+    ******************************************************************************************
+ 
+                                   AEROSOLS (IAERSL = 1,7)
+ 
+    ------------------------------------------------------------------------------------------
+    Subroutine LOWTRN
+ 
+    Stripped down version of LOWTRAN 7 run as a subroutine to supply
+    FASCOD3 with the attenuation due to aerosols, clouds, fogs, and rain.
+ 
+    Further details of most of the aerosol parameters are contained in
+    the LOWTRAN7 User Guide (AFGL-TR-88-0177), the LOWTRAN6 Report (AFGL-TR-83-0187)
+    the LOWTRAN5 Report (AFGL-TR-80-0167) and the Millimeter Aerosol Report (AFGL-TR-79-0253)
+    ******************************************************************************************
+ 
+    Activated by IAERSL = 1 or 7 (on record 1.2)
+ 
+    ** Note:  MODEL is read in FSCATM                    **
+    **        M1, M2, and M3 are set depending on MODEL  **
+ 
+    RECORD sequence as follows
+ 
+    4.1    IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT
+ 
+                                   Format (6I5,5F10.3)
+ 
+    ***Optional RECORDS***
+ 
+ (if ICLD = 18,19, or 20)     RECORD 4.2        CTHIK,CALT,CEXT,ISEED
+                                                Format (3F10.3,I10)
+ 
+ (if IVSA = 1)                RECORD 4.3        ZCVSA,ZTVSA,ZINVSA
+                                                Format (3F10.3)
+ 
+ (if IAERSL = 7)              RECORD 4.4        ML,TITLE
+                                                Format (I5,18A4)
+ 
+                              ** RECORD 4.5 is repeated ML times **
+ 
+                              RECORD 4.5        ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,ISEA1,ICHR1
+                                                Format (4F10.3,5I5)
+ 
+ (if IHAZE = 7                RECORD 4.6.1      (IREG(I),I=1,4)
+  or ICLD  = 11)                                Format (4I5)
+ 
+                              RECORD 4.6.2      AWCCON(N),TITLE(N)      ** Note: N = IREG(1)+IREG(2)+IREG(3)+IREG(4)
+                                                Format (E10.3,18A4)
+ 
+                              RECORD 4.6.3      (VX(I),EXTC(N,I),ABSC(N,I),ASYM(N,I),I=1,47)      ** 16 records **
+                                                Format (3(F6.2,2F7.5,F6.4))
+ 
+    ******************************************************************************************
+
+ 
+***************************************************************************************
+ 
+RECORD 4.1            IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT
+ 
+                               FORMAT (6I5,5F10.3)
+ 
+IHAZE selects the type of extinction and a default meteorological
+      range for the boundary-layer aerosol model
+      (0 to 2 km altitude)
+ 
+     IHAZE = 0      no aerosol attenuation included in calculation
+           = 1      Rural extinction, (23 km VIS. default profile)
+           = 2      Rural extinction, (5 km VIS. default profile)
+           = 3      Navy Maritime extinction, sets own VIS.
+           = 4      Maritime extinction, 23 km VIS.  (LOWTRAN 5 Model)
+           = 5      Urban extinction,(5 km VIS. default profile)
+           = 6      Tropospheric extinction, (50 km VIS. default profile)
+           = 7      User defined aerosol extinction coefficients
+                    see Records 4.6.1 - 4.6.3
+           = 8      FOG1 (advection fog)  extinction, 0.2 km VIS.
+           = 9      FOG2 (radiation fog)  extinction, 0.5 km VIS.
+           = 10     DESERT extinction sets own visibility from wind speed (WSS).
+ 
+           If VIS is also specified on Record 4.1 it will override the
+           default IHAZE value of VIS
+ 
+ 
+ISEASN selects the seasonal dependence of the vertical profiles
+       for both the tropospheric (2 to 10 km) and stratospheric
+       (10 to 30 km) aerosols.
+ 
+    ISEASN = 0      Defaults to season of MODEL (see RECORD 3.1)
+                    (MODEL 0,1,2,4,6,7) summer
+                    (MODEL 3,5)         winter
+           = 1      spring-summer
+           = 2      fall-winter
+ 
+IVULCN selects both the profile and extinction type for
+       the stratospheric aerosols and determines transition
+       profiles above the stratosphere to 100 km.
+ 
+    IVULCN = 0      default to stratospheric background
+           = 1      stratospheric background
+           = 2      aged volcanic extinction; moderate volcanic profile
+           = 3      fresh volcanic extinction; high volcanic profile
+           = 4      aged volcanic extinction; high volcanic profile
+           = 5      fresh volcanic extinction; moderate volcanic profile
+           = 6      background stratospheric extinction; moderate volcanic profile
+           = 7      background stratospheric extinction; high volcanic profile
+           = 8      fresh volcanic extinction; extreme volcanic profile
+ 
+ 
+
+ 
+RECORD 4.1 (Continued)
+ 
+ 
+ 
+ICSTL is the air mass character (1 to 10); only used with
+      Navy maritime model (IHAZE=3)             (default value = 3)
+ 
+      ICSTL        = 1  open ocean
+                     .
+                     .
+                     .
+                    10  strong continental influence
+ 
+ICLD determines the inclusion of cirrus cloud attenuation or gives
+     a choice of five cloud models and 5 rain models
+ 
+ICLD for cloud and or rain
+ 
+     ICLD           = 0   no clouds or rain
+ 
+                    = 1   Cumulus cloud; base .66 km; top 3.0 km
+                    = 2   Altostratus cloud; base 2.4 km; top 3.0 km
+                    = 3   Stratus cloud; base .33 km; top 1.0 km
+                    = 4   Stratus; Strato Cumulus; base .66 km; top 2.0 km
+                    = 5   Nimbostratus cloud; base .16 km; top .66 km
+ 
+                    = 6   2.0 mm/hr drizzle (modeled with cloud 3)
+                          rain 2.0 mm/hr at 0.0 km to 0.22 mm/hr at 1.5 km
+                    = 7   5.0 mm/hr light rain (modeled with cloud 5)
+                          rain 5.0 mm/hr at 0.0 km to 0.2 mm/hr at 2.0 km
+                    = 8   12.5 mm/hr moderate rain (modeled with cloud 5)
+                          rain 12.5 mm/hr at 0.0 km to 0.2 mm/hr at 2.0 km
+                    = 9   25.0 mm/hr heavy rain (modeled with cloud 1)
+                          rain 25.0 mm/hr at 0.0 km to 0.2 mm/hr at 3.0 km
+                    =10   75.0 mm/hr extreme rain (modeled with cloud 1)
+                          rain 75.0 mm/hr at 0.0 km to 0.2 mm/hr at 3.5 km
+ 
+                    =11   read in user defined cloud extinction and absorption
+                          can only be used with IAERSL = 7
+ 
+                    =18   Standard Cirrus Model
+                    =19   Sub-visual Cirrus Model
+                    =20   NOAA Cirrus model (LOWTRAN 6 Model)
+ 
+
+ 
+RECORD 4.1 (Continued)
+ 
+ 
+IVSA determines the use of the Army Vertical Structure Algorithm
+     for aerosols in the boundary layer.
+ 
+     IVSA           = 0   not used
+                    = 1   vertical structure algorithm
+ 
+ 
+     VIS            =     meterological range (km) (when specified, supersedes
+                          default value set by IHAZE)
+ 
+     WSS            =     current wind speed (m/s)            only with (IHAZE=3, or IHAZE=10)
+ 
+     WHH            =     24 hour average wind speed (m/s)    only with (IHAZE=3)
+ 
+                          *** Note: For the Navy Maritime Model (IHAZE=3), if WSS=WHH=0.0,
+                                    default wind speeds are set as follows: 
+ 
+                                                                                 WSS and WHH
+                                    MODEL           Model Atmosphere        Default Wind Speed (m/s)
+ 
+                                      0             User-Defined (Horiz Path)        6.9
+                                      1             Tropical                         4.1
+                                      2             Midlatitude Summer               4.1
+                                      3             Midlatitude Winter              10.29
+                                      4             Subarctic Summer                 6.69
+                                      5             Subarctic Winter                12.35
+                                      6             U.S. Standard                    7.2
+                                      7             User-Defined                     6.9
+ 
+                                    For the DESERT aerosol model (IHAZE=10), if WSS<0, the
+                                    default wind speed is 10.0 m/s.
+ 
+     RAINRT         =     rain rate (mm/hr)        Default value is zero.
+                          Used to top of cloud when cloud is present, when no clouds, rain rate used to 6 km.
+ 
+     GNDALT         =     altitude of surface relative to sea level (km)
+                          used to modify aerosol profiles below 6 km altitude
+ 
+ 
+ 
+************************************************************************************
+ 
+ 
+ 
+
+ 
+Optional input records after Record 4.1
+Selected by parameters ICLD, IVSA, and IHAZE on Record 4.1
+ 
+**********************************************************************************
+ 
+RECORD 4.2   CTHIK,CALT,CEXT,ISEED               (if ICLD = 18, 19, or 20)
+ 
+                 FORMAT (3F10.3,I10)
+ 
+               Input record for cirrus altitude profile
+               subroutine when ICLD = 18, 19, or 20
+ 
+     CTHIK     =   cirrus thickness (km)
+                   0 use thickness statistics
+                   > 0 user defined thickness
+ 
+     CALT      =   cirrus base altitude (km)
+                   0 use calculated value
+                   > 0 user defined base altitude
+ 
+     CEXT      =   extinction coefficient (km-1) at 0.55 microns
+                   0 use 0.14*CTHIK
+                   > 0 user defined extinction coefficient
+ 
+     ISEED     =   random number initialization flag
+                   0 use default mean values for cirrus
+                   > 0 initial value of SEED for RANF function (machine dependent)
+ 
+**********************************************************************************
+ 
+RECORD 4.3   ZCVSA, ZTVSA, ZINVSA                (if IVSA = 1)
+ 
+                 FORMAT (3F10.3)
+ 
+               Input record for Army vertical structure
+               algorithm subroutine when IVSA = 1
+ 
+     ZCVSA     =   cloud ceiling height (km)
+ 
+               ZCVSA > 0  known cloud ceiling
+               ZCVSA = 0  unknown cloud ceiling height
+                          program calculates cloud height (default = 1.8 km)
+               ZCVSA < 0  no cloud ceiling
+ 
+     ZTVSA     =   thickness of cloud or fog (km)
+                        = 0    defaults to 0.2 km
+ 
+     ZINVSA    =   height of the inversion layer (km)
+                        = 0   defaults to 2 km (0.2 km for fog)
+                        < 0   no inversion layer
+ 
+ 
+**********************************************************************************
+ 
+ 
+**********************************************************************************
+ 
+ 
+RECORD 4.4   ML,TITLE                         (if IAERSL = 7)
+ 
+                 FORMAT (I5,18A4)
+ 
+           Additional aerosol profile
+ 
+          ML        =  number of aerosol profiles levels to be inserted  (maximum of 34)
+ 
+          TITLE     =  identification of new model aerosol profile
+ 
+ 
+** Note: RECORD 4.5 is repeated ML times **
+ 
+RECORD 4.5                                     (if IAERSL = 7)
+ 
+         ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,ISEA1,ICHR1
+ 
+                     FORMAT (4F10.3,5I5)
+ 
+          ZMDL      =  Altitude of layer boundary (km)
+ 
+          AHAZE     =  aerosol visible extinction coef (km-1) at altitude ZMDL
+ 
+          EQLWCZ    =  equivalent liquid water content (gm m-3) at alt ZMDL for the aerosol, cloud or fog models
+ 
+     **** either AHAZE or EQLWCZ is allowed ****
+ 
+          RRATZ     =  rain rate (mm/hr) at altitude ZMDL
+ 
+          IHA1      =  aerosol model used for spectral dependence of extinction
+ 
+          IVUL1     =  stratospheric aerosol model used for spectral dependence of extinction at altitude ZMDL
+ 
+          ICLD1     =  cloud model to be used for spectral dependence of extinction at altitude Z
+ 
+     **** only one of IHA1, ICLD1 or IVUL1 is allowed ****
+          IHA1.NE.0 others ignored
+          IHA1.EQ.0 and ICLD1.NE.0 use ICLD1
+ 
+     **** if AHAZE and EQLWCZ are both zero, default profile loaded ****
+          according to IHAZ1,ICLD1,IVUL1
+ 
+          ISEA1     =  aerosol season control for the altitude ZMDL
+                       (only used with IHA1 or IVUL1.NE.0)
+ 
+          ICHR1     =  indicates a boundary change between two or more adjacent user defined aerosol or cloud
+                       regions at altitude ZMDL  (required for IHAZE=7 or ICLD=11)
+ 
+                       ** Note: defaults to 0 for IHAZE.ne.7 or ICLD.ne.11 **
+ 
+                       = 0  no boundary change
+ 
+                       = 1  signifies boundary change
+ 
+***********************************************************************************
+ 
+***********************************************************************************
+ 
+RECORDS 4.6.1 - 4.6.3 reads in the user defined cloud extinction and absorption
+                          (IHAZE = 7 or ICLD = 11)
+ 
+RECORD 4.6.1
+ 
+         (IREG(I),I=1,4)
+ 
+            FORMAT (4I5)
+ 
+          IREG      =  specifies which of the four altitude regions a user defined
+                       aerosol or clould model will use
+ 
+                       ** Note: regions default to    1)   0 -   2 km
+                                                      2)   3 -  10 km
+                                                      3)  11 -  30 km
+                                                      4)  35 - 100 km
+                                but can be overridden with 'IHA1' settings on Record 4.5  (IAERSL=7)
+ 
+     *****  The following records (4.6.2 - 4.6.3) are repeated N times where N has the following value:   *****
+     *****                                                                                                *****
+     *****                      N = IREG(1) + IREG(2) + IREG(3) + IREG(4)                                 *****
+     *****                                                                                                *****
+ 
+RECORD 4.6.2
+ 
+         AWCCON(N),TITLE(N)
+ 
+            FORMAT (E10.3,18A4)
+ 
+          AWCCON(N) =  conversion factor from equivalent liquid water content (gm/m3)
+                       to extinction coefficient (km-1).  It is numerically equal to
+                       the equivalent liquid water content corresponding to an extinction
+                       coefficient of 1.0 km-1, at a wavelength of 0.55 microns.
+                       AWCCON has units of (km-gm/m3)
+ 
+          TITLE(N)  =  for an aerosol or cloud region (up to 72 characters)
+ 
+RECORD 4.6.3
+ 
+         (VX(I),EXTC(N,I),ABSC(N,I),ASYM(N,I),I=1,47)
+ 
+                FORMAT (3(F6.2,2F7.5,F6.4))
+ 
+                *** Note: there are 16 records per region
+ 
+          VX(I)     =  wavelength of aerosol coefficient
+                       (not used by program but must be the wavelengths
+                        defined in array VX2 in subroutine EXTDTA)
+ 
+      EXTC(N,I)     =  aerosol extinction coefficient, normalized so that EXTC
+                       for a wavelength of 0.55 microns (I=4) is 1.0 km-1.
+ 
+      ABSC(N,I)     =  aerosol absorption coefficient, normalized so that EXTC
+                       for a wavelength of 0.55 microns (I=4) is 1.0 km-1.
+ 
+      ASYM(N,I)     =  aerosol asymmetry factor
+ 
+************************************************************************************
+
+ 
+ 
+ 
+                               LASER (ILAS > 2)
+ 
+ 
+RECORD 5.1 ... 5.N
+ 
+     VLAS
+ 
+     1-20
+ 
+    F20.8
+ 
+            VLAS  laser wavenumber value  (cm-1)
+                  (negative value terminates multiple LASER option)
+ 
+REPEAT RECORD 5.1
+ 
+ 
+ 
+ 
+
+ 
+                                SCNMRG     ( for scanned sequential results; IMRG between 13 and 18 )
+ 
+ 
+ 
+RECORD 6
+ 
+ 
+     HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,       NNFILE,   NPTS
+ 
+     1-10,  11-20,  21-30,  34-35,  39-40,  44-45,  46-55,        71-75,  76-80
+ 
+     10.3,  F10.3,  F10.3,  3X,I2,  3X,I2,  3X,I2,  F10.4,   15X,    I5,     I5
+ 
+ 
+          HWHM   (Half Width Half Maximum)
+ 
+                  Note: HWHM is first zero crossing of periodic functions for JFN < 0.
+                        HWHM is redefined as  HWHM=(FIRST ZERO)/(PI/SCALE)
+ 
+            V1    beginning wavenumber value for performing SCAN
+ 
+            V2    ending wavenumber value for performing SCAN
+ 
+         JEMIT      =  0  SCAN convolved with transmission
+ 
+                    =  1  SCAN convolved with radiance
+ 
+           JFN    selects choice of scanning function
+ 
+                      JFN    Function        Half-width Bound      Default Sample
+                      ---    --------        ----------------      --------------
+                    =  0     rectangular           1.0                  0.5
+ 
+                    =  1     triangular            2.0                  2.0
+ 
+                    =  2     gaussian              4.0                  4.0
+ 
+                    =  3     sinc squared         54.1826               4.0
+ 
+                    =  4     sinc                119.332818             4.0
+ 
+                          Note: For each function BOUND = HWHM*(Half-width Bound).  BOUND represents the overlap
+                                required before V1 and after V2 in the monochromatic calculation in order to obtain
+                                a correct result from the scanning function.  ( see Record 1.3 )
+                          -------------------------------------------------------------------------------------------
+                          Note: If JFN < 0, HWHM contains the value for the first zero crossing of periodic function.
+ 
+ 
+          JVAR    flag for variable HWHM
+ 
+                    =  0  no variation
+ 
+                    =  1  HWHM(vi) = HWHM(v1) * (vi / v1)
+ 
+ 
+                                           SCNMRG (Continued)
+RECORD 6  (Continued)
+ 
+ 
+         SAMPL    number of sample points per half width
+ 
+                    =  0  gives default value for each function
+ 
+                    <  0  this variable specifies the output spectral spacing (DELVO cm-1)
+                          The value of SAMPL is calculated internally as SAMPL = HWHM/DELVO
+ 
+ 
+        NNFILE    unit number for scanned sequential output
+ 
+                    defaults to NFILE (= 13) or previous value of NNFILE if doing multiple FASCODE runs
+ 
+ 
+          NPTS    number of values to be printed for the beginning and ending of each panel
+                  for current scanned file
+ 
+         ***** Note: if the DV of the data to be scanned is larger than DVINT = HWHM/8.,  *****
+         *****       the data is first interpolated to DVINT before it is scanned.        *****
+         *****       Four-point interpolation is used for this procedure.                 *****
+
+ 
+ 
+                                  FLTMRG          ( for sequential results with filter; IMRG between 23 and 28 )
+ 
+ 
+ 
+RECORD 7.1
+ 
+ 
+          V1F,     DVF,    NPTS,   JEMIT,   NNFILE,          HEDDR
+ 
+         1-10,   11-20,   21-25,   26-30,    31-35,          46-80
+ 
+        F10.3,   F10.4,      I5,      I5,       I5, 10X,    8A4,A3
+ 
+ 
+              V1F     wavenumber of initial filter value
+ 
+              DVF     wavenumber increment between filter values
+ 
+             NPTS     number of filter values
+ 
+                      (if NPTS.LT.0, previous values of XF utilized)
+ 
+             JEMIT      =  0  transmittance integrated over filter function
+ 
+                        =  1  radiance integrated over filter function
+ 
+           NNFILE    unit number for filtered sequential intermediate output
+ 
+                         defaults to NFILE (= 13) or previous value of NNFILE if doing multiple FASCODE runs
+ 
+            HEDDR    35 characters of user identification
+ 
+ 
+RECORD 7.2
+ 
+ 
+          IVAR
+ 
+          1-80
+ 
+          20A4
+ 
+ 
+              IVAR is format specification for reading filter values, XF
+ 
+RECORD 7.3
+     . . .
+     . . .
+     . . .
+       7.N
+ 
+              XF      format specification given by record 7.2
+ 
+              XF      NPTS values of FILTRFN
+ 
+ 
+
+                                        SCANFN
+ 
+                                      (ISCAN = 1)
+ 
+RECORD 8.1
+ 
+ 
+HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,  IUNIT,  IFILST, NIFILS, JUNIT,  NPTS
+ 
+1-10,  11-20,  21-30,  34-35,  39-40,  44-45,  46-55,  59-60,  64-65,   69-70, 74-75, 76-80
+ 
+10.3,  F10.3,  F10.3,  3X,I2,  3X,I2,  3X,I2,  F10.4,  3X,I2,  3X,I2,   3X,I2, 3X,I2,    I5
+ 
+ 
+          HWHM    (Half Width Half Maximum)
+ 
+                    negative value terminates SCANFN option
+ 
+                  Note: HWHM is first zero crossing of periodic functions for JFN < 0.
+                        HWHM is redefined as  HWHM=(FIRST ZERO)/(PI/SCALE)
+ 
+            V1    beginning wavenumber value for performing SCAN
+ 
+            V2    ending wavenumber value for performing SCAN
+ 
+         JEMIT      = -1  SCANFN convolved with absorption (1.0 - transmission)
+ 
+                    =  0  SCANFN convolved with transmission
+ 
+                    =  1  SCANFN convolved with radiance
+ 
+           JFN    selects choice of scanning function
+ 
+                      JFN    Function        Half-width Bound      Default Sample
+                      ---    --------        ----------------      --------------
+                    =  0     rectangular           1.0                  0.5
+ 
+                    =  1     triangular            2.0                  2.0
+ 
+                    =  2     gaussian              4.0                  4.0
+ 
+                    =  3     sinc squared         54.1826               4.0
+ 
+                    =  4     sinc                119.332818             4.0
+ 
+                          Note: For each function BOUND = HWHM*(Half-width Bound).  BOUND represents the overlap
+                                required before V1 and after V2 in the monochromatic calculation. (Record 1.3)
+                          -------------------------------------------------------------------------------------------
+                          Note: If JFN < 0, HWHM contains the value for the first zero crossing of periodic function.
+ 
+          JVAR    flag for variable HWHM
+ 
+                    =  0  no variation
+ 
+                    =  1  HWHM(vi) = HWHM(v1) * (vi / v1)
+ 
+
+                              SCANFN (Continued)
+RECORD 8.1  (Continued)
+ 
+ 
+         SAMPL    number of sample points per half width
+ 
+                    =  0  gives default value for each function
+ 
+                    <  0  this variable specifies the output spectral spacing (DELVO cm-1)
+                          The value of SAMPL is calculated internally as SAMPL = HWHM/DELVO
+ 
+         IUNIT    unit designation of file to be scanned (default is MFILE)
+ 
+        IFILST    initial file from IUNIT to be scanned
+ 
+        NIFILS    number of files to be scanned starting at IFILST
+ 
+         JUNIT    file containing scanned results (default is JUNIT, file 11)
+ 
+          NPTS    number of values to be printed for the beginning and ending of each panel for current scanned file
+ 
+         ***** Note: if the DV of the data to be scanned is larger than DVINT = HWHM/8.,  *****
+         *****       the data is first interpolated to DVINT before it is scanned.        *****
+         *****       Interpolated data is written to named file 'SCNINTF'.                *****
+         *****       Four-point interpolation is used for this procedure.                 *****
+ 
+REPEAT RECORD 8.1
+
+ 
+ 
+                                        INTRPL
+ 
+                                      (ISCAN = 2)
+ 
+RECORD 9.1
+ 
+ 
+  DV,     V1,     V2,  JEMIT,   I4PT,   IUNIT,  IFILST, NIFILS, JUNIT,  NPTS
+ 
+1-10,  11-20,  21-30,  31-35,  36-40,   56-60,  61-65,   66-70, 71-75, 76-80
+ 
+10.3,  F10.3,  F10.3,     I5      I5,  15X,I5,     I5,      I5,    I5,    I5
+ 
+ 
+            DV    wavenumber spacing for interpolated result
+ 
+                    negative value terminates INTRPL option
+ 
+            V1    beginning wavenumber value for performing INTRPL
+ 
+            V2    ending wavenumber value for performing INTRPL
+ 
+         JEMIT
+                    = -1  interpolation of absorption (1 - transmission)
+ 
+                    =  0  interpolation of transmission
+ 
+                    =  1  interpolation of radiance
+ 
+          I4PT
+                    =  0  linear interpolation of data points
+ 
+                    =  1  four-point interpolation of data points
+ 
+         IUNIT    unit designation of file to be interpolated (default is MFILE)
+ 
+        IFILST    initial file from IUNIT to be interpolated
+ 
+        NIFILS    number of files to be interpolated starting at IFILST
+ 
+         JUNIT    file containing interpolated results (default is JUNIT, file 11)
+ 
+          NPTS    number of values to be printed forthe beginning and ending of each panel
+                  for current interpolated file
+ 
+ 
+REPEAT RECORD 9.1
+ 
+ 
+ 
+                                       FLTRFN
+ 
+                                    (IFILTR = 1)
+ 
+RECORD 10.1
+ 
+ 
+     V1F,     DVF,    NPTS,   JEMIT,  IUNIT,  IFILST,  NIFILS,   HEDDR
+ 
+    1-10,   11-20,   21-25,   26-30,  31-35,   36-40,   41-45,   46-80
+ 
+   F10.3,   F10.4,      I5,      I5,     I5,      I5,      I5,  8A4,A3
+ 
+ 
+              V1F     wavenumber of initial filter value
+ 
+                        negative value terminates the FLTRFN option
+ 
+              DVF     wavenumber increment between filter values
+ 
+             NPTS     number of filter values
+                      (if NPTS.LT.0, previous values of XF utilized)
+ 
+             JEMIT      = -1 absorption integrated over filter function
+ 
+                        =  0 transmittance integrated over filter function
+ 
+                        =  1 radiance integrated over filter function
+ 
+             IUNIT    file designation for integration
+ 
+             IFILST   initial file to be integrated
+ 
+             NIFILS   number of files to be integrated starting at IFILST
+ 
              HEDDR    35 characters of user identification
-  
-  
- RECORD 7.2
-  
-  
-           IVAR
-  
-           1-80
-  
-           20A4
-  
-  
-               IVAR is format specification for reading filter values, XF
-  
- RECORD 7.3
+ 
+RECORD 10.2
+ 
+          IVAR
+ 
+          1-80
+ 
+          20A4
+ 
+ 
+              IVAR is format specification for reading filter values, XF
+ 
+RECORD 10.3
       . . .
       . . .
       . . .
-        7.N
-  
-               XF      format specification given by record 7.2
-  
-               XF      NPTS values of FILTRFN
-  
-  
-1
-                                         SCANFN
-  
-                                       (ISCAN = 1)
-  
- RECORD 8.1
-  
-  
- HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,  IUNIT,  IFILST, NIFILS, JUNIT,  NPTS
-  
- 1-10,  11-20,  21-30,  34-35,  39-40,  44-45,  46-55,  59-60,  64-65,   69-70, 74-75, 76-80
-  
- 10.3,  F10.3,  F10.3,  3X,I2,  3X,I2,  3X,I2,  F10.4,  3X,I2,  3X,I2,   3X,I2, 3X,I2,    I5
-  
-  
-           HWHM    (Half Width Half Maximum)
-  
-                     negative value terminates SCANFN option
-  
-                   Note: HWHM is first zero crossing of periodic functions for JFN < 0.
-                         HWHM is redefined as  HWHM=(FIRST ZERO)/(PI/SCALE)
-  
-             V1    beginning wavenumber value for performing SCAN
-  
-             V2    ending wavenumber value for performing SCAN
-  
-          JEMIT      = -1  SCANFN convolved with absorption (1.0 - transmission)
-  
-                     =  0  SCANFN convolved with transmission
-  
-                     =  1  SCANFN convolved with radiance
-  
-            JFN    selects choice of scanning function
-  
-                       JFN    Function        Half-width Bound      Default Sample
-                       ---    --------        ----------------      --------------
-                     =  0     rectangular           1.0                  0.5
-  
-                     =  1     triangular            2.0                  2.0
-  
-                     =  2     gaussian              4.0                  4.0
-  
-                     =  3     sinc squared         54.1826               4.0
-  
-                     =  4     sinc                119.332818             4.0
-  
-                           Note: For each function BOUND = HWHM*(Half-width Bound).  BOUND represents the overlap
-                                 required before V1 and after V2 in the monochromatic calculation. (Record 1.3)
-                           -------------------------------------------------------------------------------------------
-                           Note: If JFN < 0, HWHM contains the value for the first zero crossing of periodic function.
-  
-           JVAR    flag for variable HWHM
-  
-                     =  0  no variation
-  
-                     =  1  HWHM(vi) = HWHM(v1) * (vi / v1)
-  
-1
-                               SCANFN (Continued)
- RECORD 8.1  (Continued)
-  
-  
-          SAMPL    number of sample points per half width
-  
-                     =  0  gives default value for each function
-  
-                     <  0  this variable specifies the output spectral spacing (DELVO cm-1)
-                           The value of SAMPL is calculated internally as SAMPL = HWHM/DELVO
-  
-          IUNIT    unit designation of file to be scanned (default is MFILE)
-  
-         IFILST    initial file from IUNIT to be scanned
-  
-         NIFILS    number of files to be scanned starting at IFILST
-  
-          JUNIT    file containing scanned results (default is JUNIT, file 11)
-  
-           NPTS    number of values to be printed for the beginning and ending of each panel for current scanned file
-  
-          ***** Note: if the DV of the data to be scanned is larger than DVINT = HWHM/8.,  *****
-          *****       the data is first interpolated to DVINT before it is scanned.        *****
-          *****       Interpolated data is written to named file 'SCNINTF'.                *****
-          *****       Four-point interpolation is used for this procedure.                 *****
-  
- REPEAT RECORD 8.1
-1
-  
-  
-                                         INTRPL
-  
-                                       (ISCAN = 2)
-  
- RECORD 9.1
-  
-  
-   DV,     V1,     V2,  JEMIT,   I4PT,   IUNIT,  IFILST, NIFILS, JUNIT,  NPTS
-  
- 1-10,  11-20,  21-30,  31-35,  36-40,   56-60,  61-65,   66-70, 71-75, 76-80
-  
- 10.3,  F10.3,  F10.3,     I5      I5,  15X,I5,     I5,      I5,    I5,    I5
-  
-  
-             DV    wavenumber spacing for interpolated result
-  
-                     negative value terminates INTRPL option
-  
-             V1    beginning wavenumber value for performing INTRPL
-  
-             V2    ending wavenumber value for performing INTRPL
-  
-          JEMIT
-                     = -1  interpolation of absorption (1 - transmission)
-  
-                     =  0  interpolation of transmission
-  
-                     =  1  interpolation of radiance
-  
-           I4PT
-                     =  0  linear interpolation of data points
-  
-                     =  1  four-point interpolation of data points
-  
-          IUNIT    unit designation of file to be interpolated (default is MFILE)
-  
-         IFILST    initial file from IUNIT to be interpolated
-  
-         NIFILS    number of files to be interpolated starting at IFILST
-  
-          JUNIT    file containing interpolated results (default is JUNIT, file 11)
-  
-           NPTS    number of values to be printed forthe beginning and ending of each panel
-                   for current interpolated file
-  
-  
- REPEAT RECORD 9.1
-  
-  
-  
-1                                       FLTRFN
-  
-                                     (IFILTR = 1)
-  
- RECORD 10.1
-  
-  
-      V1F,     DVF,    NPTS,   JEMIT,  IUNIT,  IFILST,  NIFILS,   HEDDR
-  
-     1-10,   11-20,   21-25,   26-30,  31-35,   36-40,   41-45,   46-80
-  
-    F10.3,   F10.4,      I5,      I5,     I5,      I5,      I5,  8A4,A3
-  
-  
-               V1F     wavenumber of initial filter value
-  
-                         negative value terminates the FLTRFN option
-  
-               DVF     wavenumber increment between filter values
-  
-              NPTS     number of filter values
-                       (if NPTS.LT.0, previous values of XF utilized)
-  
-              JEMIT      = -1 absorption integrated over filter function
-  
-                         =  0 transmittance integrated over filter function
-  
-                         =  1 radiance integrated over filter function
-  
-              IUNIT    file designation for integration
-  
-              IFILST   initial file to be integrated
-  
-              NIFILS   number of files to be integrated starting at IFILST
-  
-              HEDDR    35 characters of user identification
-  
- RECORD 10.2
-  
-           IVAR
-  
-           1-80
-  
-           20A4
-  
-  
-               IVAR is format specification for reading filter values, XF
-  
- RECORD 10.3
-       . . .
-       . . .
-       . . .
-        10.N
-  
-               XF      format specification given by record 10.2
-  
-               XF      NPTS values of FILTRFN
-  
-  
- REPEAT RECORD 10.1
-1
-                                     PLTFAS
-  
- RECORD 11.1
-  
-             PROGID: 30 characters of plot identification  (3A10)
-  
-  
- ***************************************************************************************************
- ***************************************************************************************************
- ****************        Use Records 11.2A and 11.3A for PLOT (IOPT = 0,1)        ******************
- ****************   Use Record 11.2B for File Difference or Ratio (IOPT = 2,3)    ******************
- ***************************************************************************************************
- ***************************************************************************************************
-  
- RECORD 11.2A    (IOPT = 0,1)
-  
-  
-             V1,    V2,  XSIZE,   DELV,NUMSBX,NOENDX, LFILE,LSKIPF, SCALE, IOPT, I4P, IXDEC
-  
-           1-10, 11-20,  21-30,  31-40,    45,    50,    55,    60, 60-70,   72,  75,    80
-  
-          F10.4, F10.4,  F10.4,  F10.4,    I5,    I5,    I5,    I5, F10.3,   I2,  I3,    I5
-  
-  
-                 V1      initial wavenumber of the plot,
-  
-                           negative value terminates the PLTFAS option
-  
-                 V2      the final wavenumber of the plot
-  
-                 XSIZE   number of inches of the X-axis.
-  
-                 DELV    number of wavenumbers (cm - 1) per major division.
-  
-                 NUMSBX  number of subdivisions per major division of x-axis.  i.e.,
-                         1 gives no subdivision tic-marks, 2 gives one subdivision
-                         mark (in other words 1 compartment per major division), etc.
-  
-                           *  IOPT = 1 will cause NUMSBX to control the
-                           *  use of symbols on the overlayed plot
-                           *  NUMSBX = 0  will produce a line plot without symbols
-                           *         > 0  will produce a line plot with symbols at every NUMSBX point
-                           *         < 0  will produce a point plot with a symbol at every NUMSBX point
-  
-                 NOENDX  controls the numbers at either end of the x-axis, i.e.,
-                         1 suppresses the numbers at either end of the axis, 2 suppresses
-                         the beginning number, 3 the ending number, and 0 leaves both.
-  
-                           *  IOPT = 1 will cause NOENDX to describe the
-                           *  symbol to be used on the overlayed plot.  For a list of symbols
-                           *  see the AFGL CYBER plotter handout, Appendix B, or your local
-                           *  plotting interface.
-1
-                               PLTFAS (Continued)
- RECORD 11.2A  (Continued)
-  
-                 LFILE   tape number of file to be read from FASCOD3.
-  
-                 LSKIPF  number of files to be skipped in tape LFILE
-                         number of file to be plotted will be LSKIPF + 1
-                         for plotting MFILE (TAPE12) LSKIPF = 0
-  
-                 SCALE   enables one to enlarge or reduce a plot.
-  
-                 IOPT    = 0  for plot, USE Records 11.2A and 11.3A
-                         = 1  for overlay plot, USE Records 11.2A and 11.3A
-                               *  will suppress the plotting of the header and axes,
-                               *  and will overlay the line on the previous plot axes.
-                               *  See also NUMSBX, NOENDX and YMIN.
-                         = 2  for file difference, USE Record 11.2B instead of 11.2A
-                         = 3  for file ratio, USE Record 11.2B instead of 11.2A
-  
-                 I4P     = 0  for linear connection of points,
-                         = 1  for four point interpolation
-  
-                 IXDEC   number of figures after decimal point on x-axis
-1
-                               PLTFAS (Continued)
-  
- RECORD 11.3A     (IOPT = 0,1)
-  
-  
-             YMIN,   YMAX,  YSIZE,   DELY,NUMSBY,NOENDY, IDEC, JEMIT, JPLOT,LOGPLT, JHDR,  JOUT,JPLTFL
-  
-             1-10,  11-20,  21-30,  31-40,    45,    50,   55,    60,    65,    70,   72,    77,    80
-  
-            G10.4,  G10.4,  F10.3,  F10.3,    I5,    I5,   I5,    I5,    I5,    I5,   I2,3X, I2,    I3
-  
-  
-             YMIN is Y value at bottom of Y-axis.
-  
-                     *  IOPT = 1 will cause YMIN to determine the vertical offset (in Y)
-                     *  for the overlayed plot.  YMIN is in the units of the previous plot
-                     *  axes and any offset is applied with respect to the previously
-                     *  defined axes.  (i.e. YMIN = 10. will offset the new plot 10. units up)
-  
-             YMAX is Y value at top of Y-axis.
-  
-                    (if log plot selected, YMIN and YMAX are the exponent values at the bottom and top of the plot).
-  
-             YSIZE is the number of inches for the y-axis.
-  
-             DELY is the number of y units per major division (= 1. when log plot is selected).
-  
-             NUMSBY is the number of subdivisions per major division of y-axis.
-  
-             NOENDY controls the plotting of the values at either end of y-axis (= 1 supresses plotting).
-  
-             IDEC is number of figures after decimal point on linear y-axis.
-  
-             JEMIT   = 0  for transmission,
-                     = 1  for radiance.
-  
-             JPLOT   = 0  plots transmission for JEMIT = 0
-                     = 1  plots optical depth for JEMIT = 0
-                     = 2  plots attenuation in decibels for JEMIT = 0
-  
-                     = 0  plots radiance in watts/(cm**2 sr cm - 1) for JEMIT = 1
-                          (if YMIN and YMAX.GT.1, these values are interpreted as
-                          brightness temperatures from which minimum and maximum
-                          values of radiance are assigned).
-  
-                     = 1  plots radiance in equivalent brightness temperature for JEMIT = 1
-  
-            LOGPLT   = 0  for linear y-axis,
-                     = 1  for log y-axis.
-  
-             JHDR    = 0  for plot of header data
-                     = 1  for suppression of header data plot
-  
-1                              PLTFAS (Continued)
-  
- RECORD 11.3A (Continued)
-  
-  
-             JOUT    = 0  for plot to system plotfile/screen
-                     = 1  for plot values written to JPLTFL (unformatted)
-                     = 2  for plot to system plotfile/screen
-                          and plot values written to JPLTFL (unformatted)
-                     = 3  for plot values written to JPLTFL (formatted)
-                     = 4  for plot to system plotfile/screen
-                          and plot values written to JPLTFL (formatted)
-  
-                          Note: For JOUT=3 & 4 the program writes out a description of the header
-                                followed by both the frequency and data arrays.  Format is below.
-                                                FORMAT (3X,1P,E15.8,4X,E15.8)
-  
-           JPLTFL         file to which plot values are written for JOUT .gt. 0  (default = 29)
-  
-                          the structure of JPLTFL (unformatted) is standard FASCODE file structure (see Table III),
-                          plot values are written out in SUBROUTINE FSCLIN
-  
-  
- REPEAT RECORD 11.2A or RECORD 11.2B
-1
-                               PLTFAS (Continued)
-  
- ***************************************************************************************************
- ****************************** USE RECORD 11.2B FOR IOPT > 1 **************************************
- ***************************************************************************************************
-  
-  
- RECORD 11.2B   (IOPT = 2,3)
-  
-  
-             V1,    V2,  JFILE,JSKIPF, LFILE,LSKIPF,   IOPT, MFILE
-  
-           1-10, 11-20,     45,    50,    55,    60,     72,    80
-  
-          F10.4, F10.4, 20X,I5,    I5,    I5,    I5, 10X,I2, 3X,I5
-  
-  
-                 V1      initial wavenumber of the difference or ratio,
-  
-                           negative value terminates the PLTFAS option
-  
-                 V2      the final wavenumber of the difference or ratio
-  
-                 JFILE   tape number of file to be read from FASCOD3 (no default)
-  
-                 JSKIPF  number of files to be skipped in tape JFILE
-                         number of file to be used will be JSKIPF + 1
-  
-                 LFILE   tape number of file to be read from FASCOD3 (no default)
-  
-                 LSKIPF  number of files to be skipped in tape LFILE
-                         number of file to be used will be LSKIPF + 1
-  
-                 IOPT    = 0  for plot, USE Records 11.2A and 11.3A
-                         = 1  for overlay plot, USE Records 11.2A and 11.3A
-                         = 2  for file difference (JFILE-LFILE)
-                         = 3  for file ratio (JFILE/LFILE)
-  
-                 MFILE   tape number of file for difference/ratio output (no default)
-  
-  
-    Subroutine FILOPT will difference or ratio two FASCODE output files.
-    Files must be    1) UNFORMATTED FASCODE files
-                     2) Single quantity files
-                        i.e. contain only ONE of the following: 
-                                 a) Opitcal Depths
-                                 b) Transmittance
-                                 c) Radiance
-                                 e) Temperature
-                     3) The difference in DV between the files must be less than 1.E-8
-  
-                *** NOTE: Standard FASCODE output files usually
-                          contain BOTH Transmittance and Radiance.
-                          The user must create either scanned or
-                          plot files for use as input to this routine.
-  
- REPEAT RECORD 11.2A or RECORD 11.2B
-1
-  TABLE III. Structure of file JPLTFL (standard FASCODE structure).
-  
-  
-  
-  
-                                             TABLE III
-  
-  
-  
-     record 1   /PLTHDR/        XID(10),SEC,P0,T0,HMOL(64),W(64),WBROAD,DVT,V1V,
-                                V2V,TBOUND,EMISIV,FSCDID(17),NMOL,NLAYER,  YID1,YID(10)
-  
-     --------------------------------------------------------------------------
-  
-     record 2   /JPLTFL/        V1P,V2P,DVP,NLIM
-  
-     record 3                   NLIM values of Y from V1P  to V2P with increment DVP
-  
-     ----------   repeats records 2 and 3 until all Y values written  ---------
-  
-  
-     record 4                   FASCODE endfile
-  
-  
-     --------------- repeats for each plot request  -------------------------------
-  
-  
-  
-  
-  
-     NOTE: for machines with 32 bit words the following variables may have been set to double precision: 
-  
-                                   XID(10),SEC,HMOL(64),V1V,V2V,YID(10)
-                                   V1P,V2P
-  
-  
-  
-  
- _________________________________________________________________________________________________________________________________
-1
-  
-  
+       10.N
+ 
+              XF      format specification given by record 10.2
+ 
+              XF      NPTS values of FILTRFN
+ 
+ 
+REPEAT RECORD 10.1
+
+                                    PLTFAS
+ 
+RECORD 11.1
+ 
+            PROGID: 30 characters of plot identification  (3A10)
+ 
+ 
+***************************************************************************************************
+***************************************************************************************************
+****************        Use Records 11.2A and 11.3A for PLOT (IOPT = 0,1)        ******************
+****************   Use Record 11.2B for File Difference or Ratio (IOPT = 2,3)    ******************
+***************************************************************************************************
+***************************************************************************************************
+ 
+RECORD 11.2A    (IOPT = 0,1)
+ 
+ 
+            V1,    V2,  XSIZE,   DELV,NUMSBX,NOENDX, LFILE,LSKIPF, SCALE, IOPT, I4P, IXDEC
+ 
+          1-10, 11-20,  21-30,  31-40,    45,    50,    55,    60, 60-70,   72,  75,    80
+ 
+         F10.4, F10.4,  F10.4,  F10.4,    I5,    I5,    I5,    I5, F10.3,   I2,  I3,    I5
+ 
+ 
+                V1      initial wavenumber of the plot,
+ 
+                          negative value terminates the PLTFAS option
+ 
+                V2      the final wavenumber of the plot
+ 
+                XSIZE   number of inches of the X-axis.
+ 
+                DELV    number of wavenumbers (cm - 1) per major division.
+ 
+                NUMSBX  number of subdivisions per major division of x-axis.  i.e.,
+                        1 gives no subdivision tic-marks, 2 gives one subdivision
+                        mark (in other words 1 compartment per major division), etc.
+ 
+                          *  IOPT = 1 will cause NUMSBX to control the
+                          *  use of symbols on the overlayed plot
+                          *  NUMSBX = 0  will produce a line plot without symbols
+                          *         > 0  will produce a line plot with symbols at every NUMSBX point
+                          *         < 0  will produce a point plot with a symbol at every NUMSBX point
+ 
+                NOENDX  controls the numbers at either end of the x-axis, i.e.,
+                        1 suppresses the numbers at either end of the axis, 2 suppresses
+                        the beginning number, 3 the ending number, and 0 leaves both.
+ 
+                          *  IOPT = 1 will cause NOENDX to describe the
+                          *  symbol to be used on the overlayed plot.  For a list of symbols
+                          *  see the AFGL CYBER plotter handout, Appendix B, or your local
+                          *  plotting interface.
+
+                              PLTFAS (Continued)
+RECORD 11.2A  (Continued)
+ 
+                LFILE   tape number of file to be read from FASCOD3.
+ 
+                LSKIPF  number of files to be skipped in tape LFILE
+                        number of file to be plotted will be LSKIPF + 1
+                        for plotting MFILE (TAPE12) LSKIPF = 0
+ 
+                SCALE   enables one to enlarge or reduce a plot.
+ 
+                IOPT    = 0  for plot, USE Records 11.2A and 11.3A
+                        = 1  for overlay plot, USE Records 11.2A and 11.3A
+                              *  will suppress the plotting of the header and axes,
+                              *  and will overlay the line on the previous plot axes.
+                              *  See also NUMSBX, NOENDX and YMIN.
+                        = 2  for file difference, USE Record 11.2B instead of 11.2A
+                        = 3  for file ratio, USE Record 11.2B instead of 11.2A
+ 
+                I4P     = 0  for linear connection of points,
+                        = 1  for four point interpolation
+ 
+                IXDEC   number of figures after decimal point on x-axis
+
+                              PLTFAS (Continued)
+ 
+RECORD 11.3A     (IOPT = 0,1)
+ 
+ 
+            YMIN,   YMAX,  YSIZE,   DELY,NUMSBY,NOENDY, IDEC, JEMIT, JPLOT,LOGPLT, JHDR,  JOUT,JPLTFL
+ 
+            1-10,  11-20,  21-30,  31-40,    45,    50,   55,    60,    65,    70,   72,    77,    80
+ 
+           G10.4,  G10.4,  F10.3,  F10.3,    I5,    I5,   I5,    I5,    I5,    I5,   I2,3X, I2,    I3
+ 
+ 
+            YMIN is Y value at bottom of Y-axis.
+ 
+                    *  IOPT = 1 will cause YMIN to determine the vertical offset (in Y)
+                    *  for the overlayed plot.  YMIN is in the units of the previous plot
+                    *  axes and any offset is applied with respect to the previously
+                    *  defined axes.  (i.e. YMIN = 10. will offset the new plot 10. units up)
+ 
+            YMAX is Y value at top of Y-axis.
+ 
+                   (if log plot selected, YMIN and YMAX are the exponent values at the bottom and top of the plot).
+ 
+            YSIZE is the number of inches for the y-axis.
+ 
+            DELY is the number of y units per major division (= 1. when log plot is selected).
+ 
+            NUMSBY is the number of subdivisions per major division of y-axis.
+ 
+            NOENDY controls the plotting of the values at either end of y-axis (= 1 supresses plotting).
+ 
+            IDEC is number of figures after decimal point on linear y-axis.
+ 
+            JEMIT   = 0  for transmission,
+                    = 1  for radiance.
+ 
+            JPLOT   = 0  plots transmission for JEMIT = 0
+                    = 1  plots optical depth for JEMIT = 0
+                    = 2  plots attenuation in decibels for JEMIT = 0
+ 
+                    = 0  plots radiance in watts/(cm**2 sr cm - 1) for JEMIT = 1
+                         (if YMIN and YMAX.GT.1, these values are interpreted as
+                         brightness temperatures from which minimum and maximum
+                         values of radiance are assigned).
+ 
+                    = 1  plots radiance in equivalent brightness temperature for JEMIT = 1
+ 
+           LOGPLT   = 0  for linear y-axis,
+                    = 1  for log y-axis.
+ 
+            JHDR    = 0  for plot of header data
+                    = 1  for suppression of header data plot
+ 
+                              PLTFAS (Continued)
+ 
+RECORD 11.3A (Continued)
+ 
+ 
+            JOUT    = 0  for plot to system plotfile/screen
+                    = 1  for plot values written to JPLTFL (unformatted)
+                    = 2  for plot to system plotfile/screen
+                         and plot values written to JPLTFL (unformatted)
+                    = 3  for plot values written to JPLTFL (formatted)
+                    = 4  for plot to system plotfile/screen
+                         and plot values written to JPLTFL (formatted)
+ 
+                         Note: For JOUT=3 & 4 the program writes out a description of the header
+                               followed by both the frequency and data arrays.  Format is below.
+                                               FORMAT (3X,1P,E15.8,4X,E15.8)
+ 
+          JPLTFL         file to which plot values are written for JOUT .gt. 0  (default = 29)
+ 
+                         the structure of JPLTFL (unformatted) is standard FASCODE file structure (see Table III),
+                         plot values are written out in SUBROUTINE FSCLIN
+ 
+ 
+REPEAT RECORD 11.2A or RECORD 11.2B
+
+                              PLTFAS (Continued)
+ 
+***************************************************************************************************
+****************************** USE RECORD 11.2B FOR IOPT > 1 **************************************
+***************************************************************************************************
+ 
+ 
+RECORD 11.2B   (IOPT = 2,3)
+ 
+ 
+            V1,    V2,  JFILE,JSKIPF, LFILE,LSKIPF,   IOPT, MFILE
+ 
+          1-10, 11-20,     45,    50,    55,    60,     72,    80
+ 
+         F10.4, F10.4, 20X,I5,    I5,    I5,    I5, 10X,I2, 3X,I5
+ 
+ 
+                V1      initial wavenumber of the difference or ratio,
+ 
+                          negative value terminates the PLTFAS option
+ 
+                V2      the final wavenumber of the difference or ratio
+ 
+                JFILE   tape number of file to be read from FASCOD3 (no default)
+ 
+                JSKIPF  number of files to be skipped in tape JFILE
+                        number of file to be used will be JSKIPF + 1
+ 
+                LFILE   tape number of file to be read from FASCOD3 (no default)
+ 
+                LSKIPF  number of files to be skipped in tape LFILE
+                        number of file to be used will be LSKIPF + 1
+ 
+                IOPT    = 0  for plot, USE Records 11.2A and 11.3A
+                        = 1  for overlay plot, USE Records 11.2A and 11.3A
+                        = 2  for file difference (JFILE-LFILE)
+                        = 3  for file ratio (JFILE/LFILE)
+ 
+                MFILE   tape number of file for difference/ratio output (no default)
+ 
+ 
+   Subroutine FILOPT will difference or ratio two FASCODE output files.
+   Files must be    1) UNFORMATTED FASCODE files
+                    2) Single quantity files
+                       i.e. contain only ONE of the following: 
+                                a) Opitcal Depths
+                                b) Transmittance
+                                c) Radiance
+                                e) Temperature
+                    3) The difference in DV between the files must be less than 1.E-8
+ 
+               *** NOTE: Standard FASCODE output files usually
+                         contain BOTH Transmittance and Radiance.
+                         The user must create either scanned or
+                         plot files for use as input to this routine.
+ 
+REPEAT RECORD 11.2A or RECORD 11.2B
+
+ TABLE III. Structure of file JPLTFL (standard FASCODE structure).
+ 
+ 
+ 
+ 
+                                            TABLE III
+ 
+ 
+ 
+    record 1   /PLTHDR/        XID(10),SEC,P0,T0,HMOL(64),W(64),WBROAD,DVT,V1V,
+                               V2V,TBOUND,EMISIV,FSCDID(17),NMOL,NLAYER,  YID1,YID(10)
+ 
+    --------------------------------------------------------------------------
+ 
+    record 2   /JPLTFL/        V1P,V2P,DVP,NLIM
+ 
+    record 3                   NLIM values of Y from V1P  to V2P with increment DVP
+ 
+    ----------   repeats records 2 and 3 until all Y values written  ---------
+ 
+ 
+    record 4                   FASCODE endfile
+ 
+ 
+    --------------- repeats for each plot request  -------------------------------
+ 
+ 
+ 
+ 
+ 
+    NOTE: for machines with 32 bit words the following variables may have been set to double precision: 
+ 
+                                  XID(10),SEC,HMOL(64),V1V,V2V,YID(10)
+                                  V1P,V2P
+ 
+ 
+ 
+ 
+_________________________________________________________________________________________________________________________________
+
+ 
+ 
