@@ -143,9 +143,8 @@ C
 C                                                                         B01120
       DATA MEFDP / 64*0 /                                                 B01130
 C                                                                         B01140
-      DATA PTHODI / 'ODint_'/
-      DATA PTHODE / 'ODexact_'/                                           B01150
-      DATA PTHODD / 'ODdeflt_'/
+      PTHODE = 'ODexact_'
+      PTHODD = 'ODdeflt_'
       DATA KODLYR /
      *     '                                                         '/
       DATA HFMODL /'         '/
@@ -165,6 +164,7 @@ C
       TODFIL = 0.0
       TMOLEC = 0.0
 C
+      LSTWDX = -654321
       NPNLXP = NWDL(IWD,LSTWDX)                                           B01190
       ICNTNM = MOD(IXSCNT,10)                                             B01200
       IXSECT = IXSCNT/10                                                  B01210
@@ -279,10 +279,9 @@ C                                                                         B02190
 C                                                                         B02210
 C     ---------------------------------------------------------------
 C
-C     - If IOD = 1 and IMERGE = 1 then calculate optical depths
-C       for each layer with DV = DVOUT (from DVSET in TAPE5, carried
-C       in by COMMON BLOCK /IODFLG/) and maintain separately.
-C       Use PTHODI as the name of the optical depth files.
+C     - If IOD = 1 or 4 then calculate optical depths for each
+C       layer with DV = DVOUT (using DVSET if IOD=4) and maintain
+C       separately. Use PTHODI as the name of the optical depth files.
 C       This requires the format HFMODL, which is produced by
 C       calling the SUBROUTINE QNTIFY.
 C
@@ -295,7 +294,7 @@ C
 C     - If calculating layer optical depths and cumulative layer
 C       optical depths for an analytic derivative calculation
 C       (IOD=3, IMRG=10), or when using the same criteria but not
-C       calculating the cumulative optical depths (IOD=3, IMRG=1),
+C       calculating the cumulative optical depths (IOD=3),
 C       then use PTHODI as the name of the optical depth files.
 C       This requires the format HFMODL, which is produced by
 C       calling the SUBROUTINE QNTIFY.
@@ -315,7 +314,7 @@ C       for each layer with DV = DVOUT (from DVSET in TAPE5, carried
 C       in by COMMON BLOCK /IODFLG/ (interpolation in PNLINT).
 C
       CALL CPUTIM(TPAT0)
-      IF ((IOD.EQ.1.or.IOD.EQ.4).AND.IMRG.EQ.1) THEN                      B02220
+      IF ((IOD.EQ.1).OR.(IOD.EQ.4)) THEN
          CALL QNTIFY(PTHODI,HFMODL)
          WRITE (KODLYR,HFMODL) PTHODI,LAYER                               B02230
          INQUIRE (UNIT=KFILE,OPENED=OP)                                   B02240
@@ -327,7 +326,7 @@ C
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02310
          DV = DVSAV
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02320
-      ELSEIF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
+      ELSEIF (IOD.EQ.2) THEN
          CALL QNTIFY(PTHODE,HFMODL)
          WRITE(KODLYR,HFMODL) PTHODE,LAYER
          INQUIRE (UNIT=KFILE,OPENED=OP)
@@ -3469,6 +3468,7 @@ C
 C
       CALL CPUTIM (TIMEL0)                                                D00610
 C                                                                         D00620
+      ILS2D = -654321
       NLNGT4 = NWDL(IWD3,ILS2D)*1250                                      D00630
       LNGTH4 = NLNGT4                                                     D00640
       PAVP0 = PAVE/P0                                                     D00650
@@ -3496,6 +3496,7 @@ C                                                                         D00820
       VHI = V2L4                                                          D00840
 C                                                                         D00850
       CALL CPUTIM(TPAT0)
+      LSTWDL = -654321
       NWDLIN = NWDL(IWD,LSTWDL)                                           D00860
       REWIND LINFIL                                                       D00870
       CALL BUFIN (LINFIL,LEOF,HLINHD(1),NWDLIN)                           D00880
