@@ -3120,11 +3120,11 @@ C
 C                                                                         L00020
 C     NFLTPT sets the maximum number of points in the incoming filter
 C
-      PARAMETER (NFLTPT = 1001)
+      PARAMETER (NFLTPT = 3001)
 C
       IMPLICIT REAL*8 (V)
 C                                                                         L00040
-      COMMON S(2650),R1(3750)                                             L00050
+      COMMON S(4650),R1(5750)                                             L00050
 C                                                                         L00060
       character*8      XID,       HMOLID,      YID        
       real*8               SECANT,       XALTZ 
@@ -3171,7 +3171,7 @@ C     Test to ensure NPTF is less than NFLTPT, the maximum number
 C     of filter points allowed
 C
       IF (NPTF.GT.NFLTPT) THEN
-         WRITE(IPR,*) 'FLTRFN: NPTS > NFLTPT limit', NLFTPT
+         WRITE(IPR,*) 'FLTRFN: NPTS > NFLTPT limit', NFLTPT
          STOP 'FLTRFN: NPTS > NFLTPT limit'
       ENDIF
 C
@@ -3343,13 +3343,13 @@ C
 C                                                                         L01710
 C     NFLTPT sets the maximum number of points in the incoming filter
 C
-      PARAMETER (NFLTPT = 1001)
+      PARAMETER (NFLTPT = 3001)
 C
       IMPLICIT REAL*8           (V) 
 C                                                                         L01730
 C     READ CONTROL CARD FOR FILTER WITH WEIGHTING FUNCTIONS               L01740
 C                                                                         L01750
-      COMMON S(2650),R1(3750)                                             L01760
+      COMMON S(4650),R1(5750)                                             L01760
 C                                                                         L01770
       character*8      XID,       HMOLID,      YID        
       real*8               SECANT,       XALTZ 
@@ -3454,14 +3454,14 @@ C
 C                                                                         L02740
 C     NFLTPT sets the maximum number of points in the incoming filter
 C
-      PARAMETER (NFLTPT = 1001)
+      PARAMETER (NFLTPT = 3001)
 C
       IMPLICIT REAL*8           (V) 
 C                                                                         L02760
 C     SUBROUTINE FLTMRG CALCULATES AND OUTPUTS THE RESULTS                L02770
 C     OF THE FILTER TO FILE JFILE                                         L02780
 C                                                                         L02790
-      COMMON S(2650),R1(3750)                                             L02800
+      COMMON S(4650),R1(5750)                                             L02800
 C                                                                         L02810
       character*8      XID,       HMOLID,      YID        
       real*8               SECANT,       XALTZ 
@@ -3624,7 +3624,7 @@ C
 C                                                                         L04360
 C     NFLTPT sets the maximum number of points in the incoming filter
 C
-      PARAMETER (NFLTPT = 1001)
+      PARAMETER (NFLTPT = 3001)
 C
       IMPLICIT REAL*8           (V) 
 C                                                                         L04380
@@ -3664,14 +3664,14 @@ C
 C                                                                         L04690
 C     NFLTPT sets the maximum number of points in the incoming filter
 C
-      PARAMETER (NFLTPT = 1001)
+      PARAMETER (NFLTPT = 3001)
 C
       IMPLICIT REAL*8           (V)     
 C                                                                         L04710
 C     SUBROUTINE FLTPRT READS FROM IFILE AND FORMATS OUT THE RESULTS      L04720
 C     OF THE FILTERED WEIGHTING FUNCTION TO IPR                           L04730
 C                                                                         L04740
-      COMMON S(2650),R1(3750)                                             L04750
+      COMMON S(4650),R1(5750)                                             L04750
 C                                                                         L04760
       character*8      XID,       HMOLID,      YID        
       real*8               SECANT,       XALTZ 
