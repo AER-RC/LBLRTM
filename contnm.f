@@ -446,9 +446,10 @@ c     *    ((V1.gt.7500.0).and.(V1.lt.8300.))) then
          ADJFAC = (CHIO2+0.3*CHIN2)/0.446
          ADJWO2 = ADJFAC * WO2
          CALL O2INF1 (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      
+         o2_scale = 0.8
 
          DO 92 J = 1, NPTC                                                
-            C(J) = C0(J)*ADJWO2                                           
+            C(J) = C0(J)*ADJWO2*o2_scale
             VJ = V1C+DVC*FLOAT(J-1)                                       
 C                                                                      
 C           Radiation field
