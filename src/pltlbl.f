@@ -709,7 +709,7 @@ C                                                                         M05530
   935 FORMAT (4F10.4,4I5,F10.3,3I5)                                       M05660
   937 FORMAT ('0       YMIN       YMAX      YSIZE       DELY  SBY  ',     M05670
      *        'NDY IDEC  JEM JPLT  LOG JHDR JOUT PFIL')                   M05680
-  940 FORMAT (1X,1P2G11.4,2G11.3,9I5)                                     M05690
+  940 FORMAT (1X,1p,2G11.4,2G11.3,0p,9I5)                                     M05690
   945 FORMAT (3A10)                                                       M05700
   950 FORMAT (A8)                                                         M05710
   955 FORMAT ('     YSIZE TOO LARGE, HAS BEEN RESET TO 10 INCHES')        M05720
@@ -1972,7 +1972,7 @@ C                                                                         M18120
 C                                                                         M18150
       RETURN                                                              M18160
 C                                                                         M18170
-  900 FORMAT (3X,F15.8,4X,1P,G19.8)                                          M18180
+  900 FORMAT (3X,F15.8,4X,1p,G19.8)                                          M18180
 C                                                                         M18190
       END                                                                 M18200
       SUBROUTINE AXISL (X,Y,BCD,N,NUMDIV,DIVLEN,NUMSUB,BEGNUM,DELNUM,     M18210
