@@ -1134,6 +1134,7 @@ C                                                                         B12000
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B12010
      *                WK(60),PZ1,PZ2,TZ1,TZ2,WBROAD,DV ,V1 ,V2 ,TBOUND,   B12020
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B12030
+      COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTS       B12040
       COMMON /XPANIN/ V1PO,V2PO,NLIMO,NLIM1,NPPANL                        B12050
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B12060
@@ -1206,8 +1207,8 @@ C                                                                         B12670
 C     ZERO POINT OF FIRST PANEL                                           B12680
 C                                                                         B12690
       IF (V1PO.EQ.0.0) THEN                                               B12700
-         R1(NM1) = R1(1)                                                   B12710
-         R1(N0) = R1(1)                                                    B12720
+         R1(NM1) = R1(1)                                                  B12710
+         R1(N0) = R1(1)                                                   B12720
          V1PO = V1P                                                       B12730
          NLIM1 = 1                                                        B12740
       ENDIF                                                               B12750
@@ -1215,7 +1216,7 @@ C                                                                         B12760
 C     END POINT OF LAST PANEL                                             B12770
 C                                                                         B12780
       ILAST = 0                                                           B12790
-      IF (V2P+DVP.GE.V2) THEN                                             B12800
+      IF (ISTOP.EQ.1) THEN                                                B12800
          R1(NLIM+1) = R1(NLIM)                                            B12810
          R1(NLIM+2) = R1(NLIM)                                            B12820
          ILAST = 1                                                        B12830
