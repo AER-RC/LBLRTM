@@ -6267,15 +6267,15 @@ C----------------------------------------------------------------------
 
       parameter (nx=2001, nxmx=1.3*nx, nzeta=101, nq=3, ndom=4)
 
-      implicit real*8 (a-h, o-z)
+      implicit real*8 (a-e,g-h, o-z)
 
 	dimension  x(0:nx), z(0:nx)
-	dimension f_voigt_armstr(0:nx)
+	dimension xf_voigt_armstr(0:nx)
 
 c       Need fv and dfv at point nx in order to compute the second derivative 
 c       as was previously done.  Store dfv at last 3 points for each of 3 separate domains
-	dimension fv(0:nx, 0:nzeta-1)
-	dimension fv_tmp(0:4, 0:ndom-1, 0:nzeta-1)
+	dimension xfv(0:nx, 0:nzeta-1)
+	dimension xfv_tmp(0:4, 0:ndom-1, 0:nzeta-1)
 	dimension dfv(0:ndom-1, 0:nzeta-1)
 c	dimension d2fv(0:ndom-1, 0:nzeta-1)
 c       Store fv(nx-1) for domain 1: need it to calculate the a coefficients
@@ -6285,11 +6285,9 @@ c       For the other domains, it can be obtained from the fv for domain 4.
 c       f1, f2, f3 dimensioned nxmx=1.3*nx, extra points are to allow for 
 c       subscript overrun without overwriting other arrays.
 
-	real*4 f1(0:nxmx-1, 0:nzeta-1), f2(0:nxmx-1, 0:nzeta-1),
+	dimension f1(0:nxmx-1, 0:nzeta-1), f2(0:nxmx-1, 0:nzeta-1),
 	1    f3(0:nxmx-1, 0:nzeta-1)
-
-c	real*4  f4(0:nxmx-1, 0:nzeta-1)
-
+c
 	dimension q1(0:nx-1), q2(0:nx-1), q3(0:nx-1)
 	dimension             AVC(0:nzeta)
 	common /voigt_cf/
@@ -6410,7 +6408,7 @@ C       see paper by B. H. Armstrong, J. Quant. Spectrosc. Radiat. Transfer.
 c       Vol. 7, pp 61-88, 1967 for the Armstrong routine
 c       returns back a real part of the voigt function "v_arm"
 	      
-	      call armstrong(nx+1,x,zeta,f_voigt_armstr)
+	      call armstrong(nx+1,x,zeta,xf_voigt_armstr)
 	      
 c       Normalize the Voigt Profile and get the first derivative
 c       The scaled frequency variable x = const*v/AD is required by the humlicek 
@@ -6418,27 +6416,27 @@ c       and Armstrong routine.  We want it scaled by z by using the cnorm1
 c       (first derivative actually only needed at 3 points: i=nx-1, nx+1, nx)
 	      if (zeta .lt. 1.00) then
 		  do 30 i = 0,nx
-		      fv(i,izet) = f_voigt_armstr(i)*cnorm1
+		      xfv(i,izet) = xf_voigt_armstr(i)*cnorm1
   30		  continue
 
 c       First derivative computed using ( symmetric finite difference = f(y+x)-f(y-x)/2x )
 		  do 36 i=0,2
 		      i2=i+nx-2
-		      fv_tmp(i,id,izet) = fv(i2,izet)
+		      xfv_tmp(i,id,izet) = xfv(i2,izet)
    36		  continue
 
-		  dfv(id,izet) =.5*(fv_tmp(2,id,izet) 
-	1	      - fv_tmp(0,id,izet))/(dz)	
+		  dfv(id,izet) =.5*(xfv_tmp(2,id,izet) 
+	1	      - xfv_tmp(0,id,izet))/(dz)	
 	      endif
 c.................................................................................
 c       FOR ZETA=1
 c       Just use the straight Lorenz function at zeta=1 (AD=0, AL=1) 
-c       fv(i,izet) = (1./pi)*(1./(1.+z(i)**2))
+c       xfv(i,izet) = (1./pi)*(1./(1.+z(i)**2))
 c.................................................................................
 	      
 	      if (zeta .eq. 1.00) then 
 		  do 40 i = 0,nx
-			  fv(i,izet) = (1./pi)*(1./(1.+z(i)**2))
+			  xfv(i,izet) = (1./pi)*(1./(1.+z(i)**2))
   40		  continue
 
 c       Pick the last few points as this is where you want the functions 
@@ -6446,29 +6444,29 @@ c       to merge (4,16,64,256)
 c
 		  do 46 i=0,2
 		      i2=i+nx-2
-		      fv_tmp(i,id,izet) = fv(i2,izet)
+		      xfv_tmp(i,id,izet) = xfv(i2,izet)
    46		  continue
 
-		  dfv(id,izet) =.5*(fv_tmp(2,id,izet) 
-	1	      - fv_tmp(0,id,izet))/(dz)	
+		  dfv(id,izet) =.5*(xfv_tmp(2,id,izet) 
+	1	      - xfv_tmp(0,id,izet))/(dz)	
 	      endif
 
-c       For now, set fvbnd = 0
-c	      fvbnd(izet) = 0.0
+c       For now, set xfvbnd = 0
+c	      xfvbnd(izet) = 0.0
 
 c       Now decompose voigt profile into subfunctions
 
 	      if (id .eq.0) then
 		  b_1(izet) = dfv(0,izet)/(2*domain(0))
-		  a_1(izet) = fv(nx-1,izet) - b_1(izet)
+		  a_1(izet) = xfv(nx-1,izet) - b_1(izet)
 	1	      *domain(0)**2 
 	      else if (id .eq. 1) then
 		  b_2(izet) = dfv(1,izet)/(2*domain(1))
-		  a_2(izet) = fv(nx-1,izet) - b_2(izet)
+		  a_2(izet) = xfv(nx-1,izet) - b_2(izet)
 	1	      *domain(1)**2 
 	      else if (id .eq. 2) then
 		  b_3(izet) = dfv(2,izet)/(2*domain(2))
-		  a_3(izet) = fv(nx-1,izet) - b_3(izet)
+		  a_3(izet) = xfv(nx-1,izet) - b_3(izet)
 	1	      *domain(2)**2
 	      endif
 
@@ -6486,18 +6484,18 @@ c
 		  q3(iz) = a_3(izet) + b_3(izet)*z(iz)**2 
 c		  
 		  if (id .eq. 0) then 
-		      f1(iz, izet) = fv(iz, izet) - q1(iz)
+		      f1(iz, izet) = xfv(iz, izet) - q1(iz)
 		  else if (id .eq. 1) then
 		      if (z(iz) .le. domain(0)) then
 			  f2(iz, izet) = q1(iz) - q2(iz)
 		      else
-			  f2(iz, izet) = fv(iz, izet) - q2(iz)
+			  f2(iz, izet) = xfv(iz, izet) - q2(iz)
 		      endif
 		  else if (id .eq. 2) then
 		      if (z(iz) .le. domain(1)) then 
 			  f3(iz, izet) = q2(iz) - q3(iz)
 		      else 
-			  f3(iz, izet) = fv(iz, izet) - q3(iz)
+			  f3(iz, izet) = xfv(iz, izet) - q3(iz)
 		      endif 
 		  endif
   60	      continue
