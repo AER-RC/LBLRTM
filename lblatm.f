@@ -3392,7 +3392,7 @@ C                                                                        FA33110
 C                                                                        FA33160
       ZARG2 = (R1**2+RANGE**2-R2**2)/(2.0*R1*RANGE)                      FA33170
       ERARG2 = ABS(ZARG2)-1.0                                            FA33180
-      IF ((ERARG2.LE.1.0E-6).OR.(ERARG2.GE.0.0)) THEN                    FA33190
+      IF ((ERARG2.LE.1.0E-6).AND.(ERARG2.GE.0.0)) THEN                   FA33190
          IF (ZARG2.LT.0.0) THEN                                          FA33200
             ZARG2 = -1.0                                                 FA33210
          ELSE                                                            FA33220
@@ -3402,7 +3402,7 @@ C                                                                        FA33160
       ANGLE = 180.0-ACOS(ZARG2)*DEG                                      FA33260
       ZARG3 = (R2**2+RANGE**2-R1**2)/(2.0*R2*RANGE)                      FA33270
       ERARG3 = ABS(ZARG3)-1.0                                            FA33280
-      IF ((ERARG3.LE.1.0E-6).OR.(ERARG3.GE.0.0)) THEN                    FA33290
+      IF ((ERARG3.LE.1.0E-6).AND.(ERARG3.GE.0.0)) THEN                   FA33290
          IF (ZARG3.LT.0.0) THEN                                          FA33300
             ZARG3 = -1.0                                                 FA33310
          ELSE                                                            FA33320
