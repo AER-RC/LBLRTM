@@ -3872,6 +3872,10 @@ C                                                                         A09600
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A09620
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL     A09630
 
+      COMMON /IFIL/ Idum1,IPR,Idum2,Ndum1,Ndum2F,Ndum3,Ndum4,Ndum5,
+     *              Ndum6,Kdum1,Kdum2,Ldum1,Ndum7,Idum3,Idum4,
+     *              Ndum8,Ldum2,Ldum3
+
       real *4 sumstr,flinlo,flinhi
       integer *4 lnfil,molcnt,mcntlc,mcntnl,linmol,
      *     lincnt,ilinlc,ilinnl,irec,irectl,lnfil4
