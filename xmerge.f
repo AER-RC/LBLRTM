@@ -1009,33 +1009,33 @@ C     ***************************************************
 C
       IF (A.LT.0.) THEN
 C     
-C        Loop through input emissivities to determine correct frequency
-C        and interpolate
+C        Determine elements of EMISSION function to use with
+C        input frequency
 C
-         DO 10 NGNU = 2,NLIMEM
-            VIEMIS = V1EMIS+DVEMIS*(NGNU-1)
-            IF (VI.GE.(VIEMIS-DVEMIS).AND.(VI.LT.VIEMIS)) THEN
-               CALL LINTCO(VIEMIS-DVEMIS,ZEMIS(NGNU-1),
-     *                     VIEMIS,ZEMIS(NGNU),VI,ZINT,ZDEL)
-               EMISFN = ZINT
-               VINEM = VIEMIS
-               EMDEL = ZDEL
-               RETURN
-            ENDIF
- 10      CONTINUE
+         NELMNT = INT((VI-V1EMIS)/DVEMIS)
 C
-C        Test for last emissivity input
+C        Test for bounds on EMISSION function
 C
-         IF (VI.EQ.VIEMIS) THEN
-            EMISFN = ZEMIS(NLIMEM)
-            VINEM = VIEMIS+DVEMIS
-            EMDEL = 0.0
-            RETURN
-         ELSE
+         IF ((NELMNT.LE.0).OR.(NELMNT.GE.NLIMEM)) THEN
             WRITE(*,*) 'Frequency range of calculation exceeded',
      *                 ' emissivity input.'
+            WRITE(*,*) ' VI = ',VI,' V1EMIS = ',V1EMIS,' V2EMIS = ',
+     *                 V2EMIS
             STOP 'ERROR IN EMISFN'
          ENDIF
+C
+C        Interpolate to obtain appropriate EMISSION value
+C
+         V1A = V1EMIS+DVEMIS*NELMNT
+         V1B = V1EMIS+DVEMIS*(NELMNT+1)
+         CALL LINTCO(V1A,ZEMIS(NELMNT),V1B,ZEMIS(NELMNT+1),VI,ZINT,
+     *               ZDEL)
+         EMISFN = ZINT
+         VINEM = V1B
+         EMDEL = ZDEL*DVI
+         EMLAST = ZEMIS(NELMNT+1)
+         RETURN
+C
       ENDIF
 C
 C     ***************************************************
@@ -1146,33 +1146,33 @@ C     ***************************************************
 C
       IF (A.LT.0.) THEN
 C     
-C        Loop through input reflectivities to determine correct frequency
-C        and interpolate
+C        Determine elements of REFLECTION function to use with
+C        input frequency
 C
-         DO 10 NGNU = 2,NLIMRF
-            VIRFLT = V1RFLT+DVRFLT*(NGNU-1)
-            IF (VI.GE.(VIRFLT-DVRFLT).AND.(VI.LT.VIRFLT)) THEN
-               CALL LINTCO(VIRFLT-DVRFLT,ZRFLT(NGNU-1),
-     *                     VIRFLT,ZRFLT(NGNU),VI,ZINT,ZDEL)
-               REFLFN = ZINT
-               VINRF = VIRFLT
-               RFDEL = ZDEL
-               RETURN
-            ENDIF
- 10      CONTINUE
+         NELMNT = INT((VI-V1RFLT)/DVRFLT)
 C
-C        Test for last reflectivity input
+C        Test for bounds on REFLECTION function
 C
-         IF (VI.EQ.VIRFLT) THEN
-            REFLFN = ZRFLT(NLIMRF)
-            VINRF = VIRFLT+DVRFLT
-            RFDEL = 0.0
-            RETURN
-         ELSE
+         IF ((NELMNT.LE.0).OR.(NELMNT.GE.NLIMRF)) THEN
             WRITE(*,*) 'Frequency range of calculation exceeded',
      *                 ' reflectivity input.'
+            WRITE(*,*) ' VI = ',VI,' V1RFLT = ',V1RFLT,' V2RFLT = ',
+     *                 V2RFLT
             STOP 'ERROR IN REFLFN'
          ENDIF
+C
+C        Interpolate to obtain appropriate reflection value
+C
+         V1A = V1RFLT+DVRFLT*NELMNT
+         V1B = V1RFLT+DVRFLT*(NELMNT+1)
+         CALL LINTCO(V1A,ZRFLT(NELMNT),V1B,ZRFLT(NELMNT+1),VI,ZINT,
+     *               ZDEL)
+         REFLFN = ZINT
+         VINRF = V1B
+         RFDEL = ZDEL*DVI
+         RFLAST = ZRFLT(NELMNT+1)
+         RETURN
+C
       ENDIF
 C
 C     ***************************************************
@@ -2391,7 +2391,7 @@ C                                                                         H22760
                NLIM1 = 0                                                  H22810
                NLIM2 = NL-1                                               H22820
 C                                                                         H22830
-   40          NLIM1 = NLIM2+1                                            H22840
+ 40            NLIM1 = NLIM2+1                                            H22840
 C                                                                         H22850
                VI = V1P+FLOAT(NLIM1-1)*DVP                                H22860
                REFLCT = REFLFN(VI,DVI,VIDVRF,RFDEL,RFLAST)                H22870
@@ -2402,6 +2402,13 @@ C                                                                         H22890
                   NLIM2 = (VIDVRF+DVI-DVP-V1P)/DVP+1.001                  H22900
                ENDIF
                NLIM2 = MIN(NLIM2,NLIM)                                    H22910
+C
+C              Test to make sure LL divides evenly into (NLIM2-NLIM1+1)
+C
+               NRMNDR = MOD(NLIM2-NLIM1,LL)
+               IF ((NRMNDR.NE.0).AND.(NLIM2+(LL-NRMNDR).LT.2400)) THEN
+                  NLIM2 = NLIM2+(LL-NRMNDR)
+               ENDIF
 C                                                                         H22920
                DO 50 I = NLIM1, NLIM2, LL                                 H22930
                   IPL = IPL+LLM1                                          H22940
@@ -2413,9 +2420,13 @@ C
 C           Increment interpolation values
 C
                   REFLCT = REFLCT+RFDEL                                   H22990
+                  ILAST = I
    50          CONTINUE                                                   H23000
 C                                                                         H23010
-               IF (NLIM2.LT.NLIM) GO TO 40                                H23020
+               IF (NLIM2.LT.NLIM) THEN
+                  NLIM2 = ILAST + LL-1
+                  GO TO 40                                                H23020
+               ENDIF
 C                                                                         H23030
             ENDIF                                                         H23040
 C                                                                         H23050
@@ -2500,6 +2511,12 @@ C                                                                         H23800
                ENDIF
                NLIM2 = MIN(NLIM2,NLIM)                                    H23820
 C                                                                         H23830
+C              Test to make sure LL divides evenly into (NLIM2-NLIM1+1)
+C
+               NRMNDR = MOD(NLIM2-NLIM1,LL)
+               IF ((NRMNDR.NE.0).AND.(NLIM2+(LL-NRMNDR).LT.2400)) THEN
+                  NLIM2 = NLIM2+(LL-NRMNDR)
+               ENDIF
                DO 100 I = NLIM1, NLIM2, LL                                H23840
                   IPL = IPL+LLM1                                          H23850
 C                                                                         H23860
@@ -2516,13 +2533,18 @@ C                                                                         H23950
      *                        A3N*RADO(IPL+1)+A4N*RADO(IPL+2))+           H23970
      *                        RADLYR(I)+RADLYB(I)*TRAOI*TRTEMP*REFLCT     H23980
                   TRALYR(I) = TRTEMP                                      H23990
+                     
 C
 C           Increment interpolation values
 C
                   REFLCT = REFLCT+RFDEL                                   H24000
+                  ILAST = I
   100          CONTINUE                                                   H24010
 C                                                                         H24020
-               IF (NLIM2.LT.NLIM) GO TO 90                                H24030
+               IF (NLIM2.LT.NLIM) THEN
+                  NLIM2 = ILAST + LL -1
+                  GO TO 90                                                H24030
+               ENDIF
 C                                                                         H24040
             ENDIF                                                         H24050
 C                                                                         H24060
