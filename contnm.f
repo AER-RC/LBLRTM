@@ -1,9 +1,7 @@
-C     path:      %P%
+C     path:      $Source$
+C     author:    $Author$
 C     revision:  $Revision$
-C     created:   $Date$  
-C     presently: %H%  %T%
-C
-C     --------------------------------------------------------------
+C     created:   $Date$
 C
       SUBROUTINE CONTNM(JRAD)                                             F00010
 C                                                                         F00020
@@ -76,9 +74,10 @@ C               and XRAYL in Record 1.2a
 C
 
 
-      HVRCNT = '$Revision$'
+      HVRCNT = '$RCSfile$ $Revision$'
 C
 c
+
       RHOAVE = (PAVE/P0)*(T0/TAVE)                                        F00300
       XKT = TAVE/RADCN2                                                   F00310
       WTOT = WBROAD                                                       F00320
@@ -253,7 +252,6 @@ C
                FH2O(J)=FH2O(J)*FSCAL
 C     
                C(J) = W1*(FH2O(J)*RFRGN)*XFRGN
-
 C                                          
 C              ---------------------------------------------------------
 C              Radiation field                                                  
@@ -285,7 +283,6 @@ C
          endif
 
 C=======================================================================
-
 
 
 C     ********    CARBON DIOXIDE   ********                               F00790
@@ -458,30 +455,34 @@ c
          endif
 
 
-C        ********    O2 DIFFUSE   ********                                F01590
+C        ********    O2 Collision Induced   ********    
 C
-C        O2 continuum formulated by Mlawer over the spectral region
-C        7500-8300 cm-1. Refer to the paper "Observed  Atmospheric
+C        O2 continuum formulated by Mate et al. over the spectral region
+C        7550-8486 cm-1:  "Absolute Intensities for the O2 1.27 micron
+C        continuum absorption", B. Mate, C. Lugez, G.T. Fraser, and
+C        W.J. Lafferty, J. Geophys. Res., 104, 30,585-30,590, 1999. 
+c
+c        The units of these continua coefficients are  1 / (amagat_O2*amagat_air)
+c
+c        Also, refer to the paper "Observed  Atmospheric
 C        Collision Induced Absorption in Near Infrared Oxygen Bands",
 C        Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
 C        Journal of Geophysical Research (1997).
 C
-C        Only calculate if V2 > 7500. cm-1 and V1 <  8300. cm-1
-
-c         if (((V2.gt.7500.0).and.(V2.lt.8300.)).or.
-c        *    ((V1.gt.7500.0).and.(V1.lt.8300.))) then
-         if (((V2.gt.7500.0).and.(V1.lt.8300.))) then
-
-            WO2 = RHOAVE*WK(7)
+C        Only calculate if V2 > 7536. cm-1 and V1 <  8500. cm-1
+c
+         if (((V2.gt.7536.0).and.(V1.lt.8500.))) then
+c
+            WO2 = (WK(7)/xlosmt) * ((pave/1013)*(273./tave))
             CHIO2 = (WK(7)*1.E-20)/WTOT 
             CHIN2 = (WBROAD*1.E-20)/WTOT 
             ADJFAC = (CHIO2+0.3*CHIN2)/0.446
             ADJWO2 = ADJFAC * WO2
-            CALL O2INF1 (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      
-            o2_scale = 0.8
-
+c
+            CALL O2INF1 (V1C,V2C,DVC,NPTC,C0)                     
+c
             DO 92 J = 1, NPTC                                                
-               C(J) = C0(J)*ADJWO2*o2_scale*XO2CN
+               C(J) = C0(J)*ADJWO2*XO2CN
                VJ = V1C+DVC*FLOAT(J-1)                                       
 C                                                                      
 C              Radiation field
@@ -493,7 +494,7 @@ C
          endif
 
 C
-C        O2 continuum formulated by Mlawer over the spectral region
+C        O2 continuum formulated by Mlawer et al. over the spectral region
 C        9100-11000 cm-1. Refer to the paper "Observed  Atmospheric
 C        Collision Induced Absorption in Near Infrared Oxygen Bands",
 C        Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
@@ -501,10 +502,9 @@ C        Journal of Geophysical Research (1997).
 C
 C        Only calculate if V2 > 9100. cm-1 and V1 <  11000. cm-1
 
-c         if (((V2.gt.9100.0).and.(V2.lt.11000.)).or.
-c        *    ((V1.gt.9100.0).and.(V1.lt.11000.))) then
-         if (((V2.gt.9100.0).and.(V1.lt.11000.))) then
-            CALL O2INF2 (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      
+         if (((V2.gt.9350.0).and.(V1.lt.9500.))) then
+c
+            CALL O2INF2 (V1C,V2C,DVC,NPTC,C0)                      
             WO2 = RHOAVE*WK(7)
             CHIO2 = (WK(7)*1.E-20)/WTOT 
             ADJFAC = CHIO2/0.209
@@ -703,18 +703,19 @@ C
 C
 C     --------------------------------------------------------------
 C
+C
       SUBROUTINE PRCNTM                                                   A10270
 C                                                                         A10280
 C     THIS SUBROUTINE PRINTS THE CONTINUUM INFORMATION TO FILE IPR        A10290
 C                                                                         A10300
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,9),CINFO3(2,9),CINFO4(2,9)
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,11)
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A10310
      *              NLNGTH,KFILE,KPANEL,LINFIL,NDFLE,IAFIL,IEXFIL,        A10320
      *              NLTEFL,LNFIL4,LNGTH4                                  A10330
       COMMON /CNTPR/ CINFO1,CINFO2,CINFO3,CINFO4
 C                                                                         A10340
       WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,9)
-      WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,9)
+      WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11)
       WRITE (IPR,910) ((CINFO3(I,J),I=1,2),J=1,9)
       WRITE (IPR,910) ((CINFO4(I,J),I=1,2),J=1,9)
 C                                                                         A10360
@@ -729,33 +730,37 @@ C     --------------------------------------------------------------
 C
 C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 C
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,9),CINFO3(2,9),CINFO4(2,9)
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,11)
       COMMON /CNTPR/ CINFO1,CINFO2,CINFO3,CINFO4
 C
       DATA CINFO1/
 c           123456789-123456789-123456789-123456789-123456789-1
-     *     '                                                   ',
-     *     '                                                   ',
-     *     '                                                   ',
-     *     '                                                   ',
-     *     '0  *****  CONTINUA :                               ',
-     *     '                                                   ',
-     *     '                                                   ',
-     *     '                                                   ',
-     *     '                     H2O   SELF  (T)      0 - 20000',
+     1     '                                                   ',
+     2     '                                                   ',
+     3     '                                                   ',
+     4     '                                                   ',
+     5     '0  *****  CONTINUA :                               ',
+     6     '                                                   ',
+     7     '                                                   ',
+     8     '                                                   ',
+     9     '                     H2O   SELF  (T)      0 - 20000',
      *     ' CM-1    ckd_2.4                                   ',
-     *     '                           AIR   (T)      0 - 20000',
-     *     ' CM-1    ckd_2.4                                   ',
-     *     '                     CO2   AIR            0 - 20000',
-     *     ' CM-1                                              ',
-     *     '                     N2    SELF           0 -   350',
-     *     ' CM-1    BORYSOW FROMMHOLD                         ',
-     *     '                           AIR         2085 -  2670',
-     *     ' CM-1                        (March 1998)          ' /
+     1     '                           AIR   (T)      0 - 20000',
+     2     ' CM-1    ckd_2.4                                   ',
+     3     '                     CO2   AIR            0 - 20000',
+     4     ' CM-1                                              ',
+     5     '                     N2    SELF           0 -   350',
+     6     ' CM-1    BORYSOW FROMMHOLD                         ',
+     7     '                           AIR         2085 -  2670',
+     8     ' CM-1                        (March 1998)          ' /
 C
       DATA CINFO2/
      *     '                     O2    AIR   (T)   1340 -  1850',
      *     ' CM-1                        (March 1998)          ',
+     *     '                           O2/N2       7550 -  8486',
+     *     ' CM-1                     (February 2000)          ',
+     *     '                           AIR         9350 -  9500',
+     *     ' CM-1                      (August  1999)          ',
      *     '                           O2/N2      36000 -  >>>>',
      *     ' CM-1    HERZBERG                                  ',
      *     '                     O3    AIR         9170 - 24565',
@@ -764,7 +769,7 @@ C
      *     ' CM-1    HARTLEY HUGGINS                           ',
      *     '                                      40800 - 54000',
      *     ' CM-1    HARTLEY HUGGINS                           ',
-     *     8*' ' /
+     *     8*'                                                 ' /
 C
       DATA CINFO3/
      *     '  H2O SELF HAS BEEN REDUCED IN THE 800-1200 CM-1 RE',
@@ -801,11 +806,16 @@ C
      *     '                                                   ',
      *     '  H2O SELF HAS BEEN INCREASED IN THE 0-200 CM-1 REG',
      *     'ION                                   (04 JUN 1999)',
+     *     '  O2 COLLISION INDUCED BAND HAS BEEN ADDED   (9350 ',
+     *     '- 9500 CM-1); MLAWER ET AL. 1998      (16 AUG 1999)',
+     *     '  O2 COLLISION INDUCED BAND HAS BEEN CHANGED (7555 ',
+     *     '- 8486 CM-1); MATE ET AL. 1999        (10 FEB 2000)',
      *     '  -------------------------------------------------',
      *     '------------------------------------------         ',
-     *     2*' ' /
+     *     2*'                                                 ' /
 C
       END
+C
 C
       SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                               F02220
 C                                                                         F02230
@@ -7207,15 +7217,29 @@ c
 
 C     --------------------------------------------------------------
 C
-      SUBROUTINE O2INF1 (V1C,V2C,DVC,NPTC,C,T,P)                         
+      SUBROUTINE O2INF1 (V1C,V2C,DVC,NPTC,C)                        
 C                                                                        
       IMPLICIT REAL*8           (V)                                     
 C                                                                        
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)               
       DIMENSION C(*)                                                     
+
+      COMMON /o2inf1_mate/ V1S,V2S,DVS,NPTS,xo2inf1(483)
+
 C                                                                        
-      V1S = 7600.                                                        
-      DVS = 1.                                                          
+C        O2 continuum formulated by Mate et al. over the spectral region
+C        7550-8486 cm-1:  "Absolute Intensities for the O2 1.27 micron
+C        continuum absorption", B. Mate, C. Lugez, G.T. Fraser, and
+C        W.J. Lafferty, J. Geophys. Res., 104, 30,585-30,590, 1999. 
+c
+c        The units of these continua coefficients are  1 / (amagat_O2*amagat_air)
+c
+c        Also, refer to the paper "Observed  Atmospheric
+C        Collision Induced Absorption in Near Infrared Oxygen Bands",
+C        Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
+C        Journal of Geophysical Research (1997).
+c   ***********
+
       DVC = DVS                                                          
 C                                                                        
       V1C = V1ABS-DVC                                                    
@@ -7228,28 +7252,155 @@ C
       I2 = (V2C-V1S)/DVS                                                 
       NPTC = I2-I1+3                                                     
       V2C = V1C+DVS*FLOAT(NPTC-1)                                        
-      DO 10 J = 1, NPTC                                                  
-         I = I1+J                                                        
-         C(J) = 0.                                                       
-         IF (I.LT.1) GO TO 10                                            
-         VJ = V1C+DVC*FLOAT(J-1)                                         
-         CALL INFRD1 (O2INF,VJ)                                           
-         C(J) = O2INF/VJ                                                  
-   10 CONTINUE                                                           
-
+c
+      DO 10 J = 1, NPTC                                                   F34310
+         I = I1+J                                                         F34320
+         C(J) = 0.                                                        F34330
+         IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F34340
+         vj = v1c + dvc*float(j-1)
+         C(J) = xo2inf1(I)/vj
+   10 CONTINUE                                                            F34360
+C                                                                         F34370
       RETURN                                                             
 C                                                                        
       END                                                                
-C
+
 C     --------------------------------------------------------------
 C
-      SUBROUTINE O2INF2 (V1C,V2C,DVC,NPTC,C,T,P)                         
+      BLOCK DATA bo2inf1
+                                                                        
+      IMPLICIT REAL*8 (V)                                               
+                                                                        
+                                                                        
+                                                                        
+      COMMON /o2inf1_mate/ V1,V2,DV,NPT,                                      
+     *          o0001(50),o0051(50),o0101(50),o0151(50),o0201(50),      
+     *          o0251(50),o0301(50),o0351(50),o0401(50),o0451(33)      
+                                                                        
+      DATA V1,V2,DV,NPT /7536.000,8500.000,   2.000,  483/              
+                                                                        
+      DATA o0001/                                                       
+     *      0.000E+00,  4.355E-11,  8.709E-11,  1.742E-10,  3.484E-10,  
+     *      6.968E-10,  1.394E-09,  2.787E-09,  3.561E-09,  3.314E-09,  
+     *      3.368E-09,  3.435E-09,  2.855E-09,  3.244E-09,  3.447E-09,  
+     *      3.891E-09,  4.355E-09,  3.709E-09,  4.265E-09,  4.772E-09,  
+     *      4.541E-09,  4.557E-09,  4.915E-09,  4.688E-09,  5.282E-09,  
+     *      5.755E-09,  5.096E-09,  5.027E-09,  4.860E-09,  4.724E-09,  
+     *      5.048E-09,  5.248E-09,  5.473E-09,  4.852E-09,  5.362E-09,  
+     *      6.157E-09,  6.150E-09,  6.347E-09,  6.388E-09,  6.213E-09,  
+     *      6.521E-09,  8.470E-09,  8.236E-09,  8.269E-09,  8.776E-09,  
+     *      9.122E-09,  9.189E-09,  9.778E-09,  8.433E-09,  9.964E-09/  
+      DATA o0051/                                                       
+     *      9.827E-09,  1.064E-08,  1.063E-08,  1.031E-08,  1.098E-08,  
+     *      1.156E-08,  1.295E-08,  1.326E-08,  1.467E-08,  1.427E-08,  
+     *      1.452E-08,  1.456E-08,  1.554E-08,  1.605E-08,  1.659E-08,  
+     *      1.754E-08,  1.757E-08,  1.876E-08,  1.903E-08,  1.876E-08,  
+     *      1.869E-08,  2.036E-08,  2.203E-08,  2.221E-08,  2.284E-08,  
+     *      2.288E-08,  2.394E-08,  2.509E-08,  2.663E-08,  2.720E-08,  
+     *      2.839E-08,  2.923E-08,  2.893E-08,  2.949E-08,  2.962E-08,  
+     *      3.057E-08,  3.056E-08,  3.364E-08,  3.563E-08,  3.743E-08,  
+     *      3.813E-08,  3.946E-08,  4.082E-08,  4.201E-08,  4.297E-08,  
+     *      4.528E-08,  4.587E-08,  4.704E-08,  4.962E-08,  5.115E-08/  
+      DATA o0101/                                                       
+     *      5.341E-08,  5.365E-08,  5.557E-08,  5.891E-08,  6.084E-08,  
+     *      6.270E-08,  6.448E-08,  6.622E-08,  6.939E-08,  7.233E-08,  
+     *      7.498E-08,  7.749E-08,  8.027E-08,  8.387E-08,  8.605E-08,  
+     *      8.888E-08,  9.277E-08,  9.523E-08,  9.880E-08,  1.037E-07,  
+     *      1.076E-07,  1.114E-07,  1.151E-07,  1.203E-07,  1.246E-07,  
+     *      1.285E-07,  1.345E-07,  1.408E-07,  1.465E-07,  1.519E-07,  
+     *      1.578E-07,  1.628E-07,  1.685E-07,  1.760E-07,  1.847E-07,  
+     *      1.929E-07,  2.002E-07,  2.070E-07,  2.177E-07,  2.262E-07,  
+     *      2.365E-07,  2.482E-07,  2.587E-07,  2.655E-07,  2.789E-07,  
+     *      2.925E-07,  3.023E-07,  3.153E-07,  3.296E-07,  3.409E-07/  
+      DATA o0151/                                                       
+     *      3.532E-07,  3.680E-07,  3.859E-07,  3.951E-07,  4.074E-07,  
+     *      4.210E-07,  4.381E-07,  4.588E-07,  4.792E-07,  4.958E-07,  
+     *      5.104E-07,  5.271E-07,  5.501E-07,  5.674E-07,  5.913E-07,  
+     *      6.243E-07,  6.471E-07,  6.622E-07,  6.831E-07,  6.987E-07,  
+     *      7.159E-07,  7.412E-07,  7.698E-07,  7.599E-07,  7.600E-07,  
+     *      7.918E-07,  8.026E-07,  8.051E-07,  8.049E-07,  7.914E-07,  
+     *      7.968E-07,  7.945E-07,  7.861E-07,  7.864E-07,  7.741E-07,  
+     *      7.675E-07,  7.592E-07,  7.400E-07,  7.362E-07,  7.285E-07,  
+     *      7.173E-07,  6.966E-07,  6.744E-07,  6.597E-07,  6.413E-07,  
+     *      6.265E-07,  6.110E-07,  5.929E-07,  5.717E-07,  5.592E-07/  
+      DATA o0201/                                                       
+     *      5.411E-07,  5.235E-07,  5.061E-07,  4.845E-07,  4.732E-07,  
+     *      4.593E-07,  4.467E-07,  4.328E-07,  4.161E-07,  4.035E-07,  
+     *      3.922E-07,  3.820E-07,  3.707E-07,  3.585E-07,  3.475E-07,  
+     *      3.407E-07,  3.317E-07,  3.226E-07,  3.134E-07,  3.016E-07,  
+     *      2.969E-07,  2.894E-07,  2.814E-07,  2.749E-07,  2.657E-07,  
+     *      2.610E-07,  2.536E-07,  2.467E-07,  2.394E-07,  2.337E-07,  
+     *      2.302E-07,  2.241E-07,  2.191E-07,  2.140E-07,  2.093E-07,  
+     *      2.052E-07,  1.998E-07,  1.963E-07,  1.920E-07,  1.862E-07,  
+     *      1.834E-07,  1.795E-07,  1.745E-07,  1.723E-07,  1.686E-07,  
+     *      1.658E-07,  1.629E-07,  1.595E-07,  1.558E-07,  1.523E-07/  
+      DATA o0251/                                                       
+     *      1.498E-07,  1.466E-07,  1.452E-07,  1.431E-07,  1.408E-07,  
+     *      1.381E-07,  1.362E-07,  1.320E-07,  1.298E-07,  1.262E-07,  
+     *      1.247E-07,  1.234E-07,  1.221E-07,  1.197E-07,  1.176E-07,  
+     *      1.142E-07,  1.121E-07,  1.099E-07,  1.081E-07,  1.073E-07,  
+     *      1.061E-07,  1.041E-07,  1.019E-07,  9.969E-08,  9.727E-08,  
+     *      9.642E-08,  9.487E-08,  9.318E-08,  9.116E-08,  9.046E-08,  
+     *      8.827E-08,  8.689E-08,  8.433E-08,  8.324E-08,  8.204E-08,  
+     *      8.036E-08,  7.951E-08,  7.804E-08,  7.524E-08,  7.392E-08,  
+     *      7.227E-08,  7.176E-08,  6.975E-08,  6.914E-08,  6.859E-08,  
+     *      6.664E-08,  6.506E-08,  6.368E-08,  6.262E-08,  6.026E-08/  
+      DATA o0301/                                                       
+     *      6.002E-08,  5.866E-08,  5.867E-08,  5.641E-08,  5.589E-08,  
+     *      5.499E-08,  5.309E-08,  5.188E-08,  5.139E-08,  4.991E-08,  
+     *      4.951E-08,  4.833E-08,  4.640E-08,  4.524E-08,  4.479E-08,  
+     *      4.304E-08,  4.228E-08,  4.251E-08,  4.130E-08,  3.984E-08,  
+     *      3.894E-08,  3.815E-08,  3.732E-08,  3.664E-08,  3.512E-08,  
+     *      3.463E-08,  3.503E-08,  3.218E-08,  3.253E-08,  3.107E-08,  
+     *      2.964E-08,  2.920E-08,  2.888E-08,  2.981E-08,  2.830E-08,  
+     *      2.750E-08,  2.580E-08,  2.528E-08,  2.444E-08,  2.378E-08,  
+     *      2.413E-08,  2.234E-08,  2.316E-08,  2.199E-08,  2.088E-08,  
+     *      1.998E-08,  1.920E-08,  1.942E-08,  1.859E-08,  1.954E-08/  
+      DATA o0351/                                                       
+     *      1.955E-08,  1.749E-08,  1.720E-08,  1.702E-08,  1.521E-08,  
+     *      1.589E-08,  1.469E-08,  1.471E-08,  1.543E-08,  1.433E-08,  
+     *      1.298E-08,  1.274E-08,  1.226E-08,  1.204E-08,  1.201E-08,  
+     *      1.298E-08,  1.220E-08,  1.220E-08,  1.096E-08,  1.080E-08,  
+     *      9.868E-09,  9.701E-09,  1.130E-08,  9.874E-09,  9.754E-09,  
+     *      9.651E-09,  9.725E-09,  8.413E-09,  7.705E-09,  7.846E-09,  
+     *      8.037E-09,  9.163E-09,  8.098E-09,  8.160E-09,  7.511E-09,  
+     *      7.011E-09,  6.281E-09,  6.502E-09,  7.323E-09,  7.569E-09,  
+     *      5.941E-09,  5.867E-09,  5.676E-09,  4.840E-09,  5.063E-09,  
+     *      5.207E-09,  4.917E-09,  5.033E-09,  5.356E-09,  3.795E-09/  
+      DATA o0401/                                                       
+     *      4.983E-09,  4.600E-09,  3.635E-09,  3.099E-09,  2.502E-09,  
+     *      3.823E-09,  3.464E-09,  4.332E-09,  3.612E-09,  3.682E-09,  
+     *      3.709E-09,  3.043E-09,  3.593E-09,  3.995E-09,  4.460E-09,  
+     *      3.583E-09,  3.290E-09,  3.132E-09,  2.812E-09,  3.109E-09,  
+     *      3.874E-09,  3.802E-09,  4.024E-09,  3.901E-09,  2.370E-09,  
+     *      1.821E-09,  2.519E-09,  4.701E-09,  3.855E-09,  4.685E-09,  
+     *      5.170E-09,  4.387E-09,  4.148E-09,  4.043E-09,  3.545E-09,  
+     *      3.392E-09,  3.609E-09,  4.635E-09,  3.467E-09,  2.558E-09,  
+     *      3.389E-09,  2.672E-09,  2.468E-09,  1.989E-09,  2.816E-09,  
+     *      4.023E-09,  2.664E-09,  2.219E-09,  3.169E-09,  1.654E-09/  
+      DATA o0451/                                                       
+     *      3.189E-09,  2.535E-09,  2.618E-09,  3.265E-09,  2.138E-09,  
+     *      1.822E-09,  2.920E-09,  2.002E-09,  1.300E-09,  3.764E-09,  
+     *      3.212E-09,  3.222E-09,  2.961E-09,  2.108E-09,  1.708E-09,  
+     *      2.636E-09,  2.937E-09,  2.939E-09,  2.732E-09,  2.218E-09,  
+     *      1.046E-09,  6.419E-10,  1.842E-09,  1.112E-09,  1.265E-09,  
+     *      4.087E-09,  2.044E-09,  1.022E-09,  5.109E-10,  2.554E-10,  
+     *      1.277E-10,  6.386E-11,  0.000E+00/                          
+
+      END
+
+
+C     --------------------------------------------------------------
+C
+      SUBROUTINE O2INF2 (V1C,V2C,DVC,NPTC,C)                         
 C                                                                        
       IMPLICIT REAL*8           (V)                                     
 C                                                                        
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)               
       DIMENSION C(*)                                                     
 C                                                                        
+      DATA V1 /9375./, HW1 /58.96/, V2 /9439./, HW2 /45.04/
+      DATA S1 /1.166E-04/, S2 /3.086E-05/
 C                                                                        
       V1S = 9040.                                                        
       DVS = 1.                                                          
@@ -7270,62 +7421,25 @@ C
          C(J) = 0.                                                       
          IF (I.LT.1) GO TO 10                                            
          VJ = V1C+DVC*FLOAT(J-1)                                         
-         CALL INFRD2 (O2INF,VJ)                                           
-         C(J) = O2INF/VJ                                                  
+         IF ((Vj.gt.9100.00) .and. (Vj.lt.11000.00)) then
+            DV1 = Vj - V1
+            DV2 = Vj - V2
+            IF (DV1 .LT. 0.0) THEN
+               DAMP1 = EXP (DV1 / 176.1)
+            ELSE
+               DAMP1 = 1.0
+            ENDIF
+            IF (DV2 .LT. 0.0) THEN
+               DAMP2 = EXP (DV2 / 176.1)
+            ELSE
+               DAMP2 = 1.0
+            ENDIF
+            O2INF = 0.31831 * (((S1 * DAMP1 / HW1)/(1. + (DV1/HW1)**2))
+     &           + ((S2 * DAMP2 / HW2)/(1. + (DV2/HW2)**2))) * 1.054
+            C(J) = O2INF/VJ        
+         endif
    10 CONTINUE                                                           
 C                                                                        
-      RETURN                                                             
-C                                                                        
-      END                                                                
-C
-C     --------------------------------------------------------------
-C
-      SUBROUTINE INFRD1 (O2INF,V)                                         
-C                                                                        
-      IMPLICIT REAL*8           (V)                                     
-C                                                                        
-      O2INF = 0.0                                                         
-      IF (V.LE.7500.00) RETURN                                           
-      IF (V.GE.8300.00) RETURN
-C
-      DV = V - 7896.464      
-      O2INF = 1.054*3.159e-26/(1.+(DV/54.93)**2+(DV/75.63)**4)
-
-      RETURN
-
- 9000 CONTINUE
-      RETURN                                                             
-C                                                                        
-      END                                                                
-C
-C     --------------------------------------------------------------
-C
-      SUBROUTINE INFRD2 (O2INF,V)                                         
-C                                                                        
-      IMPLICIT REAL*8           (V)                                     
-C                                                                        
-      DATA V1 /9375./, HW1 /58.96/, V2 /9439./, HW2 /45.04/
-      DATA S1 /1.166E-24/, S2 /3.086E-25/
-
-      O2INF = 0.0                                                         
-      IF (V .LE. 9100.00) RETURN                                           
-      IF (V .GE. 11000.00) RETURN                                          
-
-      DV1 = V - V1
-      DV2 = V - V2
-      IF (DV1 .LT. 0.0) THEN
-         DAMP1 = EXP (DV1 / 176.1)
-      ELSE
-         DAMP1 = 1.0
-      ENDIF
-      IF (DV2 .LT. 0.0) THEN
-         DAMP2 = EXP (DV2 / 176.1)
-      ELSE
-         DAMP2 = 1.0
-      ENDIF
-      O2INF = 0.31831 * (((S1 * DAMP1 / HW1)/(1. + (DV1/HW1)**2))
-     &     + ((S2 * DAMP2 / HW2)/(1. + (DV2/HW2)**2))) * 1.054
- 9000 CONTINUE
       RETURN                                                             
 C                                                                        
       END                                                                
@@ -7458,4 +7572,5 @@ C                                                                         F43280
       RETURN                                                              F43290
 C                                                                         F43300
       END                                                                 F43310
+
 
