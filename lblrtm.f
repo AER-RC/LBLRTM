@@ -1955,7 +1955,7 @@ C                                                                         A20360
      *              ALTZ(L),PZ(L),                                        A20420
      *              TZ(L)                                                 A20430
             ELSE
-               READ (IRD,917) PAVE,TAVE,SECNTK,CINP,IPTHRK,
+               READ (IRD,916) PAVE,TAVE,SECNTK,CINP,IPTHRK,
      *              ALTZ(L),PZ(L),
      *              TZ(L)
             ENDIF
@@ -2032,7 +2032,7 @@ C                                                                         A20990
                   READ (IRD,915) PAVX,TAVX,SECKXS,CINPX,IPTHKX,ALTXT,     A21040
      *                 PZXT,TZXT                                          A21050
                ELSE
-                  READ (IRD,917) PAVX,TAVX,SECKXS,CINPX,IPTHKX,ALTXT,
+                  READ (IRD,916) PAVX,TAVX,SECKXS,CINPX,IPTHKX,ALTXT,
      *                 PZXT,TZXT
                ENDIF
             ENDIF                                                         A21060
@@ -2379,7 +2379,8 @@ C                                                                         A24050
   910 FORMAT (1P,E15.7,0P,F10.4,F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))
   911 FORMAT (3F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))                          A24110
   912 FORMAT ('0   ********* ITYPE(L) IS SET FROM INPUT ******** ')       A24120
-  915 FORMAT (3F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))                          A24130
+  915 FORMAT (1P,E15.7,0P,F10.4,F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))
+  916 FORMAT (3F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))                          A24130
   917 FORMAT (A4)                                                         A24140
   920 FORMAT (I3)                                                         A24150
   925 FORMAT (1P,8E15.7,0P)
