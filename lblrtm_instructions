@@ -312,7 +312,6 @@ C     presently: %H%  %T%
  
                    = 0  normal calculation (default)
                    = 1  interpolates each layer to the spacing set by DVSET
-                           (requires IMRG = 1)
                    = 2  uses the calculated dv of each layer
                            (requires IMRG = 1)
                    = 3  uses DVSET for last layer and interpolates to the spacing set by DVSET
