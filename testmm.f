@@ -48,6 +48,7 @@ C     ASSIGN SCCS VERSION NUMBER TO MODULE
 C
       HVRTST = '$Revision$' 
 C
+      LSTWDL = -654321
       NWDLIN = NWDL(IWD,LSTWDL)                                           N00380
       ILNGTH = NLNGTH*250                                                 N00390
       DO 10 M = 1, 64                                                     N00400
