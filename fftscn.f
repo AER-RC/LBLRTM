@@ -298,8 +298,6 @@ C*****Assign SCCS version number to module fftscn.f
       Write(IPR,'(''1FFTSCN: SPECTRAL SMOOTHING IN THE '',
      1            ''FOURIER DOMAIN*****'')')
 
-      write(*,*) "You have entered Pat's f90 version ..."
-
 C*****Read in scan commands until HWHM .le. 0.
   100 Continue
       PARM1 = 0.0
