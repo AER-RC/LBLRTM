@@ -1916,7 +1916,7 @@ C                                                                         A20070
       LH2 = 1                                                             A20110
 C                                                                         A20120
       IF (IATM.EQ.0) THEN                                                 A20130
-         READ (IRD,900) NLAYRS,NMOL,SECNT0,HEDDR                          A20140
+         READ (IRD,900) IFORM,NLAYRS,NMOL,SECNT0,HEDDR                    A20140
          IF (NMOL.EQ.0) NMOL = 7                                          A20150
          IF (SECNT0.LT.0.) THEN                                           A20160
             IPATHL = 1                                                    A20170
@@ -1941,12 +1941,24 @@ C                                                                         A20330
       DO 30 L = 1, NLAYRS                                                 A20350
 C                                                                         A20360
          IF (L.EQ.1) THEN                                                 A20370
-            READ (IRD,910) PAVE,TAVE,SECNTK,CINP,IPTHRK,ALTZ(L-1),        A20380
-     *                     PZ(L-1),TZ(L-1),ALTZ(L),PZ(L),TZ(L)            A20390
+            IF (IFORM.EQ.1) THEN
+               READ (IRD,910) PAVE,TAVE,SECNTK,CINP,IPTHRK,ALTZ(L-1),     A20380
+     *              PZ(L-1),TZ(L-1),ALTZ(L),PZ(L),TZ(L)                   A20390
+            ELSE
+               READ (IRD,911) PAVE,TAVE,SECNTK,CINP,IPTHRK,ALTZ(L-1),
+     *              PZ(L-1),TZ(L-1),ALTZ(L),PZ(L),TZ(L)
+            ENDIF
             IF (CINP.NE.CBLNK) WRITE (IPR,912)                            A20400
          ELSE                                                             A20410
-            READ (IRD,915) PAVE,TAVE,SECNTK,CINP,IPTHRK,ALTZ(L),PZ(L),    A20420
-     *                     TZ(L)                                          A20430
+            IF (IFORM.EQ.1) THEN
+               READ (IRD,915) PAVE,TAVE,SECNTK,CINP,IPTHRK,
+     *              ALTZ(L),PZ(L),                                        A20420
+     *              TZ(L)                                                 A20430
+            ELSE
+               READ (IRD,917) PAVE,TAVE,SECNTK,CINP,IPTHRK,
+     *              ALTZ(L),PZ(L),
+     *              TZ(L)
+            ENDIF
             IF ((CINP.EQ.CBLNK.AND.JTYPE.EQ.1).OR.                        A20440
      *          (CINP.NE.CBLNK.AND.JTYPE.EQ.0)) THEN                      A20450
                WRITE (IPR,912)                                            A20460
@@ -1974,8 +1986,13 @@ C                                                                         A20610
          IF (IPTHRK.NE.0) IPATHL = IPTHRK                                 A20680
          IPTH(L) = IPATHL                                                 A20690
          IF (SECANT.EQ.0.) STOP 'PATH; SECANT = 0'                        A20700
-         READ (IRD,925) (WKL(M,L),M=1,7),WBRODL(L)                        A20720
-         IF (NMOL.GT.7) READ (IRD,925) (WKL(M,L),M=8,NMOL)                A20730
+         IF (IFORM.EQ.1) THEN
+            READ (IRD,925) (WKL(M,L),M=1,7),WBRODL(L)                     A20720
+            IF (NMOL.GT.7) READ (IRD,925) (WKL(M,L),M=8,NMOL)             A20730
+         ELSE
+            READ (IRD,927) (WKL(M,L),M=1,7),WBRODL(L)
+            IF (NMOL.GT.7) READ (IRD,927) (WKL(M,L),M=8,NMOL)
+         ENDIF
    30 CONTINUE                                                            A20740
 C                                                                         A20750
       IF (IATM.EQ.0.AND.IXSECT.GE.1) THEN                                 A20760
@@ -1984,7 +2001,7 @@ C                                                                         A20750
          XV2 = V2                                                         A20790
          CALL XSREAD (XV1,XV2)                                            A20800
          WRITE (IPR,932) (I,XSNAME(I),I=1,IXMOLS)                         A20810
-         READ (IRD,900) NLAYXS,IXMOL,SECNTX,HEDXS                         A20820
+         READ (IRD,900) IFRMX,NLAYXS,IXMOL,SECNTX,HEDXS                   A20820
          IF (IXMOL.EQ.0) THEN                                             A20830
             WRITE (IPR,935) IXMOL                                         A20840
             STOP ' PATH - IXMOL 0 '                                       A20850
@@ -2003,14 +2020,29 @@ C                                                                         A20970
          DO 40 L = 1, NLAYXS                                              A20980
 C                                                                         A20990
             IF (L.EQ.1) THEN                                              A21000
-               READ (IRD,910) PAVX,TAVX,SECKXS,CINPX,IPTHKX,ALTXB,        A21010
-     *                        PZXB,TZXB,ALTXT,PZXT,TZXT                   A21020
+               IF (IFRMX.EQ.1) THEN
+                  READ (IRD,910) PAVX,TAVX,SECKXS,CINPX,IPTHKX,ALTXB,     A21010
+     *                 PZXB,TZXB,ALTXT,PZXT,TZXT                          A21020
+               ELSE
+                  READ (IRD,911) PAVX,TAVX,SECKXS,CINPX,IPTHKX,ALTXB,
+     *                 PZXB,TZXB,ALTXT,PZXT,TZXT
+               ENDIF
             ELSE                                                          A21030
-               READ (IRD,915) PAVX,TAVX,SECKXS,CINPX,IPTHKX,ALTXT,        A21040
-     *                        PZXT,TZXT                                   A21050
+               IF (IFRMX.EQ.1) THEN
+                  READ (IRD,915) PAVX,TAVX,SECKXS,CINPX,IPTHKX,ALTXT,     A21040
+     *                 PZXT,TZXT                                          A21050
+               ELSE
+                  READ (IRD,917) PAVX,TAVX,SECKXS,CINPX,IPTHKX,ALTXT,
+     *                 PZXT,TZXT
+               ENDIF
             ENDIF                                                         A21060
-            READ (IRD,925) (XAMNT(M,L),M=1,7),WBRODX                      A21070
-            IF (IXMOL.GT.7) READ (IRD,925) (XAMNT(M,L),M=8,IXMOL)         A21080
+            IF (IFRMX.EQ.1) THEN
+               READ (IRD,925) (XAMNT(M,L),M=1,7),WBRODX                   A21070
+               IF (IXMOL.GT.7) READ (IRD,925) (XAMNT(M,L),M=8,IXMOL)      A21080
+            ELSE
+               READ (IRD,927) (XAMNT(M,L),M=1,7),WBRODX
+               IF (IXMOL.GT.7) READ (IRD,927) (XAMNT(M,L),M=8,IXMOL)
+            ENDIF
    40    CONTINUE                                                         A21090
       ENDIF                                                               A21100
 C                                                                         A21110
@@ -2202,9 +2234,17 @@ C                                                                         A22930
 C                                                                         A22970
          DV = DVL(L)                                                      A22980
 C                                                                         A22990
-         WRITE (IPR,960) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),TAVEL(L),   A23000
-     *                   ALBL(L),ADBL(L),AVBL(L),ZETA,DVC,H2OSL(L),       A23010
-     *                   DVL(L),TYPE,ITYL(L),IPTH(L),SECL(L)              A23020
+         IF (IFRMX.EQ.1) THEN
+            WRITE (IPR,960) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *           TAVEL(L),                                                A23000
+     *           ALBL(L),ADBL(L),AVBL(L),ZETA,DVC,H2OSL(L),               A23010
+     *           DVL(L),TYPE,ITYL(L),IPTH(L),SECL(L)                      A23020
+         ELSE
+            WRITE (IPR,961) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *           TAVEL(L),
+     *           ALBL(L),ADBL(L),AVBL(L),ZETA,DVC,H2OSL(L),
+     *           DVL(L),TYPE,ITYL(L),IPTH(L),SECL(L)
+         ENDIF
          IF (IPROB.GT.0) WRITE (IPR,962) TYPMAX                           A23030
   130 CONTINUE                                                            A23040
       PWTD = PWTD/WTOT                                                    A23050
@@ -2240,9 +2280,15 @@ C                                                                         A23280
             ITYPE = ITYL(L)                                               A23350
             DVL(L) = DV                                                   A23360
             ZETA = ALBL(L)/(ALBL(L)+ADBL(L))                              A23370
-            WRITE (IPR,960) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),         A23380
-     *                      TAVEL(L),ALBL(L),ADBL(L),AVBL(L),ZETA,        A23390
-     *                      DVC,H2OSL(L),DV,TYPE,ITYPE,IPTH(L),SECL(L)    A23400
+            IF (IFORM.EQ.1) THEN
+               WRITE (IPR,960) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),      A23380
+     *              TAVEL(L),ALBL(L),ADBL(L),AVBL(L),ZETA,                A23390
+     *              DVC,H2OSL(L),DV,TYPE,ITYPE,IPTH(L),SECL(L)            A23400
+            ELSE
+               WRITE (IPR,961) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *              TAVEL(L),ALBL(L),ADBL(L),AVBL(L),ZETA,
+     *              DVC,H2OSL(L),DV,TYPE,ITYPE,IPTH(L),SECL(L)
+            ENDIF
   140    CONTINUE                                                         A23410
       ENDIF                                                               A23420
 C                                                                         A23430
@@ -2253,8 +2299,15 @@ C                                                                         A23430
       ENDIF                                                               A23480
       WRITE (IPR,975) (HMOLID(I),I=1,7),HOLN2                             A23490
       DO 150 L = 1, NLAYRS                                                A23500
-         WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),TAVEL(L),   A23510
-     *                   IPTH(L),(WKL(M,L),M=1,7),WBRODL(L)               A23520
+         IF (IFORM.EQ.1) THEN
+            WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *           TAVEL(L),                                                A23510
+     *           IPTH(L),(WKL(M,L),M=1,7),WBRODL(L)                       A23520
+         ELSE
+            WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *           TAVEL(L),
+     *           IPTH(L),(WKL(M,L),M=1,7),WBRODL(L)
+         ENDIF
   150 CONTINUE                                                            A23530
       IF (NLAYRS.GT.1) THEN                                               A23540
          WRITE (IPR,985)                                                  A23550
@@ -2273,8 +2326,13 @@ C                                                                         A23430
             ENDIF                                                         A23680
             WRITE (IPR,975) (HMOLID(I),I=MLO,MHI)                         A23690
             DO 160 L = 1, NLAYRS                                          A23700
-               WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),      A23710
-     *                         TAVEL(L),IPTH(L),(WKL(M,L),M=MLO,MHI)      A23720
+               IF (IFORM.EQ.1) THEN
+                  WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),   A23710
+     *                 TAVEL(L),IPTH(L),(WKL(M,L),M=MLO,MHI)              A23720
+               ELSE
+                  WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *                 TAVEL(L),IPTH(L),(WKL(M,L),M=MLO,MHI)
+               ENDIF
   160       CONTINUE                                                      A23730
             IF (NLAYRS.GT.1) THEN                                         A23740
                WRITE (IPR,985)                                            A23750
@@ -2295,8 +2353,13 @@ C                                                                         A23430
             ENDIF                                                         A23900
             WRITE (IPR,975) (XSNAME(I),I=MLO,MHI)                         A23910
             DO 180 L = 1, NLAYRS                                          A23920
-               WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),      A23930
-     *                         TAVEL(L),IPTH(L),(XAMNT(M,L),M=MLO,MHI)    A23940
+               IF (IFRMX.EQ.1) THEN
+                  WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),   A23930
+     *                 TAVEL(L),IPTH(L),(XAMNT(M,L),M=MLO,MHI)            A23940
+               ELSE
+                  WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *                 TAVEL(L),IPTH(L),(XAMNT(M,L),M=MLO,MHI)
+               ENDIF
   180       CONTINUE                                                      A23950
             IF (NLAYRS.GT.1) THEN                                         A23960
                WRITE (IPR,985)                                            A23970
@@ -2308,17 +2371,19 @@ C                                                                         A23430
       ENDIF                                                               A24030
       RETURN                                                              A24040
 C                                                                         A24050
-  900 FORMAT (2X,I3,I5,F10.2,15A4)                                        A24060
+  900 FORMAT (1X,I1,I3,I5,F10.2,15A4)                                     A24060
   902 FORMAT ('0 SECANT   =',F13.4,/'0 NLAYRS=',I4,/'0 NMOL=',I4,/'0',    A24070
      *        15A4)                                                       A24080
   905 FORMAT (A6)                                                         A24090
   907 FORMAT ('0 SECANT   =',F13.4)                                       A24100
-  910 FORMAT (3F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))                          A24110
+  910 FORMAT (1P,E15.7,0P,F10.4,F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))
+  911 FORMAT (3F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))                          A24110
   912 FORMAT ('0   ********* ITYPE(L) IS SET FROM INPUT ******** ')       A24120
   915 FORMAT (3F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))                          A24130
   917 FORMAT (A4)                                                         A24140
   920 FORMAT (I3)                                                         A24150
-  925 FORMAT (8E10.3)                                                     A24160
+  925 FORMAT (1P,8E15.7,0P)
+  927 FORMAT (8E10.3)                                                     A24160
   930 FORMAT (I5,5X,I5)                                                   A24170
   932 FORMAT (/,'  THE CROSS-SECTION MOLECULES SELECTED ARE: ',/,/,(5X,   A24180
      *        I5,3X,A))                                                   A24190
@@ -2333,7 +2398,10 @@ C                                                                         A24050
      *        'TYPE',' ITYPE IPATH ',3X,'SECANT'/)                        A24280
   955 FORMAT (/,'0 **** CALC DV WAS RESET TO PREVIOUS DV',F12.6,/,        A24290
      *        '  AT ALT=  ',2(F7.2,A3),' AND ABOVE')                      A24300
-  960 FORMAT ('0',I5,2(F7.2,A3),F10.4,F8.2,3F9.6,F6.3,F9.6,F8.4,F9.6,     A24310
+  960 FORMAT ('0',I5,2(F7.2,A3),1P,E15.7,0P,F8.2,3F9.6,F6.3,
+     *        F9.6,F8.4,F9.6,
+     *        F7.3,2I5,F12.6)                                             A24320
+  961 FORMAT ('0',I5,2(F7.2,A3),F10.4,F8.2,3F9.6,F6.3,F9.6,F8.4,F9.6,     A24310
      *        F7.3,2I5,F12.6)                                             A24320
   962 FORMAT (20X,'  DV RATIO  .GT. ',F10.2)                              A24330
   965 FORMAT (/,20X,'  TYPE GT 2.5')                                      A24340
@@ -2341,7 +2409,8 @@ C                                                                         A24050
   970 FORMAT (////)                                                       A24360
   975 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,29X,    A24370
      *        'P(MB)',7X,'T(K)',1X,'IPATH',1X,8(1X,A6,3X))                A24380
-  980 FORMAT ('0',I3,2(F7.2,A3),0PF12.5,F9.2,I5,2X,1P8E10.3)              A24390
+  980 FORMAT ('0',I3,2(F7.2,A3),0PF15.7,F9.2,I5,2X,1P8E15.7)
+  982 FORMAT ('0',I3,2(F7.2,A3),0PF12.5,F9.2,I5,2X,1P8E10.3)              A24390
   985 FORMAT ('0',54X,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH')     A24400
   990 FORMAT ('0',I3,2(F7.2,A3),0PF12.5,F9.2,7X,1P8E10.3)                 A24410
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                    A24420
