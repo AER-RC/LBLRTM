@@ -12,7 +12,7 @@ PLATFORM = LINUX
 
 FC = pgf90
 FCFLAG =  -fast 
-OUTPUT = lblrtm_v6.01_f90_linux_sgl
+OUTPUT = lblrtm_v6.10_f90_linux_sgl
 CPATH = src
 CDOTO = linux_sgl.o
 
@@ -26,7 +26,7 @@ CLOW = lbllow
 CPST = postsub
 CFFT = fftscn_dbl
 CPLT = pltlbl
-CUTL = util_linux
+CUTL = util_linux_pgi
 CDUM = lbldum
 CSOL = solar
 CNLT = nonlte

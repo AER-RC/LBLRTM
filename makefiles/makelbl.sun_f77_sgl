@@ -11,10 +11,10 @@ PLATFORM = Sun
 
 
 FC = f77
-FCFLAG = -fast -O3
-OUTPUT = lblrtm_v6.01_f77_sgl
+FCFLAG = -fast 
+OUTPUT = lblrtm_v6.10_f77_sun_sgl
 CPATH = src
-CDOTO = sgl.o
+CDOTO = sun_f77_sgl.o
 
 CLBL = lblrtm
 COPR = oprop
