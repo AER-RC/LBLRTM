@@ -712,7 +712,7 @@ C                                                                         B04250
          endif
       ENDIF                                                               B04290
 C                                                                         B04300
-   10 CALL BUFINln (Lnfl,LEOF,rdpnl(1),npnlhd)
+   10 CALL BUFIN_sgl(Lnfl,LEOF,rdpnl(1),npnlhd)
       IF (LEOF.EQ.0) THEN                                                 B04320
          IF (NOPR.EQ.0) WRITE (IPR,900)                                   B04330
          IEOF = 1                                                         B04340
@@ -722,11 +722,11 @@ C                                                                         B04370
       IF (NREC.GT.LIMIN) STOP 'RDLIN; NREC GT LIMIN'                      B04380
 c
       IF (VMAX.LT.VBOT) THEN                                              B04390
-         CALL BUFINln (Lnfl,LEOF,DUM(1),n_one)
+         CALL BUFIN_sgl(Lnfl,LEOF,DUM(1),n_one)
          GO TO 10                                                         B04410
       ENDIF                                                               B04420
 c
-      CALL BUFINln (Lnfl,LEOF,vlin(1),NWDS) 
+      CALL BUFIN_sgl(Lnfl,LEOF,vlin(1),NWDS) 
 c
 c     precision conversion occurs here:
 c     incoming on right: vlin is real*8, others real*4 and integer*4
@@ -4097,14 +4097,14 @@ c
       lnfl = linfil	
       npnlhd = 6
 c
-   10 CALL BUFINln (Lnfl,LEOF,rdpnl(1),npnlhd) 
+   10 CALL BUFIN_sgl(Lnfl,LEOF,rdpnl(1),npnlhd) 
 c
       IF (LEOF.EQ.0) GO TO 30                                             D02980
       IF (VMAX.LT.VLO) THEN                                               D02990
-         CALL BUFINln (lnfl,LEOF,dum(1),1) 
+         CALL BUFIN_sgl(lnfl,LEOF,dum(1),1) 
          GO TO 10                                                         D03010
       ELSE                                                                D03020
-         CALL BUFINln (Lnfl,LEOF,vlin(1),NWDS) 
+         CALL BUFIN_sgl(Lnfl,LEOF,vlin(1),NWDS) 
       ENDIF                                                               D03040
 c
       IF ((IPASS.EQ.1).AND.(Vlin(1).GT.VLO)) WRITE (IPR,900)

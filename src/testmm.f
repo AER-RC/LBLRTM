@@ -10,6 +10,7 @@ c
       REAL*4 STR,ALF,EPP,     HWHMS, 
      *       TMPALF,PSHIFT,amol              
       real*8 xlinc,xlind
+      real*8 x_100
       integer*4  MOL,IFLG,lstwdl,iso(250)
 C                                                                         N00040
       COMMON VNU(250),STR(250),ALF(250),EPP(250),MOL(250),HWHMS(250),     N00050
@@ -49,6 +50,7 @@ C
 C     LINCPL - IS THE FLAG FOR LINE COUPLING --- 0 = OFF; 1 = ON          N00250
 C                                                                         N00260
       DATA LINCPL / 1 /                                                   N00270
+      data x_100 / 100.0d0 /
 C                                                                         N00280
 C**********************************************************************   N00290
 C                                                                         N00300
@@ -88,7 +90,7 @@ C                                                                         N00500
       DO 20 I = 1, IRECTL                                                 N00540
          IFLAG = XLIND(6,I)                                               N00550
          IF (IFLAG.GE.0) THEN                                             N00560
-            M = mod(real(XLIND(1,I)),100.)                                                N00570
+            M = mod(XLIND(1,I),x_100)                                                N00570
             IF (IFLAG.GT.0.AND.LINCPL.EQ.1) MCNTLC(M) = MCNTLC(M)+1       N00580
             MOLCNT(M) = MOLCNT(M)+1                                       N00590
             SUMSTR(M) = SUMSTR(M)+XLINC(3,I)                              N00600
@@ -124,14 +126,13 @@ C                                                                         N00700
          IFLG(K) = XLIND(6,I)                                             N00860
          IF (IFLG(K).GE.0) THEN                                           N00870
             iso(k) = xlinc(1,i)/100.
-c            MOL(K) = XLINC(1,I)                                           N00880
-            MOL(K) = mod(real(XLINC(1,I)),100.)                                           N00880
+            MOL(K) = mod(XLINC(1,I),x_100)         
 C                                                                         N00890
 C     ADD ISOTOPE TO MOLECULE FOR USE BY LBLRTM                           N00900
 C                                                                         N00910
-            MOL(K) = MOL(K)+ISO(k)*100                                       N00920
+            MOL(K) = MOL(K)+ISO(k)*100                                    N00920
          ELSE                                                             N00930
-            MOLK = mod(real(XLINC(1,I)),100.)
+            MOLK = mod(XLINC(1,I),x_100)
             AMOL(K) = XLIND(1,I)                                          N00940
 C**********************
 C     CORRECTIONS TO THE LINE COUPLING FOR OXYGEN  (21 AUG 92; SAC)
@@ -163,7 +164,7 @@ C                                                                         N01080
          NWDS = ILNGTH                                                    N01090
 c
          write(linfil_4) VNULO,VNUHI,JLIN,NWDS
-c         CALL BUFOUTln (LINFIL_4,RCDHDR(1),ilngthp)           
+c         CALL BUFOUT_sgl (LINFIL_4,RCDHDR(1),ilngthp)           
          IF (K.GE.250) GO TO 60                                           N01110
          KLO = K+1                                                        N01120
          KHI = 250                                                        N01130
@@ -179,7 +180,7 @@ c         CALL BUFOUTln (LINFIL_4,RCDHDR(1),ilngthp)
             IFLG(K) = 0.                                                  N01230
  50      CONTINUE                                                         N01240
 C                                                                         N00040
- 60      CALL BUFOUTln (LINFIL_4,VNU(1),ILNGTH)                               N01250
+ 60      CALL BUFOUT_sgl (LINFIL_4,VNU(1),ILNGTH)                               N01250
          K = 0                                                            N01260
    70 CONTINUE                                                            N01270
       ENDFILE LINFIL_4                                                      N01280

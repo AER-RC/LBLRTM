@@ -143,6 +143,10 @@ C
      *            (FSCDID(6),ISCHDR),(FSCDID(7),IPLOT),
      *            (FSCDID(8),IPATHL),(FSCDID(12),XSCID),
      *            (FSCDID(16),LAYR1)
+      equivalence (dv_sol,xhdr_s(218)),
+     *            (v1_sol,xhdr_s(219)),(v2_sol,xhdr_s(221))
+c
+      real*4 xhdr_s(265),dv_sol
 C
 C     ************************************************************
 C     ****** THIS PROGRAM DOES MERGE FOR SOLAR RADIANCE AND ******
@@ -161,6 +165,10 @@ C
       ISOLFL = 19
       OPEN(UNIT=ISOLFL,FILE='SOLAR.RAD',FORM='UNFORMATTED',
      *     STATUS='OLD')
+c
+c     Note that the file SOLAR.RAD is always single precision. Provision
+c     has been made to deal with the case in which the current program is
+c     double precision.     
 C
       CALL CPUTIM (TIME)
       WRITE (IPR,900) TIME
@@ -193,15 +201,19 @@ c     If JULDAT = 0 , then set XJUL_SCALE to 1
          write(ipr,*) 'JULDAT = ',JULDAT,
      *        ', scale factor for solar source function = ',XJUL_SCALE
       endif
-
-
 C
 C     FOR AEROSOL RUNS, MOVE YID (IFILE) INTO YID (LFILE)
 C
 C     Read file header of solar radiance file and determine dv ratio
 C
       IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)
-      CALL BUFIN (ISOLFL,KEOF,XFILHD(1),NFHDRF)
+c
+      read (isolfl) (xhdr_s(i),i=1,264)
+c
+      dv = dv_sol
+      v1 = v1_sol
+      v2 = v2_sol
+c
 cpdb      IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)
 cpdb      IF (JPATHL.GE.1) IPATHL = JPATHL
       DVK = DV
@@ -361,7 +373,7 @@ C
    30    CONTINUE
          IPANEM = IPANEM+1
          CALL CPUTIM (TIMSL1)
-         CALL SOLIN (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(1),LSEOF)
+         CALL SOLIN_sgl (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(1),LSEOF)
          CALL CPUTIM (TIMSL2)
          TIMRD = TIMRD+TIMSL2-TIMSL1
          IF (LSEOF.LE.0) GO TO 110
@@ -604,7 +616,7 @@ C     Buffer in panels from solar radiance file
 C
       IF (V2P.LE.V2PO+DVP .AND.LSEOF.GT.0) THEN
    70    CALL CPUTIM(TIMSL2)
-         CALL SOLIN(V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(NPE+1),LSEOF)
+         CALL SOLIN_sgl(V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(NPE+1),LSEOF)
          CALL CPUTIM(TIMSL3)
          TIMRD = TIMRD+TIMSL3-TIMSL2
          IF (LSEOF.LE.0) GO TO 80
@@ -950,6 +962,79 @@ C
       V2P = V2PBF
       DVP = DVPBF
       NLIM = NLIMBF
+C
+      RETURN
+C
+      END
+C
+C     ----------------------------------------------------------------
+C
+      SUBROUTINE SOLIN_sgl (V1P,V2P,DVP,NLIM,KFILE,XARRAY,KEOF)
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      
+C               LAST MODIFICATION:    1 November 1995
+C                                                                      
+C                  IMPLEMENTATION:    P.D. Brown
+C                                                                      
+C             ALGORITHM REVISIONS:    S.A. Clough
+C                                     P.D. Brown
+C                                                                      
+C                                                                      
+C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.      
+C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139       
+C                                                                      
+C----------------------------------------------------------------------
+C                                                                      
+C               WORK SUPPORTED BY:    THE ARM PROGRAM                  
+C                                     OFFICE OF ENERGY RESEARCH        
+C                                     DEPARTMENT OF ENERGY             
+C                                                                      
+C                                                                      
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C
+      IMPLICIT REAL*8           (V)
+C
+C     SUBROUTINE SOLIN_sgl inputs files for use with solar radiation
+C     calculations for interpolation in SOLINT.  Reads files with
+C     one record per panel. SOLIN_sgl reads single precision files
+C
+      COMMON /BUFPNL/ V1PBF,V2PBF,dvpbf,nlimbf
+C
+      DIMENSION PNLHDR(2),XARRAY(*),xarray_s(2410)
+C
+      EQUIVALENCE (PNLHDR(1),V1PBF)
+C
+
+      real*4 dvpbf,pnlhdr,xarray_s
+
+      integer*4 kfil_s,keof_s,nphdr_s,nphdrf,nlimbf
+
+      data nphdrf / 6 /
+
+      kfil_s = KFILE
+      keof_s = KEOF
+
+      CALL BUFIN_sgl (kfil_s,keof_s,pnlhdr(1),nphdrf) 
+
+      KEOF = keof_s
+      IF (KEOF.LE.0) RETURN
+
+      CALL BUFIN_sgl (kfil_s,keof_s,xarray_s(1),nlimbf)
+C
+      KEOF = keof_s
+
+      V1P = V1PBF
+      V2P = V2PBF
+      DVP = dvpbf
+      NLIM = nlimbf
+c
+c     The variable XARRAY (either single or double, depending on the 
+c     complile option specified, is set equal to the real*4 variable xarray_s
+
+      do 10 i=1,nlimbf
+         XARRAY(i) = xarray_s(i)
+ 10   continue
 C
       RETURN
 C
