@@ -1453,8 +1453,8 @@ c note that the dqdl and dqdu arrays are indexed by mol-id
 c number with the "0" index eserved for temperature
 c
       if (imoldq.eq.-99) then
-c          write(*,*) 'lay2lev in lblatm: ',ipmax,nmol
-          ilevdq=ipmax-1
+c          write(*,*) 'lay2lev in lblatm: ',ibmax,nmol
+          ilevdq=ibmax-1
           imoldq=nmol
           do 500 i=1,ilevdq
 
@@ -6689,10 +6689,11 @@ C F1(P) = INTERPOLATION IN LN(P), F2(P) = HYDROSTATIC CALCULATION
  161           CONTINUE
                LIP=IMMAX
  162           CONTINUE
-               
+
                IF (PX(IP) .EQ. PM(LIP-1)) THEN
                   ZX(IP) = ZMDL(LIP-1)
-               ELSE 
+               ELSE
+
                   IF(PX(IP) .EQ. PM(LIP)) THEN
                      ZX(IP) = ZMDL(LIP)
                   ELSE
@@ -6731,6 +6732,7 @@ C     COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
                      A = RATP**3
                      
                      ZX(IP) = A*ZINT + (1-A)*ZTMP(2)
+
                   ENDIF
                ENDIF
                
@@ -6770,7 +6772,7 @@ C                                                                        FX04860
 
 C ERROR MESSAGES
   300 WRITE(IPR,988) (ZX(I),I=1,LAYX) 
-      PRINT 988,(ZX(I),I=1,IBMAX)  
+      PRINT 988,(ZX(I),I=1,IP)  
 
       STOP 'ZX IN XPROFL'
 C                                                                        FX04880
