@@ -130,11 +130,11 @@ C
 C                                                                        LN05220
       CHARACTER GDATE*10                                                 LN05230
 C                                                                        LN05240
-      INTEGER*4 IARRAY(5)                                               >LN05250
+      INTEGER*4 IARRAY(3)                                               >LN05250
 C                                                                        LN05260
       CALL IDATE(IARRAY)                                                >LN05280
-      IARRAY(5)=MOD(IARRAY(5),100)                                      >LN05290
-      WRITE (GDATE,900) IARRAY(5),IARRAY(3),IARRAY(1)                   >LN05300
+      IARRAY(3)=MOD(IARRAY(3),100)                                      >LN05290
+      WRITE (GDATE,900) IARRAY(3),IARRAY(2),IARRAY(1)                   >LN05300
 C                                                                        LN05310
       READ (GDATE,901) HDATE                                             LN05320
 C                                                                        LN05400
@@ -193,3 +193,4 @@ C                                                                        LN06010
       DATA A1 / 0. /                                                     LN06020
 C                                                                        LN06030
       END                                                                LN06040
+
