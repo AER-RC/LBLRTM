@@ -10,7 +10,7 @@ C     SUBROUTINE CONTNM CONTAINS THE CONTINUUM DATA                       F00050
 C     WHICH IS INTERPOLATED INTO THE ARRAY ABSRB                          F00060
 C                                                                         F00070
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F00080
-      COMMON /XCONT/ V1C,V2C,DVC,NPTC,C(411)                              F00090
+      COMMON /XCONT/ V1C,V2C,DVC,NPTC,C( 411)
 C                                                                         F00100
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & F00110
 C                                                                         F00120
@@ -23,9 +23,10 @@ C                                                                         F00120
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         F00170
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        F00180
      *              NLTEFL,LNFIL4,LNGTH4                                  F00190
-      DIMENSION C0(411),C1(411),C2(411)                                   F00200
-      DIMENSION SH2OT0(411),SH2OT1(411),FH2O(411),CN2T0(411),FCO2(411),   F00210
-     *          CT1(411),CT2(411)                                         F00220
+c
+      DIMENSION C0( 411),C1( 411),C2( 411)
+      DIMENSION SH2OT0( 411),SH2OT1( 411),FH2O( 411),      
+     *          CN2T0( 411),FCO2( 411),CT1( 411),CT2( 411) 
 C                                                                         F00230
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
@@ -35,21 +36,20 @@ C                                                                         F00260
       DATA P0 / 1013. /,T0 / 296. /                                       F00270
       DATA XLOSMT / 2.68675E+19 /                                         F00280
 c     
-c     these are self-continuum modification factors from 700-1200 cm-1
-      dimension xfac(0:50)
-      DATA (XFAC(I),I=0,50)/
-     1    1.00000,1.02000,1.04000,1.06000,1.08000,1.10000,
-     2    1.10800,1.11600,1.12400,1.13200,1.14000,1.14800,
-     3    1.15600,1.16400,1.17200,1.18000,1.19400,1.20800,
-     4    1.22200,1.23600,1.25000,1.27500,1.30000,1.29375,
-     5    1.28750,1.28125,1.27500,1.26875,1.26250,1.25625,
-     6    1.25000,1.23600,1.22200,1.20800,1.19400,1.18000,
-     7    1.17400,1.16800,1.16200,1.15600,1.15000,1.14000,
-     8    1.13000,1.12000,1.11000,1.10000,1.08000,1.06000,
-     9    1.04000,1.02000,1.00000/
+c     These are self-continuum modification factors from 700-1200 cm-1
 c
-      data s260/-12345678./, s296/-12345678./
-      save s260, s296, vfac, sfac, wdth 
+      DIMENSION XFAC(0:50)
+c
+      DATA (XFAC(I),I=0,50)/
+     1    1.00000,1.01792,1.03767,1.05749,1.07730,1.09708,
+     2    1.10489,1.11268,1.12047,1.12822,1.13597,1.14367,
+     3    1.15135,1.15904,1.16669,1.17431,1.18786,1.20134,
+     4    1.21479,1.22821,1.24158,1.26580,1.28991,1.28295,
+     5    1.27600,1.26896,1.25550,1.24213,1.22879,1.21560,
+     6    1.20230,1.18162,1.16112,1.14063,1.12016,1.10195,
+     7    1.09207,1.08622,1.08105,1.07765,1.07398,1.06620,
+     8    1.05791,1.04905,1.03976,1.02981,1.00985,1.00000,
+     9    1.00000,1.00000,1.00000/
 C                                                                         F00290
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
@@ -89,27 +89,18 @@ C
       ALPHS2= 120.**2
       BETAS = 5.E-06
       V0S=1310.
-      FACTRS= 0.4
-C     XFACT= 1.-FACTRS
-C     PRINT *, ' XFACT,  V0S,  ALPHS, NS  ',  XFACT ,V0S,ALPHS,NS
+      FACTRS= 0.15
 C
 C--------------------------------------------------------------------
 C                             FOREIGN
-      ALPHF2= 330.**2
-      BETAF = 1.5 E-11
+      HWSQF= 330.**2
+      BETAF = 8.  E-11
       V0F =1130.
       FACTRF = 0.97
-C     XFACT= 1.- FACTRF
-C     PRINT *, ' XFACT,  V0,  ALPHF, NF  ',  XFACT ,V0,ALPHF,NF
-C     SCAL=1.E-20
-C--------------------------------------------------------------------
 C
-c     
-cc      if (s260 .le. 0.) then
-cc      print *, '  sfac '
-cc      read *,  sfac
-cc      endif
-cc      s260 = 1.
+      V0F2 =1900.
+      HWSQF2 = 150.**2
+      BETA2 = 3.E-06
 C
 C--------------------------------------------------------------------
 C
@@ -119,26 +110,30 @@ C
          SH2O = 0.                                                        F00580
          IF (SH2OT0(J).GT.0.) THEN                                        F00590
             SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC                  F00600
-c
-         sfac = 1.
-         if (vj.ge.700. .and.  vj.le.1200.) then 
-            jfac = (vj-700.)/10. + 0.00001
-            sfac = xfac(jfac)
-c           print *, '   vj,  jfac,  sfac  ',vj,jfac,sfac
-         endif
+C
+         SFAC = 1.
+         IF (VJ.GE.700. .AND.  VJ.LE.1200.) THEN 
+            JFAC = (VJ-700.)/10. + 0.00001
+            SFAC = XFAC(JFAC)
+         ENDIF
 C                                                                         F00610
 C     CORRECTION TO SELF CONTINUUM (1 SEPT 85); FACTOR OF 0.78 AT 1000    F00620
 C                             AND  .......
 C                                                                         F00630
-      SH2O = sfac * SH2O*(1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *     F00640
-     C                  (1.-FACTRS*(ALPHS2/(VS2+(BETAS*VS2**2)+ALPHS2))) 
+      SH2O = SFAC * SH2O*(1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *    F00640
+     *                  (1.-FACTRS*(ALPHS2/(VS2+(BETAS*VS2**2)+ALPHS2))) 
          ENDIF                                                            F00650
 C                                                                         F00660
 C     CORRECTION TO FOREIGN CONTINUUM                                     F00670
 C                                                                         F00680
         VF2 = (VJ-V0F)**2
         VF6 = VF2 * VF2 * VF2
-        FH2O(J)=FH2O(J)*(1.-FACTRF*(ALPHF2/(VF2+(BETAF*VF6)+ALPHF2)))
+        FSCAL  = (1.-FACTRF*(HWSQF/(VF2+(BETAF*VF6)+HWSQF)))
+        VF2 = (VJ-V0F2)**2
+        VF4 = VF2*VF2
+        FSCAL = FSCAL* (1.- 0.6*(HWSQF2/(VF2 + BETA2*VF4 + HWSQF2)))
+C
+        FH2O(J)=FH2O(J)*fscal
 C                                                                         F00700
          C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)                              F00710
 C                                                                         F00720
@@ -278,10 +273,12 @@ C                                                                         A10340
 C                                                                         A10360
       RETURN                                                              A10370
 C                                                                         A10380
-  900 FORMAT (//,'0  *****  CONTINUA:  ',//,20X,                          A10390
+  900 FORMAT (//,'0  *****  CONTINUA :  ',//,20X, 
 C
-     *        ' H2O   SELF  (T)      0 - 20000 CM-1',/,20X,               A10400
-     *        '       AIR   (T)      0 - 20000 CM-1',/,20X,               A10410
+     *        ' H2O   SELF  (T)      0 - 20000 CM-1',2X,
+     *        '  ckd_2.1',/,20X,
+     *        '       AIR   (T)      0 - 20000 CM-1',2X, 
+     *        '  ckd_2.1',/,20X,
      *        ' CO2   AIR            0 - 20000 CM-1',/,20X,               A10420
 C
      *        ' N2    AIR         2020 -  2800 CM-1',20X,                 A10430
@@ -308,7 +305,12 @@ C
      *        '  H2O SELF HAS BEEN REDUCED IN THE 1100-1500 CM-1',        A10520
      *        ' REGION',20X,'  (01 APRIL 1993)  ',/,                      A10530
      *        '  H2O FOREIGN HAS BEEN REDUCED AT ~1300 CM-1 AND',         A10520
-     *        ' IN ALL THE WINDOW REGIONS  ','  (01 APRIL 1993) ' )       A10530
+     *        ' IN ALL THE WINDOW REGIONS  ','  (01 APRIL 1993)  ',/,  
+     *        '  H2O SELF HAS BEEN MODIFIED IN THE 700-1500 CM-1',
+     *        ' REGION',20X,'  (01 MAY   1994)  ',/, 
+     *        '  H2O FOREIGN HAS BEEN MODIFIED IN THE ENTIRE',       
+     *        ' 1200-2200 CM-1 SPECTRAL RANGE   (01 MAY   1994) ')  
+
 C                                                                         A10580
       END                                                                 A10590
       SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                               F02220
