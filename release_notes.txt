@@ -1,3 +1,8 @@
+LBLRTM_v8.3
+
+1) Minor bug fix in SCNMRG subroutine.
+   (M.W. Shephard and J. Gu)
+
 LBLRTM_v8.2
 
 1) Minor bug fix to the LOWTRAN7 routine in LBLRTM (lbllow.f), which accounts
