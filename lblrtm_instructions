@@ -2270,11 +2270,11 @@ C     presently: %H%  %T%
  RECORD 11.1
  
  
-     V1F,     DVF,    NPTS,   JEMIT,  IUNIT,  IFILST,  NIFILS,   HEDDR
+     V1F,     DVF,    NPTS,   JEMIT,  IUNIT,  IFILST,  NIFILS,   JUNIT,  HEDDR
  
-    1-10,   11-20,   21-25,   26-30,  31-35,   36-40,   41-45,   46-80
+    1-10,   11-20,   21-25,   26-30,  31-35,   36-40,   41-45,   46-50,  51-85
  
-   F10.3,   F10.4,      I5,      I5,     I5,      I5,      I5,  8A4,A3
+   F10.3,   F10.4,      I5,      I5,     I5,      I5,      I5,      I5, 8A4,A3
  
  
               V1F     wavenumber of initial filter value
@@ -2301,8 +2301,15 @@ C     presently: %H%  %T%
  
              NIFILS   number of files to be integrated starting at IFILST
  
+             JUNIT    file designation for output file (named "FLT_OUT")
+ 
              HEDDR    35 characters of user identification
  
+ 
+
+                                   FLTRFN (Continued)
+
+
  RECORD 11.2
  
              IVAR
