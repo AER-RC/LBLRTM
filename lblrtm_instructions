@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                14 September 1993
+                                   4 March 1994
  
  
  
@@ -281,7 +281,6 @@ C     presently: %H%  %T%
                         results. Use with extreme caution.
  
               ALFAL0    average collision broadened halfwidth (cm - 1/atm) (default = 0.04)
-                           (for cases with line coupling set ALFAL0 = 0.05)
  
               AVMASS    average molecular mass (amu) for Doppler halfwidth (default = 36)
  
@@ -1953,7 +1952,7 @@ C     presently: %H%  %T%
           MRAT    ratio of HWHM of the scanning function to the halfwidth of the boxcar; for prescanning with a
                     boxcar (default = 12.).  If MRAT < 0., no boxcaring is performed.
 
-         DVOUT    output grid spacing (NOT USED, reserved for future use)
+         DVOUT    output grid spacing.  The scanned spectral file is interpolated onto the grid defined by V1, V2, and DVOUT.
   
          IUNIT    unit designation of file to be scanned (default is 12)
  
