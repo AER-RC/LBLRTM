@@ -27,9 +27,10 @@ C                                                                         F00120
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        F00180
      *              NLTEFL,LNFIL4,LNGTH4                                  F00190
 c
-      DIMENSION C0( 411),C1( 411),C2( 411)
-      DIMENSION SH2OT0( 411),SH2OT1( 411),FH2O( 411),      
-     *          CN2T0( 411),FCO2( 411),CT1( 411),CT2( 411) 
+      DIMENSION C0(2050),C1(2050),C2(2050)
+      DIMENSION SH2OT0( 2 ),SH2OT1( 2 ),FH2O( 2 ),      
+     *          CN2T0( 2 ),FCO2( 2 ),CT1( 2 ),CT2( 2 ) 
+      DIMENSION CCH0(3080),CCH1(3080),CCH2(3080)
 C                                                                         F00230
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
@@ -113,37 +114,40 @@ C
          SH2O = 0.                                                        F00580
          IF (SH2OT0(J).GT.0.) THEN                                        F00590
             SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC                  F00600
-C
-         SFAC = 1.
-         IF (VJ.GE.700. .AND.  VJ.LE.1200.) THEN 
-            JFAC = (VJ-700.)/10. + 0.00001
-            SFAC = XFAC(JFAC)
-         ENDIF
+C     
+            SFAC = 1.
+            IF (VJ.GE.700. .AND.  VJ.LE.1200.) THEN 
+               JFAC = (VJ-700.)/10. + 0.00001
+               SFAC = XFAC(JFAC)
+            ENDIF
 C                                                                         F00610
 C     CORRECTION TO SELF CONTINUUM (1 SEPT 85); FACTOR OF 0.78 AT 1000    F00620
 C                             AND  .......
 C                                                                         F00630
-      SH2O = SFAC * SH2O*(1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *    F00640
+            SFAC = SFAC*(1.+0.3   *(1.E+04/((VJ      )**2+1.E+04))) *   
+     *                  (1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *   
      *                  (1.-FACTRS*(ALPHS2/(VS2+(BETAS*VS2**2)+ALPHS2))) 
-         ENDIF                                                            F00650
+            SH2O = SFAC * SH2O
+         ENDIF
 C                                                                         F00660
 C     CORRECTION TO FOREIGN CONTINUUM                                     F00670
 C                                                                         F00680
-        VF2 = (VJ-V0F)**2
-        VF6 = VF2 * VF2 * VF2
-        FSCAL  = (1.-FACTRF*(HWSQF/(VF2+(BETAF*VF6)+HWSQF)))
-        VF2 = (VJ-V0F2)**2
-        VF4 = VF2*VF2
-        FSCAL = FSCAL* (1.- 0.6*(HWSQF2/(VF2 + BETA2*VF4 + HWSQF2)))
-C
-        FH2O(J)=FH2O(J)*fscal
+         VF2 = (VJ-V0F)**2
+         VF6 = VF2 * VF2 * VF2
+         FSCAL  = (1.-FACTRF*(HWSQF/(VF2+(BETAF*VF6)+HWSQF)))
+         VF2 = (VJ-V0F2)**2
+         VF4 = VF2*VF2
+         FSCAL = FSCAL* (1.- 0.6*(HWSQF2/(VF2 + BETA2*VF4 + HWSQF2)))
+C     
+         FH2O(J)=FH2O(J)*FSCAL
 C                                                                         F00700
-         C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)                              F00710
+         C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)
 C                                                                         F00720
 C     RADIATION FIELD                                                     F00730
 C                                                                         F00740
          IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                         F00750
-   20 CONTINUE                                                            F00760
+ 20   CONTINUE                                                            F00760
+C
       CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)            F00770
 C                                                                         F00780
 C     ********    CARBON DIOXIDE   ********                               F00790
@@ -162,41 +166,85 @@ C                                                                         F00900
    30 CONTINUE                                                            F00920
       CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)            F00930
 C                                                                         F00940
-C     ********    NITROGEN COLLISION INDUCED FUNDAMENTAL ********         F00950
+C                                                                         F00940
+C     ******** NITROGEN COLLISION INDUCED PURE ROTATION BAND  ********
+C
+C     Model used:
+C      Borysow, A, and L. Frommhold, "Collision-induced
+C         rototranslational absorption spectra of N2-N2
+C         pairs for temperatures from 50 to 300 K", The
+C         Astrophysical Journal, 311, 1043-1057, 1986.
+C
 C                                                                         F00960
-C     THE NITROGEN CONTINUUM IS IN UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)  F00970
-C                                                                         F00980
-      UNITN2 = 1.0E-05                                                    F00990
+C     THIS NITROGEN CONTINUUM IS IN UNITS OF 1./(CM AMAGAT^2)
+C
       IF (NMOL.GE.22) THEN                                                F01000
          WN2 = WK(22)                                                     F01010
       ELSE                                                                F01020
          WN2 = WBROAD                                                     F01030
       ENDIF                                                               F01040
-      WXN2 = (WN2)*RHOAVE*UNITN2                                          F01050
-C                                                                         F01060
-      CALL N2CONT (V1C,V2C,DVC,NPTC,CN2T0)                                F01070
+C                                                                         F00460
+C     The following puts WXN2 units in 1./(CM AMAGAT)
+C
+      WXN2 = WN2/XLOSMT
+C                                                                         F00480
+C     RHOFAC units are AMAGATS
+C
+      RHOFAC = ((WN2*1.e-20)/WTOT)*(PAVE/P0)*(273./TAVE)
+C
+      CALL N2R296 (V1C,V2C,DVC,NPTC,C0)
+      CALL N2R220 (V1C,V2C,DVC,NPTC,C1)
+C
       DO 40 J = 1, NPTC                                                   F01080
          VJ = V1C+DVC*FLOAT(J-1)                                          F01090
-         C(J) = CN2T0(J)*WXN2                                             F01100
+C
+         C(J) = 0.
+         IF (C0(J).GT.0. .AND. C1(J).GT.0.)
+     *        C(J) = WXN2*RHOFAC*C0(J)*(C0(J)/C1(J))**TFAC  
 C                                                                         F01110
 C     RADIATION FIELD                                                     F01120
 C                                                                         F01130
          IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                         F01140
-   40 CONTINUE                                                            F01150
+ 40   CONTINUE                                                            F01150
+      CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)            F01160
+C                                                                         F01170
+C                                                                         F00940
+C     ********    NITROGEN COLLISION INDUCED FUNDAMENTAL ********         F00950
+C                                                                         F00960
+C     THE NITROGEN CONTINUUM IS IN UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)  F00970
+C                                                                         F00980
+      UNITN2 = 1.0E-05                                                    F00990
+C
+      WXN2 = (WN2)*RHOAVE*UNITN2                                          F01050
+C                                                                         F01060
+      CALL N2F (V1C,V2C,DVC,NPTC,CN2T0)  
+      DO 45 J = 1, NPTC                                                   F01080
+         VJ = V1C+DVC*FLOAT(J-1)                                          F01090
+         C(J) = CN2T0(J)*WXN2                                             F01100
+C                                                                         F01110
+C        Radiation field                                                  F01120
+C                                                                         F01130
+         IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                         F01140
+ 45   CONTINUE                                                            F01150
       CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)            F01160
 C                                                                         F01170
 C     ********    DIFFUSE OZONE  ********                                 F01180
 C                                                                         F01190
-      IF (V2.GT.13000..AND.V1.LE.23600.) THEN                             F01200
-         WO3 = WK(3)/XLOSMT                                               F01210
-         CALL XO3CHP (V1C,V2C,DVC,NPTO3,C0)                               F01220
+C     Smoothing coefficients from 8920.0-9165.0 cm-1 and from
+C     24570.0-24665.0 cm-1.  Data covers 9170.0-24565.0 cm-1
+C     region.
+C
+      IF (V2.GT.8920.0.AND.V1.LE.24665.0) THEN                            F01200
+         WO3 = WK(3)*1.0E-20                                              F01210
+         CALL XO3CHP (V1C,V2C,DVC,NPTO3,CCH0,CCH1,CCH2)                   F01220
 C                                                                         F01230
+         DT=TAVE-273.15
          DO 50 J = 1, NPTO3                                               F01240
-            C(J) = C0(J)*WO3                                              F01250
-            VJ = V1C+DVC*FLOAT(J-1)                                       F01260
-            IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01270
-   50    CONTINUE                                                         F01280
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01290
+             CCH0(J)=(CCH0(J)+(CCH1(J)+CCH2(J)*DT)*DT)*WO3
+             VJ = V1C+DVC*FLOAT(J-1)                                      F01260
+             IF (JRAD.EQ.1) CCH0(J) = CCH0(J)*RADFN(VJ,XKT)               F01270
+  50     CONTINUE                                                         F01280
+         CALL XINT (V1C,V2C,DVC,CCH0,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01290
 C                                                                         F01300
       ELSEIF (V2.GT.27370..AND.V1.LT.40800.) THEN                         F01310
          WO3 = WK(3)*1.E-20                                               F01320
@@ -288,55 +336,94 @@ C
 C                                                                         A10280
 C     THIS SUBROUTINE PRINTS THE CONTINUUM INFORMATION TO FILE IPR        A10290
 C                                                                         A10300
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,9),CINFO3(2,9),CINFO4(2,9)
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A10310
      *              NLNGTH,KFILE,KPANEL,LINFIL,NDFLE,IAFIL,IEXFIL,        A10320
      *              NLTEFL,LNFIL4,LNGTH4                                  A10330
+      COMMON /CNTPR/ CINFO1,CINFO2,CINFO3,CINFO4
 C                                                                         A10340
-      WRITE (IPR,900)                                                     A10350
-      WRITE (IPR,901)                                                     A10350
+      WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,9)
+      WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,9)
+      WRITE (IPR,910) ((CINFO3(I,J),I=1,2),J=1,9)
+      WRITE (IPR,910) ((CINFO4(I,J),I=1,2),J=1,9)
 C                                                                         A10360
       RETURN                                                              A10370
 C                                                                         A10380
-  900 FORMAT (//,'0  *****  CONTINUA :  ',//,20X, 
-C
-     *        ' H2O   SELF  (T)      0 - 20000 CM-1',2X,
-     *        '  ckd_2.1',/,20X,
-     *        '       AIR   (T)      0 - 20000 CM-1',2X, 
-     *        '  ckd_2.1',/,20X,
-     *        ' CO2   AIR            0 - 20000 CM-1',/,20X,               A10420
-C
-     *        ' N2    AIR         2020 -  2800 CM-1',20X,                 A10430
-     *        '  (01 JULY  1982)  ',/,20X,                                A10440
-C
-     *        ' O2    AIR   (T)   1390 -  1760 CM-1',/,20X,               A10450
-     *        '       O2/N2      36000 -  >>>> CM-1',2X,                  A10452
-     *        '  HERZBERG',/,20X,                                         A10454
-C
-     *        ' O3    AIR        13000 - 23600 CM-1',2X,                  A10460
-     *        '  CHAPPUIS',/,20X,                                         A10470
-     *        '             (T)  27370 - 40800 CM-1',2X,                  A10480
-     *        '  HARTLEY HUGGINS ',/,20X,                                 A10490
-     *        '                  40800 - 54000 CM-1',2X,                  A10500
-     *        '  HARTLEY HUGGINS '          )                             A10510
-C
-  901  FORMAT( //,
-     *        '  H2O SELF HAS BEEN REDUCED IN THE 800-1200 CM-1',         A10520
-     *        ' REGION',21X,'  (01 SEPT  1985)  ',/,                      A10530
-     *        '  03       TEMPERATURE DEPENDENCE HAS BEEN CORRECTED',     A10540
-     *        8X,16X,'  (01 MAY   1987)  ',/,                             A10550
-     *        '  02       (1390-1760) HAS BEEN REDUCED (FACTOR = 0.78)',  A10560
-     *        5x,16X,'  (07 MARCH 1990)  ',/,                             A10570
-     *        '  H2O SELF HAS BEEN REDUCED IN THE 1100-1500 CM-1',        A10520
-     *        ' REGION',20X,'  (01 APRIL 1993)  ',/,                      A10530
-     *        '  H2O FOREIGN HAS BEEN REDUCED AT ~1300 CM-1 AND',         A10520
-     *        ' IN ALL THE WINDOW REGIONS  ','  (01 APRIL 1993)  ',/,  
-     *        '  H2O SELF HAS BEEN MODIFIED IN THE 700-1500 CM-1',
-     *        ' REGION',20X,'  (01 MAY   1994)  ',/, 
-     *        '  H2O FOREIGN HAS BEEN MODIFIED IN THE ENTIRE',       
-     *        ' 1200-2200 CM-1 SPECTRAL RANGE   (01 MAY   1994) ')  
-
+ 910  FORMAT (2A51)
 C                                                                         A10580
       END                                                                 A10590
+C
+C     --------------------------------------------------------------
+      BLOCK DATA CNTINF
+C
+C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
+C
+      CHARACTER*51 CINFO1(2,9),CINFO2(2,9),CINFO3(2,9),CINFO4(2,9)
+      COMMON /CNTPR/ CINFO1,CINFO2,CINFO3,CINFO4
+C
+      DATA CINFO1/
+     *     '                                                   ',
+     *     '                                                   ',
+     *     '                                                   ',
+     *     '                                                   ',
+     *     '0  *****  CONTINUA :                               ',
+     *     '                                                   ',
+     *     '                                                   ',
+     *     '                                                   ',
+     *     '                     H2O   SELF  (T)      0 - 20000',
+     *     ' CM-1    ckd_2.2                                   ',
+     *     '                           AIR   (T)      0 - 20000',
+     *     ' CM-1    ckd_2.2                                   ',
+     *     '                     CO2   AIR            0 - 20000',
+     *     ' CM-1                                              ',
+     *     '                     N2    SELF           0 -   350',
+     *     ' CM-1    BORYSOW FORMMHOLD                         ',
+     *     '                           AIR         2020 -  2800',
+     *     ' CM-1                      (01 JULY  1982)         ' /
+C
+      DATA CINFO2/
+     *     '                     O2    AIR   (T)   1390 -  1760',
+     *     ' CM-1                                              ',
+     *     '                           O2/N2      36000 -  >>>>',
+     *     ' CM-1    HERZBERG                                  ',
+     *     '                     O3    AIR         9170 - 24565',
+     *     ' CM-1    CHAPPUIS / WULF                           ',
+     *     '                                 (T)  27370 - 40800',
+     *     ' CM-1    HARTLEY HUGGINS                           ',
+     *     '                                      40800 - 54000',
+     *     ' CM-1    HARTLEY HUGGINS                           ',
+     *     8*' ' /
+C
+      DATA CINFO3/
+     *     '  H2O SELF HAS BEEN REDUCED IN THE 800-1200 CM-1 RE',
+     *     'GION                        (01 SEPT 1985)         ',
+     *     '  03       TEMPERATURE DEPENDENCE HAS BEEN CORRECTE',
+     *     'D                            (01 MAY 1987)         ',
+     *     '  02       (1390-1760) HAS BEEN REDUCED (FACTOR = 0',
+     *     '.78)                       (07 MARCH 1990)         ',
+     *     '  H2O SELF HAS BEEN REDUCED IN THE 1100-1500 CM-1 R',
+     *     'EGION                      (01 APRIL 1993)         ',
+     *     '  H2O FOREIGN HAS BEEN REDUCED AT ~1300 CM-1 AND IN',
+     *     ' ALL THE WINDOW REGIONS    (01 APRIL 1993)         ',
+     *     '  H2O SELF HAS BEEN MODIFIED IN THE 700-1500 CM-1 R',
+     *     'EGION                        (01 MAY 1994)         ',
+     *     '  H2O FOREIGN HAS BEEN MODIFIED IN THE ENTIRE 1200-',
+     *     '2200 CM-1 SPECTRAL RANGE     (01 MAY 1994)         ',
+     *     '  H2O SELF HAS BEEN INCREASED 30% IN THE MICROWAVE ',
+     *     'REGION                       (09 FEB 1996)         ',
+     *     '  N2 COLLISION INDUCED PURE ROTATION BAND ADDED    ',
+     *     '                             (09 FEB 1996)         ' /
+
+      DATA CINFO4/
+     *     '  O3 CHAPPUIS CHANGED TO VALUES FROM MODTRAN3      ',
+     *     '                             (09 FEB 1996)         ',
+     *     '                                                   ',
+     *     '                                                   ',
+     *     '  -------------------------------------------------',
+     *     '------------------------------------------         ',
+     *     12*' ' /
+C
+      END
 C
 C     --------------------------------------------------------------
 C
@@ -353,12 +440,14 @@ C                                                                         F02290
       V2C = V2ABS+DVC                                                     F02320
 C                                                                         F02330
       I1 = (V1C-V1S)/DVS                                                  F02340
-      IF (V1C.LT.V1S) I1 = I1-1                                           F02350
-C                                                                         F02360
-      V1C = V1S+DVS*FLOAT(I1)                                             F02370
-      I2 = (V2C-V1S)/DVS                                                  F02380
-      NPTC = I2-I1+3                                                      F02390
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F02400
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F02410
          I = I1+J                                                         F02420
          C(J) = 0.                                                        F02430
@@ -854,12 +943,14 @@ C                                                                         F07240
       V2C = V2ABS+DVC                                                     F07270
 C                                                                         F07280
       I1 = (V1C-V1S)/DVS                                                  F07290
-      IF (V1C.LT.V1S) I1 = I1-1                                           F07300
-C                                                                         F07310
-      V1C = V1S+DVS*FLOAT(I1)                                             F07320
-      I2 = (V2C-V1S)/DVS                                                  F07330
-      NPTC = I2-I1+3                                                      F07340
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F07350
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F07360
          I = I1+J                                                         F07370
          C(J) = 0.                                                        F07380
@@ -1356,12 +1447,14 @@ C                                                                         F12200
       V2C = V2ABS+DVC                                                     F12230
 C                                                                         F12240
       I1 = (V1C-V1S)/DVS                                                  F12250
-      IF (V1C.LT.V1S) I1 = I1-1                                           F12260
-C                                                                         F12270
-      V1C = V1S+DVS*FLOAT(I1)                                             F12280
-      I2 = (V2C-V1S)/DVS                                                  F12290
-      NPTC = I2-I1+3                                                      F12300
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F12310
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F12320
          I = I1+J                                                         F12330
          C(J) = 0.                                                        F12340
@@ -1858,12 +1951,14 @@ C                                                                         F17160
       V2C = V2ABS+DVC                                                     F17190
 C                                                                         F17200
       I1 = (V1C-V1S)/DVS                                                  F17210
-      IF (V1C.LT.V1S) I1 = I1-1                                           F17220
-C                                                                         F17230
-      V1C = V1S+DVS*FLOAT(I1)                                             F17240
-      I2 = (V2C-V1S)/DVS                                                  F17250
-      NPTC = I2-I1+3                                                      F17260
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F17270
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F17280
          I = I1+J                                                         F17290
          C(J) = 0.                                                        F17300
@@ -2124,12 +2219,141 @@ C                                                                         F19800
 C
 C     --------------------------------------------------------------
 C
-      SUBROUTINE N2CONT (V1C,V2C,DVC,NPTC,C)                              F19820
+      SUBROUTINE N2R296 (V1C,V2C,DVC,NPTC,C)
+C
+      IMPLICIT DOUBLE PRECISION (V)
+C
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)
+      COMMON /N2RT0/ V1S,V2S,DVS,NPTS,S(73)
+      DIMENSION C(*)
+C
+      DVC = DVS
+      V1C = V1ABS-DVC
+      V2C = V2ABS+DVC
+C
+      I1 = (V1C-V1S)/DVS
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
+      DO 10 J = 1, NPTC
+         I = I1+J
+         C(J) = 0.
+         IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10
+         C(J) = S(I)
+   10 CONTINUE
+C
+      RETURN
+C
+      END
+C
+      BLOCK DATA BN2T0
+C
+      IMPLICIT DOUBLE PRECISION (V)
+C
+C               UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)
+C
+C           THESE DATA ARE FOR 296K
+C
+      COMMON /N2RT0/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT296(73)
+C
+      DATA V1N2CR,V2N2CR,DVN2CR,NPTN2C / -10., 350., 5.0, 73 /
+C
+      DATA CT296/
+     *     0.4303E-06, 0.4850E-06, 0.4979E-06, 0.4850E-06, 0.4303E-06,
+     *     0.3715E-06, 0.3292E-06, 0.3086E-06, 0.2920E-06, 0.2813E-06,
+     *     0.2804E-06, 0.2738E-06, 0.2726E-06, 0.2724E-06, 0.2635E-06,
+     *     0.2621E-06, 0.2547E-06, 0.2428E-06, 0.2371E-06, 0.2228E-06,
+     *     0.2100E-06, 0.1991E-06, 0.1822E-06, 0.1697E-06, 0.1555E-06,
+     *     0.1398E-06, 0.1281E-06, 0.1138E-06, 0.1012E-06, 0.9078E-07,
+     *     0.7879E-07, 0.6944E-07, 0.6084E-07, 0.5207E-07, 0.4540E-07,
+     *     0.3897E-07, 0.3313E-07, 0.2852E-07, 0.2413E-07, 0.2045E-07,
+     *     0.1737E-07, 0.1458E-07, 0.1231E-07, 0.1031E-07, 0.8586E-08,
+     *     0.7162E-08, 0.5963E-08, 0.4999E-08, 0.4226E-08, 0.3607E-08,
+     *     0.3090E-08, 0.2669E-08, 0.2325E-08, 0.2024E-08, 0.1783E-08,
+     *     0.1574E-08, 0.1387E-08, 0.1236E-08, 0.1098E-08, 0.9777E-09,
+     *     0.8765E-09, 0.7833E-09, 0.7022E-09, 0.6317E-09, 0.5650E-09,
+     *     0.5100E-09, 0.4572E-09, 0.4115E-09, 0.3721E-09, 0.3339E-09,
+     *     0.3005E-09, 0.2715E-09, 0.2428E-09/
+C
+      END
+C
+      SUBROUTINE N2R220 (V1C,V2C,DVC,NPTC,C)
+C
+      IMPLICIT DOUBLE PRECISION (V)
+C
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)
+      COMMON /N2RT1/ V1S,V2S,DVS,NPTS,S(73)
+      DIMENSION C(*)
+C
+      DVC = DVS
+      V1C = V1ABS-DVC
+      V2C = V2ABS+DVC
+C
+      I1 = (V1C-V1S)/DVS
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
+      DO 10 J = 1, NPTC
+         I = I1+J
+         C(J) = 0.
+         IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10
+         C(J) = S(I)
+   10 CONTINUE
+C
+      RETURN
+C
+      END
+C
+      BLOCK DATA BN2T1
+C
+      IMPLICIT DOUBLE PRECISION (V)
+C
+C               UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)
+C
+C         THESE DATA ARE FOR 220K
+C
+      COMMON /N2RT1/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT220(73)
+C
+      DATA V1N2CR,V2N2CR,DVN2CR,NPTN2C / -10., 350., 5.0, 73 /
+C
+      DATA CT220/
+     *     0.4946E-06, 0.5756E-06, 0.5964E-06, 0.5756E-06, 0.4946E-06,
+     *     0.4145E-06, 0.3641E-06, 0.3482E-06, 0.3340E-06, 0.3252E-06,
+     *     0.3299E-06, 0.3206E-06, 0.3184E-06, 0.3167E-06, 0.2994E-06,
+     *     0.2943E-06, 0.2794E-06, 0.2582E-06, 0.2468E-06, 0.2237E-06,
+     *     0.2038E-06, 0.1873E-06, 0.1641E-06, 0.1474E-06, 0.1297E-06,
+     *     0.1114E-06, 0.9813E-07, 0.8309E-07, 0.7059E-07, 0.6068E-07,
+     *     0.5008E-07, 0.4221E-07, 0.3537E-07, 0.2885E-07, 0.2407E-07,
+     *     0.1977E-07, 0.1605E-07, 0.1313E-07, 0.1057E-07, 0.8482E-08,
+     *     0.6844E-08, 0.5595E-08, 0.4616E-08, 0.3854E-08, 0.3257E-08,
+     *     0.2757E-08, 0.2372E-08, 0.2039E-08, 0.1767E-08, 0.1548E-08,
+     *     0.1346E-08, 0.1181E-08, 0.1043E-08, 0.9110E-09, 0.8103E-09,
+     *     0.7189E-09, 0.6314E-09, 0.5635E-09, 0.4976E-09, 0.4401E-09,
+     *     0.3926E-09, 0.3477E-09, 0.3085E-09, 0.2745E-09, 0.2416E-09,
+     *     0.2155E-09, 0.1895E-09, 0.1678E-09, 0.1493E-09, 0.1310E-09,
+     *     0.1154E-09, 0.1019E-09, 0.8855E-10/
+ 
+C
+      END
+C
+C     --------------------------------------------------------------
+C
+      SUBROUTINE N2F (V1C,V2C,DVC,NPTC,C) 
 C                                                                         F19830
       IMPLICIT DOUBLE PRECISION (V)                                     ! F19840
 C                                                                         F19850
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F19860
-      COMMON /CONN2/ V1S,V2S,DVS,NPTS,S(157)                              F19870
+      COMMON /CN2F/ V1S,V2S,DVS,NPTS,S(157)                 
       DIMENSION C(*)                                                      F19880
 C                                                                         F19890
       DVC = DVS                                                           F19900
@@ -2137,12 +2361,14 @@ C                                                                         F19890
       V2C = V2ABS+DVC                                                     F19920
 C                                                                         F19930
       I1 = (V1C-V1S)/DVS                                                  F19940
-      IF (V1C.LT.V1S) I1 = I1-1                                           F19950
-C                                                                         F19960
-      V1C = V1S+DVS*FLOAT(I1)                                             F19970
-      I2 = (V2C-V1S)/DVS                                                  F19980
-      NPTC = I2-I1+3                                                      F19990
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F20000
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F20010
          I = I1+J                                                         F20020
          C(J) = 0.                                                        F20030
@@ -2156,13 +2382,15 @@ C                                                                         F20090
 C
 C     --------------------------------------------------------------
 C
-      BLOCK DATA BN2                                                      F20110
+      BLOCK DATA BN2F                                                     F20110
 C                                                                         F20120
       IMPLICIT DOUBLE PRECISION (V)                                     ! F20130
 C                                                                         F20140
-C               UNITS OF (CM**2/MOL)*(1/CM-1)*(CM/KM)                     F20150
+C               UNITS OF (CM**2/MOLEC)*(1/CM-1)*(CM/KM) 
+C       
+C       THESE DATA ARE TREATED AS TEMPERATURE INDEPENDENT
 C                                                                         F20160
-      COMMON /CONN2/ V1N2,V2N2,DVN2,NPTN2,CN2001(102),CN2103(55)          F20170
+      COMMON /CN2F/ V1N2,V2N2,DVN2,NPTN2,CN2001(102),CN2103(55)           F20170
 C                                                                         F20180
       DATA V1N2,V2N2,DVN2,NPTN2 / 2020., 2800., 5.0, 157 /                F20190
 C                                                                         F20200
@@ -2200,34 +2428,42 @@ C                                                                         F20500
 C
 C     --------------------------------------------------------------
 C
-      SUBROUTINE XO3CHP (V1C,V2C,DVC,NPTC,C)                              F20520
+      SUBROUTINE XO3CHP (V1C,V2C,DVC,NPTC,C0,C1,C2)                       F20520
 C                                                                         F20530
       IMPLICIT DOUBLE PRECISION (V)                                     ! F20540
 C                                                                         F20550
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F20560
-      COMMON /O3CHAP/ V1S,V2S,DVS,NPTS,S(54)                              F20570
-      DIMENSION C(*)                                                      F20580
+      COMMON /O3CHAP/ V1S,V2S,DVS,NPTS,X(3150),Y(3150),Z(3150)            F20570
+      DIMENSION C0(*),C1(*),C2(*)                                         F20580
 C                                                                         F20590
       DVC = DVS                                                           F20600
       V1C = V1ABS-DVC                                                     F20610
       V2C = V2ABS+DVC                                                     F20620
 C                                                                         F20630
       I1 = (V1C-V1S)/DVS                                                  F20640
-      IF (V1C.LT.V1S) I1 = I1-1                                           F20650
-C                                                                         F20660
-      V1C = V1S+DVS*FLOAT(I1)                                             F20670
-      I2 = (V2C-V1S)/DVS                                                  F20680
-      NPTC = I2-I1+3                                                      F20690
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F20700
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F20710
          I = I1+J                                                         F20720
-         C(J) = 0.                                                        F20730
-         IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F20740
-         VJ = V1C+DVC*FLOAT(J-1)                                          F20750
-         C(J) = S(I)/VJ                                                   F20760
-C                                                                         F20770
-C     RADIATION FLD REMOVED FROM DIFFUSE OZONE                            F20780
-C                                                                         F20790
+         IF ((I.LT.1).OR.(I.GT.NPTS)) THEN
+             C0(J) = 0.
+             C1(J)=0.
+             C2(J)=0.
+         ELSE
+C
+C            Remove radiation field from diffuse ozone
+C
+             VJ = V1C+DVC*FLOAT(J-1)
+             C0(J)=X(I)/VJ
+             C1(J)=Y(I)/VJ
+             C2(J)=Z(I)/VJ
+         ENDIF
    10 CONTINUE                                                            F20800
 C                                                                         F20810
       RETURN                                                              F20820
@@ -2235,34 +2471,2118 @@ C                                                                         F20830
       END                                                                 F20840
 C
 C     --------------------------------------------------------------
+      BLOCK DATA O3CH
 C
-      BLOCK DATA O3CH                                                     F20850
-C                                                                         F20860
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F20870
-C                                                                         F20880
-      COMMON /O3CHAP/ V1O1,V2O1,DVO1,NPT1,O3DIF1(54)                      F20890
-C                                                                         F20900
-C     OZONE CHAPPUIS VISIBLE ABSORPTION COEFFICIENTS                      F20910
-C                   (CM-ATM)-1                                            F20920
-C                                                                         F20930
-C     O3 LOCATION  1    V =  13000  CM-1                                  F20940
-C     O3 LOCATION  54   V =  23600  CM-1                                  F20950
-C        DV = 200  CM-1                                                   F20960
-C                                                                         F20970
-      DATA V1O1,V2O1,DVO1,NPT1/ 13000.,23600.,200.,54 /                   F20980
-C                                                                         F20990
-      DATA O3DIF1 /                                                       F21000
-     * 4.50E-03, 8.00E-03, 1.07E-02, 1.10E-02, 1.27E-02, 1.71E-02,        F21010
-     * 2.00E-02, 2.45E-02, 3.07E-02, 3.84E-02, 4.78E-02, 5.67E-02,        F21020
-     * 6.54E-02, 7.62E-02, 9.15E-02, 1.00E-01, 1.09E-01, 1.20E-01,        F21030
-     * 1.28E-01, 1.12E-01, 1.11E-01, 1.16E-01, 1.19E-01, 1.13E-01,        F21040
-     * 1.03E-01, 9.24E-02, 8.28E-02, 7.57E-02, 7.07E-02, 6.58E-02,        F21050
-     * 5.56E-02, 4.77E-02, 4.06E-02, 3.87E-02, 3.82E-02, 2.94E-02,        F21060
-     * 2.09E-02, 1.80E-02, 1.91E-02, 1.66E-02, 1.17E-02, 7.70E-03,        F21070
-     * 6.10E-03, 8.50E-03, 6.10E-03, 3.70E-03, 3.20E-03, 3.10E-03,        F21080
-     * 2.55E-03, 1.98E-03, 1.40E-03, 8.25E-04, 2.50E-04, 0.      /        F21090
-C                                                                         F21100
-      END                                                                 F21110
+C     CHAPPUIS AND WULF BAND
+C
+C     BEGINNING AND ENDING FREQUENCIES FROM DATA (CM-1):
+C
+C                        9170.0 24565.0
+C
+C     Added points at beginning and end (X,Y,Z(1:50) and
+C     X,Y,Z(3130:3150)).  Zeroed values of Y,Z(1:789) to eliminate
+C     ringing from interpolations done in MODTRAN.  Changed coefficients
+C     X(32:50,3130:3150) Y(821:841,3130:3150), & Z(821:841,3130:3150) to
+C     smooth coefficients to zero.
+C     Smoothing coefficient frequencies (cm-1):
+C
+C             9075.0 -  9165.0  and 24570.0 - 24665.0 for X
+C            13020.0 - 13120.0  and 24570.0 - 24665.0 for Y
+C            13020.0 - 13120.0  and 24570.0 - 24665.0 for Z
+C             
+C     
+C
+C     CROSS-SECTIONS IN CM^2 TIMES 1.0E20
+C     FORMULA FOR CROSS SECTION:  X+Y*DT+Z*DT*DT, DT=T-273.15
+C     THE OUTPUT OF THIS ROUTINE IS C0=X, CT1=Y AND CT2=Z.
+C
+      IMPLICIT DOUBLE PRECISION (V)
+      COMMON /O3CHAP/VBEG,VEND,DVINCR,NMAX,X(3150),Y(3150),Z(3150)
+C
+      DATA VBEG, VEND, DVINCR, NMAX /8920.0, 24665.0, 5.0, 3150/
+      DATA (X(I),I=    1,  50)/
+     1      0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,
+     2      0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,
+     3      0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,
+     4      0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,
+     5      0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,
+     6      0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,  0.00000  ,
+     7      0.00000  ,  0.075E-05,  0.150E-05,  0.225E-05,  0.300E-05,
+     8      0.400E-05,  0.500E-05,  0.600E-05,  0.700E-05,  0.850E-05,
+     9      1.000E-05,  1.200E-05,  1.430E-05,  1.680E-05,  1.980E-05,
+     *      2.280E-05,  2.630E-05,  2.980E-05,  3.376E-05,  3.826E-05/
+      DATA (X(I),I= 51, 100)/
+     1      4.276E-05,  4.775E-05,  5.825E-05,  6.908E-05,  7.299E-05,
+     2      7.116E-05,  7.388E-05,  7.965E-05,  7.689E-05,  6.900E-05,
+     3      7.008E-05,  6.945E-05,  7.083E-05,  7.053E-05,  6.908E-05,
+     4      6.923E-05,  6.770E-05,  7.146E-05,  7.749E-05,  8.464E-05,
+     5      8.441E-05,  8.754E-05,  8.795E-05,  9.971E-05,  9.632E-05,
+     6      9.539E-05,  1.037E-04,  1.085E-04,  1.058E-04,  1.077E-04,
+     7      1.121E-04,  1.193E-04,  1.292E-04,  1.364E-04,  1.526E-04,
+     8      1.658E-04,  1.808E-04,  1.861E-04,  1.786E-04,  1.804E-04,
+     9      1.885E-04,  1.972E-04,  2.218E-04,  2.408E-04,  2.317E-04,
+     $      2.098E-04,  1.938E-04,  1.851E-04,  1.896E-04,  1.875E-04/
+      DATA (X(I),I=  101,  150)/
+     1      1.708E-04,  1.710E-04,  1.796E-04,  1.865E-04,  1.943E-04,
+     2      1.881E-04,  1.885E-04,  2.136E-04,  2.255E-04,  2.267E-04,
+     3      2.234E-04,  2.418E-04,  2.695E-04,  2.710E-04,  2.738E-04,
+     4      3.066E-04,  3.269E-04,  3.465E-04,  3.986E-04,  4.410E-04,
+     5      4.719E-04,  5.051E-04,  5.211E-04,  5.132E-04,  5.125E-04,
+     6      5.159E-04,  5.549E-04,  6.562E-04,  7.168E-04,  6.502E-04,
+     7      5.140E-04,  4.161E-04,  3.620E-04,  3.264E-04,  3.004E-04,
+     8      2.815E-04,  2.650E-04,  2.527E-04,  2.424E-04,  2.292E-04,
+     9      2.155E-04,  2.072E-04,  1.992E-04,  1.943E-04,  1.914E-04,
+     $      1.855E-04,  1.813E-04,  1.724E-04,  1.687E-04,  1.676E-04/
+      DATA (X(I),I= 151, 200)/
+     1      1.601E-04,  1.503E-04,  1.518E-04,  1.436E-04,  1.455E-04,
+     2      1.448E-04,  1.410E-04,  1.406E-04,  1.425E-04,  1.407E-04,
+     3      1.405E-04,  1.436E-04,  1.369E-04,  1.355E-04,  1.331E-04,
+     4      1.328E-04,  1.350E-04,  1.394E-04,  1.372E-04,  1.444E-04,
+     5      1.490E-04,  1.455E-04,  1.460E-04,  1.523E-04,  1.559E-04,
+     6      1.654E-04,  1.766E-04,  1.843E-04,  1.911E-04,  1.881E-04,
+     7      1.894E-04,  1.927E-04,  2.043E-04,  2.106E-04,  2.215E-04,
+     8      2.268E-04,  2.249E-04,  2.230E-04,  2.302E-04,  2.408E-04,
+     9      2.518E-04,  2.625E-04,  2.753E-04,  2.788E-04,  2.701E-04,
+     $      2.746E-04,  2.935E-04,  3.173E-04,  3.457E-04,  3.452E-04/
+      DATA (X(I),I=  201,  250)/
+     1      3.329E-04,  3.443E-04,  3.706E-04,  4.079E-04,  4.403E-04,
+     2      4.343E-04,  4.172E-04,  4.448E-04,  5.132E-04,  5.635E-04,
+     3      5.590E-04,  5.419E-04,  6.007E-04,  6.912E-04,  7.258E-04,
+     4      7.146E-04,  7.529E-04,  8.706E-04,  9.465E-04,  9.923E-04,
+     5      1.134E-03,  1.286E-03,  1.351E-03,  1.485E-03,  1.709E-03,
+     6      1.897E-03,  2.086E-03,  2.186E-03,  2.195E-03,  2.185E-03,
+     7      2.199E-03,  2.336E-03,  2.666E-03,  3.076E-03,  3.075E-03,
+     8      2.543E-03,  1.920E-03,  1.498E-03,  1.283E-03,  1.165E-03,
+     9      1.070E-03,  9.833E-04,  9.018E-04,  8.207E-04,  7.451E-04,
+     $      6.811E-04,  6.178E-04,  5.661E-04,  5.199E-04,  4.868E-04/
+      DATA (X(I),I= 251, 300)/
+     1      4.541E-04,  4.291E-04,  4.135E-04,  3.990E-04,  3.878E-04,
+     2      3.815E-04,  3.722E-04,  3.691E-04,  3.726E-04,  3.711E-04,
+     3      3.744E-04,  3.778E-04,  3.808E-04,  3.826E-04,  3.852E-04,
+     4      3.919E-04,  3.975E-04,  3.990E-04,  4.053E-04,  4.176E-04,
+     5      4.232E-04,  4.291E-04,  4.414E-04,  4.541E-04,  4.723E-04,
+     6      4.887E-04,  5.058E-04,  5.226E-04,  5.501E-04,  5.836E-04,
+     7      6.059E-04,  6.238E-04,  6.469E-04,  6.711E-04,  7.046E-04,
+     8      7.448E-04,  7.794E-04,  8.054E-04,  8.222E-04,  8.371E-04,
+     9      8.538E-04,  8.612E-04,  8.698E-04,  8.914E-04,  9.122E-04,
+     $      9.305E-04,  9.562E-04,  9.844E-04,  1.018E-03,  1.053E-03/
+      DATA (X(I),I=  301,  350)/
+     1      1.091E-03,  1.136E-03,  1.187E-03,  1.233E-03,  1.289E-03,
+     2      1.336E-03,  1.372E-03,  1.405E-03,  1.435E-03,  1.470E-03,
+     3      1.504E-03,  1.517E-03,  1.511E-03,  1.541E-03,  1.619E-03,
+     4      1.728E-03,  1.848E-03,  1.955E-03,  2.044E-03,  2.128E-03,
+     5      2.254E-03,  2.396E-03,  2.527E-03,  2.660E-03,  2.832E-03,
+     6      3.010E-03,  3.182E-03,  3.340E-03,  3.504E-03,  3.673E-03,
+     7      3.822E-03,  3.923E-03,  3.997E-03,  4.042E-03,  4.061E-03,
+     8      4.035E-03,  3.979E-03,  3.901E-03,  3.785E-03,  3.642E-03,
+     9      3.494E-03,  3.339E-03,  3.173E-03,  3.004E-03,  2.849E-03,
+     $      2.703E-03,  2.556E-03,  2.432E-03,  2.310E-03,  2.191E-03/
+      DATA (X(I),I= 351, 400)/
+     1      2.076E-03,  1.969E-03,  1.883E-03,  1.818E-03,  1.753E-03,
+     2      1.705E-03,  1.672E-03,  1.643E-03,  1.617E-03,  1.616E-03,
+     3      1.629E-03,  1.648E-03,  1.662E-03,  1.667E-03,  1.669E-03,
+     4      1.664E-03,  1.655E-03,  1.645E-03,  1.643E-03,  1.642E-03,
+     5      1.632E-03,  1.629E-03,  1.632E-03,  1.638E-03,  1.644E-03,
+     6      1.647E-03,  1.646E-03,  1.642E-03,  1.638E-03,  1.632E-03,
+     7      1.628E-03,  1.626E-03,  1.628E-03,  1.635E-03,  1.642E-03,
+     8      1.649E-03,  1.653E-03,  1.656E-03,  1.660E-03,  1.669E-03,
+     9      1.685E-03,  1.705E-03,  1.730E-03,  1.755E-03,  1.779E-03,
+     $      1.804E-03,  1.830E-03,  1.861E-03,  1.896E-03,  1.931E-03/
+      DATA (X(I),I=  401,  450)/
+     1      1.962E-03,  1.991E-03,  2.024E-03,  2.068E-03,  2.131E-03,
+     2      2.207E-03,  2.285E-03,  2.357E-03,  2.423E-03,  2.490E-03,
+     3      2.564E-03,  2.649E-03,  2.743E-03,  2.842E-03,  2.943E-03,
+     4      3.044E-03,  3.146E-03,  3.248E-03,  3.350E-03,  3.452E-03,
+     5      3.555E-03,  3.664E-03,  3.785E-03,  3.927E-03,  4.083E-03,
+     6      4.250E-03,  4.418E-03,  4.570E-03,  4.708E-03,  4.835E-03,
+     7      4.961E-03,  5.088E-03,  5.218E-03,  5.348E-03,  5.471E-03,
+     8      5.594E-03,  5.713E-03,  5.828E-03,  5.933E-03,  6.026E-03,
+     9      6.100E-03,  6.152E-03,  6.186E-03,  6.193E-03,  6.182E-03,
+     $      6.149E-03,  6.093E-03,  6.011E-03,  5.914E-03,  5.799E-03/
+      DATA (X(I),I= 451, 500)/
+     1      5.676E-03,  5.553E-03,  5.438E-03,  5.330E-03,  5.233E-03,
+     2      5.151E-03,  5.080E-03,  5.025E-03,  4.987E-03,  4.972E-03,
+     3      4.976E-03,  4.991E-03,  5.013E-03,  5.032E-03,  5.043E-03,
+     4      5.043E-03,  5.032E-03,  5.010E-03,  4.980E-03,  4.950E-03,
+     5      4.913E-03,  4.879E-03,  4.838E-03,  4.786E-03,  4.723E-03,
+     6      4.652E-03,  4.578E-03,  4.503E-03,  4.433E-03,  4.366E-03,
+     7      4.306E-03,  4.247E-03,  4.191E-03,  4.135E-03,  4.083E-03,
+     8      4.035E-03,  3.997E-03,  3.968E-03,  3.945E-03,  3.923E-03,
+     9      3.904E-03,  3.886E-03,  3.867E-03,  3.856E-03,  3.848E-03,
+     $      3.845E-03,  3.848E-03,  3.860E-03,  3.878E-03,  3.897E-03/
+      DATA (X(I),I=  501,  550)/
+     1      3.915E-03,  3.941E-03,  3.971E-03,  4.008E-03,  4.057E-03,
+     2      4.113E-03,  4.176E-03,  4.243E-03,  4.325E-03,  4.418E-03,
+     3      4.518E-03,  4.626E-03,  4.723E-03,  4.812E-03,  4.891E-03,
+     4      4.972E-03,  5.058E-03,  5.155E-03,  5.263E-03,  5.382E-03,
+     5      5.516E-03,  5.657E-03,  5.810E-03,  5.974E-03,  6.145E-03,
+     6      6.331E-03,  6.532E-03,  6.752E-03,  6.993E-03,  7.247E-03,
+     7      7.507E-03,  7.768E-03,  8.036E-03,  8.304E-03,  8.579E-03,
+     8      8.862E-03,  9.148E-03,  9.442E-03,  9.744E-03,  1.006E-02,
+     9      1.038E-02,  1.071E-02,  1.104E-02,  1.137E-02,  1.168E-02,
+     $      1.195E-02,  1.220E-02,  1.242E-02,  1.264E-02,  1.283E-02/
+      DATA (X(I),I= 551, 600)/
+     1      1.303E-02,  1.322E-02,  1.339E-02,  1.356E-02,  1.371E-02,
+     2      1.385E-02,  1.398E-02,  1.408E-02,  1.415E-02,  1.417E-02,
+     3      1.415E-02,  1.408E-02,  1.395E-02,  1.376E-02,  1.353E-02,
+     4      1.326E-02,  1.295E-02,  1.262E-02,  1.228E-02,  1.194E-02,
+     5      1.161E-02,  1.128E-02,  1.097E-02,  1.067E-02,  1.038E-02,
+     6      1.011E-02,  9.859E-03,  9.625E-03,  9.409E-03,  9.208E-03,
+     7      9.022E-03,  8.843E-03,  8.668E-03,  8.505E-03,  8.348E-03,
+     8      8.207E-03,  8.088E-03,  7.987E-03,  7.909E-03,  7.842E-03,
+     9      7.782E-03,  7.727E-03,  7.675E-03,  7.619E-03,  7.570E-03,
+     $      7.526E-03,  7.488E-03,  7.459E-03,  7.440E-03,  7.429E-03/
+      DATA (X(I),I=  601,  650)/
+     1      7.429E-03,  7.429E-03,  7.440E-03,  7.455E-03,  7.474E-03,
+     2      7.500E-03,  7.529E-03,  7.563E-03,  7.593E-03,  7.622E-03,
+     3      7.649E-03,  7.675E-03,  7.715E-03,  7.771E-03,  7.846E-03,
+     4      7.939E-03,  8.039E-03,  8.147E-03,  8.255E-03,  8.367E-03,
+     5      8.482E-03,  8.605E-03,  8.746E-03,  8.903E-03,  9.078E-03,
+     6      9.271E-03,  9.472E-03,  9.677E-03,  9.889E-03,  1.011E-02,
+     7      1.034E-02,  1.059E-02,  1.085E-02,  1.113E-02,  1.143E-02,
+     8      1.174E-02,  1.207E-02,  1.242E-02,  1.277E-02,  1.313E-02,
+     9      1.350E-02,  1.388E-02,  1.425E-02,  1.464E-02,  1.503E-02,
+     $      1.544E-02,  1.586E-02,  1.628E-02,  1.670E-02,  1.713E-02/
+      DATA (X(I),I= 651, 700)/
+     1      1.755E-02,  1.796E-02,  1.837E-02,  1.875E-02,  1.911E-02,
+     2      1.945E-02,  1.975E-02,  2.002E-02,  2.028E-02,  2.050E-02,
+     3      2.070E-02,  2.089E-02,  2.104E-02,  2.117E-02,  2.126E-02,
+     4      2.132E-02,  2.135E-02,  2.135E-02,  2.130E-02,  2.123E-02,
+     5      2.114E-02,  2.101E-02,  2.087E-02,  2.072E-02,  2.053E-02,
+     6      2.032E-02,  2.010E-02,  1.986E-02,  1.963E-02,  1.939E-02,
+     7      1.915E-02,  1.891E-02,  1.868E-02,  1.845E-02,  1.821E-02,
+     8      1.798E-02,  1.773E-02,  1.746E-02,  1.719E-02,  1.692E-02,
+     9      1.666E-02,  1.643E-02,  1.621E-02,  1.598E-02,  1.576E-02,
+     $      1.558E-02,  1.542E-02,  1.529E-02,  1.519E-02,  1.509E-02/
+      DATA (X(I),I=  701,  750)/
+     1      1.501E-02,  1.493E-02,  1.484E-02,  1.477E-02,  1.473E-02,
+     2      1.471E-02,  1.469E-02,  1.468E-02,  1.468E-02,  1.470E-02,
+     3      1.473E-02,  1.475E-02,  1.476E-02,  1.477E-02,  1.480E-02,
+     4      1.484E-02,  1.489E-02,  1.497E-02,  1.507E-02,  1.520E-02,
+     5      1.533E-02,  1.543E-02,  1.551E-02,  1.557E-02,  1.563E-02,
+     6      1.569E-02,  1.575E-02,  1.581E-02,  1.591E-02,  1.602E-02,
+     7      1.614E-02,  1.625E-02,  1.637E-02,  1.654E-02,  1.676E-02,
+     8      1.698E-02,  1.719E-02,  1.740E-02,  1.762E-02,  1.784E-02,
+     9      1.805E-02,  1.827E-02,  1.852E-02,  1.878E-02,  1.906E-02,
+     $      1.935E-02,  1.962E-02,  1.985E-02,  2.005E-02,  2.024E-02/
+      DATA (X(I),I= 751, 800)/
+     1      2.047E-02,  2.073E-02,  2.106E-02,  2.137E-02,  2.167E-02,
+     2      2.194E-02,  2.223E-02,  2.256E-02,  2.287E-02,  2.316E-02,
+     3      2.344E-02,  2.373E-02,  2.405E-02,  2.445E-02,  2.490E-02,
+     4      2.542E-02,  2.592E-02,  2.640E-02,  2.684E-02,  2.729E-02,
+     5      2.778E-02,  2.828E-02,  2.876E-02,  2.914E-02,  2.948E-02,
+     6      2.979E-02,  3.010E-02,  3.039E-02,  3.066E-02,  3.091E-02,
+     7      3.116E-02,  3.138E-02,  3.153E-02,  3.155E-02,  3.152E-02,
+     8      3.146E-02,  3.144E-02,  3.138E-02,  3.126E-02,  3.110E-02,
+     9      3.092E-02,  3.073E-02,  3.054E-02,  3.033E-02,  3.008E-02,
+     $      2.980E-02,  2.947E-02,  2.910E-02,  2.870E-02,  2.832E-02/
+      DATA (X(I),I=  801,  850)/
+     1      2.795E-02,  2.765E-02,  2.735E-02,  2.706E-02,  2.680E-02,
+     2      2.656E-02,  2.637E-02,  2.620E-02,  2.604E-02,  2.587E-02,
+     3      2.570E-02,  2.551E-02,  2.533E-02,  2.520E-02,  2.514E-02,
+     4      2.513E-02,  2.513E-02,  2.512E-02,  2.509E-02,  2.506E-02,
+     5      2.504E-02,  2.501E-02,  2.498E-02,  2.494E-02,  2.493E-02,
+     6      2.497E-02,  2.508E-02,  2.522E-02,  2.535E-02,  2.545E-02,
+     7      2.550E-02,  2.558E-02,  2.568E-02,  2.578E-02,  2.587E-02,
+     8      2.592E-02,  2.598E-02,  2.605E-02,  2.619E-02,  2.631E-02,
+     9      2.621E-02,  2.617E-02,  2.629E-02,  2.642E-02,  2.654E-02,
+     $      2.669E-02,  2.685E-02,  2.700E-02,  2.716E-02,  2.734E-02/
+      DATA (X(I),I= 851, 900)/
+     1      2.752E-02,  2.772E-02,  2.792E-02,  2.813E-02,  2.834E-02,
+     2      2.858E-02,  2.885E-02,  2.913E-02,  2.941E-02,  2.973E-02,
+     3      3.005E-02,  3.038E-02,  3.075E-02,  3.117E-02,  3.159E-02,
+     4      3.202E-02,  3.246E-02,  3.290E-02,  3.335E-02,  3.384E-02,
+     5      3.438E-02,  3.493E-02,  3.547E-02,  3.603E-02,  3.660E-02,
+     6      3.718E-02,  3.772E-02,  3.826E-02,  3.879E-02,  3.931E-02,
+     7      3.987E-02,  4.042E-02,  4.098E-02,  4.151E-02,  4.199E-02,
+     8      4.243E-02,  4.287E-02,  4.316E-02,  4.344E-02,  4.369E-02,
+     9      4.392E-02,  4.405E-02,  4.417E-02,  4.429E-02,  4.436E-02,
+     $      4.436E-02,  4.438E-02,  4.437E-02,  4.427E-02,  4.416E-02/
+      DATA (X(I),I=  901,  950)/
+     1      4.405E-02,  4.394E-02,  4.383E-02,  4.372E-02,  4.359E-02,
+     2      4.344E-02,  4.329E-02,  4.312E-02,  4.299E-02,  4.289E-02,
+     3      4.278E-02,  4.269E-02,  4.258E-02,  4.242E-02,  4.227E-02,
+     4      4.213E-02,  4.202E-02,  4.194E-02,  4.183E-02,  4.178E-02,
+     5      4.179E-02,  4.177E-02,  4.175E-02,  4.174E-02,  4.174E-02,
+     6      4.175E-02,  4.177E-02,  4.183E-02,  4.191E-02,  4.199E-02,
+     7      4.207E-02,  4.214E-02,  4.219E-02,  4.226E-02,  4.232E-02,
+     8      4.239E-02,  4.247E-02,  4.254E-02,  4.261E-02,  4.270E-02,
+     9      4.279E-02,  4.287E-02,  4.298E-02,  4.311E-02,  4.323E-02,
+     $      4.338E-02,  4.357E-02,  4.375E-02,  4.393E-02,  4.413E-02/
+      DATA (X(I),I= 951, 1000)/
+     1      4.433E-02,  4.454E-02,  4.475E-02,  4.499E-02,  4.525E-02,
+     2      4.551E-02,  4.579E-02,  4.613E-02,  4.645E-02,  4.678E-02,
+     3      4.712E-02,  4.749E-02,  4.785E-02,  4.820E-02,  4.856E-02,
+     4      4.894E-02,  4.928E-02,  4.963E-02,  4.991E-02,  5.016E-02,
+     5      5.042E-02,  5.072E-02,  5.109E-02,  5.144E-02,  5.183E-02,
+     6      5.218E-02,  5.251E-02,  5.282E-02,  5.315E-02,  5.351E-02,
+     7      5.391E-02,  5.430E-02,  5.471E-02,  5.510E-02,  5.548E-02,
+     8      5.588E-02,  5.628E-02,  5.673E-02,  5.722E-02,  5.771E-02,
+     9      5.821E-02,  5.874E-02,  5.927E-02,  5.980E-02,  6.034E-02,
+     $      6.088E-02,  6.144E-02,  6.197E-02,  6.250E-02,  6.303E-02/
+      DATA (X(I),I= 1001, 1050)/
+     1      6.352E-02,  6.404E-02,  6.452E-02,  6.493E-02,  6.537E-02,
+     2      6.578E-02,  6.617E-02,  6.653E-02,  6.688E-02,  6.722E-02,
+     3      6.747E-02,  6.768E-02,  6.788E-02,  6.808E-02,  6.827E-02,
+     4      6.842E-02,  6.859E-02,  6.875E-02,  6.884E-02,  6.889E-02,
+     5      6.896E-02,  6.900E-02,  6.915E-02,  6.927E-02,  6.942E-02,
+     6      6.956E-02,  6.972E-02,  6.990E-02,  7.009E-02,  7.024E-02,
+     7      7.043E-02,  7.062E-02,  7.081E-02,  7.102E-02,  7.127E-02,
+     8      7.151E-02,  7.175E-02,  7.199E-02,  7.225E-02,  7.248E-02,
+     9      7.274E-02,  7.300E-02,  7.325E-02,  7.351E-02,  7.375E-02,
+     $      7.402E-02,  7.429E-02,  7.458E-02,  7.488E-02,  7.514E-02/
+      DATA (X(I),I= 1051, 1100)/
+     1      7.546E-02,  7.575E-02,  7.605E-02,  7.634E-02,  7.667E-02,
+     2      7.698E-02,  7.732E-02,  7.767E-02,  7.803E-02,  7.841E-02,
+     3      7.879E-02,  7.916E-02,  7.959E-02,  8.001E-02,  8.042E-02,
+     4      8.082E-02,  8.118E-02,  8.152E-02,  8.188E-02,  8.224E-02,
+     5      8.270E-02,  8.318E-02,  8.367E-02,  8.415E-02,  8.467E-02,
+     6      8.518E-02,  8.569E-02,  8.621E-02,  8.673E-02,  8.725E-02,
+     7      8.779E-02,  8.831E-02,  8.887E-02,  8.945E-02,  9.003E-02,
+     8      9.060E-02,  9.123E-02,  9.187E-02,  9.254E-02,  9.317E-02,
+     9      9.382E-02,  9.444E-02,  9.506E-02,  9.570E-02,  9.634E-02,
+     $      9.702E-02,  9.769E-02,  9.838E-02,  9.904E-02,  9.968E-02/
+      DATA (X(I),I= 1101, 1150)/
+     1      1.003E-01,  1.010E-01,  1.016E-01,  1.022E-01,  1.028E-01,
+     2      1.033E-01,  1.039E-01,  1.046E-01,  1.053E-01,  1.060E-01,
+     3      1.067E-01,  1.075E-01,  1.082E-01,  1.089E-01,  1.096E-01,
+     4      1.103E-01,  1.110E-01,  1.117E-01,  1.125E-01,  1.132E-01,
+     5      1.139E-01,  1.147E-01,  1.154E-01,  1.162E-01,  1.169E-01,
+     6      1.177E-01,  1.184E-01,  1.191E-01,  1.197E-01,  1.203E-01,
+     7      1.209E-01,  1.215E-01,  1.221E-01,  1.227E-01,  1.232E-01,
+     8      1.238E-01,  1.244E-01,  1.249E-01,  1.254E-01,  1.259E-01,
+     9      1.263E-01,  1.268E-01,  1.273E-01,  1.278E-01,  1.283E-01,
+     $      1.288E-01,  1.292E-01,  1.296E-01,  1.300E-01,  1.305E-01/
+      DATA (X(I),I= 1151, 1200)/
+     1      1.309E-01,  1.314E-01,  1.319E-01,  1.324E-01,  1.329E-01,
+     2      1.335E-01,  1.340E-01,  1.345E-01,  1.351E-01,  1.356E-01,
+     3      1.362E-01,  1.368E-01,  1.374E-01,  1.380E-01,  1.386E-01,
+     4      1.392E-01,  1.399E-01,  1.406E-01,  1.413E-01,  1.420E-01,
+     5      1.427E-01,  1.434E-01,  1.442E-01,  1.449E-01,  1.457E-01,
+     6      1.465E-01,  1.472E-01,  1.479E-01,  1.487E-01,  1.495E-01,
+     7      1.502E-01,  1.509E-01,  1.516E-01,  1.523E-01,  1.530E-01,
+     8      1.539E-01,  1.547E-01,  1.555E-01,  1.563E-01,  1.571E-01,
+     9      1.580E-01,  1.588E-01,  1.596E-01,  1.605E-01,  1.614E-01,
+     $      1.623E-01,  1.632E-01,  1.641E-01,  1.649E-01,  1.658E-01/
+      DATA (X(I),I= 1201, 1250)/
+     1      1.666E-01,  1.675E-01,  1.684E-01,  1.692E-01,  1.701E-01,
+     2      1.710E-01,  1.719E-01,  1.728E-01,  1.737E-01,  1.746E-01,
+     3      1.756E-01,  1.764E-01,  1.774E-01,  1.783E-01,  1.792E-01,
+     4      1.801E-01,  1.810E-01,  1.820E-01,  1.829E-01,  1.838E-01,
+     5      1.848E-01,  1.857E-01,  1.866E-01,  1.876E-01,  1.885E-01,
+     6      1.893E-01,  1.902E-01,  1.911E-01,  1.920E-01,  1.928E-01,
+     7      1.936E-01,  1.945E-01,  1.953E-01,  1.961E-01,  1.969E-01,
+     8      1.978E-01,  1.986E-01,  1.994E-01,  2.002E-01,  2.010E-01,
+     9      2.018E-01,  2.026E-01,  2.034E-01,  2.041E-01,  2.049E-01,
+     $      2.057E-01,  2.065E-01,  2.073E-01,  2.081E-01,  2.089E-01/
+      DATA (X(I),I= 1251, 1300)/
+     1      2.097E-01,  2.105E-01,  2.113E-01,  2.121E-01,  2.129E-01,
+     2      2.137E-01,  2.146E-01,  2.154E-01,  2.163E-01,  2.172E-01,
+     3      2.180E-01,  2.190E-01,  2.198E-01,  2.207E-01,  2.216E-01,
+     4      2.225E-01,  2.234E-01,  2.243E-01,  2.251E-01,  2.260E-01,
+     5      2.269E-01,  2.277E-01,  2.285E-01,  2.294E-01,  2.302E-01,
+     6      2.311E-01,  2.320E-01,  2.328E-01,  2.337E-01,  2.346E-01,
+     7      2.355E-01,  2.364E-01,  2.372E-01,  2.381E-01,  2.390E-01,
+     8      2.398E-01,  2.407E-01,  2.416E-01,  2.424E-01,  2.432E-01,
+     9      2.440E-01,  2.448E-01,  2.456E-01,  2.464E-01,  2.473E-01,
+     $      2.482E-01,  2.491E-01,  2.500E-01,  2.509E-01,  2.517E-01/
+      DATA (X(I),I= 1301, 1350)/
+     1      2.525E-01,  2.533E-01,  2.541E-01,  2.550E-01,  2.559E-01,
+     2      2.568E-01,  2.577E-01,  2.587E-01,  2.597E-01,  2.607E-01,
+     3      2.617E-01,  2.626E-01,  2.636E-01,  2.645E-01,  2.654E-01,
+     4      2.663E-01,  2.672E-01,  2.682E-01,  2.692E-01,  2.703E-01,
+     5      2.713E-01,  2.724E-01,  2.734E-01,  2.744E-01,  2.754E-01,
+     6      2.764E-01,  2.774E-01,  2.784E-01,  2.795E-01,  2.806E-01,
+     7      2.816E-01,  2.827E-01,  2.838E-01,  2.850E-01,  2.861E-01,
+     8      2.872E-01,  2.884E-01,  2.895E-01,  2.907E-01,  2.918E-01,
+     9      2.930E-01,  2.942E-01,  2.954E-01,  2.967E-01,  2.980E-01,
+     $      2.993E-01,  3.005E-01,  3.017E-01,  3.029E-01,  3.041E-01/
+      DATA (X(I),I= 1351, 1400)/
+     1      3.052E-01,  3.064E-01,  3.076E-01,  3.088E-01,  3.100E-01,
+     2      3.112E-01,  3.124E-01,  3.136E-01,  3.149E-01,  3.161E-01,
+     3      3.173E-01,  3.185E-01,  3.196E-01,  3.208E-01,  3.219E-01,
+     4      3.230E-01,  3.242E-01,  3.253E-01,  3.265E-01,  3.277E-01,
+     5      3.289E-01,  3.300E-01,  3.312E-01,  3.323E-01,  3.334E-01,
+     6      3.345E-01,  3.356E-01,  3.367E-01,  3.378E-01,  3.389E-01,
+     7      3.400E-01,  3.410E-01,  3.421E-01,  3.431E-01,  3.441E-01,
+     8      3.452E-01,  3.462E-01,  3.472E-01,  3.482E-01,  3.493E-01,
+     9      3.503E-01,  3.513E-01,  3.524E-01,  3.534E-01,  3.545E-01,
+     $      3.555E-01,  3.566E-01,  3.577E-01,  3.588E-01,  3.599E-01/
+      DATA (X(I),I= 1401, 1450)/
+     1      3.611E-01,  3.622E-01,  3.632E-01,  3.643E-01,  3.653E-01,
+     2      3.664E-01,  3.674E-01,  3.683E-01,  3.692E-01,  3.702E-01,
+     3      3.711E-01,  3.721E-01,  3.732E-01,  3.740E-01,  3.751E-01,
+     4      3.762E-01,  3.774E-01,  3.781E-01,  3.792E-01,  3.800E-01,
+     5      3.811E-01,  3.818E-01,  3.826E-01,  3.837E-01,  3.844E-01,
+     6      3.853E-01,  3.863E-01,  3.870E-01,  3.881E-01,  3.889E-01,
+     7      3.898E-01,  3.908E-01,  3.916E-01,  3.928E-01,  3.937E-01,
+     8      3.946E-01,  3.957E-01,  3.967E-01,  3.976E-01,  3.983E-01,
+     9      3.995E-01,  4.002E-01,  4.013E-01,  4.023E-01,  4.032E-01,
+     $      4.042E-01,  4.050E-01,  4.062E-01,  4.073E-01,  4.084E-01/
+      DATA (X(I),I= 1451, 1500)/
+     1      4.095E-01,  4.106E-01,  4.117E-01,  4.130E-01,  4.144E-01,
+     2      4.155E-01,  4.165E-01,  4.178E-01,  4.189E-01,  4.200E-01,
+     3      4.215E-01,  4.226E-01,  4.241E-01,  4.252E-01,  4.266E-01,
+     4      4.280E-01,  4.293E-01,  4.306E-01,  4.321E-01,  4.335E-01,
+     5      4.347E-01,  4.362E-01,  4.376E-01,  4.388E-01,  4.403E-01,
+     6      4.418E-01,  4.433E-01,  4.450E-01,  4.465E-01,  4.480E-01,
+     7      4.495E-01,  4.510E-01,  4.524E-01,  4.540E-01,  4.555E-01,
+     8      4.571E-01,  4.585E-01,  4.603E-01,  4.619E-01,  4.634E-01,
+     9      4.652E-01,  4.668E-01,  4.683E-01,  4.700E-01,  4.716E-01,
+     $      4.734E-01,  4.750E-01,  4.764E-01,  4.782E-01,  4.797E-01/
+      DATA (X(I),I= 1501, 1550)/
+     1      4.812E-01,  4.830E-01,  4.845E-01,  4.861E-01,  4.875E-01,
+     2      4.893E-01,  4.908E-01,  4.920E-01,  4.935E-01,  4.950E-01,
+     3      4.964E-01,  4.976E-01,  4.990E-01,  5.003E-01,  5.016E-01,
+     4      5.028E-01,  5.043E-01,  5.054E-01,  5.064E-01,  5.073E-01,
+     5      5.082E-01,  5.094E-01,  5.104E-01,  5.111E-01,  5.119E-01,
+     6      5.126E-01,  5.133E-01,  5.141E-01,  5.146E-01,  5.149E-01,
+     7      5.154E-01,  5.159E-01,  5.162E-01,  5.166E-01,  5.167E-01,
+     8      5.168E-01,  5.170E-01,  5.171E-01,  5.171E-01,  5.169E-01,
+     9      5.166E-01,  5.162E-01,  5.159E-01,  5.155E-01,  5.151E-01,
+     $      5.146E-01,  5.139E-01,  5.133E-01,  5.128E-01,  5.120E-01/
+      DATA (X(I),I= 1551, 1600)/
+     1      5.113E-01,  5.103E-01,  5.092E-01,  5.080E-01,  5.070E-01,
+     2      5.059E-01,  5.048E-01,  5.036E-01,  5.022E-01,  5.011E-01,
+     3      4.997E-01,  4.984E-01,  4.969E-01,  4.954E-01,  4.939E-01,
+     4      4.924E-01,  4.909E-01,  4.893E-01,  4.877E-01,  4.863E-01,
+     5      4.845E-01,  4.831E-01,  4.814E-01,  4.798E-01,  4.781E-01,
+     6      4.766E-01,  4.748E-01,  4.732E-01,  4.718E-01,  4.703E-01,
+     7      4.688E-01,  4.673E-01,  4.658E-01,  4.643E-01,  4.630E-01,
+     8      4.615E-01,  4.600E-01,  4.586E-01,  4.572E-01,  4.559E-01,
+     9      4.548E-01,  4.536E-01,  4.524E-01,  4.512E-01,  4.501E-01,
+     $      4.491E-01,  4.483E-01,  4.475E-01,  4.468E-01,  4.459E-01/
+      DATA (X(I),I= 1601, 1650)/
+     1      4.450E-01,  4.444E-01,  4.438E-01,  4.431E-01,  4.424E-01,
+     2      4.416E-01,  4.412E-01,  4.409E-01,  4.405E-01,  4.401E-01,
+     3      4.397E-01,  4.394E-01,  4.392E-01,  4.390E-01,  4.389E-01,
+     4      4.386E-01,  4.386E-01,  4.384E-01,  4.384E-01,  4.385E-01,
+     5      4.385E-01,  4.385E-01,  4.385E-01,  4.387E-01,  4.387E-01,
+     6      4.387E-01,  4.387E-01,  4.387E-01,  4.387E-01,  4.390E-01,
+     7      4.391E-01,  4.394E-01,  4.398E-01,  4.398E-01,  4.402E-01,
+     8      4.406E-01,  4.410E-01,  4.413E-01,  4.417E-01,  4.421E-01,
+     9      4.425E-01,  4.428E-01,  4.432E-01,  4.440E-01,  4.443E-01,
+     $      4.448E-01,  4.452E-01,  4.459E-01,  4.467E-01,  4.471E-01/
+      DATA (X(I),I= 1651, 1700)/
+     1      4.479E-01,  4.486E-01,  4.491E-01,  4.498E-01,  4.505E-01,
+     2      4.512E-01,  4.519E-01,  4.525E-01,  4.532E-01,  4.539E-01,
+     3      4.547E-01,  4.554E-01,  4.562E-01,  4.569E-01,  4.577E-01,
+     4      4.584E-01,  4.592E-01,  4.599E-01,  4.606E-01,  4.614E-01,
+     5      4.621E-01,  4.629E-01,  4.636E-01,  4.640E-01,  4.648E-01,
+     6      4.655E-01,  4.662E-01,  4.670E-01,  4.675E-01,  4.682E-01,
+     7      4.689E-01,  4.697E-01,  4.701E-01,  4.708E-01,  4.712E-01,
+     8      4.718E-01,  4.724E-01,  4.729E-01,  4.735E-01,  4.739E-01,
+     9      4.742E-01,  4.745E-01,  4.748E-01,  4.751E-01,  4.753E-01,
+     $      4.755E-01,  4.757E-01,  4.757E-01,  4.757E-01,  4.756E-01/
+      DATA (X(I),I= 1701, 1750)/
+     1      4.756E-01,  4.756E-01,  4.753E-01,  4.752E-01,  4.749E-01,
+     2      4.747E-01,  4.744E-01,  4.741E-01,  4.737E-01,  4.734E-01,
+     3      4.730E-01,  4.725E-01,  4.721E-01,  4.715E-01,  4.708E-01,
+     4      4.701E-01,  4.693E-01,  4.686E-01,  4.681E-01,  4.673E-01,
+     5      4.663E-01,  4.657E-01,  4.649E-01,  4.641E-01,  4.632E-01,
+     6      4.623E-01,  4.615E-01,  4.606E-01,  4.596E-01,  4.588E-01,
+     7      4.579E-01,  4.569E-01,  4.561E-01,  4.551E-01,  4.542E-01,
+     8      4.532E-01,  4.524E-01,  4.513E-01,  4.506E-01,  4.498E-01,
+     9      4.487E-01,  4.479E-01,  4.472E-01,  4.461E-01,  4.454E-01,
+     $      4.443E-01,  4.435E-01,  4.428E-01,  4.418E-01,  4.411E-01/
+      DATA (X(I),I= 1751, 1800)/
+     1      4.400E-01,  4.388E-01,  4.380E-01,  4.368E-01,  4.357E-01,
+     2      4.347E-01,  4.338E-01,  4.328E-01,  4.316E-01,  4.305E-01,
+     3      4.294E-01,  4.283E-01,  4.272E-01,  4.261E-01,  4.249E-01,
+     4      4.235E-01,  4.222E-01,  4.212E-01,  4.201E-01,  4.186E-01,
+     5      4.171E-01,  4.159E-01,  4.145E-01,  4.130E-01,  4.115E-01,
+     6      4.100E-01,  4.085E-01,  4.070E-01,  4.057E-01,  4.042E-01,
+     7      4.028E-01,  4.014E-01,  3.998E-01,  3.982E-01,  3.967E-01,
+     8      3.950E-01,  3.935E-01,  3.919E-01,  3.904E-01,  3.892E-01,
+     9      3.878E-01,  3.863E-01,  3.848E-01,  3.833E-01,  3.818E-01,
+     $      3.803E-01,  3.789E-01,  3.775E-01,  3.761E-01,  3.746E-01/
+      DATA (X(I),I= 1801, 1850)/
+     1      3.731E-01,  3.718E-01,  3.706E-01,  3.694E-01,  3.681E-01,
+     2      3.669E-01,  3.657E-01,  3.646E-01,  3.635E-01,  3.624E-01,
+     3      3.613E-01,  3.603E-01,  3.592E-01,  3.581E-01,  3.571E-01,
+     4      3.561E-01,  3.550E-01,  3.540E-01,  3.530E-01,  3.520E-01,
+     5      3.510E-01,  3.503E-01,  3.495E-01,  3.487E-01,  3.479E-01,
+     6      3.472E-01,  3.464E-01,  3.457E-01,  3.450E-01,  3.443E-01,
+     7      3.436E-01,  3.429E-01,  3.422E-01,  3.415E-01,  3.409E-01,
+     8      3.403E-01,  3.398E-01,  3.392E-01,  3.386E-01,  3.380E-01,
+     9      3.375E-01,  3.369E-01,  3.364E-01,  3.358E-01,  3.353E-01,
+     $      3.347E-01,  3.342E-01,  3.337E-01,  3.332E-01,  3.327E-01/
+      DATA (X(I),I= 1851, 1900)/
+     1      3.323E-01,  3.318E-01,  3.313E-01,  3.308E-01,  3.304E-01,
+     2      3.300E-01,  3.295E-01,  3.291E-01,  3.286E-01,  3.282E-01,
+     3      3.278E-01,  3.275E-01,  3.271E-01,  3.267E-01,  3.264E-01,
+     4      3.260E-01,  3.256E-01,  3.251E-01,  3.245E-01,  3.240E-01,
+     5      3.235E-01,  3.230E-01,  3.224E-01,  3.219E-01,  3.213E-01,
+     6      3.207E-01,  3.202E-01,  3.196E-01,  3.190E-01,  3.185E-01,
+     7      3.179E-01,  3.174E-01,  3.169E-01,  3.163E-01,  3.158E-01,
+     8      3.152E-01,  3.146E-01,  3.139E-01,  3.132E-01,  3.125E-01,
+     9      3.117E-01,  3.110E-01,  3.102E-01,  3.095E-01,  3.087E-01,
+     $      3.079E-01,  3.071E-01,  3.063E-01,  3.055E-01,  3.048E-01/
+      DATA (X(I),I= 1901, 1950)/
+     1      3.039E-01,  3.031E-01,  3.022E-01,  3.014E-01,  3.005E-01,
+     2      2.996E-01,  2.988E-01,  2.979E-01,  2.970E-01,  2.961E-01,
+     3      2.952E-01,  2.944E-01,  2.935E-01,  2.927E-01,  2.920E-01,
+     4      2.913E-01,  2.906E-01,  2.900E-01,  2.893E-01,  2.886E-01,
+     5      2.880E-01,  2.874E-01,  2.869E-01,  2.863E-01,  2.858E-01,
+     6      2.852E-01,  2.847E-01,  2.842E-01,  2.838E-01,  2.834E-01,
+     7      2.830E-01,  2.826E-01,  2.822E-01,  2.818E-01,  2.815E-01,
+     8      2.813E-01,  2.811E-01,  2.809E-01,  2.807E-01,  2.805E-01,
+     9      2.803E-01,  2.802E-01,  2.803E-01,  2.803E-01,  2.803E-01,
+     $      2.803E-01,  2.803E-01,  2.804E-01,  2.804E-01,  2.805E-01/
+      DATA (X(I),I= 1951, 2000)/
+     1      2.806E-01,  2.807E-01,  2.808E-01,  2.809E-01,  2.810E-01,
+     2      2.810E-01,  2.809E-01,  2.808E-01,  2.808E-01,  2.807E-01,
+     3      2.806E-01,  2.805E-01,  2.804E-01,  2.801E-01,  2.799E-01,
+     4      2.796E-01,  2.794E-01,  2.791E-01,  2.789E-01,  2.785E-01,
+     5      2.780E-01,  2.775E-01,  2.770E-01,  2.765E-01,  2.760E-01,
+     6      2.755E-01,  2.749E-01,  2.741E-01,  2.734E-01,  2.726E-01,
+     7      2.718E-01,  2.710E-01,  2.703E-01,  2.694E-01,  2.684E-01,
+     8      2.674E-01,  2.664E-01,  2.654E-01,  2.644E-01,  2.634E-01,
+     9      2.624E-01,  2.612E-01,  2.601E-01,  2.589E-01,  2.578E-01,
+     $      2.566E-01,  2.555E-01,  2.543E-01,  2.530E-01,  2.517E-01/
+      DATA (X(I),I= 2001, 2050)/
+     1      2.503E-01,  2.490E-01,  2.477E-01,  2.463E-01,  2.450E-01,
+     2      2.436E-01,  2.423E-01,  2.410E-01,  2.396E-01,  2.383E-01,
+     3      2.370E-01,  2.356E-01,  2.342E-01,  2.328E-01,  2.314E-01,
+     4      2.299E-01,  2.285E-01,  2.271E-01,  2.257E-01,  2.243E-01,
+     5      2.230E-01,  2.218E-01,  2.205E-01,  2.192E-01,  2.179E-01,
+     6      2.166E-01,  2.153E-01,  2.140E-01,  2.126E-01,  2.113E-01,
+     7      2.100E-01,  2.086E-01,  2.073E-01,  2.060E-01,  2.048E-01,
+     8      2.036E-01,  2.025E-01,  2.013E-01,  2.001E-01,  1.989E-01,
+     9      1.977E-01,  1.967E-01,  1.957E-01,  1.947E-01,  1.937E-01,
+     $      1.927E-01,  1.917E-01,  1.907E-01,  1.898E-01,  1.890E-01/
+      DATA (X(I),I= 2051, 2100)/
+     1      1.883E-01,  1.875E-01,  1.867E-01,  1.859E-01,  1.851E-01,
+     2      1.844E-01,  1.836E-01,  1.829E-01,  1.821E-01,  1.813E-01,
+     3      1.806E-01,  1.798E-01,  1.791E-01,  1.786E-01,  1.781E-01,
+     4      1.776E-01,  1.771E-01,  1.766E-01,  1.761E-01,  1.756E-01,
+     5      1.751E-01,  1.747E-01,  1.743E-01,  1.739E-01,  1.735E-01,
+     6      1.731E-01,  1.726E-01,  1.722E-01,  1.718E-01,  1.714E-01,
+     7      1.710E-01,  1.706E-01,  1.703E-01,  1.698E-01,  1.695E-01,
+     8      1.691E-01,  1.686E-01,  1.682E-01,  1.677E-01,  1.673E-01,
+     9      1.668E-01,  1.664E-01,  1.660E-01,  1.655E-01,  1.650E-01,
+     $      1.646E-01,  1.642E-01,  1.637E-01,  1.633E-01,  1.628E-01/
+      DATA (X(I),I= 2101, 2150)/
+     1      1.624E-01,  1.619E-01,  1.615E-01,  1.611E-01,  1.607E-01,
+     2      1.602E-01,  1.598E-01,  1.593E-01,  1.588E-01,  1.583E-01,
+     3      1.578E-01,  1.574E-01,  1.569E-01,  1.564E-01,  1.560E-01,
+     4      1.555E-01,  1.551E-01,  1.548E-01,  1.544E-01,  1.540E-01,
+     5      1.536E-01,  1.532E-01,  1.528E-01,  1.525E-01,  1.523E-01,
+     6      1.520E-01,  1.518E-01,  1.516E-01,  1.514E-01,  1.511E-01,
+     7      1.510E-01,  1.511E-01,  1.513E-01,  1.514E-01,  1.516E-01,
+     8      1.518E-01,  1.519E-01,  1.521E-01,  1.523E-01,  1.526E-01,
+     9      1.528E-01,  1.531E-01,  1.534E-01,  1.537E-01,  1.540E-01,
+     $      1.543E-01,  1.547E-01,  1.551E-01,  1.555E-01,  1.560E-01/
+      DATA (X(I),I= 2151, 2200)/
+     1      1.564E-01,  1.568E-01,  1.572E-01,  1.575E-01,  1.579E-01,
+     2      1.581E-01,  1.584E-01,  1.586E-01,  1.589E-01,  1.592E-01,
+     3      1.594E-01,  1.596E-01,  1.598E-01,  1.599E-01,  1.600E-01,
+     4      1.601E-01,  1.602E-01,  1.603E-01,  1.604E-01,  1.604E-01,
+     5      1.602E-01,  1.600E-01,  1.598E-01,  1.596E-01,  1.594E-01,
+     6      1.592E-01,  1.590E-01,  1.585E-01,  1.580E-01,  1.574E-01,
+     7      1.568E-01,  1.562E-01,  1.555E-01,  1.549E-01,  1.543E-01,
+     8      1.535E-01,  1.527E-01,  1.518E-01,  1.510E-01,  1.501E-01,
+     9      1.493E-01,  1.484E-01,  1.475E-01,  1.464E-01,  1.453E-01,
+     $      1.442E-01,  1.431E-01,  1.420E-01,  1.409E-01,  1.398E-01/
+      DATA (X(I),I= 2201, 2250)/
+     1      1.386E-01,  1.374E-01,  1.362E-01,  1.350E-01,  1.338E-01,
+     2      1.326E-01,  1.314E-01,  1.302E-01,  1.290E-01,  1.278E-01,
+     3      1.265E-01,  1.253E-01,  1.241E-01,  1.229E-01,  1.217E-01,
+     4      1.204E-01,  1.192E-01,  1.180E-01,  1.169E-01,  1.157E-01,
+     5      1.145E-01,  1.133E-01,  1.122E-01,  1.110E-01,  1.099E-01,
+     6      1.089E-01,  1.079E-01,  1.069E-01,  1.060E-01,  1.050E-01,
+     7      1.040E-01,  1.031E-01,  1.021E-01,  1.013E-01,  1.005E-01,
+     8      9.973E-02,  9.897E-02,  9.820E-02,  9.743E-02,  9.664E-02,
+     9      9.588E-02,  9.524E-02,  9.462E-02,  9.400E-02,  9.339E-02,
+     $      9.279E-02,  9.217E-02,  9.158E-02,  9.098E-02,  9.049E-02/
+      DATA (X(I),I= 2251, 2300)/
+     1      9.002E-02,  8.958E-02,  8.913E-02,  8.869E-02,  8.827E-02,
+     2      8.783E-02,  8.742E-02,  8.712E-02,  8.690E-02,  8.670E-02,
+     3      8.648E-02,  8.629E-02,  8.607E-02,  8.588E-02,  8.568E-02,
+     4      8.547E-02,  8.525E-02,  8.503E-02,  8.482E-02,  8.462E-02,
+     5      8.440E-02,  8.418E-02,  8.397E-02,  8.379E-02,  8.369E-02,
+     6      8.359E-02,  8.349E-02,  8.341E-02,  8.332E-02,  8.322E-02,
+     7      8.316E-02,  8.305E-02,  8.288E-02,  8.269E-02,  8.251E-02,
+     8      8.232E-02,  8.214E-02,  8.195E-02,  8.178E-02,  8.158E-02,
+     9      8.133E-02,  8.108E-02,  8.083E-02,  8.057E-02,  8.031E-02,
+     $      8.003E-02,  7.976E-02,  7.949E-02,  7.917E-02,  7.874E-02/
+      DATA (X(I),I= 2301, 2350)/
+     1      7.830E-02,  7.789E-02,  7.744E-02,  7.704E-02,  7.662E-02,
+     2      7.620E-02,  7.579E-02,  7.549E-02,  7.519E-02,  7.490E-02,
+     3      7.460E-02,  7.432E-02,  7.404E-02,  7.377E-02,  7.347E-02,
+     4      7.333E-02,  7.329E-02,  7.323E-02,  7.318E-02,  7.315E-02,
+     5      7.310E-02,  7.307E-02,  7.303E-02,  7.304E-02,  7.320E-02,
+     6      7.336E-02,  7.351E-02,  7.369E-02,  7.386E-02,  7.402E-02,
+     7      7.417E-02,  7.435E-02,  7.458E-02,  7.481E-02,  7.505E-02,
+     8      7.529E-02,  7.556E-02,  7.582E-02,  7.607E-02,  7.634E-02,
+     9      7.661E-02,  7.695E-02,  7.728E-02,  7.763E-02,  7.797E-02,
+     $      7.830E-02,  7.864E-02,  7.895E-02,  7.929E-02,  7.952E-02/
+      DATA (X(I),I= 2351, 2400)/
+     1      7.975E-02,  7.996E-02,  8.018E-02,  8.039E-02,  8.061E-02,
+     2      8.081E-02,  8.102E-02,  8.115E-02,  8.105E-02,  8.096E-02,
+     3      8.086E-02,  8.074E-02,  8.062E-02,  8.048E-02,  8.033E-02,
+     4      8.019E-02,  7.988E-02,  7.946E-02,  7.907E-02,  7.866E-02,
+     5      7.824E-02,  7.784E-02,  7.743E-02,  7.702E-02,  7.658E-02,
+     6      7.607E-02,  7.552E-02,  7.497E-02,  7.442E-02,  7.386E-02,
+     7      7.328E-02,  7.271E-02,  7.214E-02,  7.149E-02,  7.072E-02,
+     8      6.995E-02,  6.917E-02,  6.840E-02,  6.762E-02,  6.684E-02,
+     9      6.605E-02,  6.527E-02,  6.453E-02,  6.382E-02,  6.311E-02,
+     $      6.240E-02,  6.169E-02,  6.099E-02,  6.027E-02,  5.956E-02/
+      DATA (X(I),I= 2401, 2450)/
+     1      5.886E-02,  5.817E-02,  5.747E-02,  5.676E-02,  5.607E-02,
+     2      5.537E-02,  5.469E-02,  5.400E-02,  5.331E-02,  5.265E-02,
+     3      5.205E-02,  5.146E-02,  5.088E-02,  5.028E-02,  4.970E-02,
+     4      4.912E-02,  4.853E-02,  4.794E-02,  4.738E-02,  4.685E-02,
+     5      4.634E-02,  4.583E-02,  4.532E-02,  4.480E-02,  4.431E-02,
+     6      4.380E-02,  4.331E-02,  4.291E-02,  4.260E-02,  4.230E-02,
+     7      4.199E-02,  4.168E-02,  4.137E-02,  4.107E-02,  4.078E-02,
+     8      4.047E-02,  4.029E-02,  4.016E-02,  4.004E-02,  3.991E-02,
+     9      3.980E-02,  3.970E-02,  3.959E-02,  3.949E-02,  3.937E-02,
+     $      3.934E-02,  3.933E-02,  3.933E-02,  3.934E-02,  3.935E-02/
+      DATA (X(I),I= 2451, 2500)/
+     1      3.935E-02,  3.936E-02,  3.936E-02,  3.936E-02,  3.931E-02,
+     2      3.925E-02,  3.918E-02,  3.912E-02,  3.905E-02,  3.897E-02,
+     3      3.889E-02,  3.881E-02,  3.874E-02,  3.866E-02,  3.855E-02,
+     4      3.846E-02,  3.837E-02,  3.826E-02,  3.818E-02,  3.807E-02,
+     5      3.795E-02,  3.786E-02,  3.769E-02,  3.748E-02,  3.727E-02,
+     6      3.706E-02,  3.686E-02,  3.664E-02,  3.643E-02,  3.622E-02,
+     7      3.601E-02,  3.581E-02,  3.561E-02,  3.542E-02,  3.522E-02,
+     8      3.503E-02,  3.484E-02,  3.465E-02,  3.446E-02,  3.427E-02,
+     9      3.407E-02,  3.386E-02,  3.364E-02,  3.343E-02,  3.322E-02,
+     $      3.301E-02,  3.280E-02,  3.259E-02,  3.238E-02,  3.221E-02/
+      DATA (X(I),I= 2501, 2550)/
+     1      3.209E-02,  3.198E-02,  3.186E-02,  3.175E-02,  3.164E-02,
+     2      3.153E-02,  3.143E-02,  3.132E-02,  3.126E-02,  3.136E-02,
+     3      3.148E-02,  3.159E-02,  3.170E-02,  3.182E-02,  3.194E-02,
+     4      3.206E-02,  3.219E-02,  3.232E-02,  3.253E-02,  3.275E-02,
+     5      3.298E-02,  3.320E-02,  3.343E-02,  3.366E-02,  3.389E-02,
+     6      3.412E-02,  3.435E-02,  3.455E-02,  3.475E-02,  3.495E-02,
+     7      3.515E-02,  3.535E-02,  3.555E-02,  3.573E-02,  3.593E-02,
+     8      3.612E-02,  3.625E-02,  3.628E-02,  3.631E-02,  3.634E-02,
+     9      3.637E-02,  3.639E-02,  3.641E-02,  3.643E-02,  3.646E-02,
+     $      3.646E-02,  3.636E-02,  3.623E-02,  3.611E-02,  3.599E-02/
+      DATA (X(I),I= 2551, 2600)/
+     1      3.586E-02,  3.572E-02,  3.559E-02,  3.545E-02,  3.531E-02,
+     2      3.509E-02,  3.481E-02,  3.453E-02,  3.425E-02,  3.398E-02,
+     3      3.369E-02,  3.341E-02,  3.312E-02,  3.284E-02,  3.254E-02,
+     4      3.217E-02,  3.180E-02,  3.143E-02,  3.106E-02,  3.069E-02,
+     5      3.031E-02,  2.994E-02,  2.956E-02,  2.919E-02,  2.882E-02,
+     6      2.845E-02,  2.808E-02,  2.771E-02,  2.734E-02,  2.696E-02,
+     7      2.660E-02,  2.622E-02,  2.585E-02,  2.549E-02,  2.512E-02,
+     8      2.476E-02,  2.440E-02,  2.404E-02,  2.368E-02,  2.332E-02,
+     9      2.297E-02,  2.261E-02,  2.225E-02,  2.193E-02,  2.164E-02,
+     $      2.135E-02,  2.106E-02,  2.076E-02,  2.048E-02,  2.019E-02/
+      DATA (X(I),I= 2601, 2650)/
+     1      1.990E-02,  1.962E-02,  1.935E-02,  1.916E-02,  1.898E-02,
+     2      1.881E-02,  1.863E-02,  1.846E-02,  1.828E-02,  1.811E-02,
+     3      1.794E-02,  1.777E-02,  1.764E-02,  1.757E-02,  1.749E-02,
+     4      1.742E-02,  1.735E-02,  1.728E-02,  1.721E-02,  1.714E-02,
+     5      1.708E-02,  1.701E-02,  1.699E-02,  1.699E-02,  1.699E-02,
+     6      1.699E-02,  1.699E-02,  1.699E-02,  1.699E-02,  1.699E-02,
+     7      1.699E-02,  1.699E-02,  1.700E-02,  1.702E-02,  1.703E-02,
+     8      1.704E-02,  1.706E-02,  1.707E-02,  1.708E-02,  1.709E-02,
+     9      1.710E-02,  1.710E-02,  1.706E-02,  1.701E-02,  1.696E-02,
+     $      1.692E-02,  1.687E-02,  1.683E-02,  1.678E-02,  1.673E-02/
+      DATA (X(I),I= 2651, 2700)/
+     1      1.668E-02,  1.661E-02,  1.651E-02,  1.642E-02,  1.632E-02,
+     2      1.622E-02,  1.612E-02,  1.602E-02,  1.592E-02,  1.582E-02,
+     3      1.572E-02,  1.560E-02,  1.545E-02,  1.531E-02,  1.517E-02,
+     4      1.503E-02,  1.489E-02,  1.474E-02,  1.460E-02,  1.446E-02,
+     5      1.432E-02,  1.420E-02,  1.408E-02,  1.397E-02,  1.386E-02,
+     6      1.375E-02,  1.363E-02,  1.352E-02,  1.341E-02,  1.329E-02,
+     7      1.318E-02,  1.313E-02,  1.310E-02,  1.308E-02,  1.305E-02,
+     8      1.303E-02,  1.300E-02,  1.298E-02,  1.295E-02,  1.292E-02,
+     9      1.290E-02,  1.293E-02,  1.297E-02,  1.302E-02,  1.307E-02,
+     $      1.311E-02,  1.316E-02,  1.320E-02,  1.325E-02,  1.330E-02/
+      DATA (X(I),I= 2701, 2750)/
+     1      1.334E-02,  1.341E-02,  1.349E-02,  1.357E-02,  1.366E-02,
+     2      1.374E-02,  1.382E-02,  1.390E-02,  1.398E-02,  1.406E-02,
+     3      1.414E-02,  1.421E-02,  1.427E-02,  1.433E-02,  1.438E-02,
+     4      1.444E-02,  1.450E-02,  1.456E-02,  1.462E-02,  1.467E-02,
+     5      1.473E-02,  1.475E-02,  1.474E-02,  1.473E-02,  1.472E-02,
+     6      1.471E-02,  1.470E-02,  1.468E-02,  1.467E-02,  1.466E-02,
+     7      1.465E-02,  1.461E-02,  1.452E-02,  1.442E-02,  1.433E-02,
+     8      1.423E-02,  1.414E-02,  1.405E-02,  1.395E-02,  1.386E-02,
+     9      1.377E-02,  1.367E-02,  1.356E-02,  1.344E-02,  1.333E-02,
+     $      1.321E-02,  1.310E-02,  1.298E-02,  1.287E-02,  1.275E-02/
+      DATA (X(I),I= 2751, 2800)/
+     1      1.264E-02,  1.252E-02,  1.236E-02,  1.220E-02,  1.204E-02,
+     2      1.187E-02,  1.171E-02,  1.155E-02,  1.138E-02,  1.122E-02,
+     3      1.106E-02,  1.089E-02,  1.072E-02,  1.055E-02,  1.038E-02,
+     4      1.021E-02,  1.004E-02,  9.872E-03,  9.701E-03,  9.531E-03,
+     5      9.361E-03,  9.190E-03,  9.029E-03,  8.896E-03,  8.763E-03,
+     6      8.634E-03,  8.503E-03,  8.370E-03,  8.240E-03,  8.108E-03,
+     7      7.977E-03,  7.847E-03,  7.717E-03,  7.622E-03,  7.540E-03,
+     8      7.457E-03,  7.373E-03,  7.291E-03,  7.209E-03,  7.126E-03,
+     9      7.041E-03,  6.961E-03,  6.878E-03,  6.813E-03,  6.782E-03,
+     $      6.751E-03,  6.721E-03,  6.690E-03,  6.658E-03,  6.628E-03/
+      DATA (X(I),I= 2801, 2850)/
+     1      6.599E-03,  6.567E-03,  6.536E-03,  6.508E-03,  6.499E-03,
+     2      6.495E-03,  6.493E-03,  6.490E-03,  6.488E-03,  6.484E-03,
+     3      6.480E-03,  6.478E-03,  6.474E-03,  6.470E-03,  6.471E-03,
+     4      6.473E-03,  6.476E-03,  6.480E-03,  6.482E-03,  6.486E-03,
+     5      6.489E-03,  6.493E-03,  6.496E-03,  6.499E-03,  6.501E-03,
+     6      6.488E-03,  6.465E-03,  6.444E-03,  6.422E-03,  6.401E-03,
+     7      6.381E-03,  6.359E-03,  6.337E-03,  6.316E-03,  6.294E-03,
+     8      6.266E-03,  6.203E-03,  6.135E-03,  6.067E-03,  6.002E-03,
+     9      5.932E-03,  5.867E-03,  5.797E-03,  5.732E-03,  5.664E-03,
+     $      5.596E-03,  5.528E-03,  5.457E-03,  5.388E-03,  5.318E-03/
+      DATA (X(I),I= 2851, 2900)/
+     1      5.248E-03,  5.177E-03,  5.107E-03,  5.036E-03,  4.966E-03,
+     2      4.895E-03,  4.825E-03,  4.781E-03,  4.755E-03,  4.729E-03,
+     3      4.703E-03,  4.675E-03,  4.648E-03,  4.622E-03,  4.595E-03,
+     4      4.569E-03,  4.542E-03,  4.516E-03,  4.514E-03,  4.517E-03,
+     5      4.520E-03,  4.523E-03,  4.527E-03,  4.530E-03,  4.533E-03,
+     6      4.539E-03,  4.541E-03,  4.545E-03,  4.550E-03,  4.568E-03,
+     7      4.588E-03,  4.609E-03,  4.628E-03,  4.649E-03,  4.669E-03,
+     8      4.689E-03,  4.710E-03,  4.731E-03,  4.750E-03,  4.771E-03,
+     9      4.796E-03,  4.822E-03,  4.847E-03,  4.869E-03,  4.896E-03,
+     $      4.921E-03,  4.945E-03,  4.970E-03,  4.995E-03,  5.020E-03/
+      DATA (X(I),I= 2901, 2950)/
+     1      5.038E-03,  5.040E-03,  5.038E-03,  5.037E-03,  5.036E-03,
+     2      5.036E-03,  5.034E-03,  5.034E-03,  5.031E-03,  5.031E-03,
+     3      5.031E-03,  5.019E-03,  4.979E-03,  4.934E-03,  4.892E-03,
+     4      4.848E-03,  4.805E-03,  4.763E-03,  4.718E-03,  4.676E-03,
+     5      4.632E-03,  4.590E-03,  4.541E-03,  4.475E-03,  4.405E-03,
+     6      4.336E-03,  4.268E-03,  4.198E-03,  4.130E-03,  4.060E-03,
+     7      3.990E-03,  3.922E-03,  3.852E-03,  3.782E-03,  3.715E-03,
+     8      3.646E-03,  3.577E-03,  3.508E-03,  3.439E-03,  3.370E-03,
+     9      3.301E-03,  3.232E-03,  3.163E-03,  3.094E-03,  3.026E-03,
+     $      2.971E-03,  2.919E-03,  2.868E-03,  2.816E-03,  2.764E-03/
+      DATA (X(I),I= 2951, 3000)/
+     1      2.712E-03,  2.661E-03,  2.609E-03,  2.557E-03,  2.505E-03,
+     2      2.454E-03,  2.416E-03,  2.386E-03,  2.356E-03,  2.326E-03,
+     3      2.297E-03,  2.267E-03,  2.237E-03,  2.207E-03,  2.177E-03,
+     4      2.148E-03,  2.118E-03,  2.096E-03,  2.087E-03,  2.078E-03,
+     5      2.070E-03,  2.061E-03,  2.052E-03,  2.043E-03,  2.034E-03,
+     6      2.025E-03,  2.016E-03,  2.007E-03,  2.000E-03,  2.000E-03,
+     7      2.001E-03,  2.002E-03,  2.003E-03,  2.004E-03,  2.005E-03,
+     8      2.006E-03,  2.007E-03,  2.007E-03,  2.008E-03,  2.009E-03,
+     9      2.008E-03,  2.006E-03,  2.003E-03,  2.001E-03,  1.999E-03,
+     $      1.997E-03,  1.994E-03,  1.992E-03,  1.990E-03,  1.988E-03/
+      DATA (X(I),I= 3001, 3050)/
+     1      1.985E-03,  1.980E-03,  1.968E-03,  1.956E-03,  1.944E-03,
+     2      1.932E-03,  1.919E-03,  1.907E-03,  1.895E-03,  1.883E-03,
+     3      1.871E-03,  1.859E-03,  1.846E-03,  1.827E-03,  1.805E-03,
+     4      1.783E-03,  1.761E-03,  1.740E-03,  1.718E-03,  1.696E-03,
+     5      1.674E-03,  1.652E-03,  1.631E-03,  1.609E-03,  1.585E-03,
+     6      1.557E-03,  1.529E-03,  1.500E-03,  1.472E-03,  1.444E-03,
+     7      1.416E-03,  1.388E-03,  1.359E-03,  1.331E-03,  1.303E-03,
+     8      1.275E-03,  1.251E-03,  1.228E-03,  1.206E-03,  1.183E-03,
+     9      1.161E-03,  1.139E-03,  1.116E-03,  1.094E-03,  1.072E-03,
+     $      1.049E-03,  1.027E-03,  1.007E-03,  1.003E-03,  9.991E-04/
+      DATA (X(I),I= 3051, 3100)/
+     1      9.959E-04,  9.926E-04,  9.891E-04,  9.857E-04,  9.826E-04,
+     2      9.790E-04,  9.758E-04,  9.725E-04,  9.692E-04,  9.720E-04,
+     3      9.842E-04,  9.967E-04,  1.009E-03,  1.022E-03,  1.034E-03,
+     4      1.047E-03,  1.059E-03,  1.071E-03,  1.084E-03,  1.096E-03,
+     5      1.109E-03,  1.118E-03,  1.126E-03,  1.133E-03,  1.141E-03,
+     6      1.148E-03,  1.156E-03,  1.163E-03,  1.171E-03,  1.178E-03,
+     7      1.186E-03,  1.193E-03,  1.200E-03,  1.194E-03,  1.185E-03,
+     8      1.176E-03,  1.166E-03,  1.157E-03,  1.148E-03,  1.138E-03,
+     9      1.129E-03,  1.120E-03,  1.110E-03,  1.101E-03,  1.091E-03,
+     $      1.076E-03,  1.060E-03,  1.044E-03,  1.028E-03,  1.012E-03/
+      DATA (X(I),I= 3101, 3150)/
+     1      9.955E-04,  9.794E-04,  9.632E-04,  9.473E-04,  9.310E-04,
+     2      9.151E-04,  8.982E-04,  8.770E-04,  8.556E-04,  8.339E-04,
+     3      8.121E-04,  7.907E-04,  7.689E-04,  7.471E-04,  7.255E-04,
+     4      7.038E-04,  6.822E-04,  6.606E-04,  6.376E-04,  6.083E-04,
+     5      5.783E-04,  5.478E-04,  5.177E-04,  4.875E-04,  4.574E-04,
+     6      4.272E-04,  3.969E-04,  3.668E-04,  3.365E-04,  3.063E-04,
+     7      2.750E-04,  2.500E-04,  2.250E-04,  2.000E-04,  1.850E-04,
+     8      1.700E-04,  1.550E-04,  1.400E-04,  1.250E-04,  1.100E-04,
+     9      0.950E-04,  0.825E-04,  0.700E-04,  0.575E-04,  0.400E-04,
+     *      0.275E-04,  0.175E-04,  0.100E-04,  0.040E-04,  0.00000  /
+C
+      DATA (Y(I),I=    1,   50)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I= 51, 100)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I=  101,  150)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I= 151, 200)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I=  201,  250)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I= 251, 300)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I=  301,  350)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I= 351, 400)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I=  401,  450)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I= 451, 500)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I=  501,  550)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I= 551, 600)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I=  601,  650)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I= 651, 700)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I=  701,  750)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I= 751, 800)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Y(I),I=  801,  850)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.025e-05,  0.050e-05,  0.075e-05,  0.100e-05,  0.125e-05,
+     6      0.150e-05,  0.175e-05,  0.225e-05,  0.250e-05,  0.300e-05,
+     7      0.350e-05,  0.400e-05,  0.500e-05,  0.650e-05,  0.800e-05,
+     8      1.100e-05,  1.400e-05,  1.800e-05,  2.250e-05,  2.650e-05,
+     9      3.000e-05,  3.104E-05,  3.136E-05,  3.152E-05,  3.186E-05,
+     $      3.213E-05,  3.229E-05,  3.206E-05,  3.156E-05,  3.063E-05/
+      DATA (Y(I),I= 851, 900)/
+     1      3.098E-05,  3.197E-05,  3.271E-05,  3.315E-05,  3.262E-05,
+     2      3.201E-05,  3.129E-05,  3.148E-05,  3.206E-05,  3.175E-05,
+     3      3.148E-05,  3.167E-05,  3.159E-05,  3.120E-05,  3.117E-05,
+     4      3.109E-05,  3.041E-05,  2.995E-05,  3.011E-05,  3.004E-05,
+     5      2.972E-05,  2.933E-05,  2.887E-05,  2.801E-05,  2.731E-05,
+     6      2.735E-05,  2.656E-05,  2.712E-05,  2.576E-05,  2.565E-05,
+     7      2.449E-05,  2.450E-05,  2.454E-05,  2.414E-05,  2.488E-05,
+     8      2.413E-05,  2.297E-05,  2.298E-05,  2.335E-05,  2.259E-05,
+     9      2.142E-05,  2.257E-05,  2.259E-05,  2.220E-05,  2.259E-05,
+     $      2.336E-05,  2.299E-05,  2.262E-05,  2.298E-05,  2.298E-05/
+      DATA (Y(I),I=  901,  950)/
+     1      2.298E-05,  2.337E-05,  2.414E-05,  2.491E-05,  2.570E-05,
+     2      2.492E-05,  2.531E-05,  2.567E-05,  2.647E-05,  2.839E-05,
+     3      2.916E-05,  2.917E-05,  2.916E-05,  2.956E-05,  3.033E-05,
+     4      3.110E-05,  3.108E-05,  3.071E-05,  3.226E-05,  3.303E-05,
+     5      3.302E-05,  3.417E-05,  3.419E-05,  3.458E-05,  3.458E-05,
+     6      3.457E-05,  3.613E-05,  3.769E-05,  3.768E-05,  3.845E-05,
+     7      3.843E-05,  3.882E-05,  3.920E-05,  3.959E-05,  3.998E-05,
+     8      4.037E-05,  4.036E-05,  4.074E-05,  4.074E-05,  4.036E-05,
+     9      4.115E-05,  4.192E-05,  4.192E-05,  4.269E-05,  4.270E-05,
+     $      4.346E-05,  4.346E-05,  4.346E-05,  4.463E-05,  4.423E-05/
+      DATA (Y(I),I= 951, 1000)/
+     1      4.502E-05,  4.539E-05,  4.501E-05,  4.465E-05,  4.388E-05,
+     2      4.503E-05,  4.578E-05,  4.617E-05,  4.657E-05,  4.657E-05,
+     3      4.617E-05,  4.657E-05,  4.655E-05,  4.695E-05,  4.808E-05,
+     4      4.807E-05,  4.768E-05,  4.771E-05,  4.807E-05,  4.808E-05,
+     5      4.808E-05,  4.731E-05,  4.731E-05,  4.772E-05,  4.808E-05,
+     6      4.846E-05,  4.769E-05,  4.807E-05,  4.846E-05,  4.847E-05,
+     7      4.845E-05,  4.885E-05,  4.886E-05,  4.848E-05,  4.810E-05,
+     8      4.848E-05,  4.769E-05,  4.773E-05,  4.656E-05,  4.690E-05,
+     9      4.770E-05,  4.730E-05,  4.690E-05,  4.728E-05,  4.687E-05,
+     $      4.728E-05,  4.649E-05,  4.730E-05,  4.690E-05,  4.766E-05/
+      DATA (Y(I),I= 1001, 1050)/
+     1      4.804E-05,  4.727E-05,  4.649E-05,  4.727E-05,  4.647E-05,
+     2      4.723E-05,  4.760E-05,  4.800E-05,  4.836E-05,  4.762E-05,
+     3      4.760E-05,  4.834E-05,  4.837E-05,  4.796E-05,  4.796E-05,
+     4      4.796E-05,  4.876E-05,  4.955E-05,  5.030E-05,  5.067E-05,
+     5      5.106E-05,  5.183E-05,  5.104E-05,  5.185E-05,  5.224E-05,
+     6      5.340E-05,  5.301E-05,  5.340E-05,  5.456E-05,  5.532E-05,
+     7      5.532E-05,  5.531E-05,  5.608E-05,  5.762E-05,  5.799E-05,
+     8      5.877E-05,  5.837E-05,  5.839E-05,  5.878E-05,  5.916E-05,
+     9      6.032E-05,  6.109E-05,  6.226E-05,  6.342E-05,  6.305E-05,
+     $      6.305E-05,  6.265E-05,  6.226E-05,  6.298E-05,  6.452E-05/
+      DATA (Y(I),I= 1051, 1100)/
+     1      6.531E-05,  6.572E-05,  6.572E-05,  6.614E-05,  6.611E-05,
+     2      6.574E-05,  6.690E-05,  6.648E-05,  6.688E-05,  6.688E-05,
+     3      6.764E-05,  6.841E-05,  6.843E-05,  6.918E-05,  6.919E-05,
+     4      6.959E-05,  6.955E-05,  6.993E-05,  6.990E-05,  7.031E-05,
+     5      6.914E-05,  6.835E-05,  6.912E-05,  7.105E-05,  7.222E-05,
+     6      7.261E-05,  7.258E-05,  7.258E-05,  7.258E-05,  7.260E-05,
+     7      7.179E-05,  7.257E-05,  7.180E-05,  7.142E-05,  7.181E-05,
+     8      7.217E-05,  7.256E-05,  7.217E-05,  7.217E-05,  7.219E-05,
+     9      7.256E-05,  7.180E-05,  7.178E-05,  7.255E-05,  7.216E-05,
+     $      7.175E-05,  7.175E-05,  7.137E-05,  7.177E-05,  7.214E-05/
+      DATA (Y(I),I= 1101, 1150)/
+     1      7.175E-05,  7.134E-05,  7.094E-05,  7.014E-05,  7.014E-05,
+     2      7.016E-05,  7.013E-05,  6.937E-05,  6.938E-05,  6.900E-05,
+     3      6.863E-05,  6.860E-05,  6.859E-05,  6.741E-05,  6.700E-05,
+     4      6.700E-05,  6.740E-05,  6.742E-05,  6.704E-05,  6.665E-05,
+     5      6.549E-05,  6.432E-05,  6.427E-05,  6.463E-05,  6.581E-05,
+     6      6.662E-05,  6.625E-05,  6.552E-05,  6.473E-05,  6.473E-05,
+     7      6.471E-05,  6.469E-05,  6.391E-05,  6.433E-05,  6.475E-05,
+     8      6.513E-05,  6.554E-05,  6.552E-05,  6.592E-05,  6.552E-05,
+     9      6.553E-05,  6.476E-05,  6.440E-05,  6.483E-05,  6.443E-05,
+     $      6.443E-05,  6.522E-05,  6.522E-05,  6.599E-05,  6.599E-05/
+      DATA (Y(I),I= 1151, 1200)/
+     1      6.560E-05,  6.520E-05,  6.521E-05,  6.558E-05,  6.556E-05,
+     2      6.557E-05,  6.596E-05,  6.596E-05,  6.596E-05,  6.634E-05,
+     3      6.595E-05,  6.555E-05,  6.555E-05,  6.594E-05,  6.515E-05,
+     4      6.553E-05,  6.590E-05,  6.551E-05,  6.474E-05,  6.549E-05,
+     5      6.589E-05,  6.628E-05,  6.709E-05,  6.672E-05,  6.634E-05,
+     6      6.555E-05,  6.478E-05,  6.475E-05,  6.395E-05,  6.472E-05,
+     7      6.472E-05,  6.510E-05,  6.509E-05,  6.508E-05,  6.511E-05,
+     8      6.434E-05,  6.357E-05,  6.356E-05,  6.356E-05,  6.278E-05,
+     9      6.239E-05,  6.161E-05,  6.199E-05,  6.163E-05,  6.161E-05,
+     $      6.161E-05,  6.085E-05,  5.931E-05,  5.888E-05,  5.888E-05/
+      DATA (Y(I),I= 1201, 1250)/
+     1      5.846E-05,  5.805E-05,  5.809E-05,  5.890E-05,  5.892E-05,
+     2      5.896E-05,  5.823E-05,  5.746E-05,  5.709E-05,  5.708E-05,
+     3      5.707E-05,  5.668E-05,  5.709E-05,  5.666E-05,  5.627E-05,
+     4      5.628E-05,  5.552E-05,  5.550E-05,  5.552E-05,  5.588E-05,
+     5      5.627E-05,  5.588E-05,  5.627E-05,  5.591E-05,  5.477E-05,
+     6      5.515E-05,  5.517E-05,  5.558E-05,  5.599E-05,  5.591E-05,
+     7      5.668E-05,  5.507E-05,  5.429E-05,  5.311E-05,  5.279E-05,
+     8      5.281E-05,  5.402E-05,  5.406E-05,  5.485E-05,  5.562E-05,
+     9      5.562E-05,  5.481E-05,  5.484E-05,  5.483E-05,  5.443E-05,
+     $      5.404E-05,  5.365E-05,  5.442E-05,  5.444E-05,  5.521E-05/
+      DATA (Y(I),I= 1251, 1300)/
+     1      5.481E-05,  5.443E-05,  5.363E-05,  5.286E-05,  5.283E-05,
+     2      5.358E-05,  5.356E-05,  5.317E-05,  5.240E-05,  5.279E-05,
+     3      5.240E-05,  5.241E-05,  5.321E-05,  5.322E-05,  5.327E-05,
+     4      5.329E-05,  5.331E-05,  5.329E-05,  5.290E-05,  5.251E-05,
+     5      5.213E-05,  5.135E-05,  5.057E-05,  5.056E-05,  5.056E-05,
+     6      5.094E-05,  5.133E-05,  5.133E-05,  5.132E-05,  5.133E-05,
+     7      5.054E-05,  4.934E-05,  4.815E-05,  4.733E-05,  4.735E-05,
+     8      4.777E-05,  4.819E-05,  4.784E-05,  4.825E-05,  4.790E-05,
+     9      4.830E-05,  4.793E-05,  4.873E-05,  4.874E-05,  4.790E-05,
+     $      4.709E-05,  4.627E-05,  4.467E-05,  4.427E-05,  4.469E-05/
+      DATA (Y(I),I= 1301, 1350)/
+     1      4.434E-05,  4.431E-05,  4.473E-05,  4.477E-05,  4.365E-05,
+     2      4.369E-05,  4.527E-05,  4.528E-05,  4.603E-05,  4.641E-05,
+     3      4.520E-05,  4.480E-05,  4.363E-05,  4.404E-05,  4.444E-05,
+     4      4.408E-05,  4.448E-05,  4.452E-05,  4.336E-05,  4.184E-05,
+     5      4.223E-05,  4.263E-05,  4.301E-05,  4.262E-05,  4.299E-05,
+     6      4.143E-05,  4.105E-05,  3.989E-05,  3.995E-05,  3.919E-05,
+     7      3.999E-05,  4.118E-05,  4.039E-05,  3.997E-05,  3.880E-05,
+     8      3.762E-05,  3.645E-05,  3.493E-05,  3.337E-05,  3.222E-05,
+     9      3.296E-05,  3.412E-05,  3.255E-05,  3.257E-05,  3.103E-05,
+     $      3.029E-05,  2.876E-05,  2.878E-05,  2.800E-05,  2.883E-05/
+      DATA (Y(I),I= 1351, 1400)/
+     1      2.881E-05,  2.806E-05,  2.729E-05,  2.650E-05,  2.574E-05,
+     2      2.380E-05,  2.262E-05,  2.108E-05,  2.031E-05,  1.842E-05,
+     3      1.765E-05,  1.648E-05,  1.646E-05,  1.685E-05,  1.529E-05,
+     4      1.451E-05,  1.258E-05,  1.104E-05,  9.506E-06,  9.546E-06,
+     5      8.010E-06,  6.431E-06,  4.851E-06,  4.067E-06,  2.472E-06,
+     6      8.919E-07, -2.698E-07, -2.356E-07, -6.024E-07, -1.335E-06,
+     7     -2.450E-06, -3.996E-06, -5.582E-06, -6.779E-06, -7.956E-06,
+     8     -9.542E-06, -1.072E-05, -1.150E-05, -1.227E-05, -1.305E-05,
+     9     -1.382E-05, -1.500E-05, -1.580E-05, -1.738E-05, -1.779E-05,
+     $     -1.823E-05, -1.900E-05, -2.050E-05, -2.086E-05, -2.159E-05/
+      DATA (Y(I),I= 1401, 1450)/
+     1     -2.191E-05, -2.268E-05, -2.308E-05, -2.276E-05, -2.393E-05,
+     2     -2.551E-05, -2.669E-05, -2.709E-05, -2.632E-05, -2.709E-05,
+     3     -2.709E-05, -2.749E-05, -3.016E-05, -2.709E-05, -2.709E-05,
+     4     -2.709E-05, -2.708E-05, -2.709E-05, -2.709E-05, -2.709E-05,
+     5     -2.709E-05, -2.709E-05, -2.709E-05, -2.709E-05, -2.709E-05,
+     6     -3.113E-05, -2.709E-05, -2.709E-05, -3.477E-05, -2.709E-05,
+     7     -2.685E-05, -3.453E-05, -2.684E-05, -2.685E-05, -3.065E-05,
+     8     -2.684E-05, -2.684E-05, -3.065E-05, -2.685E-05, -2.685E-05,
+     9     -2.685E-05, -2.684E-05, -2.684E-05, -3.065E-05, -2.685E-05,
+     $     -3.453E-05, -2.685E-05, -2.685E-05, -2.684E-05, -2.685E-05/
+      DATA (Y(I),I= 1451, 1500)/
+     1     -2.684E-05, -2.684E-05, -2.685E-05, -3.086E-05, -3.466E-05,
+     2     -3.467E-05, -3.453E-05, -3.854E-05, -3.854E-05, -3.072E-05,
+     3     -3.854E-05, -3.840E-05, -3.854E-05, -3.840E-05, -3.452E-05,
+     4     -4.221E-05, -3.840E-05, -4.221E-05, -4.221E-05, -3.833E-05,
+     5     -4.220E-05, -4.221E-05, -3.833E-05, -4.221E-05, -4.220E-05,
+     6     -4.221E-05, -4.221E-05, -3.833E-05, -3.833E-05, -3.833E-05,
+     7     -3.834E-05, -4.601E-05, -4.601E-05, -3.833E-05, -3.833E-05,
+     8     -4.221E-05, -4.221E-05, -4.601E-05, -4.221E-05, -4.221E-05,
+     9     -4.221E-05, -4.626E-05, -4.625E-05, -4.650E-05, -5.054E-05,
+     $     -4.650E-05, -5.054E-05, -5.040E-05, -4.650E-05, -5.041E-05/
+      DATA (Y(I),I= 1501, 1550)/
+     1     -5.027E-05, -4.637E-05, -4.636E-05, -5.041E-05, -5.026E-05,
+     2     -5.405E-05, -5.404E-05, -5.027E-05, -5.041E-05, -5.041E-05,
+     3     -4.637E-05, -5.027E-05, -5.027E-05, -5.432E-05, -5.028E-05,
+     4     -5.419E-05, -6.200E-05, -5.418E-05, -6.224E-05, -5.418E-05,
+     5     -5.443E-05, -5.442E-05, -6.248E-05, -6.248E-05, -5.480E-05,
+     6     -5.480E-05, -6.249E-05, -6.248E-05, -5.443E-05, -5.442E-05,
+     7     -5.834E-05, -6.235E-05, -6.222E-05, -6.221E-05, -5.429E-05,
+     8     -5.819E-05, -5.452E-05, -5.429E-05, -5.429E-05, -6.220E-05,
+     9     -5.453E-05, -5.453E-05, -5.452E-05, -5.453E-05, -5.453E-05,
+     $     -6.246E-05, -5.477E-05, -5.845E-05, -5.477E-05, -5.477E-05/
+      DATA (Y(I),I= 1551, 1600)/
+     1     -5.478E-05, -5.453E-05, -4.671E-05, -4.672E-05, -4.633E-05,
+     2     -4.633E-05, -4.647E-05, -4.671E-05, -4.633E-05, -4.647E-05,
+     3     -4.269E-05, -4.672E-05, -4.671E-05, -4.671E-05, -4.671E-05,
+     4     -4.671E-05, -4.671E-05, -4.695E-05, -4.291E-05, -4.304E-05,
+     5     -4.266E-05, -4.280E-05, -3.899E-05, -3.512E-05, -3.875E-05,
+     6     -3.488E-05, -3.107E-05, -2.720E-05, -2.720E-05, -2.719E-05,
+     7     -2.720E-05, -2.719E-05, -2.720E-05, -2.719E-05, -3.121E-05,
+     8     -3.120E-05, -3.121E-05, -2.353E-05, -2.755E-05, -1.961E-05,
+     9     -2.730E-05, -2.730E-05, -2.328E-05, -1.156E-05, -1.169E-05,
+     $     -1.561E-05, -1.170E-05, -1.938E-05, -1.951E-05, -1.975E-05/
+      DATA (Y(I),I= 1601, 1650)/
+     1     -1.574E-05, -1.975E-05, -1.951E-05, -1.951E-05, -1.183E-05,
+     2     -1.183E-05, -7.924E-06, -7.916E-06, -7.921E-06, -7.921E-06,
+     3     -7.924E-06, -7.925E-06, -1.194E-05, -7.919E-06, -1.169E-05,
+     4     -7.920E-06, -4.014E-06, -1.193E-05, -8.024E-06, -7.778E-06,
+     5     -7.778E-06, -7.778E-06, -7.778E-06, -7.540E-06, -1.145E-05,
+     6     -1.145E-05, -1.145E-05, -3.770E-06, -3.770E-06, -7.538E-06,
+     7     -3.765E-06, -1.145E-05, -7.543E-06, -3.772E-06, -3.772E-06,
+     8     -3.768E-06, -3.769E-06, -3.769E-06, -3.769E-06, -3.767E-06,
+     9     -3.766E-06, -3.769E-06, -3.772E-06, -1.159E-05, -1.145E-05,
+     $     -7.817E-06, -7.815E-06, -7.816E-06, -1.563E-05, -7.577E-06/
+      DATA (Y(I),I= 1651, 1700)/
+     1     -7.570E-06, -1.525E-05, -7.328E-06, -7.572E-06, -7.574E-06,
+     2     -1.525E-05, -1.120E-05, -1.145E-05, -1.145E-05, -1.145E-05,
+     3     -1.145E-05, -1.913E-05, -1.145E-05, -1.145E-05, -1.145E-05,
+     4     -1.145E-05, -1.145E-05, -1.145E-05, -1.145E-05, -2.304E-05,
+     5     -2.304E-05, -2.304E-05, -2.304E-05, -1.536E-05, -1.536E-05,
+     6     -1.536E-05, -2.304E-05, -2.304E-05, -1.924E-05, -1.923E-05,
+     7     -2.692E-05, -2.692E-05, -1.924E-05, -2.691E-05, -1.923E-05,
+     8     -2.716E-05, -2.328E-05, -2.716E-05, -3.096E-05, -3.096E-05,
+     9     -3.096E-05, -3.120E-05, -3.120E-05, -3.107E-05, -2.301E-05,
+     $     -3.107E-05, -2.315E-05, -2.315E-05, -2.315E-05, -2.301E-05/
+      DATA (Y(I),I= 1701, 1750)/
+     1     -2.301E-05, -3.069E-05, -2.301E-05, -3.069E-05, -2.301E-05,
+     2     -3.093E-05, -3.055E-05, -3.056E-05, -2.287E-05, -2.301E-05,
+     3     -3.069E-05, -3.093E-05, -3.093E-05, -3.069E-05, -2.301E-05,
+     4     -2.301E-05, -2.301E-05, -2.301E-05, -3.107E-05, -3.106E-05,
+     5     -2.301E-05, -2.314E-05, -3.083E-05, -3.083E-05, -3.107E-05,
+     6     -2.706E-05, -3.083E-05, -2.681E-05, -2.301E-05, -2.682E-05,
+     7     -2.706E-05, -1.913E-05, -2.682E-05, -1.914E-05, -2.277E-05,
+     8     -1.913E-05, -1.522E-05, -1.509E-05, -1.522E-05, -2.290E-05,
+     9     -1.509E-05, -2.290E-05, -2.290E-05, -1.522E-05, -1.522E-05,
+     $     -1.910E-05, -1.522E-05, -1.522E-05, -1.155E-05, -1.155E-05/
+      DATA (Y(I),I= 1751, 1800)/
+     1     -1.156E-05, -1.142E-05, -7.541E-06, -7.536E-06, -7.544E-06,
+     2     -1.142E-05, -1.522E-05, -7.542E-06, -7.538E-06, -7.539E-06,
+     3     -7.541E-06, -7.541E-06, -7.545E-06, -7.538E-06, -3.636E-06,
+     4      1.426E-07, -3.494E-06, -3.633E-06, -3.630E-06, -3.631E-06,
+     5     -3.634E-06,  4.149E-07, -3.629E-06, -3.629E-06, -3.633E-06,
+     6     -3.632E-06, -3.634E-06, -3.628E-06, -3.385E-06,  4.292E-06,
+     7      2.437E-07,  2.431E-07,  4.155E-06, -3.766E-06, -3.771E-06,
+     8      2.430E-07,  2.438E-07,  3.915E-06,  3.909E-06,  7.824E-06,
+     9      3.913E-06,  3.911E-06,  3.913E-06,  3.909E-06,  3.910E-06,
+     $      3.910E-06,  3.914E-06,  4.150E-06,  1.184E-05,  1.184E-05/
+      DATA (Y(I),I= 1801, 1850)/
+     1      1.183E-05,  1.108E-05,  1.031E-05,  9.561E-06,  9.950E-06,
+     2      1.227E-05,  1.420E-05,  1.534E-05,  1.572E-05,  1.571E-05,
+     3      1.492E-05,  1.490E-05,  1.445E-05,  1.442E-05,  1.525E-05,
+     4      1.487E-05,  1.452E-05,  1.604E-05,  1.840E-05,  2.070E-05,
+     5      2.146E-05,  2.144E-05,  2.105E-05,  2.104E-05,  2.101E-05,
+     6      2.100E-05,  2.175E-05,  2.095E-05,  2.097E-05,  1.981E-05,
+     7      1.982E-05,  2.058E-05,  2.095E-05,  2.098E-05,  1.979E-05,
+     8      1.860E-05,  1.782E-05,  1.934E-05,  1.972E-05,  2.083E-05,
+     9      2.201E-05,  2.281E-05,  2.476E-05,  2.480E-05,  2.480E-05,
+     $      2.407E-05,  2.371E-05,  2.295E-05,  2.218E-05,  2.141E-05/
+      DATA (Y(I),I= 1851, 1900)/
+     1      2.218E-05,  2.294E-05,  2.371E-05,  2.369E-05,  2.328E-05,
+     2      2.287E-05,  2.169E-05,  2.128E-05,  2.126E-05,  2.004E-05,
+     3      2.004E-05,  2.085E-05,  2.045E-05,  2.045E-05,  2.006E-05,
+     4      2.085E-05,  2.082E-05,  2.121E-05,  2.198E-05,  2.275E-05,
+     5      2.238E-05,  2.083E-05,  2.046E-05,  1.928E-05,  1.893E-05,
+     6      1.815E-05,  1.815E-05,  1.812E-05,  1.929E-05,  2.046E-05,
+     7      2.087E-05,  2.244E-05,  2.283E-05,  2.322E-05,  2.327E-05,
+     8      2.291E-05,  2.329E-05,  2.482E-05,  2.558E-05,  2.593E-05,
+     9      2.514E-05,  2.436E-05,  2.279E-05,  2.282E-05,  2.363E-05,
+     $      2.441E-05,  2.524E-05,  2.599E-05,  2.759E-05,  2.874E-05/
+      DATA (Y(I),I= 1901, 1950)/
+     1      2.954E-05,  3.028E-05,  3.064E-05,  3.063E-05,  3.021E-05,
+     2      2.866E-05,  2.788E-05,  2.788E-05,  2.749E-05,  2.711E-05,
+     3      2.866E-05,  3.016E-05,  3.250E-05,  3.323E-05,  3.366E-05,
+     4      3.328E-05,  3.367E-05,  3.366E-05,  3.483E-05,  3.521E-05,
+     5      3.599E-05,  3.603E-05,  3.606E-05,  3.685E-05,  3.764E-05,
+     6      3.960E-05,  4.076E-05,  4.079E-05,  4.041E-05,  3.926E-05,
+     7      3.848E-05,  4.004E-05,  4.161E-05,  4.350E-05,  4.426E-05,
+     8      4.386E-05,  4.305E-05,  4.344E-05,  4.457E-05,  4.570E-05,
+     9      4.685E-05,  4.567E-05,  4.450E-05,  4.337E-05,  4.297E-05,
+     $      4.414E-05,  4.527E-05,  4.644E-05,  4.721E-05,  4.798E-05/
+      DATA (Y(I),I= 1951, 2000)/
+     1      4.873E-05,  4.952E-05,  4.797E-05,  4.798E-05,  4.681E-05,
+     2      4.721E-05,  4.760E-05,  4.724E-05,  4.802E-05,  4.805E-05,
+     3      4.766E-05,  4.690E-05,  4.727E-05,  4.800E-05,  4.911E-05,
+     4      4.947E-05,  4.636E-05,  4.401E-05,  4.164E-05,  4.089E-05,
+     5      4.167E-05,  4.245E-05,  4.248E-05,  4.136E-05,  3.944E-05,
+     6      3.832E-05,  3.753E-05,  3.867E-05,  3.982E-05,  4.022E-05,
+     7      3.829E-05,  3.714E-05,  3.481E-05,  3.365E-05,  3.438E-05,
+     8      3.478E-05,  3.474E-05,  3.395E-05,  3.277E-05,  3.085E-05,
+     9      2.966E-05,  3.045E-05,  3.044E-05,  3.123E-05,  3.042E-05,
+     $      2.965E-05,  2.969E-05,  2.966E-05,  3.082E-05,  3.273E-05/
+      DATA (Y(I),I= 2001, 2050)/
+     1      3.388E-05,  3.310E-05,  3.195E-05,  3.196E-05,  3.080E-05,
+     2      3.004E-05,  3.004E-05,  2.927E-05,  2.927E-05,  3.044E-05,
+     3      3.081E-05,  3.198E-05,  3.197E-05,  3.237E-05,  3.200E-05,
+     4      3.236E-05,  3.277E-05,  3.239E-05,  3.238E-05,  3.276E-05,
+     5      3.199E-05,  3.161E-05,  3.200E-05,  3.199E-05,  3.236E-05,
+     6      3.352E-05,  3.351E-05,  3.429E-05,  3.388E-05,  3.350E-05,
+     7      3.426E-05,  3.541E-05,  3.618E-05,  3.697E-05,  3.697E-05,
+     8      3.696E-05,  3.737E-05,  3.737E-05,  3.736E-05,  3.854E-05,
+     9      3.893E-05,  3.738E-05,  3.624E-05,  3.395E-05,  3.318E-05,
+     $      3.550E-05,  3.819E-05,  4.092E-05,  4.204E-05,  4.245E-05/
+      DATA (Y(I),I= 2051, 2100)/
+     1      4.284E-05,  4.325E-05,  4.324E-05,  4.363E-05,  4.403E-05,
+     2      4.442E-05,  4.365E-05,  4.284E-05,  4.246E-05,  4.244E-05,
+     3      4.360E-05,  4.552E-05,  4.629E-05,  4.548E-05,  4.431E-05,
+     4      4.316E-05,  4.238E-05,  4.353E-05,  4.428E-05,  4.504E-05,
+     5      4.581E-05,  4.621E-05,  4.543E-05,  4.583E-05,  4.620E-05,
+     6      4.659E-05,  4.622E-05,  4.661E-05,  4.621E-05,  4.583E-05,
+     7      4.583E-05,  4.503E-05,  4.582E-05,  4.541E-05,  4.578E-05,
+     8      4.577E-05,  4.655E-05,  4.691E-05,  4.769E-05,  4.693E-05,
+     9      4.693E-05,  4.539E-05,  4.462E-05,  4.462E-05,  4.425E-05,
+     $      4.351E-05,  4.391E-05,  4.468E-05,  4.588E-05,  4.741E-05/
+      DATA (Y(I),I= 2101, 2150)/
+     1      4.818E-05,  5.011E-05,  5.046E-05,  5.198E-05,  5.124E-05,
+     2      5.086E-05,  4.931E-05,  4.776E-05,  4.700E-05,  4.623E-05,
+     3      4.469E-05,  4.472E-05,  4.625E-05,  4.856E-05,  5.087E-05,
+     4      5.239E-05,  5.318E-05,  5.474E-05,  5.547E-05,  5.626E-05,
+     5      5.706E-05,  5.668E-05,  5.704E-05,  5.629E-05,  5.361E-05,
+     6      5.208E-05,  5.017E-05,  5.209E-05,  5.554E-05,  5.864E-05,
+     7      6.132E-05,  6.251E-05,  6.253E-05,  6.293E-05,  6.371E-05,
+     8      6.489E-05,  6.606E-05,  6.608E-05,  6.644E-05,  6.453E-05,
+     9      6.336E-05,  6.178E-05,  6.177E-05,  6.327E-05,  6.557E-05,
+     $      6.711E-05,  6.864E-05,  6.901E-05,  6.937E-05,  6.975E-05/
+      DATA (Y(I),I= 2151, 2200)/
+     1      6.821E-05,  6.704E-05,  6.554E-05,  6.438E-05,  6.398E-05,
+     2      6.318E-05,  6.319E-05,  6.280E-05,  6.048E-05,  5.933E-05,
+     3      5.817E-05,  5.660E-05,  5.620E-05,  5.619E-05,  5.616E-05,
+     4      5.501E-05,  5.226E-05,  4.917E-05,  4.647E-05,  4.528E-05,
+     5      4.565E-05,  4.602E-05,  4.641E-05,  4.524E-05,  4.213E-05,
+     6      3.943E-05,  3.713E-05,  3.711E-05,  3.866E-05,  3.982E-05,
+     7      4.137E-05,  3.944E-05,  3.674E-05,  3.368E-05,  3.139E-05,
+     8      3.100E-05,  3.139E-05,  3.212E-05,  3.251E-05,  3.135E-05,
+     9      2.904E-05,  2.633E-05,  2.441E-05,  2.478E-05,  2.480E-05,
+     $      2.557E-05,  2.594E-05,  2.477E-05,  2.404E-05,  2.404E-05/
+      DATA (Y(I),I= 2201, 2250)/
+     1      2.325E-05,  2.365E-05,  2.286E-05,  2.365E-05,  2.442E-05,
+     2      2.404E-05,  2.406E-05,  2.401E-05,  2.403E-05,  2.480E-05,
+     3      2.480E-05,  2.598E-05,  2.675E-05,  2.675E-05,  2.793E-05,
+     4      2.793E-05,  2.793E-05,  2.796E-05,  2.758E-05,  2.761E-05,
+     5      2.721E-05,  2.875E-05,  2.991E-05,  3.147E-05,  3.301E-05,
+     6      3.266E-05,  3.187E-05,  3.148E-05,  3.110E-05,  3.261E-05,
+     7      3.417E-05,  3.532E-05,  3.686E-05,  3.684E-05,  3.606E-05,
+     8      3.568E-05,  3.493E-05,  3.645E-05,  3.797E-05,  4.030E-05,
+     9      4.144E-05,  4.221E-05,  4.181E-05,  4.184E-05,  4.142E-05,
+     $      4.181E-05,  4.257E-05,  4.372E-05,  4.412E-05,  4.334E-05/
+      DATA (Y(I),I= 2251, 2300)/
+     1      4.220E-05,  4.146E-05,  3.991E-05,  4.067E-05,  4.223E-05,
+     2      4.377E-05,  4.608E-05,  4.609E-05,  4.608E-05,  4.571E-05,
+     3      4.569E-05,  4.532E-05,  4.608E-05,  4.648E-05,  4.684E-05,
+     4      4.764E-05,  4.725E-05,  4.803E-05,  4.805E-05,  4.726E-05,
+     5      4.806E-05,  4.806E-05,  4.810E-05,  4.770E-05,  4.731E-05,
+     6      4.617E-05,  4.577E-05,  4.424E-05,  4.464E-05,  4.502E-05,
+     7      4.577E-05,  4.538E-05,  4.619E-05,  4.696E-05,  4.696E-05,
+     8      4.696E-05,  4.655E-05,  4.657E-05,  4.540E-05,  4.537E-05,
+     9      4.618E-05,  4.770E-05,  4.847E-05,  5.041E-05,  5.041E-05,
+     $      4.928E-05,  4.773E-05,  4.619E-05,  4.502E-05,  4.582E-05/
+      DATA (Y(I),I= 2301, 2350)/
+     1      4.658E-05,  4.581E-05,  4.658E-05,  4.734E-05,  4.813E-05,
+     2      4.809E-05,  4.927E-05,  4.848E-05,  4.814E-05,  4.813E-05,
+     3      4.736E-05,  4.931E-05,  4.968E-05,  5.124E-05,  5.317E-05,
+     4      5.242E-05,  5.087E-05,  5.013E-05,  4.899E-05,  4.819E-05,
+     5      5.129E-05,  5.321E-05,  5.514E-05,  5.667E-05,  5.666E-05,
+     6      5.669E-05,  5.745E-05,  5.708E-05,  5.744E-05,  5.746E-05,
+     7      5.823E-05,  5.862E-05,  5.745E-05,  5.706E-05,  5.593E-05,
+     8      5.513E-05,  5.512E-05,  5.512E-05,  5.586E-05,  5.663E-05,
+     9      5.701E-05,  5.662E-05,  5.619E-05,  5.657E-05,  5.618E-05,
+     $      5.502E-05,  5.385E-05,  5.307E-05,  5.191E-05,  5.113E-05/
+      DATA (Y(I),I= 2351, 2400)/
+     1      5.074E-05,  5.033E-05,  5.036E-05,  4.994E-05,  4.801E-05,
+     2      4.723E-05,  4.609E-05,  4.531E-05,  4.724E-05,  4.992E-05,
+     3      5.185E-05,  5.298E-05,  5.028E-05,  4.607E-05,  4.225E-05,
+     4      3.800E-05,  3.608E-05,  3.610E-05,  3.454E-05,  3.455E-05,
+     5      3.339E-05,  3.302E-05,  3.263E-05,  3.264E-05,  3.186E-05,
+     6      3.262E-05,  3.417E-05,  3.493E-05,  3.647E-05,  3.530E-05,
+     7      3.375E-05,  3.221E-05,  3.068E-05,  3.031E-05,  2.992E-05,
+     8      3.029E-05,  3.029E-05,  3.108E-05,  3.108E-05,  3.031E-05,
+     9      3.031E-05,  3.031E-05,  3.031E-05,  3.031E-05,  3.070E-05,
+     $      2.994E-05,  3.111E-05,  3.109E-05,  3.184E-05,  3.300E-05/
+      DATA (Y(I),I= 2401, 2450)/
+     1      3.377E-05,  3.379E-05,  3.378E-05,  3.378E-05,  3.380E-05,
+     2      3.456E-05,  3.535E-05,  3.572E-05,  3.651E-05,  3.650E-05,
+     3      3.766E-05,  3.766E-05,  3.843E-05,  3.959E-05,  3.961E-05,
+     4      4.037E-05,  4.039E-05,  4.038E-05,  4.077E-05,  3.923E-05,
+     5      3.806E-05,  3.654E-05,  3.537E-05,  3.690E-05,  3.804E-05,
+     6      3.956E-05,  4.189E-05,  4.264E-05,  4.228E-05,  4.150E-05,
+     7      4.113E-05,  4.152E-05,  4.189E-05,  4.189E-05,  4.265E-05,
+     8      4.304E-05,  4.227E-05,  4.189E-05,  4.035E-05,  3.921E-05,
+     9      3.844E-05,  3.920E-05,  3.996E-05,  4.072E-05,  4.265E-05,
+     $      4.265E-05,  4.265E-05,  4.189E-05,  4.148E-05,  4.151E-05/
+      DATA (Y(I),I= 2451, 2500)/
+     1      4.151E-05,  4.188E-05,  4.188E-05,  4.188E-05,  4.306E-05,
+     2      4.226E-05,  4.304E-05,  4.385E-05,  4.357E-05,  4.342E-05,
+     3      4.250E-05,  4.239E-05,  4.224E-05,  4.160E-05,  4.217E-05,
+     4      4.281E-05,  4.298E-05,  4.359E-05,  4.302E-05,  4.287E-05,
+     5      4.195E-05,  4.139E-05,  4.195E-05,  4.233E-05,  4.270E-05,
+     6      4.229E-05,  4.268E-05,  4.234E-05,  4.191E-05,  4.138E-05,
+     7      4.084E-05,  4.065E-05,  4.062E-05,  4.052E-05,  4.045E-05,
+     8      4.053E-05,  4.100E-05,  4.151E-05,  4.206E-05,  4.260E-05,
+     9      4.292E-05,  4.304E-05,  4.320E-05,  4.333E-05,  4.345E-05,
+     $      4.377E-05,  4.404E-05,  4.432E-05,  4.460E-05,  4.453E-05/
+      DATA (Y(I),I= 2501, 2550)/
+     1      4.380E-05,  4.316E-05,  4.239E-05,  4.170E-05,  4.214E-05,
+     2      4.302E-05,  4.387E-05,  4.472E-05,  4.523E-05,  4.454E-05,
+     3      4.369E-05,  4.300E-05,  4.215E-05,  4.239E-05,  4.346E-05,
+     4      4.450E-05,  4.554E-05,  4.650E-05,  4.638E-05,  4.595E-05,
+     5      4.568E-05,  4.529E-05,  4.501E-05,  4.520E-05,  4.527E-05,
+     6      4.534E-05,  4.541E-05,  4.559E-05,  4.584E-05,  4.613E-05,
+     7      4.626E-05,  4.628E-05,  4.530E-05,  4.413E-05,  4.292E-05,
+     8      4.171E-05,  4.101E-05,  4.133E-05,  4.153E-05,  4.180E-05,
+     9      4.208E-05,  4.158E-05,  4.078E-05,  4.003E-05,  3.923E-05,
+     $      3.854E-05,  3.888E-05,  3.936E-05,  3.993E-05,  4.038E-05/
+      DATA (Y(I),I= 2551, 2600)/
+     1      4.018E-05,  3.852E-05,  3.686E-05,  3.515E-05,  3.349E-05,
+     2      3.280E-05,  3.284E-05,  3.285E-05,  3.277E-05,  3.273E-05,
+     3      3.205E-05,  3.128E-05,  3.044E-05,  2.968E-05,  2.902E-05,
+     4      2.895E-05,  2.891E-05,  2.895E-05,  2.895E-05,  2.876E-05,
+     5      2.837E-05,  2.803E-05,  2.760E-05,  2.726E-05,  2.707E-05,
+     6      2.707E-05,  2.700E-05,  2.700E-05,  2.689E-05,  2.685E-05,
+     7      2.681E-05,  2.674E-05,  2.667E-05,  2.651E-05,  2.628E-05,
+     8      2.602E-05,  2.575E-05,  2.552E-05,  2.544E-05,  2.567E-05,
+     9      2.591E-05,  2.614E-05,  2.633E-05,  2.610E-05,  2.557E-05,
+     $      2.511E-05,  2.457E-05,  2.416E-05,  2.450E-05,  2.512E-05/
+      DATA (Y(I),I= 2601, 2650)/
+     1      2.578E-05,  2.635E-05,  2.678E-05,  2.655E-05,  2.628E-05,
+     2      2.594E-05,  2.563E-05,  2.548E-05,  2.606E-05,  2.667E-05,
+     3      2.725E-05,  2.779E-05,  2.802E-05,  2.768E-05,  2.737E-05,
+     4      2.699E-05,  2.661E-05,  2.681E-05,  2.746E-05,  2.816E-05,
+     5      2.877E-05,  2.939E-05,  2.951E-05,  2.935E-05,  2.924E-05,
+     6      2.913E-05,  2.897E-05,  2.916E-05,  2.936E-05,  2.951E-05,
+     7      2.978E-05,  2.990E-05,  2.997E-05,  3.001E-05,  3.004E-05,
+     8      3.004E-05,  3.000E-05,  2.981E-05,  2.957E-05,  2.938E-05,
+     9      2.918E-05,  2.903E-05,  2.918E-05,  2.930E-05,  2.937E-05,
+     $      2.948E-05,  2.944E-05,  2.898E-05,  2.848E-05,  2.806E-05/
+      DATA (Y(I),I= 2651, 2700)/
+     1      2.756E-05,  2.733E-05,  2.744E-05,  2.751E-05,  2.763E-05,
+     2      2.767E-05,  2.751E-05,  2.716E-05,  2.682E-05,  2.635E-05,
+     3      2.605E-05,  2.585E-05,  2.581E-05,  2.578E-05,  2.570E-05,
+     4      2.574E-05,  2.566E-05,  2.554E-05,  2.551E-05,  2.543E-05,
+     5      2.535E-05,  2.535E-05,  2.544E-05,  2.548E-05,  2.560E-05,
+     6      2.564E-05,  2.569E-05,  2.585E-05,  2.589E-05,  2.597E-05,
+     7      2.601E-05,  2.617E-05,  2.641E-05,  2.656E-05,  2.671E-05,
+     8      2.695E-05,  2.710E-05,  2.730E-05,  2.746E-05,  2.769E-05,
+     9      2.785E-05,  2.800E-05,  2.812E-05,  2.831E-05,  2.842E-05,
+     $      2.858E-05,  2.878E-05,  2.889E-05,  2.908E-05,  2.920E-05/
+      DATA (Y(I),I= 2701, 2750)/
+     1      2.939E-05,  2.935E-05,  2.935E-05,  2.931E-05,  2.923E-05,
+     2      2.927E-05,  2.919E-05,  2.915E-05,  2.915E-05,  2.911E-05,
+     3      2.903E-05,  2.895E-05,  2.864E-05,  2.837E-05,  2.814E-05,
+     4      2.790E-05,  2.763E-05,  2.740E-05,  2.716E-05,  2.693E-05,
+     5      2.666E-05,  2.639E-05,  2.612E-05,  2.584E-05,  2.550E-05,
+     6      2.526E-05,  2.499E-05,  2.464E-05,  2.437E-05,  2.414E-05,
+     7      2.391E-05,  2.360E-05,  2.336E-05,  2.313E-05,  2.293E-05,
+     8      2.266E-05,  2.247E-05,  2.227E-05,  2.196E-05,  2.177E-05,
+     9      2.157E-05,  2.130E-05,  2.118E-05,  2.107E-05,  2.095E-05,
+     $      2.075E-05,  2.063E-05,  2.044E-05,  2.036E-05,  2.017E-05/
+      DATA (Y(I),I= 2751, 2800)/
+     1      2.005E-05,  1.994E-05,  1.982E-05,  1.971E-05,  1.959E-05,
+     2      1.944E-05,  1.933E-05,  1.925E-05,  1.906E-05,  1.898E-05,
+     3      1.887E-05,  1.876E-05,  1.864E-05,  1.856E-05,  1.849E-05,
+     4      1.830E-05,  1.827E-05,  1.815E-05,  1.807E-05,  1.800E-05,
+     5      1.788E-05,  1.778E-05,  1.770E-05,  1.766E-05,  1.762E-05,
+     6      1.755E-05,  1.755E-05,  1.751E-05,  1.740E-05,  1.736E-05,
+     7      1.736E-05,  1.728E-05,  1.725E-05,  1.721E-05,  1.717E-05,
+     8      1.712E-05,  1.712E-05,  1.709E-05,  1.704E-05,  1.693E-05,
+     9      1.693E-05,  1.685E-05,  1.685E-05,  1.680E-05,  1.680E-05,
+     $      1.672E-05,  1.672E-05,  1.672E-05,  1.672E-05,  1.668E-05/
+      DATA (Y(I),I= 2801, 2850)/
+     1      1.660E-05,  1.659E-05,  1.659E-05,  1.651E-05,  1.655E-05,
+     2      1.655E-05,  1.655E-05,  1.651E-05,  1.647E-05,  1.647E-05,
+     3      1.647E-05,  1.643E-05,  1.643E-05,  1.636E-05,  1.636E-05,
+     4      1.640E-05,  1.640E-05,  1.636E-05,  1.640E-05,  1.640E-05,
+     5      1.640E-05,  1.637E-05,  1.637E-05,  1.641E-05,  1.637E-05,
+     6      1.641E-05,  1.638E-05,  1.626E-05,  1.622E-05,  1.619E-05,
+     7      1.611E-05,  1.611E-05,  1.607E-05,  1.604E-05,  1.600E-05,
+     8      1.596E-05,  1.589E-05,  1.573E-05,  1.562E-05,  1.550E-05,
+     9      1.538E-05,  1.531E-05,  1.519E-05,  1.499E-05,  1.496E-05,
+     $      1.480E-05,  1.469E-05,  1.461E-05,  1.445E-05,  1.437E-05/
+      DATA (Y(I),I= 2851, 2900)/
+     1      1.422E-05,  1.418E-05,  1.403E-05,  1.399E-05,  1.383E-05,
+     2      1.375E-05,  1.360E-05,  1.356E-05,  1.356E-05,  1.360E-05,
+     3      1.360E-05,  1.364E-05,  1.360E-05,  1.360E-05,  1.360E-05,
+     4      1.360E-05,  1.356E-05,  1.364E-05,  1.364E-05,  1.368E-05,
+     5      1.380E-05,  1.384E-05,  1.388E-05,  1.392E-05,  1.403E-05,
+     6      1.403E-05,  1.411E-05,  1.411E-05,  1.419E-05,  1.423E-05,
+     7      1.431E-05,  1.427E-05,  1.435E-05,  1.439E-05,  1.439E-05,
+     8      1.443E-05,  1.451E-05,  1.454E-05,  1.454E-05,  1.458E-05,
+     9      1.458E-05,  1.450E-05,  1.450E-05,  1.446E-05,  1.446E-05,
+     $      1.446E-05,  1.438E-05,  1.442E-05,  1.441E-05,  1.433E-05/
+      DATA (Y(I),I= 2901, 2950)/
+     1      1.429E-05,  1.422E-05,  1.418E-05,  1.406E-05,  1.398E-05,
+     2      1.387E-05,  1.379E-05,  1.367E-05,  1.360E-05,  1.352E-05,
+     3      1.340E-05,  1.329E-05,  1.313E-05,  1.310E-05,  1.290E-05,
+     4      1.275E-05,  1.263E-05,  1.248E-05,  1.233E-05,  1.225E-05,
+     5      1.210E-05,  1.198E-05,  1.187E-05,  1.171E-05,  1.156E-05,
+     6      1.144E-05,  1.133E-05,  1.118E-05,  1.106E-05,  1.098E-05,
+     7      1.081E-05,  1.073E-05,  1.055E-05,  1.046E-05,  1.035E-05,
+     8      1.025E-05,  1.013E-05,  1.003E-05,  9.912E-06,  9.800E-06,
+     9      9.691E-06,  9.582E-06,  9.470E-06,  9.362E-06,  9.253E-06,
+     $      9.175E-06,  9.097E-06,  9.027E-06,  8.950E-06,  8.883E-06/
+      DATA (Y(I),I= 2951, 3000)/
+     1      8.802E-06,  8.732E-06,  8.658E-06,  8.588E-06,  8.510E-06,
+     2      8.440E-06,  8.385E-06,  8.342E-06,  8.307E-06,  8.267E-06,
+     3      8.228E-06,  8.189E-06,  8.149E-06,  8.106E-06,  8.063E-06,
+     4      8.024E-06,  7.984E-06,  7.957E-06,  7.949E-06,  7.944E-06,
+     5      7.928E-06,  7.920E-06,  7.908E-06,  7.907E-06,  7.895E-06,
+     6      7.883E-06,  7.874E-06,  7.870E-06,  7.854E-06,  7.858E-06,
+     7      7.853E-06,  7.850E-06,  7.853E-06,  7.849E-06,  7.853E-06,
+     8      7.849E-06,  7.845E-06,  7.852E-06,  7.848E-06,  7.844E-06,
+     9      7.836E-06,  7.825E-06,  7.810E-06,  7.798E-06,  7.787E-06,
+     $      7.776E-06,  7.753E-06,  7.741E-06,  7.726E-06,  7.715E-06/
+      DATA (Y(I),I= 3001, 3050)/
+     1      7.703E-06,  7.684E-06,  7.642E-06,  7.604E-06,  7.565E-06,
+     2      7.527E-06,  7.492E-06,  7.454E-06,  7.416E-06,  7.370E-06,
+     3      7.332E-06,  7.297E-06,  7.251E-06,  7.197E-06,  7.132E-06,
+     4      7.070E-06,  7.005E-06,  6.935E-06,  6.870E-06,  6.805E-06,
+     5      6.743E-06,  6.674E-06,  6.608E-06,  6.543E-06,  6.481E-06,
+     6      6.393E-06,  6.312E-06,  6.223E-06,  6.143E-06,  6.058E-06,
+     7      5.977E-06,  5.897E-06,  5.816E-06,  5.723E-06,  5.643E-06,
+     8      5.558E-06,  5.493E-06,  5.420E-06,  5.358E-06,  5.285E-06,
+     9      5.212E-06,  5.150E-06,  5.073E-06,  5.004E-06,  4.939E-06,
+     $      4.866E-06,  4.804E-06,  4.743E-06,  4.731E-06,  4.727E-06/
+      DATA (Y(I),I= 3051, 3100)/
+     1      4.723E-06,  4.719E-06,  4.715E-06,  4.707E-06,  4.699E-06,
+     2      4.699E-06,  4.695E-06,  4.691E-06,  4.680E-06,  4.695E-06,
+     3      4.745E-06,  4.798E-06,  4.844E-06,  4.890E-06,  4.944E-06,
+     4      4.986E-06,  5.040E-06,  5.086E-06,  5.136E-06,  5.189E-06,
+     5      5.236E-06,  5.262E-06,  5.270E-06,  5.289E-06,  5.297E-06,
+     6      5.305E-06,  5.324E-06,  5.332E-06,  5.347E-06,  5.355E-06,
+     7      5.370E-06,  5.381E-06,  5.389E-06,  5.347E-06,  5.297E-06,
+     8      5.231E-06,  5.181E-06,  5.127E-06,  5.065E-06,  5.011E-06,
+     9      4.950E-06,  4.896E-06,  4.838E-06,  4.780E-06,  4.726E-06,
+     $      4.661E-06,  4.595E-06,  4.525E-06,  4.456E-06,  4.390E-06/
+      DATA (Y(I),I= 3101, 3150)/
+     1      4.328E-06,  4.255E-06,  4.193E-06,  4.127E-06,  4.058E-06,
+     2      3.988E-06,  3.926E-06,  3.849E-06,  3.760E-06,  3.679E-06,
+     3      3.598E-06,  3.520E-06,  3.439E-06,  3.357E-06,  3.272E-06,
+     4      3.191E-06,  3.118E-06,  3.033E-06,  2.944E-06,  2.824E-06,
+     5      2.693E-06,  2.561E-06,  2.434E-06,  2.306E-06,  2.179E-06,
+     6      2.043E-06,  1.917E-06,  1.790E-06,  1.663E-06,  1.533E-06,
+     7      1.300E-06,  1.100E-06,  0.910E-06,  0.725E-06,  0.575E-06,
+     8      0.450E-06,  0.370E-06,  0.295E-06,  0.225E-06,  0.160E-06,
+     9      0.100E-06,  0.055E-06,  0.035E-06,  0.025E-06,  0.020E-06,
+     *      0.015E-06,  0.010E-06,  0.006E-06,  0.003E-06,  0.00000  /
+C
+      DATA (Z(I),I=    1,   50)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I= 51, 100)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I=  101,  150)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I= 151, 200)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I=  201,  250)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I= 251, 300)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I=  301,  350)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I= 351, 400)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I=  401,  450)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I= 451, 500)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I=  501,  550)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I= 551, 600)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I=  601,  650)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I= 651, 700)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I=  701,  750)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I= 751, 800)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     6      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     7      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     8      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     9      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     $      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    /
+      DATA (Z(I),I=  801,  850)/
+     1      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     2      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     3      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     4      0.000    ,  0.000    ,  0.000    ,  0.000    ,  0.000    ,
+     5     -5.000e-10, -1.000e-09, -1.500e-09, -2.500e-09, -5.000e-09,
+     6     -7.500e-09, -1.000e-08, -1.375e-08, -1.750e-08, -2.325e-08,
+     7     -3.200e-08, -4.100e-08, -5.000e-08, -6.000e-08, -7.000e-08,
+     8     -8.000e-08, -9.500e-08, -1.200e-07, -2.400e-07, -3.300e-07,
+     9     -3.400e-07, -3.476E-07, -3.507E-07, -3.498E-07, -3.441E-07,
+     $     -3.405E-07, -3.384E-07, -3.439E-07, -3.538E-07, -3.699E-07/
+      DATA (Z(I),I= 851, 900)/
+     1     -3.651E-07, -3.462E-07, -3.292E-07, -3.177E-07, -3.239E-07,
+     2     -3.321E-07, -3.447E-07, -3.404E-07, -3.284E-07, -3.301E-07,
+     3     -3.295E-07, -3.214E-07, -3.194E-07, -3.230E-07, -3.202E-07,
+     4     -3.182E-07, -3.245E-07, -3.272E-07, -3.181E-07, -3.133E-07,
+     5     -3.115E-07, -3.134E-07, -3.144E-07, -3.226E-07, -3.292E-07,
+     6     -3.239E-07, -3.248E-07, -3.088E-07, -3.269E-07, -3.166E-07,
+     7     -3.283E-07, -3.143E-07, -3.064E-07, -3.140E-07, -2.938E-07,
+     8     -2.938E-07, -3.014E-07, -2.873E-07, -2.809E-07, -2.809E-07,
+     9     -3.092E-07, -2.748E-07, -2.809E-07, -2.744E-07, -2.809E-07,
+     $     -2.669E-07, -2.666E-07, -2.870E-07, -2.806E-07, -2.806E-07/
+      DATA (Z(I),I=  901,  950)/
+     1     -2.806E-07, -2.870E-07, -2.730E-07, -2.590E-07, -2.512E-07,
+     2     -2.792E-07, -2.856E-07, -2.860E-07, -2.781E-07, -2.565E-07,
+     3     -2.425E-07, -2.626E-07, -2.767E-07, -2.624E-07, -2.484E-07,
+     4     -2.343E-07, -2.484E-07, -2.689E-07, -2.268E-07, -2.329E-07,
+     5     -2.470E-07, -2.193E-07, -2.254E-07, -2.318E-07, -2.318E-07,
+     6     -2.459E-07, -2.240E-07, -2.021E-07, -2.161E-07, -2.021E-07,
+     7     -2.162E-07, -2.226E-07, -2.022E-07, -2.086E-07, -2.083E-07,
+     8     -2.148E-07, -2.288E-07, -2.285E-07, -2.286E-07, -2.288E-07,
+     9     -2.209E-07, -2.069E-07, -2.069E-07, -2.131E-07, -2.131E-07,
+     $     -1.991E-07, -1.991E-07, -1.991E-07, -1.707E-07, -1.851E-07/
+      DATA (Z(I),I= 951, 1000)/
+     1     -1.772E-07, -1.775E-07, -1.912E-07, -1.976E-07, -2.117E-07,
+     2     -1.974E-07, -1.772E-07, -1.837E-07, -1.693E-07, -1.693E-07,
+     3     -1.769E-07, -1.693E-07, -1.632E-07, -1.489E-07, -1.352E-07,
+     4     -1.492E-07, -1.495E-07, -1.556E-07, -1.492E-07, -1.352E-07,
+     5     -1.352E-07, -1.492E-07, -1.492E-07, -1.349E-07, -1.285E-07,
+     6     -1.147E-07, -1.287E-07, -1.150E-07, -1.147E-07, -1.007E-07,
+     7     -9.455E-08, -8.022E-08, -6.618E-08, -7.990E-08, -8.016E-08,
+     8     -7.992E-08, -8.779E-08, -7.986E-08, -1.015E-07, -9.567E-08,
+     9     -7.373E-08, -8.135E-08, -9.567E-08, -7.520E-08, -8.955E-08,
+     $     -7.521E-08, -1.033E-07, -8.133E-08, -8.895E-08, -7.493E-08/
+      DATA (Z(I),I= 1001, 1050)/
+     1     -5.446E-08, -6.850E-08, -9.655E-08, -6.846E-08, -9.040E-08,
+     2     -7.640E-08, -7.669E-08, -6.239E-08, -5.600E-08, -7.612E-08,
+     3     -6.998E-08, -4.985E-08, -5.597E-08, -7.032E-08, -7.032E-08,
+     4     -7.031E-08, -6.243E-08, -5.453E-08, -5.458E-08, -4.817E-08,
+     5     -5.461E-08, -4.059E-08, -6.867E-08, -4.671E-08, -5.316E-08,
+     6     -3.889E-08, -3.915E-08, -3.888E-08, -3.131E-08, -1.732E-08,
+     7     -1.729E-08, -3.134E-08, -1.735E-08, -9.496E-09, -9.835E-09,
+     8     -1.596E-08, -3.031E-08, -3.644E-08, -4.288E-08, -2.243E-08,
+     9     -1.488E-08, -8.478E-10,  2.750E-08,  3.508E-08,  3.537E-08,
+     $      3.540E-08,  2.780E-08, -6.711E-09, -6.391E-10,  2.739E-08/
+      DATA (Z(I),I= 1051, 1100)/
+     1      3.530E-08,  4.290E-08,  4.289E-08,  5.107E-08,  4.316E-08,
+     2      4.345E-08,  5.102E-08,  2.937E-08,  3.696E-08,  3.699E-08,
+     3      3.695E-08,  5.099E-08,  4.486E-08,  4.480E-08,  4.479E-08,
+     4      5.240E-08,  4.448E-08,  6.496E-08,  7.107E-08,  8.540E-08,
+     5      5.706E-08,  2.900E-08,  4.300E-08,  7.128E-08,  9.295E-08,
+     6      9.322E-08,  9.936E-08,  9.935E-08,  9.934E-08,  1.134E-07,
+     7      9.146E-08,  1.195E-07,  1.055E-07,  9.177E-08,  9.207E-08,
+     8      9.848E-08,  9.876E-08,  9.846E-08,  9.846E-08,  1.125E-07,
+     9      1.122E-07,  1.122E-07,  1.183E-07,  1.324E-07,  1.321E-07,
+     $      1.245E-07,  1.245E-07,  1.108E-07,  1.251E-07,  1.315E-07/
+      DATA (Z(I),I= 1101, 1150)/
+     1      1.380E-07,  1.303E-07,  1.227E-07,  1.148E-07,  1.148E-07,
+     2      1.289E-07,  1.350E-07,  1.210E-07,  1.351E-07,  1.556E-07,
+     3      1.559E-07,  1.479E-07,  1.681E-07,  1.465E-07,  1.591E-07,
+     4      1.591E-07,  1.667E-07,  1.808E-07,  1.670E-07,  1.667E-07,
+     5      1.592E-07,  1.376E-07,  1.498E-07,  1.562E-07,  1.986E-07,
+     6      2.206E-07,  2.209E-07,  2.147E-07,  2.069E-07,  2.069E-07,
+     7      2.130E-07,  1.990E-07,  2.051E-07,  2.268E-07,  2.552E-07,
+     8      2.689E-07,  2.973E-07,  3.034E-07,  3.177E-07,  3.101E-07,
+     9      3.242E-07,  3.102E-07,  3.038E-07,  3.053E-07,  2.909E-07,
+     $      2.909E-07,  2.988E-07,  2.988E-07,  3.128E-07,  3.128E-07/
+      DATA (Z(I),I= 1151, 1200)/
+     1      3.193E-07,  3.257E-07,  3.257E-07,  3.461E-07,  3.321E-07,
+     2      3.321E-07,  3.257E-07,  3.256E-07,  3.257E-07,  3.394E-07,
+     3      3.391E-07,  3.248E-07,  3.248E-07,  3.251E-07,  3.172E-07,
+     4      3.175E-07,  3.239E-07,  3.236E-07,  3.028E-07,  3.229E-07,
+     5      3.306E-07,  3.309E-07,  3.528E-07,  3.531E-07,  3.394E-07,
+     6      3.315E-07,  3.175E-07,  3.236E-07,  3.017E-07,  3.157E-07,
+     7      3.157E-07,  3.295E-07,  3.154E-07,  3.154E-07,  3.093E-07,
+     8      2.952E-07,  2.812E-07,  2.671E-07,  2.672E-07,  2.734E-07,
+     9      2.731E-07,  2.792E-07,  2.997E-07,  2.933E-07,  2.792E-07,
+     $      2.792E-07,  2.653E-07,  2.372E-07,  2.289E-07,  2.290E-07/
+      DATA (Z(I),I= 1201, 1250)/
+     1      2.276E-07,  2.132E-07,  2.211E-07,  2.431E-07,  2.369E-07,
+     2      2.448E-07,  2.388E-07,  2.247E-07,  2.043E-07,  2.043E-07,
+     3      1.903E-07,  1.967E-07,  2.251E-07,  2.235E-07,  2.300E-07,
+     4      2.301E-07,  2.234E-07,  2.295E-07,  2.368E-07,  2.365E-07,
+     5      2.368E-07,  2.089E-07,  2.093E-07,  1.894E-07,  1.757E-07,
+     6      1.895E-07,  2.035E-07,  2.319E-07,  2.394E-07,  2.236E-07,
+     7      2.376E-07,  1.937E-07,  1.658E-07,  1.374E-07,  1.456E-07,
+     8      1.395E-07,  1.690E-07,  1.769E-07,  1.849E-07,  1.988E-07,
+     9      1.988E-07,  1.769E-07,  1.708E-07,  1.976E-07,  2.042E-07,
+     $      2.105E-07,  2.171E-07,  2.310E-07,  2.249E-07,  2.389E-07/
+      DATA (Z(I),I= 1251, 1300)/
+     1      2.246E-07,  2.109E-07,  1.822E-07,  1.682E-07,  1.536E-07,
+     2      1.467E-07,  1.529E-07,  1.593E-07,  1.521E-07,  1.866E-07,
+     3      1.930E-07,  1.729E-07,  1.947E-07,  1.745E-07,  1.623E-07,
+     4      1.562E-07,  1.636E-07,  1.629E-07,  1.626E-07,  1.623E-07,
+     5      1.688E-07,  1.750E-07,  1.676E-07,  1.878E-07,  1.946E-07,
+     6      2.151E-07,  2.086E-07,  2.086E-07,  1.946E-07,  2.087E-07,
+     7      2.007E-07,  1.784E-07,  1.630E-07,  1.613E-07,  1.551E-07,
+     8      1.425E-07,  1.507E-07,  1.242E-07,  1.184E-07,  1.259E-07,
+     9      1.605E-07,  1.540E-07,  1.962E-07,  2.102E-07,  1.804E-07,
+     $      1.585E-07,  1.225E-07,  9.271E-08,  7.834E-08,  1.067E-07/
+      DATA (Z(I),I= 1301, 1350)/
+     1      1.144E-07,  1.205E-07,  1.489E-07,  1.568E-07,  1.162E-07,
+     2      1.039E-07,  1.399E-07,  1.196E-07,  1.263E-07,  1.267E-07,
+     3      9.704E-08,  8.956E-08,  6.793E-08,  9.629E-08,  1.241E-07,
+     4      1.383E-07,  1.662E-07,  1.742E-07,  1.256E-07,  7.070E-08,
+     5      6.420E-08,  3.083E-08,  5.131E-08,  5.781E-08,  7.816E-08,
+     6      6.300E-08,  8.356E-08,  7.602E-08,  9.796E-08,  9.801E-08,
+     7      1.402E-07,  1.758E-07,  1.478E-07,  1.261E-07,  6.339E-08,
+     8      2.789E-08, -2.071E-08, -2.791E-08, -4.312E-08, -3.657E-08,
+     9     -9.756E-09,  3.890E-08,  2.843E-09, -3.339E-09, -3.133E-08,
+     $     -5.142E-08, -7.951E-08, -5.144E-08, -4.518E-08, -9.156E-09/
+      DATA (Z(I),I= 1351, 1400)/
+     1      1.096E-08,  1.085E-08,  3.110E-08,  5.755E-08,  7.769E-08,
+     2      6.960E-08,  6.819E-08,  4.017E-08,  2.609E-08, -8.452E-09,
+     3     -2.233E-08, -4.403E-08, -1.706E-08,  1.748E-08,  2.296E-09,
+     4      1.513E-08, -6.365E-09, -3.449E-08, -6.250E-08, -5.452E-08,
+     5     -8.259E-08, -1.186E-07, -1.342E-07, -1.281E-07, -1.579E-07,
+     6     -1.736E-07, -1.812E-07, -1.666E-07, -1.662E-07, -1.655E-07,
+     7     -1.787E-07, -1.864E-07, -2.023E-07, -2.179E-07, -2.260E-07,
+     8     -2.417E-07, -2.499E-07, -2.504E-07, -2.510E-07, -2.516E-07,
+     9     -2.657E-07, -2.738E-07, -2.889E-07, -3.182E-07, -3.259E-07,
+     $     -3.346E-07, -3.486E-07, -3.754E-07, -3.819E-07, -3.947E-07/
+      DATA (Z(I),I= 1401, 1450)/
+     1     -3.998E-07, -4.139E-07, -4.214E-07, -4.162E-07, -4.378E-07,
+     2     -4.672E-07, -4.888E-07, -4.964E-07, -4.825E-07, -4.964E-07,
+     3     -4.964E-07, -5.040E-07, -5.524E-07, -4.964E-07, -4.963E-07,
+     4     -4.963E-07, -4.963E-07, -4.963E-07, -4.964E-07, -4.963E-07,
+     5     -4.964E-07, -4.963E-07, -4.963E-07, -4.963E-07, -4.963E-07,
+     6     -5.724E-07, -4.964E-07, -4.963E-07, -6.365E-07, -4.963E-07,
+     7     -5.577E-07, -6.978E-07, -5.575E-07, -5.576E-07, -6.950E-07,
+     8     -5.577E-07, -5.576E-07, -6.951E-07, -5.577E-07, -5.577E-07,
+     9     -5.577E-07, -5.576E-07, -5.576E-07, -6.950E-07, -5.577E-07,
+     $     -6.978E-07, -5.576E-07, -5.577E-07, -5.576E-07, -5.577E-07/
+      DATA (Z(I),I= 1451, 1500)/
+     1     -5.576E-07, -5.577E-07, -5.576E-07, -7.010E-07, -8.381E-07,
+     2     -8.383E-07, -6.977E-07, -8.411E-07, -8.411E-07, -5.604E-07,
+     3     -8.411E-07, -7.005E-07, -8.410E-07, -7.006E-07, -6.978E-07,
+     4     -8.379E-07, -7.006E-07, -8.381E-07, -8.378E-07, -8.349E-07,
+     5     -8.380E-07, -8.380E-07, -8.351E-07, -8.379E-07, -8.379E-07,
+     6     -8.380E-07, -8.379E-07, -8.350E-07, -8.350E-07, -8.350E-07,
+     7     -8.351E-07, -9.751E-07, -9.751E-07, -8.350E-07, -8.351E-07,
+     8     -8.380E-07, -8.379E-07, -9.751E-07, -8.377E-07, -8.379E-07,
+     9     -8.379E-07, -9.140E-07, -9.139E-07, -8.527E-07, -9.286E-07,
+     $     -8.526E-07, -9.286E-07, -7.881E-07, -8.526E-07, -7.882E-07/
+      DATA (Z(I),I= 1501, 1550)/
+     1     -6.477E-07, -7.122E-07, -7.121E-07, -7.883E-07, -6.475E-07,
+     2     -8.524E-07, -8.522E-07, -6.478E-07, -7.881E-07, -7.883E-07,
+     3     -7.124E-07, -6.475E-07, -6.476E-07, -7.238E-07, -6.478E-07,
+     4     -5.834E-07, -8.637E-07, -5.832E-07, -8.025E-07, -5.832E-07,
+     5     -5.219E-07, -5.218E-07, -7.412E-07, -7.413E-07, -6.010E-07,
+     6     -6.011E-07, -7.413E-07, -7.410E-07, -5.221E-07, -5.219E-07,
+     7     -4.576E-07, -6.007E-07, -4.604E-07, -4.603E-07, -3.814E-07,
+     8     -3.169E-07, -3.199E-07, -3.813E-07, -3.813E-07, -4.601E-07,
+     9     -3.201E-07, -3.203E-07, -3.201E-07, -3.200E-07, -3.202E-07,
+     $     -3.991E-07, -2.587E-07, -2.560E-07, -2.589E-07, -2.587E-07/
+      DATA (Z(I),I= 1551, 1600)/
+     1     -2.591E-07, -3.202E-07, -3.950E-08, -3.960E-08,  3.970E-08,
+     2      3.965E-08, -1.009E-07, -3.950E-08,  3.965E-08, -1.009E-07,
+     3      1.038E-07, -3.955E-08, -3.950E-08, -3.955E-08, -3.960E-08,
+     4     -3.950E-08, -3.955E-08,  2.176E-08,  9.783E-08, -4.263E-08,
+     5      3.668E-08, -1.039E-07,  3.329E-08,  3.605E-08, -2.791E-08,
+     6     -2.515E-08,  1.121E-07,  1.149E-07,  1.150E-07,  1.150E-07,
+     7      1.148E-07,  1.150E-07,  1.149E-07,  1.150E-07, -2.838E-08,
+     8     -2.823E-08, -2.833E-08,  1.118E-07, -3.157E-08,  4.727E-08,
+     9     -9.266E-08, -9.276E-08,  5.061E-08,  2.666E-07,  1.263E-07,
+     $      1.906E-07,  1.262E-07, -1.403E-08, -1.544E-07, -9.308E-08/
+      DATA (Z(I),I= 1601, 1650)/
+     1      5.024E-08, -9.318E-08, -1.543E-07, -1.545E-07, -1.435E-08,
+     2     -1.440E-08, -7.873E-08, -7.863E-08, -7.878E-08, -7.883E-08,
+     3     -7.878E-08, -7.878E-08, -2.221E-07, -7.873E-08, -2.833E-07,
+     4     -7.878E-08, -1.432E-07, -2.220E-07, -2.865E-07, -3.478E-07,
+     5     -3.478E-07, -3.478E-07, -3.478E-07, -4.091E-07, -3.448E-07,
+     6     -3.448E-07, -3.448E-07, -2.046E-07, -2.046E-07, -4.090E-07,
+     7     -2.044E-07, -3.446E-07, -4.092E-07, -2.045E-07, -2.046E-07,
+     8     -2.045E-07, -2.046E-07, -2.046E-07, -2.044E-07, -2.047E-07,
+     9     -2.045E-07, -2.046E-07, -2.046E-07, -4.852E-07, -3.446E-07,
+     $     -2.806E-07, -2.806E-07, -2.805E-07, -5.611E-07, -3.418E-07/
+      DATA (Z(I),I= 1651, 1700)/
+     1     -3.416E-07, -4.820E-07, -4.031E-07, -3.418E-07, -3.418E-07,
+     2     -4.819E-07, -4.059E-07, -3.447E-07, -3.447E-07, -3.447E-07,
+     3     -3.447E-07, -4.848E-07, -3.447E-07, -3.446E-07, -3.448E-07,
+     4     -3.447E-07, -3.446E-07, -3.447E-07, -3.447E-07, -4.202E-07,
+     5     -4.203E-07, -4.205E-07, -4.204E-07, -2.801E-07, -2.802E-07,
+     6     -2.801E-07, -4.203E-07, -4.203E-07, -2.830E-07, -2.830E-07,
+     7     -4.230E-07, -4.233E-07, -2.831E-07, -4.230E-07, -2.829E-07,
+     8     -3.619E-07, -3.590E-07, -3.618E-07, -4.992E-07, -4.991E-07,
+     9     -4.992E-07, -4.378E-07, -4.378E-07, -2.973E-07, -7.816E-08,
+     $     -2.974E-07, -2.186E-07, -2.186E-07, -2.186E-07, -7.800E-08/
+      DATA (Z(I),I= 1701, 1750)/
+     1     -7.800E-08, -2.181E-07, -7.816E-08, -2.182E-07, -7.810E-08,
+     2     -1.568E-07, -7.758E-08, -7.774E-08,  6.250E-08, -7.810E-08,
+     3     -2.183E-07, -1.568E-07, -1.569E-07, -2.179E-07, -7.810E-08,
+     4     -7.800E-08, -7.795E-08, -7.800E-08, -2.973E-07, -2.973E-07,
+     5     -7.805E-08, -2.185E-07, -3.586E-07, -3.588E-07, -2.973E-07,
+     6     -1.541E-07, -3.586E-07, -2.152E-07, -7.805E-08, -2.154E-07,
+     7     -1.541E-07, -7.518E-08, -2.154E-07, -7.523E-08, -1.393E-07,
+     8     -7.518E-08, -1.396E-07,  7.826E-10, -1.396E-07, -2.798E-07,
+     9      9.391E-10, -2.798E-07, -2.799E-07, -1.396E-07, -1.396E-07,
+     $     -1.425E-07, -1.397E-07, -1.397E-07, -1.430E-07, -1.427E-07/
+      DATA (Z(I),I= 1751, 1800)/
+     1     -1.430E-07, -2.609E-09,  4.174E-10,  5.217E-10,  3.652E-10,
+     2     -2.348E-09, -1.397E-07,  3.652E-10,  5.739E-10,  4.696E-10,
+     3      4.696E-10,  4.696E-10,  2.609E-10,  4.696E-10, -6.407E-08,
+     4      1.406E-07,  7.654E-08, -6.402E-08, -6.402E-08, -6.412E-08,
+     5     -6.402E-08,  1.205E-08, -6.396E-08, -6.407E-08, -6.402E-08,
+     6     -6.407E-08, -6.402E-08, -6.402E-08, -1.252E-07,  1.487E-08,
+     7     -6.130E-08, -6.130E-08, -1.256E-07, -2.046E-07, -2.045E-07,
+     8     -6.130E-08, -6.130E-08, -6.438E-08, -6.449E-08, -1.288E-07,
+     9     -6.438E-08, -6.449E-08, -6.449E-08, -6.443E-08, -6.443E-08,
+     $     -6.438E-08, -6.438E-08, -1.258E-07,  1.435E-08,  1.440E-08/
+      DATA (Z(I),I= 1801, 1850)/
+     1      1.440E-08, -2.645E-08, -4.043E-08, -8.129E-08, -8.791E-08,
+     2     -7.268E-08, -5.113E-08, -5.770E-08, -7.821E-08, -9.219E-08,
+     3     -1.203E-07, -1.483E-07, -1.639E-07, -1.921E-07, -1.559E-07,
+     4     -1.422E-07, -1.278E-07, -7.962E-08, -1.560E-08,  4.664E-08,
+     5      6.057E-08,  4.649E-08,  1.883E-08,  4.696E-09, -2.332E-08,
+     6     -3.751E-08, -3.751E-08, -5.937E-08, -6.553E-08, -7.983E-08,
+     7     -7.983E-08, -6.584E-08, -5.932E-08, -6.548E-08, -1.079E-07,
+     8     -1.436E-07, -1.717E-07, -1.576E-07, -1.782E-07, -1.719E-07,
+     9     -1.502E-07, -1.489E-07, -9.939E-08, -9.814E-08, -9.819E-08,
+     $     -1.110E-07, -1.174E-07, -1.313E-07, -1.454E-07, -1.594E-07/
+      DATA (Z(I),I= 1851, 1900)/
+     1     -1.454E-07, -1.314E-07, -1.173E-07, -1.044E-07, -1.121E-07,
+     2     -1.198E-07, -1.554E-07, -1.630E-07, -1.502E-07, -1.798E-07,
+     3     -1.797E-07, -1.578E-07, -1.653E-07, -1.654E-07, -1.657E-07,
+     4     -1.578E-07, -1.517E-07, -1.514E-07, -1.374E-07, -1.233E-07,
+     5     -1.297E-07, -1.516E-07, -1.513E-07, -1.798E-07, -1.793E-07,
+     6     -1.933E-07, -1.934E-07, -2.013E-07, -1.796E-07, -1.513E-07,
+     7     -1.437E-07, -1.145E-07, -1.007E-07, -9.318E-08, -9.198E-08,
+     8     -9.835E-08, -1.049E-07, -9.078E-08, -9.083E-08, -9.845E-08,
+     9     -1.266E-07, -1.545E-07, -2.108E-07, -2.169E-07, -1.949E-07,
+     $     -2.011E-07, -1.853E-07, -1.853E-07, -1.555E-07, -1.413E-07/
+      DATA (Z(I),I= 1901, 1950)/
+     1     -1.333E-07, -1.474E-07, -1.478E-07, -1.619E-07, -1.834E-07,
+     2     -2.255E-07, -2.536E-07, -2.536E-07, -2.472E-07, -2.677E-07,
+     3     -2.255E-07, -2.055E-07, -1.555E-07, -1.495E-07, -1.480E-07,
+     4     -1.684E-07, -1.748E-07, -1.955E-07, -1.880E-07, -1.945E-07,
+     5     -2.007E-07, -1.926E-07, -1.989E-07, -1.910E-07, -1.831E-07,
+     6     -1.469E-07, -1.393E-07, -1.454E-07, -1.658E-07, -2.003E-07,
+     7     -2.352E-07, -2.133E-07, -1.981E-07, -1.844E-07, -1.705E-07,
+     8     -1.780E-07, -1.932E-07, -1.930E-07, -1.724E-07, -1.521E-07,
+     9     -1.176E-07, -1.393E-07, -1.676E-07, -1.812E-07, -1.955E-07,
+     $     -1.672E-07, -1.536E-07, -1.252E-07, -1.113E-07, -9.715E-08/
+      DATA (Z(I),I= 1951, 2000)/
+     1     -9.725E-08, -6.918E-08, -1.112E-07, -9.720E-08, -1.256E-07,
+     2     -1.111E-07, -8.343E-08, -8.309E-08, -5.502E-08, -2.687E-08,
+     3     -2.721E-08, -2.723E-08, -2.079E-08, -1.463E-08,  5.113E-09,
+     4      1.158E-08, -5.241E-08, -1.165E-07, -1.602E-07, -1.805E-07,
+     5     -1.456E-07, -1.176E-07, -1.169E-07, -1.166E-07, -1.583E-07,
+     6     -1.580E-07, -1.658E-07, -1.382E-07, -1.103E-07, -8.259E-08,
+     7     -1.109E-07, -1.252E-07, -1.611E-07, -1.754E-07, -1.626E-07,
+     8     -1.483E-07, -1.561E-07, -1.574E-07, -1.790E-07, -2.005E-07,
+     9     -2.363E-07, -2.081E-07, -2.082E-07, -1.801E-07, -2.020E-07,
+     $     -2.160E-07, -2.082E-07, -2.020E-07, -1.741E-07, -1.325E-07/
+      DATA (Z(I),I= 2001, 2050)/
+     1     -1.047E-07, -9.861E-08, -1.127E-07, -9.884E-08, -1.131E-07,
+     2     -1.270E-07, -1.406E-07, -1.546E-07, -1.478E-07, -1.194E-07,
+     3     -1.333E-07, -1.050E-07, -1.190E-07, -1.114E-07, -1.319E-07,
+     4     -1.321E-07, -1.246E-07, -1.450E-07, -1.590E-07, -1.656E-07,
+     5     -1.935E-07, -2.140E-07, -2.205E-07, -2.345E-07, -2.550E-07,
+     6     -2.475E-07, -2.615E-07, -2.335E-07, -2.411E-07, -2.414E-07,
+     7     -2.273E-07, -1.928E-07, -1.788E-07, -1.709E-07, -1.709E-07,
+     8     -1.850E-07, -1.909E-07, -1.908E-07, -2.049E-07, -1.967E-07,
+     9     -2.032E-07, -2.452E-07, -2.589E-07, -3.211E-07, -3.352E-07,
+     $     -3.133E-07, -2.710E-07, -2.275E-07, -2.278E-07, -2.203E-07/
+      DATA (Z(I),I= 2051, 2100)/
+     1     -2.267E-07, -2.392E-07, -2.600E-07, -2.665E-07, -2.729E-07,
+     2     -2.793E-07, -2.934E-07, -3.153E-07, -3.291E-07, -3.229E-07,
+     3     -3.153E-07, -2.871E-07, -2.730E-07, -2.950E-07, -3.166E-07,
+     4     -3.510E-07, -3.791E-07, -3.446E-07, -3.446E-07, -3.447E-07,
+     5     -3.307E-07, -3.231E-07, -3.512E-07, -3.436E-07, -3.439E-07,
+     6     -3.503E-07, -3.500E-07, -3.565E-07, -3.708E-07, -3.845E-07,
+     7     -3.845E-07, -4.065E-07, -3.986E-07, -4.061E-07, -4.065E-07,
+     8     -4.205E-07, -3.925E-07, -3.861E-07, -3.580E-07, -3.720E-07,
+     9     -3.720E-07, -4.001E-07, -4.141E-07, -4.140E-07, -4.138E-07,
+     $     -4.338E-07, -4.263E-07, -4.123E-07, -3.900E-07, -3.620E-07/
+      DATA (Z(I),I= 2101, 2150)/
+     1     -3.480E-07, -3.265E-07, -3.408E-07, -3.268E-07, -3.470E-07,
+     2     -3.674E-07, -4.095E-07, -4.515E-07, -4.723E-07, -4.863E-07,
+     3     -5.143E-07, -5.205E-07, -4.925E-07, -4.571E-07, -4.151E-07,
+     4     -4.011E-07, -3.932E-07, -3.713E-07, -3.652E-07, -3.574E-07,
+     5     -3.495E-07, -3.632E-07, -3.635E-07, -3.977E-07, -4.602E-07,
+     6     -5.084E-07, -5.569E-07, -5.286E-07, -4.930E-07, -4.431E-07,
+     7     -4.216E-07, -4.061E-07, -4.262E-07, -4.187E-07, -4.248E-07,
+     8     -4.234E-07, -4.018E-07, -4.219E-07, -4.223E-07, -4.640E-07,
+     9     -4.924E-07, -5.283E-07, -5.424E-07, -5.223E-07, -4.802E-07,
+     $     -4.522E-07, -4.241E-07, -4.178E-07, -4.181E-07, -3.976E-07/
+      DATA (Z(I),I= 2151, 2200)/
+     1     -4.256E-07, -4.472E-07, -4.674E-07, -4.750E-07, -4.825E-07,
+     2     -4.702E-07, -4.562E-07, -4.498E-07, -4.716E-07, -4.792E-07,
+     3     -4.867E-07, -4.884E-07, -4.820E-07, -4.618E-07, -4.355E-07,
+     4     -4.290E-07, -4.664E-07, -5.023E-07, -5.177E-07, -5.191E-07,
+     5     -4.852E-07, -4.446E-07, -4.101E-07, -3.975E-07, -4.272E-07,
+     6     -4.426E-07, -4.505E-07, -4.235E-07, -3.815E-07, -3.330E-07,
+     7     -2.910E-07, -3.124E-07, -3.279E-07, -3.699E-07, -3.978E-07,
+     8     -3.914E-07, -3.569E-07, -3.166E-07, -2.821E-07, -2.896E-07,
+     9     -3.115E-07, -3.269E-07, -3.485E-07, -3.280E-07, -3.140E-07,
+     $     -2.999E-07, -2.863E-07, -3.079E-07, -3.139E-07, -3.139E-07/
+      DATA (Z(I),I= 2201, 2250)/
+     1     -3.218E-07, -3.075E-07, -3.496E-07, -3.417E-07, -3.277E-07,
+     2     -3.415E-07, -3.476E-07, -3.695E-07, -3.757E-07, -3.617E-07,
+     3     -3.617E-07, -3.603E-07, -3.463E-07, -3.463E-07, -3.448E-07,
+     4     -3.448E-07, -3.448E-07, -3.509E-07, -3.714E-07, -3.775E-07,
+     5     -3.918E-07, -3.840E-07, -3.764E-07, -3.545E-07, -3.265E-07,
+     6     -3.531E-07, -3.812E-07, -4.156E-07, -4.361E-07, -4.362E-07,
+     7     -4.143E-07, -4.208E-07, -3.928E-07, -4.068E-07, -4.349E-07,
+     8     -4.553E-07, -4.895E-07, -4.755E-07, -4.616E-07, -4.256E-07,
+     9     -4.119E-07, -4.181E-07, -4.325E-07, -4.386E-07, -4.670E-07,
+     $     -4.734E-07, -4.734E-07, -4.659E-07, -4.723E-07, -5.004E-07/
+      DATA (Z(I),I= 2251, 2300)/
+     1     -5.141E-07, -5.342E-07, -5.763E-07, -5.623E-07, -5.404E-07,
+     2     -5.124E-07, -4.905E-07, -4.905E-07, -4.905E-07, -5.109E-07,
+     3     -5.250E-07, -5.455E-07, -5.315E-07, -5.379E-07, -5.382E-07,
+     4     -5.303E-07, -5.239E-07, -4.958E-07, -5.020E-07, -5.098E-07,
+     5     -4.879E-07, -4.879E-07, -4.800E-07, -4.876E-07, -4.879E-07,
+     6     -5.016E-07, -5.159E-07, -5.439E-07, -5.296E-07, -5.158E-07,
+     7     -5.159E-07, -5.094E-07, -4.875E-07, -4.735E-07, -4.735E-07,
+     8     -4.735E-07, -4.811E-07, -4.671E-07, -4.954E-07, -4.893E-07,
+     9     -4.673E-07, -4.534E-07, -4.394E-07, -4.037E-07, -4.037E-07,
+     $     -4.241E-07, -4.662E-07, -4.942E-07, -5.226E-07, -5.147E-07/
+      DATA (Z(I),I= 2301, 2350)/
+     1     -5.007E-07, -5.147E-07, -5.007E-07, -5.007E-07, -4.928E-07,
+     2     -5.008E-07, -4.791E-07, -5.072E-07, -5.198E-07, -5.338E-07,
+     3     -5.478E-07, -5.324E-07, -5.327E-07, -5.108E-07, -4.892E-07,
+     4     -5.093E-07, -5.514E-07, -5.715E-07, -6.060E-07, -6.481E-07,
+     5     -5.982E-07, -5.766E-07, -5.483E-07, -5.203E-07, -5.344E-07,
+     6     -5.405E-07, -5.265E-07, -5.469E-07, -5.405E-07, -5.466E-07,
+     7     -5.326E-07, -5.324E-07, -5.607E-07, -5.542E-07, -5.747E-07,
+     8     -5.826E-07, -5.966E-07, -5.966E-07, -5.765E-07, -5.625E-07,
+     9     -5.487E-07, -5.423E-07, -5.438E-07, -5.300E-07, -5.236E-07,
+     $     -5.311E-07, -5.527E-07, -5.466E-07, -5.541E-07, -5.480E-07/
+      DATA (Z(I),I= 2351, 2400)/
+     1     -5.415E-07, -5.289E-07, -5.009E-07, -4.883E-07, -5.099E-07,
+     2     -5.037E-07, -4.973E-07, -4.911E-07, -4.286E-07, -3.660E-07,
+     3     -3.035E-07, -2.489E-07, -2.844E-07, -3.340E-07, -3.760E-07,
+     4     -4.335E-07, -4.410E-07, -4.269E-07, -4.488E-07, -4.348E-07,
+     5     -4.423E-07, -4.286E-07, -4.221E-07, -4.081E-07, -4.019E-07,
+     6     -4.019E-07, -3.599E-07, -3.459E-07, -3.179E-07, -3.395E-07,
+     7     -3.473E-07, -3.754E-07, -4.034E-07, -4.031E-07, -4.033E-07,
+     8     -3.969E-07, -3.969E-07, -3.890E-07, -3.891E-07, -4.031E-07,
+     9     -4.031E-07, -4.031E-07, -4.031E-07, -4.031E-07, -4.095E-07,
+     $     -4.235E-07, -4.019E-07, -4.160E-07, -3.958E-07, -3.882E-07/
+      DATA (Z(I),I= 2401, 2450)/
+     1     -3.742E-07, -3.804E-07, -3.944E-07, -4.011E-07, -4.073E-07,
+     2     -4.073E-07, -3.994E-07, -3.997E-07, -3.919E-07, -4.059E-07,
+     3     -3.983E-07, -3.983E-07, -4.045E-07, -3.902E-07, -3.963E-07,
+     4     -3.963E-07, -4.025E-07, -4.165E-07, -4.230E-07, -4.510E-07,
+     5     -4.793E-07, -5.276E-07, -5.492E-07, -5.212E-07, -5.074E-07,
+     6     -4.935E-07, -4.576E-07, -4.576E-07, -4.640E-07, -4.921E-07,
+     7     -4.985E-07, -4.982E-07, -4.985E-07, -4.985E-07, -4.944E-07,
+     8     -4.952E-07, -5.176E-07, -5.243E-07, -5.594E-07, -5.868E-07,
+     9     -6.078E-07, -6.009E-07, -5.939E-07, -5.869E-07, -5.502E-07,
+     $     -5.515E-07, -5.487E-07, -5.599E-07, -5.661E-07, -5.695E-07/
+      DATA (Z(I),I= 2451, 2500)/
+     1     -5.667E-07, -5.574E-07, -5.560E-07, -5.532E-07, -5.221E-07,
+     2     -5.314E-07, -5.061E-07, -4.870E-07, -4.811E-07, -4.715E-07,
+     3     -4.773E-07, -4.683E-07, -4.601E-07, -4.733E-07, -4.546E-07,
+     4     -4.414E-07, -4.385E-07, -4.191E-07, -4.363E-07, -4.309E-07,
+     5     -4.395E-07, -4.499E-07, -4.353E-07, -4.183E-07, -4.019E-07,
+     6     -4.052E-07, -3.913E-07, -3.900E-07, -3.902E-07, -3.931E-07,
+     7     -3.953E-07, -3.960E-07, -3.944E-07, -3.943E-07, -3.948E-07,
+     8     -3.911E-07, -3.817E-07, -3.704E-07, -3.583E-07, -3.475E-07,
+     9     -3.403E-07, -3.394E-07, -3.356E-07, -3.333E-07, -3.309E-07,
+     $     -3.257E-07, -3.206E-07, -3.148E-07, -3.096E-07, -3.108E-07/
+      DATA (Z(I),I= 2501, 2550)/
+     1     -3.247E-07, -3.364E-07, -3.517E-07, -3.635E-07, -3.555E-07,
+     2     -3.400E-07, -3.238E-07, -3.082E-07, -3.003E-07, -3.170E-07,
+     3     -3.359E-07, -3.518E-07, -3.707E-07, -3.698E-07, -3.543E-07,
+     4     -3.388E-07, -3.232E-07, -3.092E-07, -3.154E-07, -3.275E-07,
+     5     -3.359E-07, -3.486E-07, -3.578E-07, -3.578E-07, -3.607E-07,
+     6     -3.643E-07, -3.672E-07, -3.668E-07, -3.645E-07, -3.628E-07,
+     7     -3.626E-07, -3.652E-07, -3.859E-07, -4.088E-07, -4.338E-07,
+     8     -4.595E-07, -4.744E-07, -4.748E-07, -4.758E-07, -4.761E-07,
+     9     -4.772E-07, -4.909E-07, -5.102E-07, -5.308E-07, -5.501E-07,
+     $     -5.653E-07, -5.538E-07, -5.375E-07, -5.190E-07, -5.028E-07/
+      DATA (Z(I),I= 2551, 2600)/
+     1     -4.997E-07, -5.220E-07, -5.441E-07, -5.685E-07, -5.907E-07,
+     2     -5.939E-07, -5.815E-07, -5.711E-07, -5.615E-07, -5.499E-07,
+     3     -5.515E-07, -5.545E-07, -5.589E-07, -5.625E-07, -5.621E-07,
+     4     -5.540E-07, -5.438E-07, -5.328E-07, -5.212E-07, -5.144E-07,
+     5     -5.105E-07, -5.065E-07, -5.034E-07, -4.994E-07, -4.926E-07,
+     6     -4.837E-07, -4.761E-07, -4.672E-07, -4.611E-07, -4.521E-07,
+     7     -4.445E-07, -4.370E-07, -4.294E-07, -4.233E-07, -4.186E-07,
+     8     -4.159E-07, -4.126E-07, -4.093E-07, -4.018E-07, -3.901E-07,
+     9     -3.776E-07, -3.659E-07, -3.542E-07, -3.515E-07, -3.558E-07,
+     $     -3.600E-07, -3.643E-07, -3.651E-07, -3.546E-07, -3.379E-07/
+      DATA (Z(I),I= 2601, 2650)/
+     1     -3.204E-07, -3.058E-07, -2.933E-07, -2.947E-07, -2.975E-07,
+     2     -3.010E-07, -3.052E-07, -3.066E-07, -2.933E-07, -2.793E-07,
+     3     -2.667E-07, -2.563E-07, -2.499E-07, -2.561E-07, -2.603E-07,
+     4     -2.686E-07, -2.762E-07, -2.712E-07, -2.599E-07, -2.459E-07,
+     5     -2.360E-07, -2.240E-07, -2.218E-07, -2.260E-07, -2.294E-07,
+     6     -2.328E-07, -2.370E-07, -2.342E-07, -2.306E-07, -2.292E-07,
+     7     -2.250E-07, -2.243E-07, -2.236E-07, -2.216E-07, -2.216E-07,
+     8     -2.210E-07, -2.225E-07, -2.246E-07, -2.290E-07, -2.318E-07,
+     9     -2.354E-07, -2.376E-07, -2.313E-07, -2.245E-07, -2.198E-07,
+     $     -2.129E-07, -2.102E-07, -2.160E-07, -2.210E-07, -2.253E-07/
+      DATA (Z(I),I= 2651, 2700)/
+     1     -2.297E-07, -2.306E-07, -2.237E-07, -2.176E-07, -2.121E-07,
+     2     -2.066E-07, -2.062E-07, -2.077E-07, -2.092E-07, -2.143E-07,
+     3     -2.144E-07, -2.140E-07, -2.119E-07, -2.085E-07, -2.058E-07,
+     4     -2.010E-07, -1.997E-07, -1.970E-07, -1.936E-07, -1.915E-07,
+     5     -1.896E-07, -1.874E-07, -1.838E-07, -1.816E-07, -1.794E-07,
+     6     -1.778E-07, -1.750E-07, -1.706E-07, -1.698E-07, -1.662E-07,
+     7     -1.648E-07, -1.632E-07, -1.602E-07, -1.580E-07, -1.586E-07,
+     8     -1.557E-07, -1.549E-07, -1.527E-07, -1.525E-07, -1.489E-07,
+     9     -1.487E-07, -1.479E-07, -1.486E-07, -1.484E-07, -1.491E-07,
+     $     -1.489E-07, -1.488E-07, -1.494E-07, -1.493E-07, -1.485E-07/
+      DATA (Z(I),I= 2701, 2750)/
+     1     -1.484E-07, -1.518E-07, -1.526E-07, -1.547E-07, -1.569E-07,
+     2     -1.575E-07, -1.611E-07, -1.632E-07, -1.640E-07, -1.654E-07,
+     3     -1.682E-07, -1.696E-07, -1.740E-07, -1.783E-07, -1.811E-07,
+     4     -1.855E-07, -1.885E-07, -1.927E-07, -1.956E-07, -1.992E-07,
+     5     -2.028E-07, -2.051E-07, -2.067E-07, -2.069E-07, -2.099E-07,
+     6     -2.094E-07, -2.109E-07, -2.126E-07, -2.141E-07, -2.136E-07,
+     7     -2.131E-07, -2.140E-07, -2.135E-07, -2.124E-07, -2.105E-07,
+     8     -2.093E-07, -2.081E-07, -2.055E-07, -2.058E-07, -2.039E-07,
+     9     -2.028E-07, -2.023E-07, -1.996E-07, -1.984E-07, -1.951E-07,
+     $     -1.959E-07, -1.940E-07, -1.928E-07, -1.901E-07, -1.889E-07/
+      DATA (Z(I),I= 2751, 2800)/
+     1     -1.870E-07, -1.843E-07, -1.823E-07, -1.782E-07, -1.755E-07,
+     2     -1.728E-07, -1.702E-07, -1.647E-07, -1.634E-07, -1.593E-07,
+     3     -1.566E-07, -1.518E-07, -1.491E-07, -1.464E-07, -1.436E-07,
+     4     -1.423E-07, -1.381E-07, -1.368E-07, -1.334E-07, -1.299E-07,
+     5     -1.287E-07, -1.258E-07, -1.232E-07, -1.203E-07, -1.163E-07,
+     6     -1.157E-07, -1.129E-07, -1.088E-07, -1.081E-07, -1.047E-07,
+     7     -1.019E-07, -1.006E-07, -9.780E-08, -9.514E-08, -9.455E-08,
+     8     -9.330E-08, -9.128E-08, -8.923E-08, -8.864E-08, -8.879E-08,
+     9     -8.536E-08, -8.615E-08, -8.414E-08, -8.288E-08, -8.226E-08,
+     $     -8.305E-08, -8.305E-08, -8.244E-08, -8.183E-08, -8.198E-08/
+      DATA (Z(I),I= 2801, 2850)/
+     1     -8.478E-08, -8.417E-08, -8.356E-08, -8.435E-08, -8.370E-08,
+     2     -8.370E-08, -8.432E-08, -8.575E-08, -8.651E-08, -8.651E-08,
+     3     -8.510E-08, -8.648E-08, -8.648E-08, -8.788E-08, -8.928E-08,
+     4     -8.785E-08, -8.645E-08, -8.770E-08, -8.627E-08, -8.627E-08,
+     5     -8.627E-08, -8.685E-08, -8.685E-08, -8.609E-08, -8.606E-08,
+     6     -8.462E-08, -8.257E-08, -8.394E-08, -8.330E-08, -8.186E-08,
+     7     -8.265E-08, -8.186E-08, -8.122E-08, -7.978E-08, -7.913E-08,
+     8     -7.910E-08, -7.641E-08, -7.517E-08, -7.453E-08, -7.326E-08,
+     9     -7.060E-08, -6.998E-08, -6.732E-08, -6.886E-08, -6.541E-08,
+     $     -6.417E-08, -6.353E-08, -6.230E-08, -6.308E-08, -6.246E-08/
+      DATA (Z(I),I= 2851, 2900)/
+     1     -6.325E-08, -6.126E-08, -6.205E-08, -6.000E-08, -6.078E-08,
+     2     -5.815E-08, -5.893E-08, -5.896E-08, -5.896E-08, -5.960E-08,
+     3     -5.960E-08, -5.823E-08, -6.027E-08, -6.013E-08, -6.048E-08,
+     4     -6.090E-08, -6.196E-08, -6.042E-08, -6.145E-08, -6.167E-08,
+     5     -5.982E-08, -6.005E-08, -6.021E-08, -6.029E-08, -5.844E-08,
+     6     -6.004E-08, -5.883E-08, -5.981E-08, -5.916E-08, -5.857E-08,
+     7     -5.779E-08, -5.930E-08, -5.790E-08, -5.801E-08, -5.863E-08,
+     8     -5.798E-08, -5.719E-08, -5.717E-08, -5.717E-08, -5.714E-08,
+     9     -5.653E-08, -5.933E-08, -5.872E-08, -5.808E-08, -5.948E-08,
+     $     -5.887E-08, -5.965E-08, -5.963E-08, -5.901E-08, -6.121E-08/
+      DATA (Z(I),I= 2901, 2950)/
+     1     -6.056E-08, -6.135E-08, -5.991E-08, -6.146E-08, -6.146E-08,
+     2     -6.222E-08, -6.300E-08, -6.376E-08, -6.315E-08, -6.455E-08,
+     3     -6.530E-08, -6.465E-08, -6.544E-08, -6.339E-08, -6.414E-08,
+     4     -6.493E-08, -6.367E-08, -6.506E-08, -6.377E-08, -6.377E-08,
+     5     -6.315E-08, -6.390E-08, -6.283E-08, -6.306E-08, -6.258E-08,
+     6     -6.160E-08, -6.109E-08, -6.061E-08, -6.010E-08, -5.830E-08,
+     7     -5.820E-08, -5.667E-08, -5.671E-08, -5.521E-08, -5.468E-08,
+     8     -5.347E-08, -5.241E-08, -5.126E-08, -5.032E-08, -4.923E-08,
+     9     -4.822E-08, -4.715E-08, -4.619E-08, -4.512E-08, -4.411E-08,
+     $     -4.294E-08, -4.198E-08, -4.082E-08, -3.972E-08, -3.848E-08/
+      DATA (Z(I),I= 2951, 3000)/
+     1     -3.765E-08, -3.656E-08, -3.531E-08, -3.421E-08, -3.319E-08,
+     2     -3.209E-08, -3.131E-08, -3.082E-08, -3.010E-08, -2.947E-08,
+     3     -2.890E-08, -2.833E-08, -2.776E-08, -2.718E-08, -2.669E-08,
+     4     -2.626E-08, -2.569E-08, -2.517E-08, -2.505E-08, -2.494E-08,
+     5     -2.504E-08, -2.485E-08, -2.481E-08, -2.454E-08, -2.444E-08,
+     6     -2.453E-08, -2.435E-08, -2.416E-08, -2.425E-08, -2.419E-08,
+     7     -2.441E-08, -2.454E-08, -2.448E-08, -2.470E-08, -2.463E-08,
+     8     -2.491E-08, -2.499E-08, -2.485E-08, -2.506E-08, -2.514E-08,
+     9     -2.521E-08, -2.494E-08, -2.501E-08, -2.488E-08, -2.488E-08,
+     $     -2.460E-08, -2.475E-08, -2.468E-08, -2.470E-08, -2.462E-08/
+      DATA (Z(I),I= 3001, 3050)/
+     1     -2.442E-08, -2.429E-08, -2.417E-08, -2.398E-08, -2.373E-08,
+     2     -2.353E-08, -2.314E-08, -2.295E-08, -2.276E-08, -2.264E-08,
+     3     -2.245E-08, -2.212E-08, -2.200E-08, -2.163E-08, -2.146E-08,
+     4     -2.114E-08, -2.091E-08, -2.081E-08, -2.064E-08, -2.047E-08,
+     5     -2.009E-08, -1.999E-08, -1.982E-08, -1.959E-08, -1.907E-08,
+     6     -1.885E-08, -1.841E-08, -1.804E-08, -1.760E-08, -1.724E-08,
+     7     -1.674E-08, -1.630E-08, -1.579E-08, -1.564E-08, -1.513E-08,
+     8     -1.483E-08, -1.431E-08, -1.401E-08, -1.350E-08, -1.320E-08,
+     9     -1.289E-08, -1.238E-08, -1.228E-08, -1.190E-08, -1.146E-08,
+     $     -1.116E-08, -1.064E-08, -1.033E-08, -1.040E-08, -1.028E-08/
+      DATA (Z(I),I= 3051, 3100)/
+     1     -1.042E-08, -1.036E-08, -1.023E-08, -1.037E-08, -1.045E-08,
+     2     -1.025E-08, -1.033E-08, -1.026E-08, -1.040E-08, -1.054E-08,
+     3     -1.080E-08, -1.111E-08, -1.150E-08, -1.190E-08, -1.207E-08,
+     4     -1.260E-08, -1.272E-08, -1.317E-08, -1.342E-08, -1.368E-08,
+     5     -1.399E-08, -1.426E-08, -1.466E-08, -1.493E-08, -1.533E-08,
+     6     -1.568E-08, -1.586E-08, -1.621E-08, -1.654E-08, -1.688E-08,
+     7     -1.714E-08, -1.741E-08, -1.775E-08, -1.805E-08, -1.794E-08,
+     8     -1.819E-08, -1.814E-08, -1.810E-08, -1.848E-08, -1.844E-08,
+     9     -1.868E-08, -1.864E-08, -1.874E-08, -1.885E-08, -1.887E-08,
+     $     -1.864E-08, -1.835E-08, -1.819E-08, -1.789E-08, -1.760E-08/
+      DATA (Z(I),I= 3101, 3150)/
+     1     -1.722E-08, -1.706E-08, -1.663E-08, -1.639E-08, -1.610E-08,
+     2     -1.580E-08, -1.536E-08, -1.480E-08, -1.459E-08, -1.403E-08,
+     3     -1.346E-08, -1.304E-08, -1.248E-08, -1.199E-08, -1.157E-08,
+     4     -1.115E-08, -1.045E-08, -1.002E-08, -9.538E-09, -8.929E-09,
+     5     -8.535E-09, -8.001E-09, -7.532E-09, -6.920E-09, -6.422E-09,
+     6     -6.094E-09, -5.472E-09, -4.954E-09, -4.367E-09, -3.874E-09,
+     7     -3.500E-09, -3.300E-09, -3.000E-09, -2.700E-09, -2.500E-09,
+     8     -2.300E-09, -2.100E-09, -1.900E-09, -1.700E-09, -1.500E-09,
+     9     -1.300E-09, -1.125E-09, -0.950E-09, -0.775E-09, -0.600E-09,
+     *     -0.425E-09, -0.250E-09, -0.100E-09, -0.005E-09,  0.00000  /
+C
+      END   
 C
 C     --------------------------------------------------------------
 C
@@ -2279,12 +4599,14 @@ C                                                                         F21190
       V2C = V2ABS+DVC                                                     F21220
 C                                                                         F21230
       I1 = (V1C-V1S)/DVS                                                  F21240
-      IF (V1C.LT.V1S) I1 = I1-1                                           F21250
-C                                                                         F21260
-      V1C = V1S+DVS*FLOAT(I1)                                             F21270
-      I2 = (V2C-V1S)/DVS                                                  F21280
-      NPTC = I2-I1+3                                                      F21290
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F21300
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F21310
          I = I1+J                                                         F21320
          C(J) = 0.                                                        F21330
@@ -2311,8 +4633,11 @@ C               UNITS OF (CM**2/MOL)*1.E-20                               F21500
 C                                                                         F21510
 C     NOW INCLUDES MOLINA & MOLINA AT 273K WITH THE TEMPERATURE           F21520
 C     DEPENDENCE DETERMINED FROM THE 195K HARVARD MEASUREMENTS,           F21530
-C     EMPLOYING THE BASS ALGORITHM (CO(1+C1*T+C2*T2); THIS IS             F21540
-C     ONLY FOR THE WAVELENGTH RANGE FROM .34 TO .35 MICRONS;              F21550
+C     EMPLOYING THE BASS ALGORITHM
+C
+C              (CO(1+C1*(T-273.15)+C2*(T-273.15)**2);                     F21540
+C
+C     THIS IS ONLY FOR THE WAVELENGTH RANGE FROM .34 TO .35 MICRONS;      F21550
 C     OTHERWISE, THE BASS DATA ALONE HAVE BEEN EMPLOYED BETWEEN           F21560
 C     .34 AND .245 MICRONS.                                               F21570
 C                                                                         F21580
@@ -2352,7 +4677,7 @@ C                                                                         F21900
 C                                                                         F21920
 C                                                                         F21930
 C    X 2.08858E-03, 1.98947E-03, 1.89037E-03, 1.79126E-03, 1.69215E-03,   F21940
-C     THIS LINE OF DATA HAS BEEN REPLACED BY MONTONICALLY DECREASING      F21950
+C     THIS LINE OF DATA HAS BEEN REPLACED BY MONOTONICALLY INCREASING     F21950
 C     VALUES                                                              F21960
 C                                                                         F21970
       DATA O30001/                                                        F21980
@@ -2948,7 +5273,7 @@ C                                                                         F27840
       IMPLICIT DOUBLE PRECISION (V)                                     ! F27850
 C                                                                         F27860
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F27870
-      COMMON /O3HH1/ V1S,V2S,DVS,NPTS,S(2690)                             F27880
+      COMMON /O3HH1/ V1S,V2S,DVS,NPTS,S(2687)                             F27880
       DIMENSION C(*)                                                      F27890
 C                                                                         F27900
       DVC = DVS                                                           F27910
@@ -2956,12 +5281,14 @@ C                                                                         F27900
       V2C = V2ABS+DVC                                                     F27930
 C                                                                         F27940
       I1 = (V1C-V1S)/DVS                                                  F27950
-      IF (V1C.LT.V1S) I1 = I1-1                                           F27960
-C                                                                         F27970
-      V1C = V1S+DVS*FLOAT(I1)                                             F27980
-      I2 = (V2C-V1S)/DVS                                                  F27990
-      NPTC = I2-I1+3                                                      F28000
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F28010
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F28020
          I = I1+J                                                         F28030
          C(J) = 0.                                                        F28040
@@ -2984,8 +5311,11 @@ C     DATA FROM BASS 1985                                                 F28170
 C                                                                         F28180
 C     NOW INCLUDES MOLINA & MOLINA AT 273K WITH THE TEMPERATURE           F28190
 C     DEPENDENCE DETERMINED FROM THE 195K HARVARD MEASUREMENTS,           F28200
-C     EMPLOYING THE BASS ALGORITHM (CO(1+C1*T+C2*T2); THIS IS             F28210
-C     ONLY FOR THE WAVELENGTH RANGE FROM .34 TO .35 MICRONS;              F28220
+C     EMPLOYING THE BASS ALGORITHM
+C
+C              (CO(1+C1*(T-273.15)+C2*(T-273.15)**2);                     F28210
+C
+C     THIS IS ONLY FOR THE WAVELENGTH RANGE FROM .34 TO .35 MICRONS;      F28220
 C     OTHERWISE, THE BASS DATA ALONE HAVE BEEN EMPLOYED BETWEEN           F28230
 C     .34 AND .245 MICRONS.                                               F28240
 C                                                                         F28250
@@ -2999,7 +5329,7 @@ C     AND OFTEN EXCELLENT (0-3%)                                          F28320
 C                                                                         F28330
 C                                                                         F28340
       COMMON /O3HH1/ V1C,V2C,DVC,NC,                                      F28350
-     *               O31001(88),C10086(80),C10166(80),C10246(65),         F28360
+     *               O31001(85),C10086(80),C10166(80),C10246(65),         F28360
      *               C10311(16),C10327(80),C10407( 1),                    F28370
      *               C10001(80),C10081(80),C10161(80),C10241(80),         F28380
      *               C10321(80),C10401(80),C10481(80),C10561(80),         F28390
@@ -3012,9 +5342,9 @@ C                                                                         F28340
 C                                                                         F28460
 C     DATA V1C /29405./, V2C /40800./ ,DVC /5./, NC /2280/   BASS         F28470
 C                                                                         F28480
-      DATA V1C /27370./, V2C /40800./ ,DVC /5./, NC /2690/                F28490
+      DATA V1C /27370./, V2C /40800./ ,DVC /5./, NC /2687/                F28490
 C                                                                         F28500
-      DATA O31001/88*1.3E-3/                                              F28510
+      DATA O31001/85*1.3E-3/                                              F28510
 C                                                                         F28520
       DATA C10086/                                                        F28530
      * 1.37330E-03, 1.62821E-03, 2.01703E-03, 2.54574E-03, 3.20275E-03,   F28540
@@ -3583,7 +5913,7 @@ C                                                                         F34130
       IMPLICIT DOUBLE PRECISION (V)                                     ! F34140
 C                                                                         F34150
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                F34160
-      COMMON /O3HH2/ V1S,V2S,DVS,NPTS,S(2690)                             F34170
+      COMMON /O3HH2/ V1S,V2S,DVS,NPTS,S(2687)                             F34170
       DIMENSION C(*)                                                      F34180
 C                                                                         F34190
       DVC = DVS                                                           F34200
@@ -3591,12 +5921,14 @@ C                                                                         F34190
       V2C = V2ABS+DVC                                                     F34220
 C                                                                         F34230
       I1 = (V1C-V1S)/DVS                                                  F34240
-      IF (V1C.LT.V1S) I1 = I1-1                                           F34250
-C                                                                         F34260
-      V1C = V1S+DVS*FLOAT(I1)                                             F34270
-      I2 = (V2C-V1S)/DVS                                                  F34280
-      NPTC = I2-I1+3                                                      F34290
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F34300
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F34310
          I = I1+J                                                         F34320
          C(J) = 0.                                                        F34330
@@ -3619,8 +5951,11 @@ C     DATA FROM BASS 1985                                                 F34460
 C                                                                         F34470
 C     NOW INCLUDES MOLINA & MOLINA AT 273K WITH THE TEMPERATURE           F34480
 C     DEPENDENCE DETERMINED FROM THE 195K HARVARD MEASUREMENTS,           F34490
-C     EMPLOYING THE BASS ALGORITHM (CO(1+C1*T+C2*T2); THIS IS             F34500
-C     ONLY FOR THE WAVELENGTH RANGE FROM .34 TO .35 MICRONS;              F34510
+C     EMPLOYING THE BASS ALGORITHM
+C
+C              (CO(1+C1*(T-273.15)+C2*(T-273.15)**2);                     F34500
+C
+C     THIS IS ONLY FOR THE WAVELENGTH RANGE FROM .34 TO .35 MICRONS;      F34510
 C     OTHERWISE, THE BASS DATA ALONE HAVE BEEN EMPLOYED BETWEEN           F34520
 C     .34 AND .245 MICRONS.                                               F34530
 C                                                                         F34540
@@ -3634,7 +5969,7 @@ C     AND OFTEN EXCELLENT (0-3%)                                          F34610
 C                                                                         F34620
 C                                                                         F34630
       COMMON /O3HH2/ V1C,V2C,DVC,NC,                                      F34640
-     *               O32001(88),C20086(80),C20166(80),C20246(65),         F34650
+     *               O32001(85),C20086(80),C20166(80),C20246(65),         F34650
      *               C20311(16),C20327(80),C20407( 1),                    F34660
      *               C20001(80),C20081(80),C20161(80),C20241(80),         F34670
      *               C20321(80),C20401(80),C20481(80),C20561(80),         F34680
@@ -3647,9 +5982,9 @@ C                                                                         F34630
 C                                                                         F34750
 C     DATA V1C /29405./, V2C /40800./ ,DVC /5./, NC /2280/   BASS         F34760
 C                                                                         F34770
-      DATA V1C /27370./, V2C /40800./ ,DVC /5./, NC /2690/                F34780
+      DATA V1C /27370./, V2C /40800./ ,DVC /5./, NC /2687/                F34780
 C                                                                         F34790
-      DATA O32001/88*1.0E-5/                                              F34800
+      DATA O32001/85*1.0E-5/                                              F34800
 C                                                                         F34810
       DATA C20086/                                                        F34820
      * 1.29359E-05, 1.55806E-05, 2.00719E-05, 2.64912E-05, 3.48207E-05,   F34830
@@ -4226,12 +6561,14 @@ C                                                                         F40480
       V2C = V2ABS+DVC                                                     F40510
 C                                                                         F40520
       I1 = (V1C-V1S)/DVS                                                  F40530
-      IF (V1C.LT.V1S) I1 = I1-1                                           F40540
-C                                                                         F40550
-      V1C = V1S+DVS*FLOAT(I1)                                             F40560
-      I2 = (V2C-V1S)/DVS                                                  F40570
-      NPTC = I2-I1+3                                                      F40580
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F40590
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F40600
          I = I1+J                                                         F40610
          C(J) = 0.                                                        F40620
@@ -4332,12 +6669,14 @@ C                                                                         F41470
       V2C = V2ABS+DVC                                                     F41510
 C                                                                         F41520
       I1 = (V1C-V1S)/DVS                                                  F41530
-      IF (V1C.LT.V1S) I1 = I1-1                                           F41540
-C                                                                         F41550
-      V1C = V1S+DVS*FLOAT(I1)                                             F41560
-      I2 = (V2C-V1S)/DVS                                                  F41570
-      NPTC = I2-I1+3                                                      F41580
-      V2C = V1C+DVS*FLOAT(NPTC-1)                                         F41590
+      IF (V1C.LT.V1S) I1 = -1 
+C                                    
+      V1C = V1S+DVS*FLOAT(I1)        
+      I2 = (V2C-V1S)/DVS             
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C+DVS*FLOAT(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F41600
          I = I1+J                                                         F41610
          C(J) = 0.                                                        F41620
@@ -4455,12 +6794,12 @@ C                                                                         F42640
 C     HERZBERG O2 ABSORPTION                                              F42650
 C     HALL,1987 PRIVATE COMMUNICATION, BASED ON:                          F42660
 C                                                                         F42670
-C     REF. JOHNSTON ET.AL, JGR,89,11661-11665,1984                        F42680
+C     REF. JOHNSTON, ET AL., JGR,89,11661-11665,1984                      F42680
 C          NICOLET, 1987 (RECENT STUDIES IN ATOMIC                        F42690
 C                         & MOLECULAR PROCESSES,                          F42700
-C                         PLEMUN PUBLISHING CORP, NY 1987)                F42710
+C                         PLENUM PUBLISHING CORP, NY 1987)                F42710
 C                                                                         F42720
-C     AND YOSHINO, ET.AL., 1988 (PREPRINT OF "IMPROVED ABSORPTION         F42730
+C     AND YOSHINO, ET AL., 1988 (PREPRINT OF "IMPROVED ABSORPTION         F42730
 C          CROSS SECTIONS OF OXYGEN IN THE WAVELENGTH REGION 205-240NM    F42740
 C          OF THE HERZBERG CONTINUUM")                                    F42750
 C                                                                         F42760
