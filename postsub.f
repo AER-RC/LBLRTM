@@ -1524,9 +1524,16 @@ C                                                                         I14710
          SUMOUT = SUMOUT+R1(I)                                            I14940
    20 CONTINUE                                                            I14950
 C                                                                         I14960
-      NLO = NSHIFT+1                                                      I14970
-      IPANEL = -1                                                         I14980
-      SUMR(1) = SUMOUT                                                    I14990
+      IF (ISTOP.EQ.1) GO TO 50                                            I14970
+      DO 30 J = NLIMF, MAXF
+         R1(J-NLIMF+1) = R1(J)
+   30 CONTINUE
+      DO 40 J = MAXF-NLIMF+2, MAXF
+         R1(J) = 0.
+   40 CONTINUE
+      NLO = NSHIFT+1
+   50 SUMR(1) = SUMOUT                                                    I14980
+      IPANEL = -1                                                         I14990
       SUMR(2) = SMIN                                                      I15000
       SUMR(3) = SMAX                                                      I15010
       SUMR(4) = DVO                                                       I15020
