@@ -1,7 +1,7 @@
-C     path:      %P%
+C     path:      $Source$
+C     author:    $Author$
 C     revision:  $Revision$
-C     created:   $Date$  
-C     presently: %H%  %T%
+C     created:   $Date$
       PROGRAM LBLRTM                                                      A00010
 C                                                                         A00020
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   A00030
@@ -1020,7 +1020,8 @@ C
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULES
 C
-      DATA HVRLBL / '$Revision$' /,      HVRCNT / 'NOT USED' /,
+      DATA HVRLBL / '$RCSfile$ $Revision' /,      
+     *     HVRCNT / 'NOT USED' /,
      *     HVRFFT / 'NOT USED' /, HVRATM / 'NOT USED' /,
      *     HVRLOW / 'NOT USED' /, HVRNCG / 'NOT USED' /,
      *     HVROPR / 'NOT USED' /, HVRPST / 'NOT USED' /,
@@ -1222,6 +1223,8 @@ c
 
       real *4 sumstr,flinlo,flinhi
       integer *4 lnfil
+      integer *4 negepp_flag,n_negepp,n_resetepp
+      real *4 xspace
 C                                                                         A09640
 C     LSTWD (LAST WORD) IS DUMMY, DOES NOT NEED TO BE COUNTED             A09650
 C                                                                         A09660
