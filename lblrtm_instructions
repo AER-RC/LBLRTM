@@ -2728,7 +2728,7 @@ are allowed
 		Table IV
                 --------
                                                                          
-Molecule	State        Transition Energy	Degeneracies
+Molecule	State             Energy	Degeneracies
 --------        -----        -----(cm-1)-----   ------------ 
 
    H2O     	000 		     0.             1                   
@@ -2866,7 +2866,7 @@ TAPE4-RECORD 2.3
 
 		ALT:	altitude (km)
 
-		TEM(I):	kinetic temperatute (K) for each mode I. Set to zero if the mode
+		TEM(I):	Temperature difference from ground state (K) for each mode I. Set to zero if the mode
 			is not desired. See Table IV for allowed modes and input order. 
 
 REPEAT TAPE4-RECORD 2.3 for all altitudes; the altitude range must match the atmospheric
