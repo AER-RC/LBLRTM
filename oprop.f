@@ -4481,17 +4481,7 @@ C                                                                         D07220
          ALFVI2 = ALFAVI*ALFAVI                                           D07300
          XJJ = FLOAT(JMIN-1)*DVR4                                         D07310
          F4BND = SIL/(ALFLI2+BNDSQ)                                       D07320
-c
-c     set value at 25 cm-1 for line coupling 'pedestal'
-c           note there is no continuum for oxygen (mol=7)
-c
-         IF (SPP(I).NE.0.) then
-            F4BNDX = SILX/(ALFLI2+BNDSQ)
-            IF (MOL(I) .EQ. 7) THEN
-               F4BND = 0.
-               F4BNDX = 0.
-            ENDIF
-         ENDIF
+         IF (SPP(I).NE.0.) F4BNDX = SILX/(ALFLI2+BNDSQ)                   D07330
 C                                                                         D07340
 C                FOURTH FUNCTION CONVOLUTION                              D07350
 C                                                                         D07360
