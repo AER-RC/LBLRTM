@@ -48,6 +48,10 @@ C                                                                         B00450
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B00460
 C                                                                         B00470
 C                                                                         B00480
+C     Common blocks from analytic derivatives
+C     -------------------------
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODT,PTHRDR
+C     -------------------------
       COMMON /RCNTRL/ ILNFLG
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    B00490
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    B00500
@@ -111,7 +115,7 @@ C                                                                         B00890
       COMMON /IODFLG/ DVOUT
 C                                                                         B00970
       REAL L4TIM,L4TMR,L4TMS,LOTHER
-      CHARACTER*55 PTHODI
+      CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR
       CHARACTER*10 HFMODL
       CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
@@ -288,11 +292,18 @@ C       Use PTHODE as the name of the optical depth files.
 C       This requires the format HFMODL, which is produced by
 C       calling the SUBROUTINE QNTIFY.
 C
-C     - If calculating layer optical depths using DVSET as last
-C       layer spacing, and then interpolating (IOD=3, IMRG=1),
+C     - If calculating layer optical depths and cumulative layer
+C       optical depths for an analytic derivative calculation
+C       (IOD=3, IMRG=10), or when using the same criteria but not
+C       calculating the cumulative optical depths (IOD=3, IMRG=1),
 C       then use PTHODI as the name of the optical depth files.
 C       This requires the format HFMODL, which is produced by
 C       calling the SUBROUTINE QNTIFY.
+C
+C     - If calculating layer absorptance coefficients for an
+C       analytic derivative calculation (IEMIT=3, IOD=3, and
+C       IMRG>40), then use TAPE10 as the name of the layer
+C       absorptance coefficient files.
 C
 C     - If calculating optical depths using the default procedure,
 C       sending output to a different file for each layer (IEMIT=0,
@@ -327,17 +338,25 @@ C
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3
       ELSEIF (IOD.EQ.3) THEN
-         CALL QNTIFY(PTHODI,HFMODL)
-         WRITE (KODLYR,HFMODL) PTHODI,LAYER
-         INQUIRE (UNIT=KFILE,OPENED=OP)
-         IF (OP) CLOSE (KFILE)
-         OPEN (KFILE,FILE=KODLYR,FORM=CFORM,STATUS='UNKNOWN')
-         REWIND KFILE
-         DVSAV = DV
-         DV = DVOUT
-         CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
-         DV = DVSAV
-         IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3
+         IF ((IMRG.EQ.10).OR.(IMRG.EQ.1)) THEN
+            CALL QNTIFY(PTHODI,HFMODL)
+            WRITE (KODLYR,HFMODL) PTHODI,LAYER
+            INQUIRE (UNIT=KFILE,OPENED=OP)
+            IF (OP) CLOSE (KFILE)
+            OPEN (KFILE,FILE=KODLYR,FORM=CFORM,STATUS='UNKNOWN')
+            REWIND KFILE
+            DVSAV = DV
+            DV = DVOUT
+            CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
+            DV = DVSAV
+            IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3
+         ELSEIF (IMRG.GE.40) THEN
+            DVSAV = DV
+            DV = DVOUT
+            CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
+            DV = DVSAV
+            IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3
+         ENDIF
       ELSE
          IF (IMRG.EQ.1) THEN
             CALL QNTIFY(PTHODD,HFMODL)
@@ -1165,8 +1184,8 @@ C                                                                         B11130
 C                                                                         B11160
          DO 40 I = NPTSI1, NPTSI2                                         B11170
 C           VI = VI+DV                                                    B11180
-            R1(I) = R1(I)*RADVI                                           B11200
-            RADVI = RADVI+RDEL                                            B11190
+            R1(I) = R1(I)*RADVI                                           B11190
+            RADVI = RADVI+RDEL                                            B11200
    40    CONTINUE                                                         B11210
 C                                                                         B11220
          IF (NPTSI2.LT.NHI) GO TO 30                                      B11230
@@ -3965,8 +3984,8 @@ C                                                                         D05460
 C                                                                         D05490
          DO 50 I = NPTSI1, NPTSI2                                         D05500
             VI = VI+DVR4                                                  D05510
-            R4(I) = R4(I)*RADVI                                           D05530
-            RADVI = RADVI+RDEL                                            D05520
+            R4(I) = R4(I)*RADVI                                           D05520
+            RADVI = RADVI+RDEL                                            D05530
    50    CONTINUE                                                         D05540
 C                                                                         D05550
          IF (NPTSI2.LT.NPTR4) GO TO 40                                    D05560
