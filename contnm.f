@@ -5,7 +5,7 @@ C     presently: %H%  %T%
 C
 C     --------------------------------------------------------------
 C
-      SUBROUTINE CONTNM(JRAD,XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL)   F00010
+      SUBROUTINE CONTNM(JRAD)                                             F00010
 C                                                                         F00020
       IMPLICIT REAL*8           (V)                                     ! F00030
 C                                                                         F00040
@@ -27,6 +27,8 @@ C                                                                         F00120
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         F00170
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        F00180
      *              NLTEFL,LNFIL4,LNGTH4                                  F00190
+
+      common /cntscl/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
 c
       DIMENSION C0(5050),C1(5050),C2(5050)
       DIMENSION SH2OT0(5050),SH2OT1(5050),FH2O(5050),      

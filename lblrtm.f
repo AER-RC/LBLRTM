@@ -3741,7 +3741,7 @@ C                                                                         A25110
          DO 10 I = 1, 2030                                                A25210
             ABSRB(I) = 0.                                                 A25220
    10    CONTINUE                                                         A25230
-         CALL CONTNM (JRAD,XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL)     A25240
+         CALL CONTNM (JRAD)                                               A25240
       ENDIF                                                               A25250
       DVR4 = 0.                                                           A25260
 C                                                                         A25270
