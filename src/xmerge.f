@@ -1,7 +1,7 @@
-C     path:      %P%
-C     revision:  $Revision$
-C     created:   $Date$  
-C     presently: %H%  %T%
+C     path:      /stormrc1/aer_lblrtm/src/SCCS/s.xmerge.f
+C     revision:  5.2
+C     created:   05/27/98  11:33:24
+C     presently: 07/20/00  07:30:48
 C
 C     ----------------------------------------------------------------
 C
@@ -46,7 +46,7 @@ C                                                                         H00330
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRXMR = '$Revision$'
+      HVRXMR = '5.2'
 C
       IOD = 0                                                             H00340
 C                                                                         H00350
@@ -1732,13 +1732,13 @@ C                                                                         H13420
                ODVI = TR(I)+EXT*RADFN0                                    H13460
                XX = AA*ODVI                                               H13500
 C                                                                         H13510
-               IF (ABS(ODVI) .LT. 0.001) THEN
-                   TR(I) = 1.-ODVI
-                   EM(I) = (ODVI-EM(I))*(BB+XX*BBA)/(1.+XX)
-               ELSE
-                   TR(I) = EXP(-ODVI)                                 
-                   EM(I)=(1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)  H13530
-               ENDIF
+               if (abs(odvi) .lt. 0.001) then
+                  TR(I) = 1.-ODVI
+                  EM(I) = (odvi-EM(I))*(BB+XX*BBA)/(1.+XX)
+               else
+                  TR(I) = EXP(-ODVI)                                 
+                  EM(I)=(1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)
+               endif
 C                                                                         H13540
 C              Increment interpolation values
 C
@@ -1954,9 +1954,15 @@ C                                                                         H15970
                ODVI = TR(I)+EXT*RADFN0                                    H16010
                XX = AA*ODVI                                               H16060
 C                                                                         H16070
-               TR(I) = EXP(-ODVI)                                         H16080
-               EMX = (1.-TR(I))*(1.0-EM(I)/ODVI)/(1.+XX)                  H16090
-               EM(I) = EMX*(BB+XX*BBA)                                    H16100
+               if (abs(odvi) .lt. 0.001) then
+                  TR(I) = 1.-ODVI
+                  EMX = (odvi-EM(I))/(1.+XX)
+               else
+                  TR(I) = EXP(-ODVI)                                 
+                  EMX = (1.-TR(I))*(1.0-EM(I)/ODVI)/(1.+XX)                  H16090
+               endif
+
+               EM(I)  = EMX*(BB+XX*BBA)                                   H16100
                EMB(I) = EMX*(BB+XX*BBB)                                   H16110
 C                                                                         H16120
 C              Increment interpolation values
@@ -3717,8 +3723,13 @@ C                                                                         H13420
                ODVI = TR(I)+EXT*RADFN0                                    H13450
                XX = AA*ODVI                                               H13460
 C                                                                         H13470
-               TR(I) = EXP(-ODVI)                                         H13480
-               EM(I) = (1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)    H13490
+               if (abs(odvi) .lt. 0.001) then
+                  TR(I) = 1.-ODVI
+                  EM(I) = (odvi-EM(I))*(BB+XX*BBA)/(1.+XX)
+               else
+                  TR(I) = EXP(-ODVI)                                 
+                  EM(I)=(1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)
+               endif
 C                                                                         H13500
 C              Increment interpolation values
 C
@@ -3938,8 +3949,14 @@ C                                                                         H15970
                ODVI = TR(I)+EXT*RADFN0                                    H15990
                XX = AA*ODVI                                               H16000
 C                                                                         H16010
-               TR(I) = EXP(-ODVI)                                         H16020
-               EMX = (1.-TR(I))*(1.0-EM(I)/ODVI)/(1.+XX)                  H16030
+               if (abs(odvi) .lt. 0.001) then
+                  TR(I) = 1.-ODVI
+                  EMX = (odvi-EM(I))/(1.+XX)
+               else
+                  TR(I) = EXP(-ODVI)                                 
+                  EMX = (1.-TR(I))*(1.0-EM(I)/ODVI)/(1.+XX)                  H16090
+               endif
+
                EM(I) = EMX*(BB+XX*BBA)                                    H16040
                EMB(I) = EMX*(BB+XX*BBB)                                   H16050
 C                                                                         H16060
@@ -4224,8 +4241,13 @@ C                                                                         H13420
 C                                                                         H13450
                XX = AA*ODVI                                               H13460
 C                                                                         H13470
-               TR(I) = EXP(-ODVI)                                         H13480
-               EM(I) = (1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)    H13490
+               if (abs(odvi) .lt. 0.001) then
+                  TR(I) = 1.-ODVI
+                  EM(I) = (odvi-EM(I))*(BB+XX*BBA)/(1.+XX)
+               else
+                  TR(I) = EXP(-ODVI)                                 
+                  EM(I)=(1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)
+               endif
 C                                                                         H13500
 C              Increment interpolation values
 C
@@ -4446,8 +4468,14 @@ C                                                                         H15970
 C                                                                         H16000
                XX = AA*ODVI                                               H16010
 C                                                                         H16020
-               TR(I) = EXP(-ODVI)                                         H16030
-               EMX = (1.-TR(I))*(1.0-EM(I)/ODVI)/(1.+XX)                  H16040
+               if (abs(odvi) .lt. 0.001) then
+                  TR(I) = 1.-ODVI
+                  EMX = (odvi-EM(I))/(1.+XX)
+               else
+                  TR(I) = EXP(-ODVI)                                 
+                  EMX = (1.-TR(I))*(1.0-EM(I)/ODVI)/(1.+XX)                  H16090
+               endif
+
                EM(I) = EMX*(BB+XX*BBA)                                    H16050
                EMB(I) = EMX*(BB+XX*BBB)                                   H16060
 C                                                                         H16070
