@@ -1683,7 +1683,7 @@ c
 c      
                if (abs(odvi) .le. od_lo) then
                   tr(i) = 1. - odvi + 0.5*odvi*odvi
-                  em(i) = (1.-tr(i))*(bb+ bbdif*rec_6*odvi)
+                  em(i) = (1.-tr(i))*(bb+ bb_dif*rec_6*odvi)
                else   
 c                 tri = exp(-odvi)
                   tau_fn = odvi/(aa_inv+odvi)
@@ -5833,7 +5833,7 @@ c
 c      
          if (abs(odvi) .le. od_lo) then
             tr(i) = 1. - odvi+0.5*odvi*odvi
-            em(i) = (1.-tr(i))*(bb+ bbdif*rec_6*odvi)
+            em(i) = (1.-tr(i))*(bb+ bb_dif*rec_6*odvi)
          else   
 c           tri = exp(-odvi)
             tau_fn = odvi/(aa_inv+odvi)
