@@ -4,7 +4,7 @@ C     created:   $Date$
 C     presently: %H%  %T%
       SUBROUTINE TESTMM (LINFIL)                                          N00010
 C                                                                         N00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! N00030
+      IMPLICIT REAL*8           (V)                                     ! N00030
 C                                                                         N00040
       COMMON VNU(250),STR(250),ALF(250),EPP(250),MOL(250),HWHMS(250),     N00050
      *       TMPALF(250),PSHIFT(250),IFLG(250)                            N00060
@@ -12,7 +12,7 @@ C                                                                         N00040
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /LINES/ XLINC(5,1318),XLIND(6,1318)                          N00070
 C                                                                         N00080
-      DOUBLE PRECISION   HID,HMOLID,HID1,HLINHD                         & N00090
+      CHARACTER*8        HID,HMOLID,HID1,HLINHD                         & N00090
 C                                                                         N00100
       COMMON /BUFID/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),            N00110
      *               MCNTNL(64),SUMSTR(64),NMOL,FLINLO,FLINHI,            N00120
@@ -188,7 +188,7 @@ C                                                                         N01420
       END                                                                 N01430
       BLOCK DATA BTEST                                                    N01440
 C                                                                         N01450
-      IMPLICIT DOUBLE PRECISION (V)                                     ! N01460
+      IMPLICIT REAL*8           (V)                                     ! N01460
 C                                                                         N01470
 C***********************************************************************  N01480
 C                                                                         N01490
@@ -277,7 +277,7 @@ C                                                                         N02170
      D               D1165(90),D1180(90),D1195(90),D1210(90),D1225(90),   N02520
      D               D1240(90),D1255(90),D1270(48)                        N02530
 C                                                                         N02540
-      DOUBLE PRECISION   HID,HMOLID,HID1                                & N02550
+      CHARACTER*8        HID,HMOLID,HID1                                & N02550
 C                                                                         N02560
       COMMON /BUFID/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),            N02570
      *               MCNTNL(64),SUMSTR(64),NMOL,FLINLO,FLINHI,            N02580

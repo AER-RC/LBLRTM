@@ -4,11 +4,12 @@ C     created:   $Date$
 C     presently: %H%  %T%
       SUBROUTINE PLTLBL (IENDPL)                                          M00010
 C                                                                         M00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M00030
+      IMPLICIT REAL*8           (V)                                     ! M00030
 C                                                                         M00040
       COMMON XX(2450),YY(2450)                                            M00050
 C                                                                         M00060
-      DOUBLE PRECISION XID,SEC   ,HMOL  ,XALTZ,YID,PROGID               & M00070
+      character*8      XID,       HMOL  ,      YID,PROGID
+      real*8               SEC   ,       XALTZ 
 C                                                                         M00080
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -741,7 +742,7 @@ C                                                                         M05970
       SUBROUTINE FILOPT (V1,V2,JFILE,JSKIPF,LFILE,LSKIPF,MFILE,LENGTH,    M06040
      *                   IOPT)                                            M06050
 C                                                                         M06060
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M06070
+      IMPLICIT REAL*8           (V)                                     ! M06070
 C                                                                         M06080
 C----------------------------------------------------------------------   M06090
 C             R.D. WORSHAM                                                M06100
@@ -777,7 +778,8 @@ C                                                                         M06370
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        M06400
      *              NLTEFL,LNFIL4,LNGTH4                                  M06410
 C                                                                         M06420
-      DOUBLE PRECISION XID,SEC,HMOL,XALTZ,YID,HDATE,HTIME               & M06430
+      character*8      XID,    HMOL,      YID,HDATE,HTIME         
+      real*8               SEC,     XALTZ 
 C                                                                         M06440
       COMMON /PLTHDR/ XID(10),SEC,P0  ,T0  ,HMOL(60),XALTZ(4),            M06450
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVT,V1V,V2V,TBOUND,    M06460
@@ -1011,14 +1013,15 @@ C                                                                         M08730
       END                                                                 M08740
       SUBROUTINE HEADER                                                   M08750
 C                                                                         M08760
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M08770
+      IMPLICIT REAL*8           (V)                                     ! M08770
 C                                                                         M08780
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M08790
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     M08800
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      M08810
      *                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                      M08820
 C                                                                         M08830
-      DOUBLE PRECISION XID,SEC   ,HMOL  ,XALTZ,YID                      & M08840
+      character*8      XID,       HMOL,        YID       
+      real*8               SEC,          XALTZ 
 C                                                                         M08850
       COMMON /PLTHDR/ XID(10),SEC,P0  ,T0  ,HMOL(60),XALTZ(4),            M08860
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVT,V1V,V2V,TBOUND,    M08870
@@ -1181,9 +1184,10 @@ C                                                                         M10430
       END                                                                 M10440
       SUBROUTINE AXES (IGO,LOUT,IREJ,SFY)                                 M10450
 C                                                                         M10460
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M10470
+      IMPLICIT REAL*8           (V)                                     ! M10470
 C                                                                         M10480
-      DOUBLE PRECISION XID,SEC,HMOL,XALTZ,YID,HDATE,HTIME               & M10490
+      character*8      XID,    HMOL,      YID,HDATE,HTIME         
+      real*8               SEC,     XALTZ 
 C                                                                         M10500
       COMMON /PLTHDR/ XID(10),SEC,P0  ,T0  ,HMOL(60),XALTZ(4),            M10510
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVT,V1V,V2V,TBOUND,    M10520
@@ -1403,7 +1407,7 @@ C                                                                         M12650
       END                                                                 M12660
       SUBROUTINE BBSCLE                                                   M12670
 C                                                                         M12680
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M12690
+      IMPLICIT REAL*8           (V)                                     ! M12690
 C                                                                         M12700
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M12710
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     M12720
@@ -1469,7 +1473,7 @@ C                                                                         M13310
       END                                                                 M13320
       SUBROUTINE PLTLIN (YTITLE,BLK,NY,SFY)                               M13330
 C                                                                         M13340
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M13350
+      IMPLICIT REAL*8           (V)                                     ! M13350
 C                                                                         M13360
       DIMENSION YTITLE(5)                                                 M13370
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M13380
@@ -1487,7 +1491,7 @@ C                                                                         M13490
       END                                                                 M13500
       SUBROUTINE PLTEMP (YTITLE,BLK,NY)                                   M13510
 C                                                                         M13520
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M13530
+      IMPLICIT REAL*8           (V)                                     ! M13530
 C                                                                         M13540
       DIMENSION YTITLE(4)                                                 M13550
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M13560
@@ -1509,7 +1513,7 @@ C                                                                         M13710
       END                                                                 M13720
       SUBROUTINE PLTLOG (YTITLE,BLK,NY)                                   M13730
 C                                                                         M13740
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M13750
+      IMPLICIT REAL*8           (V)                                     ! M13750
 C                                                                         M13760
       DIMENSION YTITLE(4)                                                 M13770
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M13780
@@ -1527,7 +1531,7 @@ C                                                                         M13890
       END                                                                 M13900
       SUBROUTINE AX2                                                      M13910
 C                                                                         M13920
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M13930
+      IMPLICIT REAL*8           (V)                                     ! M13930
 C                                                                         M13940
       CHARACTER TITL3*50,HTEN*2                                           M13950
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M13960
@@ -1592,7 +1596,7 @@ C                                                                         M14540
       END                                                                 M14550
       SUBROUTINE FPLINE (NLO,NPTS)                                        M14560
 C                                                                         M14570
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M14580
+      IMPLICIT REAL*8           (V)                                     ! M14580
 C                                                                         M14590
       COMMON XX(2450),YY(2450)                                            M14600
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M14610
@@ -1667,7 +1671,7 @@ C                                                                         M15290
       END                                                                 M15300
       SUBROUTINE LINT (NST,NND,J)                                         M15310
 C                                                                         M15320
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M15330
+      IMPLICIT REAL*8           (V)                                     ! M15330
 C                                                                         M15340
       COMMON XX(2450),YY(2450)                                            M15350
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502)                               M15360
@@ -1682,7 +1686,7 @@ C                                                                         M15440
       END                                                                 M15450
       SUBROUTINE EXPT (NST,NND,J)                                         M15460
 C                                                                         M15470
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M15480
+      IMPLICIT REAL*8           (V)                                     ! M15480
 C                                                                         M15490
       COMMON XX(2450),YY(2450)                                            M15500
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502)                               M15510
@@ -1691,14 +1695,15 @@ C                                                                         M15520
          YY(J) = 0.                                                       M15540
          IF (Y(I).GT.20.) GO TO 10                                        M15550
          YY(J) = EXP(-Y(I))                                               M15560
-   10    J = J+1                                                          M15570
+         J = J+1                                                          M15570
+ 10   continue
 C                                                                         M15580
       RETURN                                                              M15590
 C                                                                         M15600
       END                                                                 M15610
       SUBROUTINE XNTLOG (NST,NND,J)                                       M15620
 C                                                                         M15630
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M15640
+      IMPLICIT REAL*8           (V)                                     ! M15640
 C                                                                         M15650
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M15660
       COMMON XX(2450),YY(2450)                                            M15670
@@ -1715,7 +1720,7 @@ C                                                                         M15770
       END                                                                 M15780
       SUBROUTINE TEMPFN (NST,NND,J)                                       M15790
 C                                                                         M15800
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M15810
+      IMPLICIT REAL*8           (V)                                     ! M15810
 C                                                                         M15820
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M15830
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           M15840
@@ -1739,7 +1744,7 @@ C                                                                         M16010
       END                                                                 M16020
       SUBROUTINE TENLOG (NST,NND,J)                                       M16030
 C                                                                         M16040
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M16050
+      IMPLICIT REAL*8           (V)                                     ! M16050
 C                                                                         M16060
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M16070
       COMMON XX(2450),YY(2450)                                            M16080
@@ -1756,7 +1761,7 @@ C                                                                         M16180
       END                                                                 M16190
       SUBROUTINE DBOD (NST,NND,J)                                         M16200
 C                                                                         M16210
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M16220
+      IMPLICIT REAL*8           (V)                                     ! M16220
 C                                                                         M16230
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M16240
       COMMON XX(2450),YY(2450)                                            M16250
@@ -1774,7 +1779,7 @@ C                                                                         M16360
       END                                                                 M16370
       SUBROUTINE DBTR (NST,NND,J)                                         M16380
 C                                                                         M16390
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M16400
+      IMPLICIT REAL*8           (V)                                     ! M16400
 C                                                                         M16410
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M16420
       COMMON XX(2450),YY(2450)                                            M16430
@@ -1793,7 +1798,7 @@ C                                                                         M16550
       END                                                                 M16560
       SUBROUTINE LDBOPD (NST,NND,J)                                       M16570
 C                                                                         M16580
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M16590
+      IMPLICIT REAL*8           (V)                                     ! M16590
 C                                                                         M16600
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M16610
       COMMON XX(2450),YY(2450)                                            M16620
@@ -1812,7 +1817,7 @@ C                                                                         M16740
       END                                                                 M16750
       SUBROUTINE LDBTR (NST,NND,J)                                        M16760
 C                                                                         M16770
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M16780
+      IMPLICIT REAL*8           (V)                                     ! M16780
 C                                                                         M16790
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M16800
       COMMON XX(2450),YY(2450)                                            M16810
@@ -1833,7 +1838,7 @@ C                                                                         M16950
       END                                                                 M16960
       SUBROUTINE LINSTC (NST,NND,J,XLOGCN)                                M16970
 C                                                                         M16980
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M16990
+      IMPLICIT REAL*8           (V)                                     ! M16990
 C                                                                         M17000
       COMMON XX(2450),YY(2450)                                            M17010
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502)                               M17020
@@ -1848,7 +1853,7 @@ C                                                                         M17100
       END                                                                 M17110
       SUBROUTINE XLOGLN (NST,NND,J)                                       M17120
 C                                                                         M17130
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M17140
+      IMPLICIT REAL*8           (V)                                     ! M17140
 C                                                                         M17150
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M17160
       COMMON XX(2450),YY(2450)                                            M17170
@@ -1868,7 +1873,7 @@ C                                                                         M17300
       END                                                                 M17310
       SUBROUTINE MNMX (NST,NND,JMIN,JMAX)                                 M17320
 C                                                                         M17330
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M17340
+      IMPLICIT REAL*8           (V)                                     ! M17340
 C                                                                         M17350
       COMMON XX(2450),YY(2450)                                            M17360
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502)                               M17370
@@ -1882,7 +1887,7 @@ C                                                                         M17350
       END                                                                 M17450
       SUBROUTINE FSCLIN (NLO,NPTS,XX,YY)                                  M17460
 C                                                                         M17470
-      IMPLICIT DOUBLE PRECISION (V)                                     ! M17480
+      IMPLICIT REAL*8           (V)                                     ! M17480
 C                                                                         M17490
       DIMENSION XX(*),YY(*),PNLHDR(2)                                     M17500
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         M17510
@@ -2193,7 +2198,8 @@ C                                                                         M20400
       NABS = IABS(N)                                                      M20560
       BCDLEN = (FLOAT(NABS)-0.4)*BCDSIZ                                   M20570
       S = CYCLEN*FLOAT(NUMCYC)                                            M20580
-      NUMTIC = 2-MIN1(1.0,CYCLEN)                                         M20590
+      NUMTIC = 1.
+      if (cyclen .lt.1.) NUMTIC = 2-ifix(cyclen)
       NUMLOG = 8/NUMTIC                                                   M20600
       XBIAS = 1.85*HEIGHT*ENLARG                                          M20610
       YBIAS = 0.70*HEIGHT*ENLARG                                          M20620
@@ -2293,7 +2299,7 @@ C     LABEL H1,H2,ANGLE                                                   M21550
 C                                                                         M21560
       DIMENSION YID(10)                                                   M21570
 C                                                                         M21580
-      DOUBLE PRECISION YID                                              & M21590
+      CHARACTER*8      YID                                              & M21590
 C                                                                         M21600
       CHARACTER CARD3*30,ACRD3*30                                         M21610
       CHARACTER GOUT*64                                                   M21620
@@ -2323,13 +2329,13 @@ C     LABEL AERSOL                                                        M21850
 C                                                                         M21860
       DIMENSION YID(10)                                                   M21870
 C                                                                         M21880
-      DOUBLE PRECISION YID                                              & M21890
+      CHARACTER*8      YID                                              & M21890
 C                                                                         M21900
       CHARACTER CARD2*85,ACRD2*85                                         M21910
       CHARACTER GOUT*85                                                   M21920
 C                                                                         M21930
-      DATA CARD2(1:43)/ 'IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,   VIS,'/,   M21940
-     *     CARD2(44:85)/ '      WSS,      WHH,      RAINRT,   GNDALT'/    M21950
+      DATA CARD2/           'IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,   VIS,
+     *      WSS,      WHH,      RAINRT,   GNDALT'/   
 C                                                                         M21960
       WRITE (GOUT,900) (YID(I),I=3,7)                                     M21970
       READ (GOUT,905) IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,IVIS,IWSS,      M21980
@@ -2361,7 +2367,7 @@ C     PUT H1 H2 ANGLE INTO YID                                            M22230
 C                                                                         M22240
       DIMENSION YID(10)                                                   M22250
 C                                                                         M22260
-      DOUBLE PRECISION YID                                              & M22270
+      CHARACTER*8      YID                                              & M22270
 C                                                                         M22280
       CHARACTER GOUT*64,HOUT*40                                           M22290
       WRITE (HOUT,900) (YID(I),I=3,7)                                     M22300
@@ -2387,7 +2393,7 @@ C     IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT       M22490
 C                                                                         M22500
       DIMENSION YID(10)                                                   M22510
 C                                                                         M22520
-      DOUBLE PRECISION YID                                              & M22530
+      CHARACTER*8      YID                                              & M22530
 C                                                                         M22540
       CHARACTER GOUT*64,BLNK*18                                           M22550
       DATA BLNK / '                  '/                                   M22560

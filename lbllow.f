@@ -325,7 +325,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL03060
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
 C
-      DOUBLE PRECISION HMOD                                              FL03080
+      CHARACTER*8      HMOD                                              FL03080
 C
       COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL03090
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL03100
@@ -345,8 +345,9 @@ C
       COMMON /LCRD2D/ IREG(4),ALTB(4),IREGC(4)                           FL03230
       COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL03240
       COMMON /LCRD4/ V1,V2,DV                                            FL03250
-      DOUBLE PRECISION V1P,V2P                                           FL03260
-      DOUBLE PRECISION  XID,SECANT,HMOLID,XALTZ,YID                      FL03270
+      REAL*8           V1P,V2P                                           FL03260
+      CHARACTER*8       XID,       HMOLID,      YID   
+      Real*8                SECANT,       XALTZ
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      FL03280
@@ -426,11 +427,12 @@ C                                                                        FL03990
          IREG(II) = 0                                                    FL04010
    10 CONTINUE                                                           FL04020
       DO 20 I = 1, 5                                                     FL04030
-         DO 20 J = 1, 40                                                 FL04040
+         DO 18 J = 1, 40                                                 FL04040
             ABSC(I,J) = 0.                                               FL04050
             EXTC(I,J) = 0.                                               FL04060
             ASYM(I,J) = 0.                                               FL04070
-   20 CONTINUE                                                           FL04080
+ 18      CONTINUE 
+ 20   CONTINUE                                                           FL04080
       H1 = H1F                                                           FL04090
       NOPRNT = NOPRNF                                                    FL04100
       MODEL = MODELF                                                     FL04110
@@ -711,7 +713,7 @@ C                                                                        FL06850
   900 FORMAT('1',20X,'***** LOWTRAN 7 (MODIFIED)*****')                  FL06860
   905 FORMAT('0 RECORD 2.1 ****',8I5       )                             FL06870
   910 FORMAT(6I5,5F10.3)                                                 FL06880
-  915 FORMAT(1H0,'  GNDALT =',F10.2)                                     FL06890
+  915 FORMAT('0','  GNDALT =',F10.2)                                     FL06890
   920 FORMAT('0 RECORD 3.1 ****',6I5,5F10.3)                             FL06900
   925 FORMAT('0 GNDALT GT 6.0 RESET TO ZERO, GNDALT WAS',F10.3)          FL06910
   930 FORMAT('0**WARNING** NAVY MODEL IS NOT USEABLE BELOW 250CM-1'/     FL06920
@@ -794,7 +796,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL07510
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
 C
-      DOUBLE PRECISION HMOD                                              FL07530
+      CHARACTER*8      HMOD                                              FL07530
 C
       COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL07540
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL07550
@@ -814,8 +816,12 @@ C
       COMMON /LCRD4/ V1,V2,DV                                            FL07680
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL07690
       COMMON /MART/ RHH                                                  FL07700
-      COMMON /MDATA/ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),    FL07710
-     *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL07720
+c     COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL07710
+c    *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL07720
+      COMMON /MDATA/                              WH(MXZMD),WO(MXZMD),   FL07710
+     *                 CLD(MXZMD,7),RR(MXZMD,7)                          FL07720
+      COMMON /MDATA2/ZDA(MXZMD),P(MXZMD),T(MXZMD)
+
       COMMON /MODEL/ ZMDL(MXZMD),PMM(MXZMD),TMM(MXZMD),                  FL07730
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL07740
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
@@ -1362,9 +1368,10 @@ C                                                                        FL13070
          IF (AHAST(KK).EQ.0) AHOL2 = AHOL1                               FL13130
          IF (CLDAMT(KK).GT.0.0.OR.RRAMT(KK).GT.0.0) AHOL2 = HHOL         FL13140
          IF (ZGN(KK).GT.2.0) AHOL3 = SEASN(ISEA1)                        FL13150
-  230    WRITE (IPR,945) ZMDL(KK),P(KK),T(KK),RELHUM(KK),WH(KK),         FL13160
-     *      CLDAMT(KK),RRAMT(KK),AHOL1,AHOL2,AHOL3                       FL13170
-  240 IMMAX = ML                                                         FL13180
+         WRITE (IPR,945) ZMDL(KK),P(KK),T(KK),RELHUM(KK),WH(KK),         FL13160
+     *        CLDAMT(KK),RRAMT(KK),AHOL1,AHOL2,AHOL3                       FL13170
+ 230  continue
+ 240  IMMAX = ML                                                         FL13180
       M = 7                                                              FL13190
       IF (ML.EQ.1) WRITE (IPR,925)                                       FL13200
       IF (ML.NE.1) MODEL = M                                             FL13210
@@ -1414,8 +1421,11 @@ C
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
-      COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL13530
-     *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL13540
+c     COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL13530
+c    *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL13540
+      COMMON /MDATA/                              WH(MXZMD),WO(MXZMD),   FL13530
+     *                 CLD(MXZMD,7),RR(MXZMD,7)                          FL13540
+      COMMON /MDATA2/ZDA(MXZMD),P(MXZMD),T(MXZMD)
       COMMON /MODEL/ ZMDL(MXZMD),PN(MXZMD),TN(MXZMD),                    FL13550
      *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL13560
      *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
@@ -1491,10 +1501,15 @@ C                                                                        FL14250
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FL14260
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FL14270
 C                                                                        FL14280
-      COMMON /MDATA/ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),    FL14290
-     *     HMIX(MXZMD),CLD1(MXZMD),CLD2(MXZMD),CLD3(MXZMD),CLD4(MXZMD),  FL14300
+c     COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL14290
+c    *     HMIX(MXZMD),CLD1(MXZMD),CLD2(MXZMD),CLD3(MXZMD),CLD4(MXZMD),  FL14300
+c    *     CLD5(MXZMD),CLD6(MXZMD),CLD7(MXZMD),RR1(MXZMD),RR2(MXZMD),    FL14310
+c    *     RR3(MXZMD),RR4(MXZMD),RR5(MXZMD),RR6(MXZMD),RR7(MXZMD)        FL14320
+      COMMON /MDATA/                              WH(MXZMD),WO(MXZMD),   FL14290
+     *                 CLD1(MXZMD),CLD2(MXZMD),CLD3(MXZMD),CLD4(MXZMD),  FL14300
      *     CLD5(MXZMD),CLD6(MXZMD),CLD7(MXZMD),RR1(MXZMD),RR2(MXZMD),    FL14310
      *     RR3(MXZMD),RR4(MXZMD),RR5(MXZMD),RR6(MXZMD),RR7(MXZMD)        FL14320
+      COMMON /MDATA2/ZDA(MXZMD),P(MXZMD),T(MXZMD)
 C                                                                        FL14330
 C     DATA  Z/                                                           FL14340
 C     C       0.0,       1.0,       2.0,       3.0,       4.0,           FL14350
@@ -1554,7 +1569,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL14720
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
 C
-      DOUBLE PRECISION HMOD                                              FL14730
+      CHARACTER*8      HMOD                                              FL14730
 C
       COMMON HMOD(3),Z1(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)         FL14740
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL14750
@@ -2181,7 +2196,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL20430
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL20470
 C
-      DOUBLE PRECISION HMOD                                              FL20440
+      CHARACTER*8      HMOD                                              FL20440
 C
       COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL20450
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL20460
@@ -2201,11 +2216,12 @@ C
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL20580
       COMMON /AER/ XX1,XX2,XX3,XX4,XX5,                                  FL20590
      *     YY1,YY2,YY3,YY4,YY5,ZZ1,ZZ2,ZZ3,ZZ4,ZZ5                       FL20600
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                       FL20610
+      CHARACTER*8      XID,       HMOLID,      YID                     
+      Real*8               SECANT,       XALTZ
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      FL20620
      *     WK(60),PZL,PZU,TZL,TZU,WN2   ,DVP,V1P,V2P,TBOUNF,EMISIV,      FL20630
      *     FSCDID(17),NMOL,LAYER,YI1,YID(10) ,LSTWDF                     FL20640
-      DOUBLE PRECISION VI1,VI2,V1P,V2P,VV                                FL20650
+      REAL*8           VI1,VI2,V1P,V2P,VV                                FL20650
       COMMON /LPANEL/ VI1,VI2,DVV,NLIMAP                                 FL20660
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FL20670
      *     AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)                      FL20680
@@ -2536,9 +2552,9 @@ C     **   PAGE HEADERS                                                  FL23920
 C                                                                        FL23930
   900 FORMAT('0 LOWTRAN WAVENUMBER INTERVAL **',3F10.3)                  FL23940
   905 FORMAT(' CIRRUS NOT DEFINED BELOW 350 CM-1')                       FL23950
-  910 FORMAT (1H1,/ 1X,32H  FREQ WAVELENGTH  TOTAL    RAIN //)           FL23960
-  915 FORMAT (1H1,/ 1X,32H  FREQ FREQUENCY   TOTAL    RAIN  ,            FL23970
-     *                 /2X,14H CM-1    GHZ  ,2(4X,5HTRANS)/)             FL23980
+  910 FORMAT ('1',/ 1X,'  FREQ WAVELENGTH  TOTAL    RAIN '//)       
+  915 FORMAT ('1',/ 1X,'  FREQ FREQUENCY   TOTAL    RAIN  ',        
+     *                 /2X,' CM-1    GHZ  ',2(4X,'TRANS')/)         
   920 FORMAT(1X,F7.1,F8.3,10F9.4,F12.3)                                  FL23990
   925 FORMAT('0TRANSMISSION DUE TO CIRRUS = ',F10.4)                     FL24000
   930 FORMAT('0INTEGRATED ABSORPTION FROM ',F9.3,' TO ',F9.3,' CM-1 =',  FL24010
@@ -3015,8 +3031,11 @@ C
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL28500
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL28510
      *     RAINRT                                                        FL28520
-      COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL28530
-     *     HMIX(MXZMD), DUM1(MXZMD,7), DUM2(MXZMD,7)                     FL28540
+c     COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL28530
+c    *     HMIX(MXZMD),CDUM1(MXZMD,7),RDUM2(MXZMD,7)                     FL28540
+      COMMON /MDATA/                              WH(MXZMD),WO(MXZMD),   FL28530
+     *                 CDUM1(MXZMD,7),RDUM2(MXZMD,7)                     FL28540
+      COMMON /MDATA2/ZDA(MXZMD),P(MXZMD),T(MXZMD)
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL28550
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL28560
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL28570
@@ -3107,7 +3126,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
 C
-      DOUBLE PRECISION HMOD
+      CHARACTER*8      HMOD
 C
       COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)
       COMMON ZP(IM2),PP1(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),
@@ -3122,8 +3141,11 @@ C
      *     RAINRT                                                        FL29260
       COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL29270
       COMMON /LCRD4/ V1,V2,DV                                            FL29280
-      COMMON /MDATA/ZMDL(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),   FL29290
-     *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL29300
+c     COMMON /MDATA/ ZMDL(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),  FL29290
+c    *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                          FL29300
+      COMMON /MDATA/                               WH(MXZMD),WO(MXZMD),  FL29290
+     *                 CLD(MXZMD,7),RR(MXZMD,7)                          FL29300
+      COMMON /MDATA2/ZMDL(MXZMD),P(MXZMD),T(MXZMD)
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL29310
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL29320
       COMMON /MODEL/ ZM(MXZMD),PM(MXZMD),TM(MXZMD),
@@ -3265,7 +3287,7 @@ C                                                                        FL30640
    20 CONTINUE                                                           FL30760
       RETURN                                                             FL30770
 C                                                                        FL30780
-  900 FORMAT(1H1,//10X,'ICLD  CANNOT BE GREATER THAN 20 BUT IS',         FL30790
+  900 FORMAT('1',//10X,'ICLD  CANNOT BE GREATER THAN 20 BUT IS',         FL30790
      * I5,//)                                                            FL30800
   905 FORMAT (I4,0PF9.2,F9.3,F7.1,1X,1P9E10.3)                           FL30810
   910 FORMAT('1',/,'  ATMOSPHERIC PROFILES',//,                          FL30820
@@ -3326,15 +3348,17 @@ C
          TTMP(I) = TM(I)                                                 FL31150
          RTMP(I) = RFNDX(I)                                              FL31160
          RRAMTJ(I) = RRAMT(I)                                            FL31170
-         DO 10 K = 1, 16                                                 FL31180
+         DO  8 K = 1, 16         
             DENTMP(K,I) = DENSTY(K,I)                                    FL31190
-   10 CONTINUE                                                           FL31200
+ 8       CONTINUE      
+ 10   CONTINUE                                                           FL31200
       IF (ITYPE.EQ.1) GO TO 130                                          FL31210
       IF (ML.LT.2) GO TO 130                                             FL31220
       DO 20 I = 1, IKP                                                   FL31230
-         DO 20 K = 1, 16                                                 FL31240
+         DO 18 K = 1, 16 
             DENSTY(K,I) = 0.                                             FL31250
-   20 CONTINUE                                                           FL31260
+ 18      CONTINUE     
+ 20   CONTINUE                                                           FL31260
       I = 1                                                              FL31270
       L = 1                                                              FL31280
       J1 = 1                                                             FL31290
@@ -3557,7 +3581,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL33110
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL33120
 C
-      DOUBLE PRECISION HMOD                                              FL33130
+      CHARACTER*8      HMOD                                              FL33130
 C
       COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)         FL33140
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL33150
@@ -3618,9 +3642,10 @@ C                                                                        FL33620
          PPSUML(I) = 0.0                                                 FL33660
          TPSUML(I) = 0.0                                                 FL33670
          RHOSML(I) = 0.0                                                 FL33680
-         DO 10 K = 1, KMAX                                               FL33690
+         DO 8 K = 1, KMAX   
             AMTL(K,I) = 0.0                                              FL33700
-   10 CONTINUE                                                           FL33710
+ 8       CONTINUE     
+ 10   CONTINUE                                                           FL33710
       ZMAX = ZMDL(IMAX)                                                  FL33720
       IF (ITYPE.GE.2) GO TO 60                                           FL33730
 C                                                                        FL33740
@@ -4161,10 +4186,11 @@ C                                                                        FL38670
          PL(JNEXT) = P(I)                                                FL38730
          TL(JNEXT) = T(I)                                                FL38740
          RFNDXL(JNEXT) = RFNDX(I)                                        FL38750
-         DO 70 K = 1, KMAX                                               FL38760
+         DO 68 K = 1, KMAX  
             DENL(K,JNEXT) = DENSTY(K,I)                                  FL38770
-   70 CONTINUE                                                           FL38780
-   80 CONTINUE                                                           FL38790
+ 68      CONTINUE
+ 70   CONTINUE                                                           FL38780
+ 80   CONTINUE                                                           FL38790
 C                                                                        FL38800
 C     **   INTERPOLATE THE DENSITIES TO HB                               FL38810
 C                                                                        FL38820
@@ -4419,7 +4445,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL41030
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX0(47),AWCCON(5)          FL41040
 C
-      DOUBLE PRECISION HMOD                                              FL41050
+      CHARACTER*8      HMOD                                              FL41050
 C
       COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)         FL41060
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL41070
@@ -4672,7 +4698,8 @@ C     IBM SCIENTIFIC SUBROUTINE                                          FL43430
 C     AITKEN INTERPOLATION ROUTINE                                       FL43440
 C                                                                        FL43450
       DIMENSION ARG(NDIM),VAL(NDIM)                                      FL43460
-      IF (NDIM-1) 60, 40, 10                                             FL43470
+c
+      IF (NDIM.gt.1) then
 C                                                                        FL43480
 C     START OF AITKEN-LOOP                                               FL43490
 C                                                                        FL43500
@@ -4680,12 +4707,16 @@ C                                                                        FL43500
          IEND = J-1                                                      FL43520
          DO 20 I = 1, IEND                                               FL43530
             H = ARG(I)-ARG(J)                                            FL43540
-            IF (H) 20, 70, 20                                            FL43550
-   20       VAL(J) = (VAL(I)*(X-ARG(J))-VAL(J)*(X-ARG(I)))/H             FL43560
-   30 CONTINUE                                                           FL43570
+            IF (H.eq.0) go to 70
+            VAL(J) = (VAL(I)*(X-ARG(J))-VAL(J)*(X-ARG(I)))/H             FL43560
+ 20      continue
+ 30   CONTINUE                                                           FL43570
 C                                                                        FL43580
 C     END OF AITKEN-LOOP                                                 FL43590
 C                                                                        FL43600
+      endif
+
+
    40 J = NDIM                                                           FL43610
    50 AITK = VAL(J)                                                      FL43620
    60 RETURN                                                             FL43630
@@ -5037,7 +5068,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL46910
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL46920
 C
-      DOUBLE PRECISION HMOD                                              FL46930
+      CHARACTER*8      HMOD                                              FL46930
 C
       COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)         FL46940
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL46950
@@ -5443,25 +5474,25 @@ C                                                                        FL50790
       RETURN                                                             FL50840
 C                                                                        FL50850
   900 FORMAT('0 VERTICAL STRUCTURE ALGORITHM (VSA) USED')                FL50860
-  905 FORMAT(1H ,50X,28HCLOUD CEILING HEIGHT UNKNOWN)                    FL50870
-  910 FORMAT(1H ,50X,42HINVERSION OR BOUNDARY LAYER HEIGHT UNKNOWN,/,    FL50880
-     *  1H ,50X,39HVSA WILL USE A DEFAULT OF 2000.0 METERS,/)            FL50890
-  915 FORMAT(1H ,50X,27HRADIATION FOG DEPTH UNKNOWN)                     FL50900
-  920 FORMAT(1H ,50X,39HVSA WILL USE A DEFAULT OF 1800.0 METERS,/)       FL50910
-  925 FORMAT(5X,10HHEIGHT(KM),5X,7HR.H.(%),5X,16HEXTINCTION(KM-1),       FL50920
-     *   5X,15HVIS(3.912/EXTN),5X,5HIHAZE,/)                             FL50930
+  905 FORMAT(' ',50X,'CLOUD CEILING HEIGHT UNKNOWN')
+  910 FORMAT(' ',50X,'INVERSION OR BOUNDARY LAYER HEIGHT UNKNOWN',/,
+     *  ' ',50X,'VSA WILL USE A DEFAULT OF 2000.0 METERS',/)
+  915 FORMAT(' ',50X,'RADIATION FOG DEPTH UNKNOWN')
+  920 FORMAT(' ',50X,'VSA WILL USE A DEFAULT OF 1800.0 METERS',/)     
+  925 FORMAT(5X,'HEIGHT(KM)',5X,'R.H.(%)',5X,'EXTINCTION(KM-1)',
+     *   5X,'VIS(3.912/EXTN)',5X,'IHAZE',/)  
   930 FORMAT(7X,F7.4,7X,F5.1,8X,E12.4,11X,F7.4,10X,I2)                   FL50940
-  935 FORMAT(1H ,39X,35HVSA WILL USE A CALCULATED VALUE OF ,F7.1,        FL50950
-     *       7H METERS,/)                                                FL50960
-  940 FORMAT(1H ,50X,19HCLOUD DEPTH UNKNOWN)                             FL50970
-  945 FORMAT(1H ,50X,38HVSA WILL USE A DEFAULT OF 200.0 METERS,/)        FL50980
-  950 FORMAT(1H ,50X,24HCLOUD CEILING HEIGHT IS ,F9.1,7H METERS,/)       FL50990
-  955 FORMAT(1H ,50X,15HCLOUD DEPTH IS ,F14.1,7H METERS,/)               FL51000
-  960 FORMAT(1H ,50X,38HINVERSION OR BOUNDARY LAYER HEIGHT IS ,F7.1,     FL51010
-     * 7H METERS,/)                                                      FL51020
-  965 FORMAT(1H ,50X,26HDEPTH OF RADIATION FOG IS ,F7.1,7H METERS,/)     FL51030
-  970 FORMAT(1H ,50X,43HTHERE IS NO INVERSION OR BOUNDARY LAYER OR ,     FL51040
-     * 13HCLOUD PRESENT,/)                                               FL51050
+  935 FORMAT(' ',39X,'VSA WILL USE A CALCULATED VALUE OF ',F7.1,    
+     *       ' METERS',/)                                           
+  940 FORMAT(' ',50X,'CLOUD DEPTH UNKNOWN')                           
+  945 FORMAT(' ',50X,'VSA WILL USE A DEFAULT OF 200.0 METERS',/)      
+  950 FORMAT(' ',50X,'CLOUD CEILING HEIGHT IS ',F9.1,' METERS',/)     
+  955 FORMAT(' ',50X,'CLOUD DEPTH IS ,F14.1,7H METERS',/)             
+  960 FORMAT(' ',50X,'INVERSION OR BOUNDARY LAYER HEIGHT IS ',F7.1,   
+     * ' METERS',/)                                                   
+  965 FORMAT(' ',50X,'DEPTH OF RADIATION FOG IS ',F7.1,' METERS',/)   
+  970 FORMAT(' ',50X,'THERE IS NO INVERSION OR BOUNDARY LAYER OR ',   
+     * 'CLOUD PRESENT',/)                                             
 C                                                                        FL51060
       END                                                                FL51070
 C
@@ -5493,7 +5524,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX0(47),AWCCON(5)
 C
-      DOUBLE PRECISION HMOD
+      CHARACTER*8      HMOD
 C
       COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),
@@ -5761,7 +5792,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL53600
       COMMON ABSC(5,47),EXTC(5,47),ASYC(5,47),VX2(47),AWCCON(5)          FL53610
 C
-      DOUBLE PRECISION HMOD                                              FL53620
+      CHARACTER*8      HMOD                                              FL53620
 C
       COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL53630
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL53640
@@ -5809,7 +5840,7 @@ C                                                                        FL54030
       ALAM = 1.0E+4/V                                                    FL54040
       DO 30 N = 2, 47                                                    FL54050
          XD = ALAM-VX2(N)                                                FL54060
-         IF (XD) 40, 30, 30                                              FL54070
+         IF (XD.lt.0.) go to 40
    30 CONTINUE                                                           FL54080
       N = 47                                                             FL54090
    40 VXD = VX2(N)-VX2(N-1)                                              FL54100
@@ -6894,7 +6925,7 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FL64710
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
 C
-      DOUBLE PRECISION HMOD                                              FL64730
+      CHARACTER*8      HMOD                                              FL64730
 C
       COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL64740
       COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL64750
@@ -7563,7 +7594,8 @@ C                                                                        FL71100
       CHARACTER*8 CTMNA1,CTMNA2,CTMNA3,CTMNA4,CTMNA5,CTMNA6              FL71110
       COMMON /CLATML/                                                    FL71120
      *CTMNA1(3),CTMNA2(3),CTMNA3(3),CTMNA4(3),CTMNA5(3),CTMNA6(3)        FL71130
-      DOUBLE PRECISION ATMNA1,ATMNA2,ATMNA3,ATMNA4,ATMNA5,ATMNA6,HMODS   FL71140
+      REAL*8           ATMNA1,ATMNA2,ATMNA3,ATMNA4,ATMNA5,ATMNA6
+      Character*8                                                HMODS   FL71140
       COMMON /MLATML/ ALT(50),P1(50),P2(50),P3(50),P4(50),P5(50),P6(50), FL71150
      *T1(50),T2(50),T3(50),T4(50),T5(50),T6(50),                         FL71160
      *AMOL11(50),AMOL12(50),AMOL13(50),AMOL14(50),AMOL15(50),AMOL16(50), FL71170
@@ -8656,7 +8688,7 @@ C                                                                        FL81960
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT(NCASE2),WMOL(NCASE),
      *                WAIR,JLOW                                          FL82000
 C
-      DOUBLE PRECISION HDUM,DUM1                                         FL82010
+      CHARACTER*8      HDUM,DUM1                                         FL82010
 C
       COMMON /MLATML/ ALT(50),PMATM(50,6),TMATM(50,6),AMOL(50,8,6),      FL82020
      *     HDUM(3),DUM1(6,3),DUM2(50,38),IDUM                            FL82030
