@@ -22,10 +22,6 @@ C**********************************************************************   B00170
 C                                                                         B00180
 C                                                                         B00190
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B00200
-C                                                                         B00210
-C               LAST MODIFICATION:                                        B00220
-C                                     24 JULY   1992  
-C                                     14 AUGUST 1991                      B00220
 C                                                                         B00230
 C                  IMPLEMENTATION:    R.D. WORSHAM                        B00240
 C                                                                         B00250
@@ -554,9 +550,12 @@ C                                                                         B05000
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B05010
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B05020
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B05030
+      COMMON /XSUB/ VBOT,VTOP,VFT,DUM(7)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           B05040
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        B05050
+      COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,
+     *                HWF3,DXF3,NX3,N3MAX
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),           B05060
      *                CF3(102),CER(102)                                   B05070
 C                                                                         B05080
@@ -580,6 +579,7 @@ C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         B05250
 C                                                                         B05260
       DATA TEMPLC / 200.0,250.0,296.0,340.0 /                             B05270
       DATA HREJ /'0'/,HNOREJ /'1'/
+      DATA NWDTH /0/
 C                                                                         B05280
       NLNCR = NLNCR+1                                                     B05290
       IF (NLNCR.EQ.1) THEN                                                B05300
@@ -624,19 +624,14 @@ C     ISO=(MOD(MOL(I),1000)-M)/100   IS PROGRAMMED AS:                    B05660
 C                                                                         B05670
          ISO = MOD(MOL(I),1000)/100                                       B05680
          ILOC = ISOVEC(M)+ISO                                             B05690
-         IF ((M.GT.NMOL).OR.(M.LT.1)) THEN                                B05700
-            SUI = 0.                                                      B05710
-            SP(I) = 0.                                                    B05720
-            SPPSP(I) = 0.                                                 B05730
-            GO TO 30                                                      B05740
-         ENDIF                                                            B05750
+C
+         IF ((M.GT.NMOL).OR.(M.LT.1)) GO TO 25
+C
          MOL(I) = M                                                       B05760
          SUI = S(I)*WK(M)                                                 B05770
-         IF (SUI.EQ.0.) THEN                                              B05780
-            SP(I) = 0.                                                    B05790
-            SPPSP(I) = 0.                                                 B05800
-            GO TO 30                                                      B05810
-         ENDIF                                                            B05820
+C
+         IF (SUI.EQ.0.) GO TO 25
+C
          NLIN = NLIN+1                                                    B05830
 C                                                                         B05840
 C     Y'S AND G'S ARE STORED IN I+1 POSTION OF VNU,S,ALFA0,EPP...         B05850
@@ -703,6 +698,9 @@ C                                                                         B06280
          ELSE                                                             B06440
             NPLSAD = 0                                                    B06450
          ENDIF                                                            B06460
+C
+         IF (HWF3*ALFV+VNU(I) .LT. VFT) GO TO 25
+C
          RECALF(I) = 1./ALFV                                              B06470
 C                                                                         B06480
 C     TREAT TRANSITIONS WITH UNKNOWN EPP AS SPECIAL CASE                  B06490
@@ -711,8 +709,8 @@ C                                                                         B06500
             IF (DELTMP.LE.10.) THEN                                       B06520
                EPP(I) = 0.                                                B06530
             ELSE                                                          B06540
-               SUI = 0.                                                   B06550
                MEFDP(M) = MEFDP(M)+1                                      B06560
+               GO TO 25
             ENDIF                                                         B06570
          ENDIF                                                            B06580
          IF (JRAD.NE.1) SUI = SUI*SCOR(ILOC)*                             B06590
@@ -726,28 +724,23 @@ C                                                                         B06630
                SPEAK = SUI*RECALF(I)                                      B06650
                IF (DVR4.LE.0.) THEN                                       B06660
                   IF (SPEAK.LE.DPTMN) THEN 
-                     SUI = 0.                                             B06670
                      FREJ(J) = HREJ
+                     GO TO 25
                   ENDIF
                ELSE                                                       B06680
                   JJ = (VNU(I)-V1R4)/DVR4+1.                              B06690
                   JJ = MAX(JJ,1)                                          B06700
                   JJ = MIN(JJ,NPTR4)                                      B06710
                   IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ))) THEN
-                     SUI = 0.                                             B06720
                      FREJ(J) = HREJ
+                     GO TO 25
                   ENDIF
                ENDIF                                                      B06730
             ELSE
 C      "ELSE" IS TRUE WHEN "ILNFLG" EQUALS 2
 C
-               IF (FREJ(J).EQ.HREJ) SUI = 0.
+               IF (FREJ(J).EQ.HREJ) GO TO 25
             ENDIF
-            IF (SUI.EQ.0.) THEN                                           B06740
-               SP(I) = 0.                                                 B06750
-               SPPSP(I) = 0.                                              B06760
-               GO TO 30                                                   B06770
-            ENDIF                                                         B06780
          ENDIF                                                            B06790
 C                                                                         B06800
          NMINUS = NMINUS+NMINAD                                           B06810
@@ -759,6 +752,11 @@ C                                                                         B06860
          SP(I) = SUI*(1.+GI*PAVP2)                                        B06870
          SPPI = SUI*YI*PAVP0                                              B06880
          SPPSP(I) = SPPI/SP(I)                                            B06890
+C
+         GO TO 30
+C
+   25    SP(I) = 0.
+         SPPSP(I) = 0.  
 C                                                                         B06900
    30 CONTINUE                                                            B06910
 C                                                                         B06920
@@ -778,9 +776,6 @@ C     THE VOIGT LINE SHAPE (APPROXIMATED)                                 B07040
 C                                                                         B07050
 C     CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  B07060
 C                                                                         B07070
-C     LAST MODIFICATION:                                                  B07080
-C     28 AUGUST 1992   sac                                                B07090
-C     25 MARCH 1991                                                       B07100
 C                                                                         B07110
 C     IMPLEMENTATION:    R.D. WORSHAM                                     B07120
 C                                                                         B07130
