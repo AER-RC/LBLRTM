@@ -3153,7 +3153,7 @@ C                                                                         L00080
       CHARACTER*11 CFORM                                                  I00300
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
-      character ctape*4,fltinf*7
+      character ctape*4,fltinf*7,fltout*7,cout*4
 C                                                                         L00250
       EQUIVALENCE (FILHDR(1),XID(1)) , (FSCDID(5),IEMIT),                 L00260
      *            (FSCDID(6),ISCAN) , (FSCDID(7),IPLOT),                  L00270
@@ -3162,7 +3162,8 @@ C                                                                         L00250
      *            (FSCDID(16),LAYR1)                                      L00300
 
 
-      DATA FLTINF / '       '/,CTAPE / 'TAPE'/
+      DATA FLTINF / '       '/,FLTOUT / '       ' /,
+     *     CTAPE / 'TAPE'/,cout / 'TOUT' /
 
 C                                                                         L00310
 C
@@ -3226,11 +3227,14 @@ C                                                                         L00470
       WRITE (IPR,905)                                                     L00480
       REWIND IFILE                                                        L00490
       inquire(ifile,opened=op)
-      IF (.NOT.OP) THEN                                                   I02680
-         WRITE (FLTINF,970) CTAPE,IFILE                                   I02690
-         OPEN (IFILE,FILE=FLTINF,STATUS='UNKNOWN',FORM=CFORM)             I02700
-         REWIND IFILE                                                     I02710
-      ENDIF                                                               I02720
+      IF (.NOT.OP) THEN
+         WRITE (FLTINF,970) CTAPE,IFILE
+         WRITE (FLTOUT,970) COUT,IFILE
+         OPEN (IFILE,FILE=FLTINF,STATUS='UNKNOWN',FORM=CFORM)
+         JFILE = IFILE+1
+         OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
+         REWIND IFILE
+      ENDIF
       IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  L00500
       IEOFSC = 0                                                          L00510
       ISTOP = 0                                                           L00520
@@ -3314,6 +3318,7 @@ C                                                                         L01000
       GO TO 110                                                           L01300
   100 RFILTR = RFILTR*DVC                                                 L01310
       WRITE (IPR,965) RFILTR,SUMFLT                                       L01320
+      write(JFILE,975) RFILTR
   110 IF (IEOFSC.EQ.1) CALL SKIPFL (1,IFILE,IEOFSC)                       L01330
       IEOFT = IEOFT+1                                                     L01340
       IF (IEOFT.GT.NIFILS) GO TO 10                                       L01350
@@ -3350,6 +3355,7 @@ C                                                                         L01380
   965 FORMAT ('0 INTEGRATED EMISSION = ',1PE14.5,                         L01660
      *        '  NORMALIZATION OF THE',' FILTER = ',E14.5)                L01670
  970  format (a4,i2.2)
+ 975  format (1p,e14.5,0p)
 C                                                                         L01680
       END                                                                 L01690
 C
