@@ -1,4 +1,9 @@
 
+LBLRTM_v9.3
+
+1) Fixed a minor bug in the analytic derivative computation.
+   (H. Snell)
+
 LBLRTM_v9.2
 
 1) A correction to the collision induced nitrogen absorption in the 0-350 cm-1 region
