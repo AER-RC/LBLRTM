@@ -736,9 +736,6 @@ C                                                                         B01140
 C                                                                         B01160
       CALL CPUTIM (TIMEH0)                                                B01170
 C                                                                         B01180
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
-C
-      HVROPR = '????'
 C
 C     Initialize timing for the group "OTHER" in the TAPE6 output
 C
