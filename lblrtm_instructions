@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                    12 May 1995
+                                 1 November 1995
  
  
  
@@ -463,6 +463,7 @@ C     presently: %H%  %T%
   
 
 
+ 
  RECORD 1.5    (required if IEMIT = 2; otherwise omit)
  
                              NOTE:  IEMIT = 2 requires binary solar radiance file SOLAR.RAD
@@ -478,14 +479,19 @@ C     presently: %H%  %T%
 
                            = 0  input previously calculated radiance and transmittance from TAPE12 (default)
                            = 1  input previously calculated optical depth from TAPE10
+                           = 2  input previously calculated upwelling radiance and transmittance from TAPE12,
+                                downwelling radiance and transmittance from 'SOL.PATH.T2', and solar reflection
+                                function from 'SOL.REFLECTANCE' (all binary files).
  
               IOTFLG       (0,1) output flag for solar radiance calculation (output to TAPE13)
 
                            = 0  output attenuated solar radiance (default)
                            = 1  output total radiance (requires INFLAG = 0)
+                           = 2  output total radiance, including effects of downwelling thermal and reflection
+                                from solar path (requires INFLAG = 2)
 
 
- 
+
 
  RECORD 1.6a    (required if IMRG = 35-36, 40-41, 45-46; otherwise omit)
  
