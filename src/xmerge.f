@@ -1539,7 +1539,7 @@ C                                                                         H11130
       EQUIVALENCE (PNLHDR(1),V1PBF)                                       H11150
       EQUIVALENCE (FSCDID(4),IAERSL)                                      H11160
 C                                                                         H11170
-      data xtrtot_min /1.e-04/, od_lo /0.005/,od_hi /12./
+      data xtrtot_min /1.e-04/, od_lo /0.06/,od_hi /12./
       data itbl_calc/-99/, aa /0.278/ 
 c
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H11180
@@ -1677,11 +1677,8 @@ c
                ODVI = TR(I)+EXT*RADFN0                                    H12570
 c      
                if (abs(odvi) .le. od_lo) then
-                  tr(i) = 1. - odvi
-                  em(i) = odvi * (bb+ bbdif*rec_6*odvi)
-               else if (odvi .ge. od_hi) then
-                  tr(i) = 0.
-                  em(i) = bba
+                  tr(i) = 1. - odvi + 0.5*odvi*odvi
+                  em(i) = (1.-tr(i))*(bb+ bbdif*rec_6*odvi)
                else   
 c                 tri = exp(-odvi)
                   tau_fn = odvi/(aa_inv+odvi)
@@ -1767,14 +1764,19 @@ c
 c              tr(i) contains the layer optical depths at this stage
 
                ODVI = TR(I)+EXT*RADFN0                                    H13460
+c
+c              em(i) contains the ratio differences from 
+c                                              lte of the state populations
+               c_nlte = em(i)
 C                                                                         H13510
                if (abs(odvi) .le. od_lo) then
-                  tr(i)  = 1. - odvi
-                  tau_fn  = rec_6*odvi
-                  em(i)  = (odvi-em(i)) * (bb+bb_dif * tau_fn)
-               else if (odvi .ge. od_hi) then
-                  tr(i)  = 0.
-                  em(i)  = ( 1.0- em(i)/odvi ) * bba
+
+                  odvi_a = 0.5 * odvi
+                  absvi  = odvi - odvi_a * odvi
+                  tr(i)  = 1. - absvi
+                  tau_fn = rec_6*odvi
+                  em(i)  = (absvi - (c_nlte*(1.-odvi_a))) * 
+     *                                             (bb+bb_dif * tau_fn)
                else   
 c****             tri = exp(-odvi)
                   tau_fn = odvi/(aa_inv+odvi)
@@ -1782,7 +1784,7 @@ c****             tri = exp(-odvi)
                   tr(i) = exp_tbl(i_tbl)
 C****          Obtain correct value for the tau function from look up table
 
-                  em(i)  = ( 1.0- em(i)/odvi ) * (1.-tr(i)) * 
+                  em(i)  = ( 1.0- c_nlte/odvi ) * (1.-tr(i)) * 
      *                 (bb+bb_dif * tau_tbl(i_tbl))
 
                end if
@@ -1902,14 +1904,11 @@ c
                ODVI = TR(I)+EXT*RADFN0                                    H14760
 c      
                if (abs(odvi) .le. od_lo) then
-                  tr(i)  = 1. - odvi
+                  tr(i)  = 1. - odvi+0.5*odvi*odvi
                   taufn  = rec_6*odvi
-                  em(i)  = odvi * (bb+ bb_dif_a * taufn)
-                  emb(i) = odvi * (bb+ bb_dif_b * taufn)
-               else if (odvi .ge. od_hi) then
-                  tr(i)    = 0.
-                  em(i)  = bba
-                  emb(i) = bbb
+                  emx = (1.-tr(i))
+                  em(i)  = emx * (bb+ bb_dif_a * taufn)
+                  emb(i) = emx * (bb+ bb_dif_b * taufn)
                else   
 c****             tri = exp(-odvi)
                   tau_fn = odvi/(aa_inv+odvi)
@@ -1917,8 +1916,9 @@ c****             tri = exp(-odvi)
                   tr(i) = exp_tbl(i_tbl)
 C               Obtain correct value for the tau function from look up table
                   tau_fn = tau_tbl(i_tbl)
-                  em(i)  = (1.-tr(i)) * (bb+bb_dif_a * tau_fn)
-                  emb(i) = (1.-tr(i)) * (bb+bb_dif_b * tau_fn)
+                  emx = (1.-tr(i))
+                  em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                  emb(i) = emx * (bb+bb_dif_b * tau_fn)
 
                end if
 C                                                                         H14870
@@ -2026,22 +2026,24 @@ C                                                                         H15970
             bb_dif_b_del = bbdlb-bbdel
 c
             DO 80 I = NLIM1, NLIM2                                        H15980
+
+c              tr(i) contains the layer optical depths at this stage
+
                ODVI = TR(I)+EXT*RADFN0                                    H16010
-
-               emi = em(i)
-
+c
+c              em(i) contains the ratio diffeernces from 
+c                                              lte of the state populations
+               c_nlte = em(i)
 c      
                if (abs(odvi) .le. od_lo) then
-                  tr(i)  = 1. - odvi
-                  tau_fn  = rec_6*odvi
-                  emx  = (odvi-em(i))
+
+                  odvi_a = 0.5 * odvi
+                  absvi  = odvi - odvi_a * odvi
+                  tr(i)  = 1. - absvi
+                  tau_fn = rec_6*odvi
+                  emx    = (absvi - (c_nlte*(1.-odvi_a)))
                   em(i)  = emx * (bb+bb_dif_a * tau_fn)
                   emb(i) = emx * (bb+bb_dif_b * tau_fn)
-               else if (odvi .ge. od_hi) then
-                  tr(i)  = 0.
-                  emx = ( 1.0 - em(i)/odvi ) 
-                  em(i)  = emx * bba
-                  emb(i) = emx * bbb
                else   
 c****             tri = exp(-odvi)
                   tau_fn = odvi/(aa_inv+odvi)
@@ -2049,7 +2051,7 @@ c****             tri = exp(-odvi)
                   tr(i) = exp_tbl(i_tbl)
 C****           Obtain correct value for the tau function from look up table
                   tau_fn = tau_tbl(i_tbl)
-                  emx = ( 1.0 - em(i)/odvi ) * ( 1.-tr(i) )
+                  emx = ( 1.0 - c_nlte/odvi ) * ( 1.-tr(i) )
                   em(i)  = emx * (bb+bb_dif_a * tau_fn)
                   emb(i) = emx * (bb+bb_dif_b * tau_fn)
 
@@ -2088,7 +2090,7 @@ c
       common /fn_tbls/ jtbl_calc,aa_inv,xnn,
      *     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl)
 c
-      data xtrtot_min /1.e-04/, od_lo /0.005/,od_hi /10./
+      data xtrtot_min /1.e-04/, od_lo /0.06/,od_hi /12./
 c
 c     create table of exponential fn and correct 'linear-in-tau' fn
 c     with tau_fn as argument
@@ -2123,8 +2125,6 @@ c     table is equally spaced in tau_fn
       exp_tbl(0) = 1.0
       exp_tbl(nn_tbl) = 0.0
 c     
-c***      write(*,*)'create,itbl_calc,jtbl_calc, aa_inv, xnn'
-c***      write(*,*) itbl_calc,jtbl_calc, aa_inv, xnn
 
       return
 
@@ -5688,7 +5688,7 @@ C                                                                         H29140
       EQUIVALENCE (PNLHDR(1),V1PBF)                                       H29160
       EQUIVALENCE (FSCDID(4),IAERSL)                                      H29170
 C                                                                         H29180
-      data xtrtot_min /1.e-04/, od_lo /0.005/,od_hi /12./
+      data xtrtot_min /1.e-04/, od_lo /0.06/,od_hi /12./
       data itbl_calc/-99/, aa /0.278/ 
 c
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)                            H29190
@@ -5821,11 +5821,8 @@ c
          ODVI = SECNT*TR(I)+EXT*RADFN0                                    H30510
 c      
          if (abs(odvi) .le. od_lo) then
-            tr(i) = 1. - odvi
-            em(i) = odvi * (bb+ bbdif*rec_6*odvi)
-         else if (odvi .ge. od_hi) then
-            tr(i) = 0.
-            em(i) = bba
+            tr(i) = 1. - odvi+0.5*odvi*odvi
+            em(i) = (1.-tr(i))*(bb+ bbdif*rec_6*odvi)
          else   
 c           tri = exp(-odvi)
             tau_fn = odvi/(aa_inv+odvi)
