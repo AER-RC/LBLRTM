@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                   30 June 1994
+                                   29 July 1994
  
  
  
@@ -79,7 +79,7 @@ C     presently: %H%  %T%
  RECORD 1.2 (Continued)
  
  
-          IEMIT   (0,1)
+          IEMIT   (0,1,2,3)
  
                      = 0  optical depth only
                      = 1  radiance and transmittance
@@ -105,24 +105,31 @@ C     presently: %H%  %T%
            --------------------------------------------------------
   RECORD 1.2 (Continued)
  
-           IMRG   (0 to 9; 12-18; 22-28; 32; 35-36) selects merge option
+           IMRG   (0 to 9; 12-18; 22-28; 32; 35-36; 40-41) selects merge option
  
                                    IMRG = 0 KFILE rewound after each layer
                                         > 1 KFILE not rewound after each layer
  
                    = 0  normal merge; result on MFILE; last layer optical depth on KFILE
-                   = 1  optical depths only; results for all layers on KFILE (no merging)
+                   = 1  optical depths only; results for each layer on different file
                    = 2  optical depths from precalculated KFILE merged sequentially onto MFILE
                           ** uses merge path as defined by precalculated KFILE **
                    = 9  radiance merge with aerosols; precalculated KFILE
                           ** uses merge path as defined by precalculated KFILE **
+
                          ---------------------------------------------------------
                          |                                                       |
                          | NOTE:  KFILE usually maps to TAPE10                   |
                          |        MFILE    "      "   " TAPE12                   |
                          |        LFILE alternates with MFILE, mapping to TAPE11 |
                          |        NFILE usually maps to TAPE13                   |
+                         |        KODFIL usually maps to                         |
+                         |               ODdeflt_  for IMRG=1  and IOD=0         |
+                         |               ODint_    for IMRG=1  and IOD=1         |
+                         |               ODint_    for IMRG=1  and IOD=3         |
+                         |               ODexact_  for IMRG=1  and IOD=2         |
                          ---------------------------------------------------------
+
  
                                                         IMRG OPTIONS FOR MERGED OUTPUT
                                                         ==============================
@@ -135,9 +142,29 @@ C     presently: %H%  %T%
                                                             ---------------     ---------------     -------       -------
                            monochromatic (total merged)            A                   C               B           MFILE
                                                                  (12)                (32)            (22)
-  
+
+
+
+                  Monochromatic Input, on precalculated KODFILs.  Output is determined by IEMIT.
+                  ____________________________________________________________________________
+                                                                                IMRG =                             Final
+                                                            -----------------------------------------------       Results
+                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                                            ---------------     ---------------     -------       -------
+                           monochromatic (total merged)           40                  41                           MFILE
+
+
+           IMRG options are continued on next page.
+           ----------------------------------------
+
+ RECORD 1.2 (Continued)
+ 
+           IMRG (Continued)
+
+ 
                                                     IMRG OPTIONS FOR SEQUENTIAL OUTPUT
                                                     ==================================
+
  
                   Monochromatic Input, calculated in current run.
                   _______________________________________________
@@ -150,6 +177,7 @@ C     presently: %H%  %T%
                            filtered results                       23                  24              27           NFILE
  
  
+
                   Monochromatic Input, on precalculated KFILE.
                   ____________________________________________
                                                                                 IMRG =
@@ -159,21 +187,36 @@ C     presently: %H%  %T%
                            monochromatic                           5                   6               8           NFILE
                            scanned results                        15                  16              18           NFILE
                            filtered results                       25                  26              28           NFILE
+ 
+
+
+                  Monochromatic Input, on precalculated KODFILs.
+                  ____________________________________________
+                                                                                IMRG =
+                                                            -----------------------------------------------       Results
+                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                                            ---------------     ---------------     -------       -------
                            scanned results (flux calculations)    35                  36                           NFILE
  
-           IMRG options are continued on next page.
-           ----------------------------------------
 
+ 
+           --------------------------------------------------------
+           |                                                      |
+           |    INPUT FOR RECORD 1.2 IS CONTINUED ON NEXT PAGE    |
+           |                                                      |
+           --------------------------------------------------------
 
+ 
  RECORD 1.2 (Continued)
  
-           IMRG (Continued)
  
                     The actual results produced on MFILE or NFILE are determined by both IEMIT on Record 1.2 and JEMIT on either
                     Record 6 (scanned results) or Record 7.1 (filtered results).  The following table describes the options: 
  
+
                                                                  RESULTS PRODUCED ON MFILE OR NFILE
                                                              ------------------------------------------
+
                                     TYPE OF RESULT                IEMIT=0                  IEMIT=1
                                   ------------------         -----------------        -----------------
                                   monochromatic                optical depths         transmittance & radiance
@@ -182,6 +225,8 @@ C     presently: %H%  %T%
                                   filtered (JEMIT=0)           transmittance          transmittance
                                   filtered (JEMIT=1)                n/a               radiance
  
+
+
                  In the context of LBLRTM calculations, weighting functions are readily obtained from the
                               NFILE sequential transmittances by "subtracting" adjacent files (dT or dR), and
                               employing the stored layer boundary definitions for P or z, i.e. (dlnP or dz).
@@ -203,18 +248,20 @@ C     presently: %H%  %T%
                                     *----|---->
                                     *----|----|---->
                                            etc...
- 
+
+
+
            --------------------------------------------------------
            |                                                      |
            |    INPUT FOR RECORD 1.2 IS CONTINUED ON NEXT PAGE    |
            |                                                      |
            --------------------------------------------------------
-
 
  
  RECORD 1.2 (Continued)
  
  
+
 *******    ILAS    (0,1,2) flag for laser options                              ************ not currently available in LBLRTM
  
                    = 0  no
@@ -223,12 +270,14 @@ C     presently: %H%  %T%
                           (first laser frequency is V1 on record 1.3;
                            subsequent laser frequencies are on records 5.1 ... 5.N)
  
-            IOD    (0,1) flag for layering control in optical depth calculations
+            IOD    (0,1,2,3) flag for layering control in optical depth calculations
  
                    = 0  normal calculation (default)
-                   = 1  interpolates each layer to the value of -DVSET
+                   = 1  interpolates each layer to the spacing set by DVSET
                            (requires IMRG = 1)
                    = 2  uses the calculated dv of each layer
+                           (requires IMRG = 1)
+                   = 3  uses DVSET for last layer and interpolates to the spacing set by DVSET
                            (requires IMRG = 1)
  
          IXSECT    (0,1) flag for cross-sections
@@ -247,7 +296,6 @@ C     presently: %H%  %T%
                          as result of merge of current layer with previous layers
                          (optical depth for IEMIT=0; radiance and transmission for IEMIT=1)
                          (for laser option ILAS > 1, NPTS should be set to 0)
- 
  
  
 
@@ -356,6 +404,24 @@ C     presently: %H%  %T%
                            = 0  output attenuated solar radiance (default)
                            = 1  output total radiance (requires INFLAG = 0)
 
+
+ 
+
+ RECORD 1.6a    (required if IMRG = 35-36, 40-41; otherwise omit)
+ 
+                             NOTE:  IMRG = 35-36, 40-41 requires seperate optical depth files for each layer
+
+           PTHODL
+ 
+            1-55
+ 
+             A55
+
+
+              PTHODL       pathname for precalculated optical depth files
+
+
+ 
  
  *****************************************************************************
  ******  these records applicable only if LBLATM not selected (IATM=0)  ******
@@ -393,8 +459,8 @@ C     presently: %H%  %T%
               ZANGLE      zenith angle at H1 (degrees)
 
 
-        NOTE:   Values of ZH1, ZH2, and ZANGLE only need to be entered when using the resulting optical
-                depths for a CHARTS multiple scattering calculation.
+        NOTE:   Values of ZH1, ZH2, and ZANGLE only need to be entered when using the resulting radiances
+                for a CHARTS multiple scattering calculation.
  
  RECORD 2.1.1
   
@@ -1538,7 +1604,7 @@ C     presently: %H%  %T%
  
 
  
-                                SCNMRG     ( for scanned sequential results; IMRG between 13 and 18; 35 or 36 )
+                                SCNMRG     ( for scanned sequential results; IMRG between 13 and 18; 35-36 )
  
  
  
@@ -2119,7 +2185,7 @@ C     presently: %H%  %T%
  
             V1,    V2,  XSIZE,   DELV,NUMSBX,NOENDX, LFILE,LSKIPF, SCALE, IOPT, I4P, IXDEC
  
-          1-10, 11-20,  21-30,  31-40,    45,    50,    55,    60, 60-70,   72,  75,    80
+          1-10, 11-20,  21-30,  31-40,    45,    50,    55,    60, 61-70,   72,  75,    80
  
          F10.4, F10.4,  F10.4,  F10.4,    I5,    I5,    I5,    I5, F10.3,   I2,  I3,    I5
  
