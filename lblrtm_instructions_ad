@@ -83,8 +83,9 @@ C     presently: %H%  %T%
                      = 0  optical depth only
                      = 1  radiance and transmittance
  
-          ISCAN   (0,1,2) flag for SCANFN    1 = scanning function
-                                or INTRPL    2 = interpolating procedure
+          ISCAN   (0,1,2,3) flag for SCANFN    1 = scanning function
+                                  or INTRPL    2 = interpolating procedure
+                                  or FFTSCN    3 = Fast Fourier Transform scan
  
          IFILTR   (0,1)   flag for FILTR     1 = yes
  
@@ -271,11 +272,11 @@ C     presently: %H%  %T%
  
  
  
-             V1,     V2,   SAMPLE,   DVSET,   ALFAO,   AVMASS,   DPTMIN,   DPTFAC
+             V1,     V2,   SAMPLE,   DVSET,   ALFAO,   AVMASS,   DPTMIN,   DPTFAC,   ILNFLG
  
-           1-10,  11-20,    21-30,   31-40,   41-50,    51-60,    61-70,    71-80
+           1-10,  11-20,    21-30,   31-40,   41-50,    51-60,    61-70,    71-80,     85
  
-          E10.3,  E10.3,    E10.3,   E10.3,   E10.3,    E10.3,    E10.3,    E10.3
+          E10.3,  E10.3,    E10.3,   E10.3,   E10.3,    E10.3,    E10.3,    E10.3,    4X,I1
  
  
  
@@ -307,6 +308,12 @@ C     presently: %H%  %T%
               DPTFAC    factor multiplying molecular continuum optical depth to
                         determine optical depth below which lines will be rejected
                                 (negative value defaults to DPTFAC = 0.001)
+
+              ILNFLG    flag for binary record of line rejection information
+
+			= 0  line rejection information not recorded (default)
+			= 1  write line rejection information to REJ1, REJ4
+			= 2  read line rejection information from REJ1, REJ4
  
  
  
@@ -475,7 +482,7 @@ C     presently: %H%  %T%
  
               IXSBIN   (0,1) flag to deselect pressure convolution of cross-sections
  
-                        = 0 cross-sections convolued with pressure
+                        = 0 cross-sections convolved with pressure
                         = 1 cross-sections not convolved with pressure
  
  RECORD 2.2.1
@@ -690,7 +697,7 @@ C     presently: %H%  %T%
  
           H1     observer altitude (km)
  
-          H2     for ITYPE = 2, H2 is the end pont altitude (km)
+          H2     for ITYPE = 2, H2 is the end point altitude (km)
                      ITYPE = 3, H2 is the tangent height (km) for H2 .GT. 0.
                                       if H2 = 0. ANGLE determines tangent height
  
