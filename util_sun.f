@@ -127,7 +127,7 @@ c______________________________________________________________________________
 
       SUBROUTINE LBLDAT(HDATE)                                           LN05190
 C                                                                        LN05200
-      DOUBLE PRECISION HDATE                                            &LN05210
+      CHARACTER*8 HDATE
 C                                                                        LN05220
       CHARACTER GDATE*10                                                 LN05230
 C                                                                        LN05240
@@ -157,7 +157,7 @@ C                                                                        LN05460
       END                                                                LN05470
       SUBROUTINE FTIME (HTIME)                                           LN05480
 C                                                                        LN05490
-      DOUBLE PRECISION HTIME                                            &LN05500
+      CHARACTER*8 HTIME
 C                                                                        LN05510
       CHARACTER GTIME*10                                                 LN05520
 C                                                                        LN05530
