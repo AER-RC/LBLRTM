@@ -570,6 +570,11 @@ C                                                                         B04040
       CHARACTER*8      HLINID,BMOLID,HID1
       CHARACTER*1 CNEGEPP(8)
 
+      integer *4 molcnt,mcntlc,
+     *           mcntnl,linmol,
+     *           lincnt,ilinlc,ilinnl,irec,irectl
+      real *4 sumstr,flinlo,flinhi
+c
       COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL
@@ -3886,6 +3891,10 @@ c
       CHARACTER*8      HLINID,BMOLID,HID1
       CHARACTER*1 CNEGEPP(8)
 C                                                                         A09600
+      integer *4 molcnt,mcntlc,
+     *           mcntnl,linmol,
+     *           lincnt,ilinlc,ilinnl,irec,irectl
+c
       COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A09610
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A09620
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL     A09630
@@ -4294,8 +4303,6 @@ C                                                                         D05670
 C                                                                         D05690
 C     SUBROUTINE RDLIN4 INPUTS THE LINE DATA FROM LNFIL4                  D05700
 C                                                                         D05710
-      CHARACTER*8      HLINID,BMOLID,HID1
-      CHARACTER*1 CNEGEPP(8)
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SEC   ,       XALTZ
 C                                                                         D05730
