@@ -550,7 +550,7 @@ C
 C
             C(J) = 0.
             IF (C0(J).GT.0. .AND. C1(J).GT.0.)
-     *           C(J) = WXN2*RHOFAC*C0(J)*(C0(J)/C1(J))**TFAC  
+     *           C(J) = WXN2*RHOFAC*C0(J)*(C1(J)/C0(J))**TFAC  
 C                                                                         F01110
 C           Radiation field                                               F01120
 C                                                                         F01130
