@@ -354,7 +354,7 @@ C
 C                                                                         A03480
       DATA IDCNTL / ' HIRAC',' LBLF4',' CNTNM',' AERSL',' EMISS',         A03500
      *              ' SCNFN',' FILTR','  PLOT','  TEST','  IATM',         A03510
-     *              '  IMRG','  ILAS',' MSCAT',' XSECT' /                 A03520
+     *              '  IMRG','  ILAS',' OPDEP',' XSECT' /                 A03520
       DATA CONE / '1'/,CTWO / '2'/,CTHREE / '3'/,                         A03530
      *     CA / 'A'/,CB / 'B'/,CC / 'C'/                                  A03540
       DATA CDOL / '$'/,CPRCNT / '%'/,CBLNK / ' '/,CXIDA / 80*' '/         A03550
@@ -703,9 +703,6 @@ C                                                                         A07280
      *        '  CHANGE IEMIT TO 1 OR IHIRAC TO 1 ')                      A07410
   955 FORMAT ('0 IMRG MUST BE ONE WHEN NOT MERGING ',
      *        'OPTICAL DEPTHS (IOD>=1)')
-  960 FORMAT (/,' TGRND ',1PE10.3,' SEMIS ',3E11.3,' RMINMS ',E10.3,      A07430
-     *        ' RMAXMS ',E10.3)                                           A07440
-  965 FORMAT ('0 MULTIPLE SCATTERING TURNED OFF - IMPROPER FLAGS SET ')   A07450
   970 FORMAT (8E10.3,4X,I1)                                               A07460
   975 FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,            A07470
      *        ' AND IS NOT BOUNDED BY (0.,1.) ')                          A07480
