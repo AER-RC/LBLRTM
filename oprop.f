@@ -567,6 +567,13 @@ C                                                                         B04000
 C                                                                         B04020
 C     SUBROUTINE RDLIN INPUTS LINE DATA FROM FILE LINFIL                  B04030
 C                                                                         B04040
+      CHARACTER*8      HLINID,BMOLID,HID1
+      CHARACTER*1 CNEGEPP(8)
+
+      COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),
+     *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,
+     *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL
+
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    B04050
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    B04060
      *       ZETAI(250),IZETA(250)                                        B04070
@@ -609,8 +616,11 @@ C     BUFFER PAST FILE HEADER if necessary
 C                                                                         B04250
       IF (ILO.LE.0) THEN                                                  B04260
          REWIND LNFL
-         CALL BUFINln (LNFL,LEOF,dum(1),n_one)
-         if (negepp_flag.eq.1) CALL BUFINln (LNFL,LEOF,dum(1),n_one)
+         read (lnfl)    HLINID
+         READ (HLINID(7),950) CNEGEPP
+         IF (CNEGEPP(8).eq.'^') THEN
+            read (lnfl) n_negepp,n_resetepp,xspace
+         endif
       ENDIF                                                               B04290
 C                                                                         B04300
    10 CALL BUFINln (Lnfl,LEOF,rdpnl(1),npnlhd)
@@ -692,6 +702,7 @@ C                                                                         B04780
   900 FORMAT ('  EOF ON LINFIL (MORE LINES MAY BE REQUIRED) ')            B04790
   905 FORMAT (                                                            B04800
      *   ' FIRST LINE ON LINFIL USED (MORE LINES MAY BE REQUIRED) ')      B04810
+ 950  FORMAT (8a1)
 C                                                                         B04820
       END                                                                 B04830
       SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)                             B04840
