@@ -5435,8 +5435,8 @@ C           -------------------------------------
 C
             IF (MUNITS.EQ.1) THEN
                DRAIR = WN2L(1)
-               DO 105 M = 2,NMOL
-                  DRAIR = DRAIR + XAMNT(M,1)
+               DO 105 M = 2,NMOLSV
+                  DRAIR = DRAIR + AMOUNT(M,1)
  105           CONTINUE
 C
 C              > If DRAIR is zero, then write out XAMNT only    <
@@ -5512,8 +5512,8 @@ C           -------------------------------------
 C
             IF (MUNITS.EQ.1) THEN
                DRAIR = WN2L(L)
-               DO 125 M = 2,NMOL
-                  DRAIR = DRAIR + XAMNT(M,L)
+               DO 125 M = 2,NMOLSV
+                  DRAIR = DRAIR + AMOUNT(M,L)
  125           CONTINUE
 C
 C              > If DRAIR is zero, then write out XAMNT only    <
@@ -5540,8 +5540,8 @@ C
       WRITE(IPR,973)
       DO 135 L = 1, NLAYRS
          DRAIR = WN2L(L)
-         DO 133 M = 2,NMOL
-            DRAIR = DRAIR + XAMNT(M,L)
+         DO 133 M = 2,NMOLSV
+            DRAIR = DRAIR + AMOUNT(M,L)
  133     CONTINUE
 C
 C        > If DRAIR is zero, then write out XAMNT only    <
@@ -5738,7 +5738,7 @@ C                                                                        FX04690
 C             IF JCHAR(K) = 1, THEN OBTAIN THE VOLUME MIXING RATIO FROM  FX04700
 C             THE STANDARD PROFILE FOR THAT MOLECULE                     FX04710
 C                                                                        FX04720
-            IF (JCHAR(K).EQ.'1') CALL XTRACT (DTMP,JCHAR,ZX(L))          FX04730
+            CALL XTRACT (DTMP,JCHAR,ZX(L))                               FX04730
 C                                                                        FX04740
             DO 40 K = 1, IXMOLS                                          FX04750
                DENX(K,L) = DTMP(K)                                       FX04760
