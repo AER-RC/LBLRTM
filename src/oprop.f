@@ -77,7 +77,7 @@ C                                                                         B00630
       Real*8               SECANT,       XALTZ
 C                                                                         B00650
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
+     *    HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
@@ -114,6 +114,9 @@ C                                                                         B00890
       COMMON /FLFORM/ CFORM                                               B00960
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER
       COMMON /IODFLG/ DVOUT
+
+c     Total timing array for layer line-by-line calculation
+      common /timing_lay/ time_lay_lbl(20)
 C                                                                         B00970
       REAL L4TIM,L4TMR,L4TMS,LOTHER
       CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR
@@ -514,6 +517,30 @@ C                                                                         B03550
      *                   TF4,TF4RDF,TF4CNV,TF4PNL,ILIN4T,ILIN4,           B03610
      *                   TIME,TIMRDF,TIMCNV,TIMPNL,TOTHHI,
      *                   NLIN,LINCNT,NCHNG                                B03620
+
+c        Fill timing array
+
+c         time_lay_lbl(1) = l4tim
+c         time_lay_lbl(2) = l4tmr
+c         time_lay_lbl(3) = 0.0
+c         time_lay_lbl(4) = l4tms
+c         time_lay_lbl(5) = lother
+c         time_lay_lbl(6) = txs  
+c         time_lay_lbl(7) = txsrdf
+c         time_lay_lbl(8) = txscnv
+c         time_lay_lbl(9) = txspnl
+c         time_lay_lbl(10) = 0.0
+c         time_lay_lbl(11) = tf4   
+c         time_lay_lbl(12) = tf4rdf
+c         time_lay_lbl(13) = tf4cnv
+c         time_lay_lbl(14) = tf4pnl
+c         time_lay_lbl(15) = 0.0
+c         time_lay_lbl(16) = time
+c         time_lay_lbl(17) = timrdf
+c         time_lay_lbl(18) = timcnv
+c         time_lay_lbl(19) = timpnl
+c         time_lay_lbl(20) = tothhi
+         
          WRITE(IPR,935)
          IF (LINCNT.GE.1) THEN                                            B03630
             AVALF = SUMALF/FLOAT(LINCNT)                                  B03640
@@ -539,6 +566,10 @@ C                                                                         B03750
      *        2x,'LINF4',3X,2F15.3,15X,2F15.3,2I15,/,
      *        2X,'XSECT ',2X,4F15.3,/,2X,'LBLF4 ',2X,4F15.3,15X,2I15,/,   B03830
      *        2X,'HIRAC1',2X,5F15.3,3I15)                                 B03840
+ 921  FORMAT (2x,'LINF4',3X,2F15.3,15X,2F15.3,
+     *        2X,'XSECT ',2X,4F15.3,
+     *        2X,'LBLF4 ',2X,4F15.3,
+     *        2X,'HIRAC1',2X,5F15.3)
   925 FORMAT ('0  * HIRAC1 *  AVERAGE WIDTH = ',F8.6,                     B03850
      *        ',  AVERAGE ZETA = ',F8.6)                                  B03860
   930 FORMAT ('0 ********  HIRAC1  ********',I5,' STRENGTHS FOR',         B03870
@@ -3906,6 +3937,9 @@ c
       common /eppinfo/ negepp_flag
 
       real *4 sumstr,flinlo,flinhi
+
+      integer *4 lnfil,molcnt,mcntlc,mcntnl,linmol,
+     *     lincnt,ilinlc,ilinnl,irec,irectl,lnfil4
 
       integer *4 negepp_flag,n_negepp,n_resetepp
       real *4 xspace
