@@ -238,10 +238,10 @@ C                                                                         604920
       CHARACTER*(*) HOL                                                   604960
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
-C                                                                         E09670
-      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E09680
-     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   E09690
-     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    E09700
+C
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,  
+     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF   
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
       DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),
@@ -341,6 +341,11 @@ C                                                                         E09670
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E09680
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   E09690
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    E09700
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   E09710
+     *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       E09720
+     *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       E09730
+     *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E09740
+     *              EXTID(10)                                             E09750
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
       DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),TNESAV(26),
@@ -496,8 +501,7 @@ C                                                                         B00250
 C             ALGORITHM REVISIONS:    S.A. CLOUGH                         B00260
 C                                     R.D. WORSHAM                        B00270
 C                                     J.L. MONCET                         B00280
-C                                     M.W.SHEPHARD, W.O.GALLERY, 
-C                                     &  S.A. CLOUGH 
+C                                     M.W.SHEPHARD & W.O.GALLERY 
 C                                                                         B00300
 C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         B00310
 C                     131 Hartwell Ave,  Lexington,  MA   02421           B00320
@@ -1954,11 +1958,14 @@ C                                                                         D00490
       EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                       D00520
      *            (HLINHD(1),HID(1),IWD(1)) , (MOLB(1),AMOLB(1)),          D00530
      &    (SP(1),SABS(1))
-c                                                                         D00540
+c                                                                          D00540
       character*8 h_linf4
 c
       data h_linf4/' linf4  '/
       DATA MEFDP / 64*0 /                                                 D00550
+c
+      data jrad4 /0/
+c     the fourth function is always computed without the radiation field
 C                                                                         D00560
 C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         D00570
 C                                                                         D00580
@@ -2110,7 +2117,7 @@ C                                                                         D01820
          EPP(IJ) = EPPB(I)                                                D01850
          MOL(IJ) = M                                                      D01860
 c
-         IF (JRAD.EQ.1) SUI = SUI*VNU(ij)
+         IF (jrad4.EQ.1) SUI = SUI*VNU(ij)
 C                                                                         D01870
          IF (VNU(IJ).EQ.0.) SUI = 2.*SUI                                  D01880
 C                                                                         D01890
@@ -2300,7 +2307,7 @@ C     SUBROUTINE SHRINK COMBINES LINES FALLING IN A WAVENUMBER INTERVAL   D03290
 C     DVR4/2 INTO A SINGLE EFFECTIVE LINE TO REDUCE COMPUTATION           D03300
 C                                                                         D03310
       COMMON VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250),         D03320
-     *       SPP(1250)                                                    D03330
+     *       SPP(1250),SRAD(1250)                                        
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D03340
      *               DPTFC,ILIN4,ILIN4T                                   D03350
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        D03360
@@ -2422,8 +2429,8 @@ C     SUBROUTINE LBLF4 DOES A LINE BY LINE CALCULATION                    D04480
 C     USING FUNCTION F4.                                                  D04490
 C                                                                         D04500
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D04510
-      COMMON /BUF/ VNU(1250),SABS(1250),ALFAL(1250),ALFAD(1250),
-     &    MOL(1250),SPP(1250),SRAD(1250)                                  D04530
+      COMMON /BUF/  VNU(1250),SABS(1250),ALFAL(1250),ALFAD(1250),
+     &              MOL(1250),SPP(1250),SRAD(1250)         
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   D04540
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       D04550
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       D04560
@@ -2553,8 +2560,8 @@ C                                                                         D05730
      *                EMIS ,FSCDID(17),NMOL,LAYRS ,YID1,YID(10),LSTWDF    D05760
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D05770
      *               DPTFC,ILIN4,ILIN4T                                   D05780
-      COMMON /BUF/ VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250),   D05790
-     *             SPP(1250)                                              D05800
+      COMMON /BUF/   VNU(1250),SABS(1250),ALFAL(1250),ALFAD(1250),
+     &               MOL(1250),SPP(1250),SRAD(1250)                          
       COMMON /BUF2/ VMIN,VMAX,NREC,NWDS                                   D05810
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D05820
      *              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,        D05830

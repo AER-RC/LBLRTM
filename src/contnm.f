@@ -83,22 +83,28 @@ c
 C
       RHOAVE = (PAVE/P0)*(T0/TAVE)                                        F00300
       XKT = TAVE/RADCN2                                                   F00310
+c
       WTOT = WBROAD                                                       F00320
       DO 10 M = 1, NMOL                                                   F00330
          WTOT = WTOT+WK(M)                                                F00340
    10 CONTINUE                                                            F00350
-      WTOT = WTOT*1.E-20                                                  F00360
-      PATM = PAVE/P0                                                      F00370
 C                                                                         F00380
 C=======================================================================
 
 C               ********    WATER VAPOR   ********                        F00390
 C                                                                         F00400
 C=======================================================================
+c
+      h2o_fac = WK(1)/Wtot
+      Rh2o    =     h2o_fac  * RHOave * 1.e-20 * xself
+      Rfrgn   = (1.-h2o_fac) * RHOave * 1.e-20 * xfrgn
+C
+C=======================================================================
 C                             SELF
-
-
-
+C
+C--------------------------------------------------------------------
+c
+c
 C        Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
 c
          if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
@@ -106,30 +112,20 @@ c
             CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0)                          F00410
             CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1)                          F00420
 C                                                                         F00440
-            W1 = WK(1)*1.0E-20                                            F00450
-C                                                                         F00460
-C           The factor of 1.e-20 is handled this way to avoid underflows  F00470
-C                                                                         F00480
-            PH2O = PATM*(W1/WTOT)                                         F00490
-            RH2O = PH2O*(T0/TAVE)                                         F00500
-            XKT = TAVE/RADCN2                                             F00530
-            TFAC = (TAVE-T0)/(260.-T0)                                    F00540
-
-C
-C
 c           Loop calculating self continuum optical depth
-
+C
+            TFAC = (TAVE-T0)/(260.-T0)                                    F00540
+C
             DO 20 J = 1, NPTC                                             F00560
                VJ = V1C+DVC* REAL(J-1)                                    F00570
                SH2O = 0.                                                  F00580
                IF (SH2OT0(J).GT.0.) THEN                                  F00590
                   SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC            F00600
-C     
                   SFAC = 1.
+c
                   IF (VJ .GE. 820. .AND. VJ .LE. 960.) THEN
                      JFAC = (VJ - 820.)/10. + 0.00001
                      SFAC = XFACREV(JFAC)
-c                     SFAC = 1.
                   ENDIF
 C                                                                         F00630
                   SH2O = SFAC * SH2O
@@ -138,7 +134,7 @@ C              ---------------------------------------------------------
 
                ENDIF
 c
-               C(J) = W1*(SH2O*RH2O)*XSELF
+               C(J) = WK(1)*(SH2O*RH2O)
 C                                                                         F00720
 C              ---------------------------------------------------------
 C              Radiation field                                            F00730
@@ -156,11 +152,7 @@ c           Interpolate to total optical depth grid
 C                                                                         F00780
 C=======================================================================
 C                             FOREIGN
-
 C
-         PFRGN = PATM-PH2O
-         RFRGN = PFRGN*(T0/TAVE)
-
 C--------------------------------------------------------------------
 
 C        ------------------------------------------------------------
@@ -174,7 +166,7 @@ C
             DO 24 J = 1, NPTC                                         
                VJ = V1C+DVC* REAL(J-1)                                    F00570
 C     
-               C(J) = W1*(FH2O(J)*RFRGN)*XFRGN
+               C(J) = WK(1)*(FH2O(J)*RFRGN)
 C                                          
 C              ---------------------------------------------------------
 C              Radiation field                                                  
@@ -204,12 +196,13 @@ C        Only calculate if V2 > -20. cm-1 and V1 <  10000. cm-1
 c
          if ((V2.gt.-20.0).and.(V1.lt.10000.)) then
 c
-            WCO2 = WK(2)*RHOAVE*1.0E-20                                   F00820
+            WCO2 = WK(2) * RHOAVE * 1.0E-20 * xco2c
 C                                                                         F00830
             CALL FRNCO2 (V1C,V2C,DVC,NPTC,FCO2)                           F00840
+c
             DO 30 J = 1, NPTC                                             F00850
                VJ = V1C+DVC* REAL(J-1)                                    F00860
-               C(J) = FCO2(J)*WCO2*XCO2C                                  F00870
+               C(J) = FCO2(J)*WCO2
 
 c****2.4.+++  The co2 continuum has been increased by a factor of 7. in the 
 c                   nu2 band
@@ -220,8 +213,6 @@ c                   nu2 band
 
 
 c****2.4.+++
-
-
 C                                                                         F00880
 C              Radiation field                                            F00890
 C                                                                         F00900
@@ -239,12 +230,13 @@ C     24570.0-24665.0 cm-1.  Data covers 9170.0-24565.0 cm-1
 C     region.
 C
          IF (V2.GT.8920.0.AND.V1.LE.24665.0) THEN                         F01200
-            WO3 = WK(3)*1.0E-20                                           F01210
+            WO3 = WK(3) * 1.0E-20 * xo3cn
             CALL XO3CHP (V1C,V2C,DVC,NPTO3,CCH0,CCH1,CCH2)                F01220
 C                                                                         F01230
             DT=TAVE-273.15
+c
             DO 50 J = 1, NPTO3                                            F01240
-               CCH0(J)=(CCH0(J)+(CCH1(J)+CCH2(J)*DT)*DT)*WO3*XO3CN
+               CCH0(J)=(CCH0(J)+(CCH1(J)+CCH2(J)*DT)*DT)*WO3
                VJ = V1C+DVC* REAL(J-1)                                    F01260
                IF (JRAD.EQ.1) CCH0(J) = CCH0(J)*RADFN(VJ,XKT)             F01270
  50         CONTINUE                                                      F01280
@@ -252,14 +244,14 @@ C                                                                         F01230
          ENDIF
 C                                                                         F01300
          IF (V2.GT.27370..AND.V1.LT.40800.) THEN                          F01310
-            WO3 = WK(3)*1.E-20                                            F01320
+            WO3 = WK(3) * 1.E-20 * xo3cn
             TC = TAVE-273.15                                              F01330
             CALL O3HHT0 (V1C,V2C,DVC,NPTO3,C0)                            F01340
             CALL O3HHT1 (V1T1,V2T1,DVT1,NPT1,CT1)                         F01350
             CALL O3HHT2 (V1T2,V2T2,DVT2,NPT2,CT2)                         F01360
 C                                                                         F01370
             DO 60 J = 1, NPTO3                                            F01380
-               C(J) = C0(J)*WO3*XO3CN                                     F01390
+               C(J) = C0(J)*WO3
 C                                                                         F01400
                VJ = V1C+DVC* REAL(J-1)                                    F01410
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01420
@@ -294,11 +286,11 @@ C
 C        If V2 > 40800 cm-1, add UV Hartley Huggins contribution
 C
          IF (V2.GT.40800..AND.V1.LT.54000.) THEN
-            WO3 = WK(3)                                                   F01470
+            WO3 = WK(3) * xo3cn                                                   F01470
             CALL O3HHUV (V1C,V2C,DVC,NPTO3,C0)                            F01480
-C                                                                         F01490
+c                                                                         F01490
             DO 70 J = 1, NPTO3                                            F01500
-               C(J) = C0(J)*WO3*XO3CN                                     F01510
+               C(J) = C0(J)*WO3
                VJ = V1C+DVC* REAL(J-1)                                    F01520
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01530
  70         CONTINUE                                                      F01540
@@ -348,7 +340,7 @@ C        Only calculate if V2 > 1340. cm-1 and V1 <  1850. cm-1
             
             rhofac = (Pave/P0)*(273./Tave)
 c     
-            tau_fac = Wk(7) * 1.e-20 * rhofac 
+            tau_fac = Wk(7) * 1.e-20 * rhofac * xo2cn 
 c
 c           Wk(7) is the oxygen column amount in units of molec/cm2
 c           rhofac is in units of amagats (air)
@@ -367,7 +359,7 @@ c                   loshmidt of air (273K)
 c
             DO 80 J = 1, NPTC
                VJ = V1C+DVC* REAL(J-1)
-               C(J) = tau_fac * c0(J) * XO2CN
+               C(J) = tau_fac * c0(J) 
 C
 C              Radiation field
 C
@@ -397,16 +389,16 @@ C        Only calculate if V2 > 7536. cm-1 and V1 <  8500. cm-1
 c
          if (((V2.gt.7536.0).and.(V1.lt.8500.))) then
 c
-            WO2 = (WK(7)/xlosmt) * ((pave/1013.)*(273./tave))
-            CHIO2 = (WK(7)*1.E-20)/WTOT 
-            CHIN2 = (WBROAD*1.E-20)/WTOT 
+            WO2 = (WK(7)/xlosmt) * ((pave/1013.)*(273./tave)) * xo2cn
+            CHIO2 =  WK(7)/WTOT 
+            CHIN2 =  WBROAD/WTOT 
             ADJFAC = (CHIO2+0.3*CHIN2)/0.446
             ADJWO2 = ADJFAC * WO2
 c
             CALL O2INF1 (V1C,V2C,DVC,NPTC,C0)                     
 c
             DO 92 J = 1, NPTC                                                
-               C(J) = C0(J)*ADJWO2*XO2CN
+               C(J) = C0(J)*ADJWO2
                VJ = V1C+DVC* REAL(J-1)                                       
 C                                                                      
 C              Radiation field
@@ -429,13 +421,13 @@ c
          if ((V2.gt.9100.0).and.(V1.lt.11000.)) then
 c
             CALL O2INF2 (V1C,V2C,DVC,NPTC,C0)                      
-            WO2 = RHOAVE*WK(7)*1.e-20
-            CHIO2 = (WK(7)*1.E-20)/WTOT 
+            WO2 = RHOAVE*WK(7)*1.e-20*xo2cn
+            CHIO2 =  WK(7)/WTOT 
             ADJFAC = CHIO2/0.209
             ADJWO2 = ADJFAC * WO2
 c
             DO 93 J = 1, NPTC                                                
-               C(J) = C0(J)*ADJWO2*XO2CN
+               C(J) = C0(J)*ADJWO2
                VJ = V1C+DVC* REAL(J-1)                                       
 C                                                                      
 C              Radiation field
@@ -460,14 +452,14 @@ C        Only calculate if V2 > 15000. cm-1 and V1 <  29870. cm-1
 c
          if (((V2.gt.15000.0).and.(V1.lt.29870.))) then
 c
-            WO2 = (WK(7)*1.e-20) * ((pave/1013.)*(273./tave))
-            CHIO2 = (WK(7)*1.E-20)/WTOT 
+            WO2 = WK(7) * 1.e-20 * ((pave/1013.)*(273./tave)) * xo2cn
+            CHIO2 =  WK(7)/WTOT 
             ADJWO2 = chio2 * WO2
 c
             CALL O2_vis (V1C,V2C,DVC,NPTC,C0)                     
 c
             DO 94 J = 1, NPTC                                                
-               C(J) = C0(J)*ADJWO2*XO2CN
+               C(J) = C0(J)*ADJWO2
                VJ = V1C+DVC* REAL(J-1)                                       
 C                                                                      
 C              Radiation field
@@ -484,9 +476,11 @@ C        Only calculate if V2 > 36000. cm-1
 
          if (V2.gt.36000.0) then
 
+            WO2 = WK(7) * 1.e-20 * xo2cn
+c
             CALL O2HERZ (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                   F01820
             DO 90 J = 1, NPTC                                             F01830
-               C(J) = C0(J)*WK(7)*XO2CN                                   F01840
+               C(J) = C0(J)*WO2
                VJ = V1C+DVC* REAL(J-1)                                    F01850
 C                                                                         F01860
 C              Radiation field                                            F01870
@@ -523,11 +517,11 @@ c
 c
 C           The following puts WXN2 units in 1./(CM AMAGAT)
 C
-            WXN2 = WN2/XLOSMT
+            WXN2 = (WN2/XLOSMT)*xn2cn
 C                                                                         F00480
 C           RHOFAC units are AMAGATS
 C
-            RHOFAC = ((WN2*1.e-20)/WTOT)*(PAVE/P0)*(273./TAVE)
+            RHOFAC = (WN2/WTOT)*(PAVE/P0)*(273./TAVE)
 C     
             TFAC = (TAVE-T0)/(220.-T0)
 
@@ -539,7 +533,7 @@ C
 C
                C(J) = 0.
                IF (C0(J).GT.0. .AND. C1(J).GT.0.)
-     *            C(J) = (WXN2*RHOFAC*C0(J)*(C1(J)/C0(J))**TFAC)*XN2CN
+     *            C(J) = (WXN2*RHOFAC*C0(J)*(C1(J)/C0(J))**TFAC)
 C                                                                         F01110
 C              Radiation field                                            F01120
 C                                                                         F01130
@@ -566,7 +560,7 @@ C
 
             rhofac = (Pave/P0)*(273./Tave)
 c     
-            tau_fac = Wn2 * 1.e-20 * rhofac 
+            tau_fac = Wn2 * 1.e-20 * rhofac *xn2cn
 c
 c           Wn2 is in units of molec/cm2
 c           rhofac is in units of amagats (air)
@@ -586,8 +580,7 @@ c                   loshmidt of air (273K)
 c
             DO 45 J = 1, NPTC
                VJ = V1C+DVC* REAL(J-1)
-               C(J) = tau_fac * c0(J) * XN2CN
-C
+               C(J) = tau_fac * c0(J) 
 C              Radiation field
 C
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)
@@ -621,10 +614,11 @@ c     molecular amount in the layer, and conv_cm2mol is the conversion
 c     factor derived by multiplying air density (2.68675E19 mol/cm3)
 c     at 273 K with the number of km per cm (1.e-5 km/cm).
 c
-c     For numerical purposes, the layer amount of all molecules is
-c     calculated above as WTOT, which has been scaled by 1.e-20. We
-c     have taken 1.e20 out of the air density in the denominator
-c     as well. In addition, a factor of 10,000 (cm-1) has been 
+c     The total layer amount of all molecules is calculated above as
+c     WTOT. For numerical purposes a factor of 1.e-20  has been
+c     included in conv_cm2mol and the same factor has been included  
+c     in the air density in the denominator as well. 
+c     In addition, a factor of 10,000 (cm-1) has been 
 c     divided out of vrayleigh. Finally, the radiation field is
 c     excluded, so xvrayleigh**4 is replaced by xvrayleigh**3. When
 c     JRAD=1, the radiation field is put in by multiplying the
@@ -637,13 +631,13 @@ c
 c
 c        Thus the current formulation is
 
-            conv_cm2mol = 1./(2.68675e-1*1.e5)
-         
+            conv_cm2mol = xrayl*1.E-20/(2.68675e-1*1.e5)
+c
             do 95 i=1,nptabs
                vrayleigh = v1abs+(i-1)*dvabs
                xvrayleigh = vrayleigh/1.e4
-          ray_ext = (xvrayleigh**3/(9.38076E2-10.8426*xvrayleigh**2))
-     *           *wtot*conv_cm2mol*XRAYL
+           ray_ext = (xvrayleigh**3/(9.38076E2-10.8426*xvrayleigh**2))
+     *                 *(wtot*conv_cm2mol)
 
 C           Radiation field
 
@@ -7081,9 +7075,9 @@ c        Infrared collision-induced absorption by O2 near 6.4 microns for
 c        atmospheric applications: measurements and emprirical modeling, 
 c         Appl. Optics, 35, 5911-5917, (1996).
 
-      DATA To/ 296./, xlosmt/ 2.68675e+19/
+      DATA T_0/ 296./, xlosmt/ 2.68675e+19/
 c
-      xktfac = (1./To)-(1./T)
+      xktfac = (1./T_0)-(1./T)
 c     
 c     correct formulation for consistency with LBLRTM:
 c
@@ -7885,7 +7879,9 @@ C           =.20487/WN(I)     IN MICRONS                                  F42960
 C           =WCM(I)/48811.0   IN CM-1                                     F42970
 C                                                                         F42980
       YRATIO = V/48811.0                                                  F42990
-      HERZ = 6.884E-24*(YRATIO)*EXP(-69.738*( LOG(YRATIO))**2)-CORR       F43000
+c     HERZ = 6.884E-24*(YRATIO)*EXP(-69.738*( LOG(YRATIO))**2)-CORR       F43000
+c     factor of 1.e-20 removed; put in front factor
+      HERZ = 6.884E-04*(YRATIO)*EXP(-69.738*( LOG(YRATIO))**2)-CORR       F43000
 C                                                                         F43010
       RETURN                                                              F43020
 C                                                                         F43030

@@ -2103,10 +2103,10 @@ C                                                                        FL18840
       ENDIF                                                              FL18880
 C                                                                        FL18890
       IF (ICLD.GE.1.AND.ICLD.LE.11) GO TO 110                            FL18900
-      DO 30 I = 0, n_lvl-1                                                 FL18910
-         IF (ALTZ(I).GT.100.) GO TO 40                                     FL18920
+      DO 30 I = 1, n_lvl                                                 FL18910
+         IF (ALTZ(I-1).GT.100.) GO TO 40                                     FL18920
          IL = I                                                          FL18930
-         ZMDL(I) = ALTZ(I)                                                 FL18940
+         ZMDL(I) = ALTZ(I-1)                                                 FL18940
    30 CONTINUE                                                           FL18950
    40 ML = IL                                                            FL18960
 C                                                                        FL18970
@@ -2162,9 +2162,10 @@ c     restore rest of zmdl above cloud top
             IJ = IJ+1                                                    FL19310
             ZMDL(IJ) = ZST(I)         
   100    CONTINUE                                                        FL19340
-      ENDIF                                                              FL19350
 c
       ml = ij
+c
+      ENDIF                                                              FL19350
 c
       GO TO 300                                                          FL19360
 c____________________________________________________________

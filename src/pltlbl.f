@@ -238,8 +238,10 @@ C                                                                         M02020
 C       LSKIPF IS THE NUMBER OF FILES TO BE SKIPPED IN TAPE LFILE         M02030
 C            (NUMBER OF FILE TO BE USED WILL BE LSKIPF + 1).              M02040
 C                                                                         M02050
-C       IOPT = 0 FOR PLOT,            = 1 FOR PLOT OVERLAY,               M02060
-C            = 2 FOR FILE DIFFERENCE, = 3 FOR FILE RATIO.                 M02070
+C       IOPT = 0 FOR PLOT,            
+c            = 1 FOR PLOT OVERLAY,   
+C            = 2 FOR FILE DIFFERENCE,
+c            = 3 FOR FILE RATIO.    
 C                                                                         M02080
 C          ***  DIFFERENCE WRITTEN ON MFILE IS (JFILE - LFILE)  ***       M02090
 C          ***     RATIO WRITTEN ON MFILE IS (JFILE/LFILE)      ***       M02100
@@ -1297,7 +1299,7 @@ C                                                                         M11250
       IF (BOT.GT.V2) GO TO 60                                             M11400
       XINCH = (BOT-V1)/DX                                                 M11410
       IF (XINCH.GT.XSIZE) GO TO 30                                        M11420
-      CALL SYMBOL (XINCH,YSZSH,XP1,3,0.0,-1)                              M11430
+      CALL SYMBOL (XINCH,YSZSH,XP1,'3',0.0,-1)                              M11430
 C                                                                         M11440
 C     ('3' AS FOURTH ARGUMENT REPRESENTS PLUS SYMBOL FOR TIC MARK)        M11450
 C                                                                         M11460
@@ -1492,7 +1494,7 @@ C                                                                         M13310
 C                                                                         M13340
       IMPLICIT REAL*8           (V)                                     ! M13350
 C                                                                         M13360
-      DIMENSION YTITLE(5)                                                 M13370
+      character YTITLE,blk
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M13380
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     M13390
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      M13400
@@ -1510,7 +1512,7 @@ C                                                                         M13490
 C                                                                         M13520
       IMPLICIT REAL*8           (V)                                     ! M13530
 C                                                                         M13540
-      DIMENSION YTITLE(4)                                                 M13550
+      character YTITLE,blk  
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M13560
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     M13570
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      M13580
@@ -1532,7 +1534,7 @@ C                                                                         M13710
 C                                                                         M13740
       IMPLICIT REAL*8           (V)                                     ! M13750
 C                                                                         M13760
-      DIMENSION YTITLE(4)                                                 M13770
+      character YTITLE,blk
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,       M13780
      *                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,     M13790
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      M13800
@@ -1590,7 +1592,7 @@ C                                                                         M14080
          IF (DELY.LE.HGT) GO TO 20                                        M14310
          IF ((ISKIP.EQ.1).AND.(I.NE.5)) GO TO 30                          M14320
          YOLD = YIN                                                       M14330
-         CALL SYMBOL (XSIZE,YIN,HGT,3,0.0,-1)                             M14340
+         CALL SYMBOL (XSIZE,YIN,HGT,'3',0.0,-1)                             M14340
          IF (I.NE.5) GO TO 30                                             M14350
          YIN = YIN-HGT/2.                                                 M14360
          CALL SYMBOL (X2,YIN,HGT,HTEN,0.0,2)                              M14370
@@ -2046,7 +2048,7 @@ C   LSUPR EQUAL TO 1 SUPPRESSES THE LABEL                                 M18770
 C    LTURN NOT USED                                                       M18780
 C                                                                         M18790
       COMMON /TITLOC/ XPOS,YPOS                                           M18800
-      DIMENSION BCD(*)                                                    M18810
+      character BCD(*)
 C                                                                         M18820
       THETA1 = THETA-90.*NTURN                                            M18830
       PI = 2.*ASIN(1.)                                                    M18840
@@ -2198,7 +2200,8 @@ C         -1 TURNS LABEL BY 90 DEGREES COUNTERCLOCKWISE, 0 FOR NO TURN    M20290
 C                                                                         M20300
 C                                                                         M20310
       COMMON /TITLOC/ XPOS,YPOS                                           M20320
-      DIMENSION BCD(*),SUBDIV(10),DIVLOG(8)                               M20330
+      DIMENSION        SUBDIV(10),DIVLOG(8)  
+      character BCD(*)
       CHARACTER HTEN*2                                                    M20340
 C                                                                         M20350
       DATA DIVLOG / 0.301029995664, 0.477121254720, 0.602059991328,       M20360

@@ -1085,7 +1085,7 @@ C                                                                        FA08460
 c
          IF (NOPRNT.EQ.0) THEN
             WRITE (IPR,950) (HMOLS(K),K=1,NMOL)                             FA08490
-            WRITE (IPR,952)                                                 FA08500
+c            WRITE (IPR,952)                                                 FA08500
          ENDIF
 c
          DO 180 IM = 1, IMMAX                                            FA08510
@@ -1528,17 +1528,17 @@ C                                                                        FA10530
      *        ' BOUNDARY = ',F10.2,' ATMOSPHERE =',F10.2,/,              FA10990
      *        ' RESET BOUNDARY GT THAN ATMOSPHERE')                      FA11000
   948 FORMAT ('1ATMOSPHERIC PROFILE SELECTED IS: M = ',I3,5X,3A8)        FA11010
-  950 FORMAT (/,T4,'I',T11,'Z',T20,'P',T29,'T',T35,'REFRACT',T73,        FA11020
-     *        'DENSITY  (MOLS CM-3)',/,T35,'INDEX-1',/,T10,'(KM)',T19,   FA11030
-     *        '(MB)',T28,'(K)',T35,'*1.0E6',T47,'AIR',(T54,8(1X,A9)))    FA11040
- 951  FORMAT (/,T4,'I',T11,'Z',T20,'P',T29,'T',T35,'REFRACT',T45,
+  950 FORMAT (/,T4,'I',T13,'Z',T22,'P',T34,'T',T42,'REFRACT',T73,        FA11020
+     *        'DENSITY  (MOLS CM-3)',/,T42,'INDEX-1',/,T12,'(KM)',T21,   FA11030
+     *        '(MB)',T33,'(K)',T42,'*1.0E6',T59,'AIR',(T64,8(6X,A9)))    FA11040
+ 951  FORMAT (/,T4,'I',T13,'Z',T22,'P',T34,'T',T42,'REFRACT',T55,
      *        'DENSITY',T70,'MIXING RATIO (BASED UPON DRY AIR) (ppmv)',/,
-     *        T35,'INDEX-1',T44,
-     *        '(MOL CM-3)'/,T10,
-     *        '(KM)',T19,
-     *        '(MB)',T28,'(K)',T35,'*1.0E6',T47,'AIR',(T54,8(1X,A9)))    FA11040
+     *        T42,'INDEX-1',T52,
+     *        '(MOL CM-3)'/,T12,
+     *        '(KM)',T21,
+     *        '(MB)',T33,'(K)',T42,'*1.0E6',T57,'AIR',(T64,8(6X,A9)))    FA11040
   952 FORMAT (/)                                                         FA11050
-  954 FORMAT (I4,F9.3,F11.5,F8.2,6PF9.2,1X,1P9E10.3,/,(52X,1P8E10.3))    FA11060
+  954 FORMAT (I4,F11.5,F11.5,F11.5,6PF11.5,1X,1PE15.7,(T64,1P8E15.7))  
   956 FORMAT (///,' HALFWIDTH INFORMATION ON THE USER SUPPLIED ',        FA11070
      *        'LBLRTM BOUNDARIES',/,' THE FOLLOWING VALUES ARE ',        FA11080
      *        'ASSUMED:')                                                FA11090
@@ -1555,8 +1555,8 @@ C                                                                        FA10530
      *        'I  LAYER BOUNDARIES',T55,'INTEGRATED AMOUNTS ',           FA11200
      *        '(MOL CM-2)',/,T11,'FROM',T22,'TO',T29,'AIR',T36,          FA11210
      *        8(1X,A8,1X),/,T11,'(KM)',T21,'(KM)',(T37,8A10))            FA11220
-  964 FORMAT (I5,2F10.3,1P9E10.3,/,(35X,1P8E10.3))                       FA11230
-  966 FORMAT ('0TOTAL',F9.3,F10.3,1P9E10.3,/,(35X,1P8E10.3))             FA11240
+  964 FORMAT (I5,2F10.3,1PE10.3,(T35,1P8E10.3))
+  966 FORMAT ('0TOTAL',F9.3,F10.3,1PE10.3,(T35,1P8E10.3))
   968 FORMAT ('1 SUMMARY OF THE GEOMETRY CALCULATION',//,10X,            FA11250
      *        'MODEL   = ',4X,3A8,/10X,'H1      = ',F12.6,' KM',/,10X,   FA11260
      *        'H2      = ',F12.6,' KM',/,10X,'ANGLE   = ',F12.6,' DEG',  FA11270
@@ -1589,7 +1589,7 @@ C                                                                        FA10530
      *        T25,'H',T31,'(MB)',T41,'(K)',T53,'AIR',(T59,8(6X,A9)))
   974 FORMAT ('0',I3,2F8.3,A3,I2,F11.5,F8.2,1X,1P9E15.7)                 FA11480
   976 FORMAT ('0',I3,2F8.3,A3,I2,F11.5,F8.2,1X,1P9E15.7,/,
-     *            (52X,1P8E15.7))                                        FA11490
+     *            (60X,1P8E15.7))                                        FA11490
   978 FORMAT (1P8E15.7)                                                  FA11500
   980 FORMAT ('0',/,'0',T4,'L  PATH BOUNDARIES',T28,'PBAR',T37,'TBAR',   FA11510
      *        T65,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH',/,T9,   FA11520

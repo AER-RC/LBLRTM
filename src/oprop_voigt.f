@@ -2748,11 +2748,14 @@ C                                                                         D00490
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2))                 D00510
       EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                       D00520
      *            (HLINHD(1),HID(1),IWD(1)) , (MOLB(1),AMOLB(1))          D00530
-c                                                                          D00540
+c      
       character*8 h_linf4
 c
       data h_linf4/' linf4  '/
       DATA MEFDP / 64*0 /                                                 D00550
+c
+      data jrad4 /0/
+c     the fourth function is always computed without the radiation field
 C                                                                         D00560
 C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         D00570
 C                                                                         D00580
@@ -2903,7 +2906,7 @@ C                                                                         D01820
          EPP(IJ) = EPPB(I)                                                D01850
          MOL(IJ) = M                                                      D01860
 c
-         IF (JRAD.EQ.1) SUI = SUI*VNU(ij)
+         IF (jrad4.EQ.1) SUI = SUI*VNU(ij)
 C                                                                         D01870
          IF (VNU(IJ).EQ.0.) SUI = 2.*SUI                                  D01880
 C                                                                         D01890
@@ -5659,6 +5662,8 @@ c      endif
       scor(mol,iso) = qt_296/qt_temp
 
  110  continue
+c
+      return
 c
       END 
   

@@ -123,8 +123,11 @@ C
       PARAMETER (NMAXCO=4040)
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
+c
+      character*1 surf_refl
+      character*3 pad_3
 C     ----------------------------------------------------------------
 C
       DIMENSION XFILHD(2),XSOLHD(2),PNLHDR(2),OPNLHD(2)
@@ -143,7 +146,6 @@ C
 C
       CHARACTER*40 CYID
       CHARACTER*18 HNAMSOL,HVRSOL
-      CHARACTER*1  surf_refl
 C
       EQUIVALENCE (XSOLHD(1),XIDS(1))
       EQUIVALENCE (XFILHD(1),XID(1)),(PNLHDR(1),V1P),

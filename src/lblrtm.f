@@ -354,7 +354,6 @@ C     ----------------------------------------------------------------
 C
 C     -------------------------
       CHARACTER*6  CMOL(MXMOL),CSPC(MXSPC),SPCRT
-      CHARACTER*1  surf_refl
 C
 C     -------------------------
 C     Common blocks for analytic derivative
@@ -391,8 +390,12 @@ C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A03070
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A03080
      *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF    A03090
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
+c
+      character*1 surf_refl
+      character*3 pad_3
+c
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A03110
      *                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      A03120
      *                NLTEFL,LNFIL4,LNGTH4                                A03130
@@ -1586,8 +1589,11 @@ C                                                                         A11560
       COMMON /FILHD1/ XI1(10),SECAN1,PAV1,TAV1,HMOLI1(60),XALT1(4),       A11570
      *                W1(60),PDL,PDU,TDL,TDU,W12   ,D1 ,VD1,VD2,TBOUN1,   A11580
      *                EMISI1,FSCDI1(17),NMO1,LAYHD1,YD1,Y1D(10),LSTWDD    A11590
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
+c
+      character*1 surf_refl
+      character*3 pad_3
 C                                                                         A11610
       DIMENSION FILDUM(2),FILDU1(2)                                       A11620
       DIMENSION NTAN(160)                                                 A11630
@@ -2615,11 +2621,13 @@ C                                                                         A17190
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A17200
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A17210
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    A17220
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
+c
+      character*1 surf_refl
+      character*3 pad_3
 C                                                                         A17240
       CHARACTER*8       HLINID,BMOLID,HID1                              & A17250
-      CHARACTER*1  surf_refl
 C                                                                         A17260
       integer *4 molcnt,mcntlc,
      *           mcntnl,linmol,
@@ -2898,9 +2906,11 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A19300
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A19310
      *              EXTID(10)                                             A19320
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
+c
       character*1 surf_refl
+      character*3 pad_3
 C                                                                         A17260
       common /lbl_geo/ zh1,zh2,zangle
       character*8 hol_angle,blank_angle
