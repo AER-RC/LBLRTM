@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                  25 August 1993
+                                14 September 1993
  
  
  
@@ -372,10 +372,10 @@ C     presently: %H%  %T%
  
           1-10, 11-20,   21-30,    31-33,  34-35,      37-43,    44-51,    52-58,    59-65,  66-73,  74-80
  
-         F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
+         F10.4, F10.4,   F10.4,       A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
  
  
-                PAVE   average pressure of layer (millibars)
+                PAVE   average pressure of layer (millibars) (**If IFORM=1, then PAVE in E15.7 format**)
  
                 TAVE   average temperature of layer (K)
  
@@ -428,9 +428,11 @@ C     presently: %H%  %T%
                       (8E10.3)
  
  
-              WKL(M,L)   column densities for 7 molecular species (molecules/cm**2)
+              WKL(M,L)   column densities or mixing ratios for 7 molecular species (molecules/cm**2)
  
             WBROADL(L)   column density for broadening gases (molecules/cm**2)
+
+                         **NOTE** If IFORM=1, then WKL(M,L) and WBROADL(L) are in 8E15.7 format
  
  
  
@@ -444,7 +446,7 @@ C     presently: %H%  %T%
  
                 NMOL is set from LINFIL (TAPE3)
  
-                     (NMOL limited to 35 in LBLRTM)
+                     (NMOL limited to 35 in LBLRTM)    **NOTE: If IFORM=1 then WKL(M,L) in 8E15.7 format**
  
  
  
@@ -493,7 +495,7 @@ C     presently: %H%  %T%
           1X,I1    I5,     I5,   F10.2,  15A4
  
  
-               IFRMX      (0,1) line rejection flag
+               IFRMX      (0,1) column amount format flag
 
 			  = 0  read PAVX, XAMNT(M,L), WBROADX(L) in F10.4, E10.3, E10.3 formats (default)
 			  = 1  read PAVX, XAMNT(M,L), WBROADX(L) in E15.7 format
@@ -526,10 +528,10 @@ C     presently: %H%  %T%
  
           1-10, 11-20,   21-30,    31-33,  34-35,      37-43,    44-51,    52-58,    59-65,  66-73,  74-80
  
-         F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
+         F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.3,      F8.3,    F7.2,     F7.3,   F8.3,   F7.2
  
  
-                PAVX   ave. pressure of layer (millibars)
+                PAVX   ave. pressure of layer (millibars) (**If IFRMX=1, then PAVX in E15.7 format**)
  
                 TAVX   ave. temperature of layer (K)
  
@@ -581,10 +583,12 @@ C     presently: %H%  %T%
                       (8E10.3)
  
  
-            XAMNT(M,L)   column densities for 7 cross-section molecules (molecules/cm**2)
+            XAMNT(I,L)   column densities or mixing ratios for 7 cross-section molecules (molecules/cm**2)
  
             WBROADX(L)   column density for broadening gases (molecules/cm**2),                    ** information only **
                          should be the same as WBROADL, on Record 2.1.2
+
+                         **NOTE** If IFRMX=1, then XAMNT(I,L) and WBROADX(L) are in 8E15.7 format
  
  
  
@@ -595,8 +599,9 @@ C     presently: %H%  %T%
  
                 (8E10.3)
  
+                **NOTE: If IFRMX=1 then XAMNT(I,L) in 8E15.7 format** 
  
- 
+
  
  REPEAT RECORDS 2.2.3 through 2.2.5 for the remaining layers (up to NLAYXS)
  
@@ -609,11 +614,11 @@ C     presently: %H%  %T%
  RECORD 3.1
  
  
-      MODEL,  ITYPE, IBMAX,  NOZERO,  NOPRNT,  NMOL, IPUNCH,       RE, HSPACE,  VBAR, CO2MX
+      MODEL,  ITYPE, IBMAX,  NOZERO,  NOPRNT,  NMOL, IPUNCH, MUNITS,    RE, HSPACE,  VBAR, CO2MX
  
-          5,     10,    15,      20,      25,    30,     35,    41-50,  51-60, 61-70, 71-80
+          5,     10,    15,      20,      25,    30,     35,     40, 41-50,  51-60, 61-70, 71-80
  
-         I5,     I5,    I5,      I5,      I5,    I5,     I5, 5X,F10.3,  F10.3, F10.3, F10.3
+         I5,     I5,    I5,      I5,      I5,    I5,     I5,     I5, F10.3,  F10.3, F10.3, F10.3
  
  
            MODEL   selects atmospheric profile
@@ -648,7 +653,10 @@ C     presently: %H%  %T%
  
            IPUNCH    = 0  layer data not written (default)
                      = 1  layer data written to unit IPU (TAPE7)
- 
+
+           MUNITS    = 0  write molecular column amounts to TAPE7 (default)
+                     = 1  write molecular mixing ratios to TAPE7
+
            RE        radius of earth (km)
                      defaults for RE=0: 
  
@@ -656,12 +664,14 @@ C     presently: %H%  %T%
                      b)        1          RE = 6378.39 km
                      c)        4,5        RE = 6356.91 km
  
-           HSPACE    altitude definition for space (default = 100 km)
-                     internal models defined to 120 km
 
 
  
  RECORD 3.1 (Continued)
+
+           HSPACE    altitude definition for space (default = 100 km)
+                     internal models defined to 120 km
+
  
            VBAR      frequency for refractive geometry calculation
  
@@ -2364,13 +2374,18 @@ C     presently: %H%  %T%
  
  
       2.  fftscn.f has parameters that are hardware dependent.  Before compiling, check to make sure
-           the appropriate statement is uncommented.
+           the appropriate statements are uncommented.
  
  
       3.  the placement of the decimal point in the input supercedes that of a given format.
+
+
+      4.  if WKL(M,L) or XAMNT(I,L) is greater than one, then column density is assumed for that value
+           of M or I and L; if either is less than one, then mixing ratio is assumed for that value of M
+           or I and L.  This allows for combining density and mixing ratio information in the input.
  
  
-      4.  the character '%' signals the end of TAPE5 and terminates LBLRTM.
+      5.  the character '%' signals the end of TAPE5 and terminates LBLRTM.
 
  
  _________________________________________________________________________________________________________________________________
