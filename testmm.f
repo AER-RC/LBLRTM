@@ -5,21 +5,35 @@ C     presently: %H%  %T%
       SUBROUTINE TESTMM (LINFIL)                                          N00010
 C                                                                         N00020
       IMPLICIT REAL*8           (V)                                     ! N00030
+c
+      REAL*4 STR,ALF,EPP,     HWHMS, 
+     *       TMPALF,PSHIFT,amol              
+      integer*4  MOL,IFLG,lstwdl
 C                                                                         N00040
       COMMON VNU(250),STR(250),ALF(250),EPP(250),MOL(250),HWHMS(250),     N00050
-     *       TMPALF(250),PSHIFT(250),IFLG(250)                            N00060
+     *       TMPALF(250),PSHIFT(250),IFLG(250),lstwdl
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /LINES/ XLINC(5,1318),XLIND(6,1318)                          N00070
 C                                                                         N00080
       CHARACTER*8        HID,HMOLID,HID1,HLINHD                         & N00090
 C                                                                         N00100
-      COMMON /BUFID/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),            N00110
+      real*4       SUMSTR,FLINLO,FLINHI
+      integer*4    MOLCNT,MCNTLC,
+     *             MCNTNL,NMOL,
+     *             ILIN,ILINLC,ILINNL,IREC,IRECTL,
+     *             linfil_4,ilngthp,ilngth
+c
+      COMMON /BUFID_l/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),
      *               MCNTNL(64),SUMSTR(64),NMOL,FLINLO,FLINHI,            N00120
-     *               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL        N00130
-      COMMON /BUFIDC/ CHID,CHMOL(64),CHID1                                N00140
-      CHARACTER CHID*80,CHMOL*6,CHID1*16                                  N00150
-      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NWDS                               N00160
+     *               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2)
+      COMMON /BUFIDC/ CHID,CHMOL(64),CHID1 
+      CHARACTER CHID*80,CHMOL*6,CHID1*16  
+
+      real*4         rcdhdr
+      integer*4      jlin,nwds
+
+      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NWDS,lstwdp                               N00160
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         N00170
      *              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,        N00180
      *              NLTEFL,LNFIL4,LNGTH4                                  N00190
@@ -48,19 +62,24 @@ C     ASSIGN SCCS VERSION NUMBER TO MODULE
 C
       HVRTST = '$Revision$' 
 C
-      LSTWDL = -654321
-      NWDLIN = NWDL(IWD,LSTWDL)                                           N00380
-      ILNGTH = NLNGTH*250                                                 N00390
+      linfil_4 = linfil
+c
+      lstwdp = -654321
+      ilngthp = NWDL_4 (rcdhdr(1),LSTWDp) 
+c
+      lstwdl = -654321
+      ilngth = NWDL_4 (vnu(1),LSTWDL) 
+c
       DO 10 M = 1, 64                                                     N00400
-         READ (CHMOL(M),900) HMOLID(M)                                    N00410
+         READ (CHMOL(M),900) HMOLID(M)   
          MOLCNT(M) = 0                                                    N00420
          MCNTLC(M) = 0                                                    N00430
          MCNTNL(M) = 0                                                    N00440
          SUMSTR(M) = 0.                                                   N00450
    10 CONTINUE                                                            N00460
 C                                                                         N00470
-      READ (CHID,905) (HID(I),I=1,10)                                     N00480
-      READ (CHID1,905) (HID1(I),I=1,2)                                    N00490
+      READ (CHID,905) (HID(I),I=1,10)     
+      READ (CHID1,905) (HID1(I),I=1,2)     
 C                                                                         N00500
       WRITE (IPR,910)                                                     N00510
       FLINLO = XLINC(2,1)                                                 N00520
@@ -74,8 +93,12 @@ C                                                                         N00500
             SUMSTR(M) = SUMSTR(M)+XLINC(3,I)                              N00600
          ENDIF                                                            N00610
    20 CONTINUE                                                            N00620
-      REWIND LINFIL                                                       N00630
-      CALL BUFOUT (LINFIL,HLINHD(1),NWDLIN)                               N00640
+      REWIND LINFIL_4                                                       N00630
+c
+      write (linfil_4) HID,HMOLID,MOLCNT,MCNTLC,
+     *               MCNTNL,SUMSTR,NMOL,FLINLO,FLINHI,
+     *               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1
+c
       NREC = IRECTL                                                       N00650
       K = 0                                                               N00660
       DO 70 I = 1, NREC                                                   N00670
@@ -152,7 +175,8 @@ C                                                                         N00990
          JLIN = K                                                         N01070
 C                                                                         N01080
          NWDS = ILNGTH                                                    N01090
-         CALL BUFOUT (LINFIL,RCDHDR(1),NPHDRL)                            N01100
+c
+         CALL BUFOUTln (LINFIL_4,RCDHDR(1),ilngthp)           
          IF (K.GE.250) GO TO 60                                           N01110
          KLO = K+1                                                        N01120
          KHI = 250                                                        N01130
@@ -166,12 +190,13 @@ C                                                                         N01080
             TMPALF(K) = 0.                                                N01210
             PSHIFT(K) = 0.                                                N01220
             IFLG(K) = 0.                                                  N01230
-   50    CONTINUE                                                         N01240
-   60    CALL BUFOUT (LINFIL,VNU(1),ILNGTH)                               N01250
+ 50      CONTINUE                                                         N01240
+C                                                                         N00040
+ 60      CALL BUFOUTln (LINFIL_4,VNU(1),ILNGTH)                               N01250
          K = 0                                                            N01260
    70 CONTINUE                                                            N01270
-      ENDFILE LINFIL                                                      N01280
-      REWIND LINFIL                                                       N01290
+      ENDFILE LINFIL_4                                                      N01280
+      REWIND LINFIL_4                                                       N01290
 C                                                                         N01300
       RETURN                                                              N01310
 C                                                                         N01320
@@ -186,6 +211,25 @@ C                                                                         N01320
      *        '0 LINES ARE FROM 1986 AFGL LINE FILE',/,'0')               N01410
 C                                                                         N01420
       END                                                                 N01430
+
+      FUNCTION NWDL_4 (IWD,ILAST) 
+C                                                                        LN06500
+      implicit real*4 (a-h,o-z)
+      implicit integer*4 (i-n) 
+
+      DIMENSION IWD(*)                                                   LN06510
+C                                                                        LN06520
+      DO 10 I = 1, 9000                                                  LN06540
+         IF (IWD(I).EQ.ILAST) THEN                                       LN06550
+            NWDL_4 = I-1              
+            RETURN                                                       LN06570
+         ENDIF                                                           LN06580
+   10 CONTINUE                                                           LN06590
+C                                                                        LN06600
+      STOP ' NWDL - IWD,ILAST '                                          LN06610
+C                                                                        LN06620
+      END                                                                LN06630
+
       BLOCK DATA BTEST                                                    N01440
 C                                                                         N01450
       IMPLICIT REAL*8           (V)                                     ! N01460
@@ -279,18 +323,23 @@ C                                                                         N02170
 C                                                                         N02540
       CHARACTER*8        HID,HMOLID,HID1                                & N02550
 C                                                                         N02560
-      COMMON /BUFID/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),            N02570
+      real*4       SUMSTR,FLINLO,FLINHI
+      integer*4    MOLCNT,MCNTLC,
+     *             MCNTNL,NMOL,
+     *             ILIN,ILINLC,ILINNL,IREC,IRECTL
+c
+      COMMON /BUFID_l/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),
      *               MCNTNL(64),SUMSTR(64),NMOL,FLINLO,FLINHI,            N02580
-     *               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL        N02590
-      COMMON /BUFIDC/ CHID(2),CHMOL(64),CHID1(2)                          N02600
+     *               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2)
+      COMMON /BUFIDC/ CHID(2),CHMOL(64),CHID1(2)  
 C                                                                         N02610
-      CHARACTER CHID*40,CHMOL*6,CHID1*8                                   N02620
+      CHARACTER CHID*40,CHMOL*6,CHID1*8 
 C                                                                         N02630
-      DATA CHMOL / '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ',          N02640
+      DATA CHMOL / '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ',
      *             '  CH4 ','   O2 ',57*'      ' /                        N02650
-      DATA CHID / ' LINES FOR LBLRTM IN THE 0-50 CM-1 SPE',               N02660
+      DATA CHID / ' LINES FOR LBLRTM IN THE 0-50 CM-1 SPE',     
      *            'CTRAL REGION: 1/31/94 f=1.22    TSTMM86I' /            N02670
-      DATA CHID1 / '03/22/88','16.09.41' /                                N02680
+      DATA CHID1 / '03/22/88','16.09.41' /                      
       DATA NMOL,ILIN,ILINLC,ILINNL,IREC,IRECTL / 7,1277,41,0,1318,1318/   N02690
 C                                                                         N02700
       DATA C0001/                                                         N02710
