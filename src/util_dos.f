@@ -10,14 +10,14 @@ C                                                                         A10810
 C     IFILE IS THE FILE DESIGNATION                                       A10820
 C                                                                         A10830
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
 C
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
 C
       DIMENSION IARRAY(IWORDS)                                            A10840
 C
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C
       HVRUTL = '$Revision$' 
 C                                                                         A10850
@@ -55,16 +55,6 @@ C
 
       DIMENSION IARRAY(IWORDS)
 C                                                                         A10830
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
-C
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
-C
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
-C
-      HVRUTL = '$Revision$' 
-C                          
       IEOF = 1             
 C                          
 C#    BUFFER IN (IFILE,1) (IARRAY(ILO),IARRAY(IHI))
