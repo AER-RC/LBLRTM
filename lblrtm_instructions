@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                    12 May 1993
+                                   23 July 1993
  
  
  
@@ -74,6 +74,7 @@ C     presently: %H%  %T%
                      = 1  internal LOWTRAN aerosol models
                      = 7  user defined aerosol models
                      = 9  use precalculated aerosols (TAPE20 from a previous aerosol run)
+
 
  RECORD 1.2 (Continued)
  
@@ -93,7 +94,7 @@ C     presently: %H%  %T%
  
           ITEST   (0,1)   flag for TEST      1 = yes
  
-           IATM   (0,1)   flag for FSCATM    1 = yes
+           IATM   (0,1)   flag for LBLATM    1 = yes
  
            --------------------------------------------------------
            |                                                      |
@@ -133,8 +134,7 @@ C     presently: %H%  %T%
                                                             ---------------     ---------------     -------       -------
                            monochromatic (total merged)            A                   C               B           MFILE
                                                                  (12)                (32)            (22)
- 
- 
+  
                                                     IMRG OPTIONS FOR SEQUENTIAL OUTPUT
                                                     ==================================
  
@@ -162,6 +162,7 @@ C     presently: %H%  %T%
  
            IMRG options are continued on next page.
            ----------------------------------------
+
 
  RECORD 1.2 (Continued)
  
@@ -183,7 +184,7 @@ C     presently: %H%  %T%
                  In the context of LBLRTM calculations, weighting functions are readily obtained from the
                               NFILE sequential transmittances by "subtracting" adjacent files (dT or dR), and
                               employing the stored layer boundary definitions for P or z, i.e. (dlnP or dz).
-                              ( Use Option IOPT = 2 in PLTFAS for subtraction of LBLRTM files )
+                              ( Use Option IOPT = 2 in PLTLBL for subtraction of LBLRTM files )
  
                  For the filter option (IMRG.ge.23 .and. IMRG.le.28), the results, including the differences
                               of the total transmittances or radiances, are also printed on unit IPR (TAPE6)
@@ -207,6 +208,7 @@ C     presently: %H%  %T%
            |    INPUT FOR RECORD 1.2 IS CONTINUED ON NEXT PAGE    |
            |                                                      |
            --------------------------------------------------------
+
 
  
  RECORD 1.2 (Continued)
@@ -334,7 +336,7 @@ C     presently: %H%  %T%
  
  
  *****************************************************************************
- ******  these records applicable only if FSCATM not selected (IATM=0)  ******
+ ******  these records applicable only if LBLATM not selected (IATM=0)  ******
 
                        LAYER INPUT  (MOLECULES ONLY)
  
@@ -365,8 +367,7 @@ C     presently: %H%  %T%
  
  
  RECORD 2.1.1
- 
- 
+  
           PAVE,  TAVE,  SECNTK,  ITYL(L),  IPATH,  ALTZ(L-1),  PZ(L-1),  TZ(L-1),  ATLZ(L),  PZ(L),  TZ(L)
  
           1-10, 11-20,   21-30,    31-33,  34-35,      37-43,    44-51,    52-58,    59-65,  66-73,  74-80
@@ -393,6 +394,7 @@ C     presently: %H%  %T%
                        4 specifies 5/4
                        5 specifies 6/5
                       99 specifies first layer (i.e. no ratio)
+
 
  RECORD 2.1.1 (Continued)
  
@@ -450,7 +452,7 @@ C     presently: %H%  %T%
  
  
  *****************************************************************************
- ******  these records applicable only if FSCATM not selected (IATM=0)  ******
+ ******  these records applicable only if LBLATM not selected (IATM=0)  ******
  ****************  and cross-sections ARE selected (IXSECT=1)  ***************
  
                     LAYER INPUT  (CROSS-SECTIONS ONLY)
@@ -504,17 +506,16 @@ C     presently: %H%  %T%
                                  if positive, looking up
                                  if negative, looking down
                           normal value = 1.0
- 
-                          *** Note: this quantity is for information only, SECNTX should be the same as
+                           *** Note: this quantity is for information only, SECNTX should be the same as
                                     SECNT0 on Record 2.1, which is used instead of this quantity.
  
                HEDXS      60 character user identification
- 
+
 
           ****************************************************************************************************************
           ****  Note: all the quantites on this Record, are for information only, LBLRTM will use the corresponding   ****
           ****        values from Record 2.1.1.    This record is retained to maintain compatibility with 2.1.1 and   ****
-          ****        is consistent with the output from FSCATM with IPU = 1; this provides the flexibility of        ****
+          ****        is consistent with the output from LBLATM with IPU = 1; this provides the flexibility of        ****
           ****        independent utilization of this data with external programs.                                    ****
           ****************************************************************************************************************
  
@@ -602,9 +603,9 @@ C     presently: %H%  %T%
 
  
  *****************************************************************************
- ********     these records applicable if FSCATM selected (IATM=1)    ********
+ ********     these records applicable if LBLATM selected (IATM=1)    ********
  
-                                     FSCATM
+                                     LBLATM
  RECORD 3.1
  
  
@@ -657,6 +658,7 @@ C     presently: %H%  %T%
  
            HSPACE    altitude definition for space (default = 100 km)
                      internal models defined to 120 km
+
 
  
  RECORD 3.1 (Continued)
@@ -813,6 +815,7 @@ C     presently: %H%  %T%
  ----------------------------------------------------------------------------
  
  ****************************************************************************
+
 
  TABLE I. Units and input options for the K'th molecule
  
@@ -910,7 +913,7 @@ C     presently: %H%  %T%
  
  
  *****************************************************************************
- **********  these records applicable if FSCATM selected (IATM=1)  ***********
+ **********  these records applicable if LBLATM selected (IATM=1)  ***********
  ****************  and cross-sections ARE selected (IXSECT=1)  ***************
  
                              XAMNTS
@@ -929,7 +932,7 @@ C     presently: %H%  %T%
               IPRFL  (0,1)
  
                         = 0  user input profile
-                        = 1  standard profile as determined by FSCATM
+                        = 1  standard profile as determined by LBLATM
  
               IXSBIN (0,1) flag to deselect pressure convolution of cross-sections
  
@@ -946,6 +949,7 @@ C     presently: %H%  %T%
               XSNAME      name of the cross-section molecules to be used
                           (Note: the cross-sections specified here must also appear
                            in the cross-section input file FSCDXS.  See Table II)
+
 
  TABLE II. Structure of file FSCDXS.
  
@@ -1081,6 +1085,7 @@ C     presently: %H%  %T%
  REPEAT records 3.8.1 to 3.8.N for each of the remaining LAYX boundaries
  
  ----------------------------------------------------------------------------
+
 
     ******************************************************************************************
  
@@ -1099,7 +1104,7 @@ C     presently: %H%  %T%
  
     Activated by IAERSL = 1 or 7 (on record 1.2)
  
-    ** Note:  MODEL is read in FSCATM                    **
+    ** Note:  MODEL is read in LBLATM                    **
     **        M1, M2, and M3 are set depending on MODEL  **
  
     RECORD sequence as follows
@@ -1134,6 +1139,7 @@ C     presently: %H%  %T%
                                                 Format (3(F6.2,2F7.5,F6.4))
  
     ******************************************************************************************
+
 
  
  RECORD 4.1            IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT
@@ -1340,7 +1346,6 @@ C     presently: %H%  %T%
  
  **********************************************************************************
  
- 
  RECORD 4.4   ML,TITLE                         (if IAERSL = 7)
  
                  FORMAT (I5,18A4)
@@ -1396,8 +1401,8 @@ C     presently: %H%  %T%
                        = 1  signifies boundary change
  
  ***********************************************************************************
- 
- 
+
+
  RECORDS 4.6.1 - 4.6.3 read in the user defined cloud extinction and absorption
                           (IHAZE = 7 or ICLD = 11)
 
@@ -1457,6 +1462,7 @@ C     presently: %H%  %T%
       ASYM(N,I)     =  aerosol asymmetry factor
  
  ************************************************************************************
+
 
               LASER (ILAS > 2) 
  
@@ -1849,6 +1855,49 @@ C     presently: %H%  %T%
                                sinc(u-pi))
                                (Hanning)
 
+			NORTON-BEER FUNCTIONS:
+			_____________________
+		    					sum{Ci*(1-(xa)**2)**i}
+							  from i=0 to 4, for
+							  0 =< x =< 1/a
+								and
+							0 for x > 1/a
+
+		    =  8	weak			Ci = 0.384093,-0.087577,   2.57027	      40
+							    0.703484, 0., 0.
+
+		    =  9	moderate		Ci = 0.152442,-0.136176,   2.36771	      40
+							    0.983734, 0., 0.
+
+		    =  10	strong			Ci = 0.045335, 0.,	   2.07176	      20
+							    0.554883,0.,0.399782
+
+ 
+                              FFTSCN (Continued)
+ RECORD 10.1  (Continued)
+
+
+
+ 
+                      JFN    Scanning Function          Apodization Function       a/HWHM    a/FZ     CR        
+                      ---    -----------------          --------------------       ------    ----     --
+
+			OTHER FUNCTIONS:
+			_______________
+
+		    =  11	NA			1   for x < p		       variable	      100
+				(Brault)		        and
+							(1+cos**2(u'))/2, for
+							    p/a < x < 1/a
+							where (0 < p < 1)
+
+		    =  12	NA			Io(pi*p*sqrt(1-(x*a)**2)/      variable	      10
+				(Kaiser-Bessel)		  Io(pi*p), for
+							    0 =< x =< 1/a
+								and
+							0   for x > 1/a
+							where (2 < p < 4)
+
     _______________________________________________________________________________________________________________________
  
                   LEGEND:
@@ -1856,6 +1905,7 @@ C     presently: %H%  %T%
                          -  v  = frequency (cm-1)
                          -  x  = optical path difference (cm)
                          -  u  = (2*pi*v)/a
+                         -  u' = pi*(x*a-p)/(1-p)
                          -  a  = 1/L, where L is the maximum optical path difference of an equivalent interferometer.
                                  "a" determines the resolution, or the width of the scanning function.
                          -  FZ = distance from the center of the scanning function to the first zero.
@@ -1865,12 +1915,16 @@ C     presently: %H%  %T%
                                  function is calculated analytically.
                          -  J(5/2,u)/(u**(5/2)) = ((3-u**2)*sin(u)-3*u*cos(u))/u**5, where J(n,u) is the Bessel
                                  function of order n.
+                         -  Io = modified Bessel function of the first kind, order 0.
                          -  c1 = 0.428752
 
     _______________________________________________________________________________________________________________________
 
-                          Note: If JFN < 0, HWHM contains the value for the maximum optical path difference of an
+                    Notes:   1.  If JFN < 0, HWHM contains the value for the maximum optical path difference of an
                                 equivalent interferometer, apodized to give the scanning function given by |JFN|.
+
+                             2.  The Brault and Kaiser-Bessel functions depend upon the parameter p.  The values of
+                                a/HWHM and a/FZ for these functions also depend upon p.
  
 
                               FFTSCN (Continued)
@@ -1977,7 +2031,7 @@ C     presently: %H%  %T%
 
 		A '-1.' within columns 1-10 will terminate FLTRFN.
 
-                                    PLTFAS 
+                                    PLTLBL 
  
  
  RECORD 12.1
@@ -2019,7 +2073,7 @@ C     presently: %H%  %T%
  
                 V1      initial wavenumber of the plot,
  
-                          negative value terminates the PLTFAS option
+                          negative value terminates the PLTLBL option
  
                 V2      the final wavenumber of the plot
  
@@ -2052,7 +2106,7 @@ C     presently: %H%  %T%
                               For a list of symbols see the applicable NCAR plotter information. 
  
 
-                              PLTFAS (Continued)
+                              PLTLBL (Continued)
  RECORD 12.2A  (Continued)
  
                 LFILE   tape number of file to be read from LBLRTM.
@@ -2091,7 +2145,7 @@ C     presently: %H%  %T%
  ---------------------------------------------------------------------------------------------------------
  
 
-                              PLTFAS (Continued)
+                              PLTLBL (Continued)
  
  RECORD 12.3A     (IOPT = 0,1)
  
@@ -2144,7 +2198,7 @@ C     presently: %H%  %T%
             JHDR    = 0  for plot of header data
                     = 1  for suppression of header data plot
  
-                              PLTFAS (Continued)
+                              PLTLBL (Continued)
  
  RECORD 12.3A (Continued)
  
@@ -2172,7 +2226,7 @@ C     presently: %H%  %T%
 		A '-1.' within columns 1-10 will terminate plotting.
 
 
-                              PLTFAS (Continued)
+                              PLTLBL (Continued)
  
  ***************************************************************************************************
  ****************************** USE RECORD 12.2B FOR IOPT > 1 **************************************
@@ -2191,7 +2245,7 @@ C     presently: %H%  %T%
  
                 V1      initial wavenumber of the difference or ratio,
  
-                          negative value terminates the PLTFAS option
+                          negative value terminates the PLTLBL option
  
                 V2      the final wavenumber of the difference or ratio
  
