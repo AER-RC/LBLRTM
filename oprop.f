@@ -590,6 +590,7 @@ C                                                                         B04040
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B04110
      *              NLTEFL,LNFIL4,LNGTH4                                  B04120
       COMMON /IOU/ IOUT(250)                                              B04130
+      common /eppinfo/ negepp_flag
 C                                                                         B04150
 
 *****************************************************************************
@@ -609,6 +610,7 @@ C                                                                         B04250
       IF (ILO.LE.0) THEN                                                  B04260
          REWIND LNFL
          CALL BUFINln (LNFL,LEOF,dum(1),n_one)
+         if (negepp_flag.eq.1) CALL BUFINln (LNFL,LEOF,dum(1),n_one)
       ENDIF                                                               B04290
 C                                                                         B04300
    10 CALL BUFINln (Lnfl,LEOF,rdpnl(1),npnlhd)
@@ -3867,10 +3869,12 @@ c
       IMPLICIT REAL*8           (V) 
 c
       CHARACTER*8      HLINID,BMOLID,HID1
+      CHARACTER*1 CNEGEPP(8)
 C                                                                         A09600
       COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A09610
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A09620
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL     A09630
+      common /bufid2/ n_negepp(64),n_resetepp(64),xspace(4096),lstwdl2
 
       COMMON /IFIL/ Idum1,IPR,Idum2,Ndum1,Ndum2F,Ndum3,Ndum4,Ndum5,
      *              Ndum6,Kdum1,Kdum2,Ldum1,Ndum7,Idum3,Idum4,
@@ -3890,6 +3894,11 @@ c
      *                MCNTNL,SUMSTR,LINMOL,FLINLO,FLINHI,  
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1
 c
+      READ (HLINID(7),950) CNEGEPP
+      IF (CNEGEPP(8).eq.'^') THEN
+         read (lnfil) n_negepp,n_resetepp,xspace
+      endif
+
       go to 5
 c
  777  STOP 'Linf4: LINFIL DOES NOT EXIST'                   
@@ -3906,6 +3915,10 @@ c
       write (lnfil4)    HLINID,BMOLID,MOLCNT,MCNTLC,       
      *                MCNTNL,SUMSTR,LINMOL,FLINLO,FLINHI,  
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1
+
+      IF (CNEGEPP(8).eq.'^') THEN
+         write (lnfil4) n_negepp,n_resetepp,xspace
+      endif
 C
       return
 c
@@ -3913,6 +3926,7 @@ c
      *        'LINFIL - LINF4 NOT USED *****',/,'   VNU = ',F10.3,        D02550
      *        ' - ',F10.3,' CM-1     LINFIL = ',F10.3,' - ',F10.3,        D02560
      *        ' CM-1')                                                    D02570
+ 950  FORMAT (8a1)
 c
       end
 c*******************************************************************

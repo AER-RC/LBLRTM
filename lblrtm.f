@@ -1217,6 +1217,8 @@ c
       COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A09610
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A09620
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL     A09630
+      common /bufid2/ n_negepp(64),n_resetepp(64),xspace(4096),lstwdl2
+      common /eppinfo/ negepp_flag
 
       real *4 sumstr,flinlo,flinhi
       integer *4 lnfil
@@ -1226,6 +1228,7 @@ C                                                                         A09660
       DIMENSION HLINHD(2),IWD(2)                                          A09670
 C                                                                         A09680
       CHARACTER CHID10*8,CHARID*5,CHARDT*2,CHARI*1,CHTST*1                A09690
+      CHARACTER*1 CNEGEPP(8)
       CHARACTER*6 CDUM,SPCRT
 C                                                                         A09700
       EQUIVALENCE (HLINID(1),HLINHD(1),IWD(1))                            A09710
@@ -1241,10 +1244,21 @@ C                                                                         A09820
       REWIND LINFIL                                                       A09830
 
       lnfil = linfil
+      negepp_flag = 0
 
       read (lnfil,end=777)    HLINID,BMOLID,MOLCNT,MCNTLC,       
      *                MCNTNL,SUMSTR,LINMOL,FLINLO,FLINHI,  
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1
+
+
+c     Test for negative values of ENERGY identified in lnfl
+c     and read in second header for line information, if needed
+
+      READ (HLINID(7),950) CNEGEPP
+      IF (CNEGEPP(8).eq.'^') THEN
+         negepp_flag = 1
+         read (lnfil) n_negepp,n_resetepp,xspace
+      endif
 C
       go to 5
 C     
@@ -1257,9 +1271,20 @@ C                                                                         A09860
    10 CONTINUE                                                            A09890
       WRITE (IPR,900)                                                     A09900
       WRITE (IPR,905) HLINID,HID1                                         A09910
-      WRITE (IPR,910)                                                     A09920
-      WRITE (IPR,915) (BMOLID(I),MOLCNT(I),MCNTLC(I),MCNTNL(I),           A09930
-     *                SUMSTR(I),I=1,LINMOL)                               A09940
+
+c     Output header information regarding lines; if negative values of
+c     ENERGY were identified in lnfl, output extra header information
+
+      if (CNEGEPP(8).eq.'^') THEN
+         WRITE (IPR,960)
+         WRITE (IPR,965) (BMOLID(I),MOLCNT(I),MCNTLC(I),MCNTNL(I),
+     *        N_NEGEPP(I),N_RESETEPP(I),
+     *                SUMSTR(I),I=1,LINMOL)
+      else
+         WRITE (IPR,910)                                                  A09920
+         WRITE (IPR,915) (BMOLID(I),MOLCNT(I),MCNTLC(I),MCNTNL(I),        A09930
+     *        SUMSTR(I),I=1,LINMOL)                                       A09940
+      endif
 C                                                                         A09950
       WRITE (IPR,920) FLINLO,FLINHI,LINCNT                                A09960
 C                                                                         A09970
@@ -1307,6 +1332,13 @@ C                                                                         A10080
  940  FORMAT (' Molecule to be retrieved: ',A6,' not in linefile.',/,
      *        ' Molecules in linefile: ')
  945  FORMAT (24X,A6)
+ 950  FORMAT (8a1)
+ 960  FORMAT ('0',/,23X,'COUPLED',4X,'NLTE',3X,'NEGATIVE',3X,
+     *        'RESET',4X,'SUM LBLRTM',/,7X,'MOL',5X,'LINES',4X,
+     *        'LINES',4X,'LINES',6X,'EPP',6X,'EPP',
+     *        6X,'STRENGTHS',/)
+ 965  FORMAT (' ',4X,A6,' = ',I6,
+     *        3X,I6,3X,I6,3X,I6,3X,i6,3X,1PE12.4)
 C                                                                         A10250
       END                                                                 A10260
 C
