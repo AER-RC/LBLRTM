@@ -480,7 +480,7 @@ C     presently: %H%  %T%
                            = 0  input previously calculated radiance and transmittance from TAPE12 (default)
                            = 1  input previously calculated optical depth from TAPE10
  
-              IOTFLG       (0,1) output flag for solar radiance calculation (output to TAPE11)
+              IOTFLG       (0,1) output flag for solar radiance calculation (output to TAPE13)
 
                            = 0  output attenuated solar radiance (default)
                            = 1  output total radiance (requires INFLAG = 0)
