@@ -298,6 +298,8 @@ C*****Assign SCCS version number to module fftscn.f
       Write(IPR,'(''1FFTSCN: SPECTRAL SMOOTHING IN THE '',
      1            ''FOURIER DOMAIN*****'')')
 
+      write(*,*) "You have entered Pat's f90 version ..."
+
 C*****Read in scan commands until HWHM .le. 0.
   100 Continue
       PARM1 = 0.0
@@ -2429,9 +2431,9 @@ C*****LREC = 1, this is LPTFFT which may be less than LPTSMX
       Else
           LPTS = LPTSMX
       Endif
-      
+
       If(LREC .GT.1) Open(LFILE,access='DIRECT',err=900,recl=IBLKSZ,
-     1     status='SCRATCH')
+     1    status='SCRATCH')
 
       If(IVX .EQ. -1) Then
 C*****    Calculate the scanning function, then transform into the
@@ -2796,7 +2798,7 @@ C
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       J04120
      *               DVSC,XDUM,V1SHFT                                     J04130
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 J04170
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J04180
+      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J04180
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J04190
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J04200
 
@@ -3209,18 +3211,14 @@ C     AND PUTS THE SUB-BLOCKS IN BIT INVERTED ORDER
       ICSUBZ=ICOMSZ/NBLK
       NPASS=LLOG2(NBLK)
       DO 20 IBLK=1,NBLK
-         READ(LFILE,REC=IBLK) (A(IOUT),IOUT=1,ICOMSZ)
-         DO 10 ISUB=1,NBLK
-            IP=ISUB-NBLK
-            IB=INVER((ISUB-1),NPASS)*ICSUBZ
-            DO 9 I=1,ICSUBZ
-               IP=NBLK+IP
-               B(IB+I)=A(IP)
- 9          end do
- 10      end do
-         WRITE(LFILE,REC=IBLK) (B(IOUT),IOUT=1,ICOMSZ)
- 20   end do
-c
+          READ(LFILE,REC=IBLK) (A(IOUT),IOUT=1,ICOMSZ)
+          DO 10 ISUB=1,NBLK
+              IP=ISUB-NBLK
+              IB=INVER((ISUB-1),NPASS)*ICSUBZ
+              DO 10 I=1,ICSUBZ
+                  IP=NBLK+IP
+  10          B(IB+I)=A(IP)
+  20      WRITE(LFILE,REC=IBLK) (B(IOUT),IOUT=1,ICOMSZ)
 C     THIS SECTION OF CODE SORTS THE BLOCKS
 C     NSUB = NUMBER OF SUB-BLOCKS
 C     NBB = NUMBER OF BLOCKS IN EACH BUTTERFLY
@@ -3232,39 +3230,33 @@ C     IBB = BLOCK B
       NSUB=NBLK
       NBB=1
       DO 50 IPAS=1,NPASS
-         NBUTTE=NSUB/2
-         NBB2=NBB*2
-         ICSUB2=ICSUBZ*2
-         DO 40 IBU=1,NBB
-            IBA=IBU-NBB2
-            DO 39 IBUTT=1,NBUTTE
-               IBA=IBA+NBB2
-               IBB=IBA+NBB
+          NBUTTE=NSUB/2
+          NBB2=NBB*2
+          ICSUB2=ICSUBZ*2
+          DO 40 IBU=1,NBB
+              IBA=IBU-NBB2
+              DO 40 IBUTT=1,NBUTTE
+                  IBA=IBA+NBB2
+                  IBB=IBA+NBB
 C     OPERATE ON BLOCK A AND BLOCK B
-               READ(LFILE,REC=IBA) (A(IOUT),IOUT=1,ICOMSZ)
-               READ(LFILE,REC=IBB) (B(IOUT),IOUT=1,ICOMSZ)
-               J=-ICSUB2
-               DO 30 ISUB=1,NSUB,2
-                  J=J+ICSUB2
-                  JI=J
-                  DO 29 I=1,ICSUBZ
-                     JI=JI+1
-                     JI2=JI+ICSUBZ
-                     H=A(JI2)
-                     A(JI2)=B(JI)
-                     B(JI)=H
- 29               end do
- 30            end do
-               WRITE(LFILE,REC=IBA) (A(IOUT),IOUT=1,ICOMSZ)
-               WRITE(LFILE,REC=IBB) (B(IOUT),IOUT=1,ICOMSZ)
- 39         continue
- 40      continue
-         NBB=NBB2
-         ICSUBZ=ICSUB2
-         NSUB=NSUB/2
- 50   continue
+                  READ(LFILE,REC=IBA) (A(IOUT),IOUT=1,ICOMSZ)
+                  READ(LFILE,REC=IBB) (B(IOUT),IOUT=1,ICOMSZ)
+                  J=-ICSUB2
+                  DO 30 ISUB=1,NSUB,2
+                      J=J+ICSUB2
+                      JI=J
+                      DO 30 I=1,ICSUBZ
+                          JI=JI+1
+                          JI2=JI+ICSUBZ
+                          H=A(JI2)
+                          A(JI2)=B(JI)
+  30              B(JI)=H
+                  WRITE(LFILE,REC=IBA) (A(IOUT),IOUT=1,ICOMSZ)
+  40      WRITE(LFILE,REC=IBB) (B(IOUT),IOUT=1,ICOMSZ)
+          NBB=NBB2
+          ICSUBZ=ICSUB2
+  50  NSUB=NSUB/2
       RETURN
-      
       END
 C     
 C     
@@ -3373,49 +3365,47 @@ C     ISRE= ISIN-NBLK
       NBUTTE=NBLK/2
       NBLSIN=NBLK/8
       IF(NBLSIN.LE.0) NBLSIN=1
-c
       DO 50 IPASS=1,NPASS
 C     TAKE CARE OF COS-SIN TABLE
-         NSIN=NBB/4
-         IF(NSIN.LE.0) NSIN=1
-         NOFSIN=NBLSIN/NSIN
-         NOFSI2=NOFSIN/2
-         ISIN=NBLK+1-NOFSIN
-         DO 40 ISRE=1,NSIN
-            ISIN=ISIN+NOFSIN
-            READ(LFILE,REC=ISIN) (S(IOUT),IOUT=1,ICOMSZ)
-            IF(IPASS.EQ.NPASS) GO TO 10
+          NSIN=NBB/4
+          IF(NSIN.LE.0) NSIN=1
+          NOFSIN=NBLSIN/NSIN
+          NOFSI2=NOFSIN/2
+          ISIN=NBLK+1-NOFSIN
+          DO 40 ISRE=1,NSIN
+              ISIN=ISIN+NOFSIN
+              READ(LFILE,REC=ISIN) (S(IOUT),IOUT=1,ICOMSZ)
+              IF(IPASS.EQ.NPASS) GO TO 10
 C     GET TABLE FOR NEXT PASS
-            DELTHA=DELTHA/2
-            CALL EXPAN(A,B,S,DELTHA,IBLKSZ)
-            WRITE(LFILE,REC=ISIN) (A(IOUT),IOUT=1,ICOMSZ)
+              DELTHA=DELTHA/2
+              CALL EXPAN(A,B,S,DELTHA,IBLKSZ)
+              WRITE(LFILE,REC=ISIN) (A(IOUT),IOUT=1,ICOMSZ)
 C     FOR THE FIRST TWO PASSES YOU CAN PUT ALL THE INFORMATION IN THE
 C     COS-SIN TABLE IN ONE BLOCK
-            IF(IPASS.LE.2) GO TO 10
-            ISIN2=ISIN+NOFSI2
-            WRITE(LFILE,REC=ISIN2) (B(IOUT),IOUT=1,ICOMSZ)
+              IF(IPASS.LE.2) GO TO 10
+              ISIN2=ISIN+NOFSI2
+              WRITE(LFILE,REC=ISIN2) (B(IOUT),IOUT=1,ICOMSZ)
 C     DETERMINE WHICH BLOCKS TO WORK ON
 C     THIS SHUFFLE IS TO MAKE IT SO ONLY ONE COS-SIN TABLE BLOCK IS
 C     NEEDED TO WORK ON 8 DATA BLOCKS
- 10         NBB2=NBB/2
-            IBU=ISRE
-            CALL HERFFT(LFILE,A,B,S,ISIGN,IBLKSZ,ICOMSZ,IBU,NBB,NBUTTE)
-            IF(IPASS.LE.1) GO TO 40
-            CALL ADDNIN(S,IBLKSZ)
-            IBU=IBU+NBB2
-            CALL HERFFT(LFILE,A,B,S,ISIGN,IBLKSZ,ICOMSZ,IBU,NBB,NBUTTE)
-            IF(IPASS.LE.2) GO TO 40
-            CALL COMPNIN(S,IBLKSZ,DELT)
-            IBU=NBB2-ISRE+1
-            CALL HERFFT(LFILE,A,B,S,ISIGN,IBLKSZ,ICOMSZ,IBU,NBB,NBUTTE)
-            CALL ADDNIN(S,IBLKSZ)
-            IBU=NBB-ISRE+1
-            CALL HERFFT(LFILE,A,B,S,ISIGN,IBLKSZ,ICOMSZ,IBU,NBB,NBUTTE)
- 40      CONTINUE
-         NBB=NBB*2
-         DELT=DELT/2
-         NBUTTE=NBUTTE/2
- 50   continue
+  10         NBB2=NBB/2
+             IBU=ISRE
+             CALL HERFFT(LFILE,A,B,S,ISIGN,IBLKSZ,ICOMSZ,IBU,NBB,NBUTTE)
+             IF(IPASS.LE.1) GO TO 40
+             CALL ADDNIN(S,IBLKSZ)
+             IBU=IBU+NBB2
+             CALL HERFFT(LFILE,A,B,S,ISIGN,IBLKSZ,ICOMSZ,IBU,NBB,NBUTTE)
+             IF(IPASS.LE.2) GO TO 40
+             CALL COMPNIN(S,IBLKSZ,DELT)
+             IBU=NBB2-ISRE+1
+             CALL HERFFT(LFILE,A,B,S,ISIGN,IBLKSZ,ICOMSZ,IBU,NBB,NBUTTE)
+             CALL ADDNIN(S,IBLKSZ)
+             IBU=NBB-ISRE+1
+             CALL HERFFT(LFILE,A,B,S,ISIGN,IBLKSZ,ICOMSZ,IBU,NBB,NBUTTE)
+  40      CONTINUE
+          NBB=NBB*2
+          DELT=DELT/2
+  50  NBUTTE=NBUTTE/2
       RETURN
       END
 C     
@@ -3427,30 +3417,28 @@ C     SEE SORTFF FOR DEFINITION OF TERMS
       NBB2=NBB*2
       IBA=IBU-NBB2
       DO 40 IBUTT=1,NBUTTE
-         IBA=IBA+NBB2
-         IBB=IBA+NBB
+          IBA=IBA+NBB2
+          IBB=IBA+NBB
 C     THIS SECTION OF CODE OPERATES ON TWO BLOCKS
-         READ(LFILE,REC=IBA) (A(IOUT),IOUT=1,ICOMSZ)
-         READ(LFILE,REC=IBB) (B(IOUT),IOUT=1,ICOMSZ)
-         IF(ISIGN.EQ.1) THEN
+          READ(LFILE,REC=IBA) (A(IOUT),IOUT=1,ICOMSZ)
+          READ(LFILE,REC=IBB) (B(IOUT),IOUT=1,ICOMSZ)
+          IF(ISIGN.EQ.1) THEN
 C     The inverse was put on after the fact.
-            DO 30 I=1,ICOMSZ
-               H=A(I)
-               T=B(I)*S(I)
-               A(I)=H+T
-               B(I)=H-T
- 30         continue
-         ELSE
-            DO 35 I=1,ICOMSZ
-               H=A(I)
-               T=B(I)*CONJG(S(I))
-               A(I)=H+T
-               B(I)=H-T
- 35         continue
-         ENDIF
-         WRITE(LFILE,REC=IBA) (A(IOUT),IOUT=1,ICOMSZ)
-         WRITE(LFILE,REC=IBB) (B(IOUT),IOUT=1,ICOMSZ)
- 40   CONTINUE
+              DO 30 I=1,ICOMSZ
+                  H=A(I)
+                  T=B(I)*S(I)
+                  A(I)=H+T
+  30          B(I)=H-T
+          ELSE
+              DO 35 I=1,ICOMSZ
+                  H=A(I)
+                  T=B(I)*CONJG(S(I))
+                  A(I)=H+T
+  35          B(I)=H-T
+          ENDIF
+          WRITE(LFILE,REC=IBA) (A(IOUT),IOUT=1,ICOMSZ)
+          WRITE(LFILE,REC=IBB) (B(IOUT),IOUT=1,ICOMSZ)
+  40  CONTINUE
       RETURN
       END
 C     
@@ -3463,26 +3451,25 @@ C     THE EXPANDED TABLE GOES INTO A AND B FROM THE ORIGINAL IN S
 C     DO FIRST HALF
       J=-1
       DO 10 I=1,IBLKSZ,4
-         J=J+2
-         J2=J+1
-         COSJ=S(J)
-         SINJ=S(J2)
-         A(I)=COSJ
-         A(I+1)=SINJ
-         A(I+2)=COSJ*COSD-SINJ*SIND
-         A(I+3)=COSJ*SIND+SINJ*COSD
- 10   CONTINUE
+          J=J+2
+          J2=J+1
+          COSJ=S(J)
+          SINJ=S(J2)
+          A(I)=COSJ
+          A(I+1)=SINJ
+          A(I+2)=COSJ*COSD-SINJ*SIND
+          A(I+3)=COSJ*SIND+SINJ*COSD
+  10  CONTINUE
 C     DO SECOND PART
       DO 20 I=1,IBLKSZ,4
-         J=J+2
-         J2=J+1
-         COSJ=S(J)
-         SINJ=S(J2)
-         B(I)=COSJ
-         B(I+1)=SINJ
-         B(I+2)=COSJ*COSD-SINJ*SIND
-         B(I+3)=COSJ*SIND+SINJ*COSD
- 20   continue
+          J=J+2
+          J2=J+1
+          COSJ=S(J)
+          SINJ=S(J2)
+          B(I)=COSJ
+          B(I+1)=SINJ
+          B(I+2)=COSJ*COSD-SINJ*SIND
+  20  B(I+3)=COSJ*SIND+SINJ*COSD
       RETURN
       END
 C     
@@ -3490,11 +3477,10 @@ C
       DIMENSION S(*)
 C     THIS ROUTINE ADDS 90 TO THE ANGLE IN THE COS-SIN BLOCK
       DO 10 I=1,IBLKSZ,2
-         I2=I+1
-         T=S(I)
-         S(I)=-S(I2)
-         S(I2)=T
- 10   continue
+          I2=I+1
+          T=S(I)
+          S(I)=-S(I2)
+  10  S(I2)=T
       RETURN
       END
 C     
@@ -3506,16 +3492,15 @@ C     FROM THA TO 90 MINUS THA.
       IEND=IBSZ2+1
       J2=IBLKSZ
       DO 10 I=3,IBSZ2,2
-         I2=I+1
-         J=J2-1
-         T=S(I)
-         S(I)=-S(J)
-         S(J)=-T
-         T=S(I2)
-         S(I2)=S(J2)
-         S(J2)=T
-         J2=J2-2
- 10   continue
+          I2=I+1
+          J=J2-1
+          T=S(I)
+          S(I)=-S(J)
+          S(J)=-T
+          T=S(I2)
+          S(I2)=S(J2)
+          S(J2)=T
+  10  J2=J2-2
       S(IEND)=-S(IEND)
 C     FIND COS-SIN FOR THE FIRST POINT (THE ONE NOT IN OLD BLOCK)
       COSD=COS(DELTHA)
@@ -3598,352 +3583,317 @@ C     The following SAVE statement needed on some machines,
 C     specificlly Silicon Graphics. 
       SAVE NT,NTV2, MT
       DIMENSION A(1),INV(1),S(1),W(2),W2(2),W3(2)
- 10   IF( IABS(IFSET) .le. 1.) go to 900
-c
- 12   MTT=M-2
+  10  IF( IABS(IFSET) - 1) 900,900,12
+  12  MTT=M-2
       ROOT2 = SQRT(2.)
-      IF (MTT .le. MT ) go to 14
-      IFERR=1
+      IF (MTT-MT ) 14,14,13
+  13  IFERR=1
       RETURN
- 14   IFERR=0
+  14  IFERR=0
       M1=M
       N1=2**M1
- 16   IF(IFSET.gt.0) go to 20
-      NX= N1
+  16  IF(IFSET) 18,18,20
+  18  NX= N1
       FN = NX
       DO 19 I = 1,NX
           A(2*I-1) = A(2*I-1)/FN
-          A(2*I) = -A(2*I)/FN
- 19   continue
- 20   continue
-      NP=N1*2
+  19  A(2*I) = -A(2*I)/FN
+  20  NP=N1*2
       IL=0
       IL1=1
       MI=M1
   30  IDIF=NP
       KBIT=NP
       MEV = 2*(MI/2)
-      IF (MI .le. MEV ) go to 60
+      IF (MI - MEV )60,60,40
 C     
 C     M IS ODD. DO L=1 CASE
-      KBIT=KBIT/2
+  40  KBIT=KBIT/2
       KLAST=KBIT-1
       DO 50 K=1,KLAST,2
-         KD=K+KBIT
+          KD=K+KBIT
 C     
 C     DO ONE STEP WITH L=1,J=0
 C     A(K)=A(K)+A(KD)
 C     A(KD)=A(K)-A(KD)
 C     
-         T=A(KD)
-         A(KD)=A(K)-T
-         A(K)=A(K)+T
-         T=A(KD+1)
-         A(KD+1)=A(K+1)-T
-         A(K+1)=A(K+1)+T
- 50   continue
- 52   LFIRST =3
+          T=A(KD)
+          A(KD)=A(K)-T
+          A(K)=A(K)+T
+          T=A(KD+1)
+          A(KD+1)=A(K+1)-T
+  50  A(K+1)=A(K+1)+T
+  52  LFIRST =3
 C     
 C     DEF - JLAST = 2**(L-2) -1
       JLAST=1
       GO TO 70
 C     
 C     M IS EVEN
- 60   LFIRST = 2
+  60  LFIRST = 2
       JLAST=0
- 70   DO 240 L=LFIRST,MI,2
-         JJDIF=KBIT
-         KBIT=KBIT/4
-         KL=KBIT-2
+  70  DO 240 L=LFIRST,MI,2
+          JJDIF=KBIT
+          KBIT=KBIT/4
+          KL=KBIT-2
 C     
 C     DO FOR J=0
-         DO 80 I=1,IL1,IDIF
-            KLAST=I+KL
-            DO 79 K=I,KLAST,2
-               K1=K+KBIT
-               K2=K1+KBIT
-               K3=K2+KBIT
+          DO 80 I=1,IL1,IDIF
+              KLAST=I+KL
+              DO 80 K=I,KLAST,2
+                  K1=K+KBIT
+                  K2=K1+KBIT
+                  K3=K2+KBIT
 C     
-               T=A(K2)
-               A(K2)=A(K)-T
-               A(K)=A(K)+T
-               T=A(K2+1)
-               A(K2+1)=A(K+1)-T
-               A(K+1)=A(K+1)+T
+                  T=A(K2)
+                  A(K2)=A(K)-T
+                  A(K)=A(K)+T
+                  T=A(K2+1)
+                  A(K2+1)=A(K+1)-T
+                  A(K+1)=A(K+1)+T
 C     
-               T=A(K3)
-               A(K3)=A(K1)-T
-               A(K1)=A(K1)+T
-               T=A(K3+1)
-               A(K3+1)=A(K1+1)-T
-               A(K1+1)=A(K1+1)+T
+                  T=A(K3)
+                  A(K3)=A(K1)-T
+                  A(K1)=A(K1)+T
+                  T=A(K3+1)
+                  A(K3+1)=A(K1+1)-T
+                  A(K1+1)=A(K1+1)+T
 C     
-               T=A(K1)
-               A(K1)=A(K)-T
-               A(K)=A(K)+T
-               T=A(K1+1)
-               A(K1+1)=A(K+1)-T
-               A(K+1)=A(K+1)+T
+                  T=A(K1)
+                  A(K1)=A(K)-T
+                  A(K)=A(K)+T
+                  T=A(K1+1)
+                  A(K1+1)=A(K+1)-T
+                  A(K+1)=A(K+1)+T
 C     
-               R=-A(K3+1)
-               T = A(K3)
-               A(K3)=A(K2)-R
-               A(K2)=A(K2)+R
-               A(K3+1)=A(K2+1)-T
-               A(K2+1)=A(K2+1)+T
- 79         continue
- 80      continue
-         IF (JLAST.le.0.) go to 235
-         JJ=JJDIF   +1
+                  R=-A(K3+1)
+                  T = A(K3)
+                  A(K3)=A(K2)-R
+                  A(K2)=A(K2)+R
+                  A(K3+1)=A(K2+1)-T
+  80      A(K2+1)=A(K2+1)+T
+          IF (JLAST) 235,235,82
+  82      JJ=JJDIF   +1
 C     
           ILAST= IL +JJ
           DO 85 I = JJ,ILAST,IDIF
-             KLAST = KL+I
-             DO 84 K=I,KLAST,2
-                K1 = K+KBIT
-                K2 = K1+KBIT
-                K3 = K2+KBIT
+              KLAST = KL+I
+              DO 85 K=I,KLAST,2
+                  K1 = K+KBIT
+                  K2 = K1+KBIT
+                  K3 = K2+KBIT
 C     
-                R =-A(K2+1)
-                T = A(K2)
-                A(K2) = A(K)-R
-                A(K) = A(K)+R
-                A(K2+1)=A(K+1)-T
-                A(K+1)=A(K+1)+T
+                  R =-A(K2+1)
+                  T = A(K2)
+                  A(K2) = A(K)-R
+                  A(K) = A(K)+R
+                  A(K2+1)=A(K+1)-T
+                  A(K+1)=A(K+1)+T
 C     
-                AWR=A(K1)-A(K1+1)
-                AWI = A(K1+1)+A(K1)
-                R=-A(K3)-A(K3+1)
-                T=A(K3)-A(K3+1)
-                A(K3)=(AWR-R)/ROOT2
-                A(K3+1)=(AWI-T)/ROOT2
-                A(K1)=(AWR+R)/ROOT2
-                A(K1+1)=(AWI+T)/ROOT2
-                T= A(K1)
-                A(K1)=A(K)-T
-                A(K)=A(K)+T
-                T=A(K1+1)
-                A(K1+1)=A(K+1)-T
-                A(K+1)=A(K+1)+T
-                R=-A(K3+1)
-                T=A(K3)
-                A(K3)=A(K2)-R
-                A(K2)=A(K2)+R
-                A(K3+1)=A(K2+1)-T
-                A(K2+1)=A(K2+1)+T
- 84          continue
- 85       continue
-          IF(JLAST .le. 1) go to 235
- 90       JJ= JJ + JJDIF
+                  AWR=A(K1)-A(K1+1)
+                  AWI = A(K1+1)+A(K1)
+                  R=-A(K3)-A(K3+1)
+                  T=A(K3)-A(K3+1)
+                  A(K3)=(AWR-R)/ROOT2
+                  A(K3+1)=(AWI-T)/ROOT2
+                  A(K1)=(AWR+R)/ROOT2
+                  A(K1+1)=(AWI+T)/ROOT2
+                  T= A(K1)
+                  A(K1)=A(K)-T
+                  A(K)=A(K)+T
+                  T=A(K1+1)
+                  A(K1+1)=A(K+1)-T
+                  A(K+1)=A(K+1)+T
+                  R=-A(K3+1)
+                  T=A(K3)
+                  A(K3)=A(K2)-R
+                  A(K2)=A(K2)+R
+                  A(K3+1)=A(K2+1)-T
+  85          A(K2+1)=A(K2+1)+T
+              IF(JLAST-1) 235,235,90
+  90          JJ= JJ + JJDIF
 C     
 C     NOW DO THE REMAINING J"S
-          DO 230 J=2,JLAST
+              DO 230 J=2,JLAST
 C     
 C     FETCH W"S
 C     DEF- W=W**INV(J), W2=W**2, W3=W**3
- 96          I=INV(J+1)
- 98          IC=NT-I
-             W(1)=S(IC)
-             W(2)=S(I)
-             I2=2*I
-             I2C=NT-I2
+  96              I=INV(J+1)
+  98              IC=NT-I
+                  W(1)=S(IC)
+                  W(2)=S(I)
+                  I2=2*I
+                  I2C=NT-I2
+                  IF(I2C)120,110,100
 C     
 C     2*I IS IN FIRST QUADRANT
-             IF(I2C.gt.0)  then
- 100            W2(1)=S(I2C)
-                W2(2)=S(I2)
-                GO TO 130
-             endif
-             IF(I2C.eq.0)  then
- 110            W2(1)=0.
-                W2(2)=1.
-                GO TO 130
-             endif
-             IF(I2C.lt.0)  then
+  100             W2(1)=S(I2C)
+                  W2(2)=S(I2)
+                  GO TO 130
+  110             W2(1)=0.
+                  W2(2)=1.
+                  GO TO 130
 C     
 C     2*I IS IN SECOND QUADRANT
- 120            I2CC = I2C+NT
-                I2C=-I2C
-                W2(1)=-S(I2C)
-                W2(2)=S(I2CC)
-             endif
-c
- 130         I3=I+I2
-             I3C=NT-I3
-c
-             IF(I3C.gt.0) then
+  120             I2CC = I2C+NT
+                  I2C=-I2C
+                  W2(1)=-S(I2C)
+                  W2(2)=S(I2CC)
+  130             I3=I+I2
+                  I3C=NT-I3
+                  IF(I3C)160,150,140
 C     
 C     I3 IN FIRST QUADRANT
- 140            W3(1)=S(I3C)
-                W3(2)=S(I3)
-                GO TO 200
-             endif
-             IF(I3C.eq.0) then
- 150            W3(1)=0.
-                W3(2)=1.
-                GO TO 200
-             endif
+  140             W3(1)=S(I3C)
+                  W3(2)=S(I3)
+                  GO TO 200
+  150             W3(1)=0.
+                  W3(2)=1.
+                  GO TO 200
 C     
-             IF(I3C.lt.0) then
- 160            I3CC=I3C+NT
-             endif
-c
-             IF(I3CC.gt.0) then
+  160             I3CC=I3C+NT
+                  IF(I3CC)190,180,170
 C     
 C     I3 IN SECOND QUADRANT
- 170            I3C=-I3C
-                W3(1)=-S(I3C)
-                W3(2)=S(I3CC)
-                GO TO 200
-             endif
-             IF(I3CC.gt.0) then
- 180            W3(1)=-1.
-                W3(2)=0.
-                GO TO 200
-             endif
+  170             I3C=-I3C
+                  W3(1)=-S(I3C)
+                  W3(2)=S(I3CC)
+                  GO TO 200
+  180             W3(1)=-1.
+                  W3(2)=0.
+                  GO TO 200
 C     
 C     3*I IN THIRD QUADRANT
- 190         I3CCC=NT+I3CC
-             I3CC = -I3CC
-             W3(1)=-S(I3CCC)
-             W3(2)=-S(I3CC)
- 200         ILAST=IL+JJ
-             DO 220 I=JJ,ILAST,IDIF
-                KLAST=KL+I
-                DO 219 K=I,KLAST,2
-                   K1=K+KBIT
-                   K2=K1+KBIT
-                   K3=K2+KBIT
+  190             I3CCC=NT+I3CC
+                  I3CC = -I3CC
+                  W3(1)=-S(I3CCC)
+                  W3(2)=-S(I3CC)
+  200             ILAST=IL+JJ
+                  DO 220 I=JJ,ILAST,IDIF
+                      KLAST=KL+I
+                      DO 220 K=I,KLAST,2
+                          K1=K+KBIT
+                          K2=K1+KBIT
+                          K3=K2+KBIT
 C     
-                   R=A(K2)*W2(1)-A(K2+1)*W2(2)
-                   T=A(K2)*W2(2)+A(K2+1)*W2(1)
-                   A(K2)=A(K)-R
-                   A(K)=A(K)+R
-                   A(K2+1)=A(K+1)-T
-                   A(K+1)=A(K+1)+T
+                          R=A(K2)*W2(1)-A(K2+1)*W2(2)
+                          T=A(K2)*W2(2)+A(K2+1)*W2(1)
+                          A(K2)=A(K)-R
+                          A(K)=A(K)+R
+                          A(K2+1)=A(K+1)-T
+                          A(K+1)=A(K+1)+T
 C     
-                        R=A(K3)*W3(1)-A(K3+1)*W3(2)
-                        T=A(K3)*W3(2)+A(K3+1)*W3(1)
-                        AWR=A(K1)*W(1)-A(K1+1)*W(2)
-                        AWI=A(K1)*W(2)+A(K1+1)*W(1)
-                        A(K3)=AWR-R
-                        A(K3+1)=AWI-T
-                        A(K1)=AWR+R
-                        A(K1+1)=AWI+T
-                        T=A(K1)
-                        A(K1)=A(K)-T
-                        A(K)=A(K)+T
-                        T=A(K1+1)
-                        A(K1+1)=A(K+1)-T
-                        A(K+1)=A(K+1)+T
-                        R=-A(K3+1)
-                        T=A(K3)
-                        A(K3)=A(K2)-R
-                        A(K2)=A(K2)+R
-                        A(K3+1)=A(K2+1)-T
-                        A(K2+1)=A(K2+1)+T
- 219                 continue
- 220              continue
+                          R=A(K3)*W3(1)-A(K3+1)*W3(2)
+                          T=A(K3)*W3(2)+A(K3+1)*W3(1)
+                          AWR=A(K1)*W(1)-A(K1+1)*W(2)
+                          AWI=A(K1)*W(2)+A(K1+1)*W(1)
+                          A(K3)=AWR-R
+                          A(K3+1)=AWI-T
+                          A(K1)=AWR+R
+                          A(K1+1)=AWI+T
+                          T=A(K1)
+                          A(K1)=A(K)-T
+                          A(K)=A(K)+T
+                          T=A(K1+1)
+                          A(K1+1)=A(K+1)-T
+                          A(K+1)=A(K+1)+T
+                          R=-A(K3+1)
+                          T=A(K3)
+                          A(K3)=A(K2)-R
+                          A(K2)=A(K2)+R
+                          A(K3+1)=A(K2+1)-T
+  220                 A(K2+1)=A(K2+1)+T
 C     END OF I AND K LOOPS
 C     
-                  JJ=JJDIF+JJ
- 230           continue
+  230             JJ=JJDIF+JJ
 C     END OF J-LOOP
 C     
-               JLAST=4*JLAST+3
- 235           continue
- 240        CONTINUE
+  235             JLAST=4*JLAST+3
+  240         CONTINUE
 C     END OF  L  LOOP
 C     
 C     WE NOW HAVE THE COMPLEX FOURIER SUMS BUT THEIR ADDRESSES ARE
 C     BIT-REVERSED.  THE FOLLOWING ROUTINE PUTS THEM IN ORDER
-            N1VNT=N1/NT
-            JJD1=N1/(N1VNT*N1VNT)
-            J=1
- 800        JJ1=1
-            DO 860 JPP1=1,N1VNT
-               IPP1=INV(JJ1)
-               DO 850 JP1=1,NT
- 810              IP1=INV(JP1)*N1VNT
- 830              I=2*(IPP1+IP1)+1
-                  IF (J.ge.I) then
-                     T=A(I)
-                     A(I)=A(J)
-                     A(J)=T
-                     T=A(I+1)
-                     A(I+1)=A(J+1)
-                     A(J+1)=T
-                  endif
-                  J=J+2
- 850           continue
-               JJ1=JJ1+JJD1
- 860        continue
+              N1VNT=N1/NT
+              JJD1=N1/(N1VNT*N1VNT)
+              J=1
+  800         JJ1=1
+              DO 860 JPP1=1,N1VNT
+                  IPP1=INV(JJ1)
+                  DO 850 JP1=1,NT
+  810                 IP1=INV(JP1)*N1VNT
+  830                 I=2*(IPP1+IP1)+1
+                      IF (J-I) 840,845,845
+  840                 T=A(I)
+                      A(I)=A(J)
+                      A(J)=T
+                      T=A(I+1)
+                      A(I+1)=A(J+1)
+                      A(J+1)=T
+  845                 CONTINUE
+  850             J=J+2
+  860         JJ1=JJ1+JJD1
 C     END OF JPP1 AND JP2
 C     
 C     
- 890        IF(IFSET .ge. 0) go to 895
- 891        DO 892 I = 1,NX
-               A(2*I) = -A(2*I)
- 892        continue
- 895        RETURN
+  890         IF(IFSET)891,895,895
+  891         DO 892 I = 1,NX
+  892         A(2*I) = -A(2*I)
+  895         RETURN
 C     
 C     THE FOLLOWING PROGRAM COMPUTES THE SIN AND INV TABLES.
 C     
- 900        MT=M-2
-            MT = MAX0(2,MT)
- 904        IF (MT.le.20) goto 906
-            IFERR = 1
-            GO TO 895
- 906        IFERR=0
-            NT=2**MT
-            NTV2=NT/2
+  900         MT=M-2
+              MT = MAX0(2,MT)
+  904         IF (MT-20)906,906,905
+  905         IFERR = 1
+              GO TO 895
+  906         IFERR=0
+              NT=2**MT
+              NTV2=NT/2
 C     
 C     SET UP SIN TABLE
 C     THETA=PIE/2**(L+1) FOR L=1
- 910        THETA=.7853981634
+  910         THETA=.7853981634
 C     
 C     JSTEP=2**(MT-L+1) FOR L=1
-            JSTEP=NT
+              JSTEP=NT
 C     
 C     JDIF=2**(MT-L) FOR L=1
 C     JDIF=2**(MT-L) FOR L=1
-            JDIF=NTV2
-            S(JDIF)=SIN(THETA)
-            DO 950 L=2,MT
-               THETA=THETA/2.
-               JSTEP2=JSTEP
-               JSTEP=JDIF
-               JDIF=JSTEP/2
-               S(JDIF)=SIN(THETA)
-               JC1=NT-JDIF
-               S(JC1)=COS(THETA)
-               JLAST=NT-JSTEP2
-               IF(JLAST .lt. JSTEP) go to 950
- 920           DO 940 J=JSTEP,JLAST,JSTEP
-                  JC=NT-J
-                  JD=J+JDIF
-                  S(JD)=S(J)*S(JC1)+S(JDIF)*S(JC)
- 940           continue
- 950        CONTINUE
+              JDIF=NTV2
+              S(JDIF)=SIN(THETA)
+              DO 950 L=2,MT
+                  THETA=THETA/2.
+                  JSTEP2=JSTEP
+                  JSTEP=JDIF
+                  JDIF=JSTEP/2
+                  S(JDIF)=SIN(THETA)
+                  JC1=NT-JDIF
+                  S(JC1)=COS(THETA)
+                  JLAST=NT-JSTEP2
+                  IF(JLAST - JSTEP) 950,920,920
+  920             DO 940 J=JSTEP,JLAST,JSTEP
+                      JC=NT-J
+                      JD=J+JDIF
+  940             S(JD)=S(J)*S(JC1)+S(JDIF)*S(JC)
+  950         CONTINUE
 C     
 C     SET UP INV(J) TABLE
 C     
- 960        MTLEXP=NTV2
+  960         MTLEXP=NTV2
 C     
 C     MTLEXP=2**(MT-L). FOR L=1
-            LM1EXP=1
+              LM1EXP=1
 C     
 C     LM1EXP=2**(L-1). FOR L=1
-            INV(1)=0
-            DO 980 L=1,MT
-               INV(LM1EXP+1) = MTLEXP
-               DO 970 J=2,LM1EXP
-                  JJ=J+LM1EXP
-                  INV(JJ)=INV(J)+MTLEXP
- 970           continue
-               MTLEXP=MTLEXP/2
-               LM1EXP=LM1EXP*2
- 980        continue
- 982        IF(IFSET.eq.0) goto 895
-            goto 12
-            END
+              INV(1)=0
+                  DO 980 L=1,MT
+                      INV(LM1EXP+1) = MTLEXP
+                      DO 970 J=2,LM1EXP
+                          JJ=J+LM1EXP
+  970                 INV(JJ)=INV(J)+MTLEXP
+                      MTLEXP=MTLEXP/2
+  980             LM1EXP=LM1EXP*2
+  982             IF(IFSET)12,895,12
+                  END
