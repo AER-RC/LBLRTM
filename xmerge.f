@@ -874,11 +874,10 @@ C                                                                         H08140
          GNU2 = XVI*XVI
          BG2  = XVIOKT*XVIOKT
 C
-C     IF FIRST CALL, INITIALIZE BBLAST                                    H08150
+C     Initialize BBLAST for BBLAST negative                               H08150
 C                                                                         H08160
       IF (BBLAST.LT.0.) THEN                                              H08170
          IF (XKT.GT.0.0) THEN                                             H08180
-C                                                                         H08190
             IF (XVIOKT.LE.0.01) THEN                                      H08230
                BBLAST = RADCN1*(XVI**2)*XKT/(1.+0.5*XVIOKT)               H08240
             ELSEIF (XVIOKT.LE.80.0) THEN                                  H08250
@@ -902,25 +901,37 @@ C                                                                         H08400
       IF (XKT.GT.0.0) THEN                                                H08420
 C                                                                         H08430
          IF (XVIOKT.LE.0.01) THEN                                         H08470
-            XDELT = (GNU2 * (4.+4.*XVIOKT + BG2))/
-     *        (10.*BG2 - 24.*XVIOKT + 8.)
-            DELTAV = SQRT(ABS(FACTOR*XDELT))
-            IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
-            INTVLS = (DELTAV)/DVI
-            INTVLS = MAX(INTVLS,1)
-            VINEW = VI+DVI*FLOAT(INTVLS)
+            IF (VINEW.GE.0.0) THEN
+               XDELT = (GNU2 * (4.+4.*XVIOKT + BG2))/
+     *              (10.*BG2 - 24.*XVIOKT + 8.)
+               DELTAV = SQRT(ABS(FACTOR*XDELT))
+               IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
+               INTVLS = (DELTAV)/DVI
+               INTVLS = MAX(INTVLS,1)
+               VINEW = VI+DVI*FLOAT(INTVLS)
+            ELSE
+               VINEW = ABS(VINEW)
+               INTVLS = (VINEW-VI)/DVI
+               INTVLS = MAX(INTVLS,1)
+            ENDIF
             XVINEW = VINEW                                                H08580
 C                                                                         H08590
             BBNEXT = RADCN1*(XVINEW**2)*XKT/(1.+0.5*XVINEW/XKT)           H08600
          ELSEIF (XVIOKT.LE.80.0) THEN                                     H08610
-            FRONT  = XVIOKT/(1.-EXPNEG)
-            BOX    = 3.- FRONT
-            DELT2C = (1./GNU2)*(2.*BOX-FRONT*(1.+BOX-FRONT*EXPNEG))
-            DELTAV = SQRT(ABS(FACTOR/DELT2C))
-            IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
-            INTVLS = (DELTAV)/DVI
-            INTVLS = MAX(INTVLS,1)
-            VINEW = VI+DVI*FLOAT(INTVLS)
+            IF (VINEW.GE.0.0) THEN
+               FRONT  = XVIOKT/(1.-EXPNEG)
+               BOX    = 3.0 - FRONT
+               DELT2C = (1./GNU2)*(2.*BOX-FRONT*(1.+BOX-FRONT*EXPNEG))
+               DELTAV = SQRT(ABS(FACTOR/DELT2C))
+               IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2
+               INTVLS = (DELTAV)/DVI
+               INTVLS = MAX(INTVLS,1)
+               VINEW = VI+DVI*FLOAT(INTVLS)
+            ELSE
+               VINEW = ABS(VINEW)
+               INTVLS = (VINEW-VI)/DVI
+               INTVLS = MAX(INTVLS,1)
+            ENDIF
             XVINEW = VINEW                                                H08740
 C                                                                         H08750
             BBNEXT = RADCN1*(XVINEW**3)/(EXP(XVINEW/XKT)-1.)              H08760
@@ -934,8 +945,6 @@ C                                                                         H08750
       ENDIF                                                               H08840
 C                                                                         H08850
       BBDEL = (BBNEXT-BBFN)/FLOAT(INTVLS)                                 H08860
-C                                                                         H08870
-      VINEW = VINEW-DVI+0.00001                                           H08880
       BBLAST = BBNEXT                                                     H08890
 C                                                                         H08900
       RETURN                                                              H08910
@@ -1013,7 +1022,7 @@ C                                                                         H09560
          INTVLS = MAX(INTVLS,1)                                           H09600
          XVNEXT = XVI+DVI*FLOAT(INTVLS)                                   H09610
       ELSE                                                                H09620
-         XVNEXT = ABS(VINEM)+DVI-0.00001                                  H09630
+         XVNEXT = ABS(VINEM)                                              H09630
          INTVLS = (XVNEXT-XVI)/DVI                                        H09640
          INTVLS = MAX(INTVLS,1)                                           H09650
       ENDIF                                                               H09660
@@ -1022,7 +1031,7 @@ C                                                                         H09670
 C                                                                         H09690
       EMDEL = (EMNEXT-EMISFN)/FLOAT(INTVLS)                               H09700
 C                                                                         H09710
-      VINEM = XVNEXT-DVI+0.00001                                          H09720
+      VINEM = XVNEXT                                                      H09720
       EMLAST = EMNEXT                                                     H09730
 C                                                                         H09740
       RETURN                                                              H09750
@@ -1101,7 +1110,7 @@ C                                                                         H10410
          INTVLS = MAX(INTVLS,1)                                           H10450
          XVNEXT = XVI+DVI*FLOAT(INTVLS)                                   H10460
       ELSE                                                                H10470
-         XVNEXT = ABS(VINRF)+DVI-0.00001                                  H10480
+         XVNEXT = ABS(VINRF)                                              H10480
          INTVLS = (XVNEXT-XVI)/DVI                                        H10490
          INTVLS = MAX(INTVLS,1)                                           H10500
       ENDIF                                                               H10510
@@ -1110,7 +1119,7 @@ C                                                                         H10520
 C                                                                         H10540
       RFDEL = (RFNEXT-REFLFN)/FLOAT(INTVLS)                               H10550
 C                                                                         H10560
-      VINRF = XVNEXT-DVI+0.00001                                          H10570
+      VINRF = XVNEXT                                                      H10570
       RFLAST = RFNEXT                                                     H10580
 C                                                                         H10590
       RETURN                                                              H10600
@@ -1218,15 +1227,15 @@ C                                                                         H11410
 C                                                                         H11590
       AA = 0.2                                                            H11600
 C                                                                         H11610
-      IF (IAERSL.NE.0) THEN                                               H11630
-         BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       
-         RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDDUM)                     H11640
-         EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H11650
-         IAFBB = 0                                                        H11660
-         IF (VITST.LT.VAER.AND.VITST.LT.VIBB) IAFBB = 1                   H11670
-         IF (VAER.LT.VITST.AND.VAER.LT.VIBB) IAFBB = 2                    H11680
-      ELSE                                                                H11690
-         IAFBB = -1                                                       H11700
+      IF (IAERSL.EQ.0) THEN                                               H11620
+         IAFBB = -1                                                       H11630
+      ELSE                                                                H11640
+         BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       H11650
+         RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDDUM)                     H11660
+         EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H11670
+         IAFBB = 0                                                        H11680
+         IF (VITST.LT.VAER.AND.VITST.LT.VIBB) IAFBB = 1                   H11690
+         IF (VAER.LT.VITST.AND.VAER.LT.VIBB) IAFBB = 2                    H11700
       ENDIF                                                               H11710
 C                                                                         H11720
 C     - THIS SECTION TREATS THE CASE WHERE THE LAYER CONTRIBUTES          H11730
@@ -1252,8 +1261,6 @@ C                                                                         H11850
                   BBA = BB                                                H11930
                   BBDLA = BBDEL                                           H11940
                ENDIF                                                      H11950
-               BB = BB-BBDEL                                              H11960
-               BBA = BBA-BBDLA                                            H11970
             ELSEIF (IAFBB.EQ.0) THEN                                      H11980
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H11990
                IF (XKTA.GT.0.) THEN                                       H12000
@@ -1263,17 +1270,11 @@ C                                                                         H11850
                   BBA = BB                                                H12040
                   BBDLA = BBDEL                                           H12050
                ENDIF                                                      H12060
-               BB = BB-BBDEL                                              H12070
-               BBA = BBA-BBDLA                                            H12080
                VITST = -VIDV                                              H12090
                RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H12100
-               RADFN0 = RADFN0-RDEL                                       H12110
-               VAER = -VIDV                                               H12120
                EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H12130
-               EXT = EXT-ADEL                                             H12140
             ELSEIF (IAFBB.EQ.1) THEN                                      H12150
                RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H12160
-               RADFN0 = RADFN0-RDEL                                       H12170
                VIBB = -VIDV                                               H12180
                BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H12190
                IF (XKTA.GT.0.) THEN                                       H12200
@@ -1283,45 +1284,38 @@ C                                                                         H11850
                   BBA = BB                                                H12240
                   BBDLA = BBDEL                                           H12250
                ENDIF                                                      H12260
-               BB = BB-BBDEL                                              H12270
-               BBA = BBA-BBDLA                                            H12280
-               VAER = -VIDV                                               H12290
                EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H12300
-               EXT = EXT-ADEL                                             H12310
             ELSEIF (IAFBB.EQ.2) THEN                                      H12320
                EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H12330
-               EXT = EXT-ADEL                                             H12340
-               VIBB = -VIDV                                               H12350
-               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H12360
+               VIBB = -VIDV
+               BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
                IF (XKTA.GT.0.) THEN                                       H12370
-                  VIBB = -VIDV                                            H12380
-                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12390
+                  VIBB = -VIDV
+                  BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
                ELSE                                                       H12400
                   BBA = BB                                                H12410
                   BBDLA = BBDEL                                           H12420
                ENDIF                                                      H12430
-               BB = BB-BBDEL                                              H12440
-               BBA = BBA-BBDLA                                            H12450
                VITST = -VIDV                                              H12460
                RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H12470
-               RADFN0 = RADFN0-RDEL                                       H12480
             ENDIF                                                         H12490
 C                                                                         H12500
             NLIM2 = (VIDV-V1P)/DVP+1.001                                  H12510
             NLIM2 = MIN(NLIM2,NLIM)                                       H12520
 C                                                                         H12530
             DO 20 I = NLIM1, NLIM2                                        H12540
-               EXT = EXT+ADEL                                             H12550
-               RADFN0 = RADFN0+RDEL                                       H12560
                ODVI = TR(I)+EXT*RADFN0                                    H12570
-               BB = BB+BBDEL                                              H12580
-               BBA = BBA+BBDLA                                            H12590
-C                                                                         H12600
                XX = AA*ODVI                                               H12610
 C                                                                         H12620
                TR(I) = EXP(-ODVI)                                         H12630
                EM(I) = (1.-TR(I))*(BB+XX*BBA)/(1.+XX)                     H12640
 C                                                                         H12650
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H12550
+               RADFN0 = RADFN0+RDEL                                       H12560
+               BB = BB+BBDEL                                              H12580
+               BBA = BBA+BBDLA                                            H12590
    20       CONTINUE                                                      H12660
 C                                                                         H12670
             IF (NLIM2.LT.NLIM) GO TO 10                                   H12680
@@ -1341,8 +1335,6 @@ C                                                                         H12740
                   BBA = BB                                                H12820
                   BBDLA = BBDEL                                           H12830
                ENDIF                                                      H12840
-               BB = BB-BBDEL                                              H12850
-               BBA = BBA-BBDLA                                            H12860
             ELSEIF (IAFBB.EQ.0) THEN                                      H12870
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H12880
                IF (XKTA.GT.0.) THEN                                       H12890
@@ -1352,17 +1344,11 @@ C                                                                         H12740
                   BBA = BB                                                H12930
                   BBDLA = BBDEL                                           H12940
                ENDIF                                                      H12950
-               BB = BB-BBDEL                                              H12960
-               BBA = BBA-BBDLA                                            H12970
                VITST = -VIDV                                              H12980
                RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H12990
-               RADFN0 = RADFN0-RDEL                                       H13000
-               VAER = -VIDV                                               H13010
                EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H13020
-               EXT = EXT-ADEL                                             H13030
             ELSEIF (IAFBB.EQ.1) THEN                                      H13040
                RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H13050
-               RADFN0 = RADFN0-RDEL                                       H13060
                VIBB = -VIDV                                               H13070
                BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H13080
                IF (XKTA.GT.0.) THEN                                       H13090
@@ -1372,14 +1358,9 @@ C                                                                         H12740
                   BBA = BB                                                H13130
                   BBDLA = BBDEL                                           H13140
                ENDIF                                                      H13150
-               BB = BB-BBDEL                                              H13160
-               BBA = BBA-BBDLA                                            H13170
-               VAER = -VIDV                                               H13180
                EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H13190
-               EXT = EXT-ADEL                                             H13200
             ELSEIF (IAFBB.EQ.2) THEN                                      H13210
                EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H13220
-               EXT = EXT-ADEL                                             H13230
                VIBB = -VIDV                                               H13240
                BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H13250
                IF (XKTA.GT.0.) THEN                                       H13260
@@ -1389,28 +1370,26 @@ C                                                                         H12740
                   BBA = BB                                                H13300
                   BBDLA = BBDEL                                           H13310
                ENDIF                                                      H13320
-               BB = BB-BBDEL                                              H13330
-               BBA = BBA-BBDLA                                            H13340
                VITST = -VIDV                                              H13350
                RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H13360
-               RADFN0 = RADFN0-RDEL                                       H13370
             ENDIF                                                         H13380
 C                                                                         H13390
             NLIM2 = (VIDV-V1P)/DVP+1.001                                  H13400
             NLIM2 = MIN(NLIM2,NLIM)                                       H13410
 C                                                                         H13420
             DO 40 I = NLIM1, NLIM2                                        H13430
-               EXT = EXT+ADEL                                             H13440
-               RADFN0 = RADFN0+RDEL                                       H13450
                ODVI = TR(I)+EXT*RADFN0                                    H13460
-               BB = BB+BBDEL                                              H13470
-               BBA = BBA+BBDLA                                            H13480
-C                                                                         H13490
                XX = AA*ODVI                                               H13500
 C                                                                         H13510
                TR(I) = EXP(-ODVI)                                         H13520
                EM(I) = (1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)    H13530
 C                                                                         H13540
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H13440
+               RADFN0 = RADFN0+RDEL                                       H13450
+               BB = BB+BBDEL                                              H13470
+               BBA = BBA+BBDLA                                            H13480
    40       CONTINUE                                                      H13550
 C                                                                         H13560
             IF (NLIM2.LT.NLIM) GO TO 30                                   H13570
@@ -1446,9 +1425,6 @@ C                                                                         H13720
                   BBB = BB                                                H13870
                   BBDLB = BBDEL                                           H13880
                ENDIF                                                      H13890
-               BB = BB-BBDEL                                              H13900
-               BBA = BBA-BBDLA                                            H13910
-               BBB = BBB-BBDLB                                            H13920
             ELSEIF (IAFBB.EQ.0) THEN                                      H13930
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H13940
                IF (XKTA.GT.0.) THEN                                       H13950
@@ -1465,18 +1441,11 @@ C                                                                         H13720
                   BBB = BB                                                H14060
                   BBDLB = BBDEL                                           H14070
                ENDIF                                                      H14080
-               BB = BB-BBDEL                                              H14090
-               BBA = BBA-BBDLA                                            H14100
-               BBB = BBB-BBDLB                                            H14110
                VITST = -VIDV                                              H14120
                RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H14130
-               RADFN0 = RADFN0-RDEL                                       H14140
-               VAER = -VIDV                                               H14150
                EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H14160
-               EXT = EXT-ADEL                                             H14170
             ELSEIF (IAFBB.EQ.1) THEN                                      H14180
                RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H14190
-               RADFN0 = RADFN0-RDEL                                       H14200
                VIBB = -VIDV                                               H14210
                BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H14220
                IF (XKTA.GT.0.) THEN                                       H14230
@@ -1493,15 +1462,9 @@ C                                                                         H13720
                   BBB = BB                                                H14340
                   BBDLB = BBDEL                                           H14350
                ENDIF                                                      H14360
-               BB = BB-BBDEL                                              H14370
-               BBA = BBA-BBDLA                                            H14380
-               BBB = BBB-BBDLB                                            H14390
-               VAER = -VIDV                                               H14400
                EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H14410
-               EXT = EXT-ADEL                                             H14420
             ELSEIF (IAFBB.EQ.2) THEN                                      H14430
                EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H14440
-               EXT = EXT-ADEL                                             H14450
                VIBB = -VIDV                                               H14460
                BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H14470
                IF (XKTA.GT.0.) THEN                                       H14480
@@ -1518,25 +1481,15 @@ C                                                                         H13720
                   BBB = BB                                                H14590
                   BBDLB = BBDEL                                           H14600
                ENDIF                                                      H14610
-               BB = BB-BBDEL                                              H14620
-               BBA = BBA-BBDLA                                            H14630
-               BBB = BBB-BBDLB                                            H14640
                VITST = -VIDV                                              H14650
                RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H14660
-               RADFN0 = RADFN0-RDEL                                       H14670
             ENDIF                                                         H14680
 C                                                                         H14690
             NLIM2 = (VIDV-V1P)/DVP+1.001                                  H14700
             NLIM2 = MIN(NLIM2,NLIM)                                       H14710
 C                                                                         H14720
             DO 60 I = NLIM1, NLIM2                                        H14730
-               EXT = EXT+ADEL                                             H14740
-               RADFN0 = RADFN0+RDEL                                       H14750
                ODVI = TR(I)+EXT*RADFN0                                    H14760
-               BB = BB+BBDEL                                              H14770
-               BBA = BBA+BBDLA                                            H14780
-               BBB = BBB+BBDLB                                            H14790
-C                                                                         H14800
                XX = AA*ODVI                                               H14810
 C                                                                         H14820
                TR(I) = EXP(-ODVI)                                         H14830
@@ -1544,6 +1497,13 @@ C                                                                         H14820
                EM(I) = EMX*(BB+XX*BBA)                                    H14850
                EMB(I) = EMX*(BB+XX*BBB)                                   H14860
 C                                                                         H14870
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H14740
+               RADFN0 = RADFN0+RDEL                                       H14750
+               BB = BB+BBDEL                                              H14770
+               BBA = BBA+BBDLA                                            H14780
+               BBB = BBB+BBDLB                                            H14790
    60       CONTINUE                                                      H14880
 C                                                                         H14890
             IF (NLIM2.LT.NLIM) GO TO 50                                   H14900
@@ -1571,9 +1531,6 @@ C                                                                         H14970
                   BBB = BB                                                H15120
                   BBDLB = BBDEL                                           H15130
                ENDIF                                                      H15140
-               BB = BB-BBDEL                                              H15150
-               BBA = BBA-BBDLA                                            H15160
-               BBB = BBB-BBDLB                                            H15170
             ELSEIF (IAFBB.EQ.0) THEN                                      H15180
                BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                H15190
                IF (XKTA.GT.0.) THEN                                       H15200
@@ -1590,18 +1547,11 @@ C                                                                         H14970
                   BBB = BB                                                H15310
                   BBDLB = BBDEL                                           H15320
                ENDIF                                                      H15330
-               BB = BB-BBDEL                                              H15340
-               BBA = BBA-BBDLA                                            H15350
-               BBB = BBB-BBDLB                                            H15360
                VITST = -VIDV                                              H15370
                RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H15380
-               RADFN0 = RADFN0-RDEL                                       H15390
-               VAER = -VIDV                                               H15400
                EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H15410
-               EXT = EXT-ADEL                                             H15420
             ELSEIF (IAFBB.EQ.1) THEN                                      H15430
                RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)               H15440
-               RADFN0 = RADFN0-RDEL                                       H15450
                VIBB = -VIDV                                               H15460
                BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H15470
                IF (XKTA.GT.0.) THEN                                       H15480
@@ -1618,15 +1568,9 @@ C                                                                         H14970
                   BBB = BB                                                H15590
                   BBDLB = BBDEL                                           H15600
                ENDIF                                                      H15610
-               BB = BB-BBDEL                                              H15620
-               BBA = BBA-BBDLA                                            H15630
-               BBB = BBB-BBDLB                                            H15640
-               VAER = -VIDV                                               H15650
                EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H15660
-               EXT = EXT-ADEL                                             H15670
             ELSEIF (IAFBB.EQ.2) THEN                                      H15680
                EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)        H15690
-               EXT = EXT-ADEL                                             H15700
                VIBB = -VIDV                                               H15710
                BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                H15720
                IF (XKTA.GT.0.) THEN                                       H15730
@@ -1643,25 +1587,15 @@ C                                                                         H14970
                   BBB = BB                                                H15840
                   BBDLB = BBDEL                                           H15850
                ENDIF                                                      H15860
-               BB = BB-BBDEL                                              H15870
-               BBA = BBA-BBDLA                                            H15880
-               BBB = BBB-BBDLB                                            H15890
                VITST = -VIDV                                              H15900
                RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)              H15910
-               RADFN0 = RADFN0-RDEL                                       H15920
             ENDIF                                                         H15930
 C                                                                         H15940
             NLIM2 = (VIDV-V1P)/DVP+1.001                                  H15950
             NLIM2 = MIN(NLIM2,NLIM)                                       H15960
 C                                                                         H15970
             DO 80 I = NLIM1, NLIM2                                        H15980
-               EXT = EXT+ADEL                                             H15990
-               RADFN0 = RADFN0+RDEL                                       H16000
                ODVI = TR(I)+EXT*RADFN0                                    H16010
-               BB = BB+BBDEL                                              H16020
-               BBA = BBA+BBDLA                                            H16030
-               BBB = BBB+BBDLB                                            H16040
-C                                                                         H16050
                XX = AA*ODVI                                               H16060
 C                                                                         H16070
                TR(I) = EXP(-ODVI)                                         H16080
@@ -1669,6 +1603,13 @@ C                                                                         H16070
                EM(I) = EMX*(BB+XX*BBA)                                    H16100
                EMB(I) = EMX*(BB+XX*BBB)                                   H16110
 C                                                                         H16120
+C              Increment interpolation values
+C
+               EXT = EXT+ADEL                                             H15990
+               RADFN0 = RADFN0+RDEL                                       H16000
+               BB = BB+BBDEL                                              H16020
+               BBA = BBA+BBDLA                                            H16030
+               BBB = BBB+BBDLB                                            H16040
    80       CONTINUE                                                      H16130
 C                                                                         H16140
             IF (NLIM2.LT.NLIM) GO TO 70                                   H16150
@@ -1857,14 +1798,25 @@ C                                                                         H17740
 C                                                                         H17950
          NLIM1 = 0                                                        H17960
          NLIM2 = 0                                                        H17970
+         EMDUM = 0.                                                       H17980
          BBDUM = 0.                                                       H17990
+         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)                      H18000
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)                H18010
+         IEMBB = 0                                                        H18020
+         IF (VIDVBD.GT.VIDVEM) IEMBB = 1                                  H18030
 C                                                                         H18040
    40    NLIM1 = NLIM2+1                                                  H18050
 C                                                                         H18060
          VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18070
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)                 H18090
-         BB = BB-BBDEL                                                    H18100
+         IF (IEMBB.EQ.0) THEN                                             H18080
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18090
+            VIDVEM = -VIDV                                                H18110
+            EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H18120
+         ELSE                                                             H18140
+            EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)                    H18150
+            VIDVBD = -VIDV                                                H18170
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H18180
+         ENDIF                                                            H18200
 C                                                                         H18210
          IF (VIDV.GE.9.E+4) THEN 
             NLIM2 = NLIMO+1
@@ -1875,9 +1827,12 @@ C                                                                         H18210
 C                                                                         H18240
          DO 50 J = NLIM1, NLIM2                                           H18250
             V=VI+FLOAT(J-1)*DVPO
-            EMISIV = BNDEMI(1)+V*(BNDEMI(2)+V*BNDEMI(3))
-            BB = BB+BBDEL                                                 H18270
-            NEWEM(J) = EMLAYR(J)+TRLAYR(J)*BB*EMISIV                      H18280
+            NEWEM(J) = EMLAYR(J)+TRLAYR(J)*BB*EMISIV                      H18260
+C
+C           Increment interpolation value
+C
+            EMISIV = EMISIV+EMDEL                                         H18270
+            BB = BB+BBDEL                                                 H18280
    50    CONTINUE                                                         H18290
 C                                                                         H18300
          IF (NLIM2.LT.NLIMO) GO TO 40                                     H18310
@@ -1886,14 +1841,38 @@ C                                                                         H18320
 C                                                                         H18340
          NLIM1 = 0                                                        H18350
          NLIM2 = 0                                                        H18360
+         EMDUM = 0.                                                       H18370
+         RFDUM = 0.                                                       H18380
          BBDUM = 0.                                                       H18390
+         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)                      H18400
+         REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFDUM)                      H18410
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)                H18420
+         IEMBB = 0                                                        H18430
+         IF (VIDVEM.LT.VIDVRF.AND.VIDVEM.LT.VIDVBD) IEMBB = 1             H18440
+         IF (VIDVRF.LT.VIDVEM.AND.VIDVRF.LT.VIDVBD) IEMBB = 2             H18450
 C                                                                         H18460
    60    NLIM1 = NLIM2+1                                                  H18470
 C                                                                         H18480
          VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H18490
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)                 H18510
-         BB = BB-BBDEL                                                    H18520
+         IF (IEMBB.EQ.0) THEN                                             H18500
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H18510
+            VIDVEM = -VIDV                                                H18530
+            EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H18540
+            VIDVRF = -VIDV                                                H18560
+            REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)                  H18570
+         ELSEIF (IEMBB.EQ.1) THEN                                         H18590
+            EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)                    H18600
+            VIDVBD = -VIDV                                                H18620
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H18630
+            VIDVRF = -VIDV                                                H18650
+            REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)                  H18660
+         ELSE                                                             H18680
+            REFLCT = REFLFN(VI,DVPO,VIDV,RFDEL,RFLAST)                    H18690
+            VIDVBD = -VIDV                                                H18710
+            BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H18720
+            VIDVEM = -VIDV                                                H18740
+            EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H18750
+         ENDIF                                                            H18770
 C                                                                         H18780
          IF (VIDV.GE.9.E+4) THEN 
             NLIM2 = NLIMO+1
@@ -1904,11 +1883,14 @@ C                                                                         H18780
 C                                                                         H18810
          DO 70 J = NLIM1, NLIM2                                           H18820
             V=VI+FLOAT(J-1)*DVPO
-            EMISIV = BNDEMI(1)+V*(BNDEMI(2)+V*BNDEMI(3))
-            REFLCT = BNDRFL(1)+V*(BNDRFL(2)+V*BNDRFL(3))
-            BB = BB+BBDEL                                                 H18850
-            NEWEM(J) = EMLAYR(J)+EMLAYB(J)*REFLCT*TRLAYR(J)+              H18860
-     *                 TRLAYR(J)*BB*EMISIV                                H18870
+            NEWEM(J) = EMLAYR(J)+EMLAYB(J)*REFLCT*TRLAYR(J)+              H18830
+     *                 TRLAYR(J)*BB*EMISIV                                H18840
+C
+C           Increment interpolation value
+C
+            EMISIV = EMISIV+EMDEL                                         H18850
+            REFLCT = REFLCT+RFDEL                                         H18860
+            BB = BB+BBDEL                                                 H18870
    70    CONTINUE                                                         H18880
 C                                                                         H18890
          IF (NLIM2.LT.NLIMO) GO TO 60                                     H18900
@@ -2315,7 +2297,6 @@ C                                                                         H22830
 C                                                                         H22850
                VI = V1P+FLOAT(NLIM1-1)*DVP                                H22860
                REFLCT = REFLFN(VI,DVI,VIDVRF,RFDEL,RFLAST)                H22870
-               REFLCT = REFLCT-RFDEL                                      H22880
 C                                                                         H22890
                IF (VIDVRF.GE.9.E+4) THEN 
                   NLIM2 = NLIM+1
@@ -2326,11 +2307,14 @@ C                                                                         H22890
 C                                                                         H22920
                DO 50 I = NLIM1, NLIM2, LL                                 H22930
                   IPL = IPL+LLM1                                          H22940
-                  REFLCT = REFLCT+RFDEL                                   H22950
-                  TRTEMP = TRALYR(I)*TRAO(IPL)                            H22960
-                  RADLYR(I) = TRALYR(I)*RADO(IPL)+RADLYR(I)+              H22970
-     *                        RADLYB(I)*TRAO(IPL)*TRTEMP*REFLCT           H22980
-                  TRALYR(I) = TRTEMP                                      H22990
+                  TRTEMP = TRALYR(I)*TRAO(IPL)                            H22950
+                  RADLYR(I) = TRALYR(I)*RADO(IPL)+RADLYR(I)+              H22960
+     *                        RADLYB(I)*TRAO(IPL)*TRTEMP*REFLCT           H22970
+                  TRALYR(I) = TRTEMP                                      H22980
+C
+C           Increment interpolation values
+C
+                  REFLCT = REFLCT+RFDEL                                   H22990
    50          CONTINUE                                                   H23000
 C                                                                         H23010
                IF (NLIM2.LT.NLIM) GO TO 40                                H23020
@@ -2410,7 +2394,6 @@ C                                                                         H23740
 C                                                                         H23760
                VI = V1P+FLOAT(NLIM1-1)*DVP                                H23770
                REFLCT = REFLFN(VI,DVI,VIDVRF,RFDEL,RFLAST)                H23780
-               REFLCT = REFLCT-RFDEL                                      H23790
 C                                                                         H23800
                IF (VIDVRF.GE.9.E+4) THEN 
                   NLIM2 = NLIM+1
@@ -2421,21 +2404,24 @@ C                                                                         H23800
 C                                                                         H23830
                DO 100 I = NLIM1, NLIM2, LL                                H23840
                   IPL = IPL+LLM1                                          H23850
-                  REFLCT = REFLCT+RFDEL                                   H23860
-C                                                                         H23870
-C     INTERPOLATE THE OLD TRANSMISSION                                    H23880
-C                                                                         H23890
-                  TRAOI = A1N*TRAO(IPL-1)+A2N*TRAO(IPL)+                  H23900
-     *                    A3N*TRAO(IPL+1)+A4N*TRAO(IPL+2)                 H23910
-C                                                                         H23920
-                  TRTEMP = TRALYR(I)*TRAOI                                H23930
-C                                                                         H23940
-C     INTERPOLATE THE OLD RADIANCE                                        H23950
-C                                                                         H23960
-                  RADLYR(I) = TRALYR(I)*(A1N*RADO(IPL-1)+A2N*RADO(IPL)+   H23970
-     *                        A3N*RADO(IPL+1)+A4N*RADO(IPL+2))+           H23980
-     *                        RADLYR(I)+RADLYB(I)*TRAOI*TRTEMP*REFLCT     H23990
-                  TRALYR(I) = TRTEMP                                      H24000
+C                                                                         H23860
+C     INTERPOLATE THE OLD TRANSMISSION                                    H23870
+C                                                                         H23880
+                  TRAOI = A1N*TRAO(IPL-1)+A2N*TRAO(IPL)+                  H23890
+     *                    A3N*TRAO(IPL+1)+A4N*TRAO(IPL+2)                 H23900
+C                                                                         H23910
+                  TRTEMP = TRALYR(I)*TRAOI                                H23920
+C                                                                         H23930
+C     INTERPOLATE THE OLD RADIANCE                                        H23940
+C                                                                         H23950
+                  RADLYR(I) = TRALYR(I)*(A1N*RADO(IPL-1)+A2N*RADO(IPL)+   H23960
+     *                        A3N*RADO(IPL+1)+A4N*RADO(IPL+2))+           H23970
+     *                        RADLYR(I)+RADLYB(I)*TRAOI*TRTEMP*REFLCT     H23980
+                  TRALYR(I) = TRTEMP                                      H23990
+C
+C           Increment interpolation values
+C
+                  REFLCT = REFLCT+RFDEL                                   H24000
   100          CONTINUE                                                   H24010
 C                                                                         H24020
                IF (NLIM2.LT.NLIM) GO TO 90                                H24030
@@ -2829,16 +2815,12 @@ C                                                                         H27830
       VI = V1PO+FLOAT(NLIM1-1)*DVPO                                       H27840
       IF (IEMBB.EQ.0) THEN                                                H27850
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)                 H27860
-         BB = BB-BBDEL                                                    H27870
          VIDVEM = -VIDV                                                   H27880
          EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                     H27890
-         EMISIV = EMISIV-EMDEL                                            H27900
       ELSE                                                                H27910
          EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)                       H27920
-         EMISIV = EMISIV-EMDEL                                            H27930
          VIDVBD = -VIDV                                                   H27940
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)               H27950
-         BB = BB-BBDEL                                                    H27960
       ENDIF                                                               H27970
 C                                                                         H27980
       IF (VIDV.GE.9.E+4) THEN 
@@ -2849,9 +2831,12 @@ C                                                                         H27980
       NLIM2 = MIN(NLIM2,NLIMO)                                            H28000
 C                                                                         H28010
       DO 20 J = NLIM1, NLIM2                                              H28020
-         EMISIV = EMISIV+EMDEL                                            H28030
+         NEWEM(J) = NEWEM(J)+NEWTR(J)*EMISIV*BB                           H28030
+C
+C        Increment interpolation values
+C
          BB = BB+BBDEL                                                    H28040
-         NEWEM(J) = NEWEM(J)+NEWTR(J)*EMISIV*BB                           H28050
+         EMISIV = EMISIV+EMDEL                                            H28050
    20 CONTINUE                                                            H28060
 C                                                                         H28070
       IF (NLIM2.LT.NLIMO) GO TO 10                                        H28080
@@ -3125,8 +3110,6 @@ C                                                                         H29790
             BBA = BB                                                      H29870
             BBDLA = BBDEL                                                 H29880
          ENDIF                                                            H29890
-         BB = BB-BBDEL                                                    H29900
-         BBA = BBA-BBDLA                                                  H29910
       ELSEIF (IAFBB.EQ.0) THEN                                            H29920
          BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)                      H29930
          IF (XKTA.GT.0.) THEN                                             H29940
@@ -3136,17 +3119,12 @@ C                                                                         H29790
             BBA = BB                                                      H29980
             BBDLA = BBDEL                                                 H29990
          ENDIF                                                            H30000
-         BB = BB-BBDEL                                                    H30010
-         BBA = BBA-BBDLA                                                  H30020
          VITST = -VIDV                                                    H30030
          RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)                    H30040
-         RADFN0 = RADFN0-RDEL                                             H30050
          VAER = -VIDV                                                     H30060
          EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H30070
-         EXT = EXT-ADEL                                                   H30080
       ELSEIF (IAFBB.EQ.1) THEN                                            H30090
          RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)                     H30100
-         RADFN0 = RADFN0-RDEL                                             H30110
          VIBB = -VIDV                                                     H30120
          BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                      H30130
          IF (XKTA.GT.0.) THEN                                             H30140
@@ -3156,14 +3134,10 @@ C                                                                         H29790
             BBA = BB                                                      H30180
             BBDLA = BBDEL                                                 H30190
          ENDIF                                                            H30200
-         BB = BB-BBDEL                                                    H30210
-         BBA = BBA-BBDLA                                                  H30220
          VAER = -VIDV                                                     H30230
          EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H30240
-         EXT = EXT-ADEL                                                   H30250
       ELSEIF (IAFBB.EQ.2) THEN                                            H30260
          EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H30270
-         EXT = EXT-ADEL                                                   H30280
          VIBB = -VIDV                                                     H30290
          BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)                      H30300
          IF (XKTA.GT.0.) THEN                                             H30310
@@ -3173,28 +3147,27 @@ C                                                                         H29790
             BBA = BB                                                      H30350
             BBDLA = BBDEL                                                 H30360
          ENDIF                                                            H30370
-         BB = BB-BBDEL                                                    H30380
-         BBA = BBA-BBDLA                                                  H30390
          VITST = -VIDV                                                    H30400
          RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)                    H30410
-         RADFN0 = RADFN0-RDEL                                             H30420
       ENDIF                                                               H30430
 C                                                                         H30440
       NLIM2 = (VIDV-V1P)/DVP+1.001                                        H30450
       NLIM2 = MIN(NLIM2,NLIM)                                             H30460
 C                                                                         H30470
       DO 20 I = NLIM1, NLIM2                                              H30480
-         EXT = EXT+ADEL                                                   H30490
-         RADFN0 = RADFN0+RDEL                                             H30500
          ODVI = SECNT*TR(I)+EXT*RADFN0                                    H30510
-         BB = BB+BBDEL                                                    H30520
-         BBA = BBA+BBDLA                                                  H30530
 C                                                                         H30540
          XX = AA*ODVI                                                     H30550
 C                                                                         H30560
          TR(I) = EXP(-ODVI)                                               H30570
          EM(I) = (1.-TR(I))*(BB+XX*BBA)/(1.+XX)                           H30580
 C                                                                         H30590
+C        Increment interpolation values
+C
+         EXT = EXT+ADEL                                                   H30490
+         RADFN0 = RADFN0+RDEL                                             H30500
+         BB = BB+BBDEL                                                    H30520
+         BBA = BBA+BBDLA                                                  H30530
    20 CONTINUE                                                            H30600
 C                                                                         H30610
       IF (NLIM2.LT.NLIM) GO TO 10                                         H30620
@@ -3371,16 +3344,12 @@ C                                                                         H32290
          VI = V1PO+FLOAT(NLIM1-1)*DVPO                                    H32300
          IF (IEMBB.EQ.0) THEN                                             H32310
             BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)              H32320
-            BB = BB-BBDEL                                                 H32330
             VIDVEM = -VIDV                                                H32340
             EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)                  H32350
-            EMISIV = EMISIV-EMDEL                                         H32360
          ELSE                                                             H32370
             EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)                    H32380
-            EMISIV = EMISIV-EMDEL                                         H32390
             VIDVBD = -VIDV                                                H32400
             BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)            H32410
-            BB = BB-BBDEL                                                 H32420
          ENDIF                                                            H32430
 C                                                                         H32440
          IF (VIDV.GE.9.E+4) THEN 
@@ -3391,9 +3360,12 @@ C                                                                         H32440
          NLIM2 = MIN(NLIM2,NLIMO)                                         H32460
 C                                                                         H32470
          DO 40 J = NLIM1, NLIM2                                           H32480
-            EMISIV = EMISIV+EMDEL                                         H32490
+            NEWEM(J) = EMLAYR(J)+TRLAYR(J)*BB*EMISIV                      H32490
+C
+C           Increment interpolation values
+C
             BB = BB+BBDEL                                                 H32500
-            NEWEM(J) = EMLAYR(J)+TRLAYR(J)*BB*EMISIV                      H32510
+            EMISIV = EMISIV+EMDEL                                         H32510
    40    CONTINUE                                                         H32520
 C                                                                         H32530
          IF (NLIM2.LT.NLIMO) GO TO 30                                     H32540
@@ -4264,25 +4236,24 @@ C                                                                         H41080
       VI = V1P+FLOAT(NLIM1-1)*DVP                                         H41090
       IF (IAFRD.EQ.0) THEN                                                H41100
          RADFN0 = RADFNI(VI,DVP,XKT0,VIDV,RDEL,RDLAST)                    H41110
-         RADFN0 = RADFN0-RDEL                                             H41120
          VAER = -VIDV                                                     H41130
          EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H41140
-         EXT = EXT-ADEL                                                   H41150
       ELSE                                                                H41160
          EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H41170
-         EXT = EXT-ADEL                                                   H41180
          VITST = -VIDV                                                    H41190
          RADFN0 = RADFNI(VI,DVP,XKT0,VITST,RDEL,RDLAST)                   H41200
-         RADFN0 = RADFN0-RDEL                                             H41210
       ENDIF                                                               H41220
 C                                                                         H41230
       NLIM2 = (VIDV-V1P)/DVP+1.001                                        H41240
       NLIM2 = MIN(NLIM2,NLIM)                                             H41250
 C                                                                         H41260
       DO 30 K = NLIM1, NLIM2                                              H41270
+         R1(K) = R1(K)+EXT*RADFN0                                         H41300
+C
+C        Increment interpolation values
+C
          EXT = EXT+ADEL                                                   H41280
          RADFN0 = RADFN0+RDEL                                             H41290
-         R1(K) = R1(K)+EXT*RADFN0                                         H41300
    30 CONTINUE                                                            H41310
 C                                                                         H41320
       IF (NLIM2.LT.NLIM) GO TO 20                                         H41330
@@ -4327,8 +4298,6 @@ C                                                                         H41680
       EQUIVALENCE (XFILHD(1),XID(1))                                      H41690
       DIMENSION XFILHD(2)                                                 H41700
 C                                                                         H41710
-      DATA FACTOR / 1.E-03 /                                              H41720
-C                                                                         H41730
       VDIF = VI-V1ABS                                                     H41740
       IAER = VDIF/DVABS+1.00001                                           H41750
       VAER = V1ABS+DVABS*FLOAT(IAER-1)                                    H41760
@@ -4351,11 +4320,11 @@ C                                                                         H41910
       TDEL = DERIVS*DVI                                                   H41930
       GDEL = DERIVA*DVI                                                   H41940
 C                                                                         H41950
+C     Set next point for interpolation to be the point
+C     corresponding to the next element of the SCTTR,
+C     ASYMT, & ABSRB arrays
+C
       VINXT = VAER+DVABS                                                  H41960
-      VITST = VINXT                                                       H41970
-      IF (FACTOR*AERF.LT.ABS(DERIV*1.0E+6))                               H41980
-     *   VITST = VI+ABS(FACTOR*AERF/DERIV)                                H41990
-      IF (VITST.LT.VINXT) VINXT = VITST                                   H42000
 C                                                                         H42010
       RETURN                                                              H42020
 C                                                                         H42030
