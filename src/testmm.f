@@ -35,7 +35,7 @@ c
       real*4         rcdhdr
       integer*4      jlin,nwds
 
-      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NWDS,lstwdp                               N00160
+      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NWDS,lstwdp                          
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         N00170
      *              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,        N00180
      *              NLTEFL,LNFIL4,LNGTH4                                  N00190
@@ -147,16 +147,6 @@ C     body (01/94)
 C
 C**********************
          ENDIF                                                            N00950
-         if (iflg(k).ge.0) then
-c            write(89,920) mol(k),vnu(k),STR(k),TRANS,ALF(k),
-c     *           HWHMS(k),Epp(k),
-c     *           TMPALF(k),pSHIFT(k),IFLG(k)
-         else
-c            WRITE (89,925) mol(k),vnu(k),STR(k),TRANS,ALF(k),
-c     *           HWHMS(k),Epp(k),
-c     *           TMPALF(k),pSHIFT(k),IFLG(k)
-            WRITE (2,925)        ISO(k),Y1,G1,Y2,G2,Y3,G3,Y4,G4,IFLAG
-         endif
 C                                                                         N00960
 C     CHECK LAST LINE - TO SEE IF FIRST RECORD OF LINE COUPLED LINE       N00970
 C     IF SO, DON'T DO UNTIL NEXT GROUPING OF 250                          N00980
