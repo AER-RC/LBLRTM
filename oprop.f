@@ -2240,8 +2240,6 @@ C        COLLISION WIDTH FOR SELF BROADENING                              C00570
 C                                                                         C00580
 C     ALFD1 CONTAINS THE DOPPLER WIDTHS AT 1 CM-1                         C00590
 C                                                                         C00600
-      QRFAC(TEMP) = (TEMP0/TEMP)**RFACM                                   C00610
-C                                                                         C00630
       IF (IND.EQ.1) THEN 
 c
 c...Set up molecule isotope vectors:
@@ -3867,7 +3865,7 @@ c     this subroutine buffers past the file header for LINF4
 c
       IMPLICIT REAL*8           (V) 
 c
-      CHARACTER*8      HLINID,BMOLID,HID1,HLINHD                        & A09590
+      CHARACTER*8      HLINID,BMOLID,HID1
 C                                                                         A09600
       COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A09610
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A09620
@@ -3877,8 +3875,6 @@ C                                                                         A09600
       integer *4 lnfil,molcnt,mcntlc,mcntnl,linmol,
      *     lincnt,ilinlc,ilinnl,irec,irectl,lnfil4
 C                                                                         A09640
-      DIMENSION HLINHD(2),IWD(2)                                          A09670
-C                                                                         A09680
       lnfil = linfil
       lnfil4= linfil4
 c
@@ -3950,8 +3946,6 @@ c
 
       equivalence (vmin,rdpnl(1)), (mol_id(1),xmol(1))
 c
-      DIMENSION LINPNL(2)                                                 D02850
-C                                                                         D02880
       IPASS = 1                                                           D02890
       IF (ILO.GT.0) IPASS = 2                                             D02900
 C                                                                         D02910
