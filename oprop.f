@@ -107,10 +107,10 @@ C                                                                         B00890
      *              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,       B00940
      *              PAVP2,RECTLC,TMPDIF,ILC                               B00950
       COMMON /FLFORM/ CFORM                                               B00960
-      COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS
+      COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER
       COMMON /IODFLG/ DVOUT
 C                                                                         B00970
-      REAL L4TIM,L4TMR,L4TMS
+      REAL L4TIM,L4TMR,L4TMS,LOTHER
       CHARACTER*55 PTHODI
       CHARACTER*10 HFMODL
       CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
@@ -151,6 +151,15 @@ C                                                                         B01180
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
       HVROPR = '$Revision$'
+C
+C     Initialize timing for the group "OTHER" in the TAPE6 output
+C
+      TLNCOR = 0.0
+      TXINT = 0.0
+      TSHAPE = 0.0
+      TLOOPS = 0.0
+      TODFIL = 0.0
+      TMOLEC = 0.0
 C
       NPNLXP = NWDL(IWD,LSTWDX)                                           B01190
       ICNTNM = MOD(IXSCNT,10)                                             B01200
@@ -194,13 +203,19 @@ C                                                                         B01540
       NLIM3 = (NLIM2/4)+1                                                 B01580
 C                                                                         B01590
       IF (IFN.EQ.0) THEN                                                  B01600
+         CALL CPUTIM(TPAT0)
          CALL SHAPEL (F1,F2,F3)                                           B01610
          CALL SHAPEG (FG)                                                 B01620
          CALL VERFN (XVER)                                                B01630
          IFN = IFN+1                                                      B01640
+         CALL CPUTIM(TPAT1)
+         TSHAPE = TSHAPE+TPAT1-TPAT0
       ENDIF                                                               B01650
 C                                                                         B01660
+      CALL CPUTIM(TPAT0)
       CALL MOLEC (1,SCOR,RHOSLF,ALFD1)                                    B01670
+      CALL CPUTIM(TPAT1)
+      TMOLEC = TMOLEC+TPAT1-TPAT0
       REWIND LINFIL                                                       B01680
       TIMRDF = 0.                                                         B01690
       TIMCNV = 0.                                                         B01700
@@ -233,6 +248,7 @@ C                                                                         B01870
 C                                                                         B01970
 C     FOR CONSTANTS IN PROGRAM  MAX1=4018  MAX2=1029  MAX3=282            B01980
 C                                                                         B01990
+      CALL CPUTIM(TPAT0)
       BOUND = FLOAT(NBOUND)*DV/2.                                         B02000
       BOUNF3 = BOUND/2.                                                   B02010
       ALFMAX = BOUND/HWF3                                                 B02020
@@ -254,6 +270,8 @@ C                                                                         B01990
       ENDIF                                                               B02180
 C                                                                         B02190
       IF (IATM.GE.1.AND.IATM.LE.5) CALL YDIH1 (H1F,H2F,ANGLEF,YID)        B02200
+      CALL CPUTIM(TPAT1)
+      TLOOPS = TLOOPS + TPAT1-TPAT0
 C                                                                         B02210
 C     ---------------------------------------------------------------
 C
@@ -283,6 +301,7 @@ C       pathnames.
 C
 C     - Otherwise, use TAPE10.
 C
+      CALL CPUTIM(TPAT0)
       IF (IOD.EQ.1.AND.IMRG.EQ.1) THEN                                    B02220
          CALL QNTIFY(PTHODI,HFMODL)
          WRITE (KODLYR,HFMODL) PTHODI,LAYER                               B02230
@@ -330,6 +349,8 @@ C
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02360
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02370
       ENDIF                                                               B02380
+      CALL CPUTIM(TPAT1)
+      TODFIL = TODFIL + TPAT1-TPAT0
 C                                                                         B02390
       IF (IHIRAC.EQ.9) THEN                                               B02400
          DO 50 M = 1, NMOL                                                B02410
@@ -375,7 +396,10 @@ C                                                                         B02770
 C                                                                         B02790
 C     MODIFY LINE DATA FOR TEMPERATURE, PRESSURE, AND COLUMN DENSITY      B02800
 C                                                                         B02810
+      CALL CPUTIM(TPAT0)
       CALL LNCOR1 (NLNCR,IHI,ILO,MEFDP)                                   B02820
+      CALL CPUTIM(TPAT1)
+      TLNCOR = TLNCOR+TPAT1-TPAT0
 C                                                                         B02830
    70 CONTINUE                                                            B02840
 C                                                                         B02850
@@ -422,10 +446,13 @@ C                                                                         B03210
          TXS = TXS+TIME-TIME0                                             B03260
       ENDIF                                                               B03270
 C                                                                         B03280
+      CALL CPUTIM(TPAT0)
       IF (ILBLF4.GE.1)                                                    B03290
      *    CALL XINT (V1R4,V2R4,DVR4,R4,1.0,VFT,DVR3,R3,N1R3,N2R3)         B03300
       IF (ICNTNM.GE.1)                                                    B03310
      *    CALL XINT (V1ABS,V2ABS,DVABS,ABSRB,1.,VFT,DVR3,R3,N1R3,N2R3)    B03320
+      CALL CPUTIM(TPAT1)
+      TXINT = TXINT + TPAT1-TPAT0
 C                                                                         B03330
       CALL PANEL (R1,R2,R3,KFILE,JRAD,IENTER)                             B03340
 C                                                                         B03350
@@ -453,10 +480,13 @@ C                                                                         B03550
          IF (ILBLF4.GE.1) WRITE (IPR,905) DVR4,BOUND4                     B03570
          IF (NMINUS.GT.0) WRITE (IPR,910) NMINUS                          B03580
          IF (NPLUS.GT.0) WRITE (IPR,915) NPLUS                            B03590
-         WRITE (IPR,920) L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,
+         TOTHHI = TLNCOR+TXINT+TSHAPE+TLOOPS+TODFIL+TMOLEC
+         WRITE (IPR,920) L4TIM,L4TMR,L4TMS,LOTHER,L4NLN,L4NLS,
      *                   TXS,TXSRDF,TXSCNV,TXSPNL,                        B03600
      *                   TF4,TF4RDF,TF4CNV,TF4PNL,ILIN4T,ILIN4,           B03610
-     *                   TIME,TIMRDF,TIMCNV,TIMPNL,NLIN,LINCNT,NCHNG      B03620
+     *                   TIME,TIMRDF,TIMCNV,TIMPNL,TOTHHI,
+     *                   NLIN,LINCNT,NCHNG                                B03620
+         WRITE(IPR,935)
          IF (LINCNT.GE.1) THEN                                            B03630
             AVALF = SUMALF/FLOAT(LINCNT)                                  B03640
             AVZETA = SUMZET/FLOAT(LINCNT)                                 B03650
@@ -476,15 +506,22 @@ C                                                                         B03750
   910 FORMAT ('0 -------------------------',I5,' HALF WIDTH CHANGES')     B03790
   915 FORMAT ('0 +++++++++++++++++++++++++',I5,' HALF WIDTH CHANGES')     B03800
   920 FORMAT ('0',20X,'TIME',11X,'READ',4X,'CONVOLUTION',10X,'PANEL',     B03810
+     *        9X,'OTHER+',
      *        6X,'NO. LINES',3X,'AFTER REJECT',5X,'HW CHANGES',/,         B03820
-     *        2x,'LINF4',3X,2F15.3,15X,F15.3,2I15,/,
-     *        2X,'XSECT ',2X,4F15.3,/,2X,'LBLF4 ',2X,4F15.3,2I15,/,       B03830
-     *        2X,'HIRAC1',2X,4F15.3,3I15)                                 B03840
+     *        2x,'LINF4',3X,2F15.3,15X,2F15.3,2I15,/,
+     *        2X,'XSECT ',2X,4F15.3,/,2X,'LBLF4 ',2X,4F15.3,15X,2I15,/,   B03830
+     *        2X,'HIRAC1',2X,5F15.3,3I15)                                 B03840
   925 FORMAT ('0  * HIRAC1 *  AVERAGE WIDTH = ',F8.6,                     B03850
      *        ',  AVERAGE ZETA = ',F8.6)                                  B03860
   930 FORMAT ('0 ********  HIRAC1  ********',I5,' STRENGTHS FOR',         B03870
      *        '  TRANSITIONS WITH UNKNOWN EPP FOR MOL =',I5,              B03880
      *        ' SET TO ZERO')                                             B03890
+ 935  FORMAT (/,'0     + OTHER timing includes:',/,
+     *          '0             In LINF4:  MOLEC, BUFIN, BUFOUT, ',
+     *          'NWDL, ENDFIL, and SHRINK',/,
+     *          '0             In HIRAC:  LNCOR, XINT, SHAPEL, ',
+     *          'SHAPEG, VERFN, MOLEC, and other loops and ',
+     *          'file maintenance within HIRAC',/)
 C                                                                         B03900
       END                                                                 B03910
       BLOCK DATA BHIRAC                                                   B03920
@@ -3378,9 +3415,9 @@ C                                                                         D00300
       COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),       D00410
      *              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)          D00420
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D                          D00430
-      COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS
+      COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER
 C                                                                         D00440
-      REAL L4TIM,L4TMR,L4TMS
+      REAL L4TIM,L4TMR,L4TMS,LOTHER
       DIMENSION MEFDP(64)                                                 D00450
       DIMENSION SCOR(NSPECI),RHOSLF(NSPECI),ALFD1(NSPECI)                 D00460
       DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4)               D00470
@@ -3397,6 +3434,13 @@ C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         D00570
 C                                                                         D00580
       DATA TEMPLC / 200.0,250.0,296.0,340.0 /                             D00590
 C                                                                         D00600
+C     Initialize timing for the group "OTHER" in the TAPE6 output
+C
+      LOTHER = 0.0
+      TSHRNK = 0.0
+      TBUFFR = 0.0
+      TMOLN4 = 0.0
+C
       CALL CPUTIM (TIMEL0)                                                D00610
 C                                                                         D00620
       NLNGT4 = NWDL(IWD3,ILS2D)*1250                                      D00630
@@ -3406,7 +3450,10 @@ C                                                                         D00620
       DPTMN = DPTMIN/RADFN(V2,TAVE/RADCN2)                                D00670
       DPTFC = DPTFAC                                                      D00680
       LIMIN = 1000                                                        D00690
+      CALL CPUTIM(TPAT0)
       CALL MOLEC (1,SCOR,RHOSLF,ALFD1)                                    D00700
+      CALL CPUTIM(TPAT1)
+      TMOLN4 = TMOLN4 + TPAT1-TPAT0
 C                                                                         D00710
       TIMR = 0.                                                           D00720
       TIMS = 0.                                                           D00730
@@ -3422,9 +3469,11 @@ C                                                                         D00820
       VLO = V1L4                                                          D00830
       VHI = V2L4                                                          D00840
 C                                                                         D00850
+      CALL CPUTIM(TPAT0)
       NWDLIN = NWDL(IWD,LSTWDL)                                           D00860
       REWIND LINFIL                                                       D00870
       CALL BUFIN (LINFIL,LEOF,HLINHD(1),NWDLIN)                           D00880
+      CALL CPUTIM(TPAT1)
       IF (LEOF.EQ.0) STOP 'RDLNFL; TAPE3 EMPTY'                           D00890
 C                                                                         D00900
 C     CHECK FOR INTERSECTION OF LINEFIL AND VNU LIMITS                    D00910
@@ -3436,6 +3485,7 @@ C                                                                         D00930
          RETURN                                                           D00970
       ENDIF                                                               D00980
       CALL BUFOUT (LNFIL4,HLINHD(1),NWDLIN)                               D00990
+      TBUFFR = TBUFFR + TPAT1-TPAT0
 C                                                                         D01000
 C       TEMPERATURE CORRECTION TO INTENSITY                               D01010
 C       TEMPERATURE AND PRESSURE CORRECTION TO HALF-WIDTH                 D01020
@@ -3447,7 +3497,10 @@ C                                                                         D01060
       BETA0 = RADCN2/TEMP0                                                D01080
       BETACR = BETA-BETA0                                                 D01090
       DELTMP = ABS(TAVE-TEMP0)                                            D01100
+      CALL CPUTIM(TPAT0)
       CALL MOLEC (2,SCOR,RHOSLF,ALFD1)                                    D01110
+      CALL CPUTIM(TPAT1)
+      TMOLN4 = TMOLN4 + TPAT1-TPAT0
 C                                                                         D01120
 C     FIND CORRECT TEMPERATURE AND INTERPOLATE FOR Y AND G                D01130
 C                                                                         D01140
@@ -3557,12 +3610,19 @@ C                                                                         D02110
             GO TO 60                                                      D02180
          ENDIF                                                            D02190
    50 CONTINUE                                                            D02200
-      IF (IJ.LT.LIMIN.AND.IEOF.EQ.0) GO TO 30                             D02210
+      IF (IJ.LT.LIMIN.AND.IEOF.EQ.0) THEN
+         CALL CPUTIM (TIM2)
+         TIMS = TIMS+TIM2-TIM1
+         GO TO 30                                                         D02210
+      ENDIF
    60 CALL CPUTIM (TIM2)                                                  D02220
       IHI = IJ                                                            D02230
       TIMS = TIMS+TIM2-TIM1                                               D02240
 C                                                                         D02250
+      CALL CPUTIM(TPAT0)
       CALL SHRINK                                                         D02260
+      CALL CPUTIM(TPAT1)
+      TSHRNK = TSHRNK + TPAT1-TPAT0
       IJ = ILO-1                                                          D02270
       IF (IHI.LT.LIMIN.AND.IEOF.EQ.0) GO TO 30                            D02280
 C                                                                         D02290
@@ -3571,8 +3631,11 @@ C                                                                         D02290
       JLIN = IHI                                                          D02320
 C                                                                         D02330
       IF (JLIN.GT.0) THEN                                                 D02340
+         CALL CPUTIM(TPAT0)
          CALL BUFOUT (LNFIL4,RCDHDR(1),NPHDRL)                            D02350
          CALL BUFOUT (LNFIL4,VNU(1),NLNGT4)                               D02360
+         CALL CPUTIM(TPAT1)
+         TBUFFR = TBUFFR + TPAT1-TPAT0
       ENDIF                                                               D02370
       NLINS = NLINS+IHI-IST+1                                             D02380
 C                                                                         D02390
@@ -3594,6 +3657,7 @@ C                                                                         D02450
          L4TMS=TIMS
          L4NLN=NLIN
          L4NLS=NLINS
+         LOTHER = TSHRNK+TBUFFR+TMOLN4
       ENDIF
       RETURN                                                              D02520
 C                                                                         D02530
