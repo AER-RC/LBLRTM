@@ -3,38 +3,38 @@ C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
 
-
-
-
-
-
-
-                                    PRELIMINARY
-                           USER INSTRUCTIONS FOR FASCOD3
  
-                                   7 October 1991
+ 
+ 
+ 
+ 
+ 
+                                    PRELIMINARY
+                           USER INSTRUCTIONS FOR LBLRTM
+ 
+                                   5 January 1993
  
  
  
 
-RECORD 1.1
+ RECORD 1.1
  
  
       CXID:  80 characters of user identification  (80A1)
  
             CXID(1) is the flag which determines program initialization and termination.  The actual input data
-                    stream for FASCOD3 commences with the record containing a '$' in CXID(1).  Any record that are
-                    read prior to a record containing a '$' in CXID(1) are ignored.  Since FASCOD3 automatically
+                    stream for LBLRTM commences with the record containing a '$' in CXID(1).  Any record that are
+                    read prior to a record containing a '$' in CXID(1) are ignored.  Since LBLRTM automatically
                     recycles and reads Record 1.1 at the end of each run (this allows the stacking of multiple
-                    runs), each subsequent run of FASCOD3 must also have a '$' in CXID(1) on Record 1.1.  In order
-                    to effect a normal termination of FASCOD3, CXID(1) must be set to '%', on the final record of
-                    the input file.  Thus a standard FASCOD3 input file would begin with a '$' and end with a '%'.
-                    Records on the input file following the record with CXID(1) = '%' are ignored by FASCOD3.
+                    runs), each subsequent run of LBLRTM must also have a '$' in CXID(1) on Record 1.1.  In order
+                    to effect a normal termination of LBLRTM, CXID(1) must be set to '%', on the final record of
+                    the input file.  Thus a standard LBLRTM input file would begin with a '$' and end with a '%'.
+                    Records on the input file following the record with CXID(1) = '%' are ignored by LBLRTM.
  
-                    Note:  FASCOD3 will internally set CXID(1) = ' ' for all output.
+                    Note:  LBLRTM will internally set CXID(1) = ' ' for all output.
  
  
-RECORD 1.2
+ RECORD 1.2
  
  
       IHIRAC, ILBLF4, ICNTNM, IAERSL,  IEMIT,  ISCAN, IFILTR, IPLOT, ITEST,  IATM,  IMRG,  ILAS,   IMS, IXSECT,  MPTS,  NPTS
@@ -49,8 +49,8 @@ RECORD 1.2
                      = 0  HIRAC   HIRAC not activated; line-by-line calculation is bypassed
                                                        (skips to selected function)
                      = 1  HIRAC1  (Voigt profile)
-                     = 2  HIRACL  (Lorentz profile, not available in FASCOD3)
-                     = 3  HIRACD  (Doppler profile, not available in FASCOD3)
+                     = 2  HIRACL  (Lorentz profile, not available in LBLRTM)
+                     = 3  HIRACD  (Doppler profile, not available in LBLRTM)
                      = 4  NLTE Option (Non Local Thermodynamic Equilibrium)
                                -state populations as a function of altitude required on TAPE4
                      = 9  central line contribution omitted (functions 1-3)
@@ -181,10 +181,10 @@ RECORD 1.2
                                   filtered (JEMIT=0)           transmittance          transmittance
                                   filtered (JEMIT=1)                n/a               radiance
  
-                 In the context of FASCODE calculations, weighting functions are readily obtained from the
+                 In the context of LBLRTM calculations, weighting functions are readily obtained from the
                               NFILE sequential transmittances by "subtracting" adjacent files (dT or dR), and
                               employing the stored layer boundary definitions for P or z, i.e. (dlnP or dz).
-                              ( Use Option IOPT = 2 in PLTFAS for subtraction of FASCODE files )
+                              ( Use Option IOPT = 2 in PLTFAS for subtraction of LBLRTM files )
  
                  For the filter option (IMRG.ge.23 .and. IMRG.le.28), the results, including the differences
                               of the total transmittances or radiances, are also printed on unit IPR (TAPE6)
@@ -211,7 +211,7 @@ RECORD 1.2
  RECORD 1.2 (Continued)
  
  
-           ILAS    (0,1,2) flag for laser options
+*******    ILAS    (0,1,2) flag for laser options                              ************ not currently available in LBLRTM
  
                    = 0  no
                    = 1  single laser frequency selected (V1 on record 1.3)
@@ -219,7 +219,7 @@ RECORD 1.2
                           (first laser frequency is V1 on record 1.3;
                            subsequent laser frequencies are on records 5.1 ... 5.N)
  
-            IMS    (0,1) flag for multiple scattering of thermal radiation
+*******     IMS    (0,1) flag for multiple scattering of thermal radiation     ************ not currently available in LBLRTM
  
                    = 0  no multiple scattering
                    = 1  multiple scattering
@@ -247,7 +247,7 @@ RECORD 1.2
  
  
  
-RECORD 1.2.1  (required if IMS = 1; otherwise omit)
+ RECORD 1.2.1  (required if IMS = 1; otherwise omit)
  
             TGRND, SEMIS(1), SEMIS(2), SEMIS(3),  RMINMS,  RMAXMS
  
@@ -267,7 +267,7 @@ RECORD 1.2.1  (required if IMS = 1; otherwise omit)
  
 
  
-RECORD 1.3    (required if IHIRAC > 0, IAERSL > 0, IEMIT = 1, IATM = 1, or ILAS > 0; otherwise omit)
+ RECORD 1.3    (required if IHIRAC > 0, IAERSL > 0, IEMIT = 1, IATM = 1, or ILAS > 0; otherwise omit)
  
  
  
@@ -283,21 +283,21 @@ RECORD 1.3    (required if IHIRAC > 0, IAERSL > 0, IEMIT = 1, IATM = 1, or ILAS 
                                   (VLAS = V1 for ILAS = 1,2)
  
                   V2    ending wavenumber value for the calculation
-                                ( (V2-V1) must be less than 525 cm - 1 )
+                                ( (V2-V1) must be less than 2020 cm - 1 )
  
               SAMPLE    number of sample points per mean halfwidth (between 1. and 4.)
                         (default = 4.)
  
                DVSET    selected DV for the final monochromatic calculation
                         if positive, must be within 20% of DV for final
-                        monochromatic calculation determined by FASCODE
+                        monochromatic calculation determined by LBLRTM
  
                         If negative, final DV = abs(DVSET).  However, this option causes
                         line width readjustment which may effect the validity of the
                         reults. Use with extreme caution.
  
                ALFA0    average collision broadened halfwidth (cm - 1/atm) (default = 0.08)
-                           (for cases with line coupling set ALFA0 = 0.04)
+                           (for cases with line coupling set ALFA0 = 0.05)
  
               AVMASS    average molecular mass (amu) for Doppler halfwidth (default = 36)
  
@@ -314,7 +314,7 @@ RECORD 1.3    (required if IHIRAC > 0, IAERSL > 0, IEMIT = 1, IATM = 1, or ILAS 
 
  
  
-RECORD 1.4    (required if IEMIT > 0; otherwise omit)
+ RECORD 1.4    (required if IEMIT > 0; otherwise omit)
  
  
  
@@ -326,10 +326,11 @@ RECORD 1.4    (required if IEMIT > 0; otherwise omit)
  
  
  
-         temperature, emissivitiy and reflectivity parameters for boundary at H1
-                    (applicable to looking down case only, IPATH = 1)
+         temperature and emissivitiy parameters for boundary at H2 (end of path)
+                    (applies to downlooking, uplooking and tangent paths)
  
-         effect of reflected atmospheric radiance above H1 included for SRREFL(I) > 0.
+         for down looking case, the effect of reflected atmospheric radiance above lower boundary included for SRREFL(I) > 0.
+                    (reflected atmosphere from H1 to H2 included)
  
  
  
@@ -343,13 +344,13 @@ RECORD 1.4    (required if IEMIT > 0; otherwise omit)
  
                              REFLECTIVITY = SRREFL(1) + SRREFL(2)*V + SRREFL(3)*(V**2)
  
- 
-*****************************************************************************
-******  these records applicable only if FSCATM not selected (IATM=0)  ******
- 
+ 
+ *****************************************************************************
+ ******  these records applicable only if FSCATM not selected (IATM=0)  ******
+
                        LAYER INPUT  (MOLECULES ONLY)
  
-RECORD 2.1
+ RECORD 2.1
  
           NLAYRS, NMOL, SECNTO, HEDDR
  
@@ -370,7 +371,7 @@ RECORD 2.1
                HEDDR      60 character user identification
  
  
-RECORD 2.1.1
+ RECORD 2.1.1
  
  
           PAVE,  TAVE,  SECNTK,  ITYL(L),  IPATH,  ALTZ(L-1),  PZ(L-1),  TZ(L-1),  ATLZ(L),  PZ(L),  TZ(L)
@@ -390,7 +391,7 @@ RECORD 2.1.1
                        a non-zero value for SECNTK will override the scale factor
                        value, SECNTO .
  
-             ITYL(L)   overrides the FASCODE internal calulation of ITYPE for the layer L.
+             ITYL(L)   overrides the LBLRTM internal calulation of ITYPE for the layer L.
                        ITYPE controls the DV ratio of the previous layer to the current layer.
                        A blank defaults to the internal calulation.
                      = 0 specifies 1/1
@@ -400,7 +401,7 @@ RECORD 2.1.1
                        5 specifies 6/5
                       99 specifies first layer (i.e. no ratio)
 
-RECORD 2.1.1 (Continued)
+ RECORD 2.1.1 (Continued)
  
                IPATH = 0 determined by sign of SECNTO
                        1 looking down merge
@@ -411,20 +412,20 @@ RECORD 2.1.1 (Continued)
  
              PZ(L-1)   pressure at ALTZ(L-1)  (information only)
  
-             TZ(L-1)   temperature at ALTZ(L-1)  -  used by FASCODE for Planck Function Calculation
+             TZ(L-1)   temperature at ALTZ(L-1)  -  used by LBLRTM for Planck Function Calculation
  
                        ** NOTE **  ALTZ(L-1), PZ(L-1) and TZ(L-1) are only required for the first layer.
-                                   FASCODE assumes that these quantites are equal to the top of the previous
+                                   LBLRTM assumes that these quantites are equal to the top of the previous
                                    layer for L > 1.
  
              ALTZ(L)   altitude for top of current layer (information only)
  
                PZ(L)   pressure at ALTZ(L)  (information only)
  
-               TZ(L)   temperature at ALTZ(L)  -  used by FASCODE for Planck Function Calculation
+               TZ(L)   temperature at ALTZ(L)  -  used by LBLRTM for Planck Function Calculation
  
  
-RECORD 2.1.2
+ RECORD 2.1.2
  
  
           (WKL(M,L), M=1, 7), WBROADL(L)
@@ -438,7 +439,7 @@ RECORD 2.1.2
  
  
  
-RECORD 2.1.3     only if (NMOL  .GT . 7)         # records depends on NMOL
+ RECORD 2.1.3     only if (NMOL  .GT . 7)         # records depends on NMOL
  
  
           (WKL(M,L), M=8, NMOL)
@@ -448,20 +449,20 @@ RECORD 2.1.3     only if (NMOL  .GT . 7)         # records depends on NMOL
  
                 NMOL is set from LINFIL (TAPE3)
  
-                     (NMOL limited to 28 in FASCOD3)
+                     (NMOL limited to 28 in LBLRTM)
  
  
  
-REPEAT RECORDS 2.1.1 through 2.1.3 for the remaining layers (up to NLAYRS)
+ REPEAT RECORDS 2.1.1 through 2.1.3 for the remaining layers (up to NLAYRS)
  
- 
-*****************************************************************************
-******  these records applicable only if FSCATM not selected (IATM=0)  ******
-****************  and cross-sections ARE selected (IXSECT=1)  ***************
+ 
+ *****************************************************************************
+ ******  these records applicable only if FSCATM not selected (IATM=0)  ******
+ ****************  and cross-sections ARE selected (IXSECT=1)  ***************
  
                     LAYER INPUT  (CROSS-SECTIONS ONLY)
  
-RECORD 2.2
+ RECORD 2.2
  
           IXMOLS,        IXSBIN
  
@@ -477,7 +478,7 @@ RECORD 2.2
                         = 0 cross-sections convolued with pressure
                         = 1 cross-sections not convolved with pressure
  
-RECORD 2.2.1
+ RECORD 2.2.1
  
           XSNAME(I), I=1, IXMOLS
  
@@ -486,9 +487,9 @@ RECORD 2.2.1
  
               XSNAME      name of the cross-section molecules to be used
                           (Note: the cross-sections specified here must also appear in the
-                           cross-section input file FSCDXS.  See Table II after Record 3.7.1)
+                           cross-section input file FSCDXS.  See Table II after RECORD 3.7.1)
  
-RECORD 2.2.2
+ RECORD 2.2.2
  
           NLAYXS, IXMOL, SECNTX, HEDXS
  
@@ -513,13 +514,13 @@ RECORD 2.2.2
  
 
           ****************************************************************************************************************
-          ****  Note: all the quantites on this Record, are for information only, FASCODE will use the corresponding  ****
+          ****  Note: all the quantites on this Record, are for information only, LBLRTM will use the corresponding   ****
           ****        values from Record 2.1.1.    This record is retained to maintain compatibility with 2.1.1 and   ****
           ****        is consistent with the output from FSCATM with IPU = 1; this provides the flexibility of        ****
           ****        independent utilization of this data with external programs.                                    ****
           ****************************************************************************************************************
  
-RECORD 2.2.3
+ RECORD 2.2.3
  
  
           PAVX,  TAVX,  SECKXS,  ITYX(L),  IPATX,  ALTX(L-1),  PX(L-1),  TX(L-1),  ATLX(L),  PX(L),  TX(L)
@@ -539,7 +540,7 @@ RECORD 2.2.3
                        a non-zero value for SECKXS will override the scale factor
                        value, SECNTX .
  
-             ITYX(L)   overrides the FASCODE internal calulation of ITYPE for the layer L.
+             ITYX(L)   overrides the LBLRTM internal calulation of ITYPE for the layer L.
                        ITYPE controls the DV ratio of the previous layer to the current layer.
                        A blank defaults to the internal calulation.
                      = 0 specifies 1/1
@@ -561,7 +562,7 @@ RECORD 2.2.3
              TX(L-1)   temperature at ALTX(L-1)
  
                        ** NOTE **  ALTX(L-1), PX(L-1) and TX(L-1) are only required for the first layer.
-                                   FASCODE assumes that these quantites are equal to the top of the previous
+                                   LBLRTM assumes that these quantites are equal to the top of the previous
                                    layer for L > 1.
  
              ALTX(L)   altitude for top of current layer
@@ -573,7 +574,7 @@ RECORD 2.2.3
 
  
  
-RECORD 2.2.4
+ RECORD 2.2.4
  
  
           (XAMNT(I,L), I=1, 7), WBROADX(L)
@@ -588,7 +589,7 @@ RECORD 2.2.4
  
  
  
-RECORD 2.2.5     only if (IXMOL  .GT . 7)         # records depends on IXMOL
+ RECORD 2.2.5     only if (IXMOL  .GT . 7)         # records depends on IXMOL
  
  
           (XAMNT(I,L), I=8, IXMOL)
@@ -598,7 +599,7 @@ RECORD 2.2.5     only if (IXMOL  .GT . 7)         # records depends on IXMOL
  
  
  
-REPEAT RECORDS 2.2.3 through 2.2.5 for the remaining layers (up to NLAYXS)
+ REPEAT RECORDS 2.2.3 through 2.2.5 for the remaining layers (up to NLAYXS)
  
 
  
@@ -606,7 +607,7 @@ REPEAT RECORDS 2.2.3 through 2.2.5 for the remaining layers (up to NLAYXS)
  ********     these records applicable if FSCATM selected (IATM=1)    ********
  
                                      FSCATM
-RECORD 3.1
+ RECORD 3.1
  
  
       MODEL,  ITYPE, IBMAX,  NOZERO,  NOPRNT,  NMOL, IPUNCH,       RE, HSPACE,  VBAR, CO2MX
@@ -632,11 +633,11 @@ RECORD 3.1
                      = 2  slant path from H1 to H2
                      = 3  slant path from H1 to space (see HSPACE)
  
-           IBMAX     selects layering for FASCOD3
+           IBMAX     selects layering for LBLRTM
  
-                     = 0  FASCOD3 layers are generated internally (default)
+                     = 0  LBLRTM layers are generated internally (default)
                      > 0  IBMAX is the number of layer boundaries read in on Record 3.3B which are
-                                 used to define the layers used in FASCODE calculation
+                                 used to define the layers used in LBLRTM calculation
  
            NOZERO    = 0  zeroes absorber amounts which are less than 0.1 percent of total (default)
                      = 1  suppresses zeroing of small amounts
@@ -672,12 +673,12 @@ RECORD 3.1
  
 
  
------------------------------------------------------------------------------
+ -----------------------------------------------------------------------------
  
-------------------  SLANT PATH (ITYPE = 2,3) (MODEL = 0-6) ------------------
+ ------------------  SLANT PATH (ITYPE = 2,3) (MODEL = 0-6) ------------------
  
  
-RECORD 3.2
+ RECORD 3.2
  
  
          H1,    H2,   ANGLE,   RANGE,   BETA,   LEN
@@ -718,7 +719,7 @@ RECORD 3.2
                 RECORD 3.3  options
  
  
-RECORD 3.3A        For IBMAX  = 0 (from RECORD 3.1)
+ RECORD 3.3A        For IBMAX  = 0 (from RECORD 3.1)
  
  
                AVTRAT, TDIFF1, TDIFF2, ALTD1, ALTD2
@@ -744,26 +745,26 @@ RECORD 3.3A        For IBMAX  = 0 (from RECORD 3.1)
  
  
  
-RECORD 3.3B        For IBMAX > 0  (from RECORD 3.1)
+ RECORD 3.3B        For IBMAX > 0  (from RECORD 3.1)
  
-                ZBND(I), I=1, IBMAX   altitudes of FASCOD3 layer boundaries
+                ZBND(I), I=1, IBMAX   altitudes of LBLRTM layer boundaries
  
                (8F10.3)
  
---------------------------------------------------------------------------------
+ --------------------------------------------------------------------------------
  
  
  
  
  
 
------------------------------------------------------------------------------
+ -----------------------------------------------------------------------------
                      User Defined Atmospheric Profile
  
--------------------------------- (MODEL = 0) --------------------------------
+ -------------------------------- (MODEL = 0) --------------------------------
  
  
-RECORD 3.4
+ RECORD 3.4
  
  
            IMMAX,   HMOD
@@ -777,7 +778,7 @@ RECORD 3.4
  
             HMOD    24 character description of profile
  
-RECORD 3.5
+ RECORD 3.5
  
  
        ZM,    PM,    TM,    JCHARP, JCHART,   (JCHAR(K),K =1,28)
@@ -801,7 +802,7 @@ RECORD 3.5
                    the K'th molecule (see Table I)
  
  
-RECORD 3.6.1 ... 3.6.N
+ RECORD 3.6.1 ... 3.6.N
  
           VMOL(K), K=1, NMOL
  
@@ -809,11 +810,11 @@ RECORD 3.6.1 ... 3.6.N
  
           VMOL(K) density of the K'th molecule in units set by JCHAR(K)
  
-repeat records 3.5 and 3.6.1 to 3.6.N for each of the remaining IMMAX boundaries
+ REPEAT records 3.5 and 3.6.1 to 3.6.N for each of the remaining IMMAX boundaries
  
-----------------------------------------------------------------------------
+ ----------------------------------------------------------------------------
  
-****************************************************************************
+ ****************************************************************************
 
  TABLE I. Units and input options for the K'th molecule
  
@@ -846,10 +847,10 @@ repeat records 3.5 and 3.6.1 to 3.6.N for each of the remaining IMMAX boundaries
  
                     JCHAR(M)
  
-(M):  AVAILABLE       ( 1)  H2O   ( 2)  CO2   ( 3)  O3  ( 4)  N2O  ( 5)  CO   ( 6)  CH4   ( 7)  O2
-MOLECULAR SPECIES     ( 8)   NO   ( 9)  SO2   (10) NO2  (11)  NH3  (12) HNO3  (13)   OH   (14)  HF
-                      (15)  HCL   (16)  HBR   (17)  HI  (18)  CLO  (19)  OCS  (20) H2CO   (21) HOCL
-                      (22)   N2   (23)  HCN   (24)CH3CL (25) H2O2  (26) C2H2  (27) C2H6   (28)  PH3
+ (M):  AVAILABLE       ( 1)  H2O   ( 2)  CO2   ( 3)  O3  ( 4)  N2O  ( 5)  CO   ( 6)  CH4   ( 7)  O2
+ MOLECULAR SPECIES     ( 8)   NO   ( 9)  SO2   (10) NO2  (11)  NH3  (12) HNO3  (13)   OH   (14)  HF
+                       (15)  HCL   (16)  HBR   (17)  HI  (18)  CLO  (19)  OCS  (20) H2CO   (21) HOCL
+                       (22)   N2   (23)  HCN   (24)CH3CL (25) H2O2  (26) C2H2  (27) C2H6   (28)  PH3
  
  
                            potential choice of units for above species: 
@@ -872,13 +873,13 @@ MOLECULAR SPECIES     ( 8)   NO   ( 9)  SO2   (10) NO2  (11)  NH3  (12) HNO3  (1
 
  
  
-----------------------------------------------------------------------------
+ ----------------------------------------------------------------------------
  
-----------------  HORIZONTAL PATH (ITYPE = 1) (MODEL = 0-6)  ---------------
+ ----------------  HORIZONTAL PATH (ITYPE = 1) (MODEL = 0-6)  ---------------
  
  
  
-RECORD 3.2H
+ RECORD 3.2H
  
  
              H1,      ,      ,  RANGEF
@@ -895,27 +896,27 @@ RECORD 3.2H
  
  
  
-RECORD 3.3  not used for this case
+ RECORD 3.3  not used for this case
  
  
  
  
-RECORD 3.4                 records included for MODEL = 0 only
-       3.5                   (see MODEL = 0 input records)
-       3.6
+ RECORD 3.4                 records included for MODEL = 0 only
+        3.5                   (see MODEL = 0 input records)
+        3.6
  
-----------------------------------------------------------------------------
------------------------------------------------------------------------------
+ -----------------------------------------------------------------------------
+ -----------------------------------------------------------------------------
  
  
- 
-*****************************************************************************
-**********  these records applicable if FSCATM selected (IATM=1)  ***********
-****************  and cross-sections ARE selected (IXSECT=1)  ***************
+ 
+ *****************************************************************************
+ **********  these records applicable if FSCATM selected (IATM=1)  ***********
+ ****************  and cross-sections ARE selected (IXSECT=1)  ***************
  
                              XAMNTS
  
-RECORD 3.7
+ RECORD 3.7
  
           IXMOLS,  IPRFL, IXSBIN
  
@@ -936,7 +937,7 @@ RECORD 3.7
                         = 0 cross-sections convolved with pressure (default)
                         = 1 cross-sections not convolved with pressure
  
-RECORD 3.7.1
+ RECORD 3.7.1
  
           XSNAME(I), I=1, IXMOLS
  
@@ -1023,15 +1024,16 @@ RECORD 3.7.1
                      = ' '  -  blocked data (51*100 characters/record)    ** default **
  
         XFILS(I)     10 character cross-section file name
+                         (may include directory name if length is adequate)
  
 
------------------------------------------------------------------------------
+ -----------------------------------------------------------------------------
                      User Defined Atmospheric Profile
  
--------------------------------- (IPRFL = 0) --------------------------------
+ -------------------------------- (IPRFL = 0) --------------------------------
  
  
-RECORD 3.8
+ RECORD 3.8
  
  
             LAYX,  IZORP,  XTITLE
@@ -1050,7 +1052,7 @@ RECORD 3.8
  
            XTITLE       50 character description of profile
  
-RECORD 3.8.1
+ RECORD 3.8.1
  
  
      ZORP,  (JCHAR(K),K =1,28)
@@ -1069,7 +1071,7 @@ RECORD 3.8.1
                              = " ",A         - volume mixing ratio (ppmv)
  
  
-RECORD 3.8.2 ... 3.8.N
+ RECORD 3.8.2 ... 3.8.N
  
           DENX(K), K=1, IXMOLS
  
@@ -1077,9 +1079,9 @@ RECORD 3.8.2 ... 3.8.N
  
           DENX(K) density of the K'th cross-section in units set by JCHAR(K)
  
-repeat records 3.8.1 to 3.8.N for each of the remaining LAYX boundaries
+ REPEAT records 3.8.1 to 3.8.N for each of the remaining LAYX boundaries
  
-----------------------------------------------------------------------------
+ ----------------------------------------------------------------------------
 
     ******************************************************************************************
  
@@ -1089,7 +1091,7 @@ repeat records 3.8.1 to 3.8.N for each of the remaining LAYX boundaries
     Subroutine LOWTRN
  
     Stripped down version of LOWTRAN 7 run as a subroutine to supply
-    FASCOD3 with the attenuation due to aerosols, clouds, fogs, and rain.
+    LBLRTM with the attenuation due to aerosols, clouds, fogs, and rain.
  
     Further details of most of the aerosol parameters are contained in
     the LOWTRAN7 User Guide (AFGL-TR-88-0177), the LOWTRAN6 Report (AFGL-TR-83-0187)
@@ -1135,15 +1137,13 @@ repeat records 3.8.1 to 3.8.N for each of the remaining LAYX boundaries
     ******************************************************************************************
 
  
-***************************************************************************************
- 
-RECORD 4.1            IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT
+ RECORD 4.1            IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,RAINRT,GNDALT
  
                                FORMAT (6I5,5F10.3)
  
-IHAZE selects the type of extinction and a default meteorological
-      range for the boundary-layer aerosol model
-      (0 to 2 km altitude)
+ IHAZE selects the type of extinction and a default meteorological
+       range for the boundary-layer aerosol model
+       (0 to 2 km altitude)
  
      IHAZE = 0      no aerosol attenuation included in calculation
            = 1      Rural extinction, (23 km VIS. default profile)
@@ -1162,9 +1162,9 @@ IHAZE selects the type of extinction and a default meteorological
            default IHAZE value of VIS
  
  
-ISEASN selects the seasonal dependence of the vertical profiles
-       for both the tropospheric (2 to 10 km) and stratospheric
-       (10 to 30 km) aerosols.
+ ISEASN selects the seasonal dependence of the vertical profiles
+        for both the tropospheric (2 to 10 km) and stratospheric
+        (10 to 30 km) aerosols.
  
     ISEASN = 0      Defaults to season of MODEL (see RECORD 3.1)
                     (MODEL 0,1,2,4,6,7) summer
@@ -1172,9 +1172,9 @@ ISEASN selects the seasonal dependence of the vertical profiles
            = 1      spring-summer
            = 2      fall-winter
  
-IVULCN selects both the profile and extinction type for
-       the stratospheric aerosols and determines transition
-       profiles above the stratosphere to 100 km.
+ IVULCN selects both the profile and extinction type for
+        the stratospheric aerosols and determines transition
+        profiles above the stratosphere to 100 km.
  
     IVULCN = 0      default to stratospheric background
            = 1      stratospheric background
@@ -1189,56 +1189,56 @@ IVULCN selects both the profile and extinction type for
  
 
  
-RECORD 4.1 (Continued)
+ RECORD 4.1 (Continued)
  
  
  
-ICSTL is the air mass character (1 to 10); only used with
-      Navy maritime model (IHAZE=3)             (default value = 3)
+ ICSTL is the air mass character (1 to 10); only used with
+       Navy maritime model (IHAZE=3)             (default value = 3)
  
-      ICSTL        = 1  open ocean
-                     .
-                     .
-                     .
-                    10  strong continental influence
+       ICSTL        = 1  open ocean
+                      .
+                      .
+                      .
+                     10  strong continental influence
  
-ICLD determines the inclusion of cirrus cloud attenuation or gives
-     a choice of five cloud models and 5 rain models
+ ICLD determines the inclusion of cirrus cloud attenuation or gives
+      a choice of five cloud models and 5 rain models
  
-ICLD for cloud and or rain
+ ICLD for cloud and or rain
  
-     ICLD           = 0   no clouds or rain
+      ICLD           = 0   no clouds or rain
  
-                    = 1   Cumulus cloud; base .66 km; top 3.0 km
-                    = 2   Altostratus cloud; base 2.4 km; top 3.0 km
-                    = 3   Stratus cloud; base .33 km; top 1.0 km
-                    = 4   Stratus; Strato Cumulus; base .66 km; top 2.0 km
-                    = 5   Nimbostratus cloud; base .16 km; top .66 km
+                     = 1   Cumulus cloud; base .66 km; top 3.0 km
+                     = 2   Altostratus cloud; base 2.4 km; top 3.0 km
+                     = 3   Stratus cloud; base .33 km; top 1.0 km
+                     = 4   Stratus; Strato Cumulus; base .66 km; top 2.0 km
+                     = 5   Nimbostratus cloud; base .16 km; top .66 km
  
-                    = 6   2.0 mm/hr drizzle (modeled with cloud 3)
-                          rain 2.0 mm/hr at 0.0 km to 0.22 mm/hr at 1.5 km
-                    = 7   5.0 mm/hr light rain (modeled with cloud 5)
-                          rain 5.0 mm/hr at 0.0 km to 0.2 mm/hr at 2.0 km
-                    = 8   12.5 mm/hr moderate rain (modeled with cloud 5)
-                          rain 12.5 mm/hr at 0.0 km to 0.2 mm/hr at 2.0 km
-                    = 9   25.0 mm/hr heavy rain (modeled with cloud 1)
-                          rain 25.0 mm/hr at 0.0 km to 0.2 mm/hr at 3.0 km
-                    =10   75.0 mm/hr extreme rain (modeled with cloud 1)
-                          rain 75.0 mm/hr at 0.0 km to 0.2 mm/hr at 3.5 km
+                     = 6   2.0 mm/hr drizzle (modeled with cloud 3)
+                           rain 2.0 mm/hr at 0.0 km to 0.22 mm/hr at 1.5 km
+                     = 7   5.0 mm/hr light rain (modeled with cloud 5)
+                           rain 5.0 mm/hr at 0.0 km to 0.2 mm/hr at 2.0 km
+                     = 8   12.5 mm/hr moderate rain (modeled with cloud 5)
+                           rain 12.5 mm/hr at 0.0 km to 0.2 mm/hr at 2.0 km
+                     = 9   25.0 mm/hr heavy rain (modeled with cloud 1)
+                           rain 25.0 mm/hr at 0.0 km to 0.2 mm/hr at 3.0 km
+                     =10   75.0 mm/hr extreme rain (modeled with cloud 1)
+                           rain 75.0 mm/hr at 0.0 km to 0.2 mm/hr at 3.5 km
  
-                    =11   read in user defined cloud extinction and absorption
-                          can only be used with IAERSL = 7
+                     =11   read in user defined cloud extinction and absorption
+                           can only be used with IAERSL = 7
  
-                    =18   Standard Cirrus Model
-                    =19   Sub-visual Cirrus Model
-                    =20   NOAA Cirrus model (LOWTRAN 6 Model)
+                     =18   Standard Cirrus Model
+                     =19   Sub-visual Cirrus Model
+                     =20   NOAA Cirrus model (LOWTRAN 6 Model)
  
 
  
-RECORD 4.1 (Continued)
+ RECORD 4.1 (Continued)
  
  
-IVSA determines the use of the Army Vertical Structure Algorithm
+ IVSA determines the use of the Army Vertical Structure Algorithm
      for aerosols in the boundary layer.
  
      IVSA           = 0   not used
@@ -1278,18 +1278,18 @@ IVSA determines the use of the Army Vertical Structure Algorithm
  
  
  
-************************************************************************************
+ ************************************************************************************
  
  
  
 
  
-Optional input records after Record 4.1
-Selected by parameters ICLD, IVSA, and IHAZE on Record 4.1
+ Optional input records after Record 4.1
+ Selected by parameters ICLD, IVSA, and IHAZE on Record 4.1
  
-**********************************************************************************
+ **********************************************************************************
  
-RECORD 4.2   CTHIK,CALT,CEXT,ISEED               (if ICLD = 18, 19, or 20)
+ RECORD 4.2   CTHIK,CALT,CEXT,ISEED               (if ICLD = 18, 19, or 20)
  
                  FORMAT (3F10.3,I10)
  
@@ -1312,9 +1312,9 @@ RECORD 4.2   CTHIK,CALT,CEXT,ISEED               (if ICLD = 18, 19, or 20)
                    0 use default mean values for cirrus
                    > 0 initial value of SEED for RANF function (machine dependent)
  
-**********************************************************************************
+ **********************************************************************************
  
-RECORD 4.3   ZCVSA, ZTVSA, ZINVSA                (if IVSA = 1)
+ RECORD 4.3   ZCVSA, ZTVSA, ZINVSA                (if IVSA = 1)
  
                  FORMAT (3F10.3)
  
@@ -1336,13 +1336,13 @@ RECORD 4.3   ZCVSA, ZTVSA, ZINVSA                (if IVSA = 1)
                         < 0   no inversion layer
  
  
-**********************************************************************************
+ **********************************************************************************
+ 
+ 
+ **********************************************************************************
  
  
-**********************************************************************************
- 
- 
-RECORD 4.4   ML,TITLE                         (if IAERSL = 7)
+ RECORD 4.4   ML,TITLE                         (if IAERSL = 7)
  
                  FORMAT (I5,18A4)
  
@@ -1353,13 +1353,13 @@ RECORD 4.4   ML,TITLE                         (if IAERSL = 7)
           TITLE     =  identification of new model aerosol profile
  
  
-** Note: RECORD 4.5 is repeated ML times **
+ ** Note: RECORD 4.5 is repeated ML times **
  
-RECORD 4.5                                     (if IAERSL = 7)
+ RECORD 4.5                                     (if IAERSL = 7)
  
-         ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,ISEA1,ICHR1
+          ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,ISEA1,ICHR1
  
-                     FORMAT (4F10.3,5I5)
+                       FORMAT (4F10.3,5I5)
  
           ZMDL      =  Altitude of layer boundary (km)
  
@@ -1396,14 +1396,14 @@ RECORD 4.5                                     (if IAERSL = 7)
  
                        = 1  signifies boundary change
  
-***********************************************************************************
+ ***********************************************************************************
+ 
  
-***********************************************************************************
- 
-RECORDS 4.6.1 - 4.6.3 reads in the user defined cloud extinction and absorption
+ RECORDS 4.6.1 - 4.6.3 read in the user defined cloud extinction and absorption
                           (IHAZE = 7 or ICLD = 11)
+
  
-RECORD 4.6.1
+ RECORD 4.6.1
  
          (IREG(I),I=1,4)
  
@@ -1423,7 +1423,7 @@ RECORD 4.6.1
      *****                      N = IREG(1) + IREG(2) + IREG(3) + IREG(4)                                 *****
      *****                                                                                                *****
  
-RECORD 4.6.2
+ RECORD 4.6.2
  
          AWCCON(N),TITLE(N)
  
@@ -1437,7 +1437,7 @@ RECORD 4.6.2
  
           TITLE(N)  =  for an aerosol or cloud region (up to 72 characters)
  
-RECORD 4.6.3
+ RECORD 4.6.3
  
          (VX(I),EXTC(N,I),ABSC(N,I),ASYM(N,I),I=1,47)
  
@@ -1457,15 +1457,12 @@ RECORD 4.6.3
  
       ASYM(N,I)     =  aerosol asymmetry factor
  
-************************************************************************************
+ ************************************************************************************
 
+              LASER (ILAS > 2) 
  
  
- 
-                               LASER (ILAS > 2)
- 
- 
-RECORD 5.1 ... 5.N
+ RECORD 5.1 ... 5.N
  
      VLAS
  
@@ -1476,7 +1473,7 @@ RECORD 5.1 ... 5.N
             VLAS  laser wavenumber value  (cm-1)
                   (negative value terminates multiple LASER option)
  
-REPEAT RECORD 5.1
+ REPEAT RECORD 5.1
  
  
  
@@ -1487,7 +1484,7 @@ REPEAT RECORD 5.1
  
  
  
-RECORD 6
+ RECORD 6
  
  
      HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,       NNFILE,   NPTS
@@ -1539,7 +1536,7 @@ RECORD 6
  
  
                                            SCNMRG (Continued)
-RECORD 6  (Continued)
+ RECORD 6  (Continued)
  
  
          SAMPL    number of sample points per half width
@@ -1552,7 +1549,7 @@ RECORD 6  (Continued)
  
         NNFILE    unit number for scanned sequential output
  
-                    defaults to NFILE (= 13) or previous value of NNFILE if doing multiple FASCODE runs
+                    defaults to NFILE (= 13) or previous value of NNFILE if doing multiple LBLRTM runs
  
  
           NPTS    number of values to be printed for the beginning and ending of each panel
@@ -1568,7 +1565,7 @@ RECORD 6  (Continued)
  
  
  
-RECORD 7.1
+ RECORD 7.1
  
  
           V1F,     DVF,    NPTS,   JEMIT,   NNFILE,          HEDDR
@@ -1592,12 +1589,12 @@ RECORD 7.1
  
            NNFILE    unit number for filtered sequential intermediate output
  
-                         defaults to NFILE (= 13) or previous value of NNFILE if doing multiple FASCODE runs
+                         defaults to NFILE (= 13) or previous value of NNFILE if doing multiple LBLRTM runs
  
             HEDDR    35 characters of user identification
  
  
-RECORD 7.2
+ RECORD 7.2
  
  
           IVAR
@@ -1609,7 +1606,7 @@ RECORD 7.2
  
               IVAR is format specification for reading filter values, XF
  
-RECORD 7.3
+ RECORD 7.3
      . . .
      . . .
      . . .
@@ -1625,14 +1622,14 @@ RECORD 7.3
  
                                       (ISCAN = 1)
  
-RECORD 8.1
+ RECORD 8.1 
  
  
-HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,  IUNIT,  IFILST, NIFILS, JUNIT,  NPTS
+ HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,  IUNIT,  IFILST, NIFILS, JUNIT,  NPTS 
  
-1-10,  11-20,  21-30,  34-35,  39-40,  44-45,  46-55,  59-60,  64-65,   69-70, 74-75, 76-80
+ 1-10,  11-20,  21-30,  34-35,  39-40,  44-45,  46-55,  59-60,  64-65,   69-70, 74-75, 76-80 
  
-10.3,  F10.3,  F10.3,  3X,I2,  3X,I2,  3X,I2,  F10.4,  3X,I2,  3X,I2,   3X,I2, 3X,I2,    I5
+ F10.3  F10.3,  F10.3,  3X,I2,  3X,I2,  3X,I2,  F10.4,  3X,I2,  3X,I2,   3X,I2, 3X,I2,    I5 
  
  
           HWHM    (Half Width Half Maximum)
@@ -1679,7 +1676,7 @@ HWHM,     V1,     V2,  JEMIT,    JFN,   JVAR,  SAMPL,  IUNIT,  IFILST, NIFILS, J
  
 
                               SCANFN (Continued)
-RECORD 8.1  (Continued)
+ RECORD 8.1  (Continued)
  
  
          SAMPL    number of sample points per half width
@@ -1704,22 +1701,23 @@ RECORD 8.1  (Continued)
          *****       Interpolated data is written to named file 'SCNINTF'.                *****
          *****       Four-point interpolation is used for this procedure.                 *****
  
-REPEAT RECORD 8.1
+ REPEAT RECORD 8.1 
+
 
- 
- 
+
+      
                                         INTRPL
  
                                       (ISCAN = 2)
  
-RECORD 9.1
+ RECORD 9.1 
  
  
-  DV,     V1,     V2,  JEMIT,   I4PT,   IUNIT,  IFILST, NIFILS, JUNIT,  NPTS
+   DV,     V1,     V2,  JEMIT,   I4PT,   IUNIT,  IFILST, NIFILS, JUNIT,  NPTS 
  
-1-10,  11-20,  21-30,  31-35,  36-40,   56-60,  61-65,   66-70, 71-75, 76-80
+  1-10,  11-20,  21-30,  31-35,  36-40,   56-60,  61-65,   66-70, 71-75, 76-80 
  
-10.3,  F10.3,  F10.3,     I5      I5,  15X,I5,     I5,      I5,    I5,    I5
+ F10.3,  F10.3,  F10.3,     I5      I5,  15X,I5,     I5,      I5,    I5,    I5 
  
  
             DV    wavenumber spacing for interpolated result
@@ -1754,15 +1752,16 @@ RECORD 9.1
                   for current interpolated file
  
  
-REPEAT RECORD 9.1
+ REPEAT RECORD 9.1
  
  
  
-                                       FLTRFN
+
+                                       FLTRFN
  
                                     (IFILTR = 1)
  
-RECORD 10.1
+ RECORD 10.1
  
  
      V1F,     DVF,    NPTS,   JEMIT,  IUNIT,  IFILST,  NIFILS,   HEDDR
@@ -1795,18 +1794,18 @@ RECORD 10.1
  
              HEDDR    35 characters of user identification
  
-RECORD 10.2
+ RECORD 10.2
  
-          IVAR
+             IVAR
  
-          1-80
+             1-80
  
-          20A4
+             20A4
  
  
               IVAR is format specification for reading filter values, XF
  
-RECORD 10.3
+ RECORD 10.3
       . . .
       . . .
       . . .
@@ -1814,26 +1813,40 @@ RECORD 10.3
  
               XF      format specification given by record 10.2
  
-              XF      NPTS values of FILTRFN
+              XF      NPTS values of FILTRFN 
+ 
+ REPEAT RECORD 10.1 
+                                    PLTFAS 
  
  
-REPEAT RECORD 10.1
+ RECORD 11.1
+ 
+           CPRGID,     CEX
+ 
+             1-60,   79-80
+ 
+              A60, 18X, A2 
+ 
+ 
+ 
+           CPRGID      identifying header for plot files 
+ 
+           CEX         parameter to indicate external file name to be provided by user  
+ 
+                       value of 'EX' indicates external file names to be supplied 
+ 
+ 
+ 
 
-                                    PLTFAS
  
-RECORD 11.1
+ ****************************************************************************************************
+ ****************************************************************************************************
+ ****************        Use Records 11.2A and 11.3A for PLOT (IOPT = 0,1)         ******************
+ ****************   Use Record 11.2B for File Difference or Ratio (IOPT = 2,3)     ******************
+ ****************************************************************************************************
+ ****************************************************************************************************
  
-            PROGID: 30 characters of plot identification  (3A10)
- 
- 
-***************************************************************************************************
-***************************************************************************************************
-****************        Use Records 11.2A and 11.3A for PLOT (IOPT = 0,1)        ******************
-****************   Use Record 11.2B for File Difference or Ratio (IOPT = 2,3)    ******************
-***************************************************************************************************
-***************************************************************************************************
- 
-RECORD 11.2A    (IOPT = 0,1)
+ RECORD 11.2A    (IOPT = 0,1)
  
  
             V1,    V2,  XSIZE,   DELV,NUMSBX,NOENDX, LFILE,LSKIPF, SCALE, IOPT, I4P, IXDEC
@@ -1853,29 +1866,35 @@ RECORD 11.2A    (IOPT = 0,1)
  
                 DELV    number of wavenumbers (cm - 1) per major division.
  
-                NUMSBX  number of subdivisions per major division of x-axis.  i.e.,
-                        1 gives no subdivision tic-marks, 2 gives one subdivision
-                        mark (in other words 1 compartment per major division), etc.
+                NUMSBX  
+                       *  IOPT ne 1    
+                             NUMSBX controls the number of subdivisions per major division of x-axis. 
+                             NUMSBX = 1 gives no  tic-marks per major division
+                                    = 2 gives one tic-mark per major division
  
-                          *  IOPT = 1 will cause NUMSBX to control the
-                          *  use of symbols on the overlayed plot
-                          *  NUMSBX = 0  will produce a line plot without symbols
-                          *         > 0  will produce a line plot with symbols at every NUMSBX point
-                          *         < 0  will produce a point plot with a symbol at every NUMSBX point
+                       *  IOPT eq 1    
+                             NUMSBX controls the use of symbols for overlayed plots
+                             NUMSBX = 0  produces a line plot without symbols
+                                    > 0  produces a line plot with symbols at every NUMSBX point
+                                    < 0  produces a point plot with a symbol at every NUMSBX point
  
-                NOENDX  controls the numbers at either end of the x-axis, i.e.,
-                        1 suppresses the numbers at either end of the axis, 2 suppresses
-                        the beginning number, 3 the ending number, and 0 leaves both.
+                NOENDX 
+                        *  IOPT =0,2,3
+                             NOENDX controls the numbers at either end of the x-axis
+                             NENDX = 0 includes the numbers at both ends of the axis
+                                     1 suppresses the numbers at either end of the axis
+                                     2 suppresses the beginning number
+                                     3 suppresses the ending number
  
-                          *  IOPT = 1 will cause NOENDX to describe the
-                          *  symbol to be used on the overlayed plot.  For a list of symbols
-                          *  see the AFGL CYBER plotter handout, Appendix B, or your local
-                          *  plotting interface.
+                        *  IOPT eq 1 
+                              NOENDX selects the symbol to be used on the overlayed plot.  
+                              For a list of symbols see the applicable NCAR plotter information. 
+ 
 
                               PLTFAS (Continued)
-RECORD 11.2A  (Continued)
+ RECORD 11.2A  (Continued)
  
-                LFILE   tape number of file to be read from FASCOD3.
+                LFILE   tape number of file to be read from LBLRTM.
  
                 LSKIPF  number of files to be skipped in tape LFILE
                         number of file to be plotted will be LSKIPF + 1
@@ -1883,22 +1902,37 @@ RECORD 11.2A  (Continued)
  
                 SCALE   enables one to enlarge or reduce a plot.
  
-                IOPT    = 0  for plot, USE Records 11.2A and 11.3A
-                        = 1  for overlay plot, USE Records 11.2A and 11.3A
+                IOPT    = 0  for plot, USE instructions for records 11.2A and 11.3A
+                        = 1  for overlay plot, USE instructions for records 11.2A and 11.3A
                               *  will suppress the plotting of the header and axes,
                               *  and will overlay the line on the previous plot axes.
                               *  See also NUMSBX, NOENDX and YMIN.
-                        = 2  for file difference, USE Record 11.2B instead of 11.2A
-                        = 3  for file ratio, USE Record 11.2B instead of 11.2A
+                        = 2  for file difference, USE instructions for record 11.2B instead of 11.2A
+                        = 3  for file ratio, USE instructions for record 11.2B instead of 11.2A
  
                 I4P     = 0  for linear connection of points,
                         = 1  for four point interpolation
  
                 IXDEC   number of figures after decimal point on x-axis
+ 
+ ---------------------------------------------------------------------------------------------------------
+ 
+ RECORD 11.2.1A     (IOPT = 0,1; CEX = 'EX')
+ 
+            CFILEN(1)
+ 
+                 1-25
+ 
+                  A25
+ 
+            CFILEN(1) is the external name of the data file to be plotted or used for the overlay data (i.e. LFILE) 
+ 
+ ---------------------------------------------------------------------------------------------------------
+ 
 
                               PLTFAS (Continued)
  
-RECORD 11.3A     (IOPT = 0,1)
+ RECORD 11.3A     (IOPT = 0,1)
  
  
             YMIN,   YMAX,  YSIZE,   DELY,NUMSBY,NOENDY, IDEC, JEMIT, JPLOT,LOGPLT, JHDR,  JOUT,JPLTFL
@@ -1951,7 +1985,7 @@ RECORD 11.3A     (IOPT = 0,1)
  
                               PLTFAS (Continued)
  
-RECORD 11.3A (Continued)
+ RECORD 11.3A (Continued)
  
  
             JOUT    = 0  for plot to system plotfile/screen
@@ -1968,20 +2002,21 @@ RECORD 11.3A (Continued)
  
           JPLTFL         file to which plot values are written for JOUT .gt. 0  (default = 29)
  
-                         the structure of JPLTFL (unformatted) is standard FASCODE file structure (see Table III),
+                         the structure of JPLTFL (unformatted) is standard LBLRTM file structure (see Table III),
                          plot values are written out in SUBROUTINE FSCLIN
  
  
-REPEAT RECORD 11.2A or RECORD 11.2B
+ REPEAT RECORD 11.2A or RECORD 11.2B 
+ 
 
                               PLTFAS (Continued)
  
-***************************************************************************************************
-****************************** USE RECORD 11.2B FOR IOPT > 1 **************************************
-***************************************************************************************************
+ ***************************************************************************************************
+ ****************************** USE RECORD 11.2B FOR IOPT > 1 **************************************
+ ***************************************************************************************************
  
  
-RECORD 11.2B   (IOPT = 2,3)
+ RECORD 11.2B   (IOPT = 2,3)
  
  
             V1,    V2,  JFILE,JSKIPF, LFILE,LSKIPF,   IOPT, MFILE
@@ -1997,12 +2032,12 @@ RECORD 11.2B   (IOPT = 2,3)
  
                 V2      the final wavenumber of the difference or ratio
  
-                JFILE   tape number of file to be read from FASCOD3 (no default)
+                JFILE   tape number of file to be read from LBLRTM (no default)
  
                 JSKIPF  number of files to be skipped in tape JFILE
                         number of file to be used will be JSKIPF + 1
  
-                LFILE   tape number of file to be read from FASCOD3 (no default)
+                LFILE   tape number of file to be read from LBLRTM  (no default)
  
                 LSKIPF  number of files to be skipped in tape LFILE
                         number of file to be used will be LSKIPF + 1
@@ -2015,24 +2050,63 @@ RECORD 11.2B   (IOPT = 2,3)
                 MFILE   tape number of file for difference/ratio output (no default)
  
  
-   Subroutine FILOPT will difference or ratio two FASCODE output files.
-   Files must be    1) UNFORMATTED FASCODE files
+   Subroutine FILOPT will difference or ratio two LBLRTM output files.
+   Files must be    1) UNFORMATTED LBLRTM files
                     2) Single quantity files
                        i.e. contain only ONE of the following: 
-                                a) Opitcal Depths
+                                a) Optical Depths
                                 b) Transmittance
                                 c) Radiance
                                 e) Temperature
-                    3) The difference in DV between the files must be less than 1.E-8
+                    3) The difference in DV and V1 between the files must be less than 1.E-8
  
-               *** NOTE: Standard FASCODE output files usually
+               *** NOTE: Standard LBLRTM output files usually
                          contain BOTH Transmittance and Radiance.
                          The user must create either scanned or
                          plot files for use as input to this routine.
  
-REPEAT RECORD 11.2A or RECORD 11.2B
+ --------------------------------------------------------------------------------------------------------- 
+ 
 
- TABLE III. Structure of file JPLTFL (standard FASCODE structure).
+     (IOPT = 2,3; CEX = 'EX') 
+ 
+ 
+ RECORD 11.2.1B 
+ 
+            CFILEN(1) 
+ 
+              1-25 
+ 
+               A25
+ 
+            CFILEN(1) is the external name for the data file associated with JFILE.
+
+ RECORD 11.2.2B
+ 
+            CFILEN(2) 
+ 
+              1-25 
+ 
+               A25
+ 
+            CFILEN(2) is the external name for the data file associated with LFILE.
+
+ RECORD 11.2.3B
+ 
+            CFILEN(3) 
+ 
+              1-25 
+ 
+               A25 
+ 
+            CFILEN(3) is the external name for the data file associated with the difference/ratio file, MFILE.
+
+ ---------------------------------------------------------------------------------------------------------
+
+ REPEAT RECORD 11.2A or RECORD 11.2B
+
+
+ TABLE III. Structure of file JPLTFL (standard LBLRTM structure).
  
  
  
@@ -2053,7 +2127,7 @@ REPEAT RECORD 11.2A or RECORD 11.2B
     ----------   repeats records 2 and 3 until all Y values written  ---------
  
  
-    record 4                   FASCODE endfile
+    record 4                   LBLRTM endfile
  
  
     --------------- repeats for each plot request  -------------------------------
@@ -2070,7 +2144,7 @@ REPEAT RECORD 11.2A or RECORD 11.2B
  
  
  
-_________________________________________________________________________________________________________________________________
+ _________________________________________________________________________________________________________________________________
+
 
- 
  
