@@ -880,8 +880,7 @@ C         If IUNIT = 0 Then IFILE = IFILE Else IFILE = IUNIT
 C         IF a file is not open on IFILE, Then
 C             Set FILENAME to 'TAPExx' where xx is IFILE
 C             If FILENAME exists Then
-C                IERR = 1
-C                Return
+C                overwrite FILENAME
 C             Else
 C                Open FILENAME
 C         Return
@@ -955,29 +954,15 @@ C*****        Use this file even if it already exists
               Else
                   Write(FILNAM,'(A,I2.2)') CTAPE,IFILE
                   Write(IPR,'(/,A,A)') ' Output file name is: ',FILNAM
-                  Inquire(FILE=FILNAM,EXIST=EX)
-                  If(EX) Then
-                      Write(IPR,'(2A)') 
-     1                  ' Error: output file already exists,'
-                      IERR = 1
-                      Return
-                  Endif
-                  Open(IFILE,FILE=FILNAM,STATUS='NEW',
+                  Open(IFILE,FILE=FILNAM,STATUS='UNKNOWN',
      1                FORM='UNFORMATTED')
               Endif
           Else
               Read(IRD,'(A)') FILNAM
               Write(IPR,'(2A)') ' Output file name is: ',FILNAM
-              Inquire(FILE=FILNAM,EXIST=EX)
-              If(EX) Then
-                  Write(IPR,'(A,A)')' Error: requested output file ',
-     1                'already exists'
-                  IERR = 1
-                  Return
-              Endif
 C*****        Get a free file unit number
               Call GETUNT(IFILE)
-              OPEN(UNIT=IFILE,FILE=FILNAM,STATUS='NEW',
+              OPEN(UNIT=IFILE,FILE=FILNAM,STATUS='UNKNOWN',
      1            FORM='UNFORMATTED')
           Endif
       Endif
