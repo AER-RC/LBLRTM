@@ -52,7 +52,7 @@ C                                                                        LN05220
 C                                                                        LN05240
       INTEGER*4 IARRAY(3)                                               >LN05250
 C                                                                        LN05260
-c>>   CALL DATE (GDATE)                                                  LN05270
+C>>   CALL DATE (GDATE)                                                  LN05270
       CALL IDATE(IARRAY)                                                >LN05280
       IARRAY(3)=MOD(IARRAY(3),100)                                      >LN05290
       WRITE (GDATE,900) IARRAY(3),IARRAY(2),IARRAY(1)                   >LN05300
@@ -68,7 +68,7 @@ C     CHANGE THESE TO WORD SIZE AND FORMAT OF ROUTINE DATE               LN05390
 C                                                                        LN05400
       RETURN                                                             LN05410
 C                                                                        LN05420
-c>900 FORMAT (1X,I2,2('/',I2.2))                                         LN05430
+C>900 FORMAT (1X,I2,2('/',I2.2))                                         LN05430
   900 FORMAT (   I2,2('/',I2.2))                                         LN05430
 C>901 FORMAT (1X,A8)                                                    >LN05440
   901 FORMAT (A8)                                                        LN05450
@@ -82,9 +82,9 @@ C                                                                        LN05510
 C                                                                        LN05530
       INTEGER*4 IARRAY(3)                                               >LN05540
 C                                                                        LN05550
-c>>   CALL CLOCK (GTIME)                                                 LN05560
+C>>   CALL CLOCK (GTIME)                                                 LN05560
 C>VAX CALL TIME (GTIME)                                                 >LN05570
-C>SKY CALL ITIME (IARRAY)                                               >LN05580
+      CALL ITIME (IARRAY)                                               >LN05580
       WRITE (GTIME,900) IARRAY                                          >LN05590
 C                                                                        LN05600
       READ (GTIME,901) HTIME                                             LN05610
@@ -98,7 +98,7 @@ C     CHANGE THESE TO WORD SIZE AND FORMAT OF ROUTINE GTIME              LN05680
 C                                                                        LN05690
       RETURN                                                             LN05700
 C                                                                        LN05710
-c>900 FORMAT (1X,I2,2(':',I2.2))                                         LN05720
+C>900 FORMAT (1X,I2,2(':',I2.2))                                         LN05720
   900 FORMAT (   I2,2(':',I2.2))                                         LN05720
 C>901 FORMAT (1X,A8)                                                    >LN05730
   901 FORMAT (A8)                                                        LN05740
@@ -113,11 +113,11 @@ C                                                                        LN05820
 C     THIS SUBROUTINE OBTAINS CPU TIME                                   LN05830
 C                                                                        LN05840
       IF (A1.LE.0.) THEN                                                 LN05850
-c>>      CALL SECOND (TIME)                                              LN05860
+C>>      CALL SECOND (TIME)                                              LN05860
 C>VAX    A1 = SECNDS(0.0)                                               >LN05870
          TIME = ETIME(TARRAY)                                           >LN05880
       ELSE                                                               LN05890
-c>>      CALL SECOND (TIME)                                              LN05900
+C>>      CALL SECOND (TIME)                                              LN05900
 C>VAX    TIME = SECNDS(A1)                                              >LN05910
          TIME = ETIME(TARRAY)                                           >LN05920
       ENDIF                                                              LN05930
