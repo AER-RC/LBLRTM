@@ -3350,7 +3350,7 @@ C     GIVEN MASS MIXING RATIO (GM KG-1)                                  FA31560
 
 C     Convert using density of dry air.  The following quadratic is
 C                                                                        FA31570
-      WMOL = WMOL*R*1.0-3
+      WMOL = WMOL*R*1.0E-3
       DENNUM = (WMOL/(1.+WMOL))*RHOAIR
       GO TO 90                                                           FA31590
    30 CONTINUE                                                           FA31600
