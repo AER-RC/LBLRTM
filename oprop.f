@@ -4706,11 +4706,11 @@ C                                                                         E04500
          DO 110 NI = 1, NUMXS                                             E04510
             DO 110 NS = 1, NSPECR(NI)                                     E04520
                NPANEL = -1                                                E04530
-               IF (NFILEX(NS,NI).LE.0) GO TO 110                          E04540
-               IF (V1FX(NS,NI).GT.V2X) GO TO 110                          E04550
+               IF (NFILEX(NS,NI).LE.0) GO TO 105                          E04540
+               IF (V1FX(NS,NI).GT.V2X) GO TO 105                          E04550
                IF (V2FX(NS,NI).LT.V1X) THEN                               E04560
                   NFILEX(NS,NI) = -NFILEX(NS,NI)                          E04570
-                  GO TO 110                                               E04580
+                  GO TO 105                                               E04580
                ENDIF                                                      E04590
 C                                                                         E04600
 C     DETERMINE TEMPERATURE FILES AND TEST ON DPTMIN                      E04610
@@ -4719,7 +4719,7 @@ C                                                                         E04620
 C                                                                         E04640
 C     DPTMIN TEST - IF NMODE = 0, SKIP CROSS SECTION                      E04650
 C                                                                         E04660
-               IF (NMODE.EQ.0) GO TO 110                                  E04670
+               IF (NMODE.EQ.0) GO TO 105                                  E04670
                NMODES = NMODES+NMODE                                      E04680
 C                                                                         E04690
 C     FOR PRESSURE BROADENED CROSS-SECTION                                E04700
@@ -4843,6 +4843,11 @@ C                                                                         E05740
                   TXSPNL = TXSPNL+TIME-TIME0                              E05880
 C                                                                         E05890
   100          CONTINUE                                                   E05900
+C
+C              Continue for GOTO statements at E04540, E04550, E04580, &
+C              E04670.
+C
+ 105           CONTINUE
 C                                                                         E05910
   110    CONTINUE                                                         E05920
          IF (NFILET.EQ.0) GO TO 140                                       E05930
