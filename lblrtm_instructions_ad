@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                    5 May 1993
+                                    12 May 1993
  
  
  
@@ -103,7 +103,7 @@ C     presently: %H%  %T%
  
  RECORD 1.2 (Continued)
  
-           IMRG   (0 to 9; 12-18; 22-28; 32) selects merge option
+           IMRG   (0 to 9; 12-18; 22-28; 32; 35-36) selects merge option
  
                                    IMRG = 0 KFILE rewound after each layer
                                         > 1 KFILE not rewound after each layer
@@ -158,7 +158,7 @@ C     presently: %H%  %T%
                            monochromatic                           5                   6               8           NFILE
                            scanned results                        15                  16              18           NFILE
                            filtered results                       25                  26              28           NFILE
- 
+                           scanned results (flux calculations)    35                  36                           NFILE
  
            IMRG options are continued on next page.
            ----------------------------------------
@@ -167,10 +167,8 @@ C     presently: %H%  %T%
  
            IMRG (Continued)
  
- 
                     The actual results produced on MFILE or NFILE are determined by both IEMIT on Record 1.2 and JEMIT on either
                     Record 6 (scanned results) or Record 7.1 (filtered results).  The following table describes the options: 
- 
  
                                                                  RESULTS PRODUCED ON MFILE OR NFILE
                                                              ------------------------------------------
@@ -189,8 +187,11 @@ C     presently: %H%  %T%
  
                  For the filter option (IMRG.ge.23 .and. IMRG.le.28), the results, including the differences
                               of the total transmittances or radiances, are also printed on unit IPR (TAPE6)
- 
- 
+
+                 For the flux computations (IMRG.eq.35 .or. IMRG.eq.36), the results are merged from the top of 
+                              the atmosphere down for IMRG.eq.35 to provide the downward radiance at each level,
+                              and from the ground up for IMRG.eq.36 to provide upward radiance at each level.
+
                  "SEQUENTIAL" is defined at the total optical depth, transmittance, or radiance from H1 to
                               each layer boundary (Ln), always beginning at H1: 
  
@@ -200,7 +201,6 @@ C     presently: %H%  %T%
                                     *----|---->
                                     *----|----|---->
                                            etc...
- 
  
            --------------------------------------------------------
            |                                                      |
@@ -1479,7 +1479,7 @@ C     presently: %H%  %T%
  
 
  
-                                SCNMRG     ( for scanned sequential results; IMRG between 13 and 18 )
+                                SCNMRG     ( for scanned sequential results; IMRG between 13 and 18; 35 or 36 )
  
  
  
@@ -1557,6 +1557,25 @@ C     presently: %H%  %T%
          ***** Note: if the DV of the data to be scanned is larger than DVINT = HWHM/12., *****
          *****       the data is first interpolated to DVINT before it is scanned.        *****
          *****       Four-point interpolation is used for this procedure.                 *****
+
+
+
+ RECORD 6.1  (required for IMRG = 35 or 36; otherwise omit)
+
+
+        DIRCOS  
+      
+          1-10
+
+         F10.8
+
+
+           DIRCOS     direction cosine of radiance computation for external calculation of fluxes
+                      from Gaussian quadrature summation over one or more angles.
+
+
+
+
 
  
  
@@ -1582,9 +1601,9 @@ C     presently: %H%  %T%
  
                       (if NPTS.LT.0, previous values of XF utilized)
  
-             JEMIT      =  0  transmittance integrated over filter function
+            JEMIT      =  0  transmittance integrated over filter function
  
-                        =  1  radiance integrated over filter function
+                       =  1  radiance integrated over filter function
  
            NNFILE    unit number for filtered sequential intermediate output
  
