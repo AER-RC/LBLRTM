@@ -1851,6 +1851,7 @@ C                                                                         A19580
       COMMON /XSECTR/ V1FX(5,35),V2FX(5,35),DVFX(5,35),WXM(35),           A19610
      *                NTEMPF(5,35),NSPECR(35),IXFORM(5,35),               A19620
      *                XSMASS(35),XDOPLR(5,35),NUMXS,IXSBIN                A19625
+      COMMON /IODFLG/ DVOUT
 C                                                                         A19630
       CHARACTER*20 HEAD20
       CHARACTER*6 MOLID                                                   A19640
@@ -2345,6 +2346,28 @@ C
       ENDIF                                                               A23100
       IF (ISTOP.EQ.1) WRITE (IPR,965)                                     A23110
       IF (ISTOP.EQ.1) STOP 'PATH; ISTOP EQ 1'                             A23120
+C
+C     If DVOUT is nonzero (IOD=1,IMRG=1 -> interpolate optical depths to
+C     value of DVOUT), then test to be sure that DVOUT is not more than
+C     20% larger than the monochromatic DV (and thus ensuring enough
+C     monochromatic points are available to reach the V2 endpoint for
+C     the interpolated spectrum).
+C
+      IF (DVOUT.GT.0.) THEN
+         RATOUT = 1.
+         RATOUT = DVOUT/DV
+         write(*,*) 'dvout,dv = ',dvout,dv
+         IF (RATOUT.GT.1.2) THEN
+            WRITE (IPR,968) RATOUT,DVOUT,DV
+            write(*,*) 'dvout,dv = ',dvout,dv
+            STOP 'PATH; DVOUT ERROR, SEE TAPE6'
+         ENDIF
+      ENDIF
+C
+C     If DVSET is nonzero (set the final layer DV to the value of
+C     DVSET), then test to be sure that DVSET is not more than
+C     20% different than the monochromatic DV.
+C
       IF (DVSET.GT.0.) THEN                                               A23130
          RATIO = 1.                                                       A23140
          IF (DVSET.GT.0.) RATIO = DVSET/DV                                A23150
@@ -2640,6 +2663,7 @@ C                                                                         A24050
   962 FORMAT (20X,'  DV RATIO  .GT. ',F10.2)                              A24330
   965 FORMAT (/,20X,'  TYPE GT 2.5')                                      A24340
   967 FORMAT ('  RATIO ERROR ',F10.3,'  DVSET = ',F10.4,'  DV=',F10.4)    A24350
+ 968  FORMAT ('  RATOUT ERROR ',F10.3,'  DVOUT = ',E10.4,'  DV=',E10.4)
   970 FORMAT (////)                                                       A24360
   974 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,32X,    A24370
      *        'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(A10,4X))                  A24380
