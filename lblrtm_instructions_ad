@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                 1 November 1995
+                                    12 May 1995
  
  
  
@@ -79,12 +79,14 @@ C     presently: %H%  %T%
  RECORD 1.2 (Continued)
  
  
-          IEMIT   (0,1,2)
+          IEMIT   (0,1,2,3)
  
                      = 0  optical depth only
                      = 1  radiance and transmittance
                      = 2  solar radiance (requires previously calculated optical depths or transmittances and binary
                                solar radiation file SOLAR.RAD)
+                     = 3  radiance, transmittance, and radiance derivative for molecular species or temperature
+                               (requires RECORD 1.2a)
  
           ISCAN   (0,1,2,3) flag for SCANFN    1 = scanning function
                                   or INTRPL    2 = interpolating procedure
@@ -107,7 +109,7 @@ C     presently: %H%  %T%
 
 
  
-           IMRG   (0 to 10; 12-18; 22-28; 32; 35-36; 40-41; 45-46) selects merge option
+           IMRG   (0 to 10; 12-18; 22-28; 32; 35-36; 40-43; 45-46) selects merge option
 
  
                                    IMRG = 0 KFILE rewound after each layer
@@ -119,6 +121,8 @@ C     presently: %H%  %T%
                           ** uses merge path as defined by precalculated KFILE **
                    = 9  radiance merge with aerosols; precalculated KFILE
                           ** uses merge path as defined by precalculated KFILE **
+                   = 10 optical depths only; results for each layer on different file
+                          ** calculates accumulated optical depths by layer as well **
 
 
 
@@ -134,6 +138,7 @@ C     presently: %H%  %T%
                          |               ODdeflt_  for IMRG=1  and IOD=0         |
                          |               ODint_    for IMRG=1  and IOD=1         |
                          |               ODint_    for IMRG=1  and IOD=3         |
+                         |               ODint_    for IMRG=10 and IOD=3         |
                          |               ODexact_  for IMRG=1  and IOD=2         |
                          ---------------------------------------------------------
 
@@ -174,6 +179,9 @@ C     presently: %H%  %T%
                                                             ---------------     ---------------     -------       -------
                            monochromatic (total merged)           40                  41                           MFILE
 
+                           scanned (total merged)                 42                  43                           MFILE
+                           (Used only with IEMIT=3)                
+  
 
  
                                                         IMRG OPTIONS FOR MERGED OUTPUT BY LAYER
@@ -315,7 +323,7 @@ C     presently: %H%  %T%
                    = 2  uses the calculated dv of each layer
                            (requires IMRG = 1)
                    = 3  uses DVSET for last layer and interpolates to the spacing set by DVSET
-                           (requires IMRG = 1)
+                           (requires IMRG = 1, IMRG=10, or IMRG=40-43)
  
          IXSECT    (0,1) flag for cross-sections
  
@@ -334,6 +342,20 @@ C     presently: %H%  %T%
                          (optical depth for IEMIT=0; radiance and transmission for IEMIT=1)
                          (for laser option ILAS > 1, NPTS should be set to 0)
  
+ 
+
+
+ RECORD 1.2a   (required if IEMIT = 3)
+ 
+
+             NSPCRT
+ 
+              1-5
+ 
+              I5
+
+
+                  NSPCRT   reference number in TABLE I for species for analytic radiance derivative
  
 
  RECORD 1.2.1    (required if IEMIT = 2; otherwise omit)
@@ -366,7 +388,7 @@ C     presently: %H%  %T%
 
 
  
- RECORD 1.3    (required if IHIRAC > 0; IAERSL > 0; IEMIT = 1; IATM = 1; or ILAS > 0; otherwise omit)
+ RECORD 1.3    (required if IHIRAC > 0; IAERSL > 0; IEMIT = 1,3; IATM = 1; or ILAS > 0; otherwise omit)
  
  
  
@@ -416,7 +438,7 @@ C     presently: %H%  %T%
  
  
 
- RECORD 1.4    (required if IEMIT = 1, or both IEMIT=2 and IOTFLG=2; otherwise omit)
+ RECORD 1.4    (required if IEMIT = 1,3, or both IEMIT=2 and IOTFLG=2; otherwise omit)
  
  
  
@@ -448,6 +470,7 @@ C     presently: %H%  %T%
               SRREFL(I)    frequency dependent boundary reflectivity coefficients (I = 1,2,3)
  
                              REFLECTIVITY = SRREFL(1) + SRREFL(2)*V + SRREFL(3)*(V**2)
+ 
  
                              *** NOTE: Entering a value for SRREFL(1) < 0 allows for direct input of boundary reflectivities
                                         from file 'REFLECTION'
@@ -494,25 +517,44 @@ C     presently: %H%  %T%
 
  
 
- RECORD 1.6a    (required if IMRG = 35-36, 40-41, 45-46; otherwise omit)
+ RECORD 1.6a    (required if IMRG = 35-36, 40-43, 45-46; otherwise omit)
  
-                             NOTE:  IMRG = 35-36, 40-41, 45-46 require seperate optical depth files for each layer
+                             NOTE:  IMRG = 35-36, 40-43, 45-46 require seperate optical depth files for each layer
 
-           PTHODL, LAYTOT
+           PATH1,  LAYTOT
  
-            1-55,  57-60
+            1-55,  57-60 
  
-             A55, 1X, I4
+             A55,  1X,I4
 
 
-              PTHODL       pathname for precalculated optical depth files 
+              PATH1       pathname for precalculated optical depth files 
 
-                Example:  For PTHODL="ODdeflt_", code will look for files ODdeflt_01, ...
+                Example:  For PATH1="ODdeflt_", code will look for files ODdeflt_01, ...
                 -------
 
-              LAYTOT       total number of layers used in radiative transfer
+              LAYTOT      Total number of layers used in radiative transfer
+
+                ** NOTE **  LAYTOT ignored for IEMIT = 3.
 
 
+
+ RECORD 1.6b    (required if IMRG = 40-43 and IEMIT = 3; otherwise omit)
+ 
+                             NOTE:  Requires seperate accumulated optical depth files for each layer
+
+           PTHODT
+ 
+            1-55
+ 
+             A55
+
+
+              PTHODT       pathname for precalculated accumulated optical depth files
+
+                Example:  For PTHODT="ODtotal_", code will look for files ODtotal_01, ...
+                -------
+ 
  
  *****************************************************************************
  ******  these records applicable only if LBLATM not selected (IATM=0)  ******
@@ -1694,7 +1736,7 @@ C     presently: %H%  %T%
  
 
  
-                                SCNMRG     ( for scanned sequential results; IMRG between 13 and 18; 35-36 )
+                                SCNMRG     ( for scanned sequential results; IMRG between 13 and 18; 35-36; 42-43 )
  
  
  
@@ -1873,7 +1915,6 @@ C     presently: %H%  %T%
                             HWHM is redefined as  HWHM=(FIRST ZERO)/(PI/SCALE)
 			 2. HWHM is instrument field of view half angle (in degrees) for JFN=5,6
                             (e.g., for FOV of 10.0 degrees, HWHM=5.0)
-                         
  
             V1    beginning wavenumber value for performing SCAN
  
@@ -1898,7 +1939,7 @@ C     presently: %H%  %T%
                     =  3     sinc squared         54.1826               4.0
  
                     =  4     sinc                119.332818             4.0
-
+ 
                     =  5     FOV correction        1.0                  0.5
                              (uses center of box)
 
@@ -1925,16 +1966,16 @@ C     presently: %H%  %T%
                     =  0  no variation
  
                     =  1  HWHM(vi) = HWHM(v1) * (vi / v1)
- 
+  
          SAMPL    number of sample points per half width
  
                     =  0  gives default value for each function
  
                     <  0  this variable specifies the output spectral spacing (DELVO cm-1)
                           The value of SAMPL is calculated internally as SAMPL = HWHM/DELVO
-
-                         Note: SAMPL must be < 0 and carry the value of the output spectral spacing for JFN=5,6.
  
+                         Note: SAMPL must be < 0 and carry the value of the output spectral spacing for JFN=5,6.
+
          IUNIT    unit designation of file to be scanned (default is MFILE)
  
         IFILST    initial file from IUNIT to be scanned
