@@ -4,7 +4,7 @@ C     created:   $Date$
 C     presently: %H%  %T%
       SUBROUTINE HIRAC1 (MPTS)                                            B00010
 C                                                                         B00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B00030
+      IMPLICIT REAL*8           (V)                                     ! B00030
 C                                                                         B00040
 C                                                                         B00050
 C**********************************************************************   B00060
@@ -73,7 +73,8 @@ C
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      B00610
      *              EXTID(10)                                             B00620
 C                                                                         B00630
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & B00640
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         B00650
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -102,7 +103,7 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
 C                                                                         B00870
-      PARAMETER (NTMOL=32,NSPECI=75)                                      B00880
+      PARAMETER (NTMOL=36,NSPECI=85)   
 C                                                                         B00890
       COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           B00900
      *                SMASSI(NSPECI)                                      B00910
@@ -554,8 +555,6 @@ C                                                                         B03900
       BLOCK DATA BHIRAC                                                   B03920
 C
       PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS)
-C
-
 C                                                                         B03930
       COMMON /FNSH/ IFN,F1(NFMX),F2(NFMX),F3(NFMX),FG(NFMX),XVER(NFMX)    B03940
 C                                                                         B03950
@@ -564,22 +563,40 @@ C                                                                         B03970
       END                                                                 B03980
       SUBROUTINE RDLIN                                                    B03990
 C                                                                         B04000
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B04010
+      IMPLICIT REAL*8           (V)                                     ! B04010
 C                                                                         B04020
 C     SUBROUTINE RDLIN INPUTS LINE DATA FROM FILE LINFIL                  B04030
 C                                                                         B04040
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    B04050
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    B04060
      *       ZETAI(250),IZETA(250)                                        B04070
+
+      dimension    amol(250)
+      equivalence (mol(1),amol(1))
+
+      common /rdlnpnl/ vmin,vmax,nrec,nwds
+      integer *4 nrec,nwds,lnfl,leof,npnlhd
+
+      common /rdlnbuf/ vlin(250),str(250),hw_f(250),e_low(250),
+     *     mol_id(250),hw_s(250),hw_T(250),shft(250),jflg(250)
+      dimension xmol(250)
+      equivalence (vmin,rdpnl(1)),(mol_id(1),xmol(1))
+
+      real *4 str,hw_f,e_low,xmol,hw_s,hw_T,shft,rdpnl(2),dum(2)
+      integer *4 mol_id,jflg,n_one
+
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   B04080
-      COMMON /BUF2/ VMIN,VMAX,NREC,NWDS                                   B04090
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B04100
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B04110
      *              NLTEFL,LNFIL4,LNGTH4                                  B04120
       COMMON /IOU/ IOUT(250)                                              B04130
-      DIMENSION DUM(2),LINPNL(2)                                          B04140
 C                                                                         B04150
-      EQUIVALENCE (VMIN,LINPNL(1))                                        B04160
+
+*****************************************************************************
+c
+      data n_one/ 1/ npnlhd/ 6/
+
+      lnfl = linfil
 C                                                                         B04170
 C     THERE ARE (LIMIN * 9) QUANTITIES READ IN:                           B04180
 C     VNU,SP,ALFA0,EPP,MOL,HWHMS,TMPALF,PSHIFT,IFLG                       B04190
@@ -587,14 +604,14 @@ C                                                                         B04200
       ILNGTH = NLNGTH*LIMIN                                               B04210
       IDATA = 0                                                           B04220
 C                                                                         B04230
-C     BUFFER PAST FILE HEADER                                             B04240
+C     BUFFER PAST FILE HEADER if necessary
 C                                                                         B04250
       IF (ILO.LE.0) THEN                                                  B04260
-         REWIND LINFIL                                                    B04270
-         CALL BUFIN (LINFIL,LEOF,DUM(1),1)                                B04280
+         REWIND LNFL
+         CALL BUFINln (LNFL,LEOF,dum(1),n_one)
       ENDIF                                                               B04290
 C                                                                         B04300
-   10 CALL BUFIN (LINFIL,LEOF,LINPNL(1),NPHDRL)                           B04310
+   10 CALL BUFINln (Lnfl,LEOF,rdpnl(1),npnlhd)
       IF (LEOF.EQ.0) THEN                                                 B04320
          IF (NOPR.EQ.0) WRITE (IPR,900)                                   B04330
          IEOF = 1                                                         B04340
@@ -602,11 +619,35 @@ C                                                                         B04300
       ENDIF                                                               B04360
 C                                                                         B04370
       IF (NREC.GT.LIMIN) STOP 'RDLIN; NREC GT LIMIN'                      B04380
+c
       IF (VMAX.LT.VBOT) THEN                                              B04390
-         CALL BUFIN (LINFIL,LEOF,DUM(1),1)                                B04400
+         CALL BUFINln (Lnfl,LEOF,DUM(1),n_one)
          GO TO 10                                                         B04410
       ENDIF                                                               B04420
-      CALL BUFIN (LINFIL,LEOF,VNU(1),NWDS)                                B04430
+c
+      CALL BUFINln (Lnfl,LEOF,vlin(1),NWDS) 
+c
+c     precision conversion occurs here:
+c     incoming on right: vlin is real*8, others real*4 and integer*4
+c
+      do 15 i=1,nrec
+
+         IFLG(i)  = jflg(i)     
+         VNU(i)   = vlin(i)
+         SP(i)    = str(i)   
+         ALFA0(i) = hw_f(i)      
+         EPP(i)   = e_low(i)    
+         if (iflg(i) .ge.  0) then
+            MOL(i)   = mol_id(i)    
+         else
+            amol(i)  = xmol(i)
+         endif
+         HWHMS(i) = hw_s(i)      
+         TMPALF(i)= hw_T(i)       
+         PSHIFT(i)= shft(i)       
+
+ 15   continue
+
       IF ((ILO.EQ.0).AND.(VMIN.GT.VBOT)) WRITE (IPR,905)                  B04440
       ILO = 1                                                             B04450
 C                                                                         B04460
@@ -638,6 +679,10 @@ C                                                                         B04660
             IF (VNU(I).GT.VTOP) GO TO 70                                  B04720
          ENDIF                                                            B04730
    60 CONTINUE                                                            B04740
+
+c     the following test is to see if more data is required
+c     idata = 1 means data requirements have been met
+
    70 IF (IHI.LT.IJ) IDATA = 1                                            B04750
 C                                                                         B04760
       RETURN                                                              B04770
@@ -649,7 +694,7 @@ C                                                                         B04820
       END                                                                 B04830
       SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)                             B04840
 C                                                                         B04850
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B04860
+      IMPLICIT REAL*8           (V)                                     ! B04860
 C                                                                         B04870
       CHARACTER*1 FREJ(250),HREJ,HNOREJ
       COMMON /RCNTRL/ ILNFLG
@@ -663,7 +708,8 @@ C                                                                         B04870
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      B04960
      *              EXTID(10)                                             B04970
 C                                                                         B04980
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & B04990
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         B05000
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B05010
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B05020
@@ -677,7 +723,7 @@ C                                                                         B05000
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),           B05060
      *                CF3(102),CER(102)                                   B05070
 C                                                                         B05080
-      PARAMETER (NTMOL=32,NSPECI=75)                                      B05090
+      PARAMETER (NTMOL=36,NSPECI=85) 
 C                                                                         B05100
       COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           B05110
      *                SMASSI(NSPECI)                                      B05120
@@ -887,7 +933,7 @@ C                                                                         B06960
       SUBROUTINE CNVFNV (VNU,SP,SPPSP,RECALF,R1,R2,R3,F1,F2,F3,FG,        B06980
      *                   XVER,ZETAI,IZETA)                                B06990
 C                                                                         B07000
-      IMPLICIT DOUBLE PRECISION (V)                                       B07010
+      IMPLICIT REAL*8           (V)                                       B07010
 C                                                                         B07020
 C     SUBROUTINE CNVFNV PERFORMS THE CONVOLUTION OF THE LINE DATA WITH    B07030
 C     THE VOIGT LINE SHAPE (APPROXIMATED)                                 B07040
@@ -919,7 +965,8 @@ C                                                                         B07320
 C                                                                         B07330
 C     CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  B07340
 C                                                                         B07350
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                        B07360
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         B07370
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B07380
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B07390
@@ -1055,7 +1102,7 @@ C                                                                         B08780
       END                                                                 B08790
       SUBROUTINE PANEL (R1,R2,R3,KFILE,JRAD,IENTER)                       B09990
 C                                                                         B10000
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B10010
+      IMPLICIT REAL*8           (V)                                     ! B10010
 C                                                                         B10020
 C     SUBROUTINE PANEL COMBINES RESULTS OF R3, R2, AND R1 INTO R1 ARRAY   B10030
 C     AND OUTPUTS THE ARRAY R1                                            B10040
@@ -1088,7 +1135,8 @@ C                                                                         B10300
 C                                                                         B10310
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B10320
 C                                                                         B10330
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & B10340
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         B10350
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B10360
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B10370
@@ -1238,7 +1286,7 @@ C                                                                         B11710
       END                                                                 B11720
       SUBROUTINE PNLINT (R1,IENTER)                                       B11730
 C                                                                         B11740
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B11750
+      IMPLICIT REAL*8           (V)                                     ! B11750
 C                                                                         B11760
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B11770
 C                                                                         B11780
@@ -1263,7 +1311,8 @@ C                                     DEPARTMENT OF ENERGY                B11950
 C                                                                         B11960
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B11970
 C                                                                         B11980
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & B11990
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         B12000
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B12010
      *                WK(60),PZ1,PZ2,TZ1,TZ2,WBROAD,DV ,V1 ,V2 ,TBOUND,   B12020
@@ -1807,7 +1856,7 @@ C                                                                         B16940
       END                                                                 B16950
       SUBROUTINE RSYM (R,DV,VFT)                                          B16960
 C                                                                         B16970
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B16980
+      IMPLICIT REAL*8           (V)                                     ! B16980
 C                                                                         B16990
       DIMENSION R(*)                                                      B17000
 C                                                                         B17010
@@ -1863,7 +1912,7 @@ C                                                                         B17500
       END                                                                 B17510
       SUBROUTINE XINT (V1A,V2A,DVA,A,AFACT,VFT,DVR3,R3,N1R3,N2R3)         B17520
 C                                                                         B17530
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B17540
+      IMPLICIT REAL*8           (V)                                     ! B17540
 C                                                                         B17550
 C     THIS SUBROUTINE INTERPOLATES THE A ARRAY STORED                     B17560
 C     FROM V1A TO V2A IN INCREMENTS OF DVA USING A MULTIPLICATIVE         B17570
@@ -1897,7 +1946,7 @@ C                                                                         B17840
       END                                                                 B17850
       FUNCTION RADFN (VI,XKT)                                             B17860
 C                                                                         B17870
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B17880
+      IMPLICIT REAL*8           (V)                                     ! B17880
 C                                                                         B17890
 C     FUNCTION RADFN CALCULATES THE RADIATION TERM FOR THE LINE SHAPE     B17900
 C                                                                         B17910
@@ -1959,7 +2008,7 @@ C                                                                         B18460
       END                                                                 B18470
       FUNCTION RADFNI (VI,DVI,XKT,VINEW,RDEL,RDLAST)                      B18480
 C                                                                         B18490
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B18500
+      IMPLICIT REAL*8           (V)                                     ! B18500
 C                                                                         B18510
 C     FUNCTION RADFNI CALCULATES THE RADIATION TERM FOR THE LINE SHAPE    B18520
 C     OVER INTERVAL VI TO VINEW                                           B18530
@@ -2108,12 +2157,15 @@ C                                                                         B19960
       END                                                                 B19970
       SUBROUTINE MOLEC (IND,SCOR,RHOSLF,ALFD1)                            C00010
 C                                                                         C00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! C00030
+      IMPLICIT REAL*8           (V)                                     ! C00030
 C                                                                         C00040
-      PARAMETER (NTMOL=32,NSPECI=75)                                      C00050
+      PARAMETER (NTMOL=36,Nspeci=85)
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
       COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           C00060
      *                SMASSI(NSPECI)                                      C00070
-      COMMON /QTOT/ QCOEF(NSPECI,2,4),Q296(NSPECI),AQ(NSPECI),            C00080
+      COMMON /QTOT/ QCOEF(NSPECI,3,5),Q296(NSPECI),AQ(NSPECI),            C00080
      *              BQ(NSPECI),GJ(NSPECI)                                 C00090
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   C00100
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       C00110
@@ -2121,35 +2173,57 @@ C                                                                         C00040
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      C00130
      *              EXTID(10)                                             C00140
 C                                                                         C00150
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & C00160
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         C00170
       COMMON /FILHDR/ XID(10),SECANT,P   ,TEMP,HMOLID(60),XALTZ(4),       C00180
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   C00190
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    C00200
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           C00210
       DIMENSION SCOR(*),RHOSLF(*),ALFD1(*)                                C00220
-      COMMON /SMOLEC/ W(35,9),ND(35,9),FAD                                C00230
-      COMMON /XMOLEC/ NV(35),IVIB(35,2,9),XR(35),ROTFAC(35),QV0(35),      C00240
-     *                QV400(35)                                           C00250
+      COMMON /SMOLEC/ W(42,9),ND(42,9),FAD                                C00230
+      COMMON /XMOLEC/ NV(42),IVIB(42,2,9),XR(42),ROTFAC(42),QV0(42)
       COMMON /MOLNAM/ MOLID(0:NTMOL)                                      C00260
       CHARACTER*6 MOLID                                                   C00270
 C                                                                         C00280
 C     IS EQUIV. TO THE FOLLOWING DIMENSION AND EQUIVALENT STATEMENTS      C00290
 C                                                                         C00300
-      DIMENSION IV(630)                                                   C00310
+      DIMENSION IV(2)
       EQUIVALENCE (IV(1),IVIB(1,1,1))                                     C00320
 C                                                                         C00330
-      DATA MDIM / 35 /,NVDIM / 9 /,TMP400 / 400. /                        C00340
+      DATA MDIM / 42 /,NVDIM / 9 /
 C                                                                         C00350
-C     THIS VERSION OF MOLEC WHICH WAS REWRITTEN FOR FASCOD3 IS            C00360
-C     BASED ON THE PROGRAM TIPS WRITTEN BY R.R. GAMACHE & L. ROTHMAN      C00370
-C                                                                         C00380
-C     MODIFIED FOR FASCOD3:  22 FEBRUARY, 1991                            C00390
-C                            R. D. WORSHAM                                C00400
-C                            ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC   C00410
-C                                                                         C00420
-C        LAST MODIFICATION:  15 MAY 1991  (R.D. WORSHAM)                  C00430
-C                                                                         C00440
+c
+c
+c    Program TIPS written by R.R. Gamache
+c
+c     This is an updated version of TIPS: TIPS_97
+c     obtained from R.R. Gamache on 28 April 1998
+c
+c***************
+c
+c     Modifications have been made to the partition sums for
+c     hno3, c2h6, sf6, o, and clono2 by tony clough on 30 april 98,
+c     based on data provided by R. Gamache.
+c    
+c***************
+c
+c    This program enables the user to calculate the Total Internal
+c    Partition Sum (TIPS) for a given molecule, isotopic variant, and
+c    temperature.  Current limitations are the molecular species on the
+c    HITRAN molecular database and the temperature range 70 - 3000 K.
+c
+c...This program calculates the TIPS by the formula
+c...     Q(T) = A + B*T + C*T*T + D*T*T*T + E*T*T*T*T
+c...Reference: R.R. Gamache, R.L. Hawkins, and L.S. Rothman,
+c    J.Mol.Spectrosc. 142, 205-219 (1990)
+c
+c     Program modified by Tony Clough
+c      
+c     Converted to single precision
+c
+c     Substantive changes have retained original record as comment with c%%
+c
 C     THIS PROGRAM ENABLES THE USER TO CALCULATE THE TOTAL INTERNAL       C00450
 C     PARTITION SUM (TIPS) FOR A GIVEN MOLECULE, ISOTOPIC SPECIES,        C00460
 C     AND TEMPERATURE.  CURRENT LIMITATIONS ARE THE MOLECULAR SPECIES     C00470
@@ -2167,92 +2241,104 @@ C                                                                         C00580
 C     ALFD1 CONTAINS THE DOPPLER WIDTHS AT 1 CM-1                         C00590
 C                                                                         C00600
       QRFAC(TEMP) = (TEMP0/TEMP)**RFACM                                   C00610
-      QRFAC4(TEMP) = (TMP400/TEMP)**RFACM                                 C00620
 C                                                                         C00630
-      IF (IND.EQ.1) THEN                                                  C00640
-         CALL VECISO                                                      C00650
-C                                                                         C00660
+      IF (IND.EQ.1) THEN 
+c
+c...Set up molecule isotope vectors:
+c
+         CALL vecIso
+c
+c 5       WRITE (IPR,'(8x,A,/,8x,A////////////)')
+c     +     'This program calculates the Total Internal Partition Sum'
+c     +,'       for the molecular species on the HITRAN database.'
+c%%   
+C     
          DO 10 M = 1, NMOL                                                C00670
             READ (MOLID(M),900) HMOLID(M)                                 C00680
-   10    CONTINUE                                                         C00690
-C                                                                         C00700
+ 10      CONTINUE                                                         C00690
+C     
          FLN2 = ALOG(2.)                                                  C00710
          FAD = FLN2*2.*AVOG*BOLTZ/(CLIGHT*CLIGHT)                         C00720
          XKT0 = TEMP0/RADCN2                                              C00730
-         XKT4 = TMP400/RADCN2                                             C00740
-C                                                                         C00750
+C     
          DO 30 M = 1, MDIM                                                C00760
             DO 20 K = 1, NVDIM                                            C00770
                LOC = 2*MDIM*(K-1)+2*(M-1)                                 C00780
                W(M,K) = IV(LOC+1)                                         C00790
                ND(M,K) = IV(LOC+2)                                        C00800
-   20       CONTINUE                                                      C00810
+ 20         CONTINUE                                                      C00810
             NVM = NV(M)                                                   C00820
-            QV0(M) = QV(M,XKT0,W,ND,NVM,MDIM,NVDIM)                       C00830
-            QV400(M) = QV(M,XKT4,W,ND,NVM,MDIM,NVDIM)                     C00840
-   30    CONTINUE                                                         C00850
+ 30      CONTINUE
          RETURN                                                           C00860
       ELSE                                                                C00870
-C                                                                         C00880
+C     
+
          RHORAT = (P/P0)*(TEMP0/TEMP)                                     C00890
          XKT = TEMP/RADCN2                                                C00900
-C                                                                         C00910
-         DO 50 M = 1, NMOL                                                C00920
-C                                                                         C00930
-C     NOTE: FOR MOLECULES 7 AND 27, NEW PARTITION SUMS ARE NOT            C00940
-C           CURRENTLY AVAILABLE, SO USE FASCOD2 QUANTITES                 C00950
-C                                                                         C00960
-            DO 40 ISO = 1, ISONM(M)                                       C00970
+C     
+         DO 50 M = 1, NMOL
+C     
+            DO 40 ISO = 1, ISONM(M)
                ILOC = ISOVEC(M)+ISO                                       C00980
-               IF (M.EQ.7.OR.M.EQ.27) THEN                                C00990
-                  NVM = NV(M)                                             C01000
-                  RFACM = ROTFAC(M)                                       C01010
-                  SCOR(ILOC) = QRFAC(TEMP)*                               C01020
-     *                         (QV0(M)/QV(M,XKT,W,ND,NVM,MDIM,NVDIM))     C01030
-               ELSE                                                       C01040
-C                                                                         C01050
-C     TIPS IS CURRENTLY INVALID ABOVE 400 DEGREES K.                      C01060
-C     THE FOLLOWING IS A FIX UNTIL THIS PROBLEM IS RESOLVED.              C01070
-C                                                                         C01080
-                  IF (TEMP.LE.TMP400) THEN                                C01090
-                     CALL QOFT (M,ISO,TEMP,SCOR(ILOC))                    C01100
-                  ELSE                                                    C01110
-                     CALL QOFT (M,ISO,TMP400,SCOR(ILOC))                  C01120
-                     NVM = NV(M)                                          C01130
-                     RFACM = ROTFAC(M)                                    C01140
-                     SCTEMP = QRFAC4(TEMP)*                               C01150
-     *                        (QV400(M)/QV(M,XKT,W,ND,NVM,MDIM,NVDIM))    C01160
-                     SCOR(ILOC) = SCOR(ILOC)*SCTEMP                       C01170
-                  ENDIF                                                   C01180
-               ENDIF                                                      C01190
-               RHOSLF(ILOC) = RHORAT*WK(M)/WTOT                           C01200
-               ALFD1(ILOC) = SQRT(FAD*TEMP/SMASSI(ILOC))                  C01210
-   40       CONTINUE                                                      C01220
-   50    CONTINUE                                                         C01230
-C                                                                         C01240
-         RETURN                                                           C01250
-C                                                                         C01260
+c     
+               CALL QOFT (M,ISO,296.,QT_296) 
+               CALL QOFT (M,ISO,TEMP,QT) 
+
+               SCOR(iloc) = QT_296/QT
+
+
+c              Stop program if covering a molecule and isotope
+c              not valid for T > 500K.
+
+               if ((iloc.ge.29).and.(wk(m).gt.0.).and.
+     *              (TEMP.GT.500.)) then
+                  write(ipr,*) 'TIPS calculation of Isotope ',
+     *                 iso82(iloc),' for molecule ',m,
+     *                 ' not valid for T = ',TEMP
+                  write(*,*) 'TIPS calculation of Isotope ',
+     *                 iso82(iloc),' for molecule ',m,
+     *                 ' not valid for T = ',TEMP
+                  stop 'SUBROUTINE MOLEC'
+               endif
+
+c              Stop program if covering a molecule of nonzero amount
+c              and which has an isotope with no TIPs coefficients.
+
+               if ((scor(iloc).lt.0.).and.(wk(m).gt.0.)) then
+                  write(ipr,*) 'Isotope ',iso82(iloc),' for molecule ',
+     *                 m,' not included in TIPs'
+                  write(*,*) 'Isotope ',iso82(iloc),' for molecule ',
+     *                 m,' not included in TIPs'
+                  stop 'SUBROUTINE MOLEC'
+               endif
+
+               RHOSLF(ILOC) = RHORAT*WK(M)/WTOT                    
+               ALFD1(ILOC) = SQRT(FAD*TEMP/SMASSI(ILOC))           
+ 40         CONTINUE                                               
+ 50      CONTINUE                                                
+C     RETURN                                                              C01250
+C     
       ENDIF                                                               C01270
-C                                                                         C01280
-  900 FORMAT (A6)                                                         C01290
+C     
+ 900  FORMAT (A6)                                                         C01290
 C                                                                         C01300
       END                                                                 C01310
       BLOCK DATA BMOLEC                                                   C01320
 C                                                                         C01330
       COMMON /XMOLEC/                                                     C01340
-     2  NV1(7),NV2(7),NV3(7),NV4(7),NV5(7),                               C01350
-     3  IV11(14),IV12(14),IV13(14),IV14(14),IV15(14),                     C01360
-     4  IV21(14),IV22(14),IV23(14),IV24(14),IV25(14),                     C01370
-     5  IV31(14),IV32(14),IV33(14),IV34(14),IV35(14),                     C01380
-     6  IV41(14),IV42(14),IV43(14),IV44(14),IV45(14),                     C01390
-     7  IV51(14),IV52(14),IV53(14),IV54(14),IV55(14),                     C01400
-     8  IV61(14),IV62(14),IV63(14),IV64(14),IV65(14),                     C01410
-     9  IV71(14),IV72(14),IV73(14),IV74(14),IV75(14),                     C01420
-     *  IV81(14),IV82(14),IV83(14),IV84(14),IV85(14),                     C01430
-     1  IV91(14),IV92(14),IV93(14),IV94(14),IV95(14),                     C01440
-     2  XR1(7),XR2(7),XR3(7),XR4(7),XR5(7),                               C01450
-     3  ROTFC1(7),ROTFC2(7),ROTFC3(7),ROTFC4(7),ROTFC5(7),                C01460
-     4  QV0(35),QV400(35)                                                 C01470
+     2  NV1(7),NV2(7),NV3(7),NV4(7),NV5(7),NV6(7),
+     3  IV11(14),IV12(14),IV13(14),IV14(14),IV15(14),IV16(14),  
+     4  IV21(14),IV22(14),IV23(14),IV24(14),IV25(14),IV26(14),  
+     5  IV31(14),IV32(14),IV33(14),IV34(14),IV35(14),IV36(14),  
+     6  IV41(14),IV42(14),IV43(14),IV44(14),IV45(14),IV46(14),  
+     7  IV51(14),IV52(14),IV53(14),IV54(14),IV55(14),IV56(14),  
+     8  IV61(14),IV62(14),IV63(14),IV64(14),IV65(14),IV66(14),  
+     9  IV71(14),IV72(14),IV73(14),IV74(14),IV75(14),IV76(14),  
+     *  IV81(14),IV82(14),IV83(14),IV84(14),IV85(14),IV86(14),  
+     1  IV91(14),IV92(14),IV93(14),IV94(14),IV95(14),IV96(14),  
+     2  XR1(7),XR2(7),XR3(7),XR4(7),XR5(7),XR6(7),                     
+     3  ROTFC1(7),ROTFC2(7),ROTFC3(7),ROTFC4(7),ROTFC5(7),ROTFC6(7),      
+     4  QV0(42)
 C                                                                         C01480
       DATA NV1,IV11,IV21,IV31,IV41,IV51,IV61,IV71,IV81,IV91,XR1,ROTFC1/   C01490
 C                                                                         C01500
@@ -2320,7 +2406,23 @@ C           N2      HCN    CH3CL     H2O2     C2H2     C2H6      PH3      C01990
 C                                                                         C02120
       DATA NV5,IV15,IV25,IV35,IV45,IV55,IV65,IV75,IV85,IV95,XR5,ROTFC5/   C02130
 C                                                                         C02140
-C         COF2      SF6      H2S    HCOOH      ???      ???      ???      C02150
+C         COF2      SF6      H2S    HCOOH      HO2        O   CLONO2      C02150
+     C       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,    C02160
+     1  0000,1 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 ,    C02170
+     2     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02180
+     3     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02190
+     4     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02200
+     5     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02210
+     6     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02220
+     7     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02230
+     8     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02240
+     9     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02250
+     X     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    C02260
+     Y     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 /    C02270
+C                                                                         C02280
+      DATA NV6,IV16,IV26,IV36,IV46,IV56,IV66,IV76,IV86,IV96,XR6,ROTFC6/ 
+C                                                                       
+C          NO+      ???      ???      ???      ???      ???      ??? 
      C       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,    C02160
      1  0000,1 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 ,    C02170
      2     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02180
@@ -2350,123 +2452,72 @@ C                                                                         C02410
       RETURN                                                              C02420
 C                                                                         C02430
       END                                                                 C02440
-      SUBROUTINE QOFT (MOL,ISO,TOUT,SCOR)                                 C02450
-C                                                                         C02460
-      PARAMETER (NTMOL=32,NSPECI=75)                                      C02470
-C                                                                         C02480
-C     MOLECULE-ISOTOPE ARRAY LOCATIONS                                    C02490
-C                                                                         C02500
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           C02510
-     *                SMASSI(NSPECI)                                      C02520
-      COMMON /QTOT/ QCOEF(NSPECI,2,4),Q296(NSPECI),AQ(NSPECI),            C02530
-     *              BQ(NSPECI),GJ(NSPECI)                                 C02540
-C                                                                         C02550
-C     FIND POSITION IN ARRAY                                              C02560
-C                                                                         C02570
-      IVEC = ISOVEC(MOL)+ISO                                              C02580
-C                                                                         C02590
-      QT296 = Q296(IVEC)                                                  C02600
-C                                                                         C02610
-C     TOTAL INTERNAL SUM AT 296K                                          C02620
-C                                                                         C02630
-      IF (TOUT.EQ.296.) THEN                                              C02640
-         QT = Q296(IVEC)                                                  C02650
-         GO TO 10                                                         C02660
-      ENDIF                                                               C02670
-C                                                                         C02680
-C     VALUE DEPENDS ON TEMPERATURE RANGE                                  C02690
-C                                                                         C02700
-      IF (TOUT.GE.70..AND.TOUT.LE.400.) IRANGE = 1                        C02710
-      IF (TOUT.GT.400..AND.TOUT.LE.2005.) IRANGE = 2                      C02720
-      IF (TOUT.GT.2005.) IRANGE = 3                                       C02730
-C                                                                         C02740
-      IF (IRANGE.EQ.1.OR.IRANGE.EQ.2) THEN                                C02750
-         QT = QCOEF(IVEC,IRANGE,1)+                                       C02760
-     *        QCOEF(IVEC,IRANGE,2)*TOUT+                                  C02770
-     *        QCOEF(IVEC,IRANGE,3)*TOUT*TOUT+                             C02780
-     *        QCOEF(IVEC,IRANGE,4)*TOUT*TOUT*TOUT                         C02790
-      ELSE                                                                C02800
-C                                                                         C02810
-C     HIGH TEMPERATURE EXTRAPOLATION                                      C02820
-C                                                                         C02830
-         IF (AQ(IVEC).EQ.-1.) THEN                                        C02840
-            QT = -1.                                                      C02850
-         ELSE                                                             C02860
-            ALNQT = AQ(IVEC)*LOG(TOUT)+BQ(IVEC)                           C02870
-            QT = EXP(ALNQT)                                               C02880
-         ENDIF                                                            C02890
-C                                                                         C02900
-      ENDIF                                                               C02910
-C                                                                         C02920
-   10 SCOR = QT296/QT                                                     C02930
-C                                                                         C02940
-      RETURN                                                              C02950
-C                                                                         C02960
-      END                                                                 C02970
-      SUBROUTINE VECISO                                                   C02980
-C                                                                         C02990
-      PARAMETER (NTMOL=32,NSPECI=75)                                      C03000
-C                                                                         C03010
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           C03020
-     *                SMASSI(NSPECI)                                      C03030
-C                                                                         C03040
-C     ISOTOPE VECTOR INFORMATION                                          C03050
-C        SET UP ISOVEC:                                                   C03060
-C                                                                         C03070
-      ISOVEC(1) = 0                                                       C03080
-      DO 20 I = 2, NTMOL                                                  C03090
-         ISOVEC(I) = 0                                                    C03100
-         DO 10 J = 1, I-1                                                 C03110
-            ISOVEC(I) = ISOVEC(I)+ISONM(J)                                C03120
-   10    CONTINUE                                                         C03130
-   20 CONTINUE                                                            C03140
-C                                                                         C03150
-      RETURN                                                              C03160
-C                                                                         C03170
-      END                                                                 C03180
-      BLOCK DATA ISOTPE                                                   C03190
-C                                                                         C03200
-      PARAMETER (NTMOL=32,NSPECI=75)                                      C03210
-C                                                                         C03220
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           C03230
-     *                SMASSI(NSPECI)                                      C03240
-C                                                                         C03250
-C    THE NUMBER OF ISOTOPES FOR A PARTICULAR MOLECULE:                    C03260
-      DATA (ISONM(I),I=1,NTMOL)/                                          C03270
-C     H2O, CO2, O3, N2O, CO, CH4, O2,                                     C03280
-     *  4,   8,  3,   5,  5,   3,  3,                                     C03290
-C      NO, SO2, NO2, NH3, HNO3, OH, HF, HCL, HBR, HI,                     C03300
-     *  3,   2,   1,   2,    1,  3,  1,   2,   2,  1,                     C03310
-C     CLO, OCS, H2CO, HOCL, N2, HCN, CH3CL, H2O2, C2H2, C2H6, PH3         C03320
-     *  2,   4,    3,    2,  1,   3,     2,    1,    2,    1,   1,        C03330
-C     COF2, SF6, H2S, HCOOH                                               C03340
-     *   1,   1,   1,     1/                                              C03350
-C                                                                         C03360
-      DATA ISO82/                                                         C03370
-C       H2O                                                               C03380
-     *  161,181,171,162,                                                  C03390
-C       CO2                                                               C03400
-     *  626,636,628,627,638,637,828,728,                                  C03410
-C       O3                                                                C03420
-     *  666,668,686,                                                      C03430
-C       N2O                                                               C03440
-     *  446,456,546,448,447,                                              C03450
-C       CO,              CH4                                              C03460
-     *  26,36,28,27,38,  211,311,212,                                     C03470
-C       O2,        NO,        SO2                                         C03480
-     *  66,68,67,  46,56,48  ,626,646,                                    C03490
-C       NO2,   NH3,        HNO3                                           C03500
-     *  646,   4111,5111,  146,                                           C03510
-C       OH,        HF,  HCL,    HBR,    HI                                C03520
-     *  61,81,62,  19,  15,17,  19,11,  17,                               C03530
-C       CLO,    OCS,              H2CO                                    C03540
-     *  56,76,  622,624,632,822,  126,136,128,                            C03550
-C       HOCL,     N2,  HCN                                                C03560
-     *  165,167,  44,  124,134,125,                                       C03570
-C       CH3CL,    H2O2,  C2H2,       C2H6,  PH3                           C03580
-     *  215,217,  1661,  1221,1231,  1221,  1111,                         C03590
-C       COF2, SF6, H2S, HCOOH                                             C03600
-     *  269,  29, 121,   126/                                             C03610
+c***********************************************
+      SUBROUTINE vecIso
+c***********************************************
+c
+      PARAMETER (NMOL=36,Nspeci=85)
+      COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISONM(NMOL),
+     *     sdum(Nspeci)
+c
+c...Isotope vector information
+c     Set up ISOVEC:
+         ISOVEC(1) = 0
+         DO 20 I = 2,NMOL
+          ISOVEC(I) = 0
+          DO 10 J = 1,I-1
+           ISOVEC(I) = ISOVEC(I)+ISONM(J)
+   10     CONTINUE
+   20    CONTINUE
+c
+      RETURN
+      END
+c  ****************************************
+      BLOCK DATA Isotop
+c  ****************************************
+C$$   IMPLICIT DOUBLE PRECISION (a-h,o-z)
+c
+      PARAMETER (NMOL=36,Nspeci=85)
+      COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISONM(NMOL),
+     *     smassi(Nspeci)
+c
+c    The number of isotopes for a particular molecule:
+      DATA (ISONM(I),I=1,NMOL)/
+c     H2O, CO2, O3, N2O, CO, CH4, O2,
+     +  4,   8,  5,   5,  6,   3,  3,
+c      NO, SO2, NO2, NH3, HNO3, OH, HF, HCl, HBr, HI,
+     +  3,   2,   1,   2,    1,  3,  1,   2,   2,  1,
+c     ClO, OCS, H2CO, HOCl, N2, HCN, CH3Cl, H2O2, C2H2, C2H6, PH3
+     +  2,   4,    3,    2,  1,   3,     2,    1,    2,    1,   1,
+c     COF2, SF6, H2S, HCOOH, HO2, O, ClONO2,  NO+
+     +  1,   1,   3,     1,   1,  1,     2,    1/
+c
+      DATA ISO82/
+c       H2O
+     +  161,181,171,162,                                           
+c       CO2
+     +  626,636,628,627,638,637,828,728,
+c       O3
+     +  666,668,686,667,676,
+c       N2O
+     +  446,456,546,448,447,
+c       CO,                 CH4
+     +  26,36,28,27,38,37,  211,311,212,
+c       O2,        NO,        SO2
+     +  66,68,67,  46,56,48  ,626,646,
+c      NO2,   NH3,        HNO3
+     + 646,   4111,5111,  146,
+c       OH,        HF,  HCl,    HBr,    HI
+     +  61,81,62,  19,  15,17,  19,11,  17,
+c       ClO,    OCS,              H2CO
+     +  56,76,  622,624,632,822,  126,136,128,
+c       HOCl,     N2,  HCN
+     +  165,167,  44,  124,134,125
+c      CH3Cl,    H2O2,  C2H2,       C2H6,  PH3
+     +,215,217,  1661,  1221,1231,  1221,  1111,
+c     COF2, SF6, H2S,            HCOOH,  HO2, O,   ClONO2      NO+
+     + 269,  29,  121,141,131,   126,    166, 6,   5646,7646,  46/
+c
 C                                                                         C03620
 C     MOLECULAR MASSES FOR EACH ISOTOPE                                   C03630
 C                                                                         C03640
@@ -2475,12 +2526,12 @@ C     H2O:   161,   181,   171,   162                                     C03660
      *       18.01, 20.01, 19.01, 19.01,                                  C03670
 C     CO2:   626,   636,   628,   627,   638,   637,   828,   728         C03680
      *       43.98, 44.98, 45.98, 44.98, 46.98, 45.98, 47.98, 46.98,      C03690
-C     O3:    666,   668,   686                                            C03700
-     *       47.97, 49.97, 49.97,                                         C03710
+C     O3:    666,   668,   686    667    676                              ******
+     *       47.97, 49.97, 49.97, 48.99, 48.99,                           ******
 C     N2O:   446,   456,   546,   448,   447                              C03720
      *       43.99, 44.99, 44.99, 45.99, 44.99,                           C03730
-C     CO:    26,    36,    28,    27,    38                               C03740
-     *       27.99, 28.99, 29.99, 28.99, 30.99,                           C03750
+C     CO:    26,    36,    28,    27,    38     37                        ******
+     *       27.99, 28.99, 29.99, 28.99, 30.99, 30.00,                    ******
 C     CH4:   211,   311,   212;   O2:    66,    68,    67                 C03760
      *       16.04, 17.04, 17.04,        31.98, 33.98, 32.98,             C03770
 C     NO:    46,    56,    48;    SO2:   626,   646                       C03780
@@ -2501,15 +2552,977 @@ C     CH3CL: 215,   217;   H2O2:  1661;  C2H2:  1221,  1231               C03920
      *       50.00, 52.00,        34.00,        26.02, 27.02,             C03930
 C     C2H6:  1221;  PH3:   1111;  COF2:  269;   SF6:   29                 C03940
      *       30.06,        34.00,        65.99,        145.97,            C03950
-C     H2S:   121;   HCOOH: 126                                            C03960
-     *       33.99,        46.00/                                         C03970
-C                                                                         C03980
-      END                                                                 C03990
+C     H2S:   121    141    131;   HCOOH: 126;   HO2:   166                ******
+     *       33.99, 35.98, 34.99,        46.00,        33.00,             ******
+C     O:     6      ClONO2:5646   7646;  NO+:   46                        ******
+     *       15.99,        96.96, 98.95,        30.00 /                   ******
+C
+      END
+
+c
+C*******************************************
+      SUBROUTINE QofT(Mol, Iso, Tout, QT)
+C*******************************************
+c...date last changed:  September 19, 1997
+c
+c...input - Mol, Iso, and a temperature Tout
+c...output - Total internal partition sum, QT, at T=Tout
+c
+c$$$      IMPLICIT DOUBLE PRECISION (a-h,o-z)
+c
+c++
+      PARAMETER (NMOL=36,Nspeci=85)
+c++
+      COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISONM(NMOL),
+     *     sdum(Nspeci)
+c++:  bd-QT
+      common/Qtot/ Qcoef(Nspeci,3,5), Q296(Nspeci), aQ(Nspeci), 
+     + bQ(Nspeci), gj(Nspeci)
+c
+      ivec = isovec(Mol) + iso
+c
+c...value depends on temperature range
+      IF (Tout.lt.70. .OR. Tout.gt.3005.) THEN
+        QT = -1.
+        WRITE (*,*) '  OUT OF TEMPERATURE RANGE'
+        GOTO 99
+      ENDIF
+      IF (Tout .ge.  70. .and. Tout .le.  500.) irange = 1
+      IF (Tout .gt. 500. .and. Tout .le. 1500.) irange = 2
+      IF (Tout .gt. 1500.) irange = 3
+c
+        QT = Qcoef(ivec,irange,1)
+     +       + Qcoef(ivec,irange,2)*Tout
+     +       + Qcoef(ivec,irange,3)*Tout*Tout
+     +       + Qcoef(ivec,irange,4)*Tout*Tout*Tout
+     +       + Qcoef(ivec,irange,5)*Tout*Tout*Tout*Tout
+c
+   99 RETURN
+      END
+
+c**************************************
+      BLOCK DATA QTdata
+c**************************************
+c$$$      IMPLICIT DOUBLE PRECISION (a-h,o-z)
+c
+c
+c++
+      PARAMETER (NMOL=36,Nspeci=85)
+c++:  bd-QT
+      common/Qtot/ Qcoef(Nspeci,3,5), Q296(Nspeci), aQ(Nspeci), 
+     + bQ(Nspeci), gj(Nspeci)
+c
+c...State independent degeneracy factors: gj
+c...(includes general nuclear factor (P(2I+1)), (2S+1), and (2-dl0)
+c... when applicable)
+c              H2O              CO2                     O3
+      DATA gj/1.,1.,6.,6.,  1.,2.,1.,6.,2.,12.,1.,6.,  1.,1.,1.,6.,6.,
+c              N2O                CO             CH4        O2
+     +  9.,6.,6.,9.,54.,  1.,2.,1.,6.,2.,12.,  1.,2.,3.,  1.,1.,6.,
+c          NO        SO2    NO2    NH3   HNO3    OH        HF    HCl
+     +  1.,1.,1.,  1.,1.,  3.,  3.,2.,  6.,  1.,1.,1.,  4.,  8.,8.,
+c        HBr    HI     ClO      OCS          H2CO      HOCl         N2
+     +  8.,8.,  12.,  1.,1.,  1.,1.,2.,1.,  1.,2.,1.,  8.,8.,  1,
+c        HCN        CH3Cl  H2O2  C2H2   C2H6  PH3
+     +  6.,12.,4.,  4.,4.,  1.,  1.,8.,  64.,  2.,
+c      COF2,  SF6,  H2S,  HCOOH
+     +  1.,  1.,  1.,1.,4.,  4.,
+c        HO2, O,   ClONO2    NO+
+     +   2.,  1.,   12.,12.,   3./
+c
+c...Total internal partition sums for T<=70 to <=500 K range:
+c...   H2O  --   161
+      DATA (Qcoef( 1,1,j),j=1,5)/-.44405E+01, .27678E+00,
+     +                .12536E-02,-.48938E-06, 0.   /
+c...   H2O  --   181
+      DATA (Qcoef( 2,1,j),j=1,5)/-.43624E+01, .27647E+00,
+     +                .12802E-02,-.52046E-06, 0.   /
+c...   H2O  --   171
+      DATA (Qcoef( 3,1,j),j=1,5)/-.25767E+02, .16458E+01,
+     +                .76905E-02,-.31668E-05, 0.   /
+c...   H2O  --   162
+      DATA (Qcoef( 4,1,j),j=1,5)/-.23916E+02, .13793E+01,
+     +                .61246E-02,-.21530E-05, 0.   /
+c...   CO2  --   626
+      DATA (Qcoef( 5,1,j),j=1,5)/-.13617E+01, .94899E+00,
+     +               -.69259E-03, .25974E-05, 0.   /
+c...   CO2  --   636
+      DATA (Qcoef( 6,1,j),j=1,5)/-.20631E+01, .18873E+01,
+     +               -.13669E-02, .54032E-05, 0.   /
+c...   CO2  --   628
+      DATA (Qcoef( 7,1,j),j=1,5)/-.29175E+01, .20114E+01,
+     +               -.14786E-02, .55941E-05, 0.   /
+c...   CO2  --   627
+      DATA (Qcoef( 8,1,j),j=1,5)/-.16558E+02, .11733E+02,
+     +               -.85844E-02, .32379E-04, 0.   /
+c...   CO2  --   638
+      DATA (Qcoef( 9,1,j),j=1,5)/-.44685E+01, .40330E+01,
+     +               -.29590E-02, .11770E-04, 0.   /
+c...   CO2  --   637
+      DATA (Qcoef(10,1,j),j=1,5)/-.26263E+02, .23350E+02,
+     +               -.17032E-01, .67532E-04, 0.   /
+c...   CO2  --   828
+      DATA (Qcoef(11,1,j),j=1,5)/-.14811E+01, .10667E+01,
+     +               -.78758E-03, .30133E-05, 0.   /
+c...   CO2  --   728
+      DATA (Qcoef(12,1,j),j=1,5)/-.17600E+02, .12445E+02,
+     +               -.91837E-02, .34915E-04, 0.   /
+c...    O3  --   666
+      DATA (Qcoef(13,1,j),j=1,5)/-.16443E+03, .69047E+01,
+     +                .10396E-01, .26669E-04, 0.   /
+c...    O3  --   668
+      DATA (Qcoef(14,1,j),j=1,5)/-.35222E+03, .14796E+02,
+     +                .21475E-01, .59891E-04, 0.   /
+c...    O3  --   686
+      DATA (Qcoef(15,1,j),j=1,5)/-.17466E+03, .72912E+01,
+     +                .10093E-01, .29991E-04, 0.   /
+c...    O3  --   667
+      DATA (Qcoef(16,1,j),j=1,5)/-.20540E+04, .85998E+02,
+     +                .12667E+00, .33026E-03, 0.   /
+c...    O3  --   676
+      DATA (Qcoef(17,1,j),j=1,5)/-.10148E+04, .42494E+02,
+     +                .62586E-01, .16319E-03, 0.   /
+c...   N2O  --   446
+      DATA (Qcoef(18,1,j),j=1,5)/ .24892E+02, .14979E+02,
+     +               -.76213E-02, .46310E-04, 0.   /
+c...   N2O  --   456
+      DATA (Qcoef(19,1,j),j=1,5)/ .36318E+02, .95497E+01,
+     +               -.23943E-02, .26842E-04, 0.   /
+c...   N2O  --   546
+      DATA (Qcoef(20,1,j),j=1,5)/ .24241E+02, .10179E+02,
+     +               -.43002E-02, .30425E-04, 0.   /
+c...   N2O  --   448
+      DATA (Qcoef(21,1,j),j=1,5)/ .67708E+02, .14878E+02,
+     +               -.10730E-02, .34254E-04, 0.   /
+c...   N2O  --   447
+      DATA (Qcoef(22,1,j),j=1,5)/ .50069E+03, .84526E+02,
+     +                .83494E-02, .17154E-03, 0.   /
+c...    CO  --    26
+      DATA (Qcoef(23,1,j),j=1,5)/ .27758E+00, .36290E+00,
+     +               -.74669E-05, .14896E-07, 0.   /
+c...    CO  --    36
+      DATA (Qcoef(24,1,j),j=1,5)/ .53142E+00, .75953E+00,
+     +               -.17810E-04, .35160E-07, 0.   /
+c...    CO  --    28
+      DATA (Qcoef(25,1,j),j=1,5)/ .26593E+00, .38126E+00,
+     +               -.92083E-05, .18086E-07, 0.   /
+c...    CO  --    27                              
+      DATA (Qcoef(26,1,j),j=1,5)/ .16376E+01, .22343E+01,
+     +               -.49025E-04, .97389E-07, 0.   /
+c...    CO  --    38                              
+      DATA (Qcoef(27,1,j),j=1,5)/ .51216E+00, .79978E+00,
+     +               -.21784E-04, .42749E-07, 0.   /
+c...    CO  --    37                              
+      DATA (Qcoef(28,1,j),j=1,5)/ .32731E+01, .46577E+01,
+     +               -.69833E-04, .18853E-06, 0.   /
+c...   CH4  --   211                              
+      DATA (Qcoef(29,1,j),j=1,5)/-.26479E+02, .11557E+01,
+     +                .26831E-02, .15117E-05, 0.   /
+c...   CH4  --   311                              
+      DATA (Qcoef(30,1,j),j=1,5)/-.52956E+02, .23113E+01,
+     +                .53659E-02, .30232E-05, 0.   /
+c...   CH4  --   212                              
+      DATA (Qcoef(31,1,j),j=1,5)/-.21577E+03, .93318E+01,
+     +                .21779E-01, .12183E-04, 0.   /
+c...    O2  --    66                              
+      DATA (Qcoef(32,1,j),j=1,5)/ .35923E+00, .73534E+00,
+     +               -.64870E-04, .13073E-06, 0.   /
+c...    O2  --    68                              
+      DATA (Qcoef(33,1,j),j=1,5)/-.40039E+01, .15595E+01,
+     +               -.15357E-03, .30969E-06, 0.   /
+c...    O2  --    67                              
+      DATA (Qcoef(34,1,j),j=1,5)/-.23325E+02, .90981E+01,
+     +               -.84435E-03, .17062E-05, 0.   /
+c...    NO  --    46                              
+      DATA (Qcoef(35,1,j),j=1,5)/-.25296E+02, .26349E+01,
+     +                .58517E-02,-.52020E-05, 0.   /
+c...    NO  --    56                              
+      DATA (Qcoef(36,1,j),j=1,5)/-.14990E+02, .18240E+01,
+     +                .40261E-02,-.35648E-05, 0.   /
+c...    NO  --    48                              
+      DATA (Qcoef(37,1,j),j=1,5)/-.26853E+02, .27816E+01,
+     +                .61493E-02,-.54410E-05, 0.   /
+c...   SO2  --   626                              
+      DATA (Qcoef(38,1,j),j=1,5)/-.24056E+03, .11101E+02,
+     +                .22164E-01, .52334E-04, 0.   /
+c...   SO2  --   646                              
+      DATA (Qcoef(39,1,j),j=1,5)/-.24167E+03, .11151E+02,
+     +                .22270E-01, .52550E-04, 0.   /
+c...   NO2  --   646                              
+      DATA (Qcoef(40,1,j),j=1,5)/-.53042E+03, .24216E+02,
+     +                .66856E-01, .43823E-04, 0.   /
+c...   NH3  --  4111                              
+      DATA (Qcoef(41,1,j),j=1,5)/-.42037E+02, .25976E+01,
+     +                .13073E-01,-.62230E-05, 0.   /
+c...   NH3  --  5111                              
+      DATA (Qcoef(42,1,j),j=1,5)/-.28609E+02, .17272E+01,
+     +                .87529E-02,-.41714E-05, 0.   /
+
+c**********
+c...  HNO3  --   146                              
+c      DATA (Qcoef(43,1,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                .00000E+00, .00000E+00, 0.   /
+
+      DATA (Qcoef(43,1,j),j=1,5)/ -6.672718E+4, 1.462506E+3,
+     +               -5.981021E+0, 1.414328E-2, 0.  /
+
+c 1.414328E-2*x^3 + -5.981021E+0*x^2 + 1.462506E+3*x + -6.672718E+4
+ 
+c...    OH  --    61                              
+      DATA (Qcoef(44,1,j),j=1,5)/ .87390E+01, .15977E+00,
+     +                .38291E-03,-.35669E-06, 0.   /
+c...    OH  --    81                              
+      DATA (Qcoef(45,1,j),j=1,5)/ .86770E+01, .16175E+00,
+     +                .38223E-03,-.35466E-06, 0.   /
+c...    OH  --    62                              
+      DATA (Qcoef(46,1,j),j=1,5)/ .10239E+02, .43783E+00,
+     +                .10477E-02,-.94570E-06, 0.   /
+c...    HF  --    19                              
+      DATA (Qcoef(47,1,j),j=1,5)/ .15486E+01, .13350E+00,
+     +                .59154E-05,-.46889E-08, 0.   /
+c...   HCl  --    15                              
+      DATA (Qcoef(48,1,j),j=1,5)/ .28627E+01, .53122E+00,
+     +                .67464E-05,-.16730E-08, 0.   /
+c...   HCl  --    17                              
+      DATA (Qcoef(49,1,j),j=1,5)/ .28617E+01, .53203E+00,
+     +                .66553E-05,-.15168E-08, 0.   /
+c...   HBr  --    19                              
+      DATA (Qcoef(50,1,j),j=1,5)/ .27963E+01, .66532E+00,
+     +                .34255E-05, .52274E-08, 0.   /
+c...   HBr  --    11                              
+      DATA (Qcoef(51,1,j),j=1,5)/ .27953E+01, .66554E+00,
+     +                .32931E-05, .54823E-08, 0.   /
+c...    HI  --    17                              
+      DATA (Qcoef(52,1,j),j=1,5)/ .40170E+01, .13003E+01,
+     +               -.11409E-04, .40026E-07, 0.   /
+c...   ClO  --    56                              
+      DATA (Qcoef(53,1,j),j=1,5)/ .90968E+02, .70918E+01,
+     +                .11639E-01, .30145E-05, 0.   /
+c...   ClO  --    76                              
+      DATA (Qcoef(54,1,j),j=1,5)/ .92598E+02, .72085E+01,
+     +                .11848E-01, .31305E-05, 0.   /
+c...   OCS  --   622                              
+      DATA (Qcoef(55,1,j),j=1,5)/-.93697E+00, .36090E+01,
+     +               -.34552E-02, .17462E-04, 0.   /
+c...   OCS  --   624                              
+      DATA (Qcoef(56,1,j),j=1,5)/-.11536E+01, .37028E+01,
+     +               -.35582E-02, .17922E-04, 0.   /
+c...   OCS  --   632                              
+      DATA (Qcoef(57,1,j),j=1,5)/-.61015E+00, .72200E+01,
+     +               -.70044E-02, .36708E-04, 0.   /
+c...   OCS  --   822                              
+      DATA (Qcoef(58,1,j),j=1,5)/-.21569E+00, .38332E+01,
+     +               -.36783E-02, .19177E-04, 0.   /
+c...  H2CO  --   126                              
+      DATA (Qcoef(59,1,j),j=1,5)/-.11760E+03, .46885E+01,
+     +                .15088E-01, .35367E-05, 0.   /
+c...  H2CO  --   136                              
+      DATA (Qcoef(60,1,j),j=1,5)/-.24126E+03, .96134E+01,
+     +                .30938E-01, .72579E-05, 0.   /
+c...  H2CO  --   128                              
+      DATA (Qcoef(61,1,j),j=1,5)/-.11999E+03, .52912E+01,
+     +                .14686E-01, .43505E-05, 0.   /
+c...  HOCl  --   165                              
+      DATA (Qcoef(62,1,j),j=1,5)/-.73640E+03, .34149E+02,
+     +                .93554E-01, .67409E-04, 0.   /
+c...  HOCl  --   167                              
+      DATA (Qcoef(63,1,j),j=1,5)/-.74923E+03, .34747E+02,
+     +                .95251E-01, .68523E-04, 0.   /
+c...    N2  --    44                              
+      DATA (Qcoef(64,1,j),j=1,5)/ .13684E+01, .15756E+01,
+     +               -.18511E-04, .38960E-07, 0.   /
+c...   HCN  --   124                              
+      DATA (Qcoef(65,1,j),j=1,5)/-.13992E+01, .29619E+01,
+     +               -.17464E-02, .65937E-05, 0.   /
+c...   HCN  --   134                              
+      DATA (Qcoef(66,1,j),j=1,5)/-.25869E+01, .60744E+01,
+     +               -.35719E-02, .13654E-04, 0.   /
+c...   HCN  --   125                              
+      DATA (Qcoef(67,1,j),j=1,5)/-.11408E+01, .20353E+01,
+     +               -.12159E-02, .46375E-05, 0.   /
+c... CH3Cl  --   215                              
+      DATA (Qcoef(68,1,j),j=1,5)/-.91416E+03, .34081E+02,
+     +                .75461E-02, .17933E-03, 0.   /
+c... CH3Cl  --   217                              
+      DATA (Qcoef(69,1,j),j=1,5)/-.92868E+03, .34621E+02,
+     +                .76674E-02, .18217E-03, 0.   /
+c...  H2O2  --  1661                              
+      DATA (Qcoef(70,1,j),j=1,5)/-.36499E+03, .13712E+02,
+     +                .38658E-01, .23052E-04, 0.   /
+c...  C2H2  --  1221                              
+      DATA (Qcoef(71,1,j),j=1,5)/-.83088E+01, .14484E+01,
+     +               -.25946E-02, .84612E-05, 0.   /
+c...  C2H2  --  1231                              
+      DATA (Qcoef(72,1,j),j=1,5)/-.66736E+02, .11592E+02,
+     +               -.20779E-01, .67719E-04, 0.   /
+
+
+c**********
+c...  C2H6  --  1221                              
+c      DATA (Qcoef(73,1,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                .00000E+00, .00000E+00, 0.   /
+      DATA (Qcoef(73,1,j),j=1,5)/-1.198174E+4, 2.799115E+2,
+     +              -7.416173E-1, 1.846289E-3, 0.   /
+
+c 1.846289E-3*x^3 + -7.416173E-1*x^2 + 2.799115E+2*x + -1.198174E+4
+
+
+c...   PH3  --  1111                              
+      DATA (Qcoef(74,1,j),j=1,5)/-.15068E+03, .64718E+01,
+     +                .12588E-01, .14759E-04, 0.   /
+c...  COF2  --   269                              
+      DATA (Qcoef(75,1,j),j=1,5)/-.54180E+04, .18868E+03,
+     +               -.33139E+00, .18650E-02, 0.   /
+
+c**********
+c...   SF6  --    29                              
+c      DATA (Qcoef(76,1,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                .00000E+00, .00000E+00, 0.   /
+      DATA (Qcoef(76,1,j),j=1,5)/7.892502E+6, -1.839926E+5,
+     +             1.433742E+3, -4.510500E+0,  5.163613E-3/
+
+c 5.163613E-3*x^4 + -4.510500E+0*x^3 + 1.433742E+3*x^2 + -1.839926E+5*x + 7.892502E+6
+
+
+c...   H2S  --   121                              
+      DATA (Qcoef(77,1,j),j=1,5)/-.15521E+02, .83130E+00,
+     +                .33656E-02,-.85691E-06, 0.   /
+c...   H2S  --   141                              
+      DATA (Qcoef(78,1,j),j=1,5)/-.15561E+02, .83337E+00,
+     +                .33744E-02,-.85937E-06, 0.   /
+c...   H2S  --   131                              
+      DATA (Qcoef(79,1,j),j=1,5)/-.62170E+02, .33295E+01,
+     +                .13480E-01,-.34323E-05, 0.   /
+c... HCOOH  --   126                              
+      DATA (Qcoef(80,1,j),j=1,5)/-.29550E+04, .10349E+03,
+     +               -.13146E+00, .87787E-03, 0.   /
+c...   HO2  --   166                              
+      DATA (Qcoef(81,1,j),j=1,5)/-.15684E+03, .74450E+01,
+     +                .26011E-01,-.92704E-06, 0.   /
+
+c**********
+c...     O  --     6                              
+c      DATA (Qcoef(82,1,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                .00000E+00, .00000E+00, 0.   /
+
+      DATA (Qcoef(82,1,j),j=1,5)/  1.0       , .00000E+00,
+     +                 .00000E+00, .00000E+00, 0.   /
+
+
+c**********
+c...ClONO2  --  5646                              
+c      DATA (Qcoef(83,1,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                .00000E+00, .00000E+00, 0.   /
+      DATA (Qcoef(83,1,j),j=1,5)/2.516742E+6, -5.996989E+4,
+     +             5.111204E+2, -1.665663E+0,  2.399248E-3/
+
+c 2.399248E-3*x^4 + -1.665663E+0*x^3 + 5.111204E+2*x^2 + -5.996989E+4*x + 2.516742E+6
+
+
+c**********
+c...ClONO2  --  7646                              
+c      DATA (Qcoef(84,1,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                .00000E+00, .00000E+00, 0.   /
+      DATA (Qcoef(84,1,j),j=1,5)/2.601684E+6, -6.187640E+4,
+     +            5.260888E+2,  -1.711186E+0,  2.461028E-3/
+
+c 2.461028E-3*x^4 + -1.711186E+0*x^3 + 5.260888E+2*x^2 + -6.187640E+4*x + 2.601684E+6
+
+c...   NO+  --    46                              
+      DATA (Qcoef(85,1,j),j=1,5)/ .91798E+00, .10416E+01,
+     +               -.11614E-04, .24499E-07, 0.   /
+c
+c...Total internal partition sums for T>500 to <=1500 K range:
+c...   H2O  --   161                              
+      DATA (Qcoef( 1,2,j),j=1,5)/-.94327E+02, .81903E+00,
+     +                .74005E-04, .42437E-06, 0.   /
+c...   H2O  --   181                              
+      DATA (Qcoef( 2,2,j),j=1,5)/-.95686E+02, .82839E+00,
+     +                .68311E-04, .42985E-06, 0.   /
+c...   H2O  --   171                              
+      DATA (Qcoef( 3,2,j),j=1,5)/-.57133E+03, .49480E+01,
+     +                .41517E-03, .25599E-05, 0.   /
+c...   H2O  --   162                              
+      DATA (Qcoef( 4,2,j),j=1,5)/-.53366E+03, .44246E+01,
+     +               -.46935E-03, .29548E-05, 0.   /
+c...   CO2  --   626                              
+      DATA (Qcoef( 5,2,j),j=1,5)/-.50925E+03, .32766E+01,
+     +               -.40601E-02, .40907E-05, 0.   /
+c...   CO2  --   636                              
+      DATA (Qcoef( 6,2,j),j=1,5)/-.11171E+04, .70346E+01,
+     +               -.89063E-02, .88249E-05, 0.   /
+c...   CO2  --   628                              
+      DATA (Qcoef( 7,2,j),j=1,5)/-.11169E+04, .71299E+01,
+     +               -.89194E-02, .89268E-05, 0.   /
+c...   CO2  --   627                              
+      DATA (Qcoef( 8,2,j),j=1,5)/-.66816E+04, .42402E+02,
+     +               -.53269E-01, .52774E-04, 0.   /
+c...   CO2  --   638                              
+      DATA (Qcoef( 9,2,j),j=1,5)/-.25597E+04, .15855E+02,
+     +               -.20440E-01, .19855E-04, 0.   /
+c...   CO2  --   637                              
+      DATA (Qcoef(10,2,j),j=1,5)/-.14671E+05, .91204E+02,
+     +               -.11703E+00, .11406E-03, 0.   /
+c...   CO2  --   828                              
+      DATA (Qcoef(11,2,j),j=1,5)/-.63775E+03, .40047E+01,
+     +               -.50950E-02, .50023E-05, 0.   /
+c...   CO2  --   728                              
+      DATA (Qcoef(12,2,j),j=1,5)/-.73235E+04, .46140E+02,
+     +               -.58473E-01, .57573E-04, 0.   /
+c...    O3  --   666                              
+      DATA (Qcoef(13,2,j),j=1,5)/-.11725E+05, .66515E+02,
+     +               -.96010E-01, .94001E-04, 0.   /
+c...    O3  --   668                              
+      DATA (Qcoef(14,2,j),j=1,5)/-.25409E+05, .14393E+03,
+     +               -.20850E+00, .20357E-03, 0.   /
+c...    O3  --   686                              
+      DATA (Qcoef(15,2,j),j=1,5)/-.12624E+05, .71391E+02,
+     +               -.10383E+00, .10106E-03, 0.   /
+c...    O3  --   667                              
+      DATA (Qcoef(16,2,j),j=1,5)/-.14000E+06, .79825E+03,
+     +               -.11465E+01, .11372E-02, 0.   /
+c...    O3  --   676                              
+      DATA (Qcoef(17,2,j),j=1,5)/-.69175E+05, .39442E+03,
+     +               -.56650E+00, .56189E-03, 0.   /
+c...   N2O  --   446                              
+      DATA (Qcoef(18,2,j),j=1,5)/-.12673E+05, .75128E+02,
+     +               -.10092E+00, .95557E-04, 0.   /
+c...   N2O  --   456                              
+      DATA (Qcoef(19,2,j),j=1,5)/-.90045E+04, .52833E+02,
+     +               -.71771E-01, .67297E-04, 0.   /
+c...   N2O  --   546                              
+      DATA (Qcoef(20,2,j),j=1,5)/-.89960E+04, .53096E+02,
+     +               -.71784E-01, .67592E-04, 0.   /
+c...   N2O  --   448                              
+      DATA (Qcoef(21,2,j),j=1,5)/-.13978E+05, .82338E+02,
+     +               -.11167E+00, .10507E-03, 0.   /
+c...   N2O  --   447                              
+      DATA (Qcoef(22,2,j),j=1,5)/-.79993E+05, .47265E+03,
+     +               -.63804E+00, .60218E-03, 0.   /
+c...    CO  --    26                              
+      DATA (Qcoef(23,2,j),j=1,5)/ .90723E+01, .33263E+00,
+     +                .11806E-04, .27035E-07, 0.   /
+c...    CO  --    36                              
+      DATA (Qcoef(24,2,j),j=1,5)/ .20651E+02, .68810E+00,
+     +                .34217E-04, .55823E-07, 0.   /
+c...    CO  --    28                              
+      DATA (Qcoef(25,2,j),j=1,5)/ .98497E+01, .34713E+00,
+     +                .15290E-04, .28766E-07, 0.   /
+c...    CO  --    27                              
+      DATA (Qcoef(26,2,j),j=1,5)/ .58498E+02, .20351E+01,
+     +                .87684E-04, .16554E-06, 0.   /
+c...    CO  --    38                              
+      DATA (Qcoef(27,2,j),j=1,5)/ .23511E+02, .71565E+00,
+     +                .46681E-04, .58223E-07, 0.   /
+c...    CO  --    37                              
+      DATA (Qcoef(28,2,j),j=1,5)/ .11506E+03, .42727E+01,
+     +                .17494E-03, .34413E-06, 0.   /
+c...   CH4  --   211                              
+      DATA (Qcoef(29,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   CH4  --   311                              
+      DATA (Qcoef(30,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   CH4  --   212                              
+      DATA (Qcoef(31,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...    O2  --    66                              
+      DATA (Qcoef(32,2,j),j=1,5)/ .36539E+02, .57015E+00,
+     +                .16332E-03, .45568E-07, 0.   /
+c...    O2  --    68                              
+      DATA (Qcoef(33,2,j),j=1,5)/ .77306E+02, .11818E+01,
+     +                .38661E-03, .89415E-07, 0.   /
+c...    O2  --    67                              
+      DATA (Qcoef(34,2,j),j=1,5)/ .44281E+03, .69531E+01,
+     +                .21669E-02, .53053E-06, 0.   /
+c...    NO  --    46                              
+      DATA (Qcoef(35,2,j),j=1,5)/-.78837E+02, .39173E+01,
+     +                .80657E-03, .22042E-06, 0.   /
+c...    NO  --    56                              
+      DATA (Qcoef(36,2,j),j=1,5)/-.67000E+02, .27874E+01,
+     +                .45181E-03, .21161E-06, 0.   /
+c...    NO  --    48                              
+      DATA (Qcoef(37,2,j),j=1,5)/-.98460E+02, .42347E+01,
+     +                .71550E-03, .32213E-06, 0.   /
+c...   SO2  --   626                              
+      DATA (Qcoef(38,2,j),j=1,5)/-.21162E+05, .11846E+03,
+     +               -.16648E+00, .16825E-03, 0.   /
+c...   SO2  --   646                              
+      DATA (Qcoef(39,2,j),j=1,5)/-.21251E+05, .11896E+03,
+     +               -.16717E+00, .16895E-03, 0.   /
+c...   NO2  --   646                              
+      DATA (Qcoef(40,2,j),j=1,5)/-.27185E+05, .16489E+03,
+     +               -.19540E+00, .22024E-03, 0.   /
+c...   NH3  --  4111                              
+      DATA (Qcoef(41,2,j),j=1,5)/-.47139E+03, .54035E+01,
+     +                .64491E-02,-.72674E-06, 0.   /
+c...   NH3  --  5111                              
+      DATA (Qcoef(42,2,j),j=1,5)/-.31638E+03, .36086E+01,
+     +                .43087E-02,-.48207E-06, 0.   /
+
+
+c**********
+c...  HNO3  --   146                              
+c      DATA (Qcoef(43,2,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                .00000E+00, .00000E+00, 0.   /
+
+      DATA (Qcoef(43,2,j),j=1,5)/-2.155375E+8, 8.804353E+5,
+     +              -1.165682E+3, 5.170532E-1, 0.   /
+
+c 5.170532E-1*x^3 + -1.165682E+3*x^2 + 8.804353E+5*x + -2.155375E+8
+
+c...    OH  --    61                              
+      DATA (Qcoef(44,2,j),j=1,5)/-.88840E+01, .30202E+00,
+     +               -.15565E-04, .14330E-07, 0.   /
+c...    OH  --    81                              
+      DATA (Qcoef(45,2,j),j=1,5)/-.51535E+01, .29076E+00,
+     +               -.72340E-05, .20702E-07, 0.   /
+c...    OH  --    62                              
+      DATA (Qcoef(46,2,j),j=1,5)/-.41683E+02, .83890E+00,
+     +               -.36063E-04, .38083E-07, 0.   /
+c...    HF  --    19                              
+      DATA (Qcoef(47,2,j),j=1,5)/-.36045E-01, .14220E+00,
+     +               -.10755E-04, .65523E-08, 0.   /
+c...   HCl  --    15                              
+      DATA (Qcoef(48,2,j),j=1,5)/ .25039E+01, .54430E+00,
+     +               -.38656E-04, .39793E-07, 0.   /
+c...   HCl  --    17                              
+      DATA (Qcoef(49,2,j),j=1,5)/ .14998E+01, .54847E+00,
+     +               -.42209E-04, .41029E-07, 0.   /
+c...   HBr  --    19                              
+      DATA (Qcoef(50,2,j),j=1,5)/ .67229E+01, .66356E+00,
+     +               -.33749E-04, .54818E-07, 0.   /
+c...   HBr  --    11                              
+      DATA (Qcoef(51,2,j),j=1,5)/ .67752E+01, .66363E+00,
+     +               -.33655E-04, .54823E-07, 0.   /
+c...    HI  --    17                              
+      DATA (Qcoef(52,2,j),j=1,5)/ .29353E+02, .12220E+01,
+     +                .10209E-04, .10719E-06, 0.   /
+c...   ClO  --    56                              
+      DATA (Qcoef(53,2,j),j=1,5)/ .22662E+03, .61093E+01,
+     +                .14454E-01, .16928E-06, 0.   /
+c...   ClO  --    76                              
+      DATA (Qcoef(54,2,j),j=1,5)/ .23304E+03, .61805E+01,
+     +                .14797E-01, .16629E-06, 0.   /
+c...   OCS  --   622                              
+      DATA (Qcoef(55,2,j),j=1,5)/-.54125E+04, .29749E+02,
+     +               -.44698E-01, .38878E-04, 0.   /
+c...   OCS  --   624                              
+      DATA (Qcoef(56,2,j),j=1,5)/-.55472E+04, .30489E+02,
+     +               -.45809E-01, .39847E-04, 0.   /
+c...   OCS  --   632                              
+      DATA (Qcoef(57,2,j),j=1,5)/-.11863E+05, .64745E+02,
+     +               -.98318E-01, .84563E-04, 0.   /
+c...   OCS  --   822                              
+      DATA (Qcoef(58,2,j),j=1,5)/-.61288E+04, .33520E+02,
+     +               -.50734E-01, .43792E-04, 0.   /
+c...  H2CO  --   126                              
+      DATA (Qcoef(59,2,j),j=1,5)/-.17628E+05, .91794E+02,
+     +               -.13055E+00, .89336E-04, 0.   /
+c...  H2CO  --   136                              
+      DATA (Qcoef(60,2,j),j=1,5)/-.36151E+05, .18825E+03,
+     +               -.26772E+00, .18321E-03, 0.   /
+c...  H2CO  --   128                              
+      DATA (Qcoef(61,2,j),j=1,5)/-.17628E+05, .91794E+02,
+     +               -.13055E+00, .89336E-04, 0.   /
+c...  HOCl  --   165                              
+      DATA (Qcoef(62,2,j),j=1,5)/-.24164E+05, .15618E+03,
+     +               -.13206E+00, .21900E-03, 0.   /
+c...  HOCl  --   167                              
+      DATA (Qcoef(63,2,j),j=1,5)/-.24592E+05, .15895E+03,
+     +               -.13440E+00, .22289E-03, 0.   /
+c...    N2  --    44                              
+      DATA (Qcoef(64,2,j),j=1,5)/ .27907E+02, .14972E+01,
+     +               -.70424E-05, .11734E-06, 0.   /
+c...   HCN  --   124                              
+      DATA (Qcoef(65,2,j),j=1,5)/-.78078E+03, .61725E+01,
+     +               -.53816E-02, .73379E-05, 0.   /
+c...   HCN  --   134                              
+      DATA (Qcoef(66,2,j),j=1,5)/-.16309E+04, .12801E+02,
+     +               -.11242E-01, .15268E-04, 0.   /
+c...   HCN  --   125                              
+      DATA (Qcoef(67,2,j),j=1,5)/-.56301E+03, .43794E+01,
+     +               -.38928E-02, .52467E-05, 0.   /
+c... CH3Cl  --   215                              
+      DATA (Qcoef(68,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c... CH3Cl  --   217                              
+      DATA (Qcoef(69,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...  H2O2  --  1661                              
+      DATA (Qcoef(70,2,j),j=1,5)/-.27583E+05, .15064E+03,
+     +               -.19917E+00, .16977E-03, 0.   /
+c...  C2H2  --  1221                              
+      DATA (Qcoef(71,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...  C2H2  --  1231                              
+      DATA (Qcoef(72,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+
+c**********
+c...  C2H6  --  1221                              
+      DATA (Qcoef(73,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   PH3  --  1111                              
+      DATA (Qcoef(74,2,j),j=1,5)/-.28390E+05, .14463E+03,
+     +               -.21473E+00, .14346E-03, 0.   /
+c...  COF2  --   269                              
+      DATA (Qcoef(75,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   SF6  --    29                              
+      DATA (Qcoef(76,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   H2S  --   121                              
+      DATA (Qcoef(77,2,j),j=1,5)/-.37572E+03, .29157E+01,
+     +               -.98642E-03, .24113E-05, 0.   /
+c...   H2S  --   141                              
+      DATA (Qcoef(78,2,j),j=1,5)/-.37668E+03, .29231E+01,
+     +               -.98894E-03, .24174E-05, 0.   /
+c...   H2S  --   131                              
+      DATA (Qcoef(79,2,j),j=1,5)/-.15049E+04, .11678E+02,
+     +               -.39510E-02, .96579E-05, 0.   /
+c... HCOOH  --   126                              
+      DATA (Qcoef(80,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   HO2  --   166                              
+      DATA (Qcoef(81,2,j),j=1,5)/-.32576E+04, .25539E+02,
+     +               -.12803E-01, .29358E-04, 0.   /
+
+c**********
+c...     O  --     6                              
+c      DATA (Qcoef(82,2,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                 .00000E+00, .00000E+00, 0.   /
+
+      DATA (Qcoef(82,2,j),j=1,5)/  1.0       , .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+
+c...ClONO2  --  5646                              
+      DATA (Qcoef(83,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...ClONO2  --  7646                              
+      DATA (Qcoef(84,2,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   NO+  --    46                              
+      DATA (Qcoef(85,2,j),j=1,5)/ .17755E+02, .99262E+00,
+     +               -.70814E-05, .76699E-07, 0.   /
+c
+c...total internal partition sums for T>1500 <=3005 K range:
+c...   H2O  --   161                              
+      DATA (Qcoef( 1,3,j),j=1,5)/-.11727E+04, .29261E+01,
+     +               -.13299E-02, .74356E-06, 0.   /
+c...   H2O  --   181                              
+      DATA (Qcoef( 2,3,j),j=1,5)/-.17914E+04, .39835E+01,
+     +               -.19288E-02, .86144E-06, 0.   /
+c...   H2O  --   171                              
+      DATA (Qcoef( 3,3,j),j=1,5)/-.10665E+05, .23729E+02,
+     +               -.11474E-01, .51294E-05, 0.   /
+c...   H2O  --   162                              
+      DATA (Qcoef( 4,3,j),j=1,5)/-.12585E+05, .26707E+02,
+     +               -.14454E-01, .59457E-05, 0.   /
+c...   CO2  --   626                              
+      DATA (Qcoef( 5,3,j),j=1,5)/-.34938E+05, .66965E+02,
+     +               -.44010E-01, .12662E-04, 0.   /
+c...   CO2  --   636                              
+      DATA (Qcoef( 6,3,j),j=1,5)/-.76420E+05, .14638E+03,
+     +               -.96343E-01, .27589E-04, 0.   /
+c...   CO2  --   628                              
+      DATA (Qcoef( 7,3,j),j=1,5)/-.76677E+05, .14693E+03,
+     +               -.96622E-01, .27746E-04, 0.   /
+c...   CO2  --   627                              
+      DATA (Qcoef( 8,3,j),j=1,5)/-.44040E+06, .84397E+03,
+     +               -.55484E+00, .15946E-03, 0.   /
+c...   CO2  --   638                              
+      DATA (Qcoef( 9,3,j),j=1,5)/-.16856E+06, .32278E+03,
+     +               -.21259E+00, .60747E-04, 0.   /
+c...   CO2  --   637                              
+      DATA (Qcoef(10,3,j),j=1,5)/-.96531E+06, .18487E+04,
+     +               -.12172E+01, .34817E-03, 0.   /
+c...   CO2  --   828                              
+      DATA (Qcoef(11,3,j),j=1,5)/-.42074E+05, .80599E+02,
+     +               -.53035E-01, .15202E-04, 0.   /
+c...   CO2  --   728                              
+      DATA (Qcoef(12,3,j),j=1,5)/-.48298E+06, .92535E+03,
+     +               -.60873E+00, .17463E-03, 0.   /
+c...    O3  --   666                              
+      DATA (Qcoef(13,3,j),j=1,5)/-.61205E+06, .11896E+04,
+     +               -.80924E+00, .24833E-03, 0.   /
+c...    O3  --   668                              
+      DATA (Qcoef(14,3,j),j=1,5)/-.13289E+07, .25826E+04,
+     +               -.17574E+01, .53877E-03, 0.   /
+c...    O3  --   686                              
+      DATA (Qcoef(15,3,j),j=1,5)/-.66163E+06, .12857E+04,
+     +               -.87521E+00, .26802E-03, 0.   /
+c...    O3  --   667                              
+      DATA (Qcoef(16,3,j),j=1,5)/-.70636E+07, .13772E+05,
+     +               -.94024E+01, .29276E-02, 0.   /
+c...    O3  --   676                              
+      DATA (Qcoef(17,3,j),j=1,5)/-.34902E+07, .68051E+04,
+     +               -.46459E+01, .14466E-02, 0.   /
+c...   N2O  --   446                              
+      DATA (Qcoef(18,3,j),j=1,5)/-.83406E+06, .15951E+04,
+     +               -.10534E+01, .29849E-03, 0.   /
+c...   N2O  --   456                              
+      DATA (Qcoef(19,3,j),j=1,5)/-.59281E+06, .11334E+04,
+     +               -.74907E+00, .21164E-03, 0.   /
+c...   N2O  --   546                              
+      DATA (Qcoef(20,3,j),j=1,5)/-.59301E+06, .11339E+04,
+     +               -.74918E+00, .21193E-03, 0.   /
+c...   N2O  --   448                              
+      DATA (Qcoef(21,3,j),j=1,5)/-.92317E+06, .17651E+04,
+     +               -.11664E+01, .32984E-03, 0.   /
+c...   N2O  --   447                              
+      DATA (Qcoef(22,3,j),j=1,5)/-.52739E+07, .10085E+05,
+     +               -.66623E+01, .18858E-02, 0.   /
+c...    CO  --    26                              
+      DATA (Qcoef(23,3,j),j=1,5)/ .63418E+02, .20760E+00,
+     +                .10895E-03, .19844E-08, 0.   /
+c...    CO  --    36                              
+      DATA (Qcoef(24,3,j),j=1,5)/ .13265E+03, .43434E+00,
+     +                .22794E-03, .41523E-08, 0.   /
+c...    CO  --    28                              
+      DATA (Qcoef(25,3,j),j=1,5)/ .66581E+02, .21800E+00,
+     +                .11441E-03, .20839E-08, 0.   /
+c...    CO  --    27                              
+      DATA (Qcoef(26,3,j),j=1,5)/ .39033E+03, .12780E+01,
+     +                .67066E-03, .12218E-07, 0.   /
+c...    CO  --    38                              
+      DATA (Qcoef(27,3,j),j=1,5)/ .13959E+03, .45717E+00,
+     +                .23991E-03, .43712E-08, 0.   /
+c...    CO  --    37                              
+      DATA (Qcoef(28,3,j),j=1,5)/ .81756E+03, .26767E+01,
+     +                .14046E-02, .25378E-07, 0.   /
+c...   CH4  --   211                              
+      DATA (Qcoef(29,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   CH4  --   311                              
+      DATA (Qcoef(30,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   CH4  --   212                              
+      DATA (Qcoef(31,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...    O2  --    66                              
+      DATA (Qcoef(32,3,j),j=1,5)/ .76324E+01, .58006E+00,
+     +                .18941E-03, .27822E-07, 0.   /
+c...    O2  --    68                              
+      DATA (Qcoef(33,3,j),j=1,5)/ .16157E+02, .12282E+01,
+     +                .40112E-03, .58919E-07, 0.   /
+c...    O2  --    67                              
+      DATA (Qcoef(34,3,j),j=1,5)/ .94397E+02, .71717E+01,
+     +                .23423E-02, .34425E-06, 0.   /
+c...    NO  --    46                              
+      DATA (Qcoef(35,3,j),j=1,5)/ .52033E+03, .26381E+01,
+     +                .17177E-02, .17933E-07, 0.   /
+c...    NO  --    56                              
+      DATA (Qcoef(36,3,j),j=1,5)/ .35655E+03, .18125E+01,
+     +                .12126E-02, .12110E-07, 0.   /
+c...    NO  --    48                              
+      DATA (Qcoef(37,3,j),j=1,5)/ .54190E+03, .27581E+01,
+     +                .18694E-02, .18266E-07, 0.   /
+c...   SO2  --   626                              
+      DATA (Qcoef(38,3,j),j=1,5)/-.10718E+07, .20831E+04,
+     +               -.14138E+01, .43806E-03, 0.   /
+c...   SO2  --   646                              
+      DATA (Qcoef(39,3,j),j=1,5)/-.10762E+07, .20918E+04,
+     +               -.14196E+01, .43988E-03, 0.   /
+c...   NO2  --   646                              
+      DATA (Qcoef(40,3,j),j=1,5)/-.12837E+07, .25067E+04,
+     +               -.16761E+01, .53904E-03, 0.   /
+c...   NH3  --  4111                              
+      DATA (Qcoef(41,3,j),j=1,5)/-.17334E+04, .80988E+01,
+     +                .44771E-02,-.24084E-06, 0.   /
+c...   NH3  --  5111                              
+      DATA (Qcoef(42,3,j),j=1,5)/-.11656E+04, .54254E+01,
+     +                .29809E-02,-.15750E-06, 0.   /
+
+c**********
+c...  HNO3  --   146                              
+c      DATA (Qcoef(43,3,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                .00000E+00, .00000E+00, 0.   /
+
+      DATA (Qcoef(43,3,j),j=1,5)/-1.425802E+11, 2.311441E+8,
+     +             -1.248681E+5,  2.268254E+1 , 0.  /
+
+c 2.268254E+1*x^3 + -1.248681E+5*x^2 + 2.311441E+8*x + -1.425802E+11
+
+c...    OH  --    61                              
+      DATA (Qcoef(44,3,j),j=1,5)/ .33750E+02, .22130E+00,
+     +                .35953E-04, .32366E-08, 0.   /
+c...    OH  --    81                              
+      DATA (Qcoef(45,3,j),j=1,5)/ .42716E+02, .18843E+00,
+     +                .67175E-04, .23903E-08, 0.   /
+c...    OH  --    62                              
+      DATA (Qcoef(46,3,j),j=1,5)/ .72913E+02, .62430E+00,
+     +                .99073E-04, .94503E-08, 0.   /
+c...    HF  --    19                              
+      DATA (Qcoef(47,3,j),j=1,5)/ .18423E+02, .10799E+00,
+     +                .10568E-04, .20752E-08, 0.   /
+c...   HCl  --    15                              
+      DATA (Qcoef(48,3,j),j=1,5)/ .92445E+02, .35539E+00,
+     +                .96272E-04, .71602E-08, 0.   /
+c...   HCl  --    17                              
+      DATA (Qcoef(49,3,j),j=1,5)/ .92519E+02, .35592E+00,
+     +                .96492E-04, .71775E-08, 0.   /
+c...   HBr  --    19                              
+      DATA (Qcoef(50,3,j),j=1,5)/ .11692E+03, .42161E+00,
+     +                .14690E-03, .92595E-08, 0.   /
+c...   HBr  --    11                              
+      DATA (Qcoef(51,3,j),j=1,5)/ .11700E+03, .42161E+00,
+     +                .14703E-03, .92525E-08, 0.   /
+c...    HI  --    17                              
+      DATA (Qcoef(52,3,j),j=1,5)/ .22138E+03, .78595E+00,
+     +                .34579E-03, .20348E-07, 0.   /
+c...   ClO  --    56                              
+      DATA (Qcoef(53,3,j),j=1,5)/ .37348E+03, .56800E+01,
+     +                .14805E-01, .23168E-06, 0.   /
+c...   ClO  --    76                              
+      DATA (Qcoef(54,3,j),j=1,5)/ .38100E+03, .57530E+01,
+     +                .15142E-01, .23652E-06, 0.   /
+c...   OCS  --   622                              
+      DATA (Qcoef(55,3,j),j=1,5)/-.37301E+06, .71169E+03,
+     +               -.47328E+00, .13049E-03, 0.   /
+c...   OCS  --   624                              
+      DATA (Qcoef(56,3,j),j=1,5)/-.38232E+06, .72945E+03,
+     +               -.48509E+00, .13375E-03, 0.   /
+c...   OCS  --   632                              
+      DATA (Qcoef(57,3,j),j=1,5)/-.82204E+06, .15682E+04,
+     +               -.10435E+01, .28668E-03, 0.   /
+c...   OCS  --   822                              
+      DATA (Qcoef(58,3,j),j=1,5)/-.42390E+06, .80869E+03,
+     +               -.53803E+00, .14798E-03, 0.   /
+c...  H2CO  --   126                              
+      DATA (Qcoef(59,3,j),j=1,5)/-.24906E+07, .45519E+04,
+     +               -.28336E+01, .64198E-03, 0.   /
+c...  H2CO  --   136                              
+      DATA (Qcoef(60,3,j),j=1,5)/-.51075E+07, .93349E+04,
+     +               -.58110E+01, .13165E-02, 0.   /
+c...  H2CO  --   128                              
+      DATA (Qcoef(61,3,j),j=1,5)/-.24906E+07, .45519E+04,
+     +               -.28336E+01, .64198E-03, 0.   /
+c...  HOCl  --   165                              
+      DATA (Qcoef(62,3,j),j=1,5)/-.11326E+07, .22197E+04,
+     +               -.14357E+01, .49952E-03, 0.   /
+c...  HOCl  --   167                              
+      DATA (Qcoef(63,3,j),j=1,5)/-.11527E+07, .22590E+04,
+     +               -.14612E+01, .50838E-03, 0.   /
+c...    N2  --    44                              
+      DATA (Qcoef(64,3,j),j=1,5)/ .27986E+03, .93070E+00,
+     +                .42409E-03, .95573E-08, 0.   /
+c...   HCN  --   124                              
+      DATA (Qcoef(65,3,j),j=1,5)/-.51989E+05, .10057E+03,
+     +               -.64310E-01, .19844E-04, 0.   /
+c...   HCN  --   134                              
+      DATA (Qcoef(66,3,j),j=1,5)/-.10838E+06, .20960E+03,
+     +               -.13411E+00, .41345E-04, 0.   /
+c...   HCN  --   125                              
+      DATA (Qcoef(67,3,j),j=1,5)/-.37363E+05, .72225E+02,
+     +               -.46251E-01, .14237E-04, 0.   /
+c... CH3Cl  --   215                              
+      DATA (Qcoef(68,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c... CH3Cl  --   217                              
+      DATA (Qcoef(69,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...  H2O2  --  1661                              
+      DATA (Qcoef(70,3,j),j=1,5)/-.26863E+07, .49815E+04,
+     +               -.31584E+01, .78351E-03, 0.   /
+c...  C2H2  --  1221                              
+      DATA (Qcoef(71,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...  C2H2  --  1231                              
+      DATA (Qcoef(72,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+
+c**********
+c...  C2H6  --  1221                              
+      DATA (Qcoef(73,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+
+c...   PH3  --  1111                              
+      DATA (Qcoef(74,3,j),j=1,5)/-.44074E+07, .80563E+04,
+     +               -.50179E+01, .11272E-02, 0.   /
+c...  COF2  --   269                              
+      DATA (Qcoef(75,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   SF6  --    29                              
+      DATA (Qcoef(76,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   H2S  --   121                              
+      DATA (Qcoef(77,3,j),j=1,5)/-.10043E+05, .20827E+02,
+     +               -.12249E-01, .48236E-05, 0.   /
+c...   H2S  --   141                              
+      DATA (Qcoef(78,3,j),j=1,5)/-.10069E+05, .20881E+02,
+     +               -.12280E-01, .48359E-05, 0.   /
+c...   H2S  --   131                              
+      DATA (Qcoef(79,3,j),j=1,5)/-.40225E+05, .83420E+02,
+     +               -.49061E-01, .19320E-04, 0.   /
+c... HCOOH  --   126                              
+      DATA (Qcoef(80,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   HO2  --   166                              
+      DATA (Qcoef(81,3,j),j=1,5)/-.13056E+06, .26188E+03,
+     +               -.16161E+00, .61250E-04, 0.   /
+
+c**********
+c...     O  --     6                              
+c      DATA (Qcoef(82,3,j),j=1,5)/-.10000E+01, .00000E+00,
+c     +                .00000E+00, .00000E+00, 0.   /
+
+      DATA (Qcoef(82,3,j),j=1,5)/  1.0       , .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+
+c...ClONO2  --  5646                              
+      DATA (Qcoef(83,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...ClONO2  --  7646                              
+      DATA (Qcoef(84,3,j),j=1,5)/-.10000E+01, .00000E+00,
+     +                .00000E+00, .00000E+00, 0.   /
+c...   NO+  --    46                              
+      DATA (Qcoef(85,3,j),j=1,5)/ .18634E+03, .61771E+00,
+     +                .27607E-03, .45828E-08, 0.   /
+c     
+c                    H2O 161,         181,         171,                         
+      DATA q296/ .174626E+03, .176141E+03, .105306E+04,
+c               162;     CO2 626,         636,         628,         627,        
+     +  .865122E+03, .286219E+03, .576928E+03, .607978E+03, .354389E+04,
+c               638,         637,         828,         728;      O3 666,        
+     +  .123528E+04, .714432E+04, .323407E+03, .376700E+04, .348186E+04,
+c               668,         686,         667,         676;     N2O 446,        
+     +  .746207E+04, .364563E+04, .430647E+05, .212791E+05, .499183E+04,
+c               456,         546,         448,         447;       CO 26,        
+     +  .334938E+04, .344940E+04, .526595E+04, .307008E+05, .107428E+03,
+c                36,          28,          27,          38,          37;        
+     +  .224704E+03, .112781E+03, .661209E+03, .236447E+03, .138071E+04,
+c           CH4 211,         311,         212;       O2 66,          68,        
+     +  .589908E+03, .117974E+04, .477061E+04, .215726E+03, .452188E+03,
+c                67;      NO  46,          56,          48;     SO2 626,        
+     +  .263998E+04, .113243E+04, .785200E+03, .119417E+04, .634449E+04,
+c               646;     NO2 646;    NH3 4111,        5111;    HNO3 146;        
+     +  .637321E+04, .136318E+05, .171089E+04, .114134E+04, .213822E+06,
+c             OH 61,         81,           62;       HF 19;      HCl 15,        
+     +  .803295E+02, .808460E+02, .207108E+03, .414625E+02, .160650E+03,
+c                17;      HBr 19,          11;       HI 17;      ClO 56,        
+     +  .160887E+03, .200165E+03, .200227E+03, .388948E+03, .328810E+04,
+c                76;     OCS 622,         624,         632,         822;        
+     +  .334560E+04, .121746E+04, .124793E+04, .247482E+04, .130948E+04,
+c          H2CO 126,         136,         128;    HOCl 165,         167;        
+     +  .268388E+04, .550322E+04, .284573E+04, .193166E+05, .196584E+05,
+c             N2 44;     HCN 124,         134,         125;   CH3Cl 215,        
+     +  .467136E+03, .893323E+03, .183657E+04, .615046E+03, .144858E+05,
+c               217;   H2O2 1661;   C2H2 1221,        1231,   C2H6 1221;        
+     +  .147153E+05, .767871E+04, .412519E+03, .330014E+04, .546265E+05,
+c          PH3 1111;    COF2 269;      SF6 29;     H2S 121,         141,        
+     +  .325067E+04, .697632E+05, .162242E+07, .503204E+03, .504486E+03,
+c               131;   HCOOH 126;     HO2 166;        O 6;  ClONO2 5646,        
+     +  .201546E+04, .389257E+05, .430184E+04,-.100000E+01, .212829E+07,
+c              7646;      NO+ 46;                                               
+     +  .218246E+07, .308855E+03/
+      END
+
       BLOCK DATA BDMOL                                                    C04000
 C                                                                         C04010
 C     LAST MODIFIED JANUARY 17, 1991                                      C04020
 C                                                                         C04030
-      PARAMETER (NTMOL=32,NSPECI=75)                                      C04040
+      PARAMETER (NTMOL=36,NSPECI=85)                                      C04040
       CHARACTER*6 MOLID                                                   C04050
       COMMON /MOLNAM/ MOLID(0:NTMOL)                                      C04060
 C                                                                         C04070
@@ -2518,851 +3531,13 @@ C                                                                         C04070
      *  '   NO ','  SO2 ','  NO2 ','  NH3 ',' HNO3 ','   OH ','   HF ',   C04100
      *  '  HCL ','  HBR ','   HI ','  CLO ','  OCS ',' H2CO ',' HOCL ',   C04110
      *  '   N2 ','  HCN ','CH3CL ',' H2O2 ',' C2H2 ',' C2H6 ','  PH3 ',   C04120
-     *  ' COF2 ','  SF6 ','  H2S ','HCOOH '/                              C04130
+     *  ' COF2 ','  SF6 ','  H2S ','HCOOH ','  HO2 ','    O ','CLONO2',
+     *  '  NO+ ' /
 C                                                                         C04140
       END                                                                 C04150
-      BLOCK DATA QTDATA                                                   C04160
-C                                                                         C04170
-      PARAMETER (NTMOL=32,NSPECI=75)                                      C04180
-C                                                                         C04190
-C     LAST MODIFIED JANUARY 17, 1991                                      C04200
-C                                                                         C04210
-      COMMON /QTOT/ QCOEF(NSPECI,2,4), Q296(NSPECI), AQ(NSPECI),          C04220
-     *              BQ(NSPECI), GJ(NSPECI)                                C04230
-C                                                                         C04240
-C     STATE INDEPENDENT DEGENERACY FACTORS: GJ                            C04250
-C     (INCLUDES GENERAL NUCLEAR FACTOR (P(2I+1)), (2S+1), AND (2-DL0)     C04260
-C                                                                         C04270
-      DATA GJ/ 1.,1.,6.,6.,  1.,2.,1.,6.,2.,12.,1.,6.,  1.,1.,1.,         C04280
-     *         9.,6.,6.,9.,54.,  1.,2.,1.,6.,2.,  1.,2.,3.,  1.,1.,6.,    C04290
-     *         12.,8.,12.,  1.,1.,  6.,  3.,2.,  6.,  8.,8.,12.,  4.,     C04300
-     *         8.,8.,8.,8.,  12.,  4.,4.,  1.,1.,2.,1.,  1.,2.,1.,        C04310
-     *         8.,8.,  .5,  6.,12.,4.,  4.,4.,  4.,  1.,8.,  64.,         C04320
-     *         2., 1.,1.,1.,1. /                                          C04330
-C                                                                         C04340
-C     --- TOTAL INTERNAL PARTITION SUMS FOR 70 - 400 K RANGE ---          C04350
-C     H2O  --  161                                                        C04360
-C                                                                         C04370
-      DATA (QCOEF( 1,1,J),J=1,4)/ -.37688E+01, .26168E+00,                C04380
-     *                             .13497E-02,-.66013E-06 /               C04390
-C                                                                         C04400
-C     H2O  --  181                                                        C04410
-C                                                                         C04420
-      DATA (QCOEF( 2,1,J),J=1,4)/ -.38381E+01, .26466E+00,                C04430
-     *                             .13555E-02,-.65372E-06 /               C04440
-C                                                                         C04450
-C     H2O  --  171                                                        C04460
-C                                                                         C04470
-      DATA (QCOEF( 3,1,J),J=1,4)/ -.22842E+02, .15840E+01,                C04480
-     *                             .81575E-02,-.39650E-05 /               C04490
-C                                                                         C04500
-C     H2O  --  162                                                        C04510
-C                                                                         C04520
-      DATA (QCOEF( 4,1,J),J=1,4)/ -.20481E+02, .13017E+01,                C04530
-     *                             .66225E-02,-.30447E-05 /               C04540
-C                                                                         C04550
-C     CO2  --  626                                                        C04560
-C                                                                         C04570
-      DATA (QCOEF( 5,1,J),J=1,4)/ -.21995E+01, .96751E+00,                C04580
-     *                            -.80827E-03, .28040E-05 /               C04590
-C                                                                         C04600
-C     CO2  --  636                                                        C04610
-C                                                                         C04620
-      DATA (QCOEF( 6,1,J),J=1,4)/ -.38840E+01, .19263E+01,                C04630
-     *                            -.16058E-02, .58202E-05 /               C04640
-C                                                                         C04650
-C     CO2  --  628                                                        C04660
-C                                                                         C04670
-      DATA (QCOEF( 7,1,J),J=1,4)/ -.47289E+01, .20527E+01,                C04680
-     *                            -.17421E-02, .60748E-05 /               C04690
-C                                                                         C04700
-C     CO2  --  627                                                        C04710
-C                                                                         C04720
-      DATA (QCOEF( 8,1,J),J=1,4)/ -.27475E+02, .11973E+02,                C04730
-     *                            -.10110E-01, .35187E-04 /               C04740
-C                                                                         C04750
-C     CO2  --  638                                                        C04760
-C                                                                         C04770
-      DATA (QCOEF( 9,1,J),J=1,4)/ -.84191E+01, .41186E+01,                C04780
-     *                            -.34961E-02, .12750E-04 /               C04790
-C                                                                         C04800
-C     CO2  --  637                                                        C04810
-C                                                                         C04820
-      DATA (QCOEF(10,1,J),J=1,4)/ -.48468E+02, .23838E+02,                C04830
-     *                            -.20089E-01, .73067E-04 /               C04840
-C                                                                         C04850
-C     CO2  --  828                                                        C04860
-C                                                                         C04870
-      DATA (QCOEF(11,1,J),J=1,4)/ -.22278E+01, .10840E+01,                C04880
-     *                            -.89718E-03, .32143E-05 /               C04890
-C                                                                         C04900
-C     CO2  --  728                                                        C04910
-C                                                                         C04920
-      DATA (QCOEF(12,1,J),J=1,4)/ -.29547E+02, .12714E+02,                C04930
-     *                            -.10913E-01, .38169E-04 /               C04940
-C                                                                         C04950
-C     O3   --  666                                                        C04960
-C                                                                         C04970
-      DATA (QCOEF(13,1,J),J=1,4)/ -.13459E+03, .62255E+01,                C04980
-     *                             .14811E-01, .18608E-04 /               C04990
-C                                                                         C05000
-C     O3   --  668                                                        C05010
-C                                                                         C05020
-      DATA (QCOEF(14,1,J),J=1,4)/ -.12361E+03, .61656E+01,                C05030
-     *                             .19168E-01, .13223E-04 /               C05040
-C                                                                         C05050
-C     O3   --  686                                                        C05060
-C                                                                         C05070
-      DATA (QCOEF(15,1,J),J=1,4)/ -.12359E+03, .60957E+01,                C05080
-     *                             .18239E-01, .13939E-04 /               C05090
-C                                                                         C05100
-C     N2O  --  446                                                        C05110
-C                                                                         C05120
-      DATA (QCOEF(16,1,J),J=1,4)/ -.95291E+01, .15719E+02,                C05130
-     *                            -.12063E-01, .53781E-04 /               C05140
-C                                                                         C05150
-C     N2O  --  456                                                        C05160
-C                                                                         C05170
-      DATA (QCOEF(17,1,J),J=1,4)/  .48994E+01, .10211E+02,                C05180
-     *                            -.62964E-02, .33355E-04 /               C05190
-C                                                                         C05200
-C     N2O  --  546                                                        C05210
-C                                                                         C05220
-      DATA (QCOEF(18,1,J),J=1,4)/ -.28797E+01, .10763E+02,                C05230
-     *                            -.78058E-02, .36321E-04 /               C05240
-C                                                                         C05250
-C     N2O  --  448                                                        C05260
-C                                                                         C05270
-      DATA (QCOEF(19,1,J),J=1,4)/  .25668E+02, .15803E+02,                C05280
-     *                            -.67882E-02, .44093E-04 /               C05290
-C                                                                         C05300
-C     N2O  --  477                                                        C05310
-C                                                                         C05320
-      DATA (QCOEF(20,1,J),J=1,4)/  .18836E+03, .91152E+02,                C05330
-     *                            -.31071E-01, .23789E-03 /               C05340
-C                                                                         C05350
-C     CO   --   26                                                        C05360
-C                                                                         C05370
-      DATA (QCOEF(21,1,J),J=1,4)/  .31591E+00, .36205E+00,                C05380
-     *                            -.22603E-05, .61215E-08 /               C05390
-C                                                                         C05400
-C     CO   --   36                                                        C05410
-C                                                                         C05420
-      DATA (QCOEF(22,1,J),J=1,4)/  .62120E+00, .75758E+00,                C05430
-     *                            -.59190E-05, .15232E-07 /               C05440
-C                                                                         C05450
-C     CO   --   28                                                        C05460
-C                                                                         C05470
-      DATA (QCOEF(23,1,J),J=1,4)/  .30985E+00, .38025E+00,                C05480
-     *                            -.29998E-05, .76646E-08 /               C05490
-C                                                                         C05500
-C     CO   --   27                                                        C05510
-C                                                                         C05520
-      DATA (QCOEF(24,1,J),J=1,4)/  .18757E+01, .22289E+01,                C05530
-     *                            -.15793E-04, .41607E-07 /               C05540
-C                                                                         C05550
-C     CO   --   38                                                        C05560
-C                                                                         C05570
-      DATA (QCOEF(25,1,J),J=1,4)/  .60693E+00, .79754E+00,                C05580
-     *                            -.78021E-05, .19200E-07 /               C05590
-C                                                                         C05600
-C     CH4  --  211                                                        C05610
-C                                                                         C05620
-      DATA (QCOEF(26,1,J),J=1,4)/ -.17475E+02, .95375E+00,                C05630
-     *                             .39758E-02,-.81837E-06 /               C05640
-C                                                                         C05650
-C     CH4  --  311                                                        C05660
-C                                                                         C05670
-      DATA (QCOEF(27,1,J),J=1,4)/ -.27757E+02, .17264E+01,                C05680
-     *                             .93304E-02,-.48181E-05 /               C05690
-C                                                                         C05700
-C     CH4  --  212                                                        C05710
-C                                                                         C05720
-      DATA (QCOEF(28,1,J),J=1,4)/ -.89810E+03, .44451E+02,                C05730
-     *                             .17474E+00,-.22469E-04 /               C05740
-C                                                                         C05750
-C     O2  --  66                                                          C05760
-C                                                                         C05770
-      DATA (QCOEF(29,1,J),J=1,4)/ -.10000E+01, .00000E+00,                C05780
-     *                             .00000E+00, .00000E+00 /               C05790
-C                                                                         C05800
-C     O2  --  68                                                          C05810
-C                                                                         C05820
-      DATA (QCOEF(30,1,J),J=1,4)/ -.10000E+01, .00000E+00,                C05830
-     *                             .00000E+00, .00000E+00 /               C05840
-C                                                                         C05850
-C     O2  --  67                                                          C05860
-C                                                                         C05870
-      DATA (QCOEF(31,1,J),J=1,4)/ -.10000E+01, .00000E+00,                C05880
-     *                             .00000E+00, .00000E+00 /               C05890
-C                                                                         C05900
-C     NO   --   46                                                        C05910
-C                                                                         C05920
-      DATA (QCOEF(32,1,J),J=1,4)/ -.17685E+03, .28839E+02,                C05930
-     *                             .87413E-01,-.92142E-04 /               C05940
-C                                                                         C05950
-C     NO   --   56                                                        C05960
-C                                                                         C05970
-      DATA (QCOEF(33,1,J),J=1,4)/ -.61157E+02, .13304E+02,                C05980
-     *                             .40161E-01,-.42247E-04 /               C05990
-C                                                                         C06000
-C     NO   --   48                                                        C06010
-C                                                                         C06020
-      DATA (QCOEF(34,1,J),J=1,4)/ -.18775E+03, .30428E+02,                C06030
-     *                             .92040E-01,-.96827E-04 /               C06040
-C                                                                         C06050
-C     SO2  --  626                                                        C06060
-C                                                                         C06070
-      DATA (QCOEF(35,1,J),J=1,4)/ -.17187E+03, .94104E+01,                C06080
-     *                             .34620E-01, .25199E-04 /               C06090
-C                                                                         C06100
-C     SO2  --  646                                                        C06110
-C                                                                         C06120
-      DATA (QCOEF(36,1,J),J=1,4)/ -.17263E+03, .94528E+01,                C06130
-     *                             .34777E-01, .25262E-04 /               C06140
-C                                                                         C06150
-C     NO2  --  646                                                        C06160
-C                                                                         C06170
-      DATA (QCOEF(37,1,J),J=1,4)/ -.89749E+03, .44718E+02,                C06180
-     *                             .15781E+00, .43820E-04 /               C06190
-C                                                                         C06200
-C     NH3  --   4111                                                      C06210
-C                                                                         C06220
-      DATA (QCOEF(38,1,J),J=1,4)/ -.48197E+02, .27739E+01,                C06230
-     *                             .11492E-01,-.18209E-05 /               C06240
-C                                                                         C06250
-C     NH3  --   5111                                                      C06260
-C                                                                         C06270
-      DATA (QCOEF(39,1,J),J=1,4)/ -.32700E+02, .18444E+01,                C06280
-     *                             .77001E-02,-.12388E-05 /               C06290
-C                                                                         C06300
-C     HNO3   LO TEMPERATURE RANGE --  146                                 C06310
-C                                                                         C06320
-      DATA (QCOEF(40,1,J),J=1,4)/ -.74208E+04, .34984E+03,                C06330
-     *                             .89051E-01, .39356E-02 /               C06340
-C                                                                         C06350
-C     OH   --   61                                                        C06360
-C                                                                         C06370
-      DATA (QCOEF(41,1,J),J=1,4)/  .76510E+02, .11377E+01,                C06380
-     *                             .39068E-02,-.42750E-05 /               C06390
-C                                                                         C06400
-C     OH   --   81                                                        C06410
-C                                                                         C06420
-      DATA (QCOEF(42,1,J),J=1,4)/  .76140E+02, .11508E+01,                C06430
-     *                             .39178E-02,-.42870E-05 /               C06440
-C                                                                         C06450
-C     OH   --   62                                                        C06460
-C                                                                         C06470
-      DATA (QCOEF(43,1,J),J=1,4)/  .14493E+03, .47809E+01,                C06480
-     *                             .15441E-01,-.16217E-04 /               C06490
-C                                                                         C06500
-C     HF   --   19                                                        C06510
-C                                                                         C06520
-      DATA (QCOEF(44,1,J),J=1,4)/  .15649E+01, .13318E+00,                C06530
-     *                             .80622E-05,-.83354E-08 /               C06540
-C                                                                         C06550
-C     HCL  --   15                                                        C06560
-C                                                                         C06570
-      DATA (QCOEF(45,1,J),J=1,4)/  .28877E+01, .53077E+00,                C06580
-     *                             .99904E-05,-.70856E-08 /               C06590
-C                                                                         C06600
-C     HCL  --   17                                                        C06610
-C                                                                         C06620
-      DATA (QCOEF(46,1,J),J=1,4)/  .28873E+01, .53157E+00,                C06630
-     *                             .99796E-05,-.70647E-08 /               C06640
-C                                                                         C06650
-C     HBR  --   19                                                        C06660
-C                                                                         C06670
-      DATA (QCOEF(47,1,J),J=1,4)/  .28329E+01, .66462E+00,                C06680
-     *                             .83420E-05,-.30996E-08 /               C06690
-C                                                                         C06700
-C     HBR  --   11                                                        C06710
-C                                                                         C06720
-      DATA (QCOEF(48,1,J),J=1,4)/  .28329E+01, .66483E+00,                C06730
-     *                             .83457E-05,-.31074E-08 /               C06740
-C                                                                         C06750
-C     HI   --   17                                                        C06760
-C                                                                         C06770
-      DATA (QCOEF(49,1,J),J=1,4)/  .41379E+01, .12977E+01,                C06780
-     *                             .61598E-05, .10382E-07 /               C06790
-C                                                                         C06800
-C     CLO  --   56                                                        C06810
-C                                                                         C06820
-      DATA (QCOEF(50,1,J),J=1,4)/  .15496E+04, .11200E+03,                C06830
-     *                             .19225E+00, .40831E-04 /               C06840
-C                                                                         C06850
-C     CLO  --   76                                                        C06860
-C                                                                         C06870
-      DATA (QCOEF(51,1,J),J=1,4)/  .15728E+04, .11393E+03,                C06880
-     *                             .19518E+00, .43308E-04 /               C06890
-C                                                                         C06900
-C     OCS  --  622                                                        C06910
-C                                                                         C06920
-      DATA (QCOEF(52,1,J),J=1,4)/  .18600E+02, .31185E+01,                C06930
-     *                             .30405E-03, .85400E-05 /               C06940
-C                                                                         C06950
-C     OCS  --  624                                                        C06960
-C                                                                         C06970
-      DATA (QCOEF(53,1,J),J=1,4)/  .19065E+02, .31965E+01,                C06980
-     *                             .31228E-03, .87535E-05 /               C06990
-C                                                                         C07000
-C     OCS  --  632                                                        C07010
-C                                                                         C07020
-      DATA (QCOEF(54,1,J),J=1,4)/  .42369E+02, .61394E+01,                C07030
-     *                             .13090E-02, .16856E-04 /               C07040
-C                                                                         C07050
-C     OCS  --  822                                                        C07060
-C                                                                         C07070
-      DATA (QCOEF(55,1,J),J=1,4)/  .21643E+02, .32816E+01,                C07080
-     *                             .57748E-03, .90034E-05 /               C07090
-C                                                                         C07100
-C     H2CO --  126                                                        C07110
-C                                                                         C07120
-      DATA (QCOEF(56,1,J),J=1,4)/ -.44663E+02, .23031E+01,                C07130
-     *                             .95095E-02,-.16965E-05 /               C07140
-C                                                                         C07150
-C     H2CO --  136                                                        C07160
-C                                                                         C07170
-      DATA (QCOEF(57,1,J),J=1,4)/ -.91605E+02, .47223E+01,                C07180
-     *                             .19505E-01,-.34832E-05 /               C07190
-C                                                                         C07200
-C     H2CO --  128                                                        C07210
-C                                                                         C07220
-      DATA (QCOEF(58,1,J),J=1,4)/ -.44663E+02, .23031E+01,                C07230
-     *                             .95095E-02,-.16965E-05 /               C07240
-C                                                                         C07250
-C     HOCL --  165                                                        C07260
-C                                                                         C07270
-      DATA (QCOEF(59,1,J),J=1,4)/ -.62547E+03, .31546E+02,                C07280
-     *                             .11132E+00, .32438E-04 /               C07290
-C                                                                         C07300
-C     HOCL --  167                                                        C07310
-C                                                                         C07320
-      DATA (QCOEF(60,1,J),J=1,4)/ -.60170E+03, .31312E+02,                C07330
-     *                             .11841E+00, .23717E-04 /               C07340
-C                                                                         C07350
-C     N2   --   44                                                        C07360
-C                                                                         C07370
-      DATA (QCOEF(61,1,J),J=1,4)/  .73548E+00, .78662E+00,                C07380
-     *                            -.18282E-05, .68772E-08 /               C07390
-C                                                                         C07400
-C     HCN  --  124                                                        C07410
-C                                                                         C07420
-      DATA (QCOEF(62,1,J),J=1,4)/ -.97107E+00, .29506E+01,                C07430
-     *                            -.16077E-02, .61148E-05 /               C07440
-C                                                                         C07450
-C     HCN  --  134                                                        C07460
-C                                                                         C07470
-      DATA (QCOEF(63,1,J),J=1,4)/ -.16460E+01, .60490E+01,                C07480
-     *                            -.32724E-02, .12632E-04 /               C07490
-C                                                                         C07500
-C     HCN  --  125                                                        C07510
-C                                                                         C07520
-      DATA (QCOEF(64,1,J),J=1,4)/ -.40184E+00, .20202E+01,                C07530
-     *                            -.10855E-02, .42504E-05 /               C07540
-C                                                                         C07550
-C     CH3CL--   215                                                       C07560
-C                                                                         C07570
-      DATA (QCOEF(65,1,J),J=1,4)/ -.89695E+03, .40155E+02,                C07580
-     *                             .82775E-01, .13400E-03 /               C07590
-C                                                                         C07600
-C     CH3CL--   217                                                       C07610
-C                                                                         C07620
-      DATA (QCOEF(66,1,J),J=1,4)/ -.91113E+03, .40791E+02,                C07630
-     *                             .84091E-01, .13611E-03 /               C07640
-C                                                                         C07650
-C     H2O2 -- 1661                                                        C07660
-C                                                                         C07670
-      DATA (QCOEF(67,1,J),J=1,4)/ -.95255E+03, .49483E+02,                C07680
-     *                             .21249E+00,-.35489E-04 /               C07690
-C                                                                         C07700
-C     C2H2 -- 1221                                                        C07710
-C                                                                         C07720
-      DATA (QCOEF(68,1,J),J=1,4)/  .25863E+01, .11921E+01,                C07730
-     *                            -.79281E-03, .46225E-05 /               C07740
-C                                                                         C07750
-C     C2H2 -- 1231                                                        C07760
-C                                                                         C07770
-      DATA (QCOEF(69,1,J),J=1,4)/  .20722E+02, .95361E+01,                C07780
-     *                            -.63398E-02, .36976E-04 /               C07790
-C                                                                         C07800
-C     C2H6 --  1221                                                       C07810
-C                                                                         C07820
-      DATA (QCOEF(70,1,J),J=1,4)/ -.10000E+01, .00000E+00,                C07830
-     *                             .00000E+00, .00000E+00 /               C07840
-C                                                                         C07850
-C     PH3  --  1111                                                       C07860
-C                                                                         C07870
-      DATA (QCOEF(71,1,J),J=1,4)/ -.11388E+03, .69602E+01,                C07880
-     *                             .17396E-01, .65088E-05 /               C07890
-C                                                                         C07900
-C     COF2 --  269                                                        C07910
-C                                                                         C07920
-      DATA (QCOEF(72,1,J),J=1,4)/ -.10000E+01, .00000E+00,                C07930
-     *                             .00000E+00, .00000E+00 /               C07940
-C                                                                         C07950
-C     SF6 --  29                                                          C07960
-C                                                                         C07970
-      DATA (QCOEF(73,1,J),J=1,4)/ -.10000E+01, .00000E+00,                C07980
-     *                             .00000E+00, .00000E+00 /               C07990
-C                                                                         C08000
-C     H2S --  121                                                         C08010
-C                                                                         C08020
-      DATA (QCOEF(74,1,J),J=1,4)/ -.10000E+01, .00000E+00,                C08030
-     *                             .00000E+00, .00000E+00 /               C08040
-C                                                                         C08050
-C     HCOOH --  126                                                       C08060
-C                                                                         C08070
-      DATA (QCOEF(75,1,J),J=1,4)/ -.10000E+01, .00000E+00,                C08080
-     *                             .00000E+00, .00000E+00 /               C08090
-C                                                                         C08100
-C     --- TOTAL INTERNAL PARTITION SUMS FOR 400 - 2005 K RANGE ---        C08110
-C                                                                         C08120
-C     H2O   161                                                           C08130
-C                                                                         C08140
-      DATA (QCOEF( 1,2,J),J=1,4)/ -.51182E+02, .63598E+00,                C08150
-     *                             .31873E-03, .32149E-06 /               C08160
-C                                                                         C08170
-C     H2O   181                                                           C08180
-C                                                                         C08190
-      DATA (QCOEF( 2,2,J),J=1,4)/ -.45948E+02, .61364E+00,                C08200
-     *                             .35470E-03, .32872E-06 /               C08210
-C                                                                         C08220
-C     H2O   171                                                           C08230
-C                                                                         C08240
-      DATA (QCOEF( 3,2,J),J=1,4)/ -.27577E+03, .36821E+01,                C08250
-     *                             .21279E-02, .19724E-05 /               C08260
-C                                                                         C08270
-C     H2O   162                                                           C08280
-C                                                                         C08290
-      DATA (QCOEF( 4,2,J),J=1,4)/ -.10499E+03, .24288E+01,                C08300
-     *                             .25247E-02, .15024E-05 /               C08310
-C                                                                         C08320
-C     CO2   626                                                           C08330
-C                                                                         C08340
-      DATA (QCOEF( 5,2,J),J=1,4)/ -.35179E+03, .27793E+01,                C08350
-     *                            -.36737E-02, .40901E-05 /               C08360
-C                                                                         C08370
-C     CO2   636                                                           C08380
-C                                                                         C08390
-      DATA (QCOEF( 6,2,J),J=1,4)/  .31424E+03, .14819E+00,                C08400
-     *                             .18144E-02, .34270E-05 /               C08410
-C                                                                         C08420
-C     CO2   628                                                           C08430
-C                                                                         C08440
-      DATA (QCOEF( 7,2,J),J=1,4)/  .41427E+03,-.28104E+00,                C08450
-     *                             .26658E-02, .31136E-05 /               C08460
-C                                                                         C08470
-C     CO2   627                                                           C08480
-C                                                                         C08490
-      DATA (QCOEF( 8,2,J),J=1,4)/ -.12204E+04, .18403E+02,                C08500
-     *                            -.19962E-01, .38328E-04 /               C08510
-C                                                                         C08520
-C     CO2   638                                                           C08530
-C                                                                         C08540
-      DATA (QCOEF( 9,2,J),J=1,4)/ -.17721E+03, .51237E+01,                C08550
-     *                            -.49831E-02, .12861E-04 /               C08560
-C                                                                         C08570
-C     CO2   637                                                           C08580
-C                                                                         C08590
-      DATA (QCOEF(10,2,J),J=1,4)/ -.22254E+04, .36099E+02,                C08600
-     *                            -.39733E-01, .79776E-04 /               C08610
-C                                                                         C08620
-C     CO2   828                                                           C08630
-C                                                                         C08640
-      DATA (QCOEF(11,2,J),J=1,4)/ -.21531E+03, .21676E+01,                C08650
-     *                            -.24526E-02, .36542E-05 /               C08660
-C                                                                         C08670
-C     CO2   728                                                           C08680
-C                                                                         C08690
-      DATA (QCOEF(12,2,J),J=1,4)/  .40887E+04,-.98940E+01,                C08700
-     *                             .30287E-01, .12296E-04 /               C08710
-C                                                                         C08720
-C     O3   666                                                            C08730
-C                                                                         C08740
-      DATA (QCOEF(13,2,J),J=1,4)/  .70208E+04,-.32154E+02,                C08750
-     *                             .76432E-01,-.70688E-05 /               C08760
-C                                                                         C08770
-C     O3   668                                                            C08780
-C                                                                         C08790
-      DATA (QCOEF(14,2,J),J=1,4)/  .16322E+04,-.77895E+01,                C08800
-     *                             .53646E-01,-.13162E-04 /               C08810
-C                                                                         C08820
-C     O3   686                                                            C08830
-C                                                                         C08840
-      DATA (QCOEF(15,2,J),J=1,4)/  .18667E+04,-.91145E+01,                C08850
-     *                             .54732E-01,-.13296E-04 /               C08860
-C                                                                         C08870
-C     N2O   446                                                           C08880
-C                                                                         C08890
-      DATA (QCOEF(16,2,J),J=1,4)/  .59819E+04,-.22671E+02,                C08900
-     *                             .72560E-01,-.11473E-04 /               C08910
-C                                                                         C08920
-C     N2O   456                                                           C08930
-C                                                                         C08940
-      DATA (QCOEF(17,2,J),J=1,4)/  .25987E+04,-.85322E+01,                C08950
-     *                             .40843E-01,-.79294E-05 /               C08960
-C                                                                         C08970
-C     N2O   546                                                           C08980
-C                                                                         C08990
-      DATA (QCOEF(18,2,J),J=1,4)/  .35285E+04,-.12908E+02,                C09000
-     *                             .47147E-01,-.83427E-05 /               C09010
-C                                                                         C09020
-C     N2O   448                                                           C09030
-C                                                                         C09040
-      DATA (QCOEF(19,2,J),J=1,4)/  .36585E+04,-.92760E+01,                C09050
-     *                             .54617E-01,-.95417E-05 /               C09060
-C                                                                         C09070
-C     N2O   477                                                           C09080
-C                                                                         C09090
-      DATA (QCOEF(20,2,J),J=1,4)/  .98093E+04, .19355E+01,                C09100
-     *                             .24605E+00,-.48629E-04 /               C09110
-C                                                                         C09120
-C     CO    26                                                            C09130
-C                                                                         C09140
-      DATA (QCOEF(21,2,J),J=1,4)/  .65928E+01, .33911E+00,                C09150
-     *                             .79512E-05, .27069E-07 /               C09160
-C                                                                         C09170
-C     CO    36                                                            C09180
-C                                                                         C09190
-      DATA (QCOEF(22,2,J),J=1,4)/  .15017E+02, .70324E+00,                C09200
-     *                             .24475E-04, .56426E-07 /               C09210
-C                                                                         C09220
-C     CO    28                                                            C09230
-C                                                                         C09240
-      DATA (QCOEF(23,2,J),J=1,4)/  .75898E+01, .35270E+00,                C09250
-     *                             .12628E-04, .28309E-07 /               C09260
-C                                                                         C09270
-C     CO    27                                                            C09280
-C                                                                         C09290
-      DATA (QCOEF(24,2,J),J=1,4)/  .42623E+02, .20771E+01,                C09300
-     *                             .61914E-04, .16632E-06 /               C09310
-C                                                                         C09320
-C     CO    38                                                            C09330
-C                                                                         C09340
-      DATA (QCOEF(25,2,J),J=1,4)/  .17317E+02, .73239E+00,                C09350
-     *                             .35779E-04, .58967E-07 /               C09360
-C                                                                         C09370
-C     CH4   211                                                           C09380
-C                                                                         C09390
-      DATA (QCOEF(26,2,J),J=1,4)/  .35513E+03,-.11165E+01,                C09400
-     *                             .71453E-02,-.16135E-05 /               C09410
-C                                                                         C09420
-C     CH4   311                                                           C09430
-C                                                                         C09440
-      DATA (QCOEF(27,2,J),J=1,4)/ -.17262E+03, .29240E+01,                C09450
-     *                             .57503E-02,-.10899E-05 /               C09460
-C                                                                         C09470
-C     CH4   212                                                           C09480
-C                                                                         C09490
-      DATA (QCOEF(28,2,J),J=1,4)/  .21422E+05,-.42118E+02,                C09500
-     *                             .20083E+00, .10661E-03 /               C09510
-C                                                                         C09520
-C     O2   66                                                             C09530
-C                                                                         C09540
-      DATA (QCOEF(29,2,J),J=1,4)/ -.10000E+01, .00000E+00,                C09550
-     *                             .00000E+00, .00000E+00 /               C09560
-C                                                                         C09570
-C     O2   68                                                             C09580
-C                                                                         C09590
-      DATA (QCOEF(30,2,J),J=1,4)/ -.10000E+01, .00000E+00,                C09600
-     *                             .00000E+00, .00000E+00 /               C09610
-C                                                                         C09620
-C     O2   67                                                             C09630
-C                                                                         C09640
-      DATA (QCOEF(31,2,J),J=1,4)/ -.10000E+01, .00000E+00,                C09650
-     *                             .00000E+00, .00000E+00 /               C09660
-C                                                                         C09670
-C     NO    46                                                            C09680
-C                                                                         C09690
-      DATA (QCOEF(32,2,J),J=1,4)/ -.13687E+04, .48097E+02,                C09700
-     *                             .90728E-02, .26135E-05 /               C09710
-C                                                                         C09720
-C     NO    56                                                            C09730
-C                                                                         C09740
-      DATA (QCOEF(33,2,J),J=1,4)/ -.54765E+03, .21844E+02,                C09750
-     *                             .46287E-02, .11057E-05 /               C09760
-C                                                                         C09770
-C     NO    48                                                            C09780
-C                                                                         C09790
-      DATA (QCOEF(34,2,J),J=1,4)/ -.12532E+04, .49741E+02,                C09800
-     *                             .10974E-01, .24674E-05 /               C09810
-C                                                                         C09820
-C     SO2   626                                                           C09830
-C                                                                         C09840
-      DATA (QCOEF(35,2,J),J=1,4)/  .51726E+04,-.20352E+02,                C09850
-     *                             .87930E-01,-.52092E-05 /               C09860
-C                                                                         C09870
-C     SO2   646                                                           C09880
-C                                                                         C09890
-      DATA (QCOEF(36,2,J),J=1,4)/  .52103E+04,-.20559E+02,                C09900
-     *                             .88623E-01,-.55322E-05 /               C09910
-C                                                                         C09920
-C     NO2   646                                                           C09930
-C                                                                         C09940
-      DATA (QCOEF(37,2,J),J=1,4)/  .29305E+05,-.10243E+03,                C09950
-     *                             .34919E+00, .15348E-04 /               C09960
-C                                                                         C09970
-C     NH3    4111                                                         C09980
-C                                                                         C09990
-      DATA (QCOEF(38,2,J),J=1,4)/  .53877E+03, .70380E+00,                C10000
-     *                             .10900E-01, .35142E-05 /               C10010
-C                                                                         C10020
-C     NH3    5111                                                         C10030
-C                                                                         C10040
-      DATA (QCOEF(39,2,J),J=1,4)/  .36092E+03, .45860E+00,                C10050
-     *                             .72936E-02, .23486E-05 /               C10060
-C                                                                         C10070
-C     HNO3   146                                                          C10080
-C                                                                         C10090
-      DATA (QCOEF(40,2,J),J=1,4)/  .40718E+06,-.24214E+04,                C10100
-     *                             .64287E+01,-.10773E-02 /               C10110
-C                                                                         C10120
-C     OH    61                                                            C10130
-C                                                                         C10140
-      DATA (QCOEF(41,2,J),J=1,4)/ -.61974E+02, .23874E+01,                C10150
-     *                            -.97362E-04, .10729E-06 /               C10160
-C                                                                         C10170
-C     OH    81                                                            C10180
-C                                                                         C10190
-      DATA (QCOEF(42,2,J),J=1,4)/ -.63101E+02, .24036E+01,                C10200
-     *                            -.93312E-04, .10475E-06 /               C10210
-C                                                                         C10220
-C     OH    62                                                            C10230
-C                                                                         C10240
-      DATA (QCOEF(43,2,J),J=1,4)/ -.31590E+03, .93816E+01,                C10250
-     *                             .15600E-03, .54606E-06 /               C10260
-C                                                                         C10270
-C     HF    19                                                            C10280
-C                                                                         C10290
-      DATA (QCOEF(44,2,J),J=1,4)/  .32470E+00, .14095E+00,                C10300
-     *                            -.93764E-05, .60911E-08 /               C10310
-C                                                                         C10320
-C     HCL    15                                                           C10330
-C                                                                         C10340
-      DATA (QCOEF(45,2,J),J=1,4)/  .25734E+01, .54202E+00,                C10350
-     *                            -.33353E-04, .37021E-07 /               C10360
-C                                                                         C10370
-C     HCL    17                                                           C10380
-C                                                                         C10390
-      DATA (QCOEF(46,2,J),J=1,4)/  .25937E+01, .54276E+00,                C10400
-     *                            -.33345E-04, .37100E-07 /               C10410
-C                                                                         C10420
-C     HBR    19                                                           C10430
-C                                                                         C10440
-      DATA (QCOEF(47,2,J),J=1,4)/  .62524E+01, .66207E+00,                C10450
-     *                            -.27599E-04, .51074E-07 /               C10460
-C                                                                         C10470
-C     HBR    11                                                           C10480
-C                                                                         C10490
-      DATA (QCOEF(48,2,J),J=1,4)/  .62563E+01, .66225E+00,                C10500
-     *                            -.27588E-04, .51093E-07 /               C10510
-C                                                                         C10520
-C     HI    17                                                            C10530
-C                                                                         C10540
-      DATA (QCOEF(49,2,J),J=1,4)/  .21682E+02, .12417E+01,                C10550
-     *                            -.31297E-06, .10661E-06 /               C10560
-C                                                                         C10570
-C     CLO    56                                                           C10580
-C                                                                         C10590
-      DATA (QCOEF(50,2,J),J=1,4)/ -.32321E+04, .12011E+03,                C10600
-     *                             .23683E+00,-.48509E-04 /               C10610
-C                                                                         C10620
-C     CLO    76                                                           C10630
-C                                                                         C10640
-      DATA (QCOEF(51,2,J),J=1,4)/ -.33857E+04, .12234E+03,                C10650
-     *                             .24153E+00,-.49591E-04 /               C10660
-C                                                                         C10670
-C     OCS   622                                                           C10680
-C                                                                         C10690
-      DATA (QCOEF(52,2,J),J=1,4)/ -.11191E+03, .23157E+01,                C10700
-     *                             .70961E-02,-.14510E-05 /               C10710
-C                                                                         C10720
-C     OCS   624                                                           C10730
-C                                                                         C10740
-      DATA (QCOEF(53,2,J),J=1,4)/ -.11333E+03, .23669E+01,                C10750
-     *                             .72844E-02,-.14918E-05 /               C10760
-C                                                                         C10770
-C     OCS   632                                                           C10780
-C                                                                         C10790
-      DATA (QCOEF(54,2,J),J=1,4)/ -.28497E+03, .49188E+01,                C10800
-     *                             .14264E-01,-.29340E-05 /               C10810
-C                                                                         C10820
-C     OCS   822                                                           C10830
-C                                                                         C10840
-      DATA (QCOEF(55,2,J),J=1,4)/ -.13795E+03, .25510E+01,                C10850
-     *                             .75996E-02,-.15672E-05 /               C10860
-C                                                                         C10870
-C     H2CO   126                                                          C10880
-C                                                                         C10890
-      DATA (QCOEF(56,2,J),J=1,4)/  .10827E+04,-.23289E+01,                C10900
-     *                             .12214E-01, .29810E-05 /               C10910
-C                                                                         C10920
-C     H2CO   136                                                          C10930
-C                                                                         C10940
-      DATA (QCOEF(57,2,J),J=1,4)/  .22290E+04,-.48211E+01,                C10950
-     *                             .25122E-01, .60757E-05 /               C10960
-C                                                                         C10970
-C     H2CO   128                                                          C10980
-C                                                                         C10990
-      DATA (QCOEF(58,2,J),J=1,4)/  .10827E+04,-.23289E+01,                C11000
-     *                             .12214E-01, .29810E-05 /               C11010
-C                                                                         C11020
-C     HOCL   165                                                          C11030
-C                                                                         C11040
-      DATA (QCOEF(59,2,J),J=1,4)/  .10904E+05,-.35742E+02,                C11050
-     *                             .23414E+00,-.34244E-04 /               C11060
-C                                                                         C11070
-C     HOCL   167                                                          C11080
-C                                                                         C11090
-      DATA (QCOEF(60,2,J),J=1,4)/  .11062E+05,-.36361E+02,                C11100
-     *                             .23872E+00,-.35509E-04 /               C11110
-C                                                                         C11120
-C     N2    44                                                            C11130
-C                                                                         C11140
-      DATA (QCOEF(61,2,J),J=1,4)/  .10100E+02, .75749E+00,                C11150
-     *                            -.67405E-05, .57247E-07 /               C11160
-C                                                                         C11170
-C     HCN   124                                                           C11180
-C                                                                         C11190
-      DATA (QCOEF(62,2,J),J=1,4)/  .24602E+03, .66588E+00,                C11200
-     *                             .53695E-02,-.92887E-06 /               C11210
-C                                                                         C11220
-C     HCN   134                                                           C11230
-C                                                                         C11240
-      DATA (QCOEF(63,2,J),J=1,4)/  .49946E+03, .13761E+01,                C11250
-     *                             .11084E-01,-.19286E-05 /               C11260
-C                                                                         C11270
-C     HCN   125                                                           C11280
-C                                                                         C11290
-      DATA (QCOEF(64,2,J),J=1,4)/  .16586E+03, .45963E+00,                C11300
-     *                             .37319E-02,-.65245E-06 /               C11310
-C                                                                         C11320
-C     CH3CL    215                                                        C11330
-C                                                                         C11340
-      DATA (QCOEF(65,2,J),J=1,4)/  .28504E+05,-.11914E+03,                C11350
-     *                             .33419E+00, .43461E-04 /               C11360
-C                                                                         C11370
-C     CH3CL    217                                                        C11380
-C                                                                         C11390
-      DATA (QCOEF(66,2,J),J=1,4)/  .28955E+05,-.12103E+03,                C11400
-     *                             .33949E+00, .44151E-04 /               C11410
-C                                                                         C11420
-C     H2O2  1661                                                          C11430
-C                                                                         C11440
-      DATA (QCOEF(67,2,J),J=1,4)/  .71508E+04, .87112E+00,                C11450
-     *                             .29330E+00,-.60860E-04 /               C11460
-C                                                                         C11470
-C     C2H2  1221                                                          C11480
-C                                                                         C11490
-      DATA (QCOEF(68,2,J),J=1,4)/  .94384E+01, .36148E+00,                C11500
-     *                             .33278E-02,-.61666E-06 /               C11510
-C                                                                         C11520
-C     C2H2  1231                                                          C11530
-C                                                                         C11540
-      DATA (QCOEF(69,2,J),J=1,4)/  .75506E+02, .28919E+01,                C11550
-     *                             .26623E-01,-.49335E-05 /               C11560
-C                                                                         C11570
-C     C2H6  1221                                                          C11580
-C                                                                         C11590
-      DATA (QCOEF(70,2,J),J=1,4)/ -.10000E+01, .00000E+00,                C11600
-     *                             .00000E+00, .00000E+00 /               C11610
-C                                                                         C11620
-C     PH3   1111                                                          C11630
-C                                                                         C11640
-      DATA (QCOEF(71,2,J),J=1,4)/  .28348E+04,-.75986E+01,                C11650
-     *                             .35714E-01, .58694E-05 /               C11660
-C                                                                         C11670
-C     COF2 --  269                                                        C11680
-C                                                                         C11690
-      DATA (QCOEF(72,2,J),J=1,4)/ -.10000E+01, .00000E+00,                C11700
-     *                             .00000E+00, .00000E+00 /               C11710
-C                                                                         C11720
-C     SF6 --  29                                                          C11730
-C                                                                         C11740
-      DATA (QCOEF(73,2,J),J=1,4)/ -.10000E+01, .00000E+00,                C11750
-     *                             .00000E+00, .00000E+00 /               C11760
-C                                                                         C11770
-C     H2S --  121                                                         C11780
-C                                                                         C11790
-      DATA (QCOEF(74,2,J),J=1,4)/ -.10000E+01, .00000E+00,                C11800
-     *                             .00000E+00, .00000E+00 /               C11810
-C                                                                         C11820
-C     HCOOH --  126                                                       C11830
-C                                                                         C11840
-      DATA (QCOEF(75,2,J),J=1,4)/ -.10000E+01, .00000E+00,                C11850
-     *                             .00000E+00, .00000E+00 /               C11860
-C                                                                         C11870
-C     TOTAL INTERNAL PARTITION SUMS AT REFERENCE TEMPERATURE, 296 K.      C11880
-C                                                                         C11890
-      DATA Q296/  .174824E+03, .176311E+03, .105791E+04, .866085E+03,     C11900
-     *            .286084E+03, .576543E+03, .607783E+03, .354336E+04,     C11910
-     *            .123504E+04, .714234E+04, .323520E+03, .376742E+04,     C11920
-     *            .348838E+04, .372378E+04, .364022E+04, .498127E+04,     C11930
-     *            .334085E+04, .344098E+04, .525202E+04, .306164E+05,     C11940
-     *            .107440E+03, .224743E+03, .112800E+03, .661315E+03,     C11950
-     *            .236493E+03, .591953E+03, .117578E+04, .269868E+05,     C11960
-     *           -.100000E+01,-.100000E+01,-.100000E+01, .136286E+05,     C11970
-     *            .629983E+04, .143719E+05, .630040E+04, .632754E+04,     C11980
-     *            .273021E+05, .173254E+04, .115578E+04, .206001E+06,     C11990
-     *            .644694E+03, .648860E+03, .249241E+04, .414766E+02,     C12000
-     *            .160686E+03, .160924E+03, .200212E+03, .200274E+03,     C12010
-     *            .389072E+03, .526040E+05, .535212E+05, .118980E+04,     C12020
-     *            .121962E+04, .241146E+04, .127710E+04, .142625E+04,     C12030
-     *            .292479E+04, .142625E+04, .193070E+05, .196566E+05,     C12040
-     *            .233594E+03, .890125E+03, .182974E+04, .612714E+03,     C12050
-     *            .217165E+05, .220607E+05, .313916E+05, .405852E+03,     C12060
-     *            .324689E+04,-.100000E+01, .363932E+04,-.100000E+01,     C12070
-     *           -.100000E+01,-.100000E+01,-.100000E+01 /                 C12080
-C                                                                         C12090
-C     LNQ(T) = A*LN(T) + B --- THE A COEFFICIENTS                         C12100
-C                                                                         C12110
-        DATA AQ/  .226100E+01, .227050E+01, .227050E+01, .226120E+01,     C12120
-     *            .319540E+01, .274440E+01, .268940E+01, .303220E+01,     C12130
-     *            .299430E+01, .303350E+01, .298930E+01, .253530E+01,     C12140
-     *            .197900E+01, .107470E+01, .109440E+01, .165290E+01,     C12150
-     *            .142450E+01, .154210E+01, .150940E+01, .134650E+01,     C12160
-     *            .147370E+01, .148280E+01, .148350E+01, .147890E+01,     C12170
-     *            .149270E+01, .121370E+01, .130340E+01, .255580E+01,     C12180
-     *           -.100000E+01,-.100000E+01,-.100000E+01, .151060E+01,     C12190
-     *            .150960E+01, .151130E+01, .196420E+01, .195630E+01,     C12200
-     *            .220060E+01, .234040E+01, .234070E+01, .166280E+01,     C12210
-     *            .125620E+01, .125060E+01, .139880E+01, .119150E+01,     C12220
-     *            .134830E+01, .134870E+01, .141210E+01, .141220E+01,     C12230
-     *            .148280E+01, .123800E+01, .123620E+01, .126930E+01,     C12240
-     *            .126810E+01, .126250E+01, .126100E+01, .237630E+01,     C12250
-     *            .237490E+01, .237630E+01, .164260E+01, .163230E+01,     C12260
-     *            .143190E+01, .142360E+01, .141970E+01, .141680E+01,     C12270
-     *            .235820E+01, .235820E+01, .130420E+01, .139690E+01,     C12280
-     *            .139690E+01,-.100000E+01, .231487E+01,-.100000E+01,     C12290
-     *           -.100000E+01,-.100000E+01,-.100000E+01 /                 C12300
-C                                                                         C12310
-C     LNQ(T) = A*LN(T) + B --- THE B COEFFICIENTS                         C12320
-C                                                                         C12330
-        DATA BQ/ -.865480E+01,-.869570E+01,-.690400E+01,-.698800E+01,     C12340
-     *           -.142340E+02,-.103890E+02,-.996700E+01,-.105700E+02,     C12350
-     *           -.113190E+02,-.984100E+01,-.126550E+02,-.704580E+01,     C12360
-     *           -.287730E+01, .329670E+01, .315580E+01,-.586580E+00,     C12370
-     *            .528580E+00,-.212890E+00, .281140E+00, .308480E+01,     C12380
-     *           -.436250E+01,-.368430E+01,-.437850E+01,-.257950E+01,     C12390
-     *           -.369760E+01, .306600E+00,-.565120E-02,-.514510E+01,     C12400
-     *           -.100000E+01,-.100000E+01,-.100000E+01, .449890E+00,     C12410
-     *           -.311240E+00, .507160E+00,-.240720E+01,-.234750E+01,     C12420
-     *           -.261510E+01,-.658160E+01,-.698720E+01, .371490E+01,     C12430
-     *           -.994960E+00,-.947490E+00,-.569920E+00,-.337450E+01,     C12440
-     *           -.311820E+01,-.311940E+01,-.333780E+01,-.333790E+01,     C12450
-     *           -.315210E+01, .417780E+01, .420940E+01, .318090E+00,     C12460
-     *            .352090E+00, .107600E+01, .451040E+00,-.691800E+01,     C12470
-     *           -.619030E+01,-.691800E+01, .822630E+00, .912490E+00,     C12480
-     *           -.330520E+01,-.116380E+01,-.412330E+00,-.148210E+01,     C12490
-     *           -.372050E+01,-.370490E+01, .353900E+01,-.150070E+01,     C12500
-     *            .578920E+00,-.100000E+01,-.550870E+01,-.100000E+01,     C12510
-     *           -.100000E+01,-.100000E+01,-.100000E+01 /                 C12520
-C                                                                         C12530
-      END                                                                 C12540
       SUBROUTINE R1PRNT (V1P,DVP,NLIM,R1,JLO,NPTS,MFILE,IENTER)           C12550
 C                                                                         C12560
-      IMPLICIT DOUBLE PRECISION (V)                                     ! C12570
+      IMPLICIT REAL*8           (V)                                     ! C12570
 C                                                                         C12580
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         C12600
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        C12610
@@ -3399,17 +3574,17 @@ C                                                                         C12910
       END                                                                 C12920
       SUBROUTINE LINF4 (V1L4,V2L4)                                        D00010
 C                                                                         D00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! D00030
+      IMPLICIT REAL*8           (V)                                     ! D00030
 C                                                                         D00040
 C     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4    D00050
 C                                                                         D00060
-      PARAMETER (NTMOL=32,NSPECI=75)                                      D00070
+      PARAMETER (NTMOL=36,NSPECI=85)                                      D00070
 C                                                                         D00080
       COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           D00090
      *                SMASSI(NSPECI)                                      D00100
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D00110
 C                                                                         D00120
-      DOUBLE PRECISION   HID,HMOLIL,HID1,HLINHD                         & D00130
+      REAL*8             HID,HMOLIL,HID1,HLINHD                         & D00130
 C                                                                         D00140
       COMMON /BUFID/ HID(10),HMOLIL(64),MOLCNT(64),MCNTLC(64),            D00150
      *               MCNTNL(64),SUMSTR(64),NMOI,FLINLO,FLINHI,            D00160
@@ -3425,7 +3600,8 @@ C                                                                         D00210
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D00260
      *              EXTID(10)                                             D00270
 C                                                                         D00280
-      DOUBLE PRECISION XID,SEC   ,HMOLID,XALTZ,YID                      & D00290
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SEC   ,       XALTZ
 C                                                                         D00300
       COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),       D00310
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1 ,V2 ,TBOUND,    D00320
@@ -3452,7 +3628,7 @@ C                                                                         D00490
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2))                 D00510
       EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                       D00520
      *            (HLINHD(1),HID(1),IWD(1)) , (MOLB(1),AMOLB(1))          D00530
-C                                                                         D00540
+                                                                          D00540
       DATA MEFDP / 64*0 /                                                 D00550
 C                                                                         D00560
 C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         D00570
@@ -3496,22 +3672,10 @@ C                                                                         D00820
       VHI = V2L4                                                          D00840
 C                                                                         D00850
       CALL CPUTIM(TPAT0)
-      LSTWDL = -654321
-      NWDLIN = NWDL(IWD,LSTWDL)                                           D00860
-      REWIND LINFIL                                                       D00870
-      CALL BUFIN (LINFIL,LEOF,HLINHD(1),NWDLIN)                           D00880
+c
+      call lnfilhd_4(linfil,lnfil4,v1,v2)
+c
       CALL CPUTIM(TPAT1)
-      IF (LEOF.EQ.0) STOP 'RDLNFL; TAPE3 EMPTY'                           D00890
-C                                                                         D00900
-C     CHECK FOR INTERSECTION OF LINEFIL AND VNU LIMITS                    D00910
-C     IF NO LINES, NO NEED FOR LINF4 OR LBLF4                             D00920
-C                                                                         D00930
-      IF (V1.GT.FLINHI.OR.V2.LT.FLINLO) THEN                              D00940
-         CALL ENDFIL (LNFIL4)                                             D00950
-         WRITE (IPR,900) V1,V2,FLINLO,FLINHI                              D00960
-         RETURN                                                           D00970
-      ENDIF                                                               D00980
-      CALL BUFOUT (LNFIL4,HLINHD(1),NWDLIN)                               D00990
       TBUFFR = TBUFFR + TPAT1-TPAT0
 C                                                                         D01000
 C       TEMPERATURE CORRECTION TO INTENSITY                               D01010
@@ -3541,6 +3705,7 @@ C                                                                         D01140
 C                                                                         D01220
       IJ = 0                                                              D01230
    30 CALL CPUTIM (TIM0)                                                  D01240
+
       CALL RDLNFL (IEOF,ILINLO,ILINHI)                                    D01250
       CALL CPUTIM (TIM1)                                                  D01260
       TIMR = TIMR+TIM1-TIM0                                               D01270
@@ -3688,10 +3853,6 @@ C                                                                         D02450
       ENDIF
       RETURN                                                              D02520
 C                                                                         D02530
-  900 FORMAT ('0  *****  LINF4 - VNU LIMITS DO NOT INTERSECT WITH ',      D02540
-     *        'LINFIL - LINF4 NOT USED *****',/,'   VNU = ',F10.3,        D02550
-     *        ' - ',F10.3,' CM-1     LINFIL = ',F10.3,' - ',F10.3,        D02560
-     *        ' CM-1')                                                    D02570
   905 FORMAT ('0*************************',I5,' STRENGTHS FOR',           D02580
      *        '  TRANSITIONS WITH UNKNOWN EPP FOR MOL =',I5,              D02590
      *        ' SET TO ZERO')                                             D02600
@@ -3699,29 +3860,97 @@ C                                                                         D02530
      *        'AFTER SHRINK',/,2X,'LINF4 ',2X,3F15.3,2I15)                D02620
 C                                                                         D02630
       END                                                                 D02640
+c***********************************************************************
+      subroutine lnfilhd_4(linfil,linfil4,v1,v2)
+c
+c     this subroutine buffers past the file header for LINF4
+c
+      IMPLICIT REAL*8           (V) 
+c
+      CHARACTER*8      HLINID,BMOLID,HID1,HLINHD                        & A09590
+C                                                                         A09600
+      COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A09610
+     *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A09620
+     *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL     A09630
+
+      real *4 sumstr,flinlo,flinhi
+      integer *4 lnfil,molcnt,mcntlc,mcntnl,linmol,
+     *     lincnt,ilinlc,ilinnl,irec,irectl,lnfil4
+C                                                                         A09640
+      DIMENSION HLINHD(2),IWD(2)                                          A09670
+C                                                                         A09680
+      lnfil = linfil
+      lnfil4= linfil4
+c
+      REWIND lnfil
+c
+      read (lnfil,end=777)    HLINID,BMOLID,MOLCNT,MCNTLC,       
+     *                MCNTNL,SUMSTR,LINMOL,FLINLO,FLINHI,  
+     *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1
+c
+      go to 5
+c
+ 777  STOP 'Linf4: LINFIL DOES NOT EXIST'                   
+c
+ 5    continue
+
+C     
+      IF (V1.GT.FLINHI.OR.V2.LT.FLINLO) THEN                              D00940
+         CALL ENDFIL (LNFIL4)                                             D00950
+         WRITE (IPR,900) V1,V2,FLINLO,FLINHI                              D00960
+         RETURN                                                           D00970
+      ENDIF                                                               D00980
+c
+      write (lnfil4)    HLINID,BMOLID,MOLCNT,MCNTLC,       
+     *                MCNTNL,SUMSTR,LINMOL,FLINLO,FLINHI,  
+     *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1
+C
+      return
+c
+  900 FORMAT ('0  *****  LINF4 - VNU LIMITS DO NOT INTERSECT WITH ',      D02540
+     *        'LINFIL - LINF4 NOT USED *****',/,'   VNU = ',F10.3,        D02550
+     *        ' - ',F10.3,' CM-1     LINFIL = ',F10.3,' - ',F10.3,        D02560
+     *        ' CM-1')                                                    D02570
+c
+      end
+c*******************************************************************
       SUBROUTINE RDLNFL (IEOF,ILO,IHI)                                    D02650
 C                                                                         D02660
-      IMPLICIT DOUBLE PRECISION (V)                                     ! D02670
+      IMPLICIT REAL*8           (V)                                     ! D02670
 C                                                                         D02680
 C     SUBROUTINE RDLNFL INPUTS THE LINE DATA FROM LINFIL                  D02690
 C                                                                         D02700
-      DOUBLE PRECISION XID,SEC   ,HMOLID,XALTZ,YID                      & D02710
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SEC   ,       XALTZ
 C                                                                         D02720
       COMMON /FILHDR/ XID(10),SEC   ,PAV ,TAV ,HMOLID(60),XALTZ(4),       D02730
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   D02740
      *                EMIS ,FSCDID(17),NMOL,LAYRS ,YID1,YID(10),LSTWDF    D02750
       COMMON /R4SUB/ VLO,VHI,ILD,IST,IHD,LIMIN,LIMOUT,ILAST,DPTMN,        D02760
      *               DPTFC,ILIN4,ILIN4T                                   D02770
-      COMMON /BUF2/ VMIN,VMAX,NREC,NWDS                                   D02780
       COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),       D02790
      *              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)          D02800
+c
+      dimension amolb(250)
+      equivalence (molb(1),amolb(1))
+c
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D02810
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        D02820
      *              NLTEFL,LNFIL4,LNGTH4                                  D02830
       COMMON /IOU/ IOUT(250)                                              D02840
-      DIMENSION DUM(2),LINPNL(2)                                          D02850
-C                                                                         D02860
-      EQUIVALENCE (VMIN,LINPNL(1))                                        D02870
+c
+      common /rdlnpnl/ vmin,vmax,nrec,nwds
+      integer *4 nrec,nwds,lnfl,leof,npnlhd
+c
+      common /rdlnbuf/ vlin(250),str(250),hw_f(250),e_low(250),
+     *     mol_id(250),hw_s(250),hw_T(250),shft(250),jflg(250)
+
+      real *4 str,hw_f,e_low,hw_s,hw_T,shft,rdpnl(2),dum(2),xmol(2)
+      integer *4 mol_id,jflg
+
+      equivalence (vmin,rdpnl(1)), (mol_id(1),xmol(1))
+c
+      DIMENSION LINPNL(2)                                                 D02850
 C                                                                         D02880
       IPASS = 1                                                           D02890
       IF (ILO.GT.0) IPASS = 2                                             D02900
@@ -3731,18 +3960,43 @@ C                                                                         D02930
       IEOF = 0                                                            D02940
       ILO = 1                                                             D02950
       IHI = 0                                                             D02960
-   10 CALL BUFIN (LINFIL,LEOF,LINPNL(1),NPHDRL)                           D02970
+c
+      lnfl = linfil	
+      npnlhd = 6
+c
+   10 CALL BUFINln (Lnfl,LEOF,rdpnl(1),npnlhd) 
+c
       IF (LEOF.EQ.0) GO TO 30                                             D02980
       IF (VMAX.LT.VLO) THEN                                               D02990
-         CALL BUFIN (LINFIL,LEOF,DUM(1),1)                                D03000
+         CALL BUFINln (lnfl,LEOF,dum(1),1) 
          GO TO 10                                                         D03010
       ELSE                                                                D03020
-         CALL BUFIN (LINFIL,LEOF,VNUB(1),NWDS)                            D03030
+         CALL BUFINln (Lnfl,LEOF,vlin(1),NWDS) 
       ENDIF                                                               D03040
-      IF ((IPASS.EQ.1).AND.(VNUB(1).GT.VLO)) WRITE (IPR,900)              D03050
+c
+      IF ((IPASS.EQ.1).AND.(Vlin(1).GT.VLO)) WRITE (IPR,900)
 C                                                                         D03060
       IJ = 0                                                              D03070
 C                                                                         D03080
+c     precision conversion occurs here:
+c     incoming on right: vlin is real*8;  others are real*4 and integer*4
+c
+      do 15 i=1,nrec
+         IFLG(i)  = jflg(i)     
+         VNUB(i)   = vlin(i)
+         SB(i)    = str(i)   
+         ALB(i)   = hw_f(i)      
+         EPPB(i)   = e_low(i)    
+         if (iflg(i) .ge.  0) then
+            MOLB(i)  = mol_id(i)    
+         else
+            amolb(i)  = xmol(i)
+         endif
+         HWHMB(i) = hw_s(i)      
+         TMPALB(i)= hw_T(i)       
+         PSHIFB(i)= shft(i)       
+ 15   continue
+c
       DO 20 J = 1, NREC                                                   D03090
          IF (IFLG(J).GE.0) THEN                                           D03100
             IJ = IJ+1                                                     D03110
@@ -3761,7 +4015,7 @@ C                                                                         D03230
       END                                                                 D03240
       SUBROUTINE SHRINK                                                   D03250
 C                                                                         D03260
-      IMPLICIT DOUBLE PRECISION (V)                                     ! D03270
+      IMPLICIT REAL*8           (V)                                     ! D03270
 C                                                                         D03280
 C     SUBROUTINE SHRINK COMBINES LINES FALLING IN A WAVENUMBER INTERVAL   D03290
 C     DVR4/2 INTO A SINGLE EFFECTIVE LINE TO REDUCE COMPUTATION           D03300
@@ -3880,7 +4134,7 @@ C                                                                         D04420
       END                                                                 D04430
       SUBROUTINE LBLF4 (JRAD,V1,V2)                                       D04440
 C                                                                         D04450
-      IMPLICIT DOUBLE PRECISION (V)                                     ! D04460
+      IMPLICIT REAL*8           (V)                                     ! D04460
 C                                                                         D04470
 C     SUBROUTINE LBLF4 DOES A LINE BY LINE CALCULATION                    D04480
 C     USING FUNCTION F4.                                                  D04490
@@ -3894,7 +4148,8 @@ C                                                                         D04500
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D04570
      *              EXTID(10)                                             D04580
 C                                                                         D04590
-      DOUBLE PRECISION XID,SEC   ,HMOLID,XALTZ,YID                      & D04600
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SEC   ,       XALTZ
 C                                                                         D04610
       COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),       D04620
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1H,V2H,TBOUND,    D04630
@@ -4001,11 +4256,12 @@ C                                                                         D05640
       END                                                                 D05650
       SUBROUTINE RDLIN4 (IEOF)                                            D05660
 C                                                                         D05670
-      IMPLICIT DOUBLE PRECISION (V)                                     ! D05680
+      IMPLICIT REAL*8           (V)                                     ! D05680
 C                                                                         D05690
 C     SUBROUTINE RDLIN4 INPUTS THE LINE DATA FROM LNFIL4                  D05700
 C                                                                         D05710
-      DOUBLE PRECISION XID,SEC   ,HMOLID,XALTZ,YID                      & D05720
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SEC   ,       XALTZ
 C                                                                         D05730
       COMMON /FILHDR/ XID(10),SEC   ,PAV ,TAV ,HMOLID(60),XALTZ(4),       D05740
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   D05750
@@ -4062,7 +4318,7 @@ C                                                                         D06250
       END                                                                 D06260
       SUBROUTINE CONVF4 (VNU,S,ALFAL,ALFAD,MOL,SPP)                       D06270
 C                                                                         D06280
-      IMPLICIT DOUBLE PRECISION (V)                                     ! D06290
+      IMPLICIT REAL*8           (V)                                     ! D06290
 C                                                                         D06300
 C     SUBROUTINE CONVF4 CONVOLVES THE LINE DATA WITH FUNCTION F4          D06310
 C                                                                         D06320
@@ -4245,7 +4501,7 @@ C                                                                         D07880
       END                                                                 D07890
       SUBROUTINE XSREAD (XV1,XV2)                                         E00010
 C                                                                         E00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! E00030
+      IMPLICIT REAL*8           (V)                                     ! E00030
 C                                                                         E00040
 C**********************************************************************   E00050
 C     THIS SUBROUTINE READS IN THE DESIRED "CROSS-SECTION"                E00060
@@ -4423,7 +4679,7 @@ C                                                                         E01610
       END                                                                 E01620
       BLOCK DATA BXSECT                                                   E01630
 C                                                                         E01640
-      IMPLICIT DOUBLE PRECISION (V)                                     ! E01650
+      IMPLICIT REAL*8           (V)                                     ! E01650
 C                                                                         E01660
 C**   XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES          E01670
 C**            (NOTE: ALL NAMES ARE LEFT-JUSTIFIED)                       E01680
@@ -4515,7 +4771,7 @@ C                                                                         E02370
       END                                                                 E02380
       SUBROUTINE XSECTM (IFST,IR4)                                        E02390
 C                                                                         E02400
-      IMPLICIT DOUBLE PRECISION (V)                                     ! E02410
+      IMPLICIT REAL*8           (V)                                     ! E02410
 C                                                                         E02420
 C     THIS SUBROUTINE MOVES THE CROSS SECTIONS INTO                       E02430
 C     THE APPROPRIATE ARRAY R1, R2, R3, R4, OR ABSRB                      E02440
@@ -4534,7 +4790,8 @@ C                                                                         E02470
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E02570
      *              EXTID(10)                                             E02580
 C                                                                         E02590
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & E02600
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         E02610
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E02620
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   E02630
@@ -4619,11 +4876,12 @@ C                                                                         E03380
          NPTSX = NPTSXS                                                   E03420
 C                                                                         E03430
          DO 10 NI = 1, NUMXS                                              E03440
-            DO 10 NS = 1, NSPECR(NI)                                      E03450
+            DO  9 NS = 1, NSPECR(NI)                                      E03450
                IXBIN(NS,NI) = 1                                           E03460
                IXSBN(NS,NI) = 0                                           E03470
                NFILEX(NS,NI) = ABS(NFILEX(NS,NI))                         E03480
-   10    CONTINUE                                                         E03490
+ 9          continue
+ 10      CONTINUE                                                         E03490
       ENDIF                                                               E03500
 C                                                                         E03510
 C     CHECK V1X FOR INPUT                                                 E03520
@@ -4653,12 +4911,13 @@ C                                                                         E03570
          V2XT = V2X-2.*DVX                                                E03760
          IF (V1XT.GT.V2XT) GO TO 140                                      E03770
          DO 30 NI = 1, NUMXS                                              E03780
-            DO 30 NS = 1, NSPECR(NI)                                      E03790
+            DO 29 NS = 1, NSPECR(NI)                                      E03790
                IF (NFILEX(NS,NI).EQ.0) GO TO 30                           E03800
                IF (V1FX(NS,NI).LE.V1XT.AND.V2FX(NS,NI).GE.V1XT) IFL = 1   E03810
                IF (V1FX(NS,NI).LE.V2XT.AND.V2FX(NS,NI).GE.V2XT) IFL = 1   E03820
                IF (V1FX(NS,NI).GE.V1XT.AND.V2FX(NS,NI).LE.V2XT) IFL = 1   E03830
-   30    CONTINUE                                                         E03840
+ 29         CONTINUE                                                         E03840
+ 30      CONTINUE                                                         E03840
          IF (IFL.EQ.0) GO TO 140                                          E03850
       ENDIF                                                               E03860
 C                                                                         E03870
@@ -4668,11 +4927,11 @@ C                                                                         E03890
          JINPUT = 0                                                       E03910
          DO 40 I = 1, LIMOUT                                              E03920
             RX(I) = 0.0                                                   E03930
-   40    CONTINUE                                                         E03940
+ 40      CONTINUE                                                         E03940
          DO 50 I = 1, NLIMX+10                                            E03950
             RDX1(I) = 0.0                                                 E03960
             RDX2(I) = 0.0                                                 E03970
-   50    CONTINUE                                                         E03980
+ 50      CONTINUE                                                         E03980
 C                                                                         E03990
 C     FOR NPANEL = 0, READ IN FILE HEADERS                                E04000
 C                                                                         E04010
@@ -4683,8 +4942,8 @@ C                                                                         E04010
             NT2 = 0                                                       E04060
             NMODE = 0                                                     E04070
             DO 60 NI = 1, NUMXS                                           E04080
-               DO 60 NS = 1, NSPECR(NI)                                   E04090
-                  DO 60 NT1 = 1, NTEMPF(NS,NI)                            E04100
+               DO 59 NS = 1, NSPECR(NI)                                   E04090
+                  DO 58 NT1 = 1, NTEMPF(NS,NI)                            E04100
                      NFILEX(NS,NI) = 1                                    E04110
                      CALL CPUTIM (TIME0)                                  E04120
                      CALL XSECIN (NPANEL,NI,NS,NT1,NT2,NMODE,NSKIP,       E04130
@@ -4712,7 +4971,9 @@ C                                                                         E04293
                         WRITE(IPR,900)                                    E04296
                         STOP 'XSTEMP - XSECTM'                            E04297
                      ENDIF                                                E04298
-   60       CONTINUE                                                      E04300
+ 58               CONTINUE                                                
+ 59            CONTINUE                                                      E04300
+ 60         CONTINUE                                                      E04300
             DVX = DVXMIN                                                  E04310
             V1X = MAX(VFT,V1XMIN)                                         E04320
             V1X = V1X-2.*DVX                                              E04330
@@ -4734,7 +4995,7 @@ C                                                                         E04470
          NMODES = 0                                                       E04490
 C                                                                         E04500
          DO 110 NI = 1, NUMXS                                             E04510
-            DO 110 NS = 1, NSPECR(NI)                                     E04520
+            DO 109 NS = 1, NSPECR(NI)                                     E04520
                NPANEL = -1                                                E04530
                IF (NFILEX(NS,NI).LE.0) GO TO 105                          E04540
                IF (V1FX(NS,NI).GT.V2X) GO TO 105                          E04550
@@ -4872,14 +5133,15 @@ C                                                                         E05740
                   CALL CPUTIM (TIME)                                      E05870
                   TXSPNL = TXSPNL+TIME-TIME0                              E05880
 C                                                                         E05890
-  100          CONTINUE                                                   E05900
+ 100           CONTINUE                                                   E05900
 C
 C              Continue for GOTO statements at E04540, E04550, E04580, &
 C              E04670.
 C
  105           CONTINUE
 C                                                                         E05910
-  110    CONTINUE                                                         E05920
+ 109        CONTINUE                                                         E05920
+ 110     CONTINUE                                                         E05920
          IF (NFILET.EQ.0) GO TO 140                                       E05930
 C                                                                         E05940
 C     FACTOR OUT RADIATION FIELD IF REQUIRED                              E05950
@@ -4964,7 +5226,7 @@ C                                                                         E06700
       END                                                                 E06710
       SUBROUTINE XSECIN (NPANEL,NI,NS,NT1,NT2,NMODE,NSKIP,NMAX,IEOF)      E06720
 C                                                                         E06730
-      IMPLICIT DOUBLE PRECISION (V)                                     ! E06740
+      IMPLICIT REAL*8           (V)                                     ! E06740
 C                                                                         E06750
 C     THIS SUBROUTINE READS IN THE DESIRED CROSS SECTIONS                 E06760
 C                                                                         E06770
@@ -4972,7 +5234,8 @@ C                                                                         E06770
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        E06790
      *              NLTEFL,LNFIL4,LNGTH4                                  E06800
 C                                                                         E06810
-      DOUBLE PRECISION XI1,SECAN1,HMOLI1,XALT1,YID1                     & E06820
+      CHARACTER*8      XI1,       HMOLI1,      YID1   
+      Real*8               SECAN1,       XALT1
 C                                                                         E06830
       COMMON /FXSHDR/ XI1(10),SECAN1,PAV1,TAV1,HMOLI1(60),XALT1(4),       E06840
      *                W1(60),P1L,P1U,T1L,T1U,WBROA1,DVB,V1B,V2B,TBOUN1,   E06850
@@ -5269,12 +5532,13 @@ C                                                                         E09570
       END                                                                 E09580
       SUBROUTINE XSNTMP (NI,NS,NT1,NT2,NMODE)                             E09590
 C                                                                         E09600
-      IMPLICIT DOUBLE PRECISION (V)                                     ! E09610
+      IMPLICIT REAL*8           (V)                                     ! E09610
 C                                                                         E09620
 C     THIS SUBROUTINE DETERMINES THE CORRECT MODE                         E09630
 C     AND BRACKETS THE LAYER TEMPERATURE                                  E09640
 C                                                                         E09650
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & E09660
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         E09670
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E09680
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   E09690
@@ -5353,18 +5617,20 @@ C                                                                         E10370
       END                                                                 E10380
       SUBROUTINE XSBINF (NI,NS,NT1,NT2,NMODE)                             E10390
 C                                                                         E10400
-      IMPLICIT DOUBLE PRECISION (V)                                     ! E10410
+      IMPLICIT REAL*8           (V)                                     ! E10410
 C                                                                         E10420
 C     THIS SUBROUTINE PERFORMS A TEMPERATURE DEPENDENT CONVOLUTION        E10430
 C     ON THE CROSS-SECTIONS PRODUCING A BINARY INTERMEDIATE FILE          E10440
 C                                                                         E10450
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & E10460
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         E10470
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E10480
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV0,V10,V20,TBOUND,   E10490
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    E10500
 C                                                                         E10510
-      DOUBLE PRECISION XI1,SECAN1,HMOLI1,XALT1,YID1                     & E10520
+      CHARACTER*8      XI1,       HMOLI1,      YID1   
+      Real*8               SECAN1,       XALT1
 C                                                                         E10530
       COMMON /FXSHDR/ XI1(10),SECAN1,PAV1,TAV1,HMOLI1(60),XALT1(4),       E10540
      *                W1(60),P1L,P1U,T1L,T1U,WBROA1,DVB,V1B,V2B,TBOUN1,   E10550
@@ -5580,13 +5846,14 @@ C                                                                         E12610
       END                                                                 E12650
       SUBROUTINE XSCNVN (IFILE,JFILE,NS,NI)                               E12660
 C                                                                         E12670
-      IMPLICIT DOUBLE PRECISION (V)                                     ! E12680
+      IMPLICIT REAL*8           (V)                                     ! E12680
 C                                                                         E12690
 C     DRIVER FOR CONVOLVING SPECTRUM WITH INSTRUMENTAL SCANNING FUNCTIO   E12700
 C                                                                         E12710
       COMMON /XSCONV/ S(2050),R1(1025)                                    E12720
 C                                                                         E12730
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,SCANID               & E12740
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
 C                                                                         E12750
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E12760
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,   E12770
@@ -5595,7 +5862,7 @@ C                                                                         E12750
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       E12800
      *               DVSC,XDUM,V1SHFT                                     E12810
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 E12820
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            E12830
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,tdum(8)
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      E12840
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,               E12850
      *                HWF3,DXF3,NX3,N3MAX                                 E12860
@@ -5732,7 +5999,7 @@ C                                                                         E14160
       END                                                                 E14170
       SUBROUTINE PNLCNV (R1,JFILE,SUMR,NPTS,NS,NI)                        E14180
 C                                                                         E14190
-      IMPLICIT DOUBLE PRECISION (V)                                     ! E14200
+      IMPLICIT REAL*8           (V)                                     ! E14200
 C                                                                         E14210
 C     SUBROUTINE PNLCNV OUTPUTS THE RESULTS OF THE CONVOLUTION            E14220
 C     TO FILE JFILE                                                       E14230
@@ -5744,7 +6011,7 @@ C                                                                         E14240
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       E14290
      *               DVSC,XDUM,V1SHFT                                     E14300
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 E14310
-      COMMON /STIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            E14320
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,tdum(8)
       COMMON /SPANEL/ V1P,V2P,DV,NLIM                                     E14330
       COMMON /XSTMPR/ PF,TF,PDX(6,5,35),DVXPR(5,35),IXBIN(5,35),          E14340
      *                IXSBN(5,35)                                         E14350
