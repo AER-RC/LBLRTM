@@ -341,11 +341,11 @@ C                                                                        FA03360
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA03370
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA03380
      *              NLTEFL,LNFIL4,LNGTH4                                 FA03390
-      COMMON /MSACCT/ IMS,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),           FA03400
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),           FA03400
      *                MXPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,         FA03410
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                 FA03420
       COMMON /MSCONS/ AIRMSS(MXLAY),TGRND,SEMIS(3),HMINMS,HMAXMS,        FA03430
-     *                MSFLAG,MSWIT,IMSFIL,MSTGLE                         FA03440
+     *                MSFLAG,MSWIT,IODFIL,MSTGLE                         FA03440
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NOP,H1F,H2F,       FA03450
      *                ANGLEF,RANGEF,BETAF,LENF,V1,V2,RO,IPUNCH,XVBAR,    FA03460
      *                HMINF,PHIF,IERRF,HSPACE                            FA03470
@@ -611,73 +611,6 @@ C                                                                        FA05950
          IF (IPUNCH.EQ.1)                                                FA06070
      *        WRITE (IPU,926) PH,TH,IPATH(1),ZH,ZH,(AMOUNT(K,1),K=1,7),  FA06080
      *                        WN2L(1),(AMOUNT(K,1),K=8,NMOL)             FA06090
-C                                                                        FA06100
-C     CALL FSCGEO AND OBTAIN HMIN IF MULTIPLE SCATTERING IS SET          FA06110
-C                                                                        FA06120
-         IF (IMS.EQ.1.AND.MSTGLE.EQ.0) THEN                              FA06130
-            MSIFLG = 0                                                   FA06140
-            MSTGLE = 1                                                   FA06150
-            CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,      FA06160
-     *                   IERROR)                                         FA06170
-            IF (IERROR.NE.0) GO TO 310                                   FA06180
-            HMAXM = AMAX1(H1,H2)                                         FA06190
-C                                                                        FA06200
-C      IF HMIN IS GREATER THAN HMAXMS, TURN OFF MULTIPLE SCATTERING      FA06210
-C                                                                        FA06220
-            IF (HMIN.GT.HMAXMS) THEN                                     FA06230
-               IMS = 0                                                   FA06240
-               WRITE (IPR,928) HMIN,HMAXMS                               FA06250
-            ELSE                                                         FA06260
-               IF (HMAXM.LT.HMAXMS.AND.MSFLAG.LT.13) THEN                FA06270
-                  MSFLAG = 13                                            FA06280
-                  MSIFLG = 1                                             FA06290
-                  MSWIT = MSWIT+100                                      FA06300
-                  ITYPE = 2                                              FA06310
-                  HMIN = HMINMS                                          FA06320
-                  H1 = HMAXM                                             FA06330
-                  H2 = HMAXMS                                            FA06340
-                  ANGLE = 0.0                                            FA06350
-                  RANGE = 0.0                                            FA06360
-                  BETA = 0.0                                             FA06370
-                  LEN = 0                                                FA06380
-                  IMSTOR = IMSFIL                                        FA06390
-                  IMSFIL = IEXFIL                                        FA06400
-                  IEXFIL = IMSTOR                                        FA06410
-               ENDIF                                                     FA06420
-               IF (HMIN.GT.HMINMS.AND.MSIFLG.EQ.0                        FA06430
-     *                           .AND.MSFLAG.LT.23) THEN                 FA06440
-                  MSFLAG = 23                                            FA06450
-                  MSIFLG = 1                                             FA06460
-                  MSWIT = -(ABS(MSWIT)+10)                               FA06470
-                  ITYPE = 2                                              FA06480
-                  H1 = HMINMS                                            FA06490
-                  H2 = HMIN                                              FA06500
-                  HMIN = 0.0                                             FA06510
-                  ANGLE = 0.0                                            FA06520
-                  RANGE = 0.0                                            FA06530
-                  BETA = 0.0                                             FA06540
-                  LEN = 0                                                FA06550
-                  IF (ABS(MSWIT).GT.100) THEN                            FA06560
-                     IMSTOR = IMSFIL                                     FA06570
-                     IMSFIL = IEXFIL                                     FA06580
-                     IEXFIL = IMSTOR                                     FA06590
-                  ENDIF                                                  FA06600
-               ENDIF                                                     FA06610
-               IF (MSIFLG.EQ.1) THEN                                     FA06620
-                  ITYPEF = ITYPE                                         FA06630
-                  H1F = H1                                               FA06640
-                  H2F = H2                                               FA06650
-                  HMINF = HMIN                                           FA06660
-                  ANGLEF = ANGLE                                         FA06670
-                  RANGEF = RANGE                                         FA06680
-                  BETAF = BETA                                           FA06690
-                  LENF = LEN                                             FA06700
-               ELSE                                                      FA06710
-                  MSFLAG = 33                                            FA06720
-                  MSWIT = -(ABS(MSWIT)+1)                                FA06730
-               ENDIF                                                     FA06740
-            ENDIF                                                        FA06750
-         ENDIF                                                           FA06760
 C                                                                        FA06770
       ELSE                                                               FA06780
 C                                                                        FA06790
@@ -755,85 +688,6 @@ C                                                                        FA07370
             ENDIF                                                        FA07510
          ENDIF                                                           FA07520
 C                                                                        FA07530
-C                                                                        FA07540
-C     CALL FSCGEO AND OBTAIN HMIN IF MULTIPLE SCATTERING IS SET          FA07550
-C                                                                        FA07560
-         IF (IMS.EQ.1.AND.MSTGLE.EQ.0) THEN                              FA07570
-            MSIFLG = 0                                                   FA07580
-            MSTGLE = 1                                                   FA07590
-            DO 160 IM = 1, IMMAX                                         FA07600
-               PPH2O = DENM(1,IM)*PZERO*TM(IM)/(TZERO*ALOSMT)            FA07610
-               RFNDXM(IM) = ((77.46+0.459E-8*XVBAR**2)*PM(IM)/TM(IM)-    FA07620
-     *                      (PPH2O/1013.0)*(43.49-0.347E-8*XVBAR**2))*   FA07630
-     *                      1.0E-6                                       FA07640
-  160       CONTINUE                                                     FA07650
-            CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,      FA07660
-     *                   IERROR)                                         FA07670
-            IF (IERROR.NE.0) GO TO 310                                   FA07680
-            IF (ITYPE.EQ.3) THEN                                         FA07690
-               ITYPEM = 2                                                FA07700
-               CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPEM,LEN,HMIN,PHI,  FA07710
-     *                      IERROR)                                      FA07720
-            ENDIF                                                        FA07730
-            IF (IERROR.NE.0) GO TO 310                                   FA07740
-            HMAXM = AMAX1(H1,H2)                                         FA07750
-C                                                                        FA07760
-C     IF HMIN IS GREATER THAN HMAXMS THEN TURN OFF MULTPLE SCATTERING    FA07770
-C                                                                        FA07780
-            IF (HMIN.GT.HMAXMS) THEN                                     FA07790
-               IMS = 0                                                   FA07800
-               WRITE (IPR,928) HMIN,HMAXMS                               FA07810
-            ELSE                                                         FA07820
-               IF (HMAXM.LT.HMAXMS.AND.MSFLAG.LT.13) THEN                FA07830
-                  MSFLAG = 13                                            FA07840
-                  MSIFLG = 1                                             FA07850
-                  MSWIT = MSWIT+100                                      FA07860
-                  ITYPE = 2                                              FA07870
-                  HMIN = HMINMS                                          FA07880
-                  H1 = HMAXM                                             FA07890
-                  H2 = HMAXMS                                            FA07900
-                  ANGLE = 0.0                                            FA07910
-                  RANGE = 0.0                                            FA07920
-                  BETA = 0.0                                             FA07930
-                  LEN = 0                                                FA07940
-                  IMSTOR = IMSFIL                                        FA07950
-                  IMSFIL = IEXFIL                                        FA07960
-                  IEXFIL = IMSTOR                                        FA07970
-               ENDIF                                                     FA07980
-               IF (HMIN.GT.HMINMS.AND.MSIFLG.EQ.0                        FA07990
-     *                           .AND.MSFLAG.LT.23) THEN                 FA08000
-                  MSFLAG = 23                                            FA08010
-                  MSIFLG = 1                                             FA08020
-                  MSWIT = -(ABS(MSWIT)+10)                               FA08030
-                  ITYPE = 2                                              FA08040
-                  H1 = HMINMS                                            FA08050
-                  H2 = HMIN                                              FA08060
-                  HMIN = 0.0                                             FA08070
-                  ANGLE = 0.0                                            FA08080
-                  RANGE = 0.0                                            FA08090
-                  BETA = 0.0                                             FA08100
-                  LEN = 0                                                FA08110
-                  IF (ABS(MSWIT).GT.100) THEN                            FA08120
-                     IMSTOR = IMSFIL                                     FA08130
-                     IMSFIL = IEXFIL                                     FA08140
-                     IEXFIL = IMSTOR                                     FA08150
-                  ENDIF                                                  FA08160
-               ENDIF                                                     FA08170
-               IF (MSIFLG.EQ.1) THEN                                     FA08180
-                  ITYPEF = ITYPE                                         FA08190
-                  H1F = H1                                               FA08200
-                  H2F = H2                                               FA08210
-                  HMINF = HMIN                                           FA08220
-                  ANGLEF = ANGLE                                         FA08230
-                  RANGEF = RANGE                                         FA08240
-                  BETAF = BETA                                           FA08250
-                  LENF = LEN                                             FA08260
-               ELSE                                                      FA08270
-                  MSFLAG = 33                                            FA08280
-                  MSWIT = -(ABS(MSWIT)+1)                                FA08290
-               ENDIF                                                     FA08300
-            ENDIF                                                        FA08310
-         ENDIF                                                           FA08320
 C                                                                        FA08330
 C     COMPUTE THE REFRACTIVE INDEX PROFILE                               FA08340
 C     RFNDXM IS 1.0-INDEX                                                FA08350
@@ -1279,7 +1133,7 @@ C                                                                        FA12620
      *     AMOL55(MXZMD),AMOL56(MXZMD),AMOL57(MXZMD),AMOL58(MXZMD),      FA12750
      *     AMOL61(MXZMD),AMOL62(MXZMD),AMOL63(MXZMD),AMOL64(MXZMD),      FA12760
      *     AMOL65(MXZMD),AMOL66(MXZMD),AMOL67(MXZMD),AMOL68(MXZMD),      FA12770
-     *     ZST(MXZMD),PST(MXZMD),TST(MXZMD),AMOLS(MXZMD,MXMOL),IMST      FA12780
+     *     ZST(MXZMD),PST(MXZMD),TST(MXZMD),AMOLS(MXZMD,MXMOL)           FA12780
       COMMON /MLATMC/ ATMNAM(6)                                          FA12790
       CHARACTER*24 ATMNAM                                                FA12800
 C                                                                        FA12810
@@ -2370,11 +2224,11 @@ C                                                                        FA23620
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA23660
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA23670
      *                IPDIM,KDIM,KMXNOM,NMOL                             FA23680
-      COMMON /MSACCT/ IMS,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),           FA23690
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),           FA23690
      *                MXPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,         FA23700
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                 FA23710
       COMMON /MSCONS/ AIRMSS(MXLAY),TGRND,SEMIS(3),HMINMS,HMAXMS,        FA23720
-     *                MSFLAG,MSWIT,IMSFIL,MSTGLE                         FA23730
+     *                MSFLAG,MSWIT,IODFIL,MSTGLE                         FA23730
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA23740
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA23750
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA23760
@@ -2388,7 +2242,7 @@ C                                                                        FA23790
 C                                                                        FA23840
       COMMON /MLATM/ ALT(MXZMD),PMDL(MXZMD,6),TMDL(MXZMD,6),             FA23850
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),TST(MXZMD),   FA23860
-     *               AMOLS(MXZMD,MXMOL),IMST                             FA23870
+     *               AMOLS(MXZMD,MXMOL)                                  FA23870
       COMMON /MLATMC/ ATMNAM(6)                                          FA23880
       CHARACTER*24 ATMNAM                                                FA23890
       COMMON /TRAC/ TRAC(MXZMD,MXTRAC)                                   FA23900
@@ -2441,7 +2295,6 @@ C                                                                        FA24350
       ZMAX = ZMDL(IMMAX)                                                 FA24370
 C                                                                        FA24380
       IMLOW = IMMAX                                                      FA24390
-      IMST = IMMAX                                                       FA24400
 C                                                                        FA24410
       RETURN                                                             FA24420
 C                                                                        FA24430
@@ -2871,7 +2724,7 @@ C                                                                        FA28650
      *               JUNITT                                              FA28670
       COMMON /MLATM/ ALT(MXZMD),PMATM(MXZMD,6),TMATM(MXZMD,6),           FA28680
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),TST(MXZMD),   FA28690
-     *               AMOLS(MXZMD,MXMOL),IMST                             FA28700
+     *               AMOLS(MXZMD,MXMOL)                                  FA28700
       COMMON /MLATMC/ ATMNAM(6)                                          FA28710
       CHARACTER*24 ATMNAM                                                FA28720
       COMMON /TRAC/ TRAC(MXZMD,MXTRAC)                                   FA28730
@@ -4883,7 +4736,7 @@ C                                                                        FX00360
      *                IPDIM,KDIM,KMXNOM,NMOL                             FX00450
       COMMON /MLATM/ ALT(MXZMD),PMDL(MXZMD,6),TMDL(MXZMD,6),             FX00460
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),              FX00470
-     *               TST(MXZMD),AMOLS(MXZMD,MXMOL),IMST                  FX00480
+     *               TST(MXZMD),AMOLS(MXZMD,MXMOL)                       FX00480
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FX00490
 C                                                                        FX00500
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES        FX00510
@@ -5227,7 +5080,7 @@ C                                                                        FX03870
       COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(MXMOL),XAMNT(MXMOL,MXLAY)       FX03880
       COMMON /MLATM/ ALT(MXZMD),PMDL(MXZMD,6),TMDL(MXZMD,6),             FX03890
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),              FX03900
-     *               TST(MXZMD),AMOLS(MXZMD,MXMOL),IMST                  FX03910
+     *               TST(MXZMD),AMOLS(MXZMD,MXMOL)                       FX03910
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FX03920
 C                                                                        FX03930
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES        FX03940
@@ -5431,7 +5284,7 @@ C                                                                        FX05880
       COMMON AMTP(MXMOL,MXPDIM)                                          FX05920
       COMMON /MLATM/ ALT(MXZMD),PMDL(MXZMD,6),TMDL(MXZMD,6),             FX05930
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),              FX05940
-     *               TST(MXZMD),AMOLS(MXZMD,MXMOL),IMST                  FX05950
+     *               TST(MXZMD),AMOLS(MXZMD,MXMOL)                       FX05950
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FX05960
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FX05970
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FX05980
