@@ -340,6 +340,7 @@ C
       COMMON /HDRL/ V1LD,VL2D,NLD,NWDS,ILST3D                             A03260
       COMMON /RCNTRL/ ILNFLG
       COMMON /FLFORM/ CFORM                                               A03270
+      COMMON /IODFLG/ DVOUT
       COMMON COMSTR(250,9)                                                A02950
       COMMON R1(3600),R2(900),R3(225)                                     A02960
       EQUIVALENCE (FSCDID(1),IFSDID(1),IHIRAC) , (FSCDID(2),ILBLF4),      A03300
@@ -518,8 +519,8 @@ C                                                                         A04720
          ENDIF                                                            A04840
       ENDIF                                                               A04850
 C
-C     CHECK VALUES OF IOD AND IMRG AND
-C     SET IMULT EQUAL TO IOD, THE FLAG FOR OPTICAL DEPTH DV
+C     Check values of IOD and IMRG and
+C     set IMULT equal to IOD, the flag for optical depth DV
 C
       IF (IOD.GE.1.AND.IMRG.NE.1) THEN
          WRITE (IPR,955)
@@ -660,6 +661,15 @@ C                                                                         A06540
       ENDIF                                                               A06600
       IF (ILAS.EQ.2) ILASRD = 1                                           A06610
 C                                                                         A06620
+C     If IOD = 1 and IMRG = 1, then set DVOUT to DVSET as flag for
+C     interpolation in PNLINT, and reset DVSET to zero to avoid ratio
+C     error message in SUBROUTINE PATH.
+C
+      IF (IOD.EQ.1) THEN
+         DVOUT = ABS(DVSET)
+         DVSET = 0.0
+      ENDIF
+C
       IF (IHIRAC+IATM+IMRG.GT.0)                                          A06630
      *    CALL XLAYER (MPTS,NPTS,LFILE,MFILE,NFILE)                       A06640
 C                                                                         A06650
