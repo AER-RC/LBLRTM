@@ -44,7 +44,7 @@ C-                                                                       FA00390
 C----------------------------------------------------------------------  FA00400
 C                                                                        FA00410
 C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM         FA00420
-C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                       FA00430
+C     MXLAY IS THE MAXIMUM NUMBER OF OUTPUT LAYERS                       FA00430
 C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE       FA00440
 C         STORED IN ZMDL (INPUT)                                         FA00450
 C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH         FA00460
@@ -110,6 +110,7 @@ C                                                                        FA00990
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FA01020
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FA01030
       COMMON /CNTRL/ I1,I2,I3,I4,NBNDL,I6,I7,NBNDF,I9                    FA01040
+      COMMON /COLUNT/ MUNITS
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
@@ -271,7 +272,8 @@ C     NUMBER OF LAYERS LMAX AND A 70 CHARACTER FIELD DESCRIBING THE      FA02580
 C     PROFILE AND THE PATH, FOLLOWED BY TWO (OR MORE) CARD IMAGES FOR    FA02590
 C     EACH OF THE LMAX LAYERS                                            FA02600
 C                                                                        FA02610
-C        CARD 2.1    LMAX,NMOL,SECNT0,HMOD  (2I5,F10.6,3A8)              FA02620
+C        CARD 2.1    IFORM,LMAX,NMOL,SECNT0,HMOD (1X,I1,I3,I5,F10.6,3A8) FA02620
+C             IFORM  = COLUMN AMOUNT FORMAT FLAG
 C             LMAX   = NUMBER OF LBLRTM LAYERS, MAY DIFFER FROM          FA02630
 C                      IBMAX DEPENDING ON THE PATH.                      FA02640
 C             NMOL   = NUMBER OF MOLECULES SELECTED                      FA02650
@@ -280,7 +282,7 @@ C             HMOD   = 24 CHARACTER FIELD.                               FA02670
 C                                                                        FA02680
 C        CARD 2.1.1  PBAR(L),TBAR(L),SECNTK(L),ITYL(L),IPATH(L),         FA02690
 C                    ALTZ(L-1),PZ(L-1),TZ(L-1),ALTZ(L),PZ(L),TZ(L)       FA02700
-C                    (3F10.4,A3,I2,1X,F7.2,F8.3,F7.2,F7.2,F8.3,F7.2)     FA02710
+C                  (E15.7,2F10.4,A3,I2,1X,F7.2,F8.3,F7.2,F7.2,F8.3,F7.2) FA02710
 C             PBAR   =  AVERAGE PRESSURE (MB)                            FA02720
 C             TBAR   =  AVERAGE TEMPERATURE (K)                          FA02730
 C             SECNTK = SCALE FACTOR FOR COLUMN AMOUNT (DEFAULT=0)        FA02740
@@ -305,12 +307,12 @@ C             TZ(L)      TEMPERATURE AT ALTZ(L), DEGREES K               FA02920
 C             TZ(L-1)    TEMPERATURE AT ALTZ(L-1),(FOR FIRST LAYER ONLY  FA02930
 C                                                                        FA02940
 C        CARD 2.1.2           (AMOUNT(K,L),K=1,7),WBROADL(L)             FA02950
-C                             (1P8E10.2)                                 FA02960
+C                             (1P8E15.7)                                 FA02960
 C        CARD 2.1.3           (AMOUNT(K,L),K=8,NMOL)                     FA02970
-C                             (1P8E10.2)                                 FA02980
+C                             (1P8E15.7)                                 FA02980
 C             AMOUNT(K)   COLUMN DENSITIES FOR THE K'TH MOLECULAR        FA02990
 C                         SPECIES (MOLECULES CM-2)                       FA03000
-C             WBROADL(L)  CLOUMN DENSITY FOR BROADENING GASES            FA03010
+C             WBROADL(L)  COLUMN DENSITY FOR BROADENING GASES            FA03010
 C                         (MOLECULES CM-2)                               FA03020
 C                                                                        FA03030
 C        CARDS 2.1 ARE REPEATED UNITL LMAX LAYERS ARE SPECIFIED.         FA03040
@@ -376,7 +378,7 @@ C                                                                        FA03610
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA03640
       COMMON AMTP(MXMOL,MXPDIM)                                          FA03650
 C                                                                        FA03660
-      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FA03670
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA03670
 C                                                                        FA03680
       DOUBLE PRECISION HMOLS                                            &FA03690
 C                                                                        FA03700
@@ -406,6 +408,7 @@ C                                                                        FA03820
      *              ADOPP(MXFSC),AVOIGT(MXFSC)                           FA03940
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FA03950
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FA03960
+      COMMON /COLUNT/ MUNITS
       DIMENSION XPBAR(NXPBAR),XZOUT(NXZOUT),WMT(MXMOL)                   FA03970
 C                                                                        FA03980
       EQUIVALENCE (PBAR(1),XPBAR(1)) , (ZOUT(1),XZOUT(1))                FA03990
@@ -420,9 +423,9 @@ C                                                                        FA04050
       DATA HT1HRZ / ' AT '/,HT2HRZ / ' KM '/,HT1SLT / ' TO '/,           FA04080
      *     HT2SLT / ' KM '/                                              FA04090
       DATA PZFORM / 'F8.6','F8.5','F8.4','F8.3','F8.2'/                  FA04100
-      DATA PAFORM / '1PE10.4','  G10.5'/                                 FA04110
-      DATA CFORM1 / '(1PE10.4,0PF10.2,10X,I5,1X,2(F7.3,F8.3,F7.2))'/     FA04120
-      DATA CFORM2 / '(  G10.5,0PF10.2,10X,I5,23X,(F7.3,F8.3,F7.2))'/     FA04130
+      DATA PAFORM / '1PE15.7','  G15.7'/                                 FA04110
+      DATA CFORM1 / '(1PE15.7,0PF10.2,10X,I5,1X,2(F7.3,F8.3,F7.2))'/     FA04120
+      DATA CFORM2 / '(  G15.7,0PF10.2,10X,I5,23X,(F7.3,F8.3,F7.2))'/     FA04130
       DATA IERROR / 0 /                                                  FA04140
 C                                                                        FA04150
 C     IAMT = 1: CALCULATE AMOUNTS, IAMT = 2: DO NOT CALCULATE AMOUNTS    FA04160
@@ -452,9 +455,10 @@ C                                                                        FA04380
          WMT(N) = 0.0                                                    FA04400
    10 CONTINUE                                                           FA04410
 C                                                                        FA04420
-C        BLANK COMMON                                                    FA04430
+C       COMMON /DEAMT/ DRYAIR with BLANK COMMON RFNDXM                   FA04430
 C                                                                        FA04440
       DO 20 N = 1, IMDIM                                                 FA04450
+         DRYAIR(N) = 0.
          RFNDXM(N) = 0.                                                  FA04460
    20 CONTINUE                                                           FA04470
       DO 30 N = 1, IPDIM                                                 FA04480
@@ -469,7 +473,7 @@ C                                                                        FA04440
             RHOPSM(N) = 0.                                               FA04570
          ENDIF                                                           FA04580
 C                                                                        FA04590
-C     COMMON /DEAMT/                                                     FA04600
+C     COMMON /DEAMT/ DENP  with BLANK COMMON AMTP                        FA04600
 C                                                                        FA04610
          DO 30 M = 1, KDIM                                               FA04620
             DENP(M,N) = 0.                                               FA04630
@@ -492,15 +496,15 @@ C                                                                        FA04780
 C                                                                        FA04800
 C     READ CONTROL CARD 3.1                                              FA04810
 C                                                                        FA04820
-         READ (IRD,900) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,RE,  FA04830
-     *                  HSPACE,XVBAR,CO2MX                               FA04840
+         READ (IRD,900) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,     FA04830
+     *                  MUNITS,RE,HSPACE,XVBAR,CO2MX                     FA04840
       ENDIF                                                              FA04850
 C                                                                        FA04860
       NOP = NOPRNT                                                       FA04870
       RO = RE                                                            FA04880
       WRITE (IPR,902)                                                    FA04890
-      WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,RE,    FA04900
-     *                HSPACE,XVBAR,CO2MX                                 FA04910
+      WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA04900
+     *                MUNITS,RE,HSPACE,XVBAR,CO2MX                       FA04910
       IF (CO2MX.EQ.0.) CO2MX = 330.                                      FA04920
       CO2RAT = CO2MX/330.                                                FA04930
       M = MODEL                                                          FA04940
@@ -524,18 +528,18 @@ C                                                                        FA05070
       ENDIF                                                              FA05120
 C                                                                        FA05130
       WRITE (IPR,906)                                                    FA05140
-      WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,RE,    FA05150
-     *                HSPACE,XVBAR,CO2MX                                 FA05160
+      WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA05150
+     *                MUNITS,RE,HSPACE,XVBAR,CO2MX                       FA05160
 C                                                                        FA05170
       IF (ITYPE.EQ.1) THEN                                               FA05180
 C                                                                        FA05190
 C                                                                        FA05200
-C     HORIZONTAL PATH SELECTED                                           FA05210
+C     =>   HORIZONTAL PATH SELECTED                                      FA05210
 C                                                                        FA05220
 C                                                                        FA05230
          WRITE (IPR,908)                                                 FA05240
 C                                                                        FA05250
-C     READ IN CONTROL CARD 3.2                                           FA05260
+C        READ IN CONTROL CARD 3.2                                        FA05260
 C                                                                        FA05270
          IF (IREAD.LE.0) READ (IRD,910) H1F,RANGEF                       FA05280
          RANGE = RANGEF                                                  FA05290
@@ -551,7 +555,7 @@ C                                                                        FA05270
          LENF = LEN                                                      FA05390
          WRITE (IPR,912) ZH,RANGE                                        FA05400
 C                                                                        FA05410
-C     SET UP THE ATMOSPHERIC PROFILE                                     FA05420
+C        SET UP THE ATMOSPHERIC PROFILE                                  FA05420
 C                                                                        FA05430
          CALL MDLATM (ITYPE,M,IREAD,HSPACE,CO2RAT)                       FA05440
 C                                                                        FA05450
@@ -569,7 +573,7 @@ C                                                                        FA05450
             GO TO 110                                                    FA05570
          ENDIF                                                           FA05580
 C                                                                        FA05590
-C     INTERPOLATE ATMOSPHERIC PROFILE DENSITIES TO ZH                    FA05600
+C        INTERPOLATE ATMOSPHERIC PROFILE DENSITIES TO ZH                 FA05600
 C                                                                        FA05610
          DO 80 IM = 2, IMMAX                                             FA05620
             IF (ZH.LT.ZMDL(IM)) GO TO 90                                 FA05630
@@ -587,7 +591,7 @@ C                                                                        FA05740
   110    WRITE (IPR,914) HMOD,ZH,PH,TH,(HMOLS(K),K=1,NMOL)               FA05750
          WRITE (IPR,916) RHOBAR,(DENP(K,1),K=1,NMOL)                     FA05760
 C                                                                        FA05770
-C     COMPUTE AMOUNTS FOR A HORIZONTAL PATH                              FA05780
+C        COMPUTE AMOUNTS FOR A HORIZONTAL PATH                           FA05780
 C                                                                        FA05790
          DO 120 K = 1, NMOL                                              FA05800
             AMOUNT(K,1) = DENP(K,1)*RANGE*1.0E+5                         FA05810
@@ -614,23 +618,55 @@ C                                                                        FA05950
          ALTZ(1) = ZH                                                    FA06020
          READ (HT1HRZ,922) HT1                                           FA06030
          READ (HT2HRZ,922) HT2                                           FA06040
-         IF (IPUNCH.EQ.1)                                                FA06050
-     *        WRITE (IPU,924) LMAX,NMOL,SECNT0,HMOD,RANGE,ZH             FA06060
-         IF (IPUNCH.EQ.1)                                                FA06070
-     *        WRITE (IPU,926) PH,TH,IPATH(1),ZH,ZH,(AMOUNT(K,1),K=1,7),  FA06080
-     *                        WN2L(1),(AMOUNT(K,1),K=8,NMOL)             FA06090
+C                                                                        FA06050
+C        > Write atmosphere to TAPE7 (in E15.7 format) <                 FA06060
+C                                                                        FA06070
+         IF (IPUNCH.EQ.1) THEN                                           FA06080
+           IFORM = 1
+           WRITE (IPU,924) IFORM,LMAX,NMOL,SECNT0,HMOD,RANGE,ZH          FA06090
+C
+C           -------------------------------------
+C           > Write molecular information in    <
+C           >  - mixing ratio if MUNITS is 1    <
+C           >  - column density if MUNITS is 0  <
+C           -------------------------------------
+C
+           IF (MUNITS.EQ.1) THEN                                         FA06140
+              DRAIR =  WN2L(1)                                           FA06150
+              DO 135 M = 2,NMOL
+                 DRAIR = DRAIR + AMOUNT(M,1)
+ 135          CONTINUE
+C
+C             > If DRAIR is zero, then write out AMOUNT only    <
+C             > (since AMOUNT zero => mixing ratio zero)        <
+C
+              IF (DRAIR.EQ.0) THEN
+                 WRITE (IPU,926) PH,TH,IPATH(1),ZH,ZH,
+     *                           (AMOUNT(K,1),K=1,7),WN2L(1),
+     *                           (AMOUNT(K,1),K=8,NMOL)
+              ELSE
+                 WRITE (IPU,926) PH,TH,IPATH(1),ZH,ZH,                   FA06160
+     *                           (AMOUNT(K,1)/DRAIR,K=1,7),WN2L(1),      FA06170
+     *                           (AMOUNT(K,1)/DRAIR,K=8,NMOL)            FA06180
+              ENDIF
+           ELSE                                                          FA06190
+              WRITE (IPU,926) PH,TH,IPATH(1),ZH,ZH,                      FA06240
+     *             (AMOUNT(K,1),K=1,7),WN2L(1),                          FA06250
+     *             (AMOUNT(K,1),K=8,NMOL)                                FA06260
+           ENDIF                                                         FA06270
+        ENDIF                                                            FA06280
 C                                                                        FA06770
       ELSE                                                               FA06780
 C                                                                        FA06790
 C                                                                        FA06800
-C     SLANT PATH SELECTED                                                FA06810
+C     =>   SLANT PATH SELECTED                                           FA06810
 C                                                                        FA06820
 C                                                                        FA06830
-C     ITYPE = 2 OR 3: SLANT PATH THROUGH THE ATMOSPHERE                  FA06840
+C        ITYPE = 2 OR 3: SLANT PATH THROUGH THE ATMOSPHERE               FA06840
 C                                                                        FA06850
          WRITE (IPR,930) ITYPE                                           FA06860
 C                                                                        FA06870
-C     READ IN CONTROL CARD 3.2 CONTAINING SLANT PATH PARAMETERS          FA06880
+C      >  READ IN CONTROL CARD 3.2 CONTAINING SLANT PATH PARAMETERS <    FA06880
 C                                                                        FA06890
          IF (IREAD.LE.0)                                                 FA06900
      *         READ (IRD,932) H1F,H2F,ANGLEF,RANGEF,BETAF,LENF           FA06910
@@ -642,11 +678,11 @@ C                                                                        FA06890
          LEN = LENF                                                      FA06970
          WRITE (IPR,934) H1,H2,ANGLE,RANGE,BETA,LEN                      FA06980
 C                                                                        FA06990
-C     GENERATE OR READ IN LBLRTM BOUNDARY LAYERS                         FA07000
+C        > GENERATE OR READ IN LBLRTM BOUNDARY LAYERS <                  FA07000
 C                                                                        FA07010
          IF (IBMAX.EQ.0) THEN                                            FA07020
 C                                                                        FA07030
-C     SELECT AUTOMATIC LAYERING                                          FA07040
+C           > SELECT AUTOMATIC LAYERING <                                FA07040
 C                                                                        FA07050
             IF (IREAD.LE.0) THEN                                         FA07060
                READ (IRD,936) AVTRAT,TDIFF1,TDIFF2,ALTD1,ALTD2           FA07070
@@ -665,7 +701,7 @@ C                                                                        FA07050
 C                                                                        FA07200
          ENDIF                                                           FA07210
 C                                                                        FA07220
-C     READ IN LBLRTM BOUNDARY LAYERS                                     FA07230
+C        > READ IN LBLRTM BOUNDARY LAYERS <                              FA07230
 C                                                                        FA07240
          IF (IREAD.LE.0) THEN                                            FA07250
             READ (IRD,940) (ZBND(IB),IB=1,IBMAX)                         FA07260
@@ -678,7 +714,7 @@ C                                                                        FA07290
   140    CONTINUE                                                        FA07330
   150    CONTINUE                                                        FA07340
 C                                                                        FA07350
-C     SET UP ATMOSPHERIC PROFILE                                         FA07360
+C        > SET UP ATMOSPHERIC PROFILE <                                  FA07360
 C                                                                        FA07370
          CALL MDLATM (ITYPE,M,IREAD,HSPACE,CO2RAT)                       FA07380
          IERB = 0                                                        FA07390
@@ -697,9 +733,9 @@ C                                                                        FA07370
          ENDIF                                                           FA07520
 C                                                                        FA07530
 C                                                                        FA08330
-C     COMPUTE THE REFRACTIVE INDEX PROFILE                               FA08340
-C     RFNDXM IS 1.0-INDEX                                                FA08350
-C     EQUATION FOR RFNDXM IS FROM LOWTRAN (REF 3)                        FA08360
+C        > COMPUTE THE REFRACTIVE INDEX PROFILE        <                 FA08340
+C        > RFNDXM IS 1.0-INDEX                         <                 FA08350
+C        > EQUATION FOR RFNDXM IS FROM LOWTRAN (REF 3) <                 FA08360
 C                                                                        FA08370
          DO 170 IM = 1, IMMAX                                            FA08380
             PPH2O = DENM(1,IM)*PZERO*TM(IM)/(TZERO*ALOSMT)               FA08390
@@ -708,7 +744,7 @@ C                                                                        FA08370
      *                   1.0E-6                                          FA08420
   170    CONTINUE                                                        FA08430
 C                                                                        FA08440
-C     PRINT ATMOSPHERIC PROFILE                                          FA08450
+C        > PRINT ATMOSPHERIC PROFILE <                                   FA08450
 C                                                                        FA08460
          WRITE (IPR,948) M,HMOD                                          FA08470
          IF (NOPRNT.NE.0) GO TO 190                                      FA08480
@@ -716,7 +752,7 @@ C                                                                        FA08460
          WRITE (IPR,952)                                                 FA08500
          DO 180 IM = 1, IMMAX                                            FA08510
 C                                                                        FA08520
-C     DENG=DENM(1,IM)*2.989641E-17                                       FA08530
+C        > DENG=DENM(1,IM)*2.989641E-17 <                                FA08530
 C                                                                        FA08540
             DENAIR = ALOSMT*(PM(IM)/PZERO)*(TZERO/TM(IM))                FA08550
             WRITE (IPR,954) IM,ZMDL(IM),PM(IM),TM(IM),RFNDXM(IM),        FA08560
@@ -724,16 +760,16 @@ C                                                                        FA08540
   180    CONTINUE                                                        FA08580
   190    CONTINUE                                                        FA08590
 C                                                                        FA08600
-C     REDUCE SLANT PATH PARAMETERS TO STANDARD FORM                      FA08610
+C        > REDUCE SLANT PATH PARAMETERS TO STANDARD FORM <               FA08610
 C                                                                        FA08620
          CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,IERROR)  FA08630
          IF (IERROR.NE.0) GO TO 310                                      FA08640
 C                                                                        FA08650
-C     SET UP LBLRTM LAYER BOUNDARIES                                     FA08660
+C        > SET UP LBLRTM LAYER BOUNDARIES <                              FA08660
 C                                                                        FA08670
          IF (IBMAX.NE.0) GO TO 200                                       FA08680
 C                                                                        FA08690
-C     AUTOMATIC LAYERING SELECTED                                        FA08700
+C        > AUTOMATIC LAYERING SELECTED <                                 FA08700
 C                                                                        FA08710
          HMAX = AMAX1(H1,H2)                                             FA08720
          CALL AUTLAY (HMIN,HMAX,XVBAR,AVTRAT,TDIFF1,TDIFF2,ALTD1,ALTD2,  FA08730
@@ -741,7 +777,7 @@ C                                                                        FA08710
          GO TO 220                                                       FA08750
   200    CONTINUE                                                        FA08760
 C                                                                        FA08770
-C     USER SUPPLIED LAYERING                                             FA08780
+C        > USER SUPPLIED LAYERING <                                      FA08780
 C                                                                        FA08790
          WRITE (IPR,956)                                                 FA08800
          DO 210 IB = 1, IBMAX                                            FA08810
@@ -761,11 +797,11 @@ C                                                                        FA08790
   230    CONTINUE                                                        FA08950
          IF (IERROR.NE.0) STOP ' IERROR'                                 FA08960
 C                                                                        FA08970
-C     CALCULATE THE REFRACTED PATH THROUGH THE ATMOSPHERE                FA08980
+C        > CALCULATE THE REFRACTED PATH THROUGH THE ATMOSPHERE <         FA08980
 C                                                                        FA08990
          CALL RFPATH (H1,H2,ANGLE,PHI,LEN,HMIN,IAMT,RANGE,BETA,BENDNG)   FA09000
 C                                                                        FA09010
-C     PRINT AMOUNTS BY LAYER AND ACCUMULATE TOTALS                       FA09020
+C        > PRINT AMOUNTS BY LAYER AND ACCUMULATE TOTALS <                FA09020
 C                                                                        FA09030
          IF (NOPRNT.NE.1) WRITE (IPR,962) (HMOLS(K),K=1,NMOL)            FA09040
          I2 = IPMAX-1                                                    FA09050
@@ -789,7 +825,7 @@ C                                                                        FA09030
          IF (NOPRNT.NE.1)                                                FA09230
      *        WRITE (IPR,966) H1,H2,AIRTOT,(AMTTOT(K),K=1,NMOL)          FA09240
 C                                                                        FA09250
-C     PRINT SUMMARY OF PATH                                              FA09260
+C        > PRINT SUMMARY OF PATH <                                       FA09260
 C                                                                        FA09270
          AIRMAS = AIRTOT/AIRMS1                                          FA09280
          WRITE (IPR,968) HMOD,H1,H2,ANGLE,RANGE,BETA,PHI,HMIN,BENDNG,    FA09290
@@ -803,15 +839,15 @@ C                                                                        FA09270
          LENF = LEN                                                      FA09370
          HMINF = HMIN                                                    FA09380
 C                                                                        FA09390
-C     CONDENSE THE AMOUNTS INTO THE LBLRTM OUTPUT LAYERS ZOUT, WHICH     FA09400
-C     ARE DEFINED BY THE BOUNDARIES ZBND FROM HMIN TO HMAX               FA09410
-C     ALSO, ZERO OUT THE AMOUNT FOR A MOLECULE IF THE CUMULATIVE         FA09420
-C     AMOUNT FOR THAT LAYER AND ABOVE IN LESS THAN 0.1 PERCENT OF        FA09430
-C     TOTAL                                                              FA09440
+C        > CONDENSE THE AMOUNTS INTO THE LBLRTM OUTPUT LAYERS ZOUT, <    FA09400
+C        > WHICH ARE DEFINED BY THE BOUNDARIES ZBND FROM HMIN TO    <    FA09410
+C        > HMAX ALSO, ZERO OUT THE AMOUNT FOR A MOLECULE IF THE     <    FA09420
+C        > CUMULATIVE AMOUNT FOR THAT LAYER AND ABOVE IN LESS THAN  <    FA09430
+C        > 0.1 PERCENT OF THE TOTAL                                 <    FA09440
 C                                                                        FA09450
          CALL FPACK (H1,H2,HMID,LEN,IEMIT,NOZERO)                        FA09460
 C                                                                        FA09470
-C     OUTPUT THE PROFILE                                                 FA09480
+C        > OUTPUT THE PROFILE <                                          FA09480
 C                                                                        FA09490
          LMAX = IOUTMX-1                                                 FA09500
          IF (NMOL.LE.7) THEN                                             FA09510
@@ -820,9 +856,11 @@ C                                                                        FA09490
             WRITE (IPR,970) (HMOLS(K),K=1,7),COTHER,                     FA09540
      *                      (HMOLS(K),K=8,NMOL)                          FA09550
          ENDIF                                                           FA09560
-         IF (IPUNCH.EQ.1)                                                FA09570
-     *        WRITE (IPU,972) LMAX,NMOL,SECNT0,(HMOD(I),I=1,2),          FA09580
-     *                        H1,H2,ANGLE,LEN                            FA09590
+         IF (IPUNCH.EQ.1) THEN                                           FA09570
+            IFORM = 1
+            WRITE (IPU,972) IFORM,LMAX,NMOL,SECNT0,(HMOD(I),I=1,2),      FA09580
+     *                      H1,H2,ANGLE,LEN                              FA09590
+         ENDIF
          SUMN2 = 0.                                                      FA09600
          SUMRS = 0.                                                      FA09610
          PWTD = 0.                                                       FA09620
@@ -842,6 +880,9 @@ C                                                                        FA09490
             WTOT = WTOT+WTOTL(L)*FACTOR                                  FA09760
             PWTD = PWTD+PBAR(L)*WTOTL(L)*FACTOR                          FA09770
             TWTD = TWTD+TBAR(L)*WTOTL(L)*FACTOR                          FA09780
+C
+C           > Write atmosphere to TAPE6 in column density <
+C
             IF (NMOL.LE.7) THEN                                          FA09790
                WRITE (IPR,974) L,ZOUT(L),ZOUT(L+1),IPATH(L),             FA09800
      *                         PBAR(L),TBAR(L),RHOSUM(L),                FA09810
@@ -852,6 +893,9 @@ C                                                                        FA09490
      *                         (AMOUNT(K,L),K=1,7),WN2L(L),              FA09860
      *                         (AMOUNT(K,L),K=8,NMOL)                    FA09870
             ENDIF                                                        FA09880
+C
+C           > Write atmosphere to TAPE7 <
+C
             IF (IPUNCH.EQ.1) THEN                                        FA09890
                LTST = L                                                  FA09900
                IF (L.EQ.1) LTST = 0                                      FA09910
@@ -872,10 +916,80 @@ C                                                                        FA09490
                   WRITE (IPU,CFORM2) PBAR(L),TBAR(L),IPATH(L),           FA10060
      *                               ALTZ(L),  PZ(L),  TZ(L)             FA10070
                ENDIF                                                     FA10080
-               WRITE (IPU,978) (AMOUNT(K,L),K=1,7),WN2L(L)               FA10090
-               IF (NMOL.GT.7) WRITE (IPU,978) (AMOUNT(K,L),K=8,NMOL)     FA10100
+C
+C           -------------------------------------
+C           > Write molecular information in    <
+C           >  - mixing ratio if MUNITS is 1    <
+C           >  - column density if MUNITS is 0  <
+C           -------------------------------------
+C
+               IF (MUNITS.EQ.1) THEN
+                  DRAIR =  WN2L(L)
+                  DO 275 M = 2,NMOL
+                     DRAIR = DRAIR + AMOUNT(M,L)
+ 275              CONTINUE
+C
+C                 > If DRAIR is zero, then write out AMOUNT only    <
+C                 > (since AMOUNT zero => mixing ratio zero)        <
+C
+                  IF (DRAIR.EQ.0) THEN
+                     WRITE (IPU,978) (AMOUNT(K,L),K=1,7),WN2L(L)
+                     IF (NMOL.GT.7) WRITE (IPU,978)
+     *                                    (AMOUNT(K,L),K=8,NMOL)
+                  ELSE
+                     WRITE (IPU,978) (AMOUNT(K,L)/DRAIR,K=1,7),WN2L(L)
+                     IF (NMOL.GT.7) WRITE (IPU,978)
+     *                                    (AMOUNT(K,L)/DRAIR,K=8,NMOL)
+                  ENDIF
+               ELSE
+                  WRITE (IPU,978) (AMOUNT(K,L),K=1,7),WN2L(L)            FA10090
+                  IF (NMOL.GT.7) WRITE (IPU,978) (AMOUNT(K,L),K=8,NMOL)  FA10100
+               ENDIF
             ENDIF                                                        FA10110
   280    CONTINUE                                                        FA10120
+C
+C        > Write atmosphere to TAPE6 in mixing ratio <
+C
+         IF (NMOL.LE.7) THEN
+            WRITE (IPR,973) (HMOLS(K),K=1,NMOL),COTHER
+         ELSE
+            WRITE (IPR,973) (HMOLS(K),K=1,7),COTHER,
+     *                      (HMOLS(K),K=8,NMOL)
+         ENDIF
+         DO 285 L = 1, LMAX
+            DRAIR = WN2L(L)
+            DO 283 M = 2,NMOL
+               DRAIR = DRAIR + AMOUNT(M,L)
+ 283        CONTINUE
+C
+C           > If DRAIR is zero, then write out AMOUNT only    <
+C           > (since AMOUNT zero => mixing ratio zero)        <
+C
+            IF (DRAIR.EQ.0) THEN
+               IF (NMOL.LE.7) THEN
+                  WRITE (IPR,974) L,ZOUT(L),ZOUT(L+1),IPATH(L),
+     *                            PBAR(L),TBAR(L),RHOSUM(L),
+     *                            (AMOUNT(K,L),K=1,NMOL),WN2L(L)
+               ELSE
+                  WRITE (IPR,976) L,ZOUT(L),ZOUT(L+1),IPATH(L),
+     *                            PBAR(L),TBAR(L),RHOSUM(L),
+     *                            (AMOUNT(K,L),K=1,7),WN2L(L),
+     *                            (AMOUNT(K,L),K=8,NMOL)
+               ENDIF
+            ELSE
+               IF (NMOL.LE.7) THEN
+                  WRITE (IPR,974) L,ZOUT(L),ZOUT(L+1),IPATH(L),
+     *                            PBAR(L),TBAR(L),RHOSUM(L),
+     *                            (AMOUNT(K,L)/DRAIR,K=1,NMOL),WN2L(L)
+               ELSE
+                  WRITE (IPR,976) L,ZOUT(L),ZOUT(L+1),IPATH(L),
+     *                            PBAR(L),TBAR(L),RHOSUM(L),
+     *                            (AMOUNT(K,L)/DRAIR,K=1,7),WN2L(L),
+     *                            (AMOUNT(K,L)/DRAIR,K=8,NMOL)
+               ENDIF
+            ENDIF
+285     CONTINUE
+C
          PWTD = PWTD/WTOT                                                FA10130
          TWTD = TWTD/WTOT                                                FA10140
          L = LMAX                                                        FA10150
@@ -917,14 +1031,14 @@ C                                                                        FA10490
 C                                                                        FA10510
       STOP ' AVTRAT,TDIFF'                                               FA10520
 C                                                                        FA10530
-  900 FORMAT (7I5,5X,4F10.3)                                             FA10540
+  900 FORMAT (8I5,4F10.3)                                                FA10540
   902 FORMAT (' CONTROL CARD 3.1: MODEL AND OPTIONS ')                   FA10550
   904 FORMAT (/,10X,'MODEL   = ',I5,/,10X,'ITYPE   = ',I5,/,10X,         FA10560
      *        'IBMAX   = ',I5,/,10X,'NOZERO  = ',I5,/,10X,'NOPRNT  = ',  FA10570
      *        I5,/,10X,'NMOL    = ',I5,/,10X,'IPUNCH  = ',I5,/,10X,      FA10580
-     *        'RE      = ',F10.3,' KM',/,10X,'HSPACE  = ',F10.3,' KM',   FA10590
-     *        /,10X,'VBAR    = ',F10.3,' CM-1',/,10X,'CO2MX   = ',       FA10600
-     *        F10.3,' PPM')                                              FA10610
+     *        'MUNITS  = ',I5,/,10X,'RE      = ',F10.3,' KM',/,10X,      FA10590
+     *        'HSPACE  = ',F10.3,' KM',/,10X,'VBAR    = ',F10.3,         FA10600
+     *        ' CM-1',/,10X,'CO2MX   = ',F10.3,' PPM')                   FA10610
   906 FORMAT (///,' CONTROL CARD 3.1 PARAMETERS WITH DEFAULTS:')         FA10620
   908 FORMAT (///,' HORIZONTAL PATH SELECTED')                           FA10630
   910 FORMAT (F10.3,10X,10X,F10.3)                                       FA10640
@@ -942,8 +1056,9 @@ C                                                                        FA10530
      *        //,10X,'AMOUNTS (MOL CM-2):',T36,'AIR',(T32,8A10))         FA10760
   920 FORMAT (//,T30,1PE10.2,(T30,8E10.2))                               FA10770
   922 FORMAT (A4)                                                        FA10780
-  924 FORMAT (2I5,F10.6,3A8,' * ',F7.3,' KM PATH AT ',F7.3,' KM ALT')    FA10790
-  926 FORMAT (2F10.4,10X,I5,1X,F7.3,15X,F7.3,/,(1P8E10.3))               FA10800
+  924 FORMAT (1X,I1,I3,I5,F10.6,3A8,' * ',F7.3,' KM PATH AT ',F7.3,
+     *        ' KM ALT')                                                 FA10790
+  926 FORMAT (E15.7,F10.4,10X,I5,1X,F7.3,15X,F7.3,/,(1P8E15.7))          FA10800
   928 FORMAT (//,' MULTIPLE SCATTERING TURNED OFF, HMIN = ',F10.6,       FA10810
      *        ' > HMAXMS = ',F10.6,/)                                    FA10820
   930 FORMAT (///,' SLANT PATH SELECTED, ITYPE = ',I5)                   FA10830
@@ -1008,12 +1123,16 @@ C                                                                        FA10530
      *        'LAYER',T22,'I',/,T4,'L',T10,'BOUNDARIES',T22,'P',T28,     FA11420
      *        'PBAR',T37,'TBAR',T70,'INTEGRATED AMOUNTS (MOLS CM-2)',    FA11430
      *        /,T9,'FROM',T18,'TO',T22,'T',/,T9,'(KM)',T17,'(KM)',T22,   FA11440
-     *        'H',T28,'(MB)',T38,'(K)',T47,'AIR',(T54,8(1X,A9)))         FA11450
-  972 FORMAT (2I5,F10.6,2A8,' H1=',F8.2,' H2=',F8.2,' ANG=',F8.3,        FA11460
-     *        ' LEN=',I2)                                                FA11470
-  974 FORMAT ('0',I3,2F8.3,I2,F11.5,F8.2,1X,1P9E10.3)                    FA11480
-  976 FORMAT ('0',I3,2F8.3,I2,F11.5,F8.2,1X,1P9E10.3,/,(52X,1P8E10.3))   FA11490
-  978 FORMAT (1P8E10.3)                                                  FA11500
+     *        'H',T28,'(MB)',T38,'(K)',T50,'AIR',(T54,8(6X,A9)))         FA11450
+  972 FORMAT (1X,I1,I3,I5,F10.6,2A8,' H1=',F8.2,' H2=',F8.2,             FA11460
+     *        ' ANG=',F8.3,' LEN=',I2)                                   FA11470
+  973 FORMAT ('1',3X,'------------------------------------',/,
+     *            66X,'  MOLECULAR MIXING RATIOS BY LAYER',/,
+     *            T9,'FROM',T18,'TO',T22,'T',/,T9,'(KM)',T17,'(KM)',T22,
+     *            'H',T28,'(MB)',T38,'(K)',T50,'AIR',(T54,8(6X,A9)))
+  974 FORMAT ('0',I3,2F8.3,I2,F11.5,F8.2,1X,1P9E15.7)                    FA11480
+  976 FORMAT ('0',I3,2F8.3,I2,F11.5,F8.2,1X,1P9E15.7,/,(52X,1P8E15.7))   FA11490
+  978 FORMAT (1P8E15.7)                                                  FA11500
   980 FORMAT ('0',/,'0',T4,'L  PATH BOUNDARIES',T28,'PBAR',T37,'TBAR',   FA11510
      *        T65,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH',/,T9,   FA11520
      *        'FROM',T18,'TO',/,T9,'(KM)',T17,'(KM)',T28,'(MB)',T38,     FA11530
@@ -2254,7 +2373,7 @@ C                                                                        FA23840
       COMMON /MLATMC/ ATMNAM(6)                                          FA23880
       CHARACTER*24 ATMNAM                                                FA23890
       COMMON /TRAC/ TRAC(MXZMD,MXTRAC)                                   FA23900
-      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FA23910
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA23910
 C                                                                        FA23920
 C     ZMDL BLANK COMMON ALTITUDES FOR LBLRTM BOUNDRIES                   FA23930
 C     ZMAX /PARMTR/ HIGHEST LBLRTM ALT                                   FA23940
@@ -2268,16 +2387,26 @@ C                                                                        FA23980
          ZMDL(I) = ALT(I)                                                FA24020
          PM(I) = PMDL(I,MDL)                                             FA24030
          TM(I) = TMDL(I,MDL)                                             FA24040
+C
+C        > Calculate water density and subtract from <
+C        > total density to obtain dry air density  <
+C
+         DENM(1,I) = AMOL(I,1,MDL)*AMOL(I,8,MDL)*1.0E-6
+         DRYAIR(I) = AMOL(I,8,MDL) - DENM(1,I)
          DO 10 K = 1, 7                                                  FA24050
             IF (K.GT.NMOL) GO TO 10                                      FA24060
-            DENM(K,I) = AMOL(I,K,MDL)*AMOL(I,8,MDL)*1.0E-6               FA24070
+            DENM(K,I) = AMOL(I,K,MDL)*1.0E-6*DRYAIR(I)                   FA24070
    10    CONTINUE                                                        FA24080
          IF (NMOL.GT.1) DENM(2,I) = DENM(2,I)*CO2RAT                     FA24090
          DENW(I) = DENM(1,I)                                             FA24100
          DO 20 K = 8, 28                                                 FA24110
             IF (K.GT.NMOL) GO TO 30                                      FA24120
             ITR = K-7                                                    FA24130
-            DENM(K,I) = TRAC(I,ITR)*AMOL(I,8,MDL)*1.0E-6                 FA24140
+C
+C           < TRAC is the trace constituent information, >
+C           < obtained from LBLLOW                       >
+C
+            DENM(K,I) = TRAC(I,ITR)*1.0E-6*DRYAIR(I)                     FA24140
    20    CONTINUE                                                        FA24150
 C                                                                        FA24160
    30 CONTINUE                                                           FA24170
@@ -2353,7 +2482,7 @@ C                                                                        FA24850
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA24880
       COMMON AMTP(MXMOL,MXPDIM)                                          FA24890
 C                                                                        FA24900
-      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FA24910
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA24910
 C                                                                        FA24920
       DOUBLE PRECISION HMOLS                                            &FA24930
 C                                                                        FA24940
@@ -2378,17 +2507,12 @@ C     READ IN GENERIC UNITS FOR USER MODEL                               FA25120
 C                                                                        FA25130
          CALL RDUNIT (IM,ZMDL(IM),PM(IM),TM(IM),NMOL,NOPRNT,CO2RAT)      FA25140
 C                                                                        FA25150
-         RHOAIR = ALOSMT*(PM(IM)/PZERO)*(TZERO/TM(IM))                   FA25160
-         DO 10 K = 1, NMOL                                               FA25170
-            DENM(K,IM) = 0.0                                             FA25180
-C                                                                        FA25190
 C     CONVERSION OF GENERIC UNITS TO DENSITIES FOR LBLRTM RUNS           FA25200
 C                                                                        FA25210
-            CALL CONVRT (PM(IM),TM(IM),K,JUNIT(K),WMOL(K),DENM(K,IM),    FA25220
-     *                   NOPRNT)                                         FA25230
-            DENW(IM) = DENM(1,IM)                                        FA25240
-C                                                                        FA25250
-   10    CONTINUE                                                        FA25260
+c         CALL CONVRT (PM(IM),TM(IM),JUNIT,WMOL,DENM,IM,NMOL,NOPRNT)     FA25230
+         CALL CONVRT (PM(IM),TM(IM),JUNIT,WMOL,IM,NMOL,NOPRNT)           FA25230
+C                                                                        FA25240
+         DENW(IM) = DENM(1,IM)                                           FA25250
    20 CONTINUE                                                           FA25270
 C                                                                        FA25280
       RETURN                                                             FA25290
@@ -2866,7 +2990,8 @@ C                                                                        FA30000
   900 FORMAT (/,'   *** Z IS GREATER THAN 120 KM ***, Z = ',F10.3)       FA30010
 C                                                                        FA30020
       END                                                                FA30030
-      SUBROUTINE CONVRT (P,T,K,JUNIT,WMOL,DENNUM,NOPRNT)                 FA30040
+c      SUBROUTINE CONVRT (P,T,JUNIT,WMOL,DENM,IM,NMOL,NOPRNT)             FA30040
+      SUBROUTINE CONVRT (P,T,JUNIT,WMOL,IM,NMOL,NOPRNT)                  FA30040
 C                                                                        FA30050
 C*************************************************************           FA30060
 C                                                                        FA30070
@@ -2896,61 +3021,77 @@ C                                                                        FA30280
      *              NLTEFL,LNFIL4,LNGTH4                                 FA30310
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA30320
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA30330
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)
 C                                                                        FA30340
+C
+      INTEGER JUNIT(MXMOL)
+      DIMENSION WMOL(MXMOL)
       DATA C1 / 18.9766 /,C2 / -14.9595 /,C3 / -2.4388 /                 FA30350
 C                                                                        FA30360
       RHOAIR = ALOSMT*(P/PZERO)*(TZERO/T)                                FA30370
       A = TZERO/T                                                        FA30380
       B = AVOGAD/AMWT(K)                                                 FA30390
       R = AIRMWT/AMWT(K)                                                 FA30400
-      IF (K.NE.1) GO TO 10                                               FA30410
-      CALL WATVAP (P,T,JUNIT,WMOL,DENNUM,NOPRNT)                         FA30420
-      GO TO 70                                                           FA30430
-   10 CONTINUE                                                           FA30440
-      IF (JUNIT.GT.10) GO TO 20                                          FA30450
+C
+C     Get water vapor density                                            FA30410
+C
+      CALL WATVAP (P,T,JUNIT(1),WMOL(1),DENM(1,IM),NOPRNT)               FA30420
+C
+C     Determine density of dry air
+C
+      DRYAIR(IM) = RHOAIR - DENM(1,IM)                                   FA30430
+C
+C     Loop through other molecules
+C
+      DO 70 K=2,NMOL
+         DENM(K,IM) = 0.0                                                FA30440
+
+         IF (JUNIT(K).GT.10) GO TO 20                                    FA30450
 C                                                                        FA30460
 C     GIVEN VOL. MIXING RATIO                                            FA30470
 C                                                                        FA30480
-      DENNUM = WMOL*RHOAIR*1.E-6                                         FA30490
-      GO TO 70                                                           FA30500
-   20 IF (JUNIT.NE.11) GO TO 30                                          FA30510
+         DENM(K,IM) = WMOL(K)*DRYAIR(IM)*1.E-6                           FA30490
+         GO TO 70                                                        FA30500
+ 20      IF (JUNIT(K).NE.11) GO TO 30                                    FA30510
 C                                                                        FA30520
 C     GIVEN NUMBER DENSITY (CM-3)                                        FA30530
 C                                                                        FA30540
-      DENNUM = WMOL                                                      FA30550
-      GO TO 70                                                           FA30560
-   30 CONTINUE                                                           FA30570
-      IF (JUNIT.NE.12) GO TO 40                                          FA30580
+         DENM(K,IM) = WMOL(K)                                            FA30550
+         GO TO 70                                                        FA30560
+ 30      CONTINUE                                                        FA30570
+         IF (JUNIT(K).NE.12) GO TO 40                                    FA30580
 C                                                                        FA30590
 C     GIVEN MASS MIXING RATIO (GM KG-1)                                  FA30600
 C                                                                        FA30610
-      DENNUM = R*WMOL*1.0E-3*RHOAIR                                      FA30620
-      GO TO 70                                                           FA30630
-   40 CONTINUE                                                           FA30640
-      IF (JUNIT.NE.13) GO TO 50                                          FA30650
+         DENM(K,IM) = R*WMOL(K)*1.0E-3*DRYAIR(IM)                        FA30620
+         GO TO 70                                                        FA30630
+ 40      CONTINUE                                                        FA30640
+         IF (JUNIT(K).NE.13) GO TO 50                                    FA30650
 C                                                                        FA30660
 C     GIVEN MASS DENSITY (GM M-3)                                        FA30670
 C                                                                        FA30680
-      DENNUM = B*WMOL*1.0E-6                                             FA30690
-      GO TO 70                                                           FA30700
-   50 CONTINUE                                                           FA30710
-      IF (JUNIT.NE.14) GO TO 60                                          FA30720
+         DENM(K,IM) = B*WMOL(K)*1.0E-6                                   FA30690
+         GO TO 70                                                        FA30700
+ 50      CONTINUE                                                        FA30710
+         IF (JUNIT(K).NE.14) GO TO 60                                    FA30720
 C                                                                        FA30730
 C     GIVEN PARTIAL PRESSURE (MB)                                        FA30740
 C                                                                        FA30750
-      DENNUM = ALOSMT*(WMOL/PZERO)*(TZERO/T)                             FA30760
-      GO TO 70                                                           FA30770
-   60 CONTINUE                                                           FA30780
-      IF (JUNIT.GT.14) GO TO 80                                          FA30790
-C                                                                        FA30800
-   70 RETURN                                                             FA30810
-C                                                                        FA30820
-   80 CONTINUE                                                           FA30830
-      WRITE (IPR,900) JUNIT                                              FA30840
+         DENM(K,IM) = ALOSMT*(WMOL(K)/PZERO)*(TZERO/T)                   FA30760
+         GO TO 70                                                        FA30770
+ 60      CONTINUE                                                        FA30780
+C                                                                        FA30790
+C     JUNIT(18) available for user definition here                       FA30800
+C
+C
+         IF (JUNIT(K).GT.14) THEN                                        FA30810
+            WRITE (IPR,900) K,JUNIT(K)                                   FA30820
+            STOP ' CONVRT '                                              FA30830
+         ENDIF                                                           FA30840
 C                                                                        FA30850
-      STOP ' CONVRT '                                                    FA30860
+ 70      CONTINUE                                                        FA30860
 C                                                                        FA30870
-  900 FORMAT (/,'   **** ERROR IN CONVRT ****, JUNIT = ',I5)             FA30880
+  900 FORMAT (/,'   **** ERROR IN CONVRT ****, JUNIT(',I5,') = ',I5)     FA30880
 C                                                                        FA30890
       END                                                                FA30900
       SUBROUTINE WATVAP (P,T,JUNIT,WMOL,DENNUM,NOPRNT)                   FA30910
@@ -3006,8 +3147,13 @@ C                                                                        FA31360
       IF (JUNIT.NE.10) GO TO 10                                          FA31410
 C                                                                        FA31420
 C     GIVEN VOL. MIXING RATIO                                            FA31430
+C     Convert using density of dry air.  The following quadratic is
+C     equivalent to the iterative scheme:
+C           DENNUM = WMOL*RHOAIR*1.E-6
+C           DRYAIR = RHOAIR - DENNUM
+C           DENNUM = WMOL*DRYAIR*1.E-6
 C                                                                        FA31440
-      DENNUM = WMOL*RHOAIR*1.E-6                                         FA31450
+      DENNUM = ((WMOL*1.E-6) - (WMOL*1.E-6)**2)*RHOAIR                   FA31450
       GO TO 90                                                           FA31460
    10 IF (JUNIT.NE.11) GO TO 20                                          FA31470
 C                                                                        FA31480
@@ -3019,8 +3165,13 @@ C                                                                        FA31500
       IF (JUNIT.NE.12) GO TO 30                                          FA31540
 C                                                                        FA31550
 C     GIVEN MASS MIXING RATIO (GM KG-1)                                  FA31560
+C     Convert using density of dry air.  The following quadratic is
+C     equivalent to the iterative scheme:
+C           DENNUM = R*WMOL*1.0E-3*RHOAIR
+C           DRYAIR = RHOAIR - DENNUM
+C           DENNUM = R*WMOL*1.0E-3*DRYAIR
 C                                                                        FA31570
-      DENNUM = R*WMOL*1.0E-3*RHOAIR                                      FA31580
+      DENNUM = ((R*WMOL*1.0E-3) - (R*WMOL*1.0E-3)**2)*RHOAIR             FA31580
       GO TO 90                                                           FA31590
    30 CONTINUE                                                           FA31600
       IF (JUNIT.NE.13) GO TO 40                                          FA31610
@@ -3941,7 +4092,7 @@ C                                                                        FA40730
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA40760
       COMMON AMTP(MXMOL,MXPDIM)                                          FA40770
 C                                                                        FA40780
-      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FA40790
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA40790
       COMMON /BNDRY/ ZBND(MXFSC),PBND(MXFSC),TBND(MXFSC),ALORNZ(MXFSC),  FA40800
      *               ADOPP(MXFSC),AVOIGT(MXFSC)                          FA40810
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FA40820
@@ -4120,7 +4271,7 @@ C                                                                        FA42520
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA42550
       COMMON AMTP(MXMOL,MXPDIM)                                          FA42560
 C                                                                        FA42570
-      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FA42580
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA42580
       DIMENSION HDEN(MXMOL),DENA(MXMOL),DENB(MXMOL)                      FA42590
 C                                                                        FA42600
       DATA EPSILN / 1.0E-5 /                                             FA42610
@@ -4586,7 +4737,7 @@ C                                                                        FA47160
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)         FA47190
       COMMON AMTP(MXMOL,MXPDIM)                                          FA47200
 C                                                                        FA47210
-      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FA47220
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA47220
       COMMON /PATHD/ PBAR(MXLAY),TBAR(MXLAY),AMOUNT(MXMOL,MXLAY),        FA47230
      *               WN2L(MXLAY),DVL(MXLAY),WTOTL(MXLAY),ALBL(MXLAY),    FA47240
      *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FA47250
@@ -4747,7 +4898,7 @@ C                                                                        FX00360
       COMMON /MLATM/ ALT(MXZMD),PMDL(MXZMD,6),TMDL(MXZMD,6),             FX00460
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),              FX00470
      *               TST(MXZMD),AMOLS(MXZMD,MXMOL)                       FX00480
-      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FX00490
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FX00490
 C                                                                        FX00500
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES        FX00510
 C     FOR THE CROSS-SECTION MOLECULES.                                   FX00520
@@ -4784,6 +4935,7 @@ C                                                                        FX00810
       COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(MXMOL),XAMNT(MXMOL,MXLAY)       FX00820
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FX00830
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FX00840
+      COMMON /COLUNT/ MUNITS
 C                                                                        FX00850
       DIMENSION XAMNTT(MXMOL)                                            FX00860
 C                                                                        FX00870
@@ -4794,9 +4946,9 @@ C                                                                        FX00870
 C                                                                        FX00920
       DATA HOTHER / ' OTHER    '/                                        FX00930
       DATA PZFORM / 'F8.6','F8.5','F8.4','F8.3','F8.2'/                  FX00940
-      DATA PAFORM / '1PE10.4','  G10.5'/                                 FX00950
-      DATA CFORM1 / '(1PE10.4,0PF10.2,10X,I5,1X,2(F7.3,F8.3,F7.2))'/     FX00960
-      DATA CFORM2 / '(  G10.5,0PF10.2,10X,I5,23X,(F7.3,F8.3,F7.2))'/     FX00970
+      DATA PAFORM / '1PE15.7','  G15.7'/                                 FX00950
+      DATA CFORM1 / '(1PE15.7,0PF10.2,10X,I5,1X,2(F7.3,F8.3,F7.2))'/     FX00960
+      DATA CFORM2 / '(  G15.7,0PF10.2,10X,I5,23X,(F7.3,F8.3,F7.2))'/     FX00970
 C                                                                        FX00980
       WRITE (IPR,900)                                                    FX00990
 C                                                                        FX01000
@@ -4852,12 +5004,13 @@ C     RFPATH TO CALCULATE THE ABSORBER AMOUNTS.                          FX01490
 C                                                                        FX01500
       IF (ITYPE.EQ.1) THEN                                               FX01510
 C                                                                        FX01520
-C     HORIZONTAL PATH                                                    FX01530
-C     GET MIXING RATIO OF X-MOLECULES AT H1F                             FX01540
+C     =>  HORIZONTAL PATH                                                FX01530
+C
+C        > GET NUMBER DENSITIES OF X-MOLECULES AT H1F <                  FX01540
 C                                                                        FX01550
          IF (IMMAX.EQ.1) THEN                                            FX01560
 C                                                                        FX01570
-C             ITYPE = 1, HOMOGENOUS PATH                                 FX01580
+C           > ITYPE = 1, HOMOGENOUS PATH <                               FX01580
 C                                                                        FX01590
             PH = PM(1)                                                   FX01600
             TH = TM(1)                                                   FX01610
@@ -4867,7 +5020,7 @@ C                                                                        FX01590
 C                                                                        FX01650
          ELSE                                                            FX01660
 C                                                                        FX01670
-C     INTERPOLATE MIXING RATIOS TO H1F                                   FX01680
+C           > INTERPOLATE NUMBER DENSITIES TO H1F <                      FX01680
 C                                                                        FX01690
             ZH = H1F                                                     FX01700
             DO 30 L = 1, IMMAX                                           FX01710
@@ -4883,7 +5036,7 @@ C                                                                        FX01690
    50       CONTINUE                                                     FX01810
          ENDIF                                                           FX01820
 C                                                                        FX01830
-C     CALCULATE NUMBER DENSITY AND PATH AMOUNTS                          FX01840
+C     > CALCULATE PATH AMOUNTS <                                         FX01840
 C                                                                        FX01850
          DO 60 K = 1, IXMOLS                                             FX01860
             XAMNT(K,1) = DENP(K,1)*RANGEF*1.0E+5                         FX01870
@@ -4895,8 +5048,9 @@ C                                                                        FX01900
 C                                                                        FX01930
       ELSE                                                               FX01940
 C                                                                        FX01950
-C         SLANT PATH                                                     FX01960
-C         ZERO OUT ARRAYS                                                FX01970
+C     => SLANT PATH                                                      FX01960
+C
+C        > ZERO OUT ARRAYS <                                             FX01970
 C                                                                        FX01980
          DO 70 N = 1, IPDIM                                              FX01990
             IF (N.LE.IPDIM-2) THEN                                       FX02000
@@ -4914,7 +5068,7 @@ C                                                                        FX01980
                AMTP(M,N) = 0.0                                           FX02120
    70    CONTINUE                                                        FX02130
 C                                                                        FX02140
-C     CALCULATE THE REFRACTIVITY                                         FX02150
+C        > CALCULATE THE REFRACTIVITY <                                  FX02150
 C                                                                        FX02160
          DO 80 IM = 1, IMMAX                                             FX02170
             PPH2O = AMOLS(IM,1)*PZERO*TM(IM)/(TZERO*ALOSMT)              FX02180
@@ -4924,8 +5078,8 @@ C                                                                        FX02160
          CALL RFPATH (H1F,H2F,ANGLEF,PHIF,LENF,HMINF,1,RANGE,BETA,       FX02220
      *                BENDNG)                                            FX02230
 C                                                                        FX02240
-C     CROSS-SECTION ABSORBER AMOUNTS ARE NOW IN AMTP(J,I).               FX02250
-C     CONDENSE THE AMOUNTS INTO THE LAYERS DEFINDED BY ZOUT.             FX02260
+C        > CROSS-SECTION ABSORBER AMOUNTS ARE NOW IN AMTP(J,I).   <      FX02250
+C        > CONDENSE THE AMOUNTS INTO THE LAYERS DEFINDED BY ZOUT. <      FX02260
 C                                                                        FX02270
          I2 = IPMAX-1                                                    FX02280
          IOUT = 1                                                        FX02290
@@ -4945,20 +5099,50 @@ C                                                                        FX02380
 C                                                                        FX02430
          IOUTMX = IOMXSV                                                 FX02440
          LMAX = IOUTMX-1                                                 FX02450
+C
       ENDIF                                                              FX02460
 C                                                                        FX02470
 C     CROSS-SECTION AMOUNTS ARE NOW IN XAMNT. PRINT THEM OUT.            FX02480
+C                      (in E15.7 format)
 C                                                                        FX02490
       IF (IPUNCH.EQ.1) THEN                                              FX02500
+         IFRMX = 1
          WRITE (IPU,940) IXMOLS,IXSBIN                                   FX02510
          WRITE (IPU,945) (XSNAME(K),K=1,7),HOTHER,(XSNAME(K),K=8,NMOL)   FX02520
          IF (ITYPE.EQ.1) THEN                                            FX02530
-            WRITE (IPU,950) LMAX,NMOL,SECNT0,HMOD,RANGE,ZH               FX02540
-            WRITE (IPU,955) PH,TH,IPATH(1),ZH,ZH,(XAMNT(K,1),K=1,7),     FX02550
-     *                      WN2L(1),(XAMNT(K,1),K=8,NMOL)                FX02560
+            WRITE (IPU,950) IFRMX,LMAX,NMOL,SECNT0,HMOD,RANGE,ZH         FX02540
+C
+C           -------------------------------------
+C           > Write molecular information in    <
+C           >  - mixing ratio if MUNITS is 1    <
+C           >  - column density if MUNITS is 0  <
+C           -------------------------------------
+C
+            IF (MUNITS.EQ.1) THEN
+               DRAIR = WN2L(1)
+               DO 105 M = 2,NMOL
+                  DRAIR = DRAIR + XAMNT(M,1)
+ 105           CONTINUE
+C
+C              > If DRAIR is zero, then write out XAMNT only    <
+C              > (since XAMNT zero => mixing ratio zero)        <
+C
+               IF (DRAIR.EQ.0) THEN
+                  WRITE (IPU,955) PH,TH,IPATH(1),ZH,ZH,
+     *                            (XAMNT(K,1),K=1,7),WN2L(1),
+     *                            (XAMNT(K,1),K=8,NMOL)
+               ELSE
+                  WRITE (IPU,955) PH,TH,IPATH(1),ZH,ZH,
+     *                            (XAMNT(K,1)/DRAIR,K=1,7),WN2L(1),
+     *                            (XAMNT(K,1)/DRAIR,K=8,NMOL)
+               ENDIF
+            ELSE
+               WRITE (IPU,955) PH,TH,IPATH(1),ZH,ZH,(XAMNT(K,1),K=1,7),  FX02550
+     *                         WN2L(1),(XAMNT(K,1),K=8,NMOL)             FX02560
+            ENDIF
          ELSE                                                            FX02570
-            WRITE (IPU,960) LMAX,NMOL,SECNT0,(HMOD(I),I=1,2),H1F,H2F,    FX02580
-     *                      ANGLE,LENF                                   FX02590
+            WRITE (IPU,960) IFRMX,LMAX,NMOL,SECNT0,(HMOD(I),I=1,2),      FX02580
+     *                      H1F,H2F,ANGLE,LENF                           FX02590
          ENDIF                                                           FX02600
       ENDIF                                                              FX02610
 C                                                                        FX02620
@@ -4969,6 +5153,9 @@ C                                                                        FX02640
   110 CONTINUE                                                           FX02670
 C                                                                        FX02680
       DO 130 L = 1, NLAYRS                                               FX02690
+C
+C        > Write atmosphere to TAPE6 in column density <
+C
          IF (ITYPE.EQ.1) THEN                                            FX02700
             WRITE (IPR,970) L,ZOUT(L),ZOUT(L),(XAMNT(K,L),K=1,IXMOLS)    FX02710
          ELSE                                                            FX02720
@@ -4999,12 +5186,69 @@ C                                                                        FX02800
                WRITE (IPU,CFORM2) PBAR(L),TBAR(L),IPATH(L),ALTZ(L),      FX02970
      *                            PZ(L),TZ(L)                            FX02980
             ENDIF                                                        FX02990
-            WRITE (IPU,975) (XAMNT(K,L),K=1,7),WN2L(L)                   FX03000
-            IF (NMOL.GT.7) WRITE (IPU,975) (XAMNT(K,L),K=8,NMOL)         FX03010
+C
+C           -------------------------------------
+C           > Write molecular information in    <
+C           >  - mixing ratio if MUNITS is 1    <
+C           >  - column density if MUNITS is 0  <
+C           -------------------------------------
+C
+            IF (MUNITS.EQ.1) THEN
+               DRAIR = WN2L(L)
+               DO 125 M = 2,NMOL
+                  DRAIR = DRAIR + XAMNT(M,L)
+ 125           CONTINUE
+C
+C              > If DRAIR is zero, then write out XAMNT only    <
+C              > (since XAMNT zero => mixing ratio zero)        <
+C
+               IF (DRAIR.EQ.0) THEN
+                  WRITE (IPU,975) (XAMNT(K,L),K=1,7),WN2L(L)
+                  IF (NMOL.GT.7) WRITE (IPU,975) (XAMNT(K,L),K=8,NMOL)
+               ELSE
+                  WRITE (IPU,975) (XAMNT(K,L)/DRAIR,K=1,7),WN2L(L)
+                  IF (NMOL.GT.7) WRITE (IPU,975)
+     *                                 (XAMNT(K,L)/DRAIR,K=8,NMOL)
+               ENDIF
+            ELSE
+               WRITE (IPU,975) (XAMNT(K,L),K=1,7),WN2L(L)                FX03000
+               IF (NMOL.GT.7) WRITE (IPU,975) (XAMNT(K,L),K=8,NMOL)      FX03010
+            ENDIF
          ENDIF                                                           FX03020
 C                                                                        FX03030
   130 CONTINUE                                                           FX03040
 C                                                                        FX03050
+C     > Write atmosphere to TAPE6 in mixing ratio <
+C
+      WRITE(IPR,973)
+      DO 135 L = 1, NLAYRS
+         DRAIR = WN2L(L)
+         DO 133 M = 2,NMOL
+            DRAIR = DRAIR + XAMNT(M,L)
+ 133     CONTINUE
+C
+C        > If DRAIR is zero, then write out XAMNT only    <
+C        > (since XAMNT zero => mixing ratio zero)        <
+C
+         IF (DRAIR.EQ.0) THEN
+            IF (ITYPE.EQ.1) THEN
+               WRITE (IPR,970) L,ZOUT(L),ZOUT(L),
+     *                         (XAMNT(K,L),K=1,IXMOLS)
+            ELSE
+               WRITE (IPR,970) L,ZOUT(L),ZOUT(L+1),
+     *                         (XAMNT(K,L),K=1,IXMOLS)
+            ENDIF
+         ELSE
+            IF (ITYPE.EQ.1) THEN
+               WRITE (IPR,970) L,ZOUT(L),ZOUT(L),
+     *                         (XAMNT(K,L)/DRAIR,K=1,IXMOLS)
+            ELSE
+               WRITE (IPR,970) L,ZOUT(L),ZOUT(L+1),
+     *                         (XAMNT(K,L)/DRAIR,K=1,IXMOLS)
+            ENDIF
+         ENDIF
+ 135  CONTINUE
+C
       WRITE (IPR,980) (XAMNTT(K),K=1,IXMOLS)                             FX03060
 C                                                                        FX03070
 C     DONE                                                               FX03080
@@ -5028,18 +5272,20 @@ C                                                                        FX03150
      *        '  DOES NOT MATCH IOUTMX = ',I5)                           FX03260
   940 FORMAT (2(I5,5X),' THE FOLLOWING CROSS-SECTIONS WERE SELECTED:')   FX03270
   945 FORMAT (8A10)                                                      FX03280
-  950 FORMAT ('  ',I3,I5,F10.6,3A8,' * ',F7.3,' KM PATH AT ',F7.3,       FX03290
+  950 FORMAT (1X,I1,I3,I5,F10.6,3A8,' * ',F7.3,' KM PATH AT ',F7.3,      FX03290
      *        ' KM ALT')                                                 FX03300
-  955 FORMAT (2F10.4,10X,I5,1X,F7.3,15X,F7.3,/,(1P8E10.3))               FX03310
-  960 FORMAT ('  ',I3,I5,F10.6,2A8,' H1=',F8.3,' H2=',F8.3,' ANG=',      FX03320
+  955 FORMAT (E15.7,F10.4,10X,I5,1X,F7.3,15X,F7.3,/,(1P8E15.7))          FX03310
+  960 FORMAT (1X,I1,I3,I5,F10.6,2A8,' H1=',F8.3,' H2=',F8.3,' ANG=',     FX03320
      *        F8.3,' LEN=',I2)                                           FX03330
   965 FORMAT (//,'  LAYER AMOUNTS FOR THE CROSS-SECTION MOLECULES',//,   FX03340
      *        '           LAYER          AMOUNTS (MOLS/CM2)',/,          FX03350
      *        '   L    FROM     TO ',/,'        (KM)    (KM)',4X,8A10,   FX03360
      *        /,25X,8A10)                                                FX03370
-  970 FORMAT (1X,I3,2F8.3,3X,1P8E10.3,/,23X,1P8E10.3)                    FX03380
-  975 FORMAT (1P8E10.3)                                                  FX03390
-  980 FORMAT (//,1X,'TOTAL AMOUNT FOR PATH ',1P8E10.3)                   FX03400
+  970 FORMAT (1X,I3,2F8.3,3X,1P8E10.3,/,23X,1P8E15.7)                    FX03380
+  973 FORMAT ('1',3X,'------------------------------------',/,
+     *            3X,'  MOLECULAR MIXING RATIOS BY LAYER',/)
+  975 FORMAT (1P8E15.7)                                                  FX03390
+  980 FORMAT (//,1X,'TOTAL AMOUNT FOR PATH ',1P8E15.7)                   FX03400
 C                                                                        FX03410
       END                                                                FX03420
       SUBROUTINE XPROFL (IPRFL)                                          FX03430
@@ -5091,7 +5337,7 @@ C                                                                        FX03870
       COMMON /MLATM/ ALT(MXZMD),PMDL(MXZMD,6),TMDL(MXZMD,6),             FX03890
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),              FX03900
      *               TST(MXZMD),AMOLS(MXZMD,MXMOL)                       FX03910
-      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FX03920
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FX03920
 C                                                                        FX03930
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES        FX03940
 C     FOR THE CROSS-SECTION MOLECULES.                                   FX03950
@@ -5121,7 +5367,7 @@ C                                                                        FX04180
       IF (IPRFL.GT.0) THEN                                               FX04190
 C                                                                        FX04200
 C     A STANDARD PROFILE FOR X-MOLECULES DENSITY PROFILES HAS BEEN       FX04210
-C     SELECTED. THE PROFILES OF VOLUMNE MIXING RATIO ARE IN AMOLX        FX04220
+C     SELECTED. THE PROFILES OF VOLUME MIXING RATIO ARE IN AMOLX         FX04220
 C     STORED AT THE LEVELS ALTX. LOAD THE ALTITUDES INTO ZX AND          FX04230
 C     DENX RESPECTIVELY.                                                 FX04240
 C                                                                        FX04250
@@ -5295,7 +5541,7 @@ C                                                                        FX05880
       COMMON /MLATM/ ALT(MXZMD),PMDL(MXZMD,6),TMDL(MXZMD,6),             FX05930
      *               AMOL(MXZMD,8,6),ZST(MXZMD),PST(MXZMD),              FX05940
      *               TST(MXZMD),AMOLS(MXZMD,MXMOL)                       FX05950
-      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM)                FX05960
+      COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FX05960
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FX05970
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FX05980
      *                IPDIM,KDIM,KMXNOM,NMOL                             FX05990
@@ -5305,23 +5551,27 @@ C                                                                        FX06020
       LX = 2                                                             FX06030
       DO 30 L = 1, IMMAX                                                 FX06040
 C                                                                        FX06050
-C     FIND THE SMALLEST ZX GE ZMDL(L)                                    FX06060
+C        > FIND THE SMALLEST ZX GE ZMDL(L) <                             FX06060
 C                                                                        FX06070
    10    CONTINUE                                                        FX06080
          IF (ZMDL(L).LE.ZX(LX).OR.LX.EQ.LAYX) THEN                       FX06090
             A = (ZMDL(L)-ZX(LX-1))/(ZX(LX)-ZX(LX-1))                     FX06100
             IF (A.LT.0.0 .OR. A.GT.1.0) WRITE (IPR,900)                  FX06110
 C                                                                        FX06120
-C     CALCULATE THE NUMBER DENSITY OF AIR                                FX06130
+C           > IF DRYAIR FOR LAYER NOT CALCULATED PREVIOUSLY <
+C           > (USING NORMAL MOLECULES), THEN CALCULATE THE  <
+C           > NUMBER DENSITY OF AIR                         <            FX06130
 C                                                                        FX06140
-            RHOAIR = ALOSMT*(PM(L)/PZERO)/(TM(L)/TZERO)                  FX06150
+            IF (DRYAIR(L).EQ.0.)
+     *           DRYAIR(L) = ALOSMT*(PM(L)/PZERO)/(TM(L)/TZERO)          FX06150
+
 C                                                                        FX06160
             DO 20 K = 1, IXMOLS                                          FX06170
                CALL EXPINT (DENM(K,L),DENX(K,LX-1),DENX(K,LX),A)         FX06180
 C                                                                        FX06190
-C     CONVERT MIXING RATIO (PPMV) TO NUMBER DENSITY                      FX06200
+C              > CONVERT MIXING RATIO (PPMV) TO NUMBER DENSITY <         FX06200
 C                                                                        FX06210
-               DENM(K,L) = RHOAIR*DENM(K,L)*1.0E-6                       FX06220
+               DENM(K,L) = DRYAIR(L)*DENM(K,L)*1.0E-6                    FX06220
    20       CONTINUE                                                     FX06230
             GO TO 30                                                     FX06240
          ELSE                                                            FX06250
