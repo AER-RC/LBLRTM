@@ -20,3 +20,7 @@ C     presently: %H%  %T%
       IRAND=IABS(IRAND)                                                         
       RETURN                                                                    
       END                                                                       
+      SUBROUTINE FFTSCN(IFILE,JFILE)
+      PRINT * , ' FFTSCN NOT IMPLEMENTED'        
+      STOP      
+      END       
