@@ -5,7 +5,7 @@ C     presently: 17 Feb 1997  11:21:42
       SUBROUTINE RRTATM
 C
 C     This routine has been modified from lblatm.f for use with RRTM,
-C      using the translation code, lbl2r.f, version 1.10
+C      using the translation code, lbl2r.f, version 1.11
 C
 C     path:      %P%
 C     revision:  $Revision$
@@ -69,7 +69,7 @@ C                                                                        FA00490
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA00510
 C                                                                        FA00520
       COMMON /PROFILE/ NLAYRS,PBAR(MXLAY),TBAR(MXLAY),
-     *                 PZ(0:MXLAY),TZ(0:MXLAY),TSFC
+     *                 PZ(0:MXLAY),TZ(0:MXLAY)
       COMMON /MANE1/ P0,TEMP0,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,
      *                 AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,
      *                 DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,
@@ -419,7 +419,7 @@ C                                                                        FA03800
 C     *********************************************************          FA03810
 C                                                                        FA03820
       COMMON /PROFILE/ NLAYRS,PBAR(MXLAY),TBAR(MXLAY),
-     *                 PZ(0:MXLAY),TZ(0:MXLAY),TSFC
+     *                 PZ(0:MXLAY),TZ(0:MXLAY)
       COMMON /MANE1/ P0,TEMP0,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,
      *                 AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,
      *                 DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,
@@ -4993,7 +4993,7 @@ C                                                                        FA47160
 C                                                                        FA47210
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA47220
       COMMON /PROFILE/ NLAYRS,PBAR(MXLAY),TBAR(MXLAY),
-     *                 PZ(0:MXLAY),TZ(0:MXLAY),TSFC
+     *                 PZ(0:MXLAY),TZ(0:MXLAY)
       COMMON /MANE1/ P0,TEMP0,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,
      *                 AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,
      *                 DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,
@@ -5019,7 +5019,7 @@ C
 C     If entry in TAPE5 for TBOUND < 0, use TZ(O) as boundary                   
 C     temperature                                                               
 C                                                                               
-      IF (TSFC.LT.0.) TSFC = TZ(0)
+C     Card removed in RRTM
 C                                                                               
       DO 20 IP = 1, I2                                                   FA47350
          PBAR(IOUT) = PBAR(IOUT)+PPSUM(IP)                               FA47360
@@ -5138,7 +5138,7 @@ C
       CHARACTER*3 CINP                                                          
 C                                                                               
       COMMON /PROFILE/ NLAYRS,PBAR(MXLAY),TBAR(MXLAY),
-     *                 PZ(0:MXLAY),TZ(0:MXLAY),TSFC
+     *                 PZ(0:MXLAY),TZ(0:MXLAY)
       COMMON /MANE1/ P0,TEMP0,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,
      *                 AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,
      *                 DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,
@@ -5292,7 +5292,7 @@ C     LEVEL, ALTX(L)= ALTITUDE OF THE L'TH LEVEL, LAYXMX LEVELS MAX      FX00620
 C                                                                        FX00630
       COMMON /MLATMX/ LAYXMX,ALTX(MXZMD),AMOLX(MXZMD,MXMOL)              FX00640
       COMMON /PROFILE/ NLAYRS,PBAR(MXLAY),TBAR(MXLAY),
-     *                 PZ(0:MXLAY),TZ(0:MXLAY),TSFC
+     *                 PZ(0:MXLAY),TZ(0:MXLAY)
       COMMON /MANE1/ P0,TEMP0,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,
      *                 AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,
      *                 DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,
