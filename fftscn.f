@@ -175,11 +175,15 @@ C*****PANL carries the information from the panel header
       DIMENSION PNLHDR(4)
       EQUIVALENCE (PNLHDR(1),V1P)
 
-
 C*****IFIL carries file information
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL, 
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
+
+C*****SSUBS carries frequency information
+      COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,
+     *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,
+     *               DVSC,XDUM,V1SHFT
 
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
@@ -659,7 +663,7 @@ C*****Adjust V1S and V2S to fit the current spectral grid
 C*****Actually, let V1S be one DV less than the largest VZ <= V1
 C*****and let V2S be one DV larger than the smallest VZ >= V2
 C*****This procedure gives two points beyond V1 and V2, as required for
-C*****4 point interpolation (note: interpolation not yet implemented.)
+C*****4 point interpolation
       N1 = INT((V1-V1Z)/DV)
       V1S = V1Z+(N1-1)*DV
       If (V1S .LT. V1Z) Then
@@ -721,7 +725,7 @@ C*****Interpolate the spectrum onto the desired grid
 C*****End of convolution for this scan request
 
       Close(LFILE1)
-      Close(LFILE2)
+      If (LFILE2.NE.0) Close(LFILE2)
 
 C*****End of file loop for this scan request
   105 Continue
@@ -2792,6 +2796,7 @@ C
 
       Logical OP
 
+
       IERR = 0
       IBOUND = 4
       NPTS = 0
@@ -2888,6 +2893,7 @@ C*****What if VBOT and VTOP are outside the limits of the data???
 
       VBOT = V1-BOUND                                                     I07690
       VTOP = V2+BOUND                                                     I07700
+
 C                                                                         I07710
 C     IF (JEMIT.EQ.0.AND.IDABS.EQ.0) BCD = HTRANS                         I07720
 C     IF (JEMIT.EQ.0.AND.IDABS.EQ.-1) BCD = HABSRB                        I07730
@@ -2907,7 +2913,9 @@ C                                                                         I07850
       IF (IEOFSC.LE.0) GO TO 20                                           I07870
 C                                                                         I07880
 C     DO INTERPOLATION                                                    I07890
+C     SET 4 POINT INTERPOLATION FLAG TO 1
 C                                                                         I07900
+      I4PT = 1
       CALL INTERP (IFILE,JFILE,I4PT,IBOUND,NPTS,JTREM,ISCAN,JEMIT,        I07910
      *             RSTAT,ICNVRT)                                          I07920
 C                                                                         I07930
