@@ -498,17 +498,20 @@ C     presently: %H%  %T%
  
                              NOTE:  IMRG = 35-36, 40-41, 45-46 require seperate optical depth files for each layer
 
-           PTHODL
+           PTHODL, LAYTOT
  
-            1-55
+            1-55,  57-60
  
-             A55
+             A55, 1X, I4
 
 
               PTHODL       pathname for precalculated optical depth files 
 
                 Example:  For PTHODL="ODdeflt_", code will look for files ODdeflt_01, ...
                 -------
+
+              LAYTOT       total number of layers used in radiative transfer
+
 
  
  *****************************************************************************
