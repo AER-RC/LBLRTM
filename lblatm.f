@@ -439,6 +439,7 @@ C                                                                        FA04050
       DATA CFORM1 / '(1PE15.7,0PF10.2,10X,A3,I2,1X,2(F7.3,F8.3,F7.2))'/  FA04120
       DATA CFORM2 / '(  G15.7,0PF10.2,10X,A3,I2,23X,(F7.3,F8.3,F7.2))'/  FA04130
       DATA IERROR / 0 /                                                  FA04140
+      DATA T296 /296.0/
 C                                                                        FA04150
 C     IAMT = 1: CALCULATE AMOUNTS, IAMT = 2: DO NOT CALCULATE AMOUNTS    FA04160
 C                                                                        FA04170
@@ -926,7 +927,7 @@ C
             CTYPE(L) = '   '
             IF (IFXTYP.EQ.1) THEN
                FRH2O  = AMOUNT(1,L)/WTOTL(L)
-               ALFCOR = (PBAR(L)/PZERO)*SQRT(TZERO/TBAR(L))
+               ALFCOR = (PBAR(L)/PZERO)*SQRT(T296/TBAR(L))
                ADBAR = 3.581155E-07*XVBAR*SQRT(TBAR(L)/AVMWT)
                CALL FIXTYP(IEMIT,FRH2O,ALFCOR,OLDDV,L,CTYPE(L))
             ENDIF
@@ -1273,7 +1274,7 @@ C     ALZERO IS THE MEAN LORENTZ HALFWIDTH AT PZERO AND 296.0 K.         FA12140
 C     AVMWT IS THE MEAN MOLECULAR WEIGHT USED TO AUTOMATICALLY           FA12150
 C     GENERATE THE LBLRTM BOUNDARIES IN AUTLAY                           FA12160
 C                                                                        FA12170
-      DATA ALZERO / 0.1 /,AVMWT / 36.0 /                                 FA12180
+      DATA ALZERO / 0.04 /,AVMWT / 36.0 /                                FA12180
 C                                                                        FA12190
 C     ORDER OF MOLECULES H2O(1), CO2(2), O3(3), N2O(4), CO(5), CH4(6),   FA12200
 C         O2(7), NO(8), SO2(9), NO2(10), NH3(11), HNO3(12), OH(13),      FA12210
