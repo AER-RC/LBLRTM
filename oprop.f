@@ -1119,6 +1119,7 @@ C                                                                         B11740
 C                                                                         B11760
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B11770
 C                                                                         B11780
+C               LAST MODIFICATION:    6 May 1994 pdb                      B11790
 C               LAST MODIFICATION:    9 APRIL 1991                        B11790
 C                                                                         B11800
 C                  IMPLEMENTATION:    R.D. WORSHAM                        B11810
@@ -1146,7 +1147,7 @@ C                                                                         B12000
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B12030
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA
       COMMON /XPANEL/ V1P,V2P,DVP,NLIM,RMIN,RMAX,NPNLXP,NSHIFT,NPTS       B12040
-      COMMON /XPANIN/ V1PO,V2PO,NLIMO,NLIM1,NPPANL                        B12050
+      COMMON /XPANO/ V1PO,V2PO,DVPO,NLIM2,RMINO,RMAXO,NPNXPO              B12050
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B12060
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B12070
      *              NLTEFL,LNFIL4,LNGTH4                                  B12080
@@ -1154,36 +1155,34 @@ C                                                                         B12000
 C                                                                         B12100
       DIMENSION A1(0:100),A2(0:100),A3(0:100),A4(0:100)                   B12110
       DIMENSION R1(*)                                                     B12120
-      DIMENSION PNLHDR(2)                                                 B12130
+      DIMENSION PNLHDR(2),PNLHDO(2)                                       B12130
 C                                                                         B12140
-      EQUIVALENCE (PNLHDR(1),V1P)                                         B12150
+      EQUIVALENCE (PNLHDR(1),V1P),(PNLHDO(1),V1PO)                        B12150
 C                                                                         B12160
       DATA LIMOUT / 2400 /                                                B12180
 C                                                                         B12190
-C     THE DATA FOR NM1 AND N0 ARE USED INSTEAD OF DIRECTLY INSERTING
-C     '-1' AND '0' INTO THE SUBSCRIPTS FOR R1 (LINES 1158-9) TO AVOID
-C     COMPILER WARNINGS 'CONSTANT SUBSCRIPT IS OUT OF BOUNDS'
+C     The data for NM1 and N0 are used instead of directly inserting
+C     '-1' and '0' into the subscripts for R1 (lines 1158-9) to avoid     B12200
+C     compiler warnings 'CONSTANT SUBSCRIPT IS OUT OF BOUNDS'
 C     
-      DATA NM1/-1/,N0/0/
+      DATA NM1/-1/,N0/0/                                                  B12210
 C
-C      CALL CPUTIM (TIME)                                                 B12200
-C      WRITE (IPR,900) TIME                                               B12210
-      NPANLS = 0                                                          B12220
-      V1PS = V1P                                                          B12230
-      V2PS = V2P                                                          B12240
-      DVPS = DVP                                                          B12250
-      NLIMS = NLIM                                                        B12260
-C                                                                         B12270
+C      CALL CPUTIM (TIME)                                                 B12220
+C      WRITE (IPR,900) TIME                                               B12230
+C                                                                         B12240
+      NPNXPO = NPNLXP                                                     B12250
+      DVPO = DVOUT                                                        B12260
+      NPPANL = 1                                                          B12270
       ATYPE = 9.999E09                                                    B12280
       IF (DVP.EQ.DVOUT) ATYPE = 0.                                        B12290
       IF (DVOUT.GT.DVP) ATYPE = DVP/(DVOUT-DVP)+0.5                       B12300
       IF (DVOUT.LT.DVP) ATYPE = -DVOUT/(DVP-DVOUT)-0.5                    B12310
       IF (ABS(DVOUT-DVP).LT.1.E-8) ATYPE = 0.                             B12320
 C                                                                         B12330
-      IF (ATYPE.EQ.0.) THEN                                               B12340
-C                                                                         B12350
-C     1/1 RATIO ONLY                                                      B12360
-C                                                                         B12370
+C                                                                         B12340
+C     1/1 ratio only                                                      B12350
+C                                                                         B12360
+      IF (ATYPE.EQ.0.) THEN                                               B12370
          CALL PMNMX (R1,NLIM,RMIN,RMAX)                                   B12380
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B12390
          CALL BUFOUT (KFILE,R1(1),NLIM)                                   B12400
@@ -1191,18 +1190,15 @@ C                                                                         B12410
          IF (NPTS.GT.0) CALL R1PRNT (R1,1,KFILE,IENTER)                   B12420
 C                                                                         B12430
          GO TO 40                                                         B12440
-C                                                                         B12450
       ENDIF                                                               B12460
 C                                                                         B12470
-C     ALL RATIOS EXCEPT 1/1                                               B12480
+C     All ratios except 1/1                                               B12480
 C                                                                         B12490
       DO 10 JP = 0, 100                                                   B12500
          APG = JP                                                         B12510
          P = 0.01*APG                                                     B12520
-                                                                          B12530
 C                                                                         B12540
-C     THE FOLLOW ARE THE CONSTANTS FOR THE LAGRANGE 4 POINT               B12550
-C     INTERPOLATION                                                       B12560
+C        Constants for the Lagrange 4 point interpolation                 B12560
 C                                                                         B12570
          A1(JP) = -P*(P-1.0)*(P-2.0)/6.0                                  B12580
          A2(JP) = (P**2-1.0)*(P-2.0)*0.5                                  B12590
@@ -1210,11 +1206,7 @@ C                                                                         B12570
          A4(JP) = P*(P**2-1.0)/6.0                                        B12610
    10 CONTINUE                                                            B12620
 C                                                                         B12630
-C     *** BEGINNING OF LOOP THAT DOES INTERPOLATION  ***                  B12640
-C                                                                         B12650
-   20 CONTINUE                                                            B12660
-C                                                                         B12670
-C     ZERO POINT OF FIRST PANEL                                           B12680
+C     Zero point of first panel                                           B12680
 C                                                                         B12690
       IF (V1PO.EQ.0.0) THEN                                               B12700
          R1(NM1) = R1(1)                                                  B12710
@@ -1223,87 +1215,84 @@ C                                                                         B12690
          NLIM1 = 1                                                        B12740
       ENDIF                                                               B12750
 C                                                                         B12760
-C     END POINT OF LAST PANEL                                             B12770
+C     Add points to end of last panel for interpolation                   B12770
 C                                                                         B12780
-      ILAST = 0                                                           B12790
-      IF (ISTOP.EQ.1) THEN                                                B12800
-         R1(NLIM+1) = R1(NLIM)                                            B12810
-         R1(NLIM+2) = R1(NLIM)                                            B12820
-         ILAST = 1                                                        B12830
+      IF (ISTOP.EQ.1) THEN                                                B12790
+         R1(NLIM+1) = R1(NLIM)                                            B12800
+         R1(NLIM+2) = R1(NLIM)                                            B12810
+         NLIM = NLIM + 2                                                  B12820
+         V2P = V2P + 2.*DVP                                               B12830
       ENDIF                                                               B12840
 C                                                                         B12850
+C     *** BEGINNING OF LOOP THAT DOES INTERPOLATION  ***
+C
+   20 CONTINUE
+C
       V2PO = V1PO+FLOAT(LIMOUT)*DVOUT                                     B12860
 C                                                                         B12870
       IF (V2P.LE.V2PO+DVP.AND.ILAST.EQ.0.AND.NPPANL.LE.0) GO TO 40        B12880
 C                                                                         B12890
-      IF ((V1PO+(LIMOUT-1)*DVOUT).GT.V2) THEN
-         NLIM2 = (V2-V1PO)/DVOUT + 1.
-         V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT
+      IF ((V1PO+(LIMOUT-1)*DVOUT).GT.V2) THEN                             B12900
+         NLIM2 = (V2-V1PO)/DVOUT + 1.                                     B12910
+         V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT                                 B12920
          IF (V2PO.LT.V2) THEN
             V2PO = V2PO+DVOUT
             NLIM2 = NLIM2+1
          ENDIF
+         ILAST = 1
       ELSE
          NLIM2 = LIMOUT
-         V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT
-         IF (V2PO.GT.V2P-DVP) THEN
-            NLIM2 = ((V2P-DVP-V1PO)/DVOUT) + 1.
-            V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT
-            IF (V2PO+DVOUT.LT.V2P-DVP) THEN
-               NLIM2 = NLIM2+1
-               V2PO = V2PO+DVOUT
-            ENDIF
-         ENDIF
-         ILAST = 0
-      ENDIF
+         V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT                                 B12930
+         IF (V2PO.GT.V2P-DVP) THEN                                        B12940
+            NLIM2 = ((V2P-DVP-V1PO)/DVOUT) + 1.                           B12950
+            V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT                              B12960
+            IF (V2PO+DVOUT.LT.V2P-DVP) THEN                               B12970
+               NLIM2 = NLIM2+1                                            B12980
+               V2PO = V2PO+DVOUT                                          B12990
+            ENDIF                                                         B13000
+         ENDIF                                                            B13010
+         ILAST = 0                                                        B13020
+      ENDIF                                                               B13030
 C
-      RATDV = DVOUT/DVP                                                   B12970
-C                                                                         B12980
-C     FJJ IS OFFSET BY 2. FOR ROUNDING PURPOSES                           B12990
-C                                                                         B13000
-      FJ1DIF = (V1PO-V1P)/DVP+1.+2.                                       B13010
-C                                                                         B13020
-      DO 30 II = NLIM1, NLIM2                                             B13030
-C                                                                         B13040
-         FJJ = FJ1DIF+RATDV*FLOAT(II-1)                                   B13050
-         JJ = IFIX(FJJ)-2                                                 B13060
+      RATDV = DVOUT/DVP                                                   B13040
+C                                                                         B13050
+C     FJJ is offset by 2. for rounding purposes                           B13060
 C                                                                         B13070
-         JP = (FJJ-FLOAT(JJ))*100.-199.5                                  B13080
+      FJ1DIF = (V1PO-V1P)/DVP+1.+2.                                       B13080
 C                                                                         B13090
-C     INTERPOLATE R1 TO DVOUT                                             B13100
+C     Interpolate R1 to DVOUT                                             B13100
 C                                                                         B13110
-         R1OUT(II) = A1(JP)*R1(JJ-1)+A2(JP)*R1(JJ)+A3(JP)*R1(JJ+1)+       B13120
-     *               A4(JP)*R1(JJ+2)                                      B13130
-C                                                                         B13140
-   30 CONTINUE                                                            B13150
-C                                                                         B13160
-      IF (NLIM2.EQ.LIMOUT.OR.ILAST.EQ.1) THEN                             B13170
-         V1P = V1PO                                                       B13180
-         V2P = V2PO                                                       B13190
-         DVP = DVOUT                                                      B13200
-         NLIM = NLIM2                                                     B13210
-C                                                                         B13220
-         CALL PMNMX (R1OUT,NLIM,RMIN,RMAX)                                B13230
-         CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B13240
-         CALL BUFOUT (KFILE,R1OUT(1),NLIM)                                B13250
-C                                                                         B13260
-         IF (NPTS.GT.0) CALL R1PRNT (R1OUT,1,KFILE,IENTER)                B13270
-C                                                                         B13280
-         NLIM1 = 1                                                        B13290
-C                                                                         B13300
-         V1P = V1PS                                                       B13310
-         V2P = V2PS                                                       B13320
-         DVP = DVPS                                                       B13330
-         NLIM = NLIMS                                                     B13340
-         NPPANL = 0                                                       B13350
-         V1PO = V2PO+DVOUT                                                B13360
-         IF ((V1PO+FLOAT(LIMOUT)*DVOUT).GT.(V2P-DVP)) NPPANL = 1          B13370
-      ELSE                                                                B13380
-         NLIM1 = NLIM2+1                                                  B13390
-         NPPANL = -1                                                      B13400
-      ENDIF                                                               B13410
-C                                                                         B13420
-      IF (ILAST.NE.1) GO TO 20                                            B13430
+      DO 30 II = NLIM1, NLIM2                                             B13120
+         FJJ = FJ1DIF+RATDV*FLOAT(II-1)                                   B13130
+         JJ  = IFIX(FJJ)-2                                                B13140
+         JP  = (FJJ-FLOAT(JJ))*100.-199.5                                 B13150
+         R1OUT(II) = A1(JP)*R1(JJ-1)+A2(JP)*R1(JJ)+A3(JP)*R1(JJ+1)+       B13160
+     *               A4(JP)*R1(JJ+2)                                      B13170
+   30 CONTINUE                                                            B13180
+C                                                                         B13190
+C     Buffer out whole panel (NLIM2 = 2400) or the remaining              B13200
+C     interpolated points                                                 B13210
+C
+      IF (NLIM2.EQ.LIMOUT.OR.ILAST.EQ.1) THEN                             B13220
+         CALL PMNMX (R1OUT,NLIM,RMINO,RMAXO)                              B13230
+         CALL BUFOUT (KFILE,PNLHDO(1),NPHDRF)                             B13240
+         CALL BUFOUT (KFILE,R1OUT(1),NLIM2)                               B13250
+         IF (NPTS.GT.0) CALL R1PRNT (R1OUT,1,KFILE,IENTER)                B13260
+         NLIM1 = 1                                                        B13270
+         NPPANL = 0                                                       B13280
+         V1PO = V2PO+DVOUT                                                B13290
+         IF ((V1PO+FLOAT(LIMOUT)*DVOUT).GT.(V2P-DVP)) NPPANL = 1          B13300
+      ELSE                                                                B13310
+         NLIM1 = NLIM2+1                                                  B13320
+         NPPANL = -1                                                      B13330
+      ENDIF                                                               B13340
+C                                                                         B13350
+C     If not at last point, continue interpolation                        B13360
+C                                                                         B13370
+      IF (ILAST.NE.1) GO TO 20                                            B13380
+C                                                                         B13390
+C     Reset variables                                                     B13400
+C                                                                         B13410
       V1PO = 0.0                                                          B13440
       NPPANL = 1                                                          B13450
    40 CONTINUE                                                            B13460
@@ -1317,14 +1306,6 @@ C                                                                         B13530
 C  900 FORMAT ('0 THE TIME AT THE START OF PNLINT IS ',F12.3)             B13540
 C  905 FORMAT ('0 THE TIME AT THE END OF PNLINT IS ',F12.3/F12.3,         B13550
 C     *   ' SECS WERE REQUIRED FOR THIS INTERPOLATION ')                  B13560
-C                                                                         B13570
-      END                                                                 B13580
-      BLOCK DATA BPLINT                                                   B03920
-C                                                                         B13570
-      IMPLICIT DOUBLE PRECISION (V)                                     ! B11750
-C                                                                         B13570
-      COMMON /XPANIN/ V1PO,V2PO,NLIMO,NLIM1,NPPANL                        B12050
-      DATA V1PO,V2PO,NLIMO,NLIM1,NPPANL / 0.0,0.0,0,0,1 /                 B12170
 C                                                                         B13570
       END                                                                 B13580
       SUBROUTINE PMNMX (R1,NLIM,RMIN,RMAX)                                B13590
