@@ -105,7 +105,7 @@ C
 C                                                                         B00870
       PARAMETER (NTMOL=36,NSPECI=85)   
 C                                                                         B00890
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           B00900
+      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISO_MAX(NTMOL),           B00900
      *                SMASSI(NSPECI)                                      B00910
       COMMON /LNC1/ RHOSLF(NSPECI),ALFD1(NSPECI),SCOR(NSPECI),ALFMAX,     B00920
      *              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,      B00930
@@ -818,7 +818,10 @@ C                                                                         B05000
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B05010
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B05020
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B05030
-      COMMON /XSUB/ VBOT,VTOP,VFT,DUM(7)
+      COMMON /IFIL/   IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B04100
+     *                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B04110
+     *                NLTEFL,LNFIL4,LNGTH4                                  B04120
+      COMMON /XSUB/   VBOT,VTOP,VFT,DUM(7)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
@@ -830,7 +833,7 @@ C                                                                         B05000
 C                                                                         B05080
       PARAMETER (NTMOL=36,NSPECI=85) 
 C                                                                         B05100
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           B05110
+      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISO_MAX(NTMOL),           B05110
      *                SMASSI(NSPECI)                                      B05120
       COMMON /LNC1/ RHOSLF(NSPECI),ALFD1(NSPECI),SCOR(NSPECI),ALFMAX,     B05130
      *              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,      B05140
@@ -843,6 +846,10 @@ C                                                                         B05190
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),                B05210
      *            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),                B05220
      *            (JRAD,FSCDID(9)) , (XID(1),FILHDR(1))                   B05230
+c                                                                          D00540
+      character*8 h_lncor1
+c
+      data h_lncor1/' lncor1 '/
 C                                                                         B05240
 C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         B05250
 C                                                                         B05260
@@ -896,7 +903,15 @@ C                                                                         B05670
          ISO = MOD(MOL(I),I_1000)/100                                       B05680
          ILOC = ISOVEC(M)+ISO                                             B05690
 C
-         IF ((M.GT.NMOL).OR.(M.LT.1)) GO TO 25
+c     check if lines are within allowed molecular and isotopic limits
+c
+         if (m.gt.nmol .or. m.lt. 1) then
+            call line_exception (1,ipr,h_lncor1,m,nmol,iso,iso_max)
+            go to 25
+         else if (iso .gt. iso_max(m)) then
+            call line_exception (2,ipr,h_lncor1,m,nmol,iso,iso_max)
+            go to 25
+         endif
 C
          MOL(I) = M                                                       B05760
          SUI = S(I)*WK(M)                                                 B05770
@@ -1040,7 +1055,64 @@ C                                                                         B06940
       RETURN                                                              B06950
 C                                                                         B06960
       END                                                                 B06970
+c-----------------------------------------------------------------------
 c
+      subroutine line_exception(ind,ipr,h_sub,mol,nmol,iso,iso_max)
+
+      character*8 h_sub
+      dimension iso_max(*)
+
+      data  mol_max_pr_1/-99/, iso_max_pr_1/-99/
+      
+      if ((ind.eq.1 .and. mol_max_pr_1.lt.0) .or.
+     *    (ind.eq.2 .and. iso_max_pr_1.lt.0)) then
+         write (*,*)
+         write (*,*) 'Line file exception encountered in', h_sub
+         write (*,*) 'This message only written for first exception',
+     *               ' for molecule and isotope cases'
+         write (*,*) 'Other exceptions may exist'
+
+         write (ipr,*) '****************************************'
+         write (ipr,*) 'Line file exception encountered'
+         write (ipr,*) 'This message only written for first exception'
+         write (ipr,*) 'Other exceptions may exist'
+      endif
+c
+      if (ind .eq. 1) then
+          if (mol_max_pr_1 .lt. 0) then
+             mol_max_pr_1 = 11
+             write (*,*)
+             write (*,*)   ' tape3: molecule number ', mol,
+     *             ' greater than ', nmol,' encountered and skipped'
+             write (ipr,*) ' tape3: molecule number ', mol,
+     *             ' greater than ', nmol,' encountered and skipped'
+               write (*,*)
+            endif
+            go to 25
+c
+         else if (ind .eq. 2) then
+            if (iso_max_pr_1 .lt. 0) then
+               iso_max_pr_1 = 11
+               write (*,*)
+               write (*,*)   ' tape3: molecule number ', mol
+               write (ipr,*) ' tape3: molecule number ', mol
+
+               write (*,*)   ' tape3: isotope number ', iso,
+     *                       ' greater than ', iso_max(mol),
+     *                       ' encountered and skipped'
+               write (ipr,*) ' tape3: isotope number ', iso,
+     *                       ' greater than ', iso_max(mol),
+     *                       ' encountered and skipped'
+               write (*,*)
+            endif
+            go to 25
+         endif
+C
+ 25      continue
+
+         return
+         end
+c-----------------------------------------------------------------------
       SUBROUTINE CNVFNV (VNU,SP,SPPSP,RECALF,R1,R2,R3,F1,F2,F3,FG,        B06980
      *                   XVER,ZETAI,IZETA)                                B06990
 C                                                                         B07000
@@ -2278,7 +2350,7 @@ C                                                                         C00040
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           C00060
+      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISO_MAX(NTMOL),           C00060
      *                SMASSI(NSPECI)                                      C00070
       COMMON /QTOT/ QCOEF(NSPECI,3,5),Q296(NSPECI),AQ(NSPECI),            C00080
      *              BQ(NSPECI),GJ(NSPECI)                                 C00090
@@ -2392,7 +2464,7 @@ C
 C     
          DO 50 M = 1, NMOL
 C     
-            DO 40 ISO = 1, ISONM(M)
+            DO 40 ISO = 1, ISO_MAX(M)
                ILOC = ISOVEC(M)+ISO                                       C00980
 c     
                CALL QOFT (M,ISO,296.,QT_296) 
@@ -2577,7 +2649,7 @@ c***********************************************
 c***********************************************
 c
       PARAMETER (NMOL=36,Nspeci=85)
-      COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISONM(NMOL),
+      COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISO_MAX(NMOL),
      *     sdum(Nspeci)
 c
 c...Isotope vector information
@@ -2586,7 +2658,7 @@ c     Set up ISOVEC:
          DO 20 I = 2,NMOL
           ISOVEC(I) = 0
           DO 10 J = 1,I-1
-           ISOVEC(I) = ISOVEC(I)+ISONM(J)
+           ISOVEC(I) = ISOVEC(I)+ISO_MAX(J)
    10     CONTINUE
    20    CONTINUE
 c
@@ -2597,11 +2669,11 @@ c  ****************************************
 c  ****************************************
 c
       PARAMETER (NMOL=36,Nspeci=85)
-      COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISONM(NMOL),
+      COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISO_MAX(NMOL),
      *     smassi(Nspeci)
 c
 c    The number of isotopes for a particular molecule:
-      DATA (ISONM(I),I=1,NMOL)/
+      DATA (ISO_MAX(I),I=1,NMOL)/
 c     H2O, CO2, O3, N2O, CO, CH4, O2,
      +  4,   8,  5,   5,  6,   3,  3,
 c      NO, SO2, NO2, NH3, HNO3, OH, HF, HCl, HBr, HI,
@@ -2690,7 +2762,7 @@ c
 c++
       PARAMETER (NMOL=36,Nspeci=85)
 c++
-      COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISONM(NMOL),
+      COMMON /ISVECT/ ISOVEC(NMOL),ISO82(Nspeci),ISO_MAX(NMOL),
      *     sdum(Nspeci)
 c++:  bd-QT
       common/Qtot/ Qcoef(Nspeci,3,5), Q296(Nspeci), aQ(Nspeci), 
@@ -3695,7 +3767,7 @@ C     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4    D00050
 C                                                                         D00060
       PARAMETER (NTMOL=36,NSPECI=85)                                      D00070
 C                                                                         D00080
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           D00090
+      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISO_MAX(NTMOL),           D00090
      *                SMASSI(NSPECI)                                      D00100
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D00110
 C                                                                         D00120
@@ -3744,7 +3816,10 @@ C                                                                         D00490
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2))                 D00510
       EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                       D00520
      *            (HLINHD(1),HID(1),IWD(1)) , (MOLB(1),AMOLB(1))          D00530
-                                                                          D00540
+c                                                                          D00540
+      character*8 h_linf4
+c
+      data h_linf4/' linf4  '/
       DATA MEFDP / 64*0 /                                                 D00550
 C                                                                         D00560
 C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         D00570
@@ -3846,7 +3921,18 @@ C     ISO=(MOD(MOLB(I),I_1000)-M)/100   IS PROGRAMMED AS:                   D014
 C                                                                         D01430
          ISO = MOD(MOLB(I),I_1000)/100                                      D01440
          ILOC = ISOVEC(M)+ISO                                             D01450
-         IF ((M.GT.NMOL).OR.(M.LT.1)) GO TO 50                            D01460
+C
+c     check if lines are within allowed molecular and isotopic limits
+c
+         if (m.gt.nmol .or. m.lt. 1) then
+            call line_exception (1,ipr,h_linf4,m,nmol,iso,iso_max)
+            go to 50
+         else if (iso .gt. iso_max(m)) then
+            call line_exception (2,ipr,h_linf4,m,nmol,iso,iso_max)
+            go to 50
+         endif
+C
+C
          SUI = SB(I)*W(M)                                                 D01470
          IF (SUI.EQ.0.) GO TO 50                                          D01480
          IF (VNUB(I).LT.VLO) GO TO 50                                     D01490
