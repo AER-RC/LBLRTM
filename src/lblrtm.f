@@ -294,8 +294,8 @@ C----------------------------------------------------------------------   A02910
 C                                                                         A02920
       IMPLICIT REAL*8           (V)                                     ! A02930
 C
-      character*8      XID,       HMOLID,      YID,HDATE,HTIME         
-      real*8               SECANT,       XALTZ 
+      character*8      XID,       HMOLID,      YID,HDATE,HTIME
+      real*8               SECANT,       XALTZ
 c
       LOGICAL OP
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
@@ -403,7 +403,7 @@ C
 C     Set name of output TAPE6, depending upon type calculation
 C
       CT6FIL = 'TAPE6    '
-C     
+C
 C     -------------------------
 C     Variables hardwired in for now
 C
@@ -789,7 +789,7 @@ C                                                                         A06270
 C        UNIT ICOEF used for input files
 C
          ICOEF = 13
-C         
+C
          IF (BNDEMI(1).LT.0) THEN
             OPEN (UNIT=ICOEF,FILE='EMISSION',STATUS='OLD')
             CALL READEM(ICOEF)
@@ -805,7 +805,7 @@ C
 C
 C        If BNDRFL(1) < 0, read in coefficients from file 'REFLECTION'
 C        If BNDRFL(1) > 0, check to see if reflectivity is reasonable
-C     
+C
          IF (BNDRFL(1).LT.0) THEN
             OPEN (UNIT=ICOEF,FILE='REFLECTION',STATUS='OLD')
             CALL READRF(ICOEF)
@@ -1015,7 +1015,7 @@ C
      *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
      *     JEFILE / 0 /,KEFILE / 0 /,MSLAY1 / 0 /                         A07700
 
-      DATA XSELF / 1 /,XFRGN / 1 /, XCO2C / 1 /, XO3CN / 1 /, 
+      DATA XSELF / 1 /,XFRGN / 1 /, XCO2C / 1 /, XO3CN / 1 /,
      *     XO2CN / 1 /,XN2CN / 1 /, XRAYL / 1 /
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULES
@@ -1097,7 +1097,7 @@ C                                                                         A08990
 C                                                                         A09010
       COMMON TR(2410)                                                     A09020
 C                                                                         A09030
-      character*8      XID,       HMOLID,      YID         
+      character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ
 C                                                                         A09050
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A09060
@@ -1203,7 +1203,7 @@ C
      *              NLTEFL,LNFIL4,LNGTH4                                  A09510
 C                                                                         A09520
       character*8      XID,       HMOLID,      YID
-      real*8               SECANT,       XALTZ 
+      real*8               SECANT,       XALTZ
 C                                                                         A09540
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A09550
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A09560
@@ -1249,8 +1249,8 @@ C                                                                         A09820
       lnfil = linfil
       negepp_flag = 0
 
-      read (lnfil,end=777)    HLINID,BMOLID,MOLCNT,MCNTLC,       
-     *                MCNTNL,SUMSTR,LINMOL,FLINLO,FLINHI,  
+      read (lnfil,end=777)    HLINID,BMOLID,MOLCNT,MCNTLC,
+     *                MCNTNL,SUMSTR,LINMOL,FLINLO,FLINHI,
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1
 
 
@@ -1264,8 +1264,8 @@ c     and read in second header for line information, if needed
       endif
 C
       go to 5
-C     
- 777  STOP 'LAYER; TAPE3 DOES NOT EXIST'                   
+C
+ 777  STOP 'LAYER; TAPE3 DOES NOT EXIST'
 c
  5    continue
 C                                                                         A09860
@@ -1422,13 +1422,13 @@ C                                                                         A11460
       COMMON /LASIV/ VLAS,ILAS                                            A11470
 C                                                                         A11480
       character*8      XID,       HMOLID,      YID
-      real*8               SECANT,       XALTZ 
+      real*8               SECANT,       XALTZ
 C                                                                         A11500
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A11510
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A11520
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    A11530
 C                                                                         A11540
-      character*8      XI1,       HMOLI1,      Y1D         
+      character*8      XI1,       HMOLI1,      Y1D
       real*8               SECAN1,       XALT1
 C                                                                         A11560
       COMMON /FILHD1/ XI1(10),SECAN1,PAV1,TAV1,HMOLI1(60),XALT1(4),       A11570
@@ -1537,7 +1537,7 @@ C                                                                         A12520
 C      IMRG=35 --- SPACE TO GROUND MERGE FROM PRESTORED OPTICAL DEPTHS    A12530
 C      IMRG=36 --- GROUND TO SPACE MERGE FROM PRESTORED OPTICAL DEPTHS    A12540
 C                                                                         A12550
-C        ****  RADIANCE/DERIVATIVE CALCULATIONS  **** 
+C        ****  RADIANCE/DERIVATIVE CALCULATIONS  ****
 C
 C      IMRG=40 --- Downwelling radiance from prestored optical depths,
 C                  monochromatic (radiance & derivative calculations)
@@ -1624,14 +1624,14 @@ C        Begin loop over layers
 C        -----------------------------
 C
  4       LAYER = LAYER+1
-         LAYHDR = LAYER 
-         CALL OPPATH    
+         LAYHDR = LAYER
+         CALL OPPATH
          NLAYHD = NLAYER
          CALL OPDPTH (MPTS)
          CALL ENDFIL (KFILE)
          CLOSE (KFILE)
-         REWIND MFILE   
-         REWIND LFILE   
+         REWIND MFILE
+         REWIND LFILE
          IF (LAYER.EQ.NLAYER) THEN
             PATH1  = PTHODI
             PATH2  = PTHODT
@@ -1648,7 +1648,7 @@ C
             IF (IPATHL.EQ.1) THEN
                CALL OPNMRG(LFILE,PATH1,NLAYER,HFORM1,PATH1,NLAYER,
      *              HFORM1,MFILE,PATH2,HFORM2)
-            ELSEIF (IPATHL.EQ.3) THEN 
+            ELSEIF (IPATHL.EQ.3) THEN
                CALL OPNMRG(LFILE,PATH1,1,HFORM1,PATH1,1,HFORM1,
      *              MFILE,PATH2,HFORM2)
             ELSE
@@ -1656,8 +1656,8 @@ C
             ENDIF
             CALL COPYFL(NPTS,LFILE,MFILE)
             CALL ENDFIL (MFILE)
-            REWIND MFILE   
-            REWIND LFILE   
+            REWIND MFILE
+            REWIND LFILE
             CLOSE(MFILE)
             CLOSE(LFILE)
             IF (IPATHL.EQ.1) THEN
@@ -1675,8 +1675,8 @@ C
                   CALL OPNMRG(LFILE,PATH2,L-1,HFORM2,PATH1,
      *                     L,HFORM1,MFILE,PATH2,HFORM2)
                   CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
-                  REWIND MFILE   
-                  REWIND LFILE   
+                  REWIND MFILE
+                  REWIND LFILE
                   CLOSE(MFILE)
                   CLOSE(LFILE)
  7             CONTINUE
@@ -2443,8 +2443,8 @@ C                                                                         A17110
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A17150
      *              EXTID(10)                                             A17160
 C                                                                         A17170
-      character*8      XID,       HMOLID,      YID         
-      real*8               SECANT,       XALTZ 
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ
 C                                                                         A17190
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A17200
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A17210
@@ -2695,8 +2695,8 @@ C
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A19330
 C                                                                         A19340
-      character*8      XID,       HMOLID,      YID         
-      real*8               SECANT,       XALTZ 
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ
 C                                                                         A19360
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A19370
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A19380
@@ -2737,7 +2737,7 @@ C                                                                         A19630
       CHARACTER*6 HOLN2                                                   A19660
       CHARACTER*5 HEAD5
       CHARACTER*4 HEAD4
-      CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,  ht1,ht2   
+      CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,  ht1,ht2
       CHARACTER*3 CINP,CINPX,CBLNK                                        A19680
       DIMENSION FILHDR(2),AMOUNT(2),AMTSTR(2)                             A19690
       DIMENSION HEDXS(15),WMT(35),SECL(64),WXT(35),WTOTX(67)              A19700
@@ -2940,7 +2940,7 @@ C
             STOP 'WMXRAT EXCEEDS 1.0'
          ENDIF
 
-         IF (WKL(1,L).LE.1.0 .AND. WKL(1,L) .NE. 0.0 
+         IF (WKL(1,L).LE.1.0 .AND. WKL(1,L) .NE. 0.0
      *        .AND. WDRAIR(L).EQ.0.0) THEN
             WRITE(IPR,921) L,WKL(1,L),WDRAIR(L)
             WRITE(*,921) L,WKL(1,L),WDRAIR(L)
@@ -3028,7 +3028,7 @@ C
      *           XAMNT(M,L).NE.0.0) THEN
                WRITE(IPR,921) L,XAMNT(M,L),WDRAIR(L)
                WRITE(*,921) L,XAMNT(M,L),WDRAIR(L)
-               STOP 'XAMNT NOT PROPERLY SPECIFIED IN PATH'         
+               STOP 'XAMNT NOT PROPERLY SPECIFIED IN PATH'
             ENDIF
             IF (XAMNT(M,L).LT.1) XAMNT(M,L) = XAMNT(M,L)*WDRAIR(L)
  35      CONTINUE
@@ -3067,7 +3067,7 @@ C
 C        --------------------------------------------------------------
 C
 C        When calculating derivatives, write levels and molecular
-C        amounts out to IATMFL for use when combining layer derivatives 
+C        amounts out to IATMFL for use when combining layer derivatives
 C        during retrieval.
 C
          IF (IEMIT.EQ.3) THEN
@@ -3309,7 +3309,7 @@ C                                                                         A22990
          ENDIF
          IF (IPROB.GT.0) WRITE (IPR,962) TYPMAX                           A23030
   130 CONTINUE                                                            A23040
-C    
+C
 C     SKIP TO END WHEN USING EXACT CALCULATED DV FOR OPTICAL
 C     DEPTH CALCULATIONS (IOD = 2,IMRG = 1)
 C
@@ -3485,7 +3485,7 @@ C
      *                            (WMT(M),M=MLO,MHI)
                ENDIF
             ENDIF                                                         A23790
-C     
+C
  170     CONTINUE                                                         A23800
       ENDIF                                                               A23810
 C
@@ -3649,7 +3649,7 @@ C                                                                         A24050
   915 FORMAT (E15.7,F10.4,F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))
   916 FORMAT (3F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))                          A24130
   917 FORMAT (A4)                                                         A24140
-  918 FORMAT ('0 WBROD FOR LAYER=',I3,' MUST BE SPECIFIED 
+  918 FORMAT ('0 WBROD FOR LAYER=',I3,' MUST BE SPECIFIED
      *       IN COLUMN DENSITY')
   920 FORMAT (I3)                                                         A24150
   921 FORMAT (I3,2E15.7)                                                  A24150
@@ -3758,8 +3758,8 @@ C                                                                         A24510
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A24550
      *              EXTID(10)                                             A24560
 C                                                                         A24570
-      character*8      XID,       HMOLID,      YID         
-      real*8               SECANT,       XALTZ 
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ
 C                                                                         A24590
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A24600
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A24610

@@ -1,4 +1,4 @@
-C     path:      ! C     path:      %P%
+C     path: %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
