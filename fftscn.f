@@ -61,9 +61,8 @@ C            another operation on IFILE generated an error.
 C         5. Fixed bug: the output spectral grid was sometimes off by
 C            one dv.
 C
-C
 C     Program instructions:
-C     The program commands are contained on a single mani record plus
+C     The program commands are contained on a single input record plus
 C     up to 3 additional records, depending upon the case.  Multiple 
 C     commands may be contained on successive records.  A zero or 
 C     negative number in the first field terminates the sequence.
@@ -99,6 +98,7 @@ C             = 9: Norton-Beer, Moderate
 C             =10: norton-Beer, Strong
 C             =11: Brault (needs input parameter PARM)
 C             =12: Kaiser-Bessel (needs input parameter PARM)
+C             =13: Kiruna (asymetric, c1*sinc(u)+c2*sinc(u-u1)
 C             If JFN < 0, then HWHM is the maximum optical path 
 C             difference of an equivalent interfereometer, apodized to
 C             give the scanning function given by |JFN|. 
@@ -142,52 +142,7 @@ C
 C     Record 4 (for JUNIT < 0)
 C         OUTFILE (A60) Name (including path) of the spectral output file
 C**********************************************************************
-      Parameter (JFNMAX = 12)
-C*****Computers with 32 bit words need the Double Precision Statements
-C*****Computers with 64 bit words (e.g. Cyber) do not.
-C*****Frequency variables start with V
-      Implicit Real*8           (V)
-      Character*8      XID,       HMOLID,      YID   
-      Real*8               SECANT,       XALTZ
 
-C*****Blank Common carries the spectral data
-      COMMON S(2450),R1(2650),XF(251)
-
-C*****HVERSN carries the module SCCS version numbers
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
-
-C*****SCNHRD carries the header information for the scanned file
-      COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
-     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,
-     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF 
-      DIMENSION FILHDR(2),IFSDID(17)
-      EQUIVALENCE (FILHDR(1),XID(1))
-      EQUIVALENCE (FSCDID(1),IFSDID(1),IHIRAC),(FSCDID(2),ILBLF4), 
-     C (FSCDID(3),IXSCNT),(FSCDID(4 ),IAERSL ),(FSCDID(5),IEMIT), 
-     C (FSCDID(6),ISCHDR ),(FSCDID(7 ),IPLOT  ),(FSCDID(8),IPATHL),   
-     C (FSCDID(9),JRAD  ),(FSCDID(10),ITEST  ),(FSCDID(11),IMRG),  
-     C (FSCDID(12),XSCID),(FSCDID(13),XHWHM  ),(FSCDID(14),IDABS),   
-     C (FSCDID(15),IATM ),(FSCDID(16),LAYR1  ),(FSCDID(17),NLAYFS),  
-     C (YID(1)    ,HDATE),(YID(2),      HTIME),(YI1,IMULT)        
-
-C*****PANL carries the information from the panel header
-      COMMON /PANL/ V1P,V2P,DVP,NP
-      DIMENSION PNLHDR(4)
-      EQUIVALENCE (PNLHDR(1),V1P)
-
-C*****IFIL carries file information
-      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL, 
-     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
-     *              NLTEFL,LNFIL4,LNGTH4
-
-C*****SSUBS carries frequency information
-      COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,
-     *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,
-     *               DVSC,XDUM,V1SHFT
-
-C*****LAMCHN carries hardware specific parameters
-      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 C***********************************************************************
 C     LPTSMX is the size of a data block for the FFT.  If the number of
 C     data points is LPTSMX or less, the FFT is done in memory.  If it 
@@ -232,6 +187,50 @@ C*****Following line for computers with 64 bit words where the blocksize is
 C*****measured in bytes, e.g. CRAY
 C     PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 
+      Parameter (JFNMAX = 13)
+C*****Computers with 32 bit words need the Double Precision Statements
+C*****Computers with 64 bit words (e.g. Cyber) do not.
+C*****Frequency variables start with V
+      Implicit Real*8           (V)
+      Character*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
+
+C*****Blank Common carries the spectral data
+      COMMON S(2450),R1(2650),XF(251)
+
+C*****HVERSN carries the module SCCS version numbers
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+
+C*****SCNHRD carries the header information for the scanned file
+      COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,
+     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF 
+      DIMENSION FILHDR(2),IFSDID(17)
+      EQUIVALENCE (FILHDR(1),XID(1))
+      EQUIVALENCE (FSCDID(1),IFSDID(1),IHIRAC),(FSCDID(2),ILBLF4), 
+     C (FSCDID(3),IXSCNT),(FSCDID(4 ),IAERSL ),(FSCDID(5),IEMIT), 
+     C (FSCDID(6),ISCHDR ),(FSCDID(7 ),IPLOT  ),(FSCDID(8),IPATHL),   
+     C (FSCDID(9),JRAD  ),(FSCDID(10),ITEST  ),(FSCDID(11),IMRG),  
+     C (FSCDID(12),XSCID),(FSCDID(13),XHWHM  ),(FSCDID(14),IDABS),   
+     C (FSCDID(15),IATM ),(FSCDID(16),LAYR1  ),(FSCDID(17),NLAYFS),  
+     C (YID(1)    ,HDATE),(YID(2),      HTIME),(YI1,IMULT)        
+
+C*****PANL carries the information from the panel header
+      COMMON /PANL/ V1P,V2P,DVP,NP
+      DIMENSION PNLHDR(1)
+      EQUIVALENCE (PNLHDR(1),V1P)
+
+
+C*****IFIL carries file information
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL, 
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+
+C*****LAMCHN carries hardware specific parameters
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
+
+
       Character*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       Character*16 SFNAME,ANAMES(0:JFNMAX)
@@ -246,7 +245,7 @@ C*****ANAMES are their names
 C*****SFNAME is the name of the scanning function
       Data ANAMES/'BOXCAR','TRIANGLE','GAUSSIAN','SINC**2','SINC',
      1           'BEER','HAMMING','HANNING','NB - WEAK','NB - MEDIUM',
-     2           'NB - STRONG','BRAULT','KAISER-BESSEL'/
+     2           'NB - STRONG','BRAULT','KAISER-BESSEL','Kurina'/
 
 C*****Ci's are constants = A/ HWHM, where A is the "natural" width
 C*****parameter for each function, A = 1/L, where L is the maximum
@@ -256,16 +255,19 @@ C*****Function -1 is special.  It is a very broad sinc which
 C*****is the apodization function corresponding a narrow rectangular
 C*****scanning function used to pre-scan the spectrum.
       Data C/     0.0,     2.0,0.849322,2.257609,3.314800,2.100669,
-     1       2.195676,     2.0,2.570274,2.367714,2.071759, -3.3, -2.5/
+     1       2.195676,     2.0,2.570274,2.367714,2.071759, -3.3, -2.5,
+     2       3.314800 /
 
 C*****CRATIO is the critical value of the ratio of the frequency range
 C*****to the half width at half maximum of the scanning function.
 C*****If this ratio is greater than CRATIO, then the apodization 
 C*****function is calculated analytically, otherwise it is calculated 
 C*****as the FFT of the scanning function.  The values given here are
-C*****educated guesses and may need to be revised. 
+C*****educated guesses and may need to be revised. If CRATIO < 0, 
+c*****apodization is always calculated as the FFT of the scanning 
+C*****function
       Data CRATIO/0., 40., 10., 40., 160., 20., 20. ,20.,
-     1   40., 40., 20., 100., 10./
+     1   40., 40., 20., 100., 10., -1./
 
 C*****CLIMIT: the limits of the scanned spectrum are expanded by
 C*****HWHM*CLIMIT(JFN) to allow for the wrap around effect at V1 and
@@ -273,7 +275,7 @@ C*****V2 (effectively, V2 wraps around to V1).  Like CRATIO, these
 C*****values are educated guesses (except for the triangle, where the
 C*****bound of the scanning function is exactly 2*HWHM.)
       Data CLIMIT/0., 2., 3., 40., 160., 20., 20., 20.,
-     1   40., 40., 20., 100., 10./
+     1   40., 40., 20., 100., 10., 160/
 
 C*****Note: the values of C, CRATIO, and CLIMIT for JFN=11 (Brault) 
 C*****corespond to a value of PARM of about .9, in which case the 
@@ -302,8 +304,9 @@ C*****Read in scan commands until HWHM .le. 0.
   100 Continue
       PARM1 = 0.0
       PARM2 = 0.0
+      PARM3 = 0.0
 
-      Read(IRD,10,End=120) HWHM, V1, V2, JEMIT, JFNIN, MRATIN, 
+      Read(IRD,10,End=120) HWHM, V1, V2, JEMIT, JFNIN, MRATIN,
      1     DVOUT,IUNIT,IFILST,NIFILS, JUNIT, IVX, NOFIX
    10 Format(3F10.3,3I5,F10.5,4I5,I3,I2)
 
@@ -318,9 +321,9 @@ C*****Read in scan commands until HWHM .le. 0.
 
       If(ABS(JFNIN) .ge. 11) Then
 C*****    Functions 11 and above require further parameters
-          Read(IRD,'(2F10.4)',End=120,Err=122) PARM1,PARM2
-          WRITE(IPR,16) PARM1,PARM2
-  16      Format(/,'     PARM1     PARM2',/,' ',2F10.4)
+          Read(IRD,'(3F10.4)',End=120,Err=122) PARM1,PARM2,PARM3
+          WRITE(IPR,16) PARM1,PARM2,PARM3
+  16      Format(/,'     PARM1     PARM2     PARM3',/,' ',3F10.4)
       Endif
 
 C*****Check whether JEMIT, JFNIN are within bounds
@@ -448,7 +451,7 @@ C*****    the scanned spectrum
 C*****3.  regridding: prescanning with the boxcar resamples onto a new
 C*****    frequency grid
 C*****4.  interpolation: V2S is adjusted to fall on the interpolated
-C*****    grid (interpolation not yet implemented)
+C*****    grid 
 
       If(V1 .ge. V2) Then
           Write(IPR,*) ' FFTSCN - input error: Initial V >= final V:',
@@ -635,7 +638,8 @@ C*****put on file on unit LFILE1
 
 C*****Calculate apodization and store in FUNCT2 or on LFILE2
       Call Getunt(LFILE2)
-      Call Scntrn(JFN,A,IVX,DV,LREC,LPTFFT,LFILE2,FUNCT2,PARM1,PARM2)
+      Call Scntrn(JFN,A,IVX,DV,LREC,LPTFFT,LFILE2,FUNCT2,
+     1            PARM1,PARM2,PARM3)
 
 C*****Multiply FUNCT1 and FUNCT2 and store the result in FUNCT1 or
 C*****on LFILE1
@@ -664,7 +668,7 @@ C*****Adjust V1S and V2S to fit the current spectral grid
 C*****Actually, let V1S be one DV less than the largest VZ <= V1
 C*****and let V2S be one DV larger than the smallest VZ >= V2
 C*****This procedure gives two points beyond V1 and V2, as required for
-C*****4 point interpolation
+C*****4 point interpolation 
       N1 = INT((V1-V1Z)/DV)
       V1S = V1Z+(N1-1)*DV
       If (V1S .LT. V1Z) Then
@@ -743,6 +747,7 @@ C*****Read next scan request
       Stop 'Stopped in FFTSCN'
 
   122 Continue
+   
       Write(IPR,*) ' FFTSCN: Error in reading scan fn parameters'
       Stop 'Stopped in FFTSCN'
 
@@ -1808,12 +1813,13 @@ C*****cannot be used.
       Stop 'Stopped in MULTRN'
 
       End
-      Subroutine Scnfnt(JFN,A,IAPSC,X,DX,LPTS,FUNCT,PARM1,PARM2)
+      Subroutine Scnfnt(JFN,A,IAPSC,X,DX,LPTS,FUNCT,PARM1,PARM2,PARM3)
 C************************************************************************
 C     This function calculates the spectral scanning function (IAPSC=1) or
 C     the equivalent apodization function (IAPSC=-1) corresponding to JFN,
 C     characterized by the parameter A = 1/K, where K is the length of an 
-C     equivalent interferometer. 
+C     equivalent interferometer. PARM1, PARM2, and PARM3 are parameters 
+C     required to define some of the scanning functions.
 C
 C     The scanning functions and their corresponding apodization
 C     functions are listed here. The constants Ci convert the half
@@ -1838,6 +1844,9 @@ C      9   Norton-Beer: moderate
 c     10   Norton-Beer: strong
 C     11   Brault
 C     12   Kaiser-Bessel
+C     13   Kiruna: c1*sinc(u)+c2*sinc(u-2*Pi*v_offset/a), u=2*Pi*v/a, a=1/L
+C              This is an asymetric scanning function, the corresponding 
+C              apodization function is complex.
 C
 C     JFN  Apodization Function
 C      1   Sinc**2 = (sin(z)/z)**2, z = Pi*x*a (a = C1*hwhm)
@@ -1856,6 +1865,7 @@ C     12   Kaiser-Bessel
 C                 = I0(PI*p1*sqrt((1.-(x*a)**2))/I0(Pi*p1), where IO is 
 C                   zero-order modified Bessel function of the first kind,
 C                   and p1 is a parameter (PARM1) from about 2 to 4
+c     13   Kiruna: not implemented
 C************************************************************************
 
 C*****IFIL carries file information
@@ -1878,7 +1888,7 @@ C*****to a narrow rectangular scanning function used to pre-scan the spectrum.
       X0 = X
 
       If (JFN .EQ. -1) Go to 200
-      Go to (10,20,30,40,50,60,70,80,80,80,90,100) JFN
+      Go to (10,20,30,40,50,60,70,80,80,80,90,100,110) JFN
 
       Write(IPR,*) 'Scnfnt - error: JFN out of range, = ', JFN
       Stop 'Stopped in Scnfnt'
@@ -2086,7 +2096,7 @@ C*****    Scanning function
       Else
 C*****    Apodization function
           Do 76 L=1,LPTS-1,2
-              If(X .LT. 1.0/A) Then
+              If(X .LT. 1./A) Then
                   FUNCT(L) = 0.5*(1.0+COS(Pi*X*A))
               Else
                   FUNCT(L) = 0.0
@@ -2108,15 +2118,10 @@ C****     Scanning function
           Write(IPR,*) ' Scnfnt - error: Norton-Beer apodization', 
      c        '  not yet implemented in spectral domain'
           Stop ' Stopped in Scnfnt'
-
-C
-C     THIS CODE IS PLACED HERE FOR FUTURE IMPLEMENTATION
-C     --------------------------------------------------
-C          Do 85 l=1,LPTS
-C              
-C              X = X0+L*DX
-C  85      Continue
-C     --------------------------------------------------
+          Do 85 l=1,LPTS
+              
+              X = X0+L*DX
+  85      Continue
       Else
 C****     Apodization Function
           Do 89 L=1,LPTS-1,2
@@ -2168,14 +2173,10 @@ C****     Scanning function
      c        '  not yet implemented in spectral domain'
           Stop ' Stopped in SCNFNT'
 
-C
-C     THIS CODE IS PLACED HERE FOR FUTURE IMPLEMENTATION
-C     --------------------------------------------------
-C          Do 95 l=1,LPTS
+          Do 95 l=1,LPTS
 C****         Insert code for scanning function here
-C              X = X0+L*DX
-C  95      Continue
-C     --------------------------------------------------
+              X = X0+L*DX
+  95      Continue
       Else
 C****     Apodization Function
           X1 = PARM1/A
@@ -2202,9 +2203,9 @@ C*****    F = Bessel(0,y), where Bessel(0,y) is the zero-order
 C*****        modified Bessel function of the first kind
 C*****The valid range of P is [2,4].  
 
-      If(PARM1 .LT. 2.0 .OR. PARM1 .Gt. 4.0) Then
+      If(PARM1 .LT. 2.0 .OR. PARM1 .GT. 4.0) Then
           Write(IPR,*) ' SCNFNT - Error: Kaiser-Bessel Apodization, ',
-     1        'P = ',PARM1,'  Valid range of P is [0,1)'
+     1        'P = ',PARM1,'  Valid range of P is [2,4]'
           Stop 'Stopped in SCNFNT'
       ENDIF
 
@@ -2214,14 +2215,10 @@ C****     Scanning function
      c        '  not yet implemented in spectral domain'
           Stop ' Stopped in Scnfnt'
 
-C
-C     THIS CODE IS PLACED HERE FOR FUTURE IMPLEMENTATION
-C     --------------------------------------------------
-c          Do 105 l=1,LPTS
-c              
-c              X = X0+L*DX
-c 105      Continue
-C     --------------------------------------------------
+          Do 105 l=1,LPTS
+              
+              X = X0+L*DX
+ 105      Continue
       Else
 C****     Apodization Function
 C****     Expansion for the Bessel function is from 'Numerical Recipies'
@@ -2239,6 +2236,44 @@ C****     Normalization factor: IO(X=0)
  109      Continue
       Endif
       Return
+
+  110 Continue
+C*****Kiruna (?)
+C*****This is an asymetric scanning function consisting of a sinc at 0 
+C*****and another sinc at v_offset= PARM1. The magnitudes of the two sinc's
+C*****are c1 = PARM2 and c2 = PARM3.
+
+      IF(IAPSC .EQ. -1) Then
+C*****    Scanning Function
+          Do 115 L=1,LPTS
+              U1 = 2.0*Pi*X/A
+              If (U1 .EQ. 0.0) THEN 
+                  F1=1.0
+              ELSE 
+                  F1 = SIN(U1)/U1
+              ENDIF 
+                  
+              U2 = 2.0*PI*(X-PARM1)/A
+              IF (U2 .EQ. 0.0) THEN 
+                  F2 = 1.0
+              ELSE 
+                  F2 = SIN(U2)/U2
+              ENDIF
+
+              FUNCT(L) = PARM2*F1+PARM3*F2
+              X = X0+L*DX
+  115     Continue
+          
+      Else
+C*****    Apodization Function
+C*****    The apodization function for this scanning function is complex
+C*****    and is not implemented here.  
+          Write(IPR,*) ' SCNFNT - ERROR: Kiruna Function: ',
+     1        ' Apodization Function not defined'
+              Stop 'Stopped in SCNFNT'
+
+       Endif
+       Return
 
   200 Continue
 C*****Rectangle (Boxcar) and Sinc.
@@ -2293,7 +2328,7 @@ c          Stop 'Stopped in Scnfnt'
       RETURN
       END
       Subroutine Scntrn(JFN,A,IVX,DV,LREC,LPTFFT,LFILE,FUNCT,
-     1    PARM1,PARM2)
+     1    PARM1,PARM2,PARM3)
 C***********************************************************************
 C     This subroutine generates the Fourier transform of the spectral
 C     scanning function (a.k.a. instrument response function,
@@ -2318,8 +2353,8 @@ C     increment of the calculated spectrum, while LREC is the number of
 C     records of length LPTSMX in the calculated spectrum. If LREC = 1,
 C     then the apodization function is returned in the array spect,
 C     otherwise it is written to the direct access file on LFILE in
-C     blocks of LPSTMX.  PARM1 and PARM2 are parameters used by some of the 
-C     scanning functions.
+C     blocks of LPSTMX.  PARM1, PARM2, and PARM3 are parameters used by
+C     some of the scanning functions.
 C
 C     The organization of the arrays needs some explanation.  The scanning
 C     function is a real function in the frequency domain, and is symmetric
@@ -2366,16 +2401,14 @@ C     The subroutine SCNFNT does the actual calculation of either the
 C     scanning function or the apodization function, depending on the
 C     value of IVX.
 C
-C
+C     Note: 5/20/96
+C     The capability of handling an asymetric scanning function has been
+C     added, either by specifying scanning function 13 or by reading in
+C     a scanning function.  The corresponding apodization function is 
+C     complex but Hermitan (for a symetric scanning function, it is 
+C     real.) The flag IASYM designates an asymetric scanning function.
 C************************************************************************
 
-C*****IFIL carries file information
-      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL, 
-     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
-     *              NLTEFL,LNFIL4,LNGTH4
-
-C*****LAMCHN carries hardware specific parameters
-      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 C***********************************************************************
 C     LPTSMX is the size of a data block for the FFT.  If the number of
 C     data points is LPTSMX or less, the FFT is done in memory.  If it 
@@ -2420,7 +2453,19 @@ C*****Following line for computers with 64 bit words where the blocksize is
 C*****measured in bytes, e.g. CRAY
 C     PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 
+C*****IFIL carries file information
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL, 
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+
+C*****LAMCHN carries hardware specific parameters
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
+
       DIMENSION FUNCT(LPTSMX),FNEXT(1)
+
+C*****IASYM flags asymetric scanning functions(=1)
+      DIMENSION IASYM(13)
+      DATA IASYM/12*0,1/
 
 C*****Set LPTS equal to the  number of records per block.  For
 C*****LREC = 1, this is LPTFFT which may be less than LPTSMX
@@ -2449,37 +2494,61 @@ C*****    is 0 (ie, LREC = 1), skip this section.
           JMAX = LREC/2
           V = 0.0
           Do 120 J = 1,JMAX
+              
+              VSAVE = V
+              Call Scnfnt(JFN,A,-1,V,DV,LPTS,FUNCT,PARM1,PARM2,PARM3)
 
-              Call Scnfnt(JFN,A,-1,V,DV,LPTS,FUNCT,PARM1,PARM2)
-
-C*****        FNEXT is next value of FUNCT for positive frequencies
-C*****        and is needed for the block with the negative components
-              VV = V
-              Call Scnfnt(JFN,A,-1,VV,DV,1,FNEXT,PARM1,PARM2)
 C*****        Write positive frequencies.
               IREC = J
               Write(LFILE,rec=IREC,err=910) (FUNCT(I),I=1,LPTS)
-C*****        Write negative frequencies.
-              IREC = LREC+1-J
-              Write(LFILE,rec=IREC,err=910)
-     1            FNEXT(1),(FUNCT(I),I=LPTS,2,-1)
 
+C*****        Write negative frequencies.
+              IF (IASYM(JFN) .EQ. 0) Then 
+C*****            FNEXT is next value of FUNCT for positive frequencies
+C*****            and is needed for the block with the negative components
+                  VV = V
+                  Call Scnfnt(JFN,A,-1,VV,DV,1,FNEXT,PARM1,PARM2,PARM3)
+                  IREC = LREC+1-J
+                  Write(LFILE,rec=IREC,err=910)
+     1                 FNEXT(1),(FUNCT(I),I=LPTS,2,-1)
+              Else
+C*****            Asymetric Scanning function, negative frequncies
+C*****            Start at -(VSAVE+DV) 
+                  VNEG = -(VSAVE+DV)
+                  Call Scnfnt(JFN,A,-1,-VNEG,-DV,LPTS,FUNCT,PARM1,
+     1                PARM2,PARM3)
+                  IREC = LREC+1-J
+                  Write(LFILE,rec=IREC,err=910)
+     1                (FUNCT(I),I=LPTS,1,-1)
+ 
+                  V = VV
+              Endif
   120     Continue
 
 C*****    Calculate FUNCT for the middle block, if there is one (LREC
 C*****    is odd.) Includes LREC = 1.          
           If(MOD(LREC,2) .EQ. 1) Then
-
-C*****       Calculate the positive frequencies.
-             Call Scnfnt(JFN,A,-1,V,DV,LPTS/2+1,FUNCT,PARM1,PARM2)
-
-C*****       Fill in the negative frequencies.
-             Do 140 I=2,LPTS/2
-                FUNCT(LPTS+2-I) = FUNCT(I)
-  140        Continue
-             IREC = JMAX+1
-             If(LREC .GT. 1) Write(LFILE,rec=IREC,err=910)
-     1                       (FUNCT(I),I=1,LPTS)
+              VSAVE = V
+C*****        Calculate the positive frequencies.
+              Call Scnfnt(JFN,A,-1,V,DV,LPTS/2+1,FUNCT,
+     1                    PARM1,PARM2,PARM3)
+              
+C*****        Fill in the negative frequencies.
+              If (IASYM(JFN) .EQ. 0) Then
+                  Do 140 I=2,LPTS/2
+                      FUNCT(LPTS+2-I) = FUNCT(I)
+  140             Continue
+                  IREC = JMAX+1
+                  If(LREC .GT. 1) Write(LFILE,rec=IREC,err=910)
+     1                (FUNCT(I),I=1,LPTS)
+              Else
+C*****        Need some fancy bookkeeping here. Fill in FUNCT from 
+C*****        LPTS/2+2 to LPTS, starting at V = -(LPTS/2-1)*DV
+                  V1 = -VSAVE-DV*(LPTS/2-1)
+                  Call Scnfnt(JFN,A,-1,V1,DV,LPTS/2-1,FUNCT(LPTS/2+2),
+     1                        PARM1,PARM2,PARM3)
+                  
+              Endif
           Endif
 
 C*****    Take the Fourier transform of the scanning function to
@@ -2505,7 +2574,7 @@ C*****    area of the scanning function.
                   Write(LFILE,rec=J,err=910) (FUNCT(L),L=1,LPTS)
   170         Continue
           Endif
-
+          
       Else If (IVX .EQ. 1) Then
 
 C*****    Calculate the apodization function directly
@@ -2517,7 +2586,7 @@ C*****    I think this is correct, but maybe it is the following?
 C*****    DX = 1.0/((LPTS*LREC-1)*DV)
 
           Do 200 J=1,LREC
-              Call Scnfnt(JFN,A,1,X,DX,LPTS,FUNCT,PARM1,PARM2)
+              Call Scnfnt(JFN,A,1,X,DX,LPTS,FUNCT,PARM1,PARM2,PARM3)
               IREC = J
               If(LREC .GT.1) Write(LFILE,rec=IREC,err=910)
      1                            (FUNCT(I),I=1,LPTS)
