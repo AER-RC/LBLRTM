@@ -45,7 +45,6 @@ C                                                                         NC0390
       LOGICAL IFIRST                                                      NC0410
       DIMENSION PROGID(*)                                                 NC0420
 C                                                                         NC0430
-      DATA IFIRST / .TRUE. /                                              NC0440
 C                                                                         NC0450
 C     THIS ROUTINE DOES THE INITIALIZATION FOR THE NCAR ROUTINES.         NC0460
 C                                                                         NC0470
@@ -332,3 +331,14 @@ C                                                                         NC3270
       RETURN                                                              NC3280
 C                                                                         NC3290
       END                                                                 NC3300
+C
+C ****************************************************
+      BLOCK DATA NCARGKS
+C
+      LOGICAL IFIRST
+      COMMON /NCARID/ IFIRST
+C
+      DATA IFIRST / .TRUE. /
+C
+      END
+C ****************************************************
