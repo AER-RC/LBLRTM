@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                   22 April 1994
+                                   30 June 1994
  
  
  
@@ -1031,8 +1031,8 @@ C     presently: %H%  %T%
            XNAME     10 character cross-section name, left-justified, all CAPS,
                      which matches an alias from the following table: 
  
-                                      Cross-Section Molecules and Aliases   (Oct 1990)
-                                      ------------------------------------------------
+                                      Cross-Section Molecules and Aliases   (June 1994)
+                                      -------------------------------------------------
  
                              Alias(1)           Alias(2)           Alias(3)           Alias(4)
                             ----------         ----------         ----------         ----------
@@ -1047,7 +1047,9 @@ C     presently: %H%  %T%
                             N2O5
                             HNO3
                             CF4                                    CFC14              F14
-                            CHCLF2              CHF2CL
+                            CHCLF2              CHF2CL             CFC22              F22
+                            CCLF3                                  CFC13              F13
+                            C2CLF5                                 CFC115             F115
  
                      Note: If a molecule has cross-section data in more than one spectral region,
                            each region must have a separate entry in FSCDXS.
