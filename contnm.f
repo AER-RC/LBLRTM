@@ -61,6 +61,7 @@ C     ASSIGN SCCS VERSION NUMBER TO MODULE
 C
       HVRCNT = '$Revision$' 
 C
+c
       RHOAVE = (PAVE/P0)*(T0/TAVE)                                        F00300
       XKT = TAVE/RADCN2                                                   F00310
       WTOT = WBROAD                                                       F00320
@@ -143,7 +144,7 @@ C                                                                         F00680
 C     
          FH2O(J)=FH2O(J)*FSCAL
 C                                                                         F00700
-         C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)
+         C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)                              F00710
 C                                                                         F00720
 C     RADIATION FIELD                                                     F00730
 C                                                                         F00740
@@ -358,8 +359,51 @@ C                                                                         F01770
       CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)            F01800
 C                                                                         F01810
 C     Skip to here for TAVE > 350. 
-C
  85   CONTINUE
+C
+C     O2 continuum formulated by Mlawer over the spectral region
+C     7500-8300 cm-1. Refer to the paper "Observed  Atmospheric
+C     Collision Induced Absorption in Near Infrared Oxygen Bands",
+C     Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
+C     Journal of Geophysical Reearch (1997).
+C
+      WO2 = RHOAVE*WK(7)
+      CHIO2 = (WK(7)*1.E-20)/WTOT 
+      CHIN2 = (WBROAD*1.E-20)/WTOT 
+      ADJFAC = (CHIO2+0.3*CHIN2)/0.446
+      ADJWO2 = ADJFAC * WO2
+      CALL O2INF1 (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      
+      DO 92 J = 1, NPTC                                                
+         C(J) = C0(J)*ADJWO2                                           
+         VJ = V1C+DVC*FLOAT(J-1)                                       
+C                                                                      
+C     RADIATION FIELD                                                  
+C                                                                      
+         IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      
+ 92   CONTINUE                                                         
+      CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
+
+C
+C     O2 continuum formulated by Mlawer over the spectral region
+C     9100-11000 cm-1. Refer to the paper "Observed  Atmospheric
+C     Collision Induced Absorption in Near Infrared Oxygen Bands",
+C     Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,
+C     Journal of Geophysical Reearch (1997).
+C
+      CALL O2INF2 (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                      
+      ADJFAC = CHIO2/0.209
+      ADJWO2 = ADJFAC * WO2
+      DO 93 J = 1, NPTC                                                
+         C(J) = C0(J)*ADJWO2                                              
+         VJ = V1C+DVC*FLOAT(J-1)                                       
+C                                                                      
+C     RADIATION FIELD                                                  
+C                                                                      
+         IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      
+ 93   CONTINUE                                                         
+      CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
+
+C
       CALL O2HERZ (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                         F01820
       DO 90 J = 1, NPTC                                                   F01830
          C(J) = C0(J)*WK(7)                                               F01840
@@ -371,6 +415,7 @@ C                                                                         F01880
    90 CONTINUE                                                            F01900
       CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)            F01910
 C                                                                         F01920
+ 100  continue
       RETURN                                                              F01930
 C                                                                         F01940
  900  FORMAT (/,'0    *********************************************',/,
@@ -6799,6 +6844,131 @@ C                                                                         F41790
      * 0./                                                                F42240
 C                                                                         F42250
       END                                                                 F42260
+C
+C     --------------------------------------------------------------
+C
+      SUBROUTINE O2INF1 (V1C,V2C,DVC,NPTC,C,T,P)                         
+C                                                                        
+      IMPLICIT DOUBLE PRECISION (V)                                     
+C                                                                        
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)               
+      DIMENSION C(*)                                                     
+C                                                                        
+      V1S = 7600.                                                        
+      DVS = 1.                                                          
+      DVC = DVS                                                          
+C                                                                        
+      V1C = V1ABS-DVC                                                    
+      V2C = V2ABS+DVC                                                    
+C                                                                        
+      I1 = (V1C-V1S)/DVS                                                 
+      IF (V1C.LT.V1S) I1 = I1-1                                          
+C                                                                        
+      V1C = V1S+DVS*FLOAT(I1)                                            
+      I2 = (V2C-V1S)/DVS                                                 
+      NPTC = I2-I1+3                                                     
+      V2C = V1C+DVS*FLOAT(NPTC-1)                                        
+      DO 10 J = 1, NPTC                                                  
+         I = I1+J                                                        
+         C(J) = 0.                                                       
+         IF (I.LT.1) GO TO 10                                            
+         VJ = V1C+DVC*FLOAT(J-1)                                         
+         CALL INFRD1 (O2INF,VJ)                                           
+         C(J) = O2INF/VJ                                                  
+   10 CONTINUE                                                           
+
+      RETURN                                                             
+C                                                                        
+      END                                                                
+C
+C     --------------------------------------------------------------
+C
+      SUBROUTINE O2INF2 (V1C,V2C,DVC,NPTC,C,T,P)                         
+C                                                                        
+      IMPLICIT DOUBLE PRECISION (V)                                     
+C                                                                        
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)               
+      DIMENSION C(*)                                                     
+C                                                                        
+C                                                                        
+      V1S = 9040.                                                        
+      DVS = 1.                                                          
+      DVC = DVS                                                          
+C                                                                        
+      V1C = V1ABS-DVC                                                    
+      V2C = V2ABS+DVC                                                    
+C                                                                        
+      I1 = (V1C-V1S)/DVS                                                 
+      IF (V1C.LT.V1S) I1 = I1-1                                          
+C                                                                        
+      V1C = V1S+DVS*FLOAT(I1)                                            
+      I2 = (V2C-V1S)/DVS                                                 
+      NPTC = I2-I1+3                                                     
+      V2C = V1C+DVS*FLOAT(NPTC-1)                                        
+      DO 10 J = 1, NPTC                                                  
+         I = I1+J                                                        
+         C(J) = 0.                                                       
+         IF (I.LT.1) GO TO 10                                            
+         VJ = V1C+DVC*FLOAT(J-1)                                         
+         CALL INFRD2 (O2INF,VJ)                                           
+         C(J) = O2INF/VJ                                                  
+   10 CONTINUE                                                           
+C                                                                        
+      RETURN                                                             
+C                                                                        
+      END                                                                
+C
+C     --------------------------------------------------------------
+C
+      SUBROUTINE INFRD1 (O2INF,V)                                         
+C                                                                        
+      IMPLICIT DOUBLE PRECISION (V)                                     
+C                                                                        
+      O2INF = 0.0                                                         
+      IF (V.LE.7500.00) RETURN                                           
+      IF (V.GE.8300.00) RETURN
+C
+      DV = V - 7896.464      
+      O2INF = 1.054*3.159e-26/(1.+(DV/54.93)**2+(DV/75.63)**4)
+
+      RETURN
+
+ 9000 CONTINUE
+      RETURN                                                             
+C                                                                        
+      END                                                                
+C
+C     --------------------------------------------------------------
+C
+      SUBROUTINE INFRD2 (O2INF,V)                                         
+C                                                                        
+      IMPLICIT DOUBLE PRECISION (V)                                     
+C                                                                        
+      DATA V1 /9375./, HW1 /58.96/, V2 /9439./, HW2 /45.04/
+      DATA S1 /1.166E-24/, S2 /3.086E-25/
+
+      O2INF = 0.0                                                         
+      IF (V .LE. 9100.00) RETURN                                           
+      IF (V .GE. 11000.00) RETURN                                          
+
+      DV1 = V - V1
+      DV2 = V - V2
+      IF (DV1 .LT. 0.0) THEN
+         DAMP1 = EXP (DV1 / 176.1)
+      ELSE
+         DAMP1 = 1.0
+      ENDIF
+      IF (DV2 .LT. 0.0) THEN
+         DAMP2 = EXP (DV2 / 176.1)
+      ELSE
+         DAMP2 = 1.0
+      ENDIF
+      O2INF = 0.31831 * (((S1 * DAMP1 / HW1)/(1. + (DV1/HW1)**2))
+     &     + ((S2 * DAMP2 / HW2)/(1. + (DV2/HW2)**2))) * 1.054
+ 9000 CONTINUE
+      RETURN                                                             
+C                                                                        
+      END                                                                
 C
 C     --------------------------------------------------------------
 C
