@@ -1732,8 +1732,13 @@ C                                                                         H13420
                ODVI = TR(I)+EXT*RADFN0                                    H13460
                XX = AA*ODVI                                               H13500
 C                                                                         H13510
-               TR(I) = EXP(-ODVI)                                         H13520
-               EM(I) = (1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)    H13530
+               IF (ABS(ODVI) .LT. 0.001) THEN
+                   TR(I) = 1.-ODVI
+                   EM(I) = (ODVI-EM(I))*(BB+XX*BBA)/(1.+XX)
+               ELSE
+                   TR(I) = EXP(-ODVI)                                 
+                   EM(I)=(1.-TR(I))*(1.0-EM(I)/ODVI)*(BB+XX*BBA)/(1.+XX)  H13530
+               ENDIF
 C                                                                         H13540
 C              Increment interpolation values
 C
