@@ -4,15 +4,75 @@ C     created:   $Date$
 C     presently: %H%  %T%
 
  
- 
-
-
-
 
                            USER INSTRUCTIONS FOR LBLRTM
 
-                                 14 DECEMBER 2001 
+                                  2 FEBRUARY 2002 
  
+ 
+
+  ---------------------------------------------------------------------         
+                                                                                
+                   FILE ASSIGNMENTS FOR LBLRTM                                  
+                                                                                
+                                                                                
+      TAPE3       UNFORMATTED LINE FILE WITH LBLRTM  BLOCKING                   
+                                    EXTERNAL FILE NOT REQUIRED FOR              
+                                                IHIRAC=0                        
+                                                IHIRAC=9                        
+                                                IHIRAC NE 0,9 ; ITEST=1         
+                                                                                
+      TAPE4       NLTE VIBRATIONAL TEMPERATURES (POPULATIONS) BY LAYER          
+                                          ONLY REQUIRED FOR IHIRAC=4            
+                                                                                
+      TAPE5       LBLRTM  INPUT FILE                                            
+                                                                                
+      TAPE6       LBLRTM  OUTPUT FILE                                           
+                                                                                
+      TAPE7       FILE OF MOLECULAR COLUMN AMOUNTS FROM LBLATM                  
+                                 ONLY FOR IATM=1; IPUNCH=1 (CARD 2.1)           
+                                                                                
+      TAPE9       FILE OF EFFECTIVE LINES FOR LBLF4 CREATED BY LINF4            
+                                                                                
+      TAPE10      OPTICAL DEPTH RESULTS FROM LINE BY LINE CALCULATION           
+                              LAST LAYER     FOR IMRG EQ 0                      
+                              LAYER BY LAYER FOR IMRG EQ 1                      
+                                                                                
+      TAPE11      SPECTRAL RESULTS FROM SCANFN AND INTRPL                       
+                              JEMIT=-1: ABSORPTION                              
+                              JEMIT= 0: TRANSMITTANCE                           
+                              JEMIT= 1: RADIANCE                                
+                                                                                
+      TAPE12      MONOCHROMATIC RESULTS                                         
+                              IEMIT=0: OPTICAL DEPTH                            
+                              IEMIT=1: RADIANCE/TRANSMITTANCE                   
+                                   INCLUDES AEROSOL CONTRIBUTION FOR            
+                                                   IAERSL=1; IEMIT=1            
+                                                                                
+      TAPE13      MONOCHROMATIC RESULTS FOR WEIGHTING FUNCTIONS                 
+                              IEMIT=0: OPTICAL DEPTH                            
+                              IEMIT=1: RADIANCE/TRANSMITTANCE                   
+                                   ONLY CREATED FOR IMRG= 3 TO 18               
+                                                                                
+      TAPE14      MONCHROMATIC RESULTS INLUDING AEROSOL CONTRIBUTION            
+                              IEMIT=0: OPTICAL DEPTH                            
+                              IEMIT=1: RADIANCE/TRANSMITTANCE                   
+                                   ONLY CREATED FOR IAERSL=1; IEMIT=0           
+                                                                                
+      TAPE20      SPECTRAL AEROSOL TRANSMITTANCES                               
+                              TOTAL AEROSOL  CONTRIBUTION FOR IEMIT=0           
+                              LAYER BY LAYER CONTRIBUTION FOR IEMIT=1           
+                                   ONLY CREATED FOR IAERSL=1                    
+                                                                                
+      TAPE29      FILE CONTAINING VALUES OF Y FOR PLOTTING                      
+                                   ONLY FOR IPLOT EQ 1                          
+                                                                                
+                                                                                
+      TAPE39      AFGL PLOT FILE                                                
+                                                                                
+  ---------------------------------------------------------------------         
+
+
  
 
  RECORD 1.1
