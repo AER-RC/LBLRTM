@@ -630,7 +630,7 @@ C*****format.  First, modify the header.
 
       ISCHDR = ISCHDR+1
 
-      Call BUFOUT(JFILE,1,NFHDRF,FILHDR)
+      Call BUFOUT(JFILE,FILHDR(1),NFHDRF)
       Call Wrtspc(N1,NTOTAL,LREC,LFILE1,FUNCT1,JFILE)
 
 C*****End of convolution for this scan request
@@ -1131,7 +1131,7 @@ C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
 C*****Read in the file header
-      Call BUFIN(IFILE,IEOFSC,1,NFHDRF,FILHDR)
+      Call BUFIN(IFILE,IEOFSC,FILHDR(1),NFHDRF)
 
       If(IEOFSC .le. 0) Then
           Write(IPR,*) ' GETHDR: EOF on File ',IFILE,
@@ -1266,14 +1266,14 @@ C*****LAMCHN carries hardware specific parameters
       DIMENSION DUMMY(1)
 
 C*****Read the panel header
-      Call BUFIN(IFILE,IEOFSC,1,NPHDRF,PNLHDR)
+      Call BUFIN(IFILE,IEOFSC,PNLHDR(1),NPHDRF)
       If(IEOFSC .LE. 0) Go to 200
 
 C*****Read in the spectral data and convert if necessary
 
-      Call BUFIN(IFILE,IEOFSC,1,NP,S)
+      Call BUFIN(IFILE,IEOFSC,S(1),NP)
       If(IEOFSC .LE. 0) Go to 210
-      If(JCONVT .EQ. 3) Call BUFIN(IFILE,IEOFSC,1,NP,S)
+      If(JCONVT .EQ. 3) Call BUFIN(IFILE,IEOFSC,S(1),NP)
       If(IEOFSC .LE. 0) Go to 210
       If(JCONVT .EQ. 1) Then
           Do 100 N=1,NP
@@ -1287,7 +1287,7 @@ C*****Read in the spectral data and convert if necessary
   100     Continue
       Endif
       If(JCONVT .EQ. 2) Then
-          Call BUFIN(IFILE,IEOFSC,1,1,DUMMY)
+          Call BUFIN(IFILE,IEOFSC,DUMMY(1),1)
           If(IEOFSC .LE. 0) Go to 210
 
       Endif
@@ -2613,8 +2613,8 @@ C*****    Write out a panel
 
           V2P = V1P+DVP*(NP-1)
 
-          CALL Bufout(JFILE,1,NPHDRF,V1P)
-          CALL Bufout(JFILE,1,NP,S)
+          CALL Bufout(JFILE,V1P,NPHDRF)
+          CALL Bufout(JFILE,S(1),NP)
 
           NDONE = NDONE+NP
           NLAST = 0
@@ -2630,66 +2630,6 @@ C*****    Write out a panel
       Stop 'Stopped in Wrtspc'
 
       End
-      FUNCTION NWDL(IWD,ILAST)
-      DIMENSION IWD(1)
-      ILAST=-654321
-      DO 10 I=1,900
-      IF(IWD(I).NE.ILAST) GO TO 10
-      NWDL=I-1
-      GO TO 12
-10    CONTINUE
-12    RETURN
-      END
-      SUBROUTINE ENDFIL(IFILE)
-      DIMENSION IDUM(6)
-      DATA IDUM /6*-99/
-      CALL BUFOUT(IFILE,1,6,IDUM)
-      RETURN
-      END
-      SUBROUTINE SKIPFL(NUMFL,IFILE,IEOF)
-      DIMENSION DUM(4)
-      IF(NUMFL.LE.0) RETURN
-      ISKIP=0
-10    CALL BUFIN(IFILE,IEOF,1,4,DUM)
-      IF(IEOF.EQ.1) GO TO 10
-      ISKIP=ISKIP+1
-      IF(ISKIP.LT.NUMFL) GO TO 10
-      RETURN
-      END
-      SUBROUTINE BUFIN(IFILE,IEOF,ILO,IWORDS,IARRAY)
-C
-C     THIS SUBROUTINE BUFFERS IN (READS) IWORDS INTO  IARRAY STARTING
-C     AT LOCATION ILO
-C
-C     IFILE IS THE FILE DESIGNATION
-C
-      DIMENSION IARRAY(1)
-C
-      IEOF=1
-      IHI=ILO+IWORDS-1
-C#    BUFFER IN(IFILE,1) (IARRAY(ILO),IARRAY(IHI))
-C#    IF (UNIT(IFILE) .EQ. 0.) IEOF=0
-C#    IF (IEOF. EQ. 0) RETURN
-      READ (IFILE,END=10)(IARRAY(I),I=ILO,IHI)
-      IF(IARRAY(ILO+3).EQ.-99) IEOF=-99
-      RETURN
-  10   IEOF=0
-      RETURN
-      END
-      SUBROUTINE BUFOUT(IFILE,ILO,IWORDS,IARRAY)
-C
-C     THIS SUBROUTINE BUFFERS OUT (WRITES) IWORDS FROM IARRAY STARTING
-C     AT LOCATION ILO
-C
-C     IFILE IS THE FILE DESIGNATION
-C
-      DIMENSION IARRAY(1)
-      IHI=ILO+IWORDS-1
-C#    BUFFER OUT(IFILE,1) (IARRAY(ILO),IARRAY(IHI))
-C#    IF (UNIT(IFILE). EQ. 0.) 'ERROR IN BUFOUT'
-      WRITE(IFILE)(IARRAY(I),I=ILO,IHI)
-      RETURN
-      END
       SUBROUTINE REALFT(DATA,N,ISIGN)
       DOUBLE PRECISION WR,WI,WPR,WPI,WTEMP,THETA
       PARAMETER (PI2=6.28318530717959D0)
