@@ -519,11 +519,11 @@ C     presently: %H%  %T%
  
  
  
-         TBOUND, SREMIS(1), SREMIS(2), SREMIS(3), SRREFL(1), SRREFL(2), SRREFL(3)
+         TBOUND, SREMIS(1), SREMIS(2), SREMIS(3), SRREFL(1), SRREFL(2), SRREFL(3), surf_refl
  
-           1-10,     11-20,     21-30,     31-40,     41-50,     51-60,     61-70
+           1-10,     11-20,     21-30,     31-40,     41-50,     51-60,     61-70,    75   
  
-          E10.3,     E10.3,     E10.3,     E10.3,     E10.3,     E10.3,     E10.3
+          E10.3,     E10.3,     E10.3,     E10.3,     E10.3,     E10.3,     E10.3    4X,1A
  
  
  
@@ -542,14 +542,20 @@ C     presently: %H%  %T%
                              EMISSIVITY   = SREMIS(1) + SREMIS(2)*V + SREMIS(3)*(V**2)
 
                              *** NOTE: Entering a value for SREMIS(1) < 0 allows for direct input of boundary emissivities
-                                        from file 'EMISSION'
+                                        from file 'EMISSIVITY'
  
               SRREFL(I)    frequency dependent boundary reflectivity coefficients (I = 1,2,3)
  
                              REFLECTIVITY = SRREFL(1) + SRREFL(2)*V + SRREFL(3)*(V**2)
  
                              *** NOTE: Entering a value for SRREFL(1) < 0 allows for direct input of boundary reflectivities
-                                        from file 'REFLECTION'
+                                        from file 'REFLECTIVITY'
+
+              surf_refl    is the surface reflectance used in computing the reflected downward radiance
+
+                           's' or ' ' - is specular reflectance
+                           'l'        - is lambertian reflectance
+
 
 
  RECORD 1.4 (Continued)
@@ -660,7 +666,13 @@ C     presently: %H%  %T%
  
          F10.4, F10.4,   F10.4,       A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
  
+	IF IFORM=1 from record 2.1, then the following format is used:
+
+          1-15, 16-25,   26-35,    36-38,  39-40,      42-48,    49-56,    57-63,    64-69,  71-78,  79-85
  
+         F15.7, F10.4,   F10.4,       A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
+ 
+
                 PAVE   average pressure of layer (millibars) (**If IFORM=1, then PAVE in E15.7 format**)
  
                 TAVE   average temperature of layer (K)
