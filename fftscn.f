@@ -4,7 +4,7 @@ C     created:   $Date$
 C     presently: %H%  %T%
       Subroutine FFTSCN (IFILE,JFILE)
 C**********************************************************************
-C     FFTSCN and its associated subroutines convolve a Fascode spectrum
+C     FFTSCN and its associated subroutines convolve an LBLRTM spectrum
 C     with an instrument response function (scanning function) using
 C     Fourier Transforms.  The program transforms the spectrum to the
 C     Fourier domain, multiplies it by the Fourier transform of the
@@ -93,16 +93,16 @@ C             performed.
 C     DVOUT   Not used (reserved for future use.)
 C     IUNIT   Unit number of the file containing the spectrum to be 
 C             scanned. 
-C             = 0: use file on UNIT = IFILE (from FASCODE, default=12)
+C             = 0: use file on UNIT = IFILE (from LBLRTM, default=12)
 C             > 0: use file on UNIT = IUNIT
 C             < 0: read a filename from the next record, 20 characters max,
 C                  and open this file on UNIT = -IUNIT
-C     IFILST  Sequential number of the first FASCODE file on IUNIT to
+C     IFILST  Sequential number of the first LBLRTM file on IUNIT to
 C             be scanned
-C     NIFILS  Number of FASCODE files on IUNIT to be scanned, 
+C     NIFILS  Number of LBLRTM files on IUNIT to be scanned, 
 C             beginning with IFILST
 C     JUNIT   Unit number of the file containing the output spectrum.  
-C             = 0: UNIT = IFILE (from FASCODE default = 11),
+C             = 0: UNIT = IFILE (from LBLRTM default = 11),
 C                   filename=TAPExx, where xx = IFILE
 C             > 0: UNIT = IUNIT, filename = TAPExx, where xx = IUNIT
 C             < 0: read in a filename from the next record, 60 characters max,
@@ -620,7 +620,7 @@ C*****4 point interpolation (note: interpolation not yet implimented.)
      1    ' Adjusted Limits of Scanned Spectrum:',
      2    ' V1 = ',V1S,' V2 = ',V2S,' DV = ',DV,' N  =',NTOTAL
 
-C*****Write FUNCT1 = scanned spectrum out to a file on JUNIT in FASCODE
+C*****Write FUNCT1 = scanned spectrum out to a file on JUNIT in LBLRTM
 C*****format.  First, modify the header.
       V1C = V1S
       V2C = V2S
@@ -905,7 +905,7 @@ C*****LAMCHN carries hardware specific parameters
       Logical OP,EX
       Character FILNAM*60,CTAPE*4
 
-C*****CTAPEdefines the default prefix for FASCODE FILENAMEs, e.g. TAPE12
+C*****CTAPEdefines the default prefix for LBLRTM FILENAMEs, e.g. TAPE12
       Data FILNAM/' '/,CTAPE/'TAPE'/
       
       IERR = 0
@@ -1079,7 +1079,7 @@ C*****    Use file based FFT from M. Esplin
       End
       Subroutine Gethdr (IFILE,IPRNT,JDATA,IEOFSC)
 C************************************************************************
-C     This subroutine reads the first record a Fascode file (the file
+C     This subroutine reads the first record an LBLRTM file (the file
 C     header) from unit IFILE.  It determines what data is on the file
 C     according to the following scheme:
 C     Determine what quantity is on the file (i.e., Optical depth,
@@ -1194,7 +1194,7 @@ C*****Determine what data is on the file
       Subroutine Getpnl(IFILE,JCONVT,IEOFSC)
 C***********************************************************************
 C     This subroutine gets one panel of data from the file on IFILE in
-C     Fascode format. A panel consists of a header plus one or two data
+C     LBLRTM format. A panel consists of a header plus one or two data
 C     records.  The header contains the  the initial and final
 C     wavenumbers, wavenumber increment, and number of points in the
 C     record. The data contained in the record(s) depends upon the 
@@ -1216,7 +1216,7 @@ C          2   two records, get first (mono. radiance)
 C          3   two records, get second (mono. transmittance)
 C
 C     IEOFSC equals 0 if a hardware end of file is encountered, equals
-C      -99 for the end of a Fascode file, otherwise it is 1.
+C      -99 for the end of an LBLRTM file, otherwise it is 1.
 C
 C     V1P, V2P, DVP, NP are the initial and final wavenumbers, the
 C     wavenumber increment and the number of points in the record(s).
@@ -1343,7 +1343,7 @@ C     the number of records.  Both LPTSMX and LREC must be powers of 2
 C     (LREC may be 1).  Partial records will be completed with zero's
 C     (radiance) or 1's (transmittance) and records of all zero's or
 C     1's  will be added as needed.  JCONVT indicates how the data 
-C     is to be extracted from the FASCODE file. JEMIT flags transmittance
+C     is to be extracted from the LBLRTM file. JEMIT flags transmittance
 C     (0) or radiance(1).
 C***********************************************************************
 
@@ -2453,7 +2453,7 @@ C*****    DX = 1.0/((LPTS*LREC-1)*DV)
       Subroutine Wrtspc(NV1,NTOTAL,LREC,LFILE,SPECT,JFILE)
 C************************************************************************
 C     This subroutine rewrites a spectral file from the direct access
-C     format used by fftscn to the sequential FASCODE format. 
+C     format used by fftscn to the sequential LBLRTM format. 
 C     The input data is on file LFILE, which contains LREC
 C     records in blocks of LPTSMX points, or in the array SPECT, if
 C     LREC = 1. The output file starts at point NV1 of the input 
@@ -2546,7 +2546,7 @@ C*****measured in bytes, e.g. CRAY
 C     PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 
       Dimension SPECT(LPTSMX)
-C*****NMAX is the maximum size of a Fascode panel
+C*****NMAX is the maximum size of an LBLRTM panel
       Data NMAX/2400/
 
 C*****Find the input record containing V1      
