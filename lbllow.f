@@ -7554,8 +7554,7 @@ C                                                                        FL71100
      *AMOL61(50),AMOL62(50),AMOL63(50),AMOL64(50),AMOL65(50),AMOL66(50), FL71270
      *AMOL67(50),AMOL68(50),                                             FL71280
      *ATMNA1(3),ATMNA2(3),ATMNA3(3),ATMNA4(3),ATMNA5(3),ATMNA6(3),       FL71290
-     *                 HMODS(3),ZST(50),PST(50),TST(50),AMOLS(50,35),    FL71300
-     * IMST                                                              FL71310
+     *     HMODS(3),ZST(50),PST(50),TST(50),AMOLS(50,35),IDUM            FL71300
 C                                                                        FL71320
 C     COMMON /TRACL/ TRAC(50,22)                                         FL71330
 C                                                                        FL71340
