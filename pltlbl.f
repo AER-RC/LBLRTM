@@ -1391,7 +1391,7 @@ C     WRITE DATE AND TIME TO BOTTOM OF PLOT                               M12530
 C                                                                         M12540
   150 YBIAS = -3.75*1.25*HGT-0.25                                         M12550
       XBIAS = YBIAS-0.5                                                   M12560
-      CALL FDATE (HDATE)                                                  M12570
+      CALL LBLDAT(HDATE)                                                  M12570
       CALL FTIME (HTIME)                                                  M12580
       WRITE (YIDC,'(2(A10),A3,2(A10))') HDATE,HTIME,ASTR,(YID(I),I=1,2)   M12590
       CALL SYMBOL (XBIAS,YBIAS,0.10,YIDC,0.0,43)                          M12600
