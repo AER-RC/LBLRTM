@@ -482,6 +482,57 @@ C                                                                         F01880
          CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01910
 
       endif
+
+
+C     ********** Rayleigh Scattering calculation **********
+c
+c     The formulation, adopted from MODTRAN_3.5 (using approximation
+c     of Shettle et al., (Appl Opt, 2873-4, 1980) with depolarization
+c     = 0.0279, output in km-1 for T=273K & P=1 ATM) is as follows:
+C
+c     The rayleigh "absorption" coefficient (scattering in the direct
+c     beam) ray_abs can be defined as
+c
+c         ray_abs = (vrayleigh**4/(9.38076E18-1.08426E09*vrayleigh**2))
+c     *        *wmol_tot*conv_cm2mol
+c
+c     where vrayleigh is the wavenumber value, wmol_tot is the total
+c     molecular amount in the layer, and conv_cm2mol is the conversion
+c     factor derived by multiplying air density (2.68675E19 mol/cm3)
+c     at 273 K with the number of km per cm (1.e-5 km/cm).
+c
+c     For numerical purposes, the layer amount of all molecules is
+c     calculated above as WTOT, which has been scaled by 1.e-20. We
+c     have taken 1.e20 out of the air density in the denominator
+c     as well. In addition, a factor of 10,000 (cm-1) has been 
+c     divided out of vrayleigh. Finally, the radiation field is
+c     excluded, so xvrayleigh**4 is replaced by xvrayleigh**3. When
+c     JRAD=1, the radiation field is put in by multiplying the
+c     absorption by xvrayleigh.
+c
+c     Rayleigh scattering in the direct beam is only calculated for
+c     model runs > 3100 cm-1.
+c
+      If (v2.lt.3100.) goto 100
+c
+c     Thus the current formulation is
+
+      conv_cm2mol = 1./(2.68675e-1*1.e5)
+
+      do 95 i=1,nptabs
+         vrayleigh = v1abs+(i-1)*dvabs
+         xvrayleigh = vrayleigh/1.e4
+         ray_abs = (xvrayleigh**3/(9.38076E2-1.08426*xvrayleigh**2))
+     *        *wtot*conv_cm2mol
+
+C        Radiation field
+
+         IF (JRAD.EQ.1) ray_abs = ray_abs*xvrayleigh
+
+         absrb(i) = absrb(i)+ray_abs
+ 95   continue
+
+
 C                                                                         F01920
  100  continue
       RETURN                                                              F01930
