@@ -15,7 +15,7 @@ C                                                                         N00040
       COMMON VNU(250),STR(250),ALF(250),EPP(250),MOL(250),HWHMS(250),     N00050
      *       TMPALF(250),PSHIFT(250),IFLG(250),lstwdl
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
 c      COMMON /LINES/ XLINC(5,1027),XLIND(6,1027)                          N00070
       COMMON /LINES/ XLINC(5,1068),XLIND(6,1068)                          N00070
 C                                                                         N00080
@@ -45,7 +45,7 @@ C                                                                         N00210
       EQUIVALENCE (VNULO,RCDHDR(1)) , (MOL(1),AMOL(1)),                   N00220
      *            (HLINHD(1),HID(1),IWD(1))                               N00230
 C                                                                         N00240
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
 C
 C     LINCPL - IS THE FLAG FOR LINE COUPLING --- 0 = OFF; 1 = ON          N00250
@@ -61,7 +61,7 @@ C**********************************************************************   N00340
 C                                                                         N00350
 c      DATA ISO / 1 /                                                      N00360
 C                                                                         N00370
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C
       HVRTST = '$Revision$' 
 C

@@ -201,7 +201,7 @@ C*****Blank Common carries the spectral data
 
 C*****HVERSN carries the module SCCS version numbers
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
 
 C*****SCNHRD carries the header information for the scanned file
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
@@ -232,8 +232,8 @@ C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
 
-      Character*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      Character*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
       Character*16 SFNAME,ANAMES(0:JFNMAX)
       Dimension C(0:JFNMAX),CRATIO(0:JFNMAX),CLIMIT(0:JFNMAX)
 
@@ -295,8 +295,9 @@ C*****will interpolate onto a fine grid but then boxcar back onto a
 C*****coarser grid
       Data MDVHW /12/
 
-C*****Assign SCCS version number to module fftscn.f
-      HVRFFT =  '$RCSfile$ $Revision$'
+C*****Assign CVS version number to module fftscn.f
+
+      HVRFFT =  '$Revision$'
 
       Write(IPR,'(''1FFTSCN: SPECTRAL SMOOTHING IN THE '',
      1            ''FOURIER DOMAIN*****'')')

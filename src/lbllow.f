@@ -349,7 +349,7 @@ C
       CHARACTER*8       XID,       HMOLID,      YID   
       Real*8                SECANT,       XALTZ
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      FL03280
      *     WK(60),PZL,PZU,TZL,TZU,WN2   ,DVP,V1P,V2P,TBOUNF,EMISIV,      FL03290
      *     FSCDID(17),NMOL,LAYER,YI1,YID(10) ,LSTWDF                     FL03300
@@ -363,8 +363,8 @@ C
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL03380
       CHARACTER*20 HHAZE,HSEASN,HVULCN,HMET,HMODEL,BLANK                 FL03390
       CHARACTER*24 HTRRAD                                                FL03400
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
       COMMON /TITL/ HHAZE(16),HSEASN(2),HVULCN(8),BLANK,                 FL03410
      * HMET(2),HMODEL(8),HTRRAD(4)                                       FL03420
       COMMON /VSBD/ VSB(10)                                              FL03430
@@ -377,7 +377,7 @@ C                                                                        FL03540
       DATA MAXATM,MAXGEO   /3020, 3014/                                  FL03550
       IEMSCT = IEMS                                                      FL03560
 C
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C
       HVRLOW = '$Revision$' 
 C                                                                        FL03570

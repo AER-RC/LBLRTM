@@ -77,7 +77,7 @@ C                                                                         B00630
       Real*8               SECANT,       XALTZ
 C                                                                         B00650
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
@@ -119,8 +119,8 @@ C                                                                         B00970
       CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR
       CHARACTER*10 HFMODL
       CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
       LOGICAL OP                                                          B00990
 C                                                                         B01000
       DIMENSION MEFDP(64),FILHDR(2),IWD(2)                                B01010
@@ -152,7 +152,7 @@ C                                                                         B01140
 C                                                                         B01160
       CALL CPUTIM (TIMEH0)                                                B01170
 C                                                                         B01180
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C
       HVROPR = '$Revision$'
 C

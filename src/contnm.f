@@ -17,7 +17,7 @@ C                                                                         F00100
       REAL*8               SECANT,       XALTZ
 C                                                                         F00120
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       F00130
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   F00140
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    F00150
@@ -35,8 +35,8 @@ c
 C
       REAL ABSBSV(5050)
 C                                                                         F00230
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
       EQUIVALENCE (C0,SH2OT0,CN2T0,FCO2) , (C1,SH2OT1,CT1),               F00240
      *            (C2,FH2O,CT2)                                           F00250
 C                                                                         F00260
@@ -72,8 +72,9 @@ C           5            yes       yes         no          yes
 C           6   READ IN XSELF, XFRGN, XCO2C, XO3CN, XO2CN, XN2CN, 
 C               and XRAYL in Record 1.2a
 C
-      HVRCNT = '$RCSfile$ $Revision$'
-
+C     ASSIGN CVS  VERSION NUMBER TO MODULE 
+c
+      HVRCNT = '$Revision$'
 C
       RHOAVE = (PAVE/P0)*(T0/TAVE)                                        F00300
       XKT = TAVE/RADCN2                                                   F00310

@@ -128,7 +128,7 @@ C
       DIMENSION SOLRAD(2410)
 C
       CHARACTER*40 CYID
-      CHARACTER*8 HVRSOL
+      CHARACTER*15 HVRSOL
 C
       EQUIVALENCE (XSOLHD(1),XIDS(1))
       EQUIVALENCE (XFILHD(1),XID(1)),(PNLHDR(1),V1P),
@@ -146,7 +146,7 @@ C     ****** TRANMITTANCE USING FOUR POINT INTERPOLATION    ******
 C     ************************************************************
 C
 C
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C
       HVRSOL = '$Revision$'
 C

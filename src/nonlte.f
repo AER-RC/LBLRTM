@@ -23,9 +23,14 @@ C
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
       COMMON /R4SUB/ VLOF4,VHIF4,ILOF4,IST,IHIF4,LIMIN4,LIMOUT,ILAST,     B00820
      *               DPTMN4,DPTFC4,ILIN4,ILIN4T                           B00830
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
+c
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
+      CHARACTER*15 HVRSOL
+      COMMON /ARMCM1/ HVRSOL
 
-      CHARACTER*8 HVRSOL,HVRNLT,HVRSCT
-      COMMON /HVERS2/ HVRSOL,HVNLTE,HVRSCT
 
       EQUIVALENCE (FSCDID(1),IHIRAC),(FSCDID(2),ILBLF4),
      &  (FSCDID(3),IXSCNT),(FSCDID(4),IAERSL),(FSCDID(5),IEMIT),
@@ -116,7 +121,7 @@ C                                                                         600800
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRNLT = '$RCSfile$ $Revision$'
+       hvnlte = '$Revision$'
 
       NUMH2O =  8
       NUMCO2 = 26
@@ -624,8 +629,6 @@ C                                                                         B00630
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
 C                                                                         B00650
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
@@ -667,8 +670,6 @@ C                                                                         B00970
       CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR
       CHARACTER*10 HFMODL
       CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       LOGICAL OP                                                          B00990
 C                                                                         B01000
       DIMENSION MEFDP(64),FILHDR(2),IWD(2)                                B01010

@@ -14,7 +14,7 @@ C                                                                         M00060
       real*8               SEC   ,       XALTZ 
 C                                                                         M00080
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
       COMMON /PLTHDR/ XID(10),SEC,P0,T0,HMOL(60),XALTZ(4),                M00090
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVT,V1V,V2V,TBOUND,    M00100
      *                EMISIV,FSCDID(17),NMOL,NLAYER,YID1,YID(10),LSTWDF   M00110
@@ -33,8 +33,8 @@ C                                                                         M00080
 C                                                                         M00240
       CHARACTER*8 FSTAT,NSTAT,OSTAT                                       M00245
       CHARACTER*8 COPT,CDIF,CRAT                                          M00250
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
       CHARACTER*11 CFORM,BFORM,FFORM                                      M00253
       CHARACTER*25 TAPEJJ,TAPELL,TAPEMM,TAPE29,TAPEST(99),                M00256
      *             JFILEN,LFILEN,MFILEN,JOUTNM,CFILEN(3),BLNKNM           M00260
@@ -90,7 +90,7 @@ C                                                                         M00650
 C       DELV IS THE NUMBER OF WAVENUMBERS (CM-1) PER MAJOR DIVISION.      M00660
 C                                                                         M00670
 C       NUMSBX IS THE NUMBER OF SUBDIVISIONS PER MAJOR DIVISION OF        M00680
-C          X-AXIS, I.E., 1 GIVES NO SUBDIVISION TIC-MARCS,                M00690
+C          X-AXIS, I.E., 1 GIVES NO SUBDIVISION TIC-MARKS,                M00690
 C                        2 GIVES ONE SUBDIVISION MARK                     M00700
 C                          (IN OTHER WORDS 2 COMPARTMENTS                 M00710
 C                           PER MAJOR DIVISION),                          M00720
@@ -242,7 +242,7 @@ C                                                                         M02170
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRPLT =  '$RCSfile$ $Revision$'
+      HVRPLT =  '$Revision$'
 C
       IENDPL = 0                                                          M02180
       JHDR = 0                                                            M02200
@@ -685,7 +685,7 @@ C                                                                         M05440
       IF (JOUT.GE.1) CLOSE (JPLTFL)                                       M05490
       GO TO 10                                                            M05500
 C                                                                         M05510
-  240 RETURN                                                              M05520
+ 240  RETURN                                                              M05520
 C                                                                         M05530
   900 FORMAT (A60,18X,A2)                                                 M05540
   902 FORMAT ('1'/30X,A60)                                                M05550

@@ -17,7 +17,7 @@ C                                                                         I00090
       real*8               SECANT,       XALTZ 
 C                                                                         I00110
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR,hvnlte
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       I00120
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1C,V2C,TBOUND,   I00130
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    I00140
@@ -40,8 +40,8 @@ C                                                                         I00280
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               I00290
       CHARACTER*11 CFORM                                                  I00300
       CHARACTER*8 HSCNID(0:6)                                             I00310
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+      CHARACTER*15 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR,hvnlte
       CHARACTER SCNOUT*7,SCNINF*7,CTAPE*4                                 I00320
       LOGICAL OP                                                          I00330
 C                                                                         I00340
@@ -135,7 +135,7 @@ C                                                                         I01150
 C----------------------------------------------------------------------   I01160
 C                                                                         I01170
 C
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C
       HVRPST = '$Revision$'
 C
@@ -2449,8 +2449,6 @@ C                                                                         J00230
       character*8      XID,       HMOLID,      YID        
       real*8               SECANT,       XALTZ 
 C                                                                         J00250
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       J00260
      *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1C,V2C,TBOUND,   J00270
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    J00280
@@ -2475,8 +2473,6 @@ C                                                                         J00420
 C                                                                         J00470
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               J00480
       CHARACTER CFORM*11,SCNOUT*6,CTAPE*4                                 J00490
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       LOGICAL OP                                                          J00500
 C                                                                         J00510
       DATA HTRANS / 'TRANSMISSION'/,HABSRB / ' ABSORPTION '/,             J00520
@@ -2490,11 +2486,6 @@ C     JEMIT=1   INTERPOLATE EMISSION                                      J00590
 C     JEMIT=2   INTERPOLATE OPTICAL DEPTH                                 J00600
 C----------------------------------------------------------------------   J00610
 C                                                                         J00620
-C
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
-C
-      HVRPST = '$Revision$'
-C
    10 CONTINUE                                                            J00630
       CALL CPUTIM (TIME1)                                                 J00640
       TIMRDF = 0.0                                                        J00650
@@ -2835,7 +2826,8 @@ C
       SUBROUTINE INTERP (IFILE,JFILE,I4PT,IBOUND,NPTS,JTREM,ISCAN,        J03860
      *                   JEMIT,RSTAT,ICNVRT)                              J03870
 C                                                                         J03880
-      IMPLICIT REAL*8          (V)                                     ! J03890
+      IMPLICIT REAL*8          (V)                                      ! J03890
+      real*8 p
 C                                                                         J03900
 C**********************************************************************   J03910
 C     THIS SUBROUTINE INTERPOLATES THE SPECTRAL DATA FROM IFILE, ON       J03920
@@ -3131,8 +3123,6 @@ C                                                                         L00060
 
       logical op
 C                                                                         L00080
-      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
-     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /SCNHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       L00090
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DVC,V1C,V2C,TBOUND,   L00100
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    L00110
@@ -3151,8 +3141,6 @@ C                                                                         L00080
       DIMENSION FILHDR(2)                                                 L00230
       CHARACTER*80 CVAR                                                   L00240
       CHARACTER*11 CFORM                                                  I00300
-      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
-     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       character ctape*4,fltinf*7,fltout*7
       integer*4 itest,itest2
 C                                                                         L00250
@@ -3168,13 +3156,7 @@ C                                                                         L00250
       data itest / 0 /, itest2 / 0 /
       save itest
       save itest2
-
 C                                                                         L00310
-C
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
-C
-      HVRPST = '$Revision$'
-C
       NLIMF = 2401                                                        L00320
       NREN = 0                                                            L00330
       IPRT = 1                                                            L00340
@@ -3247,7 +3229,6 @@ c     save center frequency value, and reset V1F to endpoint value.
             OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
             REWIND JFILE
          ENDIF
-
       ENDIF
 
       IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  L00500
