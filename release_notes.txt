@@ -1,4 +1,14 @@
 
+LBLRTM_v7.03
+
+1) For reading in the spectral line files, there was code implemented to report 
+    and skip over lines that cannot be handled properly by TIPS in LBLRTM.
+    (H. Snell and S.A. Clough)
+
+2) Pressures adjacent to 35 km in the built in US STD ATMOS was modified. 
+    (W.O. Gallery)
+
+
 LBLRTM_v7.01
 
 1) Completely new water vapor continuum model (0-20,000cm-1):  MT_CKD_1.00
