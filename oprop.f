@@ -1161,6 +1161,11 @@ C                                                                         B12000
      *              NLTEFL,LNFIL4,LNGTH4                                  B12080
       COMMON /R1SAV/ R1OUT(2410)                                          B12090
       COMMON /IODFLG/ DVOUT
+C
+C     SAVE statement to preserve value of NLIM1 when returning to
+C     subroutine
+C
+      SAVE NLIM1
 C                                                                         B12100
       DIMENSION A1(0:100),A2(0:100),A3(0:100),A4(0:100)                   B12110
       DIMENSION R1(*)                                                     B12120
