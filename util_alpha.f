@@ -98,6 +98,29 @@ C
 C                                                    
       END                                            
 C
+c______________________________________________________________________________
+
+      SUBROUTINE BUFOUTln (IFILE,IARRAY,IWORDS)
+C                                                 
+C     THIS SUBROUTINE BUFFERS OUT (WRITES) IWORDS FROM IARRAY STARTING
+C     AT LOCATION IARRAY                                                 
+C                                                                     
+C     IFILE IS THE FILE DESIGNATION                                   
+C                                                                     
+c
+      implicit integer*4 (i-n)
+      implicit real*4    (a-h,o-z)
+c
+      DIMENSION IARRAY(IWORDS)
+C                                                   
+C#    BUFFER OUT (IFILE,1) (IARRAY(ILO),IARRAY(IHI))
+C#    IF (UNIT(IFILE).EQ.0.) STOP ' ERROR IN BUFOUT '
+C                                                    
+      WRITE (IFILE) IARRAY
+C                                                    
+      RETURN                                         
+C                                                    
+      END                                            
 C     --------------------------------------------------------------
       SUBROUTINE LBLDAT(HDATE)                                           LN05190
 C                                                                        LN05200
