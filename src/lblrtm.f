@@ -1787,7 +1787,7 @@ C     IMRG = 40, scanned for IMRG = 42.
 C
 C                                     SPECIAL CASE -> IMRG=40-43, IEMIT=3
 C
-      IF ((IMRG.GE.40.OR.IMRG.LE.43).AND.(IEMIT.EQ.3)) THEN
+      IF ((IMRG.GE.40.AND.IMRG.LE.43).AND.(IEMIT.EQ.3)) THEN
 C
 C        Call OPPATH, which calls PATH
 C
