@@ -1462,8 +1462,10 @@ C     presently: %H%  %T%
  
     Activated by IAERSL = 1 or 7 (on record 1.2)
  
-    ** Note:  MODEL is read in LBLATM                    **
-    **        M1, M2, and M3 are set depending on MODEL  **
+    ** Note:  1) CTHIK and CALT should be place on specified   **
+    **           model levels (ZBND or PBND from Record 3.3B)  **
+    **        2) MODEL is read in LBLATM                       **
+    **        3) M1, M2, and M3 are set depending on MODEL     **
  
     RECORD sequence as follows
  
@@ -1471,30 +1473,33 @@ C     presently: %H%  %T%
  
                                    Format (6I5,5F10.3)
  
-    ***Optional RECORDS***
+         ***Optional RECORDS***
  
- (if ICLD = 18,19, or 20)     RECORD 4.2        CTHIK,CALT,CEXT,ISEED
-                                                Format (3F10.3,I10)
+         (if ICLD = 18,19, or 20)     RECORD 4.2        CTHIK,CALT,CEXT,ISEED  
+                        	                        Format (3F10.3,I10)
  
- (if IVSA = 1)                RECORD 4.3        ZCVSA,ZTVSA,ZINVSA
-                                                Format (3F10.3)
+         (if IVSA = 1)                RECORD 4.3        ZCVSA,ZTVSA,ZINVSA
+                                	                Format (3F10.3)
  
- (if IAERSL = 7)              RECORD 4.4        ML,TITLE
-                                                Format (I5,18A4)
+         (if IAERSL = 7)              RECORD 4.4        ML,TITLE
+                                        	        Format (I5,18A4)
  
-                              ** RECORD 4.5 is repeated ML times **
+                                ** RECORD 4.5 is repeated ML times **
  
-                              RECORD 4.5        ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,ISEA1,ICHR1
-                                                Format (4F10.3,5I5)
+                                     RECORD 4.5        ZMDL,AHAZE,EQLWCZ,RRATZ,IHA1,ICLD1,IVUL1,ISEA1,ICHR1
+                 	                                Format (4F10.3,5I5)
  
- (if IHAZE = 7                RECORD 4.6.1      (IREG(I),I=1,4)
-  or ICLD  = 11)                                Format (4I5)
+        (if IHAZE = 7                RECORD 4.6.1      (IREG(I),I=1,4)
+           or ICLD  = 11)                                Format (4I5)
  
-                              RECORD 4.6.2      AWCCON(N),TITLE(N)      ** Note: N = IREG(1)+IREG(2)+IREG(3)+IREG(4)
-                                                Format (E10.3,18A4)
- 
-                              RECORD 4.6.3      (VX(I),EXTC(N,I),ABSC(N,I),ASYM(N,I),I=1,47)      ** 16 records **
-                                                Format (3(F6.2,2F7.5,F6.4))
+                                     RECORD 4.6.2      AWCCON(N),TITLE(N)      
+                                                       Format (E10.3,18A4)
+                                                       ** Note: N = IREG(1)+IREG(2)+IREG(3)+IREG(4)
+                	                                
+ 	
+        	                     RECORD 4.6.3      (VX(I),EXTC(N,I),ABSC(N,I),ASYM(N,I),I=1,47)      
+                	                                Format (3(F6.2,2F7.5,F6.4))
+                                                        ** 16 records **
  
     ******************************************************************************************
 
