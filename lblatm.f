@@ -1128,9 +1128,9 @@ C                                                                        FA10530
   930 FORMAT (///,' SLANT PATH SELECTED, ITYPE = ',I5)                   FA10830
   932 FORMAT (5F10.4,I5)                                                 FA10840
   934 FORMAT (///' CONTROL CARD 3.2:  SLANT PATH PARAMETERS',//,10X,     FA10850
-     *        'H1      = ',F10.4,' KM',/,10X,'H2      = ',F10.4,' KM',   FA10860
-     *        /,10X,'ANGLE   = ',F10.4,' DEG',/,10X,'RANGE   = ',F10.4,  FA10870
-     *        ' KM',/,10X,'BETA    = ',F10.4,' DEG',/,10X,'LEN     = ',  FA10880
+     *        'H1      = ',F12.6,' KM',/,10X,'H2      = ',F12.6,' KM',   FA10860
+     *        /,10X,'ANGLE   = ',F12.6,' DEG',/,10X,'RANGE   = ',F12.6,  FA10870
+     *        ' KM',/,10X,'BETA    = ',F12.6,' DEG',/,10X,'LEN     = ',  FA10880
      *        I10)                                                       FA10890
   936 FORMAT (5F10.3)                                                    FA10900
   938 FORMAT (///,' AUTOLAYERING SELECTED',//,10X,'AVTRAT    = ',F8.2,   FA10910
@@ -1168,12 +1168,12 @@ C                                                                        FA10530
   964 FORMAT (I5,2F10.3,1P9E10.3,/,(35X,1P8E10.3))                       FA11230
   966 FORMAT ('0TOTAL',F9.3,F10.3,1P9E10.3,/,(35X,1P8E10.3))             FA11240
   968 FORMAT ('1 SUMMARY OF THE GEOMETRY CALCULATION',//,10X,            FA11250
-     *        'MODEL   = ',4X,3A8,/10X,'H1      = ',F10.3,' KM',/,10X,   FA11260
-     *        'H2      = ',F10.3,' KM',/,10X,'ANGLE   = ',F10.3,' DEG',  FA11270
-     *        /,10X,'RANGE   = ',F10.3,' KM',/,10X,'BETA    = ',F10.3,   FA11280
-     *        ' DEG',/,10X,'PHI     = ',F10.3,' DEG',/,10X,              FA11290
-     *        'HMIN    = ',F10.3,' KM',/,10X,'BENDING = ',F10.3,' DEG',  FA11300
-     *        /,10X,'LEN     = ',I10,/,10X,'AIRMAS  = ',G10.3,           FA11310
+     *        'MODEL   = ',4X,3A8,/10X,'H1      = ',F12.6,' KM',/,10X,   FA11260
+     *        'H2      = ',F12.6,' KM',/,10X,'ANGLE   = ',F12.6,' DEG',  FA11270
+     *        /,10X,'RANGE   = ',F12.6,' KM',/,10X,'BETA    = ',F12.6,   FA11280
+     *        ' DEG',/,10X,'PHI     = ',F12.6,' DEG',/,10X,              FA11290
+     *        'HMIN    = ',F12.6,' KM',/,10X,'BENDING = ',F12.6,' DEG',  FA11300
+     *        /,10X,'LEN     = ',I10,/,10X,'AIRMAS  = ',G12.6,           FA11310
      *        'RELATIVE TO A VERTICAL PATH , GROUND TO SPACE')           FA11320
   970 FORMAT ('0FINAL SET OF LAYERS FOR INPUT TO LBLRTM',/,              FA11330
      *        ' A LAYER AMOUNT MAY BE SET TO ZERO IF THE CUMULATIVE ',   FA11340
@@ -3570,9 +3570,9 @@ C                                                                        FA33930
      *        'NOTE: ANGLE IS COMPUTED FROM H1, H2, AND RANGE ',         FA34060
      *        'ASSUMING NO REFRACTION')                                  FA34070
   935 FORMAT (///,' SLANT PATH PARAMETERS IN STANDARD FORM',//,10X,      FA34080
-     *        'H1      = ',F10.3,' KM',/,10X,'H2      = ',F10.3,' KM',   FA34090
-     *        /,10X,'ANGLE   = ',F10.3,' DEG',/,10X,'PHI     = ',F10.3,  FA34100
-     *        ' DEG',/,10X,'HMIN    = ',F10.3,' KM',/,10X,'LEN     = ',  FA34110
+     *        'H1      = ',F12.6,' KM',/,10X,'H2      = ',F12.6,' KM',   FA34090
+     *        /,10X,'ANGLE   = ',F12.6,' DEG',/,10X,'PHI     = ',F12.6,  FA34100
+     *        ' DEG',/,10X,'HMIN    = ',F12.6,' KM',/,10X,'LEN     = ',  FA34110
      *        I10)                                                       FA34120
   940 FORMAT ('0FSCGEO: CASE 3B (H1,HMIN,SPACE): ERROR IN INPUT DATA',   FA34130
      *        //,10X,'H1 = ',F12.6,'    IS LESS THAN HMIN = ',F12.6)     FA34140
