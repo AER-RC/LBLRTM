@@ -1,7 +1,7 @@
-C     path:      /stormrc1/aer_lblrtm/src/SCCS/s.xmerge.f
-C     revision:  5.2
-C     created:   05/27/98  11:33:24
-C     presently: 07/20/00  07:30:48
+C     path:      %P%
+C     revision:  $Revision$
+C     created:   $Date$  
+C     presently: %H%  %T%
 C
 C     ----------------------------------------------------------------
 C
@@ -46,7 +46,7 @@ C                                                                         H00330
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      HVRXMR = '5.2'
+      HVRXMR = '$Revision$'
 C
       IOD = 0                                                             H00340
 C                                                                         H00350
