@@ -3200,6 +3200,8 @@ C
 C                                                                         L00450
       IF (V1F.LT.0) RETURN                                                L00460
 
+C                                                                         L00470
+      WRITE (IPR,905)                                                     L00480
 c
 c     DVF < 0 option flags V1F value to be the center frequency
 c     Check that there NPTF is odd (to ensure a center frequency),
@@ -3227,8 +3229,6 @@ c     save center frequency value, and reset V1F to endpoint value.
          write(ipr,*) " ''''''''''''''''''''''''''''''"
       endif
 
-C                                                                         L00470
-      WRITE (IPR,905)                                                     L00480
       REWIND IFILE                                                        L00490
       inquire(ifile,opened=op)
       IF (.NOT.OP) THEN
@@ -3333,20 +3333,21 @@ C                                                                         L01000
       GO TO 80                                                            L01220
    90 CALL CPUTIM (TIME)                                                  L01230
       WRITE (IPR,950) TIME,TIMRDF,TIMCNV                                  L01240
-      IF (JEMIT.EQ.1) GO TO 100                                           L01250
-      TRNSM = RFILTR                                                      L01260
-      RFILTR = RFILTR*DVC/SUMFLT                                          L01270
-      IF (JABS.EQ.0) WRITE (IPR,955) RFILTR,SUMFLT,TRNSM                  L01280
-      IF (JABS.EQ.1) WRITE (IPR,960) RFILTR,SUMFLT,TRNSM                  L01290
-      if (jfile.ne.0) then
-         write(JFILE,975) RFILTR
-      endif
-      GO TO 110                                                           L01300
-  100 RFILTR = RFILTR*DVC                                                 L01310
-      WRITE (IPR,965) RFILTR,SUMFLT                                       L01320
-      if (jfile.ne.0) then
-         write(JFILE,975) RFILTR
-      endif
+      IF (JEMIT.NE.1) THEN
+         TRNSM = RFILTR                                                   L01260
+         RFILTR = RFILTR*DVC/SUMFLT                                       L01270
+         IF (JABS.EQ.0) WRITE (IPR,955) RFILTR,SUMFLT,TRNSM               L01280
+         IF (JABS.EQ.1) WRITE (IPR,960) RFILTR,SUMFLT,TRNSM               L01290
+         IF (JFILE.NE.0) THEN
+            WRITE(JFILE,975) RFILTR
+         ENDIF
+      ELSE
+ 100     RFILTR = RFILTR*DVC                                              L01310
+         WRITE (IPR,965) RFILTR,SUMFLT,RFILTR/SUMFLT
+         IF (JFILE.NE.0) THEN
+            WRITE(JFILE,975) RFILTR,SUMFLT,RFILTR/SUMFLT
+         ENDIF
+      ENDIF
   110 IF (IEOFSC.EQ.1) CALL SKIPFL (1,IFILE,IEOFSC)                       L01330
       IEOFT = IEOFT+1                                                     L01340
       IF (IEOFT.GT.NIFILS) GO TO 10                                       L01350
@@ -3380,10 +3381,14 @@ C                                                                         L01380
   960 FORMAT ('0  INTEGRATED ABSORPTION = ',1PE14.5,                      L01630
      *        '  NORMALIZATION OF  THE FILTER = ',E14.5,/                 L01640
      *        '0 UNNORMALIZED INTEGRATED ABSORPTION =    ',E14.5)         L01650
+c  965 FORMAT ('0 INTEGRATED EMISSION = ',1PE14.5,                         L01660
+c     *        '  NORMALIZATION OF THE',' FILTER = ',E14.5)                L01670
   965 FORMAT ('0 INTEGRATED EMISSION = ',1PE14.5,                         L01660
-     *        '  NORMALIZATION OF THE',' FILTER = ',E14.5)                L01670
+     *        '  NORMALIZATION OF THE',' FILTER = ',1PE14.5,
+     *        ' NORM. EMISSION',E14.5)                                    L01670
+
  970  format (a4,i2.2)
- 975  format (1p,e14.5,0p)
+ 975  format (1p,e14.5,1p,e14.5,1p,e14.5,0p)
  980  format (' Filter output:')
 C                                                                         L01680
       END                                                                 L01690
@@ -3714,9 +3719,6 @@ c
          vxf2 = v1f + (ifl)*dvf
          p = (vxf2-v2s)/(vxf2-vxf1)
          RFILTR = RFILTR+S(I)*(p*XF(IFL)+(1.-p)*xf(IFL+1))                L04590
-c         write(88,*) v1s,xf(ifl),(p*XF(IFL)+(1.-p)*xf(IFL+1))
-c         write(89,*) i,v1i,dvi,v2s,xif0
-c         write(89,*) ifl,v1f,dvf,vxf1,vxf2,p
    10 CONTINUE                                                            L04600
       IF (IMAX.LT.IHI) VFT = VFT+((FLOAT(IHI)-FLOAT(ILO))+1.0)*DVI        L04610
       CALL CPUTIM (TIME)                                                  L04620
