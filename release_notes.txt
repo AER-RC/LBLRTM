@@ -1,3 +1,29 @@
+
+LBLRTM_v8.4
+
+1) Minor bug fixs to the LOWTRAN7 routin in LBLRTM (lbllow.f) that
+   includes the moving of an ENDIF to the proper location and the
+   proper alignment of ZMDL and ALTZ arrays
+   (S.A. Clough and S. Shald)
+
+2) In the continuum module, the coding of the partial pressure of water vapor has
+   been simplified by introducing a varaiable h2o_frac.  The factor of 1.e-20 has
+   been removed from Wtot.  In conjunction with this, the factor of 1e-20 has been 
+   removed from the calculation of fractions for the other species, including the 
+   Rayleigh scattering section.
+   (S.A. Clough)
+
+3) The common blocks in several subroutines have been modified to eliminate compiler
+   Warning Messages
+   (S.A. Clough)
+
+4) Minor bug fix in postsub.f 
+   (S.A. Clough)
+
+5) Changes to xmerge.f to get it ready for analytic derivation implementation. 
+   (H. Snell)
+
+
 LBLRTM_v8.3
 
 1) Minor bug fix in SCNMRG subroutine.
