@@ -4172,3 +4172,60 @@ C
  910  FORMAT (E15.7)
 C
       END
+c-----------------------------------------------------------------------
+c
+      subroutine line_exception(ind,ipr,h_sub,mol,nmol,iso,iso_max)
+
+      character*8 h_sub
+      dimension iso_max(*)
+
+      data  mol_max_pr_1/-99/, iso_max_pr_1/-99/
+
+      if ((ind.eq.1 .and. mol_max_pr_1.lt.0) .or.
+     *    (ind.eq.2 .and. iso_max_pr_1.lt.0)) then
+         write (*,*)
+         write (*,*) 'Line file exception encountered in', h_sub
+         write (*,*) 'This message only written for first exception',
+     *               ' for molecule and isotope cases'
+         write (*,*) 'Other exceptions may exist'
+
+         write (ipr,*) '****************************************'
+         write (ipr,*) 'Line file exception encountered'
+         write (ipr,*) 'This message only written for first exception'
+         write (ipr,*) 'Other exceptions may exist'
+      endif
+c
+      if (ind .eq. 1) then
+          if (mol_max_pr_1 .lt. 0) then
+             mol_max_pr_1 = 11
+             write (*,*)
+             write (*,*)   ' tape3: molecule number ', mol,
+     *             ' greater than ', nmol,' encountered and skipped'
+             write (ipr,*) ' tape3: molecule number ', mol,
+     *             ' greater than ', nmol,' encountered and skipped'
+               write (*,*)
+            endif
+            go to 25
+c
+         else if (ind .eq. 2) then
+            if (iso_max_pr_1 .lt. 0) then
+               iso_max_pr_1 = 11
+               write (*,*)
+               write (*,*)   ' tape3: molecule number ', mol
+               write (ipr,*) ' tape3: molecule number ', mol
+
+               write (*,*)   ' tape3: isotope number ', iso,
+     *                       ' greater than ', iso_max(mol),
+     *                       ' encountered and skipped'
+               write (ipr,*) ' tape3: isotope number ', iso,
+     *                       ' greater than ', iso_max(mol),
+     *                       ' encountered and skipped'
+               write (*,*)
+            endif
+            go to 25
+         endif
+C
+ 25      continue
+
+         return
+         end
