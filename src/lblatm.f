@@ -3941,6 +3941,8 @@ C                                                                        FA32330
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA32380
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA32390
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
 C                                                                        FA32400
       ITER = 0                                                           FA32410
 C
@@ -7576,7 +7578,9 @@ C**************************************************************
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA00920
      *                IPHMID,IPDIM,KDIM,KMXNOM,KMAX  
-
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+C
       REAL PM(MXZMD),TM(MXZMD),DENW(MXZMD),ZMDL(MXZMD)
       REAL H2O_MIXRAT(MXZMD),COMP_FACTOR(MXZMD),ZTEMP(MXZMD)
 
