@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                 2 September 1994
+                                    12 May 1995
  
  
  
@@ -424,6 +424,8 @@ C     presently: %H%  %T%
                              *** NOTE: Entering a value for SRREFL(1) < 0 allows for direct input of boundary reflectivities
                                         from file 'REFLECTION'
 
+
+ RECORD 1.4 (Continued)
 
                      ---------------------------------------------------------------------------------------------------
                     |                                FORMAT FOR 'EMISSION' and 'REFLECTION' FILES                       |
