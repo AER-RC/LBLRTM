@@ -4658,7 +4658,7 @@ C                                                                         E05630
                      V2FP = V2FP+3.*DVFXX                                 E05640
                   ENDIF                                                   E05650
 C                                                                         E05660
-                  N1RX = N2RX+1                                           E05670
+                  N1RX = MAX(1,N2RX+1)                                    E05670
                   N2RX = (V2FP-DVFXX-V1X)/DVX+.999                        E05680
                   N2RX = MIN(N2RX,LIMOUT)                                 E05690
 C                                                                         E05700
