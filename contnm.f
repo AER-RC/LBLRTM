@@ -4505,7 +4505,18 @@ C                                                                         F43110
 C     PO2= PARTIAL PRESSURE OF O2                                         F43120
 C     PN2= PARTIAL PRESSURE OF N2; BN2=.45*BO2                            F43130
 C                                                                         F43140
-      DATA BO2 / 1.72E-3 /                                                F43150
+C     DATA BO2 / 1.72E-3 /                                                F43150
+C
+C     Changed in Herzberg continuum pressure, 
+C     Reference:
+C     "Atmospheric Propagation in the UV, Visible, IR and MM-wave
+C     Region and Related Systems Aspects".
+C     G.P. Anderson,F.X. Kneizys, E.P. Shettle, L.W. Abreu,
+C     J.H. Chetwynd, R.E. Huffman, and L.A. Hall; Conference
+C     Proceedings No. 454 of the Advisory Group for Aerospace
+C     Research & Development; 1990.
+C
+      DATA BO2 / 1.81E-3 /
       DATA PO / 1013. /,TO / 273.16 /                                     F43160
 C                                                                         F43170
 C     NOTE:  THE HERZBERG CONTINUUM OBEYS BEER'S LAW                      F43180
@@ -4515,9 +4526,13 @@ C     BO2= RATIO OF SIGMA(O2-O2)/(SIGMA(O2)) * 760(TORR)*.2095            F43210
 C     BN2=.45*BO2= RATIO OF SIGMA(O2-N2)/(SIGMA(O2)) * 760(TORR)*.78      F43220
 C                                                                         F43230
 C     BO2*760*(.2095+.45*.78) = .73 , AS BELOW                            F43240
+C
+C     Changed Herzberg continuum pressure (see above reference)
+C
+C     BO2*760*(.2095+.45*.78) = .83 , AS BELOW
 C                                                                         F43250
 C                                                                         F43260
-      HERZ = HERZ*(1.+.73*(P/PO)*(TO/T))                                  F43270
+      HERZ = HERZ*(1.+.83*(P/PO)*(TO/T))                                  F43270
 C                                                                         F43280
       RETURN                                                              F43290
 C                                                                         F43300
