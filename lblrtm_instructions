@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                 1 November 1995
+                                    9 May 1997
  
  
  
@@ -134,6 +134,7 @@ C     presently: %H%  %T%
                          |               ODdeflt_  for IMRG=1  and IOD=0         |
                          |               ODint_    for IMRG=1  and IOD=1         |
                          |               ODint_    for IMRG=1  and IOD=3         |
+                         |               ODint_    for IMRG=1  and IOD=4         |
                          |               ODexact_  for IMRG=1  and IOD=2         |
                          ---------------------------------------------------------
 
@@ -308,14 +309,15 @@ C     presently: %H%  %T%
                           (first laser frequency is V1 on record 1.3;
                            subsequent laser frequencies are on records 5.1 ... 5.N)
  
-            IOD    (0,1,2,3) flag for layering control in optical depth calculations
+            IOD    (0,1,2,3,4) flag for layering control in optical depth calculations
  
                    = 0  normal calculation (default)
-                   = 1  interpolates each layer to the spacing set by DVSET
-                   = 2  uses the calculated dv of each layer
+                   = 1  uses exact calculated dv for each layer and interpolates to the spacing set by DVOUT
+                   = 2  uses the exact calculated dv of each layer
                            (requires IMRG = 1)
                    = 3  uses DVSET for last layer and interpolates to the spacing set by DVSET
-                           (requires IMRG = 1)
+                           (requires IMRG = 1, IMRG=10, or IMRG=40-43)
+                   = 4  uses DVSET for last layer and interpolates to the spacing set by DVOUT
  
          IXSECT    (0,1) flag for cross-sections
  
@@ -370,11 +372,11 @@ C     presently: %H%  %T%
  
  
  
-             V1,     V2,   SAMPLE,   DVSET,  ALFAL0,   AVMASS,   DPTMIN,   DPTFAC,   ILNFLG
+             V1,     V2,   SAMPLE,   DVSET,  ALFAL0,   AVMASS,   DPTMIN,   DPTFAC,   ILNFLG,     DVOUT
  
-           1-10,  11-20,    21-30,   31-40,   41-50,    51-60,    61-70,    71-80,     85
+           1-10,  11-20,    21-30,   31-40,   41-50,    51-60,    61-70,    71-80,     85,      90-100
  
-          E10.3,  E10.3,    E10.3,   E10.3,   E10.3,    E10.3,    E10.3,    E10.3,    4X,I1
+          E10.3,  E10.3,    E10.3,   E10.3,   E10.3,    E10.3,    E10.3,    E10.3,    4X,I1,  5X,E10.3
  
  
  
@@ -412,9 +414,10 @@ C     presently: %H%  %T%
 			= 1  write line rejection information to REJ1, REJ4
 			= 2  read line rejection information from REJ1, REJ4
  
- 
- 
- 
+               DVOUT    selected DV grid for the optical depth "monochromatic" 
+                        output spacing (must be less than or equal to default
+                        spacing or DVSET if nonzero). 
+
 
  RECORD 1.4    (required if IEMIT = 1, or both IEMIT=2 and IOTFLG=2; otherwise omit)
  
