@@ -2719,3 +2719,208 @@ C     presently: %H%  %T%
 
 
  
+If the NLTE (IHIRAC = 4) option is selected a separate file (TAPE4) must be created.
+The following instructions describe the contents of a TAPE4 file.
+
+Note : TAPE4 permits selection of vibrational states; only the states listed in Table IV
+are allowed
+
+		Table IV
+                --------
+                                                                         
+Molecule	State        Transition Energy	Degeneracies
+--------        -----        -----(cm-1)-----   ------------ 
+
+   H2O     	000 		     0.             1                   
+   ---     	010 		  1594.750          1 		
+           	020 		  3151.630	    1
+           	100 		  3657.053	    1
+           	001 		  3755.930	    1
+           	030 		  4666.793	    1
+           	110 		  5234.977	    1
+           	011 		  5333.269          1                  
+
+   CO2
+   ---        00001      	     0.    	    1
+              01101     	   667.380 	    2
+              10002    		  1285.409 	    1
+              02201    		  1335.132 	    2
+              10001    		  1388.185 	    1
+              11102    		  1932.470 	    2 
+              03301    		  2003.246 	    2
+              11101    		  2076.856 	    2
+              00011    		  2349.143 	    1
+              20003               2548.366          1                                               
+              12202               2585.022          2                                               
+              20002               2671.143          1                                               
+              04401               2671.717          2                                               
+              12201               2760.725          2                                               
+              20001               2797.135          1                                               
+              01111               3004.012          2                                               
+              10012               3612.842          1                                                
+              02211               3659.273          2                                                
+              10011               3714.783          1                                                
+              11112               4247.706          2                                                
+              03311               4314.914          2                                                
+              11111               4390.629          2                                                
+              20013               4853.623          1                                                
+              04411               4970.931          1                                                
+              20012               4977.834          1                                                
+              20011               5099.660          1                                                
+                                                                                  
+   O3
+   --           000                  0.             1                                                   
+                010                700.931          1                                                   
+                001               1042.084          1                                                   
+                100               1103.140          1                                                   
+                020               1399.275          1                                                   
+                011               1726.528          1                                                   
+                110               1796.261          1                                                   
+                002               2057.892          1                                                   
+                101               2110.785          1                                                   
+                200               2201.157          1                                                   
+                111               2785.245          1                                                   
+                003               3041.200          1                                                   
+                004               3988.             1                                                    
+                005               4910.             1                                                    
+                006               5803.             1                                                    
+                007               6665.             1                                                    
+                008               7497.             1                                                    
+                009               8299.             1                                                     
+                                                                                  
+   CO
+   --             0                  0.   	    1                                                     
+                  1               2143.272          1                                          
+                  2               4260.063          1                                          
+                                                                                  
+   NO
+   --             0                  0.             1                                                      
+                  1               1878.077          1                                                    
+                  2               3724.067          1                                                    
+
+
+
+TAPE4-RECORD 1.1
+
+	TIT
+
+	1-80
+
+	A80
+
+		TIT:	80 characters of user indetification
+
+REPEAT TAPE4-RECORD 1.1 for a total of three times
+
+
+TAPE4-RECORD 1.2
+
+	IVIB,	MOLNEQ
+
+           5,       10
+
+          I5	    I5
+
+		IVIB:	(0,1) selects input for vibrational data:
+                          
+                           = 0 (kinetic temepratures (K) )
+			
+			   = 1 (population)
+
+		MOLNEQ:  place holder for future input 
+
+ ******  these records applicable only if IVIB eq 1 ***
+
+TAPE4-RECORD 2.1 
+
+ 	CHRD(1)
+
+              3
+
+	 2x, A1
+
+		CHRD(1):	a flag which indicates the beginning of input for
+			        a new molecule; must be set to '-'
+
+
+	The next two records are required for the following five molecules:
+         H2O, CO2, O3, C0 and NO, in that order. All molecules must be input,
+	 even if not used in NLTE calculations.
+  
+          
+TAPE4-RECORD 2.2 
+
+	HMNLTE
+
+	    10
+
+	   A10
+
+		HMNLTE: 	molecule name
+
+TAPE4-RECORD 2.3
+
+	ALT,   (TEM(I),I=1,NUM)
+
+           (F7.0,7F11.3/(18X,6F11.3))
+
+		ALT:	altitude (km)
+
+		TEM(I):	kinetic temperatute (K) for each mode I. Set to zero if the mode
+			is not desired. See Table IV for allowed modes and input order. 
+
+REPEAT TAPE4-RECORD 2.3 for all altitudes; the altitude range must match the atmospheric
+profile input in TAPE5
+
+REPEAT TAPE4-RECORDS 2.1, 2.2 and 2.3 for each molecule : H2O, CO2, O3, C0 and NO
+
+
+ ******  these records applicable only if IVIB eq 2 ***
+
+TAPE4-RECORD 3.1 
+
+ 	CHRD(1)
+
+              3
+
+	 2x, A1
+
+		CHRD(1):	a flag which indicates the beginning of input for
+			        a new molecule; must be set to '-'
+
+
+	The next two records are required for the following five molecules:
+         H2O, CO2, O3, C0 and NO, in that order. All molecules must be input,
+	 even if not used in NLTE calculations.
+  
+          
+TAPE4-RECORD 3.2 
+
+	HMNLTE
+
+	    10
+
+	   A10
+
+		HMNLTE: 	molecule name
+
+TAPE4-RECORD 3.3
+
+	ALT,   (VPNE(I),I=1,NUM)
+
+           (F7.0,1P,7E11.4,     /(18X, 6E11.4))
+
+		ALT:	 altitude (km)
+
+		VPNE(I): population for each mode I. Set to zero if the mode
+			 is not desired. See Table IV for allowed modes and input order. 
+
+REPEAT TAPE4-RECORD 3.3 for all altitudes; the altitude range must match the atmospheric
+profile input in TAPE5
+
+REPEAT TAPE4-RECORDS 3.1, 3.2 and 3.3 for each molecule : H2O, CO2, O3, C0 and NO
+
+ _________________________________________________________________________________________________________________________________
+
+
+ 
