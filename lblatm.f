@@ -347,7 +347,7 @@ C                                                                        FA03360
       COMMON /MSCONS/ AIRMSS(MXLAY),TGRND,SEMIS(3),HMINMS,HMAXMS,        FA03430
      *                MSFLAG,MSWIT,IMSFIL,MSTGLE                         FA03440
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NOP,H1F,H2F,       FA03450
-     *                ANGLEF,RANGEF,BETAF,LENF,V1,V2,RO,IPUNCH,VBAR,     FA03460
+     *                ANGLEF,RANGEF,BETAF,LENF,V1,V2,RO,IPUNCH,XVBAR,    FA03460
      *                HMINF,PHIF,IERRF,HSPACE                            FA03470
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA03480
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA03490
@@ -485,14 +485,14 @@ C                                                                        FA04800
 C     READ CONTROL CARD 3.1                                              FA04810
 C                                                                        FA04820
          READ (IRD,900) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,RE,  FA04830
-     *                  HSPACE,VBAR,CO2MX                                FA04840
+     *                  HSPACE,XVBAR,CO2MX                               FA04840
       ENDIF                                                              FA04850
 C                                                                        FA04860
       NOP = NOPRNT                                                       FA04870
       RO = RE                                                            FA04880
       WRITE (IPR,902)                                                    FA04890
       WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,RE,    FA04900
-     *                HSPACE,VBAR,CO2MX                                  FA04910
+     *                HSPACE,XVBAR,CO2MX                                 FA04910
       IF (CO2MX.EQ.0.) CO2MX = 330.                                      FA04920
       CO2RAT = CO2MX/330.                                                FA04930
       M = MODEL                                                          FA04940
@@ -510,14 +510,14 @@ C                                                                        FA04860
    60 CONTINUE                                                           FA05060
 C                                                                        FA05070
       IF (HSPACE.EQ.0.) HSPACE = 100.                                    FA05080
-      IF (VBAR.LE.0.) THEN                                               FA05090
-         VBAR = (V1+V2)/2.                                               FA05100
-         IF (V2.LT.V1) VBAR = V1                                         FA05110
+      IF (XVBAR.LE.0.) THEN                                              FA05090
+         XVBAR = (V1+V2)/2.                                              FA05100
+         IF (V2.LT.V1) XVBAR = V1                                        FA05110
       ENDIF                                                              FA05120
 C                                                                        FA05130
       WRITE (IPR,906)                                                    FA05140
       WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,RE,    FA05150
-     *                HSPACE,VBAR,CO2MX                                  FA05160
+     *                HSPACE,XVBAR,CO2MX                                 FA05160
 C                                                                        FA05170
       IF (ITYPE.EQ.1) THEN                                               FA05180
 C                                                                        FA05190
@@ -763,8 +763,8 @@ C                                                                        FA07560
             MSTGLE = 1                                                   FA07590
             DO 160 IM = 1, IMMAX                                         FA07600
                PPH2O = DENM(1,IM)*PZERO*TM(IM)/(TZERO*ALOSMT)            FA07610
-               RFNDXM(IM) = ((77.46+0.459E-8*VBAR**2)*PM(IM)/TM(IM)-     FA07620
-     *                      (PPH2O/1013.0)*(43.49-0.347E-8*VBAR**2))*    FA07630
+               RFNDXM(IM) = ((77.46+0.459E-8*XVBAR**2)*PM(IM)/TM(IM)-    FA07620
+     *                      (PPH2O/1013.0)*(43.49-0.347E-8*XVBAR**2))*   FA07630
      *                      1.0E-6                                       FA07640
   160       CONTINUE                                                     FA07650
             CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,      FA07660
@@ -841,8 +841,8 @@ C     EQUATION FOR RFNDXM IS FROM LOWTRAN (REF 3)                        FA08360
 C                                                                        FA08370
          DO 170 IM = 1, IMMAX                                            FA08380
             PPH2O = DENM(1,IM)*PZERO*TM(IM)/(TZERO*ALOSMT)               FA08390
-            RFNDXM(IM) = ((77.46+0.459E-8*VBAR**2)*PM(IM)/TM(IM)-        FA08400
-     *                   (PPH2O/1013.0)*(43.49-0.347E-8*VBAR**2))*       FA08410
+            RFNDXM(IM) = ((77.46+0.459E-8*XVBAR**2)*PM(IM)/TM(IM)-       FA08400
+     *                   (PPH2O/1013.0)*(43.49-0.347E-8*XVBAR**2))*      FA08410
      *                   1.0E-6                                          FA08420
   170    CONTINUE                                                        FA08430
 C                                                                        FA08440
@@ -874,7 +874,7 @@ C                                                                        FA08690
 C     AUTOMATIC LAYERING SELECTED                                        FA08700
 C                                                                        FA08710
          HMAX = AMAX1(H1,H2)                                             FA08720
-         CALL AUTLAY (HMIN,HMAX,VBAR,AVTRAT,TDIFF1,TDIFF2,ALTD1,ALTD2,   FA08730
+         CALL AUTLAY (HMIN,HMAX,XVBAR,AVTRAT,TDIFF1,TDIFF2,ALTD1,ALTD2,  FA08730
      *                IERROR)                                            FA08740
          GO TO 220                                                       FA08750
   200    CONTINUE                                                        FA08760
@@ -883,11 +883,11 @@ C     USER SUPPLIED LAYERING                                             FA08780
 C                                                                        FA08790
          WRITE (IPR,956)                                                 FA08800
          DO 210 IB = 1, IBMAX                                            FA08810
-            CALL HALFWD (ZBND(IB),VBAR,PBND(IB),TBND(IB),ALORNZ(IB),     FA08820
+            CALL HALFWD (ZBND(IB),XVBAR,PBND(IB),TBND(IB),ALORNZ(IB),    FA08820
      *                   ADOPP(IB),AVOIGT(IB))                           FA08830
   210    CONTINUE                                                        FA08840
   220    CONTINUE                                                        FA08850
-         WRITE (IPR,958) ALZERO,AVMWT,VBAR                               FA08860
+         WRITE (IPR,958) ALZERO,AVMWT,XVBAR                              FA08860
          DO 230 IB = 1, IBMAX                                            FA08870
             ZETA = ALORNZ(IB)/(ALORNZ(IB)+ADOPP(IB))                     FA08880
             RATIO = 0.0                                                  FA08890
@@ -4445,7 +4445,7 @@ C                                                                        FA44400
       RETURN                                                             FA44410
 C                                                                        FA44420
       END                                                                FA44430
-      SUBROUTINE AUTLAY (HMIN,HMAX,VBAR,AVTRAT,TDIFF1,TDIFF2,ALTD1,      FA44440
+      SUBROUTINE AUTLAY (HMIN,HMAX,XVBAR,AVTRAT,TDIFF1,TDIFF2,ALTD1,     FA44440
      *                   ALTD2,IERROR)                                   FA44450
 C                                                                        FA44460
 C     *****************************************************************  FA44470
@@ -4503,11 +4503,11 @@ C                                                                        FA44920
       HTOP = MIN(HTOP,ZMAX)                                              FA44990
       IM = IHMIN-1                                                       FA45000
       ZZ = ZMDL(IM)                                                      FA45010
-      CALL HALFWD (ZZ,VBAR,P,T,AL,AD,AVTM(IM))                           FA45020
+      CALL HALFWD (ZZ,XVBAR,P,T,AL,AD,AVTM(IM))                          FA45020
       IB = 1                                                             FA45030
       ZBND(IB) = HMIN                                                    FA45040
       IM = IHMIN                                                         FA45050
-      CALL HALFWD (ZBND(IB),VBAR,PBND(IB),TBND(IB),ALORNZ(IB),           FA45060
+      CALL HALFWD (ZBND(IB),XVBAR,PBND(IB),TBND(IB),ALORNZ(IB),          FA45060
      *             ADOPP(IB),AVOIGT(IB))                                 FA45070
 C                                                                        FA45080
 C     BEGIN IM LOOP                                                      FA45090
@@ -4527,7 +4527,7 @@ C                                                                        FA45200
       ZBND(IB) = ZMDL(IM)                                                FA45230
       ZBNDTI = ZMDL(IM)                                                  FA45240
       IF (ZBND(IB).GE.HTOP) ZBND(IB) = HTOP                              FA45250
-      CALL HALFWD (ZBND(IB),VBAR,PBND(IB),TBND(IB),ALORNZ(IB),           FA45260
+      CALL HALFWD (ZBND(IB),XVBAR,PBND(IB),TBND(IB),ALORNZ(IB),          FA45260
      *             ADOPP(IB),AVOIGT(IB))                                 FA45270
       AVTM(IM) = AVOIGT(IB)                                              FA45280
 C                                                                        FA45290
@@ -4585,7 +4585,7 @@ C                                                                        FA45690
          IF (ZBND(IB)-ZBND(IB-1).LE.0.1) THEN                            FA45810
             IB = IB-1                                                    FA45820
             ZBND(IB) = HTOP                                              FA45830
-            CALL HALFWD (ZBND(IB),VBAR,PBND(IB),TBND(IB),ALORNZ(IB),     FA45840
+            CALL HALFWD (ZBND(IB),XVBAR,PBND(IB),TBND(IB),ALORNZ(IB),    FA45840
      *                   ADOPP(IB),AVOIGT(IB))                           FA45850
          ENDIF                                                           FA45860
          GO TO 80                                                        FA45870
@@ -4602,7 +4602,7 @@ C                                                                        FA45970
 C     ONE OF THE TESTS FAILED AND A NEW BOUNDRY ZBND WAS PRODUCED        FA45980
 C                                                                        FA45990
       ZBND(IB) = ZROUND(ZBND(IB))                                        FA46000
-      CALL HALFWD (ZBND(IB),VBAR,PBND(IB),TBND(IB),ALORNZ(IB),           FA46010
+      CALL HALFWD (ZBND(IB),XVBAR,PBND(IB),TBND(IB),ALORNZ(IB),          FA46010
      *             ADOPP(IB),AVOIGT(IB))                                 FA46020
       GO TO 30                                                           FA46030
    80 CONTINUE                                                           FA46040
@@ -4634,7 +4634,7 @@ C                                                                        FA46160
      *        'THE GENERATED LAYERS FOLLOW')                             FA46300
 C                                                                        FA46310
       END                                                                FA46320
-      SUBROUTINE HALFWD (Z,VBAR,P,T,ALORNZ,ADOPP,AVOIGT)                 FA46330
+      SUBROUTINE HALFWD (Z,XVBAR,P,T,ALORNZ,ADOPP,AVOIGT)                FA46330
 C                                                                        FA46340
 C     *****************************************************************  FA46350
 C     GIVEN AN ALTITUDE Z AND AN AVERAGE WAVENUMBER VBAR, THIS           FA46360
@@ -4685,7 +4685,7 @@ C                                                                        FA46730
       CALL EXPINT (P,PM(IM-1),PM(IM),FAC)                                FA46810
       T = TM(IM-1)+(TM(IM)-TM(IM-1))*FAC                                 FA46820
       ALORNZ = ALPHAL(P,T)                                               FA46830
-      ADOPP = ALPHAD(T,VBAR)                                             FA46840
+      ADOPP = ALPHAD(T,XVBAR)                                            FA46840
       AVOIGT = ALPHAV(ALORNZ,ADOPP)                                      FA46850
 C                                                                        FA46860
       RETURN                                                             FA46870
@@ -5055,8 +5055,8 @@ C     CALCULATE THE REFRACTIVITY                                         FX02150
 C                                                                        FX02160
          DO 80 IM = 1, IMMAX                                             FX02170
             PPH2O = AMOLS(IM,1)*PZERO*TM(IM)/(TZERO*ALOSMT)              FX02180
-            RFNDXM(IM) = ((77.46+0.459E-8*VBAR**2)*PM(IM)/TM(IM)-        FX02190
-     *                   (PPH2O/PZERO)*(43.49-0.347E-8*VBAR**2))*1.0E-6  FX02200
+            RFNDXM(IM) = ((77.46+0.459E-8*XVBAR**2)*PM(IM)/TM(IM)-       FX02190
+     *                   (PPH2O/PZERO)*(43.49-0.347E-8*XVBAR**2))*1.0E-6 FX02200
    80    CONTINUE                                                        FX02210
          CALL RFPATH (H1F,H2F,ANGLEF,PHIF,LENF,HMINF,1,RANGE,BETA,       FX02220
      *                BENDNG)                                            FX02230
