@@ -3,6 +3,17 @@ C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
       SUBROUTINE LOWTRN                                                  FL00000
+C
+C  --------------------------------------------------------------------------
+C |                                                                          |
+C |  Copyright 2002, 2003, Atmospheric & Environmental Research, Inc. (AER). |
+C |  This software may be used, copied, or redistributed as long as it is    |
+C |  not sold and this copyright notice is reproduced on each copy made.     |
+C |  This model is provided as is without any express or implied warranties. |
+C |                       (http://www.rtweb.aer.com/)                        |
+C |                                                                          |
+C  --------------------------------------------------------------------------
+C
 C                                                                        FL00010
 C     CC                                                                 FL00020
 C     CC   STRIPPED DOWN VERSION OF LOWTRAN 7 TO RUN AS A SUBROUTINE     FL00030
@@ -846,10 +857,8 @@ C
       COMMON /PATHD/ PBAR(MXLAY),TBAR(MXLAY),AMOUNT(MXMOL,MXLAY),        FA00530
      *               WN2L(MXLAY),DVL(MXLAY),WTOTL(MXLAY),ALBL(MXLAY),    FA00540
      *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FA00550
-c     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA00560
-     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(MXLAY+1),    FA00560
-c     *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA00570
-     *               PZ(MXLAY+1),TZ(MXLAY+1)                             FA00570
+     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA00560
+     *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA00570
 c 
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL07580
      *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL07590
@@ -931,7 +940,7 @@ C                                                                        FL08210
       IREGC(4) = 0                                                       FL08250
       ICL = 0                                                            FL08260
       MLSV = ML                                                          FL08270
-      DO 10 I = 1, n_lvl
+      DO 10 I = 0, n_lvl-1
          ZSTF(I) = ALTZ(I)                                                 FL08290
    10 CONTINUE                                                           FL08300
       ICONV = 1                                                          FL08310
@@ -998,7 +1007,7 @@ c
       ENDIF                                                              FL08880
       IF (IAERSL.EQ.7) WRITE (IPR,910)                                   FL08890
 C                                                                        FL08900
-      KLO = 2                                                            FL08910
+      KLO = 1                                                            FL08910
 C                                                                        FL08920
       IF (IAERSL.NE.7) THEN                                              FL08930
          DO 50 I = 1, ML                                                 FL08940
@@ -1633,10 +1642,8 @@ C
       COMMON /PATHD/ PBAR(MXLAY),TBAR(MXLAY),AMOUNT(MXMOL,MXLAY),        FA00530
      *               WN2L(MXLAY),DVL(MXLAY),WTOTL(MXLAY),ALBL(MXLAY),    FA00540
      *               ADBL(MXLAY),AVBL(MXLAY),H2OSL(MXLAY),IPATH(MXLAY),  FA00550
-c     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA00560
-     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(MXLAY+1),   
-c     *               PZ(0:MXLAY),TZ(0:MXLAY)                             FA00570
-     *               PM(MXLAY+1),TM(MXLAY+1)                             FA00570
+     *               ITYL(MXLAY),SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY),    FA00560
+     *               PM(0:MXLAY),TM(0:MXLAY)                             FA00570
 c 
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1              FL14780
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
@@ -1656,7 +1663,7 @@ C                                                                        FL14880
       J = INEW(K)                                                        FL14920
 C                                                                        FL14930
       JL = J-1                                                           FL14940
-      IF (JL.LT.1) JL = 1                                                FL14950
+      IF (JL.LT.0) JL = 0                                                FL14950
       JP = JL+1                                                          FL14960
       IF (JP.GT.ML) GO TO 40                                             FL14970
       DIF = ALTZ(JP)-ALTZ(JL)                                                FL14980
@@ -1667,9 +1674,9 @@ C                                                                        FL14930
    10 T(K) = TM(JL)                                                      FL15030
       IF (TM(JP).LE.0.0.OR.TM(JL).LE.0.) GO TO 20                        FL15040
       T(K) = TM(JL)*(TM(JP)/TM(JL))**FAC                                 FL15050
-   20 WHN = DENW(JL)                                                     FL15060
-      IF (DENW(JP).LE.0.0.OR.DENW(JL).LE.0.) GO TO 30                    FL15070
-      WHN = DENW(JL)*(DENW(JP)/DENW(JL))**FAC                            FL15080
+   20 WHN = DENW(JL+1)                                                     FL15060
+      IF (DENW(JP+1).LE.0.0.OR.DENW(JL+1).LE.0.) GO TO 30                    FL15070
+      WHN = DENW(JL+1)*(DENW(JP+1)/DENW(JL+1))**FAC                            FL15080
    30 CONTINUE                                                           FL15090
       WHN = WHN*B                                                        FL15100
       RETURN                                                             FL15110
@@ -2053,7 +2060,7 @@ C     ZVSA  VSA ALTITUDES                                                FL18480
 C                                                                        FL18490
       COMMON /LCRD2A/ CTHIK,CALT,CEXT                                    FL18500
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL18510
-      DIMENSION ZNEWV(24),ALTZ( *),ZMDL( *)                                FL18520
+      DIMENSION ZNEWV(24),ALTZ(0:*),ZMDL( *)                                FL18520
       DIMENSION ZNEW(17),ZCLD(16),ZAER(34),ZST(234)                       FL18530
       DATA ZCLD/ 0.0,0.16,0.33,0.66,1.0,1.5,2.0,2.4,2.7,                 FL18540
      * 3.0,3.5,4.0,4.5,5.0,5.5,6.0/                                      FL18550
@@ -2096,7 +2103,7 @@ C                                                                        FL18840
       ENDIF                                                              FL18880
 C                                                                        FL18890
       IF (ICLD.GE.1.AND.ICLD.LE.11) GO TO 110                            FL18900
-      DO 30 I = 1, n_lvl                                                    FL18910
+      DO 30 I = 0, n_lvl-1                                                 FL18910
          IF (ALTZ(I).GT.100.) GO TO 40                                     FL18920
          IL = I                                                          FL18930
          ZMDL(I) = ALTZ(I)                                                 FL18940

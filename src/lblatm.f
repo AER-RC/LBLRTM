@@ -3,6 +3,17 @@ C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
       SUBROUTINE LBLATM                                                  FA00010
+C
+C  --------------------------------------------------------------------------
+C |                                                                          |
+C |  Copyright 2002, 2003, Atmospheric & Environmental Research, Inc. (AER). |
+C |  This software may be used, copied, or redistributed as long as it is    |
+C |  not sold and this copyright notice is reproduced on each copy made.     |
+C |  This model is provided as is without any express or implied warranties. |
+C |                       (http://www.rtweb.aer.com/)                        |
+C |                                                                          |
+C  --------------------------------------------------------------------------
+C
 C                                                                        FA00020
       IMPLICIT REAL*8           (V)                                     !FA00030
 C                                                                        FA00040
@@ -111,6 +122,8 @@ C                                                                        FA00870
 
       COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
+c
+      character*1 jchar_st
 C                                                                        FA00970
       CHARACTER*8      HDATE,HTIME                                      &FA00980
 C                                                                        FA00990
@@ -133,8 +146,6 @@ C
       COMMON /PCHINF/ MUNITS,CTYPE(MXLAY)
 C
       CHARACTER*3 CTYPE
-c
-      character*1 jchar_st
 C
 C     ASSIGN CVS VERSION NUMBER TO MODULE 
 C
@@ -389,7 +400,9 @@ C                                                                        FA03360
 
       COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
-      
+c
+      character*1 jchar_st
+c      
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,        FA03480
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA03490
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL    
@@ -412,8 +425,6 @@ C                                                                        FA03610
 C                                                                        FA03660
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA03670
 C                                                                        FA03680
-      character*1 jchar_st
-c
       CHARACTER*8      HMOLS                                            &FA03690
 C                                                                        FA03700
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA03710
@@ -458,7 +469,7 @@ C                                                                        FA04000
       CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,PZFORM(5),  ht1,ht2
       CHARACTER*3 CTYPE
 C                                                                        FA04050
-       DATA COTHER / 'OTHER   '/                                          FA04060
+      DATA COTHER / 'OTHER   '/                                          FA04060
       DATA AVRATS / 1.5 /,TDIF1S / 5.0 /,TDIF2S / 8.0 /                  FA04070
       DATA HT1HRZ / ' AT '/,HT2HRZ / ' KM '/,HT1SLT / ' TO '/,           FA04080
      *     HT2SLT / ' KM '/                                              FA04090
@@ -2826,7 +2837,9 @@ C                                                                        FA23620
 
       COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
-      
+c
+      character*1 jchar_st
+c      
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FA23740
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA23750
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA23760
@@ -2948,7 +2961,9 @@ C                                                                        FA24710
 
       COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
-
+c
+      character*1 jchar_st
+c
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,  
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA24760
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                      FA24770
@@ -2968,8 +2983,6 @@ C                                                                        FA24850
 C                                                                        FA24900
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA24910
 C                                                                        FA24920
-      character*1 jchar_st
-c
       CHARACTER*8      HMOLS                                            &FA24930
 C                                                                        FA24940
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA24950
@@ -3176,13 +3189,14 @@ C                                                                        FA24900
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA26680
      *               JUNITT                                              FA26690
       CHARACTER*1 JCHAR,JCHARP,JCHART,JLONG                              FA26700
-      character*1 jchar_st
-
+c
       COMMON /MCHAR/ JCHAR(MXMOL),JCHARP,JCHART,JLONG                    FA26710
 
       COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_dum,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
-      
+c
+      character*1 jchar_st
+c      
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
