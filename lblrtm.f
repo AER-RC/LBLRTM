@@ -1278,6 +1278,7 @@ C
       IF (IMRG.GE.35) THEN
          READ (IRD,945) PATH1
          CALL QNTIFY(PATH1,HFORM1)
+         CALL OPNRAD(1,1,PATH1,HFORM1)
       ENDIF
 C
 C     ---------------------
@@ -1300,7 +1301,6 @@ C        -----------------------------
 C        Obtain information from KFILE
 C        -----------------------------
 C
-         CALL OPNRAD(1,1,PATH1,HFORM1)
          REWIND KFILE
          CALL BUFIN (KFILE,KEOF,FILDU1(1),NFHDRF)
          LTGNT = LTNSAV
