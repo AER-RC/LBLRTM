@@ -8,7 +8,7 @@ C                                                                        FA00020
 C                                                                        FA00040
 C**********************************************************************  FA00050
 C                                                                        FA00060
-C     FSCATM IS AN ATMOSPHERIC RAY TRACE PROGRAM.                        FA00070
+C     LBLATM IS AN ATMOSPHERIC RAY TRACE PROGRAM.                        FA00070
 C     IT CREATES AND FORMATS THE ATMOSPHERIC INPUTS FOR THE AFGL         FA00080
 C     LINE-BY-LINE TRANSMITTANCE/RADIANCE PROGRAM LBLRTM.                FA00090
 C                                                                        FA00100
@@ -19,7 +19,7 @@ C**********************************************************************  FA00140
 C-                                                                       FA00150
 C-                      STATEMENT FLAGS                                  FA00160
 C-                                                                       FA00170
-C-    FSCATM HAS BEEN STRUCTURED TO HAVE ENHANCED PORTABILITY UNDER      FA00180
+C-    LBLATM HAS BEEN STRUCTURED TO HAVE ENHANCED PORTABILITY UNDER      FA00180
 C-    FORTRAN 77.  TWO FLAGS (COLUMN73) HAVE BEEN USED TO FACILITATE     FA00190
 C-    PROGRAM CONVERSION.                                                FA00200
 C-                                                                       FA00210
@@ -144,7 +144,7 @@ C                                                                        FA01350
 C                                                                        FA01400
       RETURN                                                             FA01410
 C                                                                        FA01420
-  900 FORMAT ('1',20X,'*****PROGRAM FSCATM*****     ',A10,5X,A10,///)    FA01430
+  900 FORMAT ('1',20X,'*****PROGRAM LBLATM*****     ',A10,5X,A10,///)    FA01430
   905 FORMAT (A8)                                                        FA01440
 C                                                                        FA01450
       END                                                                FA01460
