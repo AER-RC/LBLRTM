@@ -179,7 +179,7 @@ C
 C     
             FH2O(J)=FH2O(J)*FSCAL
 C     
-            C(J) = W1*FH2O(J)
+            C(J) = W1*(FH2O(J)*RFRGN)
 C                                         
 C           ------------------------------------------------------------
 C           Radiation field 
