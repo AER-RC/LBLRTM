@@ -2382,11 +2382,11 @@ C                                                                         A24050
      *        'CALCULATED USING THE EXACT DV, SO THE VALUE ',
      *        'OF DVSET HAS BEEN IGNORED ***')
   955 FORMAT (/,'0 **** CALC DV WAS RESET TO PREVIOUS DV',F12.6,/,        A24290
-     *        '  AT ALT=  ',2(F7.2,A3),' AND ABOVE')                      A24300
-  960 FORMAT ('0',I5,2(F7.2,A3),1P,E15.7,0P,F8.2,3F9.6,F6.3,
+     *        '  AT ALT=  ',2(F7.3,A3),' AND ABOVE')                      A24300
+  960 FORMAT ('0',I5,2(F7.3,A3),1P,E15.7,0P,F8.2,3F9.6,F6.3,
      *        F9.6,F8.4,F9.6,
      *        F7.3,2I5,F12.6)                                             A24320
-  961 FORMAT ('0',I5,2(F7.2,A3),F10.4,F8.2,3F9.6,F6.3,F9.6,F8.4,F9.6,     A24310
+  961 FORMAT ('0',I5,2(F7.3,A3),F10.4,F8.2,3F9.6,F6.3,F9.6,F8.4,F9.6,     A24310
      *        F7.3,2I5,F12.6)                                             A24320
   962 FORMAT (20X,'  DV RATIO  .GT. ',F10.2)                              A24330
   965 FORMAT (/,20X,'  TYPE GT 2.5')                                      A24340
@@ -2394,10 +2394,10 @@ C                                                                         A24050
   970 FORMAT (////)                                                       A24360
   975 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,29X,    A24370
      *        'P(MB)',7X,'T(K)',1X,'IPATH',1X,8(1X,A6,3X))                A24380
-  980 FORMAT ('0',I3,2(F7.2,A3),0PF15.7,F9.2,I5,2X,1P8E15.7)
-  982 FORMAT ('0',I3,2(F7.2,A3),0PF12.5,F9.2,I5,2X,1P8E10.3)              A24390
+  980 FORMAT ('0',I3,2(F7.3,A3),0PF15.7,F9.2,I5,2X,1P8E15.7)
+  982 FORMAT ('0',I3,2(F7.3,A3),0PF12.5,F9.2,I5,2X,1P8E10.3)              A24390
   985 FORMAT ('0',54X,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH')     A24400
-  990 FORMAT ('0',I3,2(F7.2,A3),0PF12.5,F9.2,7X,1P8E10.3)                 A24410
+  990 FORMAT ('0',I3,2(F7.3,A3),0PF12.5,F9.2,7X,1P8E10.3)                 A24410
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                    A24420
      *        '     *****  CROSS SECTIONS  *****      ')                  A24430
 C                                                                         A24440
