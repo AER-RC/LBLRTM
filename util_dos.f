@@ -37,6 +37,52 @@ C                                                                         A10990
       RETURN                                                              A11000
 C                                                                         A11010
       END                                                                 A11020
+c >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+c         note the name change
+
+      SUBROUTINE BUFINln (IFILE,IEOF,IARRAY,IWORDS)
+C
+C     THIS SUBROUTINE BUFFERS IN (READS) IWORDS INTO  IARRAY STARTING
+C     AT LOCATION IARRAY
+C
+C     IFILE IS THE FILE DESIGNATION
+C                                  
+
+      implicit integer*4 (i-n)
+      implicit real*4    (a-h,o-z)
+
+
+      DIMENSION IARRAY(IWORDS)
+C                                                                         A10830
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
+C
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULE 
+C
+      HVRUTL = '$Revision$' 
+C                          
+      IEOF = 1             
+C                          
+C#    BUFFER IN (IFILE,1) (IARRAY(ILO),IARRAY(IHI))
+C#    IF (UNIT(IFILE).EQ.0.) GO TO 10              
+C                                               
+      READ (IFILE,END=10) IARRAY
+      ITEST = MIN(IWORDS,4)                 
+      IF (IARRAY(ITEST).EQ.-99) IEOF = -99      
+C                                               
+      RETURN                                    
+C                                               
+   10 IEOF = 0                                  
+C                                               
+      RETURN                                    
+C                                               
+      END                                       
+c______________________________________________________________________________
+
       SUBROUTINE BUFOUT (IFILE,IARRAY,IWORDS)                             A11030
 C                                                                         A11040
 C     THIS SUBROUTINE BUFFERS OUT (WRITES) IWORDS FROM IARRAY STARTING    A11050
