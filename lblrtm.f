@@ -2091,7 +2091,7 @@ C
       ENDIF                                                               A21100
 C                                                                         A21110
    50 WRITE (IPR,945) XID,(YID(M),M=1,2)                                  A21120
-      IF (IFRMX.EQ.1) THEN
+      IF (IFORM.EQ.1) THEN
          WRITE (IPR,950)
       ELSE
          WRITE (IPR,951)
@@ -2148,6 +2148,13 @@ C                                                                         A21550
 C                                                                         A21630
 C     DVTST=DVSET                                                         A21640
 C                                                                         A21650
+C     Write message if IOD=2 (Optical depth flag) and IMRG = 1
+C
+      IF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
+         WRITE(IPR,953)
+         IF (DVSET.NE.0) WRITE(IPR,954) DVSET
+      ENDIF
+C
 C     LOOP OVER LAYERS                                                    A21660
 C                                                                         A21670
       DO 130 L = 1, NLAYRS                                                A21680
@@ -2206,8 +2213,17 @@ C     AND IMRG = 1
 C
          IF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
             DVL(L) = DV
-            WRITE(IPR,953)
-            IF (DVSET.NE.0) WRITE(IPR,954) DVSET
+            TYPE = 0.
+            ITYPE = -99
+            IF (IFORM.EQ.1) THEN
+               WRITE (IPR,960) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *              TAVEL(L),ALBL(L),ADBL(L),AVBL(L),ZETA,
+     *              DV,H2OSL(L),DV,TYPE,ITYPE,IPTH(L),SECL(L)
+            ELSE
+               WRITE (IPR,961) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *              TAVEL(L),ALBL(L),ADBL(L),AVBL(L),ZETA,
+     *              DV,H2OSL(L),DV,TYPE,ITYPE,IPTH(L),SECL(L)
+            ENDIF
             GOTO 130
          ENDIF
 C
