@@ -917,6 +917,7 @@ C                                                                         I08910
       SUMR(2) = SMIN                                                      I08970
       SUMR(3) = SMAX                                                      I08980
       SUMR(4) = DVOSAV                                                    I08990
+      NSHIFT = 32
 C                                                                         I09000
       REWIND IUNIT                                                        I09010
       CALL BUFIN (IUNIT,IEOF,FILHDR(1),NFHDRF)                            I09020
@@ -980,7 +981,7 @@ C                                                                         I09530
       TIMCNV = 0.                                                         I09550
       TIMPNL = 0.                                                         I09560
       IEOFSC = 1                                                          I09570
-      NLO = NBOUND+1                                                      I09580
+      NLO = NSHIFT+1                                                      I09580
       SUMIN = 0.                                                          I09590
       NHI = NLIMF+NSHIFT-1                                                I09600
       DO 10 I = 1, MAXF                                                   I09610
