@@ -359,7 +359,7 @@ C                                                                         A03560
 C     DATA CFORM / 'BUFFERED   '/                                       # A03570
 C     DATA CFORM / 'UNFORMATTED'/                                         A03580
 C                                                                         A03590
-C      SET ILNFLG
+C      SET ILNFLG TO DEFAULT (NO LINE REJECTION FILES KEPT)
 C
       ILNFLG = 0
 C
@@ -374,14 +374,6 @@ C                                                                         A03610
       OPEN (LNFIL4,FILE='TAPE9',STATUS='UNKNOWN',FORM=CFORM)              A03680
       KFILE = 10                                                          A03690
       OPEN (KFILE,FILE='TAPE10',STATUS='UNKNOWN',FORM=CFORM)              A03700
-      IF (ILNFLG.EQ.1) THEN
-         OPEN(15,FILE='REJ1',STATUS='NEW',FORM='UNFORMATTED')
-         OPEN(16,FILE='REJ4',STATUS='NEW',FORM='UNFORMATTED')
-      ENDIF
-      IF (ILNFLG.EQ.2) THEN
-         OPEN(15,FILE='REJ1',STATUS='OLD',FORM='UNFORMATTED')
-         OPEN(16,FILE='REJ4',STATUS='OLD',FORM='UNFORMATTED')
-      ENDIF
       LFILE = 11                                                          A03710
       OPEN (LFILE,FILE='TAPE11',STATUS='UNKNOWN',FORM=CFORM)              A03720
       MFILE = 12                                                          A03730
@@ -440,9 +432,9 @@ C                                                                         A04080
       CALL CPUTIM (TIME0)                                                 A04260
       WRITE (IPR,920) TIME0                                               A04270
 C                                                                         A04280
-      READ (IRD,925,END=80) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,ISCAN,      A04290
-     *                      IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,IMS,        A04300
-     *                      IXSECT,IRAD,MPTS,NPTS                         A04310
+      READ (IRD,925,END=80) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,            A04290
+     *                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,      A04300
+     *                      IMS,IXSECT,IRAD,MPTS,NPTS                     A04310
 C                                                                         A04320
       IXSCNT = IXSECT*10+ICNTNM                                           A04330
 C                                                                         A04340
@@ -607,11 +599,22 @@ C                                                                         A05910
       IF ((IHIRAC+IAERSL+IEMIT+IATM+ILAS).GT.0) THEN                      A05930
 C                                                                         A05940
          READ (IRD,970,END=80) V1,V2,SAMPLE,DVSET,ALFAL0,AVMASS,DPTMIN,   A05950
-     *                         DPTFAC                                     A05960
+     *                         DPTFAC,ILNFLG                              A05960
 C                                                                         A05970
 C     IF DPTMIN < 0. SET TO DEFAULT (.0002)                               A05980
 C     IF DPTFAC < 0. SET TO DEFAULT (.001)                                A05990
 C                                                                         A06000
+C     OPEN LINE REJECTION FILES IF ILNFLG IS ONE OR TWO
+C
+      IF (ILNFLG.EQ.1) THEN
+         OPEN(15,FILE='REJ1',STATUS='NEW',FORM='UNFORMATTED')
+         OPEN(16,FILE='REJ4',STATUS='NEW',FORM='UNFORMATTED')
+      ENDIF
+      IF (ILNFLG.EQ.2) THEN
+         OPEN(15,FILE='REJ1',STATUS='OLD',FORM='UNFORMATTED')
+         OPEN(16,FILE='REJ4',STATUS='OLD',FORM='UNFORMATTED')
+      ENDIF
+C
          IF (DPTMIN.LT.0.) DPTMIN = .0002                                 A06010
          IF (DPTFAC.LT.0.) DPTFAC = .001                                  A06020
          IF (V2.LE.V1.AND.ILAS.EQ.0) ILAS = 1                             A06030
@@ -759,7 +762,7 @@ C                                                                         A07280
   960 FORMAT (/,' TGRND ',1PE10.3,' SEMIS ',3E11.3,' RMINMS ',E10.3,      A07430
      *        ' RMAXMS ',E10.3)                                           A07440
   965 FORMAT ('0 MULTIPLE SCATTERING TURNED OFF - IMPROPER FLAGS SET ')   A07450
-  970 FORMAT (8E10.3)                                                     A07460
+  970 FORMAT (8E10.3,4X,I1)                                               A07460
   975 FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,            A07470
      *        ' AND IS NOT BOUNDED BY (0.,1.) ')                          A07480
   980 FORMAT ('0 FOR VNU = ',F10.3,' THE REFLECTIVITY = ',E10.3,          A07490
