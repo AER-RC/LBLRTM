@@ -1151,11 +1151,11 @@ C        and interpolate
 C
          DO 10 NGNU = 2,NLIMRF
             VIRFLT = V1RFLT+DVRFLT*(NGNU-1)
-            IF (VI.GE.(VIRFLT-DVEMIS).AND.(VI.LT.VIRFLT)) THEN
+            IF (VI.GE.(VIRFLT-DVRFLT).AND.(VI.LT.VIRFLT)) THEN
                CALL LINTCO(VIRFLT-DVRFLT,ZRFLT(NGNU-1),
      *                     VIRFLT,ZRFLT(NGNU),VI,ZINT,ZDEL)
                REFLFN = ZINT
-               RFNEXT = VIRFLT
+               VINRF = VIRFLT
                RFDEL = ZDEL
                RETURN
             ENDIF
@@ -1165,7 +1165,7 @@ C        Test for last reflectivity input
 C
          IF (VI.EQ.VIRFLT) THEN
             REFLFN = ZRFLT(NLIMRF)
-            RFNEXT = VIRFLT+DVRFLT
+            VINRF = VIRFLT+DVRFLT
             RFDEL = 0.0
             RETURN
          ELSE
