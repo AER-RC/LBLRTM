@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                   29 July 1994
+                                 2 September 1994
  
  
  
@@ -79,7 +79,7 @@ C     presently: %H%  %T%
  RECORD 1.2 (Continued)
  
  
-          IEMIT   (0,1,2,3)
+          IEMIT   (0,1,2)
  
                      = 0  optical depth only
                      = 1  radiance and transmittance
@@ -104,8 +104,11 @@ C     presently: %H%  %T%
            |                                                      |
            --------------------------------------------------------
   RECORD 1.2 (Continued)
+
+
  
-           IMRG   (0 to 9; 12-18; 22-28; 32; 35-36; 40-41) selects merge option
+           IMRG   (0 to 10; 12-18; 22-28; 32; 35-36; 40-41; 45-46) selects merge option
+
  
                                    IMRG = 0 KFILE rewound after each layer
                                         > 1 KFILE not rewound after each layer
@@ -116,6 +119,10 @@ C     presently: %H%  %T%
                           ** uses merge path as defined by precalculated KFILE **
                    = 9  radiance merge with aerosols; precalculated KFILE
                           ** uses merge path as defined by precalculated KFILE **
+
+
+
+
 
                          ---------------------------------------------------------
                          |                                                       |
@@ -130,15 +137,27 @@ C     presently: %H%  %T%
                          |               ODexact_  for IMRG=1  and IOD=2         |
                          ---------------------------------------------------------
 
+
+
+
+           IMRG options are continued on next page.
+           ----------------------------------------
+
+ RECORD 1.2 (Continued)
+ 
+           IMRG (Continued)
+
  
                                                         IMRG OPTIONS FOR MERGED OUTPUT
                                                         ==============================
  
                   Monochromatic Input, on precalculated KFILE.  Output is determined by IEMIT.
                   ____________________________________________________________________________
-                                                                                IMRG =                             Final
-                                                            -----------------------------------------------       Results
-                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                                                                IMRG =
+                                                            -----------------------------------------------
+                                             MERGE PATH:    space to ground     ground to space     tangent        Final
+                                   RADIANCE CALCULATION:      downwelling          upwelling                      Results
+                                          OBSERVER PATH:       uplooking          downlooking        limb         on file
                                                             ---------------     ---------------     -------       -------
                            monochromatic (total merged)            A                   C               B           MFILE
                                                                  (12)                (32)            (22)
@@ -147,11 +166,27 @@ C     presently: %H%  %T%
 
                   Monochromatic Input, on precalculated KODFILs.  Output is determined by IEMIT.
                   ____________________________________________________________________________
-                                                                                IMRG =                             Final
-                                                            -----------------------------------------------       Results
-                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                                                                IMRG =
+                                                            -----------------------------------------------
+                                             MERGE PATH:    space to ground     ground to space     tangent        Final
+                                   RADIANCE CALCULATION:      downwelling          upwelling                      Results
+                                          OBSERVER PATH:       uplooking          downlooking        limb       on file
                                                             ---------------     ---------------     -------       -------
                            monochromatic (total merged)           40                  41                           MFILE
+
+
+ 
+                                                        IMRG OPTIONS FOR MERGED OUTPUT BY LAYER
+                                                        =======================================
+ 
+                  Monochromatic Input, on precalculated KODFILs.  Output is determined by IEMIT.
+                  ____________________________________________________________________________
+                                                                                IMRG =                             Final
+                                                            -----------------------------------------------       Results
+                                             MERGE PATH:    space to ground     ground to space     tangent       by layer
+                                   RADIANCE CALCULATION:      downwelling          upwelling                      on files
+                                                            ---------------     ---------------     -------       --------
+                  monochromatic (by layer, 1 file/layer)           45                  46                           MFILE
 
 
            IMRG options are continued on next page.
@@ -169,8 +204,9 @@ C     presently: %H%  %T%
                   Monochromatic Input, calculated in current run.
                   _______________________________________________
                                                                                 IMRG =
-                                                            -----------------------------------------------       Results
-                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                                            -----------------------------------------------
+                                             MERGE PATH:    space to ground     ground to space     tangent       Results
+                                   RADIANCE CALCULATION:      downwelling          upwelling                      on file
                                                             ---------------     ---------------     -------       -------
                            monochromatic                           3                   4               7           NFILE
                            scanned results                        13                  14              17           NFILE
@@ -182,7 +218,8 @@ C     presently: %H%  %T%
                   ____________________________________________
                                                                                 IMRG =
                                                             -----------------------------------------------       Results
-                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                             MERGE PATH:    space to ground     ground to space     tangent       Results
+                                   RADIANCE CALCULATION:      downwelling          upwelling                      on file
                                                             ---------------     ---------------     -------       -------
                            monochromatic                           5                   6               8           NFILE
                            scanned results                        15                  16              18           NFILE
@@ -194,7 +231,8 @@ C     presently: %H%  %T%
                   ____________________________________________
                                                                                 IMRG =
                                                             -----------------------------------------------       Results
-                                           TYPE OF PATH:    space to ground     ground to space     tangent       on file
+                                             MERGE PATH:    space to ground     ground to space     tangent       Results
+                                   RADIANCE CALCULATION:      downwelling          upwelling                      on file
                                                             ---------------     ---------------     -------       -------
                            scanned results (flux calculations)    35                  36                           NFILE
  
@@ -300,7 +338,7 @@ C     presently: %H%  %T%
  
 
  
- RECORD 1.3    (required if IHIRAC > 0, IAERSL > 0, IEMIT = 1, IATM = 1, or ILAS > 0; otherwise omit)
+ RECORD 1.3    (required if IHIRAC > 0; IAERSL > 0; IEMIT = 1; IATM = 1; or ILAS > 0; otherwise omit)
  
  
  
@@ -418,10 +456,11 @@ C     presently: %H%  %T%
              A55
 
 
-              PTHODL       pathname for precalculated optical depth files
+              PTHODL       pathname for precalculated optical depth files 
 
+                Example:  For PTHODL="ODdeflt_", code will look for files ODdeflt_01, ...
+                -------
 
- 
  
  *****************************************************************************
  ******  these records applicable only if LBLATM not selected (IATM=0)  ******
@@ -498,9 +537,9 @@ C     presently: %H%  %T%
 
  
                IPATH = 0 determined by sign of SECNTO
-                       1 looking down merge
+                       1 looking down merge (upwelling radiance calculated)
                        2 tangent layer merge
-                       3 looking up merge
+                       3 looking up merge (downwelling radiance calculated)
  
            ALTZ(L-1)   altitude for bottom of current layer (information only)
  
@@ -612,8 +651,7 @@ C     presently: %H%  %T%
                            *** Note: this quantity is for information only, SECNTX should be the same as
                                     SECNT0 on Record 2.1, which is used instead of this quantity.
  
-               HEDXS      60 character user identification
-
+               HEDXS      60 character user identification
           ****************************************************************************************************************
           ****  Note: all the quantites on this Record, are for information only, LBLRTM will use the corresponding   ****
           ****        values from Record 2.1.1.    This record is retained to maintain compatibility with 2.1.1 and   ****
@@ -652,9 +690,9 @@ C     presently: %H%  %T%
                       99 specifies first layer (i.e. no ratio)
  
                IPATX = 0 determined by sign of SECNTX
-                       1 looking down merge
+                       1 looking down merge (upwelling radiance calculated)
                        2 tangent layer merge
-                       3 looking up merge
+                       3 looking up merge (downwelling radiance calculated)
  
            ALTX(L-1)   altitude for bottom of current layer
  
