@@ -2683,7 +2683,7 @@ C                                                                         L02830
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   L02870
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       L02880
      *               DVSC,XDUM,V1SHFT                                     L02890
-      COMMON /MAIN/ P0,TEMP0,NLAYER,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   L02900
+      COMMON /MANE/ P0,TEMP0,NLAYER,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   L02900
      *              AVFIX,LAYMA,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,        L02910
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       L02920
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      L02930
@@ -2804,7 +2804,7 @@ C                                                                         L04030
 C                                                                         L04080
       RETURN                                                              L04090
 C                                                                         L04100
-  900 FORMAT ('0  RESULT FROM SCANNING FUNCTION INCONSISTENT WITH '       L04110
+  900 FORMAT ('0  RESULT FROM SCANNING FUNCTION INCONSISTENT WITH ',      L04110
      *        'FILTER REQUEST')                                           L04120
   905 FORMAT ('0',//,8(' -------  '),/,'0',10A8,2X,2(1X,A8,1X))           L04130
   910 FORMAT (//,' INITIAL LAYER = ',I5,'   FINAL LAYER =',I5)            L04140
@@ -2878,7 +2878,7 @@ C                                                                         L04780
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   L04820
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       L04830
      *               DVSC,XDUM,V1SHFT                                     L04840
-      COMMON /MAIN/ P0,TEMP0,NLAYER,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   L04850
+      COMMON /MANE/ P0,TEMP0,NLAYER,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   L04850
      *              AVFIX,LAYMA,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,        L04860
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       L04870
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      L04880
