@@ -2995,5 +2995,12 @@ REPEAT TAPE4-RECORDS 3.1, 3.2 and 3.3 for each molecule : H2O, CO2, O3, C0 and N
 
  _________________________________________________________________________________________________________________________________
 
+Special LINUX note:
+
+When running LINUX on the PGI compile in DOUBLE precision we encountered a "bug" with the 
+compile.  Thus, one needs to run the script, src/linux_dbl_script, before using the makefile,
+makefiles/makelbl.pgi_linux_f90_dbl.
+
+
 
  
