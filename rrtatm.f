@@ -1,7 +1,7 @@
 C     path:      /home/rc1/aer_lblrtm/src/SCCS/s.lblatm.f                       
-C     revision:  3.19                                                           
-C     created:   03/16/98  12:25:29                                             
-C     presently: 03/16/98  12:25:49                                             
+C     revision:  5.2                                                            
+C     created:   08/17/98  09:43:43                                             
+C     presently: 08/17/98  09:44:36                                             
       SUBROUTINE RRTATM
 C
 C     This routine has been modified from lblatm.f for use with RRTM,
@@ -12,7 +12,7 @@ C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
 C                                                                        FA00020
-      IMPLICIT DOUBLE PRECISION (V)                                     !FA00030
+      IMPLICIT REAL*8           (V)                                     !FA00030
 C                                                                        FA00040
 C**********************************************************************  FA00050
 C                                                                        FA00060
@@ -83,7 +83,8 @@ C                                                                        FA00520
      *                 SECNTA(MXLAY),HT1,HT2,ALTZ(0:MXLAY)
       COMMON /XRRTATM/ IXSECT
 C                                                                        FA00630
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      &FA00640
+      CHARACTER*8      XID,       HMOLID,      YID                              
+      Real*8               SECANT,       XALTZ                                  
 C                                                                        FA00650
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,               
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR                 
@@ -93,7 +94,7 @@ C                                                                        FA00650
 C                                                                        FA00690
       EQUIVALENCE (FSCDID(3),IXSCNT) , (FSCDID(5),IEMIT)                 FA00700
 C                                                                        FA00710
-      DOUBLE PRECISION HMOLS                                            &FA00720
+      CHARACTER*8      HMOLS                                            &FA00720
 C                                                                        FA00730
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA00740
      *               JUNITT                                              FA00750
@@ -101,6 +102,7 @@ C                                                                        FA00730
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,             
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR                            
       CHARACTER*8 HMOLC                                                  FA00770
+      character*4 ht1,ht2                                                       
 C                                                                        FA00780
 C     ********************************************************           FA00790
 C                                                                        FA00800
@@ -121,7 +123,7 @@ C                                                                        FA00870
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,        FA00950
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                     FA00960
 C                                                                        FA00970
-      DOUBLE PRECISION HDATE,HTIME                                      &FA00980
+      CHARACTER*8      HDATE,HTIME                                      &FA00980
 C                                                                        FA00990
       COMMON /BNDRY/ ZBND(MXFSC),PBND(MXFSC),TBND(MXFSC),ALORNZ(MXFSC),  FA01000
      *               ADOPP(MXFSC),AVOIGT(MXFSC)                          FA01010
@@ -134,7 +136,7 @@ C
 C                                                                               
 C     ASSIGN SCCS VERSION NUMBER TO MODULE                                      
 C                                                                               
-      HVRATM = '3.19'                                                           
+      HVRATM = '$Revision$'                                                            
 C                                                                        FA01050
 C     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM         FA01060
 C     IOUTDM IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                      FA01070
@@ -395,7 +397,7 @@ C                                                                        FA03550
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA03570
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA03580
 C                                                                        FA03590
-      DOUBLE PRECISION HMOD                                             &FA03600
+      CHARACTER*8      HMOD                                             &FA03600
 C                                                                        FA03610
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA03620
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA03630
@@ -404,7 +406,7 @@ C                                                                        FA03610
 C                                                                        FA03660
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA03670
 C                                                                        FA03680
-      DOUBLE PRECISION HMOLS                                            &FA03690
+      CHARACTER*8      HMOLS                                            &FA03690
 C                                                                        FA03700
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA03710
      *               JUNITT                                              FA03720
@@ -448,7 +450,7 @@ C                                                                        FA04000
       CHARACTER*48 CFORM1,CFORM2                                         FA04010
       CHARACTER*8 COTHER                                                 FA04020
       CHARACTER*7 PAFORM(2)                                              FA04030
-      CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,PZFORM(5)                  FA04040
+      CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,PZFORM(5),  ht1,ht2               
       CHARACTER*3 CTYPE                                                         
 C                                                                        FA04050
       DATA COTHER / 'OTHER   '/                                          FA04060
@@ -509,10 +511,11 @@ C                                                                        FA04440
 C                                                                        FA04590
 C     COMMON /DEAMT/ DENP  with BLANK COMMON AMTP                        FA04600
 C                                                                        FA04610
-         DO 30 M = 1, KDIM                                               FA04620
+         DO 28 M = 1, KDIM                                               FA04620
             DENP(M,N) = 0.                                               FA04630
             AMTP(M,N) = 0.                                               FA04640
-   30 CONTINUE                                                           FA04650
+ 28      CONTINUE                                                               
+ 30   CONTINUE                                                           FA04650
 C                                                                        FA04660
 C     /PROFILE/, /SPECIES/, & /PATHD1/
 C                                                                        FA04680
@@ -659,8 +662,8 @@ C                                                                        FA05950
          IOUTMX = 1                                                      FA06000
          SECNTA(1) = 1.                                                  FA06010
          ALTZ(1) = ZH                                                    FA06020
-         READ (HT1HRZ,922) HT1                                           FA06030
-         READ (HT2HRZ,922) HT2                                           FA06040
+         ht1 = ht1hrz                                                           
+         ht2 = ht2hrz                                                           
 C                                                                        FA06050
 C        > Write atmosphere to TAPE7 (in E15.7 format) <                 FA06060
 C                                                                        FA06070
@@ -1154,8 +1157,8 @@ C
          ENDIF                                                           FA10250
 C                                                                        FA10260
          NLAYRS = LMAX                                                   FA10270
-         READ (HT1SLT,922) HT1                                           FA10280
-         READ (HT2SLT,922) HT2                                           FA10290
+         HT1 = HT1SLT                                                           
+         HT2 = HT2SLT                                                           
 C                                                                        FA10300
       ENDIF                                                              FA10310
 C                                                                        FA10320
@@ -1224,7 +1227,7 @@ C                                                                        FA10530
      *        10X,'ALTD1     = ',F8.2,/,10X,'ALTD2     = ',F8.2)         FA10930
   940 FORMAT (8F10.3)                                                    FA10940
   942 FORMAT (///,' USER DEFINED BOUNDARIES FOR LBLRTM LAYERS',/,10X,    FA10950
-     *        'I',4X,'Z (KM)',//,(10X,I2,F10.4))                         FA10960
+     *        'I',4X,'Z (KM)',//,(10X,I4,F10.4))                         FA10960
   944 FORMAT (' ERROR IN USER INPUT BOUNDARIES ')                        FA10970
   946 FORMAT (' BOUNDARIES ARE OUTSIDE THE RANGE OF THE ATMOSPHERE',/,   FA10980
      *        ' BOUNDARY = ',F10.2,' ATMOSPHERE =',F10.2,/,              FA10990
@@ -1338,7 +1341,7 @@ C                                                                        FA11820
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA11860
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA11870
 C                                                                        FA11880
-      DOUBLE PRECISION HMOLS                                            &FA11890
+      CHARACTER*8      HMOLS                                            &FA11890
 C                                                                        FA11900
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA11910
      *               JUNITT                                              FA11920
@@ -2537,7 +2540,7 @@ C                                                                        FA23620
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA23750
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA23760
 C                                                                        FA23770
-      DOUBLE PRECISION HMOD                                             &FA23780
+      CHARACTER*8      HMOD                                             &FA23780
 C                                                                        FA23790
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA23800
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA23810
@@ -2655,7 +2658,7 @@ C                                                                        FA24710
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA24810
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA24820
 C                                                                        FA24830
-      DOUBLE PRECISION HMOD                                             &FA24840
+      CHARACTER*8      HMOD                                             &FA24840
 C                                                                        FA24850
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA24860
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA24870
@@ -2664,7 +2667,7 @@ C                                                                        FA24850
 C                                                                        FA24900
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA24910
 C                                                                        FA24920
-      DOUBLE PRECISION HMOLS                                            &FA24930
+      CHARACTER*8      HMOLS                                            &FA24930
 C                                                                        FA24940
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA24950
      *              JUNITT                                               FA24960
@@ -2716,7 +2719,7 @@ C
 C                                                                        FA25440
 C     SUBROUTINE TO WRITE HEADER INFORMATION FOR MODEL  0                FA25450
 C                                                                        FA25460
-      DOUBLE PRECISION HMOLS                                            &FA25470
+      CHARACTER*8      HMOLS                                            &FA25470
 C                                                                        FA25480
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA25490
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA25500
@@ -2838,7 +2841,7 @@ C                                                                        FA26610
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA26630
      *              NLTEFL,LNFIL4,LNGTH4                                 FA26640
 C                                                                        FA26650
-      DOUBLE PRECISION HMOLS                                            &FA26660
+      CHARACTER*8      HMOLS                                            &FA26660
 C                                                                        FA26670
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA26680
      *               JUNITT                                              FA26690
@@ -3060,7 +3063,7 @@ C                                                                        FA28560
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA28610
      *                IPDIM,KDIM,KMXNOM,NMOL                             FA28620
 C                                                                        FA28630
-      DOUBLE PRECISION HMOLS                                            &FA28640
+      CHARACTER*8      HMOLS                                            &FA28640
 C                                                                        FA28650
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA28660
      *               JUNITT                                              FA28670
@@ -3800,7 +3803,7 @@ C                                                                        FA34830
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA34840
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA34850
 C                                                                        FA34860
-      DOUBLE PRECISION RA,RB,SG,ANGLE1,ANGLE2,BETA,DBETA                !FA34870
+      REAL*8           RA,RB,SG,ANGLE1,ANGLE2,BETA,DBETA                !FA34870
 C                                                                        FA34880
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA34890
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA34900
@@ -3989,7 +3992,7 @@ C                                                                        FA36640
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,      FA36690
      *                IPDIM,KDIM,KMXNOM,NMOL                             FA36700
 C                                                                        FA36710
-      DOUBLE PRECISION CPATH,CRFRCT,ANDEXD,SH,GAMMA,CT1,CTP,                    
+      REAL*8           CPATH,CRFRCT,ANDEXD,SH,GAMMA,CT1,CTP,                    
      *                 CH2,CMIN                                                 
 C                                                                               
       DATA DH / 0.2 /,ETA / 5.0E-7 /                                    >FA36720
@@ -4114,7 +4117,7 @@ C                                                                        FA37830
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA37910
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA37920
 C                                                                        FA37930
-      DOUBLE PRECISION HMOD                                             &FA37940
+      CHARACTER*8      HMOD                                             &FA37940
 C                                                                        FA37950
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA37960
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA37970
@@ -4240,8 +4243,8 @@ C                                                                        FA38940
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA39020
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA39030
 C                                                                        FA39040
-      DOUBLE PRECISION HMOD                                             &FA39050
-      DOUBLE PRECISION DS,DBEND,S,SINAI,COSAI,CPATH,ANDEXD,SH,GAMMA             
+      CHARACTER*8      HMOD                                             &FA39050
+      REAL*8           DS,DBEND,S,SINAI,COSAI,CPATH,ANDEXD,SH,GAMMA             
 C                                                                        FA39060
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA39070
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA39080
@@ -4421,7 +4424,7 @@ C                                                                        FA40590
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA40690
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA40700
 C                                                                        FA40710
-      DOUBLE PRECISION HMOD                                             &FA40720
+      CHARACTER*8      HMOD                                             &FA40720
 C                                                                        FA40730
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA40740
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA40750
@@ -4608,7 +4611,7 @@ C                                                                        FA42400
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA42480
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA42490
 C                                                                        FA42500
-      DOUBLE PRECISION HMOD                                             &FA42510
+      CHARACTER*8      HMOD                                             &FA42510
 C                                                                        FA42520
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA42530
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA42540
@@ -4618,7 +4621,7 @@ C                                                                        FA42570
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD)  FA42580
       DIMENSION HDEN(MXMOL),DENA(MXMOL),DENB(MXMOL)                      FA42590
 C                                                                               
-      DOUBLE PRECISION S,BEND,DS,DBEND,W1,W2,W3,DSDX1,DSDX2,DSDX3,              
+      REAL*8           S,BEND,DS,DBEND,W1,W2,W3,DSDX1,DSDX2,DSDX3,              
      *       DBNDX1,DBNDX2,DBNDX3,R1,R2,R3,X1,X2,X3,RATIO1,RATIO2,              
      *       RATIO3,SINAI1,SINAI2,SINAI3,COSAI1,COSAI2,COSAI3,Y1,Y3,            
      *       CPATH,DX,DH,SINAI,COSAI,D31,D32,D21,DHMIN,                         
@@ -4845,7 +4848,7 @@ C                                                                        FA44630
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA44730
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA44740
 C                                                                        FA44750
-      DOUBLE PRECISION HMOD                                             &FA44760
+      CHARACTER*8      HMOD                                             &FA44760
 C                                                                        FA44770
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA44780
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA44790
@@ -5032,7 +5035,7 @@ C                                                                        FA46470
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA46570
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA46580
 C                                                                        FA46590
-      DOUBLE PRECISION HMOD                                             &FA46600
+      CHARACTER*8      HMOD                                             &FA46600
 C                                                                        FA46610
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA46620
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA46630
@@ -5075,8 +5078,10 @@ C     THAN 0.1 PERCENT OF THE TOTAL FOR THAT MOLECULE, UNLESS THE        FA46960
 C     NOZERO OPTION IS SELECTED.                                         FA46970
 C     *****************************************************************  FA46980
 C                                                                        FA46990
-      IMPLICIT DOUBLE PRECISION (V)                                             
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                              
+      IMPLICIT REAL*8           (V)                                             
+c                                                                               
+      CHARACTER*8      XID,       HMOLID,      YID                      &FA00640
+      Real*8               SECANT,       XALTZ                                  
 C                                                                               
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA47000
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA47010
@@ -5093,7 +5098,7 @@ C                                                                        FA47020
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FA47120
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FA47130
 C                                                                        FA47140
-      DOUBLE PRECISION HMOD                                             &FA47150
+      CHARACTER*8      HMOD                                             &FA47150
 C                                                                        FA47160
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FA47170
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FA47180
@@ -5120,10 +5125,14 @@ C                                                                        FA47210
      *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1 ,V2 ,TBOUND,         
      *                EMISIV,FSCDID(17),NDUM,LAYER ,YI1,YID(10),LSTWDF          
 C                                                                        FA47300
+      character*4 ht1,ht2                                                       
+                                                                                
       I2 = IPMAX-1                                                       FA47310
       IOUT = 1                                                           FA47320
       PZ(0) = PP(1)                                                      FA47330
       TZ(0) = TP(1)                                                      FA47340
+                                                                                
+                                                                                
 C                                                                               
 C     If entry in TAPE5 for TBOUND < 0, use TZ(O) as boundary                   
 C     temperature                                                               
@@ -5351,12 +5360,12 @@ C                                                                        FX00140
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FX00150
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FX00160
 C                                                                        FX00170
-      IMPLICIT DOUBLE PRECISION (V)                                     !FX00171
+      IMPLICIT REAL*8           (V)                                     !FX00171
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FX00180
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FX00190
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FX00200
 C                                                                        FX00210
-      DOUBLE PRECISION HMOD                                             &FX00220
+      CHARACTER*8      HMOD                                             &FX00220
 C                                                                        FX00230
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FX00240
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FX00250
@@ -5430,7 +5439,7 @@ C                                                                        FX00870
       CHARACTER*48 CFORM1,CFORM2                                         FX00880
       CHARACTER*10 HOTHER                                                FX00890
       CHARACTER*7 PAFORM(2)                                              FX00900
-      CHARACTER*4 PZFORM(5)                                              FX00910
+      CHARACTER*4 PZFORM(5),ht1,ht2                                      FX00910
       CHARACTER*3 CTYPE                                                         
 C                                                                        FX00920
       DATA HOTHER / ' OTHER    '/                                        FX00930
@@ -5482,9 +5491,10 @@ C                                                                        FX01350
       NOPRNT = 1                                                         FX01390
 C                                                                        FX01400
       DO 10 I = 1, IOUTDM                                                FX01410
-         DO 10 K = 1, IXMAX                                              FX01420
+         DO 8  K = 1, IXMAX                                              FX01420
             XAMNT(K,I) = 0.0                                             FX01430
-   10 CONTINUE                                                           FX01440
+ 8       CONTINUE                                                               
+ 10   CONTINUE                                                           FX01440
 C                                                                        FX01450
 C     GET THE STANDARD-FORM SLANT PATH PARAMETERS H1, H2, ANGLE, PHI,    FX01460
 C     HMIN, AND LEN FROM /ADRIVE/ AS H1F, H2F, ANGLEF, PHIF, HMINF       FX01470
@@ -5552,10 +5562,11 @@ C                                                                        FX01980
                TPSUM(N) = 0.0                                            FX02070
                RHOPSM(N) = 0.0                                           FX02080
             ENDIF                                                        FX02090
-            DO 70 M = 1, KDIM                                            FX02100
+            DO 68 M = 1, KDIM                                            FX02100
                DENP(M,N) = 0.0                                           FX02110
                AMTP(M,N) = 0.0                                           FX02120
-   70    CONTINUE                                                        FX02130
+ 68         CONTINUE                                                            
+ 70      CONTINUE                                                        FX02130
 C                                                                        FX02140
 C        > CALCULATE THE REFRACTIVITY <                                  FX02150
 C                                                                        FX02160
@@ -5840,7 +5851,7 @@ C                                                                        FX03570
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FX03590
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FX03600
 C                                                                        FX03610
-      DOUBLE PRECISION HMOD                                             &FX03620
+      CHARACTER*8      HMOD                                             &FX03620
 C                                                                        FX03630
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FX03640
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FX03650
@@ -6071,7 +6082,7 @@ C                                                                        FX05810
       COMMON WPATH(IM2,16),TBBY(IM2)                                     FX05840
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)         FX05850
 C                                                                        FX05860
-      DOUBLE PRECISION HMOD                                             &FX05870
+      CHARACTER*8      HMOD                                             &FX05870
 C                                                                        FX05880
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)       FX05890
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),   FX05900
@@ -6544,14 +6555,14 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                            
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)                
 C                                                                               
-      DOUBLE PRECISION HMOD                                                     
+      CHARACTER*8      HMOD                                                     
 C                                                                               
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)              
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),          
      *       TPSUM(IM2),RHOPSM(IM2),IMLOW,WGM(MXZMD),DENW(MXZMD)                
       COMMON AMTP(MXMOL,MXPDIM)                                                 
 C                                                                               
-      DOUBLE PRECISION CPATH,CPJ,CPJ1,SH,GAMMA,ANDEXD,CRFRCT,RE2                
+      REAL*8           CPATH,CPJ,CPJ1,SH,GAMMA,ANDEXD,CRFRCT,RE2                
 C                                                                               
       CRFRCT(H)=(RE2+H)*ANDEXD(H,SH,GAMMA)                                      
 C                                                                               
@@ -6617,7 +6628,7 @@ C
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,             
      *                IPDIM,KDIM,KMXNOM,KMAX                                    
                                                                                 
-      DOUBLE PRECISION CX1,CX2,CPATH,F,FMID,SH,GAMMA,ANDEXD                     
+      REAL*8           CX1,CX2,CPATH,F,FMID,SH,GAMMA,ANDEXD                     
       DATA XACC/1E-5/                                                           
       PARAMETER (JMAX=40)                                                       
 C                                                                               
@@ -6663,7 +6674,7 @@ C
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,IPHMID,             
      *                IPDIM,KDIM,KMXNOM,KMAX                                    
 C                                                                               
-      DOUBLE PRECISION SAVE,STHETA,CAPRJ,PNTGRN,CTHETA,CTHET1,DX,               
+      REAL*8           SAVE,STHETA,CAPRJ,PNTGRN,CTHETA,CTHET1,DX,               
      *     DRNG,DBETA,R,DIFF,CPATH,ANDEXD,SH,GAMMA,RX,RATIO,RPLDR               
 C                                                                               
       DATA DR/0.005/                                                            
@@ -6702,7 +6713,10 @@ C
          ELSE                                                                   
             DZ = DR                                                             
          ENDIF                                                                  
-         DO 100 Z = R1, R2-DZ, DZ                                               
+c                                                                               
+                                                                                
+         z = r1                                                                 
+         DO 100 while (z.lt.r2)                                                 
             Z2=Z                                                                
             R=Z+RE                                                              
             CALL FNDSHD(Z2,SH,GAMMA)                                            
@@ -6771,6 +6785,7 @@ C
                PHI = 180.0 - ACOS(CTHETA)*DEG                                   
                RETURN                                                           
             ENDIF                                                               
+            z=z+dz                                                              
  100     CONTINUE                                                               
  200  CONTINUE                                                                  
 C                                                                               
@@ -6824,7 +6839,8 @@ C
       COMMON WPATH(IM2,16),TBBY(IM2)                                            
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),AVX2(47),AWCCON(5)                
 C                                                                               
-      DOUBLE PRECISION HMOD,SH,GAMMA                                            
+      REAL*8                SH,GAMMA                                            
+      CHARACTER*8      HMOD                                                     
 C                                                                               
       COMMON HMOD(3),ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)              
       COMMON ZPTH(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),PPSUM(IM2),          
@@ -6857,7 +6873,7 @@ C     AND Z2 ( Z1 < Z2). IT ALSO CALCULATES THE EXTRAPOLATED VALUE
 C     GAMMA OF THE (INDEX-1.0) AT Z = 0.0                                       
 C     *****************************************************************         
 C                                                                               
-      DOUBLE PRECISION SH,GAMMA                                                 
+      REAL*8           SH,GAMMA                                                 
 C                                                                               
       RF1 = RFNDX1+1.0E-20                                                      
       RF2 = RFNDX2+1.0E-20                                                      
@@ -6881,7 +6897,7 @@ C
 C                                                                               
 C ----------------------------------------------------------------              
 C                                                                               
-      DOUBLE PRECISION FUNCTION ANDEXD (H,SH,GAMMA)                             
+      FUNCTION ANDEXD (H,SH,GAMMA)                                              
 C                                                                               
 C     Double precision version of ANDEX - needed for improved geometry          
 C                                                                               
@@ -6891,9 +6907,8 @@ C     SCALE HEIGHT, GAMMA IS THE VALUE AT H=0 OF THE REFRACTIVITY =
 C     INDEX-1                                                                   
 C     *****************************************************************         
 C                                                                               
-      DOUBLE PRECISION SH,GAMMA                                                 
+      REAL*8     andexd, SH,GAMMA                                               
 C                                                                               
-      REAL H                                                                    
       IF (SH.EQ.0.0) THEN                                                       
          ANDEXD = 1.0+GAMMA                                                     
       ELSE                                                                      
@@ -6906,7 +6921,7 @@ C
 C                                                                               
 C ----------------------------------------------------------------              
 C                                                                               
-      DOUBLE PRECISION FUNCTION RADRFD (H,SH,GAMMA)                             
+      FUNCTION RADRFD (H,SH,GAMMA)                                              
 C                                                                               
 C     Double precision version of RADREF - needed for improved geometry         
 C                                                                               
@@ -6915,8 +6930,7 @@ C     COMPUTES THE RADIUS OF CURVATURE OF THE REFRACTED RAY FOR
 C     A HORIZONTAL PATH.  RADREF = ANDEX/ D(ANDEX)/D(RADIUS)                    
 C     *****************************************************************         
 C                                                                               
-      DOUBLE PRECISION SH,GAMMA,BIGNUM                                          
-      REAL H                                                                    
+      REAL*8     radrfd, SH,GAMMA,BIGNUM                                        
       DATA BIGNUM / 1.0D36 /                                                    
 C                                                                               
       IF (SH.EQ.0.0) GO TO 10                                                   
