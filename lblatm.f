@@ -132,7 +132,7 @@ C                                                                        FA01130
       IPDIM = MXPDIM                                                     FA01170
       IBDIM = MXFSC                                                      FA01180
 C                                                                        FA01190
-      CALL FDATE (HDATE)                                                 FA01200
+      CALL LBLDAT(HDATE)                                                 FA01200
       CALL FTIME (HTIME)                                                 FA01210
       WRITE (IPR,900) HDATE,HTIME                                        FA01220
 C                                                                        FA01230
