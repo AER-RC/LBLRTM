@@ -12,8 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                    13 July 1998
- 
+                                  01 November 1999
  
  
 
@@ -931,11 +930,11 @@ C     presently: %H%  %T%
  RECORD 3.2
  
  
-         H1,    H2,   ANGLE,   RANGE,   BETA,   LEN
+         H1,    H2,   ANGLE,   RANGE,   BETA,   LEN,     HOBS
  
-       1-10, 11-20,   21-30,   31-40,  41-50, 51-55
+       1-10, 11-20,   21-30,   31-40,  41-50, 51-55,    61-70
  
-      F10.3, F10.3,   F10.3,   F10.3,  F10.3,    I5
+      F10.3, F10.3,   F10.3,   F10.3,  F10.3,    I5, 5X,F10.3
  
  
           H1     observer altitude (km)
@@ -961,6 +960,10 @@ C     presently: %H%  %T%
                  for ITYPE = 3, H1 = observer altitude must be specified. Either
                                 H2 = tangent height or ANGLE must be specified.
                                 Other parameters are ignored.
+
+          HOBS   Height of observer, used only for informational purposes in 
+                 satellite-type simulations when computing output geometry
+                 above 120 km.
  
  
 
