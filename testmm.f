@@ -120,7 +120,11 @@ C     body (01/94)
 C
 C**********************
             IF (MOLK.EQ.7) THEN
-               DATA Y0RES/0.017/, FO2/1.22/
+C
+C              The value of Y0RES has been changed from 0.017 to 0.013
+C              based on the ARM APRIL, 1994 IOP    (05 Feb. 96)
+C
+               DATA Y0RES/0.013/, FO2/1.22/
 C**********************
                IF ((VNU(K-1) .GT. 0.000011) .AND. (IFLG(K).EQ.-1)) THEN
                   YY = Y0RES
