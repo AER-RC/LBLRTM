@@ -764,6 +764,9 @@ C                                                                        FL06850
 C                                                                        FL07390
       END                                                                FL07400
       SUBROUTINE AERNSM(IAERSL,JPRT,GNDALT)                              FL07410
+
+      PARAMETER (NCASE=15)
+
       CHARACTER*1 JCHAR                                                  FL07420
 C                                                                        FL07430
 C     ****************************************************************** FL07440
@@ -802,7 +805,7 @@ C
      *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL07590
      *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL07600
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL07610
-      COMMON /CARD1B/ JUNIT(15),WMOL(12),WAIR1,JLOW                      FL07620
+      COMMON /CARD1B/ JUNIT(NCASE),WMOL(NCASE),WAIR1,JLOW                FL07620
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL07630
      *    RAINRT                                                         FL07640
       COMMON /LCRD2A/ CTHIK,CALT,CEXT                                    FL07650
@@ -828,8 +831,8 @@ C                                                                        FL07830
       CHARACTER*20 HZ,SEASN,VULCN,HMET,HMODEL,BLANK
       CHARACTER*24 HTRRAD
       CHARACTER*20 AHOL1,AHOL2,AHOL3,AHLVSA,AHUS                         FL07840
-      CHARACTER*20 AHAHOL(15),HHOL                                       FL07850
-      DIMENSION  JCHAR(15)                                               FL07860
+      CHARACTER*20 AHAHOL(NCASE),HHOL                                    FL07850
+      DIMENSION  JCHAR(NCASE)                                            FL07860
       DATA AHLVSA/'VSA DEFINED         '/                                FL07870
       DATA  AHUS /'USER DEFINED        '/                                FL07880
       DATA AHAHOL/                                                       FL07890
@@ -7307,13 +7310,15 @@ C     ***************************************************************    FL68740
 C                                                                        FL68750
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+      PARAMETER (NCASE=15, NCASE2=NCASE-2)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL68760
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL68770
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL68780
       COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL68790
      *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)                  FL68800
-      COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(13),WMOL1(12),WAIR1,JLOW      FL68810
+      COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(NCASE2),WMOL1(NCASE),
+     *                WAIR1,JLOW                                         FL68810
 C
       DATA C1/18.9766/,C2/-14.9595/,C3/-2.43882/                         FL68820
 C
@@ -7425,11 +7430,13 @@ C     ****************************************************************** FL69840
 C                                                                        FL69850
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+      PARAMETER (NCASE=15, NCASE2=NCASE-2)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL69860
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL69870
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL69880
-      COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(13),WMOL1(12),WAIR,JLOW       FL69890
+      COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(NCASE2),WMOL1(NCASE),
+     *                WAIR,JLOW                                          FL69890
       COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL69900
      *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)                  FL69910
 C
@@ -8641,10 +8648,13 @@ C     ***  A POSSIBLE MISAPPLICATION OF TEMPERATURE UNITS, (K) VS (C)    FL81930
 C                                                                        FL81940
 C     ****************************************************************** FL81950
 C                                                                        FL81960
+      PARAMETER (NCASE=15, NCASE2=NCASE-2)
+
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL81970
      *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL81980
      *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL81990
-      COMMON /CARD1B/ JUNITP,JUNITT,JUNIT(13),WMOL(12),WAIR,JLOW         FL82000
+      COMMON /CARD1B/ JUNITP,JUNITT,JUNIT(NCASE2),WMOL(NCASE),
+     *                WAIR,JLOW                                          FL82000
 C
       DOUBLE PRECISION HDUM,DUM1                                         FL82010
 C
