@@ -3628,11 +3628,20 @@ C     Subtract from 180 degrees to correctly place angle in the
 C     3rd quadrant.
 C
       if (hobs.gt.0.) then
-         sinphi_sat = ((re+h1)/(re+hobs))*sinphi
-         phi_sat = 180. - asin(sinphi_sat)/radconv
-         sinphi_sat = sin(radconv*phi_sat)
-         diffangle = phi_sat - phi
-         WRITE (IPR,937) hobs,phi_sat,sinphi_sat,diffangle
+         if (h2.gt.h1) then
+            h_toa = h2
+            sintoa = sinphi
+            toa_ang = phi
+         else
+            h_toa = h1
+            sintoa = sinangle
+            toa_ang = angle
+         endif
+         sintoa_sat = ((re+h_toa)/(re+hobs))*sintoa
+         toa_sat = 180. - asin(sintoa_sat)/radconv
+         sintoa_sat = sin(radconv*toa_sat)
+         diffangle = toa_sat - toa_ang
+         WRITE (IPR,937) hobs,toa_sat,sintoa_sat,diffangle
       endif
 
 
