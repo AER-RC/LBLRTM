@@ -36,8 +36,10 @@ foreach i (`ls *.f`)
 echo $i
 #replace 
 cat $i | sed 's/c%%%%%LINUX_PGI90 (-i8)%%%%%//g' > $i.tmp
-cat $i.tmp | sed 's/ LOGICAL / LOGICAL*4 /g' > $i:r_linux.f
-\rm $i.tmp
+cat $i.tmp | sed 's/ Logical / Logical*4 /g' > $i.tmp1
+cat $i.tmp1 | sed 's/ logical / logical*4 /g' > $i.tmp2
+cat $i.tmp2 | sed 's/ LOGICAL / LOGICAL*4 /g' > $i:r_linux.f
+\rm $i.tmp $i.tmp1 $i.tmp2
 end
 
 \rm util_aix_linux.f  util_dos_linux.f 
