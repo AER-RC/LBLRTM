@@ -427,7 +427,7 @@ C                                                                         A04080
       CXIDA(1) = CBLNK                                                    A04120
       READ (CXID,910) (XID(I),I=1,10)                                     A04130
       READ (XID8,910) XID(10)                                             A04140
-      CALL FDATE (HDATE)                                                  A04150
+      CALL LBLDAT(HDATE)                                                  A04150
       CALL FTIME (HTIME)                                                  A04160
       WRITE (IPR,915) XID,HDATE,HTIME                                     A04170
       DO 30 I = 1, 17                                                     A04180

@@ -54,7 +54,7 @@ C                                                                         A11170
       RETURN                                                              A11180
 C                                                                         A11190
       END                                                                 A11200
-      SUBROUTINE FDATE (HDATE)                                           LN05190
+      SUBROUTINE LBLDAT(HDATE)                                           LN05190
 C                                                                        LN05200
       DOUBLE PRECISION HDATE                                            &LN05210
 C                                                                        LN05220
