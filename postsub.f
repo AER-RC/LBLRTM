@@ -3122,7 +3122,7 @@ C     NFLTPT sets the maximum number of points in the incoming filter
 C
       PARAMETER (NFLTPT = 1001)
 C
-      IMPLICIT DOUBLE PRECISION (V)                                     ! L00030
+      IMPLICIT REAL*8 (V)
 C                                                                         L00040
       COMMON S(2650),R1(3750)                                             L00050
 C                                                                         L00060
@@ -3345,7 +3345,7 @@ C     NFLTPT sets the maximum number of points in the incoming filter
 C
       PARAMETER (NFLTPT = 1001)
 C
-      IMPLICIT DOUBLE PRECISION (V)                                     ! L01720
+      IMPLICIT REAL*8           (V) 
 C                                                                         L01730
 C     READ CONTROL CARD FOR FILTER WITH WEIGHTING FUNCTIONS               L01740
 C                                                                         L01750
@@ -3456,7 +3456,7 @@ C     NFLTPT sets the maximum number of points in the incoming filter
 C
       PARAMETER (NFLTPT = 1001)
 C
-      IMPLICIT DOUBLE PRECISION (V)                                     ! L02750
+      IMPLICIT REAL*8           (V) 
 C                                                                         L02760
 C     SUBROUTINE FLTMRG CALCULATES AND OUTPUTS THE RESULTS                L02770
 C     OF THE FILTER TO FILE JFILE                                         L02780
@@ -3626,7 +3626,7 @@ C     NFLTPT sets the maximum number of points in the incoming filter
 C
       PARAMETER (NFLTPT = 1001)
 C
-      IMPLICIT DOUBLE PRECISION (V)                                     ! L04370
+      IMPLICIT REAL*8           (V) 
 C                                                                         L04380
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L04390
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L04400
@@ -3666,7 +3666,7 @@ C     NFLTPT sets the maximum number of points in the incoming filter
 C
       PARAMETER (NFLTPT = 1001)
 C
-      IMPLICIT DOUBLE PRECISION (V)                                     ! L04700
+      IMPLICIT REAL*8           (V)     
 C                                                                         L04710
 C     SUBROUTINE FLTPRT READS FROM IFILE AND FORMATS OUT THE RESULTS      L04720
 C     OF THE FILTERED WEIGHTING FUNCTION TO IPR                           L04730

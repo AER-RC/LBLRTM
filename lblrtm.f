@@ -1119,13 +1119,16 @@ C                                                                         A09540
 C                                                                         A09580
       CHARACTER*8      HLINID,BMOLID,HID1,HLINHD                        & A09590
 C                                                                         A09600
+      integer *4 molcnt,mcntlc,
+     *           mcntnl,linmol,
+     *           lincnt,ilinlc,ilinnl,irec,irectl
+c
       COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A09610
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A09620
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL     A09630
 
       real *4 sumstr,flinlo,flinhi
-      integer *4 lnfil,molcnt,mcntlc,mcntnl,linmol,
-     *     lincnt,ilinlc,ilinnl,irec,irectl
+      integer *4 lnfil
 C                                                                         A09640
 C     LSTWD (LAST WORD) IS DUMMY, DOES NOT NEED TO BE COUNTED             A09650
 C                                                                         A09660
@@ -2324,6 +2327,12 @@ C                                                                         A17190
 C                                                                         A17240
       CHARACTER*8       HLINID,BMOLID,HID1                              & A17250
 C                                                                         A17260
+      integer *4 molcnt,mcntlc,
+     *           mcntnl,linmol,
+     *           lincnt,ilinlc,ilinnl,irec,irectl
+c
+      real *4 sumstr,flinlo,flinhi
+C                                                                         A09640
       COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A17270
      *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A17280
      *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL     A17290
