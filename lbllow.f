@@ -306,15 +306,32 @@ C     *** REPEAT RECORDS 3.6.2 - 3.6.3 N TIMES, WHERE                    FL03000
 C     *** N = IREG(1)+IREG(2)+IREG(3)+IREG(4) FROM RECORD 3.6.1          FL03010
 C                                                                        FL03020
 C     ****************************************************************** FL03030
-C                                                                        FL03040
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL03050
-      COMMON             WPATH(129,16),TBBY(129)                         FL03060
-      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL03070
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,    FL03040
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL03050
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL03060
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
+C
       DOUBLE PRECISION HMOD                                              FL03080
-      COMMON HMOD(3),ZM(64),PF(64),TF(64),RFNDXM(64)                     FL03090
-      COMMON          ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),       FL03100
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL03110
-     * IMLOW,WGM(64),DENW(64)                                            FL03120
+C
+      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL03090
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL03100
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL03110
+     *     IMLOW,WGM(MXZMD),DENW(MXZMD)                                  FL03120
+C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL03130
      *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL03140
      *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL03150
@@ -335,8 +352,9 @@ C                                                                        FL03040
      *     FSCDID(17),NMOL,LAYER,YI1,YID(10) ,LSTWDF                     FL03300
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL03310
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL03320
-      COMMON/MODEL/ ZMDL(64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),      FL03330
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL03340
+      COMMON/MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                     FL03330
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL03340
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /MART/ RHH                                                  FL03350
       COMMON /USRDTA/ NANGLS,ANGF(50),F(4,50)                            FL03360
       COMMON /MDLZ/ HMDLZ(10)                                            FL03370
@@ -752,14 +770,32 @@ C     CLD RAIN  CLDTYPE                                                  FL07460
 C     LOADS HAZE INTO APPROPRATE LOCATION                                FL07470
 C     ****************************************************************** FL07480
 C                                                                        FL07490
-      COMMON RELFAS(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL07500
-      COMMON             WPATH(129,16),TBBY(129)                         FL07510
-      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL07520
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELFAS(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL07500
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL07510
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
+C
       DOUBLE PRECISION HMOD                                              FL07530
-      COMMON HMOD(3),ZM(64),PF(64),TF(64),RFNDXM(64)                     FL07540
-      COMMON ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),                FL07550
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL07560
-     * IMMAX,WGM(64),DENW(64)                                            FL07570
+C
+      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL07540
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL07550
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL07560
+     *     IMMAX,WGM(MXZMD),DENW(MXZMD)                                  FL07570
+C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL07580
      *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL07590
      *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL07600
@@ -775,17 +811,18 @@ C                                                                        FL07490
       COMMON /MART/ RHH                                                  FL07700
       COMMON /MDATA/ZDA(50),P(50)  ,T(50)  ,WH(50)  ,WO(50),             FL07710
      * HMIX(50),CLD(50,7),RR(50,7)                                       FL07720
-      COMMON /MODEL/ ZMDL(64),PMM(64),TMM(64),RFNDX(64),DENSTY(16,64),   FL07730
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL07740
+      COMMON /MODEL/ ZMDL(MXZMD),PMM(MXZMD),TMM(MXZMD),                  FL07730
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL07740
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL07750
       COMMON /MDLZ/HMDLZ(10)                                             FL07760
-      CHARACTER*20 HZ,SEASN,VULCN,HMET,HMODEL,BLANK                      FL07770
-      CHARACTER*24 HTRRAD                                                FL07780
       COMMON /TITL/ HZ(16),SEASN(2),VULCN(8),BLANK,                      FL07790
      * HMET(2),HMODEL(8),HTRRAD(4)                                       FL07800
       DIMENSION ITY1(51),IH1(50),IS1(50),IVL1(50),ZGN(50)                FL07810
-      DIMENSION INEW(50),RELHUM(64),ZSTF(64),CLDTOP(10),AHAST(50)        FL07820
+      DIMENSION INEW(50),RELHUM(MXZMD),ZSTF(MXZMD),CLDTOP(10),AHAST(50)
 C                                                                        FL07830
+      CHARACTER*20 HZ,SEASN,VULCN,HMET,HMODEL,BLANK
+      CHARACTER*24 HTRRAD
       CHARACTER*20 AHOL1,AHOL2,AHOL3,AHLVSA,AHUS                         FL07840
       CHARACTER*20 AHAHOL(15),HHOL                                       FL07850
       DIMENSION  JCHAR(15)                                               FL07860
@@ -1344,6 +1381,9 @@ C                                                                        FL13230
   950 FORMAT(//,' MODEL ATMOSPHERE NO. ',I5,' ICLD =',I5,//)             FL13390
 C                                                                        FL13400
       END                                                                FL13410
+C
+C     ***********************************************************
+C
       SUBROUTINE LAYCLD(K,CLDATZ,RRATZ,IAERSL,ICLD1,GNDALT,RAINRT)       FL13420
 C                                                                        FL13430
 C     THIS SUBROUTINE RESTRUCTURES THE ATMOSPHERIC PROFILE               FL13440
@@ -1355,10 +1395,23 @@ C     ZCLD CLOUD ALTITUDE ARRAY                                          FL13490
 C     ZDIF  ALT DIFF OF 2 LAYERS                                         FL13500
 C     ZDA COMMON /MDATA/ CLD AND RAIN INFO IN THIS COMMON                FL13510
 C                                                                        FL13520
-      COMMON /MDATA/ZDA(50),P(50)  ,T(50)  ,WH(50)  ,WO(50),             FL13530
-     * HMIX(50),CLD(50,7),RR(50,7)                                       FL13540
-      COMMON /MODEL/ ZMDL(64),PN(64),TN(64),RFNDX(64),DENSTY(16,64),     FL13550
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL13560
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+      COMMON /MDATA/ ZDA(50),P(50),T(50),WH(50),WO(50),                  FL13530
+     *     HMIX(50),CLD(50,7),RR(50,7)                                   FL13540
+      COMMON /MODEL/ ZMDL(MXZMD),PN(MXZMD),TN(MXZMD),                    FL13550
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL13560
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       DIMENSION ZCLD(16)                                                 FL13570
       DATA ZCLD/ 0.0,0.16,0.33,0.66,1.0,1.5,2.0,2.4,2.7,                 FL13580
      * 3.0,3.5,4.0,4.5,5.0,5.5,6.0/                                      FL13590
@@ -1471,16 +1524,37 @@ C                                                                        FL14650
 C     DATA CO2       /                                                   FL14660
 C                                                                        FL14670
       END                                                                FL14680
+C
+C     **************************************************************
+C
       SUBROUTINE GETPT(K,ZMDL,P,T,WHN,INEW)                              FL14690
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL14700
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL14710
-      COMMON             WPATH(129,16),TBBY(129)                         FL14720
-      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL14730
-      DOUBLE PRECISION HMOD                                              FL14740
-      COMMON HMOD(3),Z1(64),PM(64),TM(64),RFNDXM(64)                     FL14750
-      COMMON          ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),       FL14760
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL14770
-     * IMLOW,WGM(64),DENW(64)                                            FL14780
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL14720
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
+C
+      DOUBLE PRECISION HMOD                                              FL14730
+C
+      COMMON HMOD(3),Z1(MXZMD),PM(MXZMD),TM(MXZMD),RFNDXM(MXZMD)         FL14740
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL14750
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL14760
+     *     IMLOW,WGM(MXZMD),DENW(MXZMD)                                  FL14770
+C
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL14780
       DIMENSION INEW( *)                                                 FL14790
       DIMENSION ZMDL( *),P(50)  ,T(50)                                   FL14800
 C                                                                        FL14810
@@ -1548,20 +1622,37 @@ C     DEFAULT VALUE 0.14*CTHIK                                           FL15420
 C     *                                                                  FL15430
 C     ****************************************************************** FL15440
 C                                                                        FL15450
-      COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL15460
-      COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL15470
-     *    RAINRT                                                         FL15480
-      COMMON /LCRD2A/ CTHIK,CALT,CEXT                                    FL15490
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL15500
-      COMMON             WPATH(129,16),TBBY(129)                         FL15510
-      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL15520
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL15460
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL15470
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL15480
+C
+      COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL15490
+      COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL15500
+     *     RAINRT                                                        FL15510
+      COMMON /LCRD2A/ CTHIK,CALT,CEXT                                    FL15520
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IMULT,JH1            FL15530
       COMMON /LCRD4/ V1,V2,DV                                            FL15540
-      COMMON/MODEL/ ZMDL(64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),      FL15550
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL15560
+      COMMON/MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                     FL15550
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL15560
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL15570
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL15580
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL15590
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL15580
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL15590
       DIMENSION CBASE(5,2),TSTAT(11),PTAB(5),CAMEAN(5)                   FL15600
       DIMENSION CBASE1(5),CBASE2(5)                                      FL15610
       EQUIVALENCE (CBASE1(1),CBASE(1,1)),(CBASE2(1),CBASE(1,2))          FL15620
@@ -1635,12 +1726,28 @@ C     *               DESG    -  ASYMMETRY PARAMETER AT 47 WAVELENGTHS   FL16290
 C     *                                                                  FL16300
 C     ****************************************************************** FL16310
 C                                                                        FL16320
-      COMMON RELHUM(64),WHNO3(50),ICH(4),VH(16),TX(16),W(16)             FL16330
-      COMMON             WPATH(129,16),TBBY(129)                         FL16340
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),WHNO3(50),ICH(4),VH(16),TX(16),W(16)          FL16330
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL16340
+C
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL16350
       COMMON /DESAER/ EXT(47,4),ABS(47,4),G(47,4)                        FL16360
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL16370
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL16380
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL16380
      *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL16390
       DIMENSION DESEXT(47),DESSCA(47),DESABS(47),DESG(47),WIND(4)        FL16400
       REAL      DESEXT    ,DESSCA    ,DESABS    ,DESG    ,WIND           FL16410
@@ -1839,6 +1946,9 @@ C                                                                        FL18070
      * 0.8588, 0.8918, 0.8922, 0.8407, 0.6488, 0.7557, 0.7021, 0.6024,   FL18340
      * 0.5533, 0.5280, 0.5016, 0.4711, 0.4396, 0.4230, 0.4058/           FL18350
       END                                                                FL18360
+C
+C     *****************************************************************
+C
       SUBROUTINE FLAYZ(ML,MODEL,ICLD,IAERSL,ZMDL,ZM,GNDALT,IVSA,IEMSCT)  FL18370
 C                                                                        FL18380
 C     SUBROUTINE TO CREATE FINAL LOWTRAN BOUNDRIES                       FL18390
@@ -2019,6 +2129,9 @@ C                                                                        FL20110
   240 CONTINUE                                                           FL20140
   250 RETURN                                                             FL20150
       END                                                                FL20160
+C
+C     ******************************************************************
+C
       SUBROUTINE TRANS                                                   FL20170
 C                                                                        FL20180
 C     ****************************************************************** FL20190
@@ -2042,27 +2155,45 @@ C     ****************************************************************** FL20360
 C                                                                        FL20370
       PARAMETER (MAXDV=2050)                                             FL20380
       INTEGER PHASE,DIST,ERR                                             FL20390
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL20400
-      COMMON             WPATH(129,16),TBBY(129)                         FL20410
-      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL20420
-      DOUBLE PRECISION HMOD                                              FL20430
-      COMMON HMOD(3),ZM(64),PF(64),TF(64),RFNDXM(64)                     FL20440
-      COMMON          ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),       FL20450
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL20460
-     * IMLOW,WGM(64),DENW(64)                                            FL20470
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,    FL20400
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)                        FL20410
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL20420
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL20430
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL20470
+C
+      DOUBLE PRECISION HMOD                                              FL20440
+C
+      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL20450
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL20460
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),
+     *     IMLOW,WGM(MXZMD),DENW(MXZMD)
+C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL20480
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL20490
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL20500
-      COMMON /RAIN/ RNPATH(129),RRAMTK(129)                              FL20510
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL20490
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL20500
+      COMMON /RAIN/ RNPATH(IM2),RRAMTK(IM2)                              FL20510
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL20520
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL20530
-     *    RAINRT                                                         FL20540
+     *     RAINRT                                                        FL20540
       COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL20550
       COMMON /LCRD4/ V1,V2,DV                                            FL20560
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL20570
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL20580
       COMMON /AER/ XX1,XX2,XX3,XX4,XX5,                                  FL20590
-     * YY1,YY2,YY3,YY4,YY5,ZZ1,ZZ2,ZZ3,ZZ4,ZZ5                           FL20600
+     *     YY1,YY2,YY3,YY4,YY5,ZZ1,ZZ2,ZZ3,ZZ4,ZZ5                       FL20600
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                       FL20610
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      FL20620
      *     WK(60),PZL,PZU,TZL,TZU,WN2   ,DVP,V1P,V2P,TBOUNF,EMISIV,      FL20630
@@ -2070,7 +2201,7 @@ C                                                                        FL20370
       DOUBLE PRECISION VI1,VI2,V1P,V2P,VV                                FL20650
       COMMON /LPANEL/ VI1,VI2,DVV,NLIMAP                                 FL20660
       COMMON /ZOUTP/ ZOUT(67),SOUT(67),RHOSUM(67),AMTTOT(35),AMTCUM(35), FL20670
-     * ISKIP(35)                                                         FL20680
+     *     ISKIP(35)                                                     FL20680
       EQUIVALENCE (VI1,PNLHDR(1))                                        FL20690
       EQUIVALENCE (FSCDID(17),NLIM)                                      FL20700
       EQUIVALENCE (XID(1),XFILHD(1))                                     FL20710
@@ -2407,13 +2538,16 @@ C                                                                        FL23930
      * F10.2,' CM-1',/,' AVERAGE TRANSMITTANCE =',F6.4,/)                FL24020
 C                                                                        FL24030
       END                                                                FL24040
+C
+C     ******************************************************************
+C
       SUBROUTINE RNSCAT(V,R,TT,PHASE,DIST,IK,CSSA,ASYMR,IENT)            FL24050
 C                                                                        FL24060
 C     ****************************************************************** FL24070
 C                                                                        FL24080
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL24090
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL24100
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL24110
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL24100
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL24110
       INTEGER PHASE,DIST,ERR                                             FL24120
       DIMENSION SC(3,4)                                                  FL24130
 C                                                                        FL24140
@@ -2632,6 +2766,9 @@ C                                                                        FL26170
      *' PARAMETER IS CALCULATED FOR 50 MM/HR')                           FL26270
 C                                                                        FL26280
       END                                                                FL26290
+C
+C     ******************************************************************
+C
       SUBROUTINE BS(I,A,B,N,S)                                           FL26300
 C                                                                        FL26310
 C     ****************************************************************** FL26320
@@ -2845,23 +2982,42 @@ C                                                                        FL28340
       ENDIF                                                              FL28400
       RETURN                                                             FL28410
       END                                                                FL28420
+C
+C     *****************************************************************
+C
       SUBROUTINE LAYVSA(K,RH,AHAZE,IHA1,ZSTF)                            FL28430
 C                                                                        FL28440
 C     RETURNS HAZE FOR VSA OPTION                                        FL28450
 C                                                                        FL28460
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL28470
-      COMMON/MODEL/ ZMDL(64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),      FL28480
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL28490
+      COMMON/MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                     FL28480
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)          FL28490
+C
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL28500
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL28510
-     *    RAINRT                                                         FL28520
+     *     RAINRT                                                        FL28520
       COMMON /MDATA/ ZDA(50),P(50)  ,T(50)  ,WH(50)  ,WO(50),            FL28530
-     *               HMIX(50), DUM1(50,7), DUM2(50,7)                    FL28540
+     *     HMIX(50), DUM1(50,7), DUM2(50,7)                              FL28540
       COMMON /ZVSALY/ ZVSA(10),RHVSA(10),AHVSA(10),IHVSA(10)             FL28550
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL28560
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL28570
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL28580
-      DIMENSION ZSTF(64)                                                 FL28590
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL28570
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL28580
+C
+      DIMENSION ZSTF(MXZMD)                                              FL28590
+C
       RH = 0.                                                            FL28600
       AHAZE = 0                                                          FL28610
       IHA1 = 0                                                           FL28620
@@ -2908,6 +3064,9 @@ C                                                                        FL29020
   900 FORMAT('   ERROR MODEL EQ 0 AND ARMY MODEL CANNOT MIX')            FL29030
 C                                                                        FL29040
       END                                                                FL29050
+C
+C     ******************************************************************
+C
       SUBROUTINE STDMDL                                                  FL29060
 C                                                                        FL29070
 C     ****************************************************************** FL29080
@@ -2923,28 +3082,47 @@ C     ZP  BLANK COMMON                                                   FL29170
 C                                                                        FL29180
 C     ****************************************************************** FL29190
 C                                                                        FL29200
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)
+      COMMON WPATH(IM2,16),TBBY(IM2)
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
+C
+      DOUBLE PRECISION HMOD
+C
+      COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)
+      COMMON ZP(IM2),PP1(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),
+     *     IMMAX,WGM(MXZMD),DEMW(MXZMD)
+C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL29210
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL29220
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL29230
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL29220
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL29230
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL29240
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL29250
-     *    RAINRT                                                         FL29260
+     *     RAINRT                                                        FL29260
       COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL29270
       COMMON /LCRD4/ V1,V2,DV                                            FL29280
       COMMON /MDATA/ZMDL(50),P(50) ,T(50)  ,WH(50)  ,WO(50),             FL29290
-     * HMIX(50),CLD(50,7),RR(50,7)                                       FL29300
+     *     HMIX(50),CLD(50,7),RR(50,7)                                   FL29300
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL29310
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL29320
-      COMMON /MODEL/ ZM(64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),       FL29330
-     * CLDM(64),RRM(64),EQLWC(64),HAZEC(64)                              FL29340
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL29350
-      COMMON             WPATH(129,16),TBBY(129)                         FL29360
-      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL29370
-      DOUBLE PRECISION HMOD                                              FL29380
-      COMMON HMOD(3),ZN(64),PN(64),TN(64),RFNDXM(64)                     FL29390
-      COMMON         ZP(129),PP1(129),TP(129),RFNDXP(129),SP(129),       FL29400
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL29410
-     * IMMAX,WGM(64),DEMW(64)                                            FL29420
+      COMMON /MODEL/ ZM(MXZMD),PM(MXZMD),TM(MXZMD),
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),
+     *     CLDM(MXZMD),RRM(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
 C                                                                        FL29430
 C     XLOSCH = LOSCHMIDT'S NUMBER,MOLECULES CM-2,KM-1                    FL29440
 C                                                                        FL29450
@@ -3093,6 +3271,9 @@ C                                                                        FL30780
      * '(-)',T104,'(-)',T113,'(PERCNT)',/)                               FL30880
 C                                                                        FL30890
       END                                                                FL30900
+C
+C     *****************************************************************
+C
       SUBROUTINE NEWMDL(MAXATM)                                          FL30910
 C                                                                        FL30920
 C     CC                                                                 FL30930
@@ -3103,17 +3284,36 @@ C     ZOUT COMMON /ZOUTP/ FINAL LBLRTM BOUNDRIES                         FL30970
 C     ZMDL COMMON /MODEL/ FINAL ALTITUDE FOR LOWTRAN                     FL30980
 C     CC                                                                 FL30990
 C                                                                        FL31000
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL31010
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL31020
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL31030
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL31020
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL31030
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL31040
-      COMMON/MODEL/ZMDL(64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),       FL31050
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL31060
+      COMMON/MODEL/ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                      FL31050
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL31060
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /ZOUTP/ ZOUT(67),SOUT(67),RHOSUM(67),AMTTOT(35),AMTCUM(35), FL31070
-     * ISKIP(35)                                                         FL31080
+     *     ISKIP(35)                                                     FL31080
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISS,IKP,JH1                 FL31090
-      DIMENSION PTMP(64),TTMP(64),RTMP(64),DENTMP(16,64),ZMTP(64),       FL31100
-     * RRAMTJ(64)                                                        FL31110
+C
+      DIMENSION PTMP(MXZMD),TTMP(MXZMD),RTMP(MXZMD),                     FL31100
+     *     DENTMP(16,MXZMD),ZMTP(MXZMD),RRAMTJ(MXZMD)                    FL31110
+C
       DO 10 I = 1, ML                                                    FL31120
          ZMTP(I) = ZMDL(I)                                               FL31130
          PTMP(I) = PM(I)                                                 FL31140
@@ -3188,18 +3388,34 @@ C                                                                        FL31820
   900 FORMAT(' LAYER LIMIT REACHED  CHANGE AVARAT  2. 10. 20. WORKS' )   FL31830
 C                                                                        FL31840
       END                                                                FL31850
+C
+C     ******************************************************************
+C
       SUBROUTINE AERPRF (I,K,VIS,HAZE,IHAZE,ICLD,ISEASN,IVULCN,N)        FL31860
 C                                                                        FL31870
 C     ****************************************************************** FL31880
 C     WILL COMPUTE DENSITY    PROFILES FOR AEROSOLS                      FL31890
 C     ****************************************************************** FL31900
 C                                                                        FL31910
-      COMMON/PRFD  /ZHT(34),HZ2K(34,5),FAWI50(34),FAWI23(34),SPSU50(34), FL31920
-     *SPSU23(34),BASTFW(34),VUMOFW(34),HIVUFW(34),EXVUFW(34),BASTSS(34), FL31930
-     *VUMOSS(34),HIVUSS(34),EXVUSS(34),UPNATM(34),VUTONO(34),            FL31940
-     *VUTOEX(34),EXUPAT(34)                                              FL31950
-      COMMON /MODEL/ ZMDL(64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),     FL31960
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL31970
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+      COMMON/PRFD  / ZHT(34),HZ2K(34,5),FAWI50(34),FAWI23(34),           FL31920
+     *     SPSU50(34),SPSU23(34),BASTFW(34),VUMOFW(34),HIVUFW(34),       FL31930
+     *     EXVUFW(34),BASTSS(34),VUMOSS(34),HIVUSS(34),EXVUSS(34),       FL31940
+     *     UPNATM(34),VUTONO(34),VUTOEX(34),EXUPAT(34)
+      COMMON /MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                    FL31950
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL31960
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)          FL31970
       DIMENSION VS(5)                                                    FL31980
       DATA VS/50.,23.,10.,5.,2./                                         FL31990
       DATA CULWC/7.683E-03/,ASLWC/4.509E-03/,STLWC/5.272E-03/            FL32000
@@ -3300,6 +3516,9 @@ C                                                                        FL31910
   250 HAZI = VUTONO(I)                                                   FL32950
   260 IF (HAZI.GT.0) HAZE = HAZI                                         FL32960
       END                                                                FL32970
+C
+C     ******************************************************************
+C
       SUBROUTINE GEO(IERROR,BENDNG,MAXGEO)                               FL32980
 C                                                                        FL32990
 C     ****************************************************************** FL33000
@@ -3312,18 +3531,36 @@ C     THE INPUT PARAMETERS ITYPE, H1, H2, ANGLE, RANGE, BETA, AND LEN    FL33060
 C     ALL FUNCTION IN THE SAME WAY IN THE NEW ROUTINES AS IN THE OLD.    FL33070
 C     ****************************************************************** FL33080
 C                                                                        FL33090
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL33100
-      COMMON             WPATH(129,16),TBBY(129)                         FL33110
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL33100
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL33110
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL33120
+C
       DOUBLE PRECISION HMOD                                              FL33130
-      COMMON HMOD(3),ZN(64),PN(64),TN(64),RFNDXM(64)                     FL33140
-      COMMON          ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),       FL33150
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL33160
-     * IMMAX,WGM(64),DEMW(64)                                            FL33170
+C
+      COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)         FL33140
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL33150
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL33160
+     *     IMMAX,WGM(MXZMD),DEMW(MXZMD)                                  FL33170
+C
       COMMON  /RFRPTH/ ZL(70),PL(70),TL(70),RFNDXL(70),SL(70),           FL33180
      *    PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),      FL33190
      *   LJ(131)                                                         FL33200
-      COMMON /RAIN/ RNPATH(129),RRAMTK(129)                              FL33210
+      COMMON /RAIN/ RNPATH(IM2),RRAMTK(IM2)                              FL33210
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL33220
      *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL33230
      *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL33240
@@ -3334,8 +3571,9 @@ C                                                                        FL33090
       COMMON /LCRD4/ V1,V2,DV                                            FL33290
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL33300
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL33310
-      COMMON/MODEL/ZMDL(64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),       FL33320
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL33330
+      COMMON/MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                     FL33320
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL33330
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL33340
       COMMON /ADRIVE/LOWFLG,IREAD,MODELF,ITYPEF,NOZERO,NOPRNF,           FL33350
      * H1F,H2F,ANGLEF,RANGEF,BETAF,LENF,VL1,VL2,RO,IPUNCH,VBAR,          FL33360
@@ -3591,6 +3829,9 @@ C                                                                        FL35630
      *,' JMAXST = ',I5,' RESET AVTRAT TDIFF1 TDIFF2 TO 2. 10. 20.')      FL35860
 C                                                                        FL35870
       END                                                                FL35880
+C
+C     ******************************************************************
+C
       SUBROUTINE FINDSL(H,SH,GAMMA)                                      FL35890
 C                                                                        FL35900
 C     **   GIVEN AN ALTITUDE H, THIS SUBROUTINE FINDS THE LAYER BOUNDARI FL35910
@@ -3598,10 +3839,24 @@ C     **   ZM(I1) AND ZM(I2) WHICH CONTAIN H,  THEN CALCULATES THE SCALE FL35920
 C     **   HEIGHT (SH) AND THE VALUE AT THE GROUND (GAMMA+1) FOR THE     FL35930
 C     **   INDEX OF REFRACTION                                           FL35940
 C                                                                        FL35950
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL35960
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL35970
-      COMMON /MODEL/ ZMDL(64),P(64),T(64),RFNDX(64),DENSTY(16,64),       FL35980
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL35990
+      COMMON /MODEL/ ZMDL(MXZMD),P(MXZMD),T(MXZMD),                      FL35980
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL35990
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
+C
       DO 10 IM = 2, IMOD                                                 FL36000
          I2 = IM                                                         FL36010
          IF (ZMDL(IM).GE.H) GO TO 20                                     FL36020
@@ -3626,14 +3881,15 @@ C     FOR THE REFRACTED PATH FROM H1 TO H2                               FL36200
 C     ****************************************************************** FL36210
 C                                                                        FL36220
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL36230
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL36240
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL36250
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL36240
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL36250
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL36260
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL36270
       COMMON  /RFRPTH/ ZL(70),PL(70),TL(70),RFNDXL(70),SL(70),           FL36280
-     *    PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),      FL36290
-     *   LJ(131)                                                         FL36300
+     *     PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),     FL36290
+     *     LJ(131)                                                       FL36300
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL36310
+C
       DIMENSION HLOW(2)                                                  FL36320
 C                                                                        FL36330
       IF (H1.GT.H2) GO TO 10                                             FL36340
@@ -3805,6 +4061,9 @@ C                                                                        FL37960
 C                                                                        FL38000
 C                                                                        FL38010
       END                                                                FL38020
+C
+C     ******************************************************************
+C
       SUBROUTINE FILL(HA,HB,JNEXT)                                       FL38030
 C                                                                        FL38040
 C     ****************************************************************** FL38050
@@ -3814,17 +4073,31 @@ C     THESE BOUNDARIES ASSUMING THE DENSITIES VARY EXPONENTIALLY         FL38080
 C     WITH HEIGHT                                                        FL38090
 C     ****************************************************************** FL38100
 C                                                                        FL38110
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL38120
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL38130
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL38140
-      COMMON /MODEL/ ZMDL(64),P(64),T(64),RFNDX(64),DENSTY(16,64),       FL38150
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL38160
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL38130
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL38140
+      COMMON /MODEL/ ZMDL(MXZMD),P(MXZMD),T(MXZMD),                      FL38150
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL38160
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH               FL38170
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL38180
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL38190
       COMMON  /RFRPTH/ ZL(70),PL(70),TL(70),RFNDXL(70),SL(70),           FL38200
-     *    PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),      FL38210
-     *   LJ(131)                                                         FL38220
+     *     PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),     FL38210
+     *     LJ(131)                                                       FL38220
+C
       IF (HA.LT.HB) GO TO 10                                             FL38230
       WRITE (IPR,900) HA,HB,JNEXT                                        FL38240
       STOP                                                               FL38250
@@ -3904,6 +4177,9 @@ C                                                                        FL38970
      *    10X,'HA, HB, JNEXT = ',2E25.15,I6)                             FL38990
 C                                                                        FL39000
       END                                                                FL39010
+C
+C     *****************************************************************
+C
       SUBROUTINE LOLAYR(J,SINAI,COSAI,CPATH,SH,GAMMA,IAMT,S,BEND)        FL39020
 C                                                                        FL39030
 C     *****************************************************************  FL39040
@@ -3915,9 +4191,11 @@ C                                                                        FL39080
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL39100
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL39110
       COMMON  /RFRPTH/ ZL(70),PL(70),TL(70),RFNDXL(70),SL(70),           FL39120
-     *    PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),      FL39130
-     *   LJ(131)                                                         FL39140
+     *     PPSUML(70),TPSUML(70),RHOSML(70),DENL(16,70),AMTL(16,70),     FL39130
+     *     LJ(131)                                                       FL39140
+C
       DIMENSION HDEN(20),DENA(20),DENB(20)                               FL39150
+C
       DATA EPSILN/1.0E-5/                                                FL39160
 C                                                                        FL39170
 C     **   INITIALIZE LOOP                                               FL39180
@@ -4095,6 +4373,9 @@ C                                                                        FL40660
       SL(J) = S                                                          FL40900
       RETURN                                                             FL40910
       END                                                                FL40920
+C
+C     *****************************************************************
+C
       SUBROUTINE EQULWC                                                  FL40930
 C                                                                        FL40940
 C     CC                                                                 FL40950
@@ -4104,17 +4385,37 @@ C     CC   IN SUBROUTINE EXABIN AND MULTIPLIED BY THE BEXT (DENSTY(N,I)) FL40980
 C     CC   WHERE N=7,12,13 OR 14 AND I IS THE NUMBER OF LAYERS           FL40990
 C     CC                                                                 FL41000
 C                                                                        FL41010
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL41020
-      COMMON             WPATH(129,16),TBBY(129)                         FL41030
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL41020
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL41030
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX0(47),AWCCON(5)          FL41040
+C
       DOUBLE PRECISION HMOD                                              FL41050
-      COMMON HMOD(3),ZN(64),PN(64),TN(64),RFNDXM(64)                     FL41060
-      COMMON          ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),       FL41070
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL41080
-     * IMMAX,WGM(64),DEMW(64)                                            FL41090
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISS,IKP,JH1                 FL41100
-      COMMON /MODEL/ ZMDL(64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),     FL41110
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL41120
+C
+      COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)         FL41060
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL41070
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL41080
+     *     IMMAX,WGM(MXZMD),DEMW(MXZMD)                                  FL41090
+C
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISS,IKP,JH1
+      COMMON /MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                    FL41100
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL41110
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)          FL41120
+C
       DO 10 I = 1, ML                                                    FL41130
          IF (DENSTY(7,I).NE.0.0) EQLWC(I) = DENSTY(7,I)*AWCCON(1)        FL41140
          IF (DENSTY(12,I).NE.0.0) EQLWC(I) = DENSTY(12,I)*AWCCON(2)      FL41150
@@ -4123,6 +4424,9 @@ C                                                                        FL41010
    10 CONTINUE                                                           FL41180
       RETURN                                                             FL41190
       END                                                                FL41200
+C
+C     *****************************************************************
+C
       SUBROUTINE INDX (WAVL,TC,KEY,REIL,AIMAG)                           FL41210
 C                                                                        FL41220
 C     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  FL41230
@@ -4147,8 +4451,9 @@ C     * *                                                                FL41410
 C     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *  FL41420
 C                                                                        FL41430
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL41440
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL41450
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL41460
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL41450
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL41460
+C
       R1 = 0.0                                                           FL41470
       R2 = 0.0                                                           FL41480
       IF (WAVL.LT..0001) WRITE (IPR,900)                                 FL41490
@@ -4221,6 +4526,9 @@ C                                                                        FL42120
      * -20. DEGREES CENTIGRADE',//)                                      FL42160
 C                                                                        FL42170
       END                                                                FL42180
+C
+C     *****************************************************************
+C
       SUBROUTINE DEBYE(WAVL,TC,KEY,RE,AI)                                FL42190
 C                                                                        FL42200
 C     CC                                                                 FL42210
@@ -4650,6 +4958,9 @@ C     CC                                                                 FL46440
 C                                                                        FL46450
       RETURN                                                             FL46460
       END                                                                FL46470
+C
+C     ******************************************************************
+C
       SUBROUTINE CIRRUS(CTHIK,CALT,ISEED,CPROB,MODEL)                    FL46480
 C                                                                        FL46490
 C     ****************************************************************** FL46500
@@ -4692,19 +5003,40 @@ C     *         CPROB        -  CIRRUS PROBABILITY                       FL46860
 C     *                                                                  FL46870
 C     ****************************************************************** FL46880
 C                                                                        FL46890
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL46900
-      COMMON             WPATH(129,16),TBBY(129)                         FL46910
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL46900
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL46910
       COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL46920
+C
       DOUBLE PRECISION HMOD                                              FL46930
-      COMMON HMOD(3),ZN(64),PN(64),TN(64),RFNDXM(64)                     FL46940
-      COMMON          ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),       FL46950
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL46960
-     * IMMAX,WGM(64),DEMW(64)                                            FL46970
+C
+      COMMON HMOD(3),ZN(MXZMD),PN(MXZMD),TN(MXZMD),RFNDXM(MXZMD)         FL46940
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL46950
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL46960
+     *     IMMAX,WGM(MXZMD),DEMW(MXZMD)                                  FL46970
+C
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IKP,JH1              FL46980
-      COMMON /MODEL/ ZMDL (64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),    FL46990
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL47000
+      COMMON /MODEL/ ZMDL (MXZMD),PM(MXZMD),TM(MXZMD),
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL46990
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)          FL47000
+C
       DIMENSION CBASE(5,2),TSTAT(11),PTAB(5),CAMEAN(5)                   FL47010
       DIMENSION CBASE1(5),CBASE2(5)                                      FL47020
+C
       EQUIVALENCE (CBASE1(1),CBASE(1,1)),(CBASE2(1),CBASE(1,2))          FL47030
 C                                                                        FL47040
 C     ISEED IS INTEGER*4                                                 FL47050
@@ -4788,6 +5120,9 @@ C                                                                        FL47660
    70 CONTINUE                                                           FL47830
       RETURN                                                             FL47840
       END                                                                FL47850
+C
+C     *****************************************************************
+C
       SUBROUTINE VSA(IHAZE,VIS,CEILHT,DEPTH,ZINVHT,Z,RH,AHAZE,IH)        FL47860
 C                                                                        FL47870
 C     VERTICAL STRUCTURE ALGORITHM                                       FL47880
@@ -4885,11 +5220,14 @@ C     LAYER PRESENT, I.E. CLEAR SKIES                                    FL48790
 C     EXTINCTION PROFILE CONSTANT WITH HEIGHT                            FL48800
 C                                                                        FL48810
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL48820
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL48830
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL48840
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL48830
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL48840
+C
       DIMENSION Z(10),RH(10),AHAZE(10),IH(10)                            FL48850
       DIMENSION AA(2),CC(2),EE(4),A(2),B(2),C(2),FAC1(9),FAC2(9)         FL48860
+C
       REAL KMTOM                                                         FL48870
+C
       DATA AA/135.,0.3981/,CC/-0.030,0.0125/,KMTOM/1000.0/,CR/0.35/      FL48880
 C                                                                        FL48890
 C     THE LAST 3 VALUES OF EE BELOW ARE EXTINCTIONS FOR VISIBILITIES     FL48900
@@ -4898,6 +5236,7 @@ C                                                                        FL48920
       DATA EE/7.064,0.7824,0.17009,0.07824/                              FL48930
       DATA FAC1/0.0,0.03,0.05,0.075,0.1,0.18,0.3,0.45,1.0/               FL48940
       DATA FAC2/0.0,0.03,0.1,0.18,0.3,0.45,0.6,0.78,1.0/                 FL48950
+C
       WRITE (IPR,900)                                                    FL48960
 C                                                                        FL48970
 C     UPPER LIMIT ON VERTICAL DISTANCE - 2 KM                            FL48980
@@ -5110,6 +5449,9 @@ C                                                                        FL50850
      * 13HCLOUD PRESENT,/)                                               FL51050
 C                                                                        FL51060
       END                                                                FL51070
+C
+C     *****************************************************************
+C
       SUBROUTINE EXABIN                                                  FL51080
 C                                                                        FL51090
 C     LOADS EXTINCTION, ABSORPTION AND ASYMMETRY COEFFICIENTS            FL51100
@@ -5117,35 +5459,55 @@ C     FOR THE FOUR AEROSOL ALTITUDE REGIONS                              FL51110
 C                                                                        FL51120
 C     MODIFIED FOR ASYMMETRY - JAN 1986 (A.E.R. INC.)                    FL51130
 C                                                                        FL51140
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)
+      COMMON WPATH(IM2,16),TBBY(IM2)
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX0(47),AWCCON(5)
+C
+      DOUBLE PRECISION HMOD
+C
+      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),
+     *     IMLOW,WGM(MXZMD),DENW(MXZMD)
+C
       COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL51150
       COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL51160
-     *    RAINRT                                                         FL51170
+     *     RAINRT                                                        FL51170
       COMMON /LCRD2D/ IREG(4),ALTB(4),IREGC(4)                           FL51180
       COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL51190
       COMMON /LCRD4/ V1,V2,DV                                            FL51200
 C                                                                        FL51210
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL51220
-      COMMON             WPATH(129,16),TBBY(129)                         FL51230
-      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX0(47),AWCCON(5)          FL51240
-      DOUBLE PRECISION HMOD                                              FL51250
-      COMMON HMOD(3),ZM(64),PF(64),TF(64),RFNDXM(64)                     FL51260
-      COMMON          ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),       FL51270
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL51280
-     * IMLOW,WGM(64),DENW(64)                                            FL51290
       COMMON /EXTD  /  VX2(47),RUREXT(47,4),RURABS(47,4),RURSYM(47,4),   FL51300
-     * URBEXT(47,4),URBABS(47,4),URBSYM(47,4),OCNEXT(47,4),              FL51310
-     * OCNABS(47,4),OCNSYM(47,4),TROEXT(47,4),TROABS(47,4),              FL51320
-     * TROSYM(47,4),FG1EXT(47),FG1ABS(47),FG1SYM(47),                    FL51330
-     * FG2EXT(47),FG2ABS(47),FG2SYM(47),BSTEXT(47),BSTABS(47),           FL51340
-     * BSTSYM(47),AVOEXT(47),AVOABS(47),AVOSYM(47),FVOEXT(47),           FL51350
-     * FVOABS(47),FVOSYM(47),DMEEXT(47),DMEABS(47),DMESYM(47),           FL51360
-     * CCUEXT(47),CCUABS(47),CCUSYM(47),CALEXT(47),CALABS(47),           FL51370
-     * CALSYM(47),CSTEXT(47),CSTABS(47),CSTSYM(47),CSCEXT(47),           FL51380
-     * CSCABS(47),CSCSYM(47),CNIEXT(47),CNIABS(47),CNISYM(47)            FL51390
-       COMMON/CIRR/ CI64XT(47),CI64AB(47),CI64G(47),                     FL51400
-     *              CIR4XT(47),CIR4AB(47),CIR4G(47)                      FL51410
+     *     URBEXT(47,4),URBABS(47,4),URBSYM(47,4),OCNEXT(47,4),          FL51310
+     *     OCNABS(47,4),OCNSYM(47,4),TROEXT(47,4),TROABS(47,4),          FL51320
+     *     TROSYM(47,4),FG1EXT(47),FG1ABS(47),FG1SYM(47),                FL51330
+     *     FG2EXT(47),FG2ABS(47),FG2SYM(47),BSTEXT(47),BSTABS(47),       FL51340
+     *     BSTSYM(47),AVOEXT(47),AVOABS(47),AVOSYM(47),FVOEXT(47),       FL51350
+     *     FVOABS(47),FVOSYM(47),DMEEXT(47),DMEABS(47),DMESYM(47),       FL51360
+     *     CCUEXT(47),CCUABS(47),CCUSYM(47),CALEXT(47),CALABS(47),       FL51370
+     *     CALSYM(47),CSTEXT(47),CSTABS(47),CSTSYM(47),CSCEXT(47),       FL51380
+     *     CSCABS(47),CSCSYM(47),CNIEXT(47),CNIABS(47),CNISYM(47)        FL51390
+      COMMON/CIRR/ CI64XT(47),CI64AB(47),CI64G(47),                      FL51400
+     *     CIR4XT(47),CIR4AB(47),CIR4G(47)                               FL51410
+C
       DIMENSION RHZONE(4)                                                FL51420
       DIMENSION ELWCR(4),ELWCU(4),ELWCM(4),ELWCT(4)                      FL51430
+C
       DATA RHZONE/0.,70.,80.,99./                                        FL51440
       DATA ELWCR/3.517E-04,3.740E-04,4.439E-04,9.529E-04/                FL51450
       DATA ELWCM/4.675E-04,6.543E-04,1.166E-03,3.154E-03/                FL51460
@@ -5155,6 +5517,7 @@ C                                                                        FL51210
       DATA ASLWC/4.509E-03/,STLWC/5.272E-03/,SCLWC/4.177E-03/            FL51500
       DATA SNLWC/7.518E-03/,BSLWC/1.567E-04/,FVLWC/5.922E-04/            FL51510
       DATA AVLWC/1.675E-04/,MDLWC/4.775E-04/                             FL51520
+C
       DO 10 I = 1, 47                                                    FL51530
          VX0(I) = VX2(I)                                                 FL51540
    10 CONTINUE                                                           FL51550
@@ -5354,6 +5717,9 @@ C                                                                        FL52980
       RETURN                                                             FL53490
 C                                                                        FL53500
       END                                                                FL53510
+C
+C     ******************************************************************
+C
       SUBROUTINE AEREXT (V,IK,RADFT)                                     FL53520
 C                                                                        FL53530
 C     INTERPOLATES AEROSOL EXTINCTION, ABSORPTION, AND ASYMMETRY         FL53540
@@ -5361,22 +5727,41 @@ C     COEFFICIENTS FOR THE WAVENUMBER, V, WITHOUT THE RADIATION FIELD.   FL53550
 C                                                                        FL53560
 C     MODIFIED FOR ASYMMETRY  - JAN 1986 (A.E.R. INC.)                   FL53570
 C                                                                        FL53580
-      COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL53590
-      COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL53600
-     *    RAINRT                                                         FL53610
-      COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL53620
-      COMMON /LCRD4/ V1,V2,DV                                            FL53630
-      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IDUM1,IDUM2          FL53640
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL53650
-      COMMON             WPATH(129,16),TBBY(129)                         FL53660
-      COMMON ABSC(5,47),EXTC(5,47),ASYC(5,47),VX2(47),AWCCON(5)          FL53670
-      DOUBLE PRECISION HMOD                                              FL53680
-      COMMON HMOD(3),ZM(64),PF(64),TF(64),RFNDXM(64)                     FL53690
-      COMMON          ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),       FL53700
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL53710
-     * IMLOW,WGM(64),DENW(64)                                            FL53720
-      COMMON /MODEL/ ZMDL(64),PM(64),TM(64),RFNDX(64),DENSTY(16,64),     FL53730
-     * CLDAMT(64),RRAMT(64),EQLWC(64),HAZEC(64)                          FL53740
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL53590
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL53600
+      COMMON ABSC(5,47),EXTC(5,47),ASYC(5,47),VX2(47),AWCCON(5)          FL53610
+C
+      DOUBLE PRECISION HMOD                                              FL53620
+C
+      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL53630
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL53640
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL53650
+     *     IMLOW,WGM(MXZMD),DENW(MXZMD)                                  FL53660
+C
+      COMMON /LCRD1/ MODEL,ITYPE,IEMSCT,M1,M2,M3,IM,NOPRNT,TBOUND,SALB   FL53670
+      COMMON /LCRD2/ IHAZE,ISEASN,IVULCN,ICSTL,ICLD,IVSA,VIS,WSS,WHH,    FL53680
+     *     RAINRT                                                        FL53690
+      COMMON /LCRD3/ H1,H2,ANGLE,RANGE,BETA,RE,LEN                       FL53700
+      COMMON /LCRD4/ V1,V2,DV                                            FL53710
+      COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,IDUM1,IDUM2          FL53720
+      COMMON /MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                    FL53730
+     *     RFNDX(MXZMD),DENSTY(16,MXZMD),                                FL53740
+     *     CLDAMT(MXZMD),RRAMT(MXZMD),EQLWC(MXZMD),HAZEC(MXZMD)
       COMMON /AER/ EXTV(5),ABSV(5),ASYV(5)                               FL53750
 C                                                                        FL53760
 C     CC                                                                 FL53770
@@ -6467,23 +6852,45 @@ C                                                                        FL64560
      *   .7339,  .7161,  .7015,  .6821,  .6383,  .5823,  .4845,  .2977,  FL64620
      *   .2295,  .1716,  .1228,  .0748,  .0329,  .0186,  .0081 /         FL64630
       END                                                                FL64640
+C
+C     ******************************************************************
+C
       SUBROUTINE RDEXA                                                   FL64650
 C                                                                        FL64660
 C     READ IN USER DEFINED EXTINCTION, ABSORPTION AND                    FL64670
 C     ASYMMETRY PARAMETERS                                               FL64680
 C                                                                        FL64690
-      COMMON RELHUM(64),HSTOR(64),ICH(4),VH(16),TX(16),W(16)             FL64700
-      COMMON             WPATH(129,16),TBBY(129)                         FL64710
-      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)          FL64720
+C
+C     MXFSC IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM
+C     MXLAY IS THE MAXIMUN NUMBER OF OUTPUT LAYERS
+C     MXZMD IS THE MAX NUMBER OF LEVELS IN THE ATMOSPHERIC PROFILE
+C         STORED IN ZMDL (INPUT)
+C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH
+C         OBTAINED BY MERGING ZMDL AND ZOUT
+C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT
+C
+      PARAMETER (MXFSC=64,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+C
+C     BLANK COMMON FOR ZMDL
+C
+      COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),VH(16),TX(16),W(16)       FL64700
+      COMMON WPATH(IM2,16),TBBY(IM2)                                     FL64710
+      COMMON ABSC(5,47),EXTC(5,47),ASYM(5,47),VX2(47),AWCCON(5)
+C
       DOUBLE PRECISION HMOD                                              FL64730
-      COMMON HMOD(3),ZM(64),PF(64),TF(64),RFNDXM(64)                     FL64740
-      COMMON          ZP(129),PP(129),TP(129),RFNDXP(129),SP(129),       FL64750
-     *    PPSUM(129),TPSUM(129),RHOPSM(129),                             FL64760
-     * IMLOW,WGM(64),DENW(64)                                            FL64770
+C
+      COMMON HMOD(3),ZM(MXZMD),PF(MXZMD),TF(MXZMD),RFNDXM(MXZMD)         FL64740
+      COMMON ZP(IM2),PP(IM2),TP(IM2),RFNDXP(IM2),SP(IM2),                FL64750
+     *     PPSUM(IM2),TPSUM(IM2),RHOPSM(IM2),                            FL64760
+     *     IMLOW,WGM(MXZMD),DENW(MXZMD)                                  FL64770
+C
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL64780
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL64790
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL64800
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL64790
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL64800
       COMMON /LCRD2D/ IREG(4),ALTB(4),IREGC(4)                           FL64810
+C
       DIMENSION TITLE(18),VX(47)                                         FL64820
 C                                                                        FL64830
       READ (IRD,900) (IREG(IK),IK=1,4)                                   FL64840
@@ -6512,6 +6919,9 @@ C                                                                        FL65000
   930 FORMAT(2X,F6.2,2F7.5,F6.4,F6.2,2F7.5,F6.4,F6.2,2F7.5,F6.4)         FL65070
 C                                                                        FL65080
       END                                                                FL65090
+C
+C     *****************************************************************
+C
       SUBROUTINE MARINE(VIS,MODEL,WS,WH,ICSTL,BEXT,BABS,NL)              FL65100
 C                                                                        FL65110
 C     THIS SUBROUTINE DETERMINES AEROSOL EXT + ABS COEFFICIENTS          FL65120
@@ -6533,18 +6943,20 @@ C     BABS = ABSORPTION COEFFICIENT (KM-1)                               FL65270
 C                                                                        FL65280
       COMMON /MART/ RHH                                                  FL65290
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL65300
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL65310
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL65320
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL65310
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL65320
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP                      FL65330
       COMMON/A/T1QEXT(40,4),T2QEXT(40,4),T3QEXT(40,4),                   FL65340
-     *T1QABS(40,4),T2QABS(40,4),T3QABS(40,4),ALAM(40),AREL(4)            FL65350
+     *     T1QABS(40,4),T2QABS(40,4),T3QABS(40,4),ALAM(40),AREL(4)       FL65350
 C                                                                        FL65360
 C     C    COMMON/AER/A1, A2, A3        X(5)                             FL65370
 C                                                                        FL65380
       DIMENSION WSPD(8), BEXT(5,47), BABS(5,47)                          FL65390
       DIMENSION RHD(8)                                                   FL65400
+C
       DATA WSPD/6.9, 4.1, 4.1, 10.29, 6.69, 12.35, 7.2, 6.9/             FL65410
       DATA RHD/80., 75.63, 76.2, 77.13, 75.24, 80.53, 45.89, 80./        FL65420
+C
       PISC = PI/1000.0                                                   FL65430
       WRITE (IPR,900)                                                    FL65440
 C                                                                        FL65450
@@ -6856,6 +7268,9 @@ C                                                                        FL66310
      * 3.1047,   3.1337,   3.1354,   3.1458,   3.1506,   3.1572,         FL68510
      * 3.1639,   3.1680,   3.1651,   3.1624/                             FL68520
       END                                                                FL68530
+C
+C     *************************************************************
+C
       SUBROUTINE LCONVR (P,T)                                            FL68540
 C                                                                        FL68550
 C     *************************************************************      FL68560
@@ -6879,12 +7294,14 @@ C                                                                        FL68730
 C     ***************************************************************    FL68740
 C                                                                        FL68750
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL68760
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL68770
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL68780
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL68770
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL68780
       COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL68790
-     *    CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(35)                      FL68800
+     *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(35)                     FL68800
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(13),WMOL1(12),WAIR1,JLOW      FL68810
+C
       DATA C1/18.9766/,C2/-14.9595/,C3/-2.43882/                         FL68820
+C
       DENSAT(ATEMP) = ATEMP*B*EXP(C1+C2*ATEMP+C3*ATEMP**2)*1.0E-6        FL68830
 C                                                                        FL68840
       RHOAIR = ALOSMT*(P/PZERO)*(TZERO/T)                                FL68850
@@ -6955,6 +7372,9 @@ C                                                                        FL69490
   900 FORMAT(/,'   **** ERROR IN CONVERT ****, JUNIT = ',I5)             FL69500
 C                                                                        FL69510
       END                                                                FL69520
+C
+C     *************************************************************
+C
       SUBROUTINE LWATVA(P,T)                                             FL69530
 C                                                                        FL69540
 C     *************************************************************      FL69550
@@ -6989,13 +7409,15 @@ C                                                                        FL69830
 C     ****************************************************************** FL69840
 C                                                                        FL69850
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL69860
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL69870
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL69880
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL69870
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL69880
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(13),WMOL1(12),WAIR,JLOW       FL69890
       COMMON /CONSTL/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FL69900
-     *    CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(35)                      FL69910
+     *     CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(35)                     FL69910
+C
       DATA C1/18.9766/,C2/-14.9595/,C3/-2.43882/                         FL69920
       DATA XLOSCH/2.6868E19/                                             FL69930
+C
       DENSAT(ATEMP) = ATEMP*B*EXP(C1+C2*ATEMP+C3*ATEMP**2)*1.0E-6        FL69940
 C                                                                        FL69950
       RHOAIR = ALOSMT*(P/PZERO)*(TZERO/T)                                FL69960
@@ -8159,6 +8581,9 @@ C                                                                        FL78570
      *  1.00E-14,  1.00E-14,  1.00E-14,  1.00E-14,  1.00E-14,            FL81540
      *  1.00E-14,  1.00E-14,  1.00E-14,  1.00E-14,  1.00E-14/            FL81550
       END                                                                FL81560
+C
+C     ******************************************************************
+C
       SUBROUTINE LDEFAL  (Z,P,T)                                         FL81570
 C                                                                        FL81580
 C     ****************************************************************** FL81590
@@ -8200,12 +8625,14 @@ C                                                                        FL81940
 C     ****************************************************************** FL81950
 C                                                                        FL81960
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,                FL81970
-     *NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                                 FL81980
-     *                     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4       FL81990
+     *     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                            FL81980
+     *     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                       FL81990
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT(13),WMOL(12),WAIR,JLOW         FL82000
+C
       DOUBLE PRECISION HDUM,DUM1                                         FL82010
+C
       COMMON /MLATML/ ALT(50),PMATM(50,6),TMATM(50,6),AMOL(50,8,6),      FL82020
-     *                HDUM(3),DUM1(6,3),DUM2(50,38),IDUM                 FL82030
+     *     HDUM(3),DUM1(6,3),DUM2(50,38),IDUM                            FL82030
       COMMON /TRACL/ TRAC(50,22)                                         FL82040
 C                                                                        FL82050
       DATA PZERO /1013.25/,TZERO/273.15/,XLOSCH/2.6868E19/               FL82060
