@@ -297,28 +297,25 @@ C-                                                                        A02900
 C----------------------------------------------------------------------   A02910
 C                                                                         A02920
       IMPLICIT DOUBLE PRECISION (V)                                     ! A02930
-C                                                                         A02940
-      COMMON COMSTR(250,9)                                                A02950
-      COMMON R1(3600),R2(900),R3(225)                                     A02960
-      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A02970
-     *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       A02980
-     *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A02990
-     *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A03000
-     *              EXTID(10)                                             A03010
-      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           A03020
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A03030
-C                                                                         A03040
+C
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & A03050
-C                                                                         A03060
+      CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
+      CHARACTER*1 CONE,CTWO,CTHREE,CA,CB,CC,CDOL,CPRCNT,CBLNK             A03440
+      CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
+C                                                                         A02940
+      DIMENSION IDCNTL(14),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2)      A03280
+      COMMON /MAIN/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A02970
+     *                AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     A02980
+     *                DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     A02990
+     *                ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    A03000
+     *                EXTID(10)                                           A03010
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A03070
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A03080
      *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF    A03090
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP                   A03100
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A03110
-     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        A03120
-     *              NLTEFL,LNFIL4,LNGTH4                                  A03130
-      COMMON /MSCONS/ AIRMAS(67),TGRND,SEMIS(3),HMINMS,HMAXMS,MSFLAG,     A03140
-     *                MSWIT,IMSFIL,MSTGLE                                 A03150
+     *                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      A03120
+     *                NLTEFL,LNFIL4,LNGTH4                                A03130
       COMMON /MSACCT/ IMS,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    A03160
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   A03170
      *                JEFILE,KEFILE                                       A03180
@@ -326,13 +323,17 @@ C                                                                         A03060
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         A03200
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         A03210
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                      A03220
-C                                                                         A03230
+      COMMON /MSCONS/ AIRMAS(67),TGRND,SEMIS(3),HMINMS,HMAXMS,MSFLAG,     A03140
+     *                MSWIT,IMSFIL,MSTGLE                                 A03150
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           A03020
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A03030
       COMMON /HDRF/ V1D,V2D,DVD,NLND,IWLD                                 A03240
       COMMON /NGTH/ VD,SD,AD,EPD,MOLD,HWHD,TMPD,PSHD,FLGD,ILS2D           A03250
       COMMON /HDRL/ V1LD,VL2D,NLD,NWDS,ILST3D                             A03260
+      COMMON /RCNTRL/ ILNFLG
       COMMON /FLFORM/ CFORM                                               A03270
-      DIMENSION IDCNTL(14),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2)      A03280
-C                                                                         A03290
+      COMMON COMSTR(250,9)                                                A02950
+      COMMON R1(3600),R2(900),R3(225)                                     A02960
       EQUIVALENCE (FSCDID(1),IFSDID(1),IHIRAC) , (FSCDID(2),ILBLF4),      A03300
      *            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),                A03310
      *            (FSCDID(5),IEMIT) , (FSCDID(6),ISCAN),                  A03320
@@ -345,24 +346,23 @@ C                                                                         A03290
      *            (YID(2),HTIME) , (YI1,IMULT)                            A03390
       EQUIVALENCE (IWD(1),XID(1)) , (IWD2(1),V1D) , (IWD3(1),VD) ,        A03400
      *            (IWD4(1),V1LD)                                          A03410
-C                                                                         A03420
-      CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
-      CHARACTER*1 CONE,CTWO,CTHREE,CA,CB,CC,CDOL,CPRCNT,CBLNK             A03440
-      CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
-C                                                                         A03460
       EQUIVALENCE (CXID,CXIDA(1))                                         A03470
 C                                                                         A03480
-      DATA XID8 / ' LBLRTM '/                                             A03490
       DATA IDCNTL / ' HIRAC',' LBLF4',' CNTNM',' AERSL',' EMISS',         A03500
      *              ' SCNFN',' FILTR','  PLOT','  TEST','  IATM',         A03510
      *              '  IMRG','  ILAS',' MSCAT',' XSECT' /                 A03520
       DATA CONE / '1'/,CTWO / '2'/,CTHREE / '3'/,                         A03530
      *     CA / 'A'/,CB / 'B'/,CC / 'C'/                                  A03540
       DATA CDOL / '$'/,CPRCNT / '%'/,CBLNK / ' '/,CXIDA / 80*' '/         A03550
+      DATA XID8 / ' LBLRTM '/                                             A03490
 C                                                                         A03560
-C#    DATA CFORM / 'BUFFERED   '/                                         A03570
+C     DATA CFORM / 'BUFFERED   '/                                       # A03570
 C     DATA CFORM / 'UNFORMATTED'/                                         A03580
 C                                                                         A03590
+C      SET ILNFLG
+C
+      ILNFLG = 0
+C
 C      FILE ASSIGNMENTS                                                   A03600
 C                                                                         A03610
       IRD = 55                                                            A03620
@@ -374,6 +374,14 @@ C                                                                         A03610
       OPEN (LNFIL4,FILE='TAPE9',STATUS='UNKNOWN',FORM=CFORM)              A03680
       KFILE = 10                                                          A03690
       OPEN (KFILE,FILE='TAPE10',STATUS='UNKNOWN',FORM=CFORM)              A03700
+      IF (ILNFLG.EQ.1) THEN
+         OPEN(15,FILE='REJ1',STATUS='NEW',FORM='UNFORMATTED')
+         OPEN(16,FILE='REJ4',STATUS='NEW',FORM='UNFORMATTED')
+      ENDIF
+      IF (ILNFLG.EQ.2) THEN
+         OPEN(15,FILE='REJ1',STATUS='OLD',FORM='UNFORMATTED')
+         OPEN(16,FILE='REJ4',STATUS='OLD',FORM='UNFORMATTED')
+      ENDIF
       LFILE = 11                                                          A03710
       OPEN (LFILE,FILE='TAPE11',STATUS='UNKNOWN',FORM=CFORM)              A03720
       MFILE = 12                                                          A03730
@@ -777,9 +785,10 @@ C#    DATA CFORM / 'BUFFERED   '/                                         A03570
       DATA CFORM / 'UNFORMATTED'/                                         A03580
       DATA PLANCK / 6.626176E-27 /,BOLTZ / 1.380662E-16 /,                A07660
      *     CLIGHT / 2.99792458E10 /,AVOG / 6.022045E23 /                  A07670
-      DATA IMS,IDIR,ITOP,ISURF,MSPTS / 5*0 /,MSPANL / 67*0 /,             A07680
-     *     MSPNL1 / 67*0 /, ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,           A07690
-     *     IEFILE,JEFILE,KEFILE / 8*0 /,MSLAY1 / 0 /                      A07700
+      DATA IMS / 0 /,IDIR / 0 /,ITOP / 0 /,ISURF / 0 /,MSPTS / 0 /,       A07680
+     *     MSPANL / 67*0 /,MSPNL1 / 67*0 /,ISFILE / 0 /,JSFILE / 0 /,
+     *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
+     *     JEFILE / 0 /,KEFILE / 0 /,MSLAY1 / 0 /                         A07700
 C                                                                         A07710
       END                                                                 A07720
       FUNCTION NWDL (IWD,ILAST)                                           A08590
