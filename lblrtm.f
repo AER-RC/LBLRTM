@@ -669,6 +669,7 @@ C                                                                         A04660
       WRITE (IPR,935) (IDCNTL(I),I=1,14)                                  A04690
       WRITE (IPR,940) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,ISCAN,IFILTR,     A04700
      *                IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT               A04710
+
 C                                                                         A04720
       IF (IHIRAC.EQ.4) THEN                                               A04800
          IF (IEMIT.NE.1) THEN                                             A04810
@@ -725,7 +726,11 @@ C                                                                         A05800
 C                                                                         A05820
 C     PRINT CONTINUUM INFORMATION                                         A05830
 C                                                                         A05840
-      IF (ICNTNM.NE.0) CALL PRCNTM                                        A05850
+      IF (ICNTNM.NE.0) THEN
+         CALL PRCNTM                                                      A05850
+         WRITE(IPR,1020) XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
+      ENDIF
+
 C                                                                         A05860
       NOPR = 0                                                            A05870
       IF (MPTS.LT.0) NOPR = 1                                             A05880
@@ -966,6 +971,15 @@ C                                                                         A07280
      *         ' solar.f: ',6X,A8,10X, '            ',6X,8X,/)
  1010 FORMAT (2I5,2X,I3)
  1015 FORMAT (I5)
+ 1020 FORMAT (/,'  The continuum scale factors are as follows: ',
+     *         /,5x,'H2O Self:    ',f10.3,
+     *         /,5x,'H2O Foreign: ',f10.3,
+     *         /,5x,'CO2:         ',f10.3,
+     *         /,5x,'O3:          ',f10.3,
+     *         /,5x,'O2:          ',f10.3,
+     *         /,5x,'N2:          ',f10.3,
+     *         /,5x,'Rayleigh:    ',f10.3,/)
+
 C                                                                         A07580
       END                                                                 A07590
       BLOCK DATA                                                          A07600
