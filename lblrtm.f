@@ -300,6 +300,8 @@ C                                                                         A02920
 C
       DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & A03050
       CHARACTER CXID*80,CFORM*11,XID8*8,IDCNTL*6                          A03430
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       CHARACTER*1 CONE,CTWO,CTHREE,CA,CB,CC,CDOL,CPRCNT,CBLNK             A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
@@ -312,6 +314,8 @@ C
      *                DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     A02990
      *                ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    A03000
      *                EXTID(10)                                           A03010
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A03070
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A03080
      *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF    A03090
@@ -352,6 +356,14 @@ C
      *            (IWD4(1),V1LD)                                          A03410
       EQUIVALENCE (CXID,CXIDA(1))                                         A03470
 C                                                                         A03480
+C     ASSIGN SCCS VERSION NUMBER TO MODULES
+C
+      DATA HVRLBL / '$Revision$' /,      HVRCNT / 'NOT USED' /,
+     *     HVRFFT / 'NOT USED' /, HVRATM / 'NOT USED' /,
+     *     HVRLOW / 'NOT USED' /, HVRNCG / 'NOT USED' /,
+     *     HVROPR / 'NOT USED' /, HVRPST / 'NOT USED' /,
+     *     HVRPLT / 'NOT USED' /, HVRTST / 'NOT USED' /,
+     *     HVRUTL / 'NOT USED' /, HVRXMR / 'NOT USED' /
       DATA IDCNTL / ' HIRAC',' LBLF4',' CNTNM',' AERSL',' EMISS',         A03500
      *              ' SCNFN',' FILTR','  PLOT','  TEST','  IATM',         A03510
      *              '  IMRG','  ILAS',' OPDEP',' XSECT' /                 A03520
@@ -554,9 +566,6 @@ C                                                                         A05940
          READ (IRD,970,END=80) V1,V2,SAMPLE,DVSET,ALFAL0,AVMASS,DPTMIN,   A05950
      *                         DPTFAC,ILNFLG                              A05960
 C                                                                         A05970
-C     IF DPTMIN < 0. SET TO DEFAULT (.0002)                               A05980
-C     IF DPTFAC < 0. SET TO DEFAULT (.001)                                A05990
-C                                                                         A06000
 C     OPEN LINE REJECTION FILES IF ILNFLG IS ONE OR TWO
 C
       IF (ILNFLG.EQ.1) THEN
@@ -568,6 +577,9 @@ C
          OPEN(16,FILE='REJ4',STATUS='OLD',FORM='UNFORMATTED')
       ENDIF
 C
+C     IF DPTMIN < 0. SET TO DEFAULT (.0002)                               A05980
+C     IF DPTFAC < 0. SET TO DEFAULT (.001)                                A05990
+C                                                                         A06000
          IF (DPTMIN.LT.0.) DPTMIN = .0002                                 A06010
          IF (DPTFAC.LT.0.) DPTFAC = .001                                  A06020
          IF (V2.LE.V1.AND.ILAS.EQ.0) ILAS = 1                             A06030
@@ -685,6 +697,8 @@ C                                                                         A07120
       STOP ' LBLRTM EXIT; EOF ON TAPE 5 '                                 A07230
 C                                                                         A07240
    90 CONTINUE                                                            A07250
+      WRITE(IPR,1000) HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *                HVRPST,HVRPLT,HVRTST,HVRXMR,HVRUTL
       IF (IENDPL.EQ.1) CALL ENDPLT                                        A07260
       STOP ' LBLRTM EXIT '                                                A07270
 C                                                                         A07280
@@ -715,6 +729,13 @@ C                                                                         A07280
      *        3(1PE11.3))                                                 A07550
   990 FORMAT (F20.8)                                                      A07560
   995 FORMAT ('0 TIME LEAVING LBLRTM ',F15.4,' TOTAL',F15.4)              A07570
+ 1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,5X,
+     *         'lblrtm.f: ',8X,A8,10X, 'contnm.f: ',8X,A8,/,5X
+     *         'fftscn.f: ',8X,A8,10X, 'lblatm.f: ',8X,A8,/,5X
+     *         'lbllow.f: ',8X,A8,10X, 'ncargks.f: ',7X,A8,/,5X,
+     *         'oprop.f: ',9X,A8,10X,  'postsub.f: ',7X,A8,/,5X,
+     *         'pltlbl.f: ',8X,A8,10X, 'testmm.f: ',8X,A8,/,5X,
+     *         'xmerge.f: ',8X,A8,10X, 'util_xxx.f: ',6X,A8,/ )
 C                                                                         A07580
       END                                                                 A07590
       BLOCK DATA                                                          A07600
@@ -1616,11 +1637,11 @@ C                                                                         A18040
 C                                                                         A18060
             WRITE (IPR,905)                                               A18070
 C                                                                         A18080
-C     RESET ALFAL0 TO DEFAULT OF 0.08 IN VALUE READ IN .LE. 0.0           A18090
-C     FOR LINE COUPLING USER SHOULD READ IN VALUE OF 0.04                 A18100
+C     RESET ALFAL0 TO DEFAULT OF 0.04 IN VALUE READ IN .LE. 0.0           A18090
+C     FOR LINE COUPLING USER SHOULD READ IN VALUE OF 0.05                 A18100
 C                                                                         A18110
             IF (SAMPLE.LT.0.01) SAMPLE = 4.                               A18120
-            IF (ALFAL0.LE.0.) ALFAL0 = 0.08                               A18130
+            IF (ALFAL0.LE.0.) ALFAL0 = 0.04                               A18130
             IF (AVMASS.LE.0.) AVMASS = 36.                                A18140
 C                                                                         A18150
             WRITE (IPR,910) V1,V2,SAMPLE,DVSET,ALFAL0,AVMASS,DPTMIN,      A18160
