@@ -418,10 +418,6 @@ C
       KODTOT = 18
       KFILAD = 19
       KTEMP  = 88
-      PTHODI = 'ODint_'
-      PTHODT = 'ODtotal_'
-      PTHRDR = 'RDderiv_'
-      PTHT3M = 'TAPE3'
       CALL QNTIFY(PTHODI,HFMODI)
       CALL QNTIFY(PTHODT,HFMODT)
       CALL QNTIFY(PTHRDR,HFMRDR)
@@ -465,9 +461,13 @@ C                                                                         A03800
 C                                                                         A03910
       REWIND LFILE                                                        A03920
       REWIND MFILE                                                        A03930
+      LSTWDF = -654321
       NFHDRF = NWDL(IWD,LSTWDF)                                           A03940
+      IWLD = -654321
       NPHDRF = NWDL(IWD2,IWLD)                                            A03950
+      ILS2D = -654321
       NLNGTH = NWDL(IWD3,ILS2D)                                           A03960
+      ILST3D = -654321
       NPHDRL = NWDL(IWD4,ILST3D)                                          A03970
       PI = 2.*ASIN(1.)                                                    A03980
       RADCN1 = 2.*PLANCK*CLIGHT*CLIGHT*1.E-07                             A03990
@@ -904,12 +904,20 @@ C                                                                         A07580
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /ARMCM1/ HVRSOL
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A07640
+      COMMON /ADRPNM/ PTHT3M,PTHODI,PTHODT,PTHRDR
 C                                                                         A07650
       CHARACTER CFORM*11                                                  A03430
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
       CHARACTER*8 HVRSOL
 C
+      CHARACTER*55 PTHT3M,PTHODI,PTHODT,PTHRDR
+
+C
+      DATA PTHT3M /'TAPE3'/
+      DATA PTHODI/'ODint_'/,PTHODT/'ODtotal_'/,
+     *     PTHRDR/'RDderiv_'/
+
       DATA CFORM / 'UNFORMATTED'/                                         A03580
       DATA PLANCK / 6.626176E-27 /,BOLTZ / 1.380662E-16 /,                A07660
      *     CLIGHT / 2.99792458E10 /,AVOG / 6.022045E23 /                  A07670
@@ -933,7 +941,6 @@ C                                                                         A07710
 C                                                                         A08600
       DIMENSION IWD(*)                                                    A08610
 C                                                                         A08620
-      ILAST = -654321                                                     A08630
       DO 10 I = 1, 9000                                                   A08640
          IF (IWD(I).EQ.ILAST) THEN                                        A08650
             NWDL = I-1                                                    A08660
@@ -1116,6 +1123,7 @@ C                                                                         A09700
 C                                                                         A09780
       DATA CHARI / 'I'/                                                   A09790
 C                                                                         A09800
+      LSTWDL = -654321
       NFHDRL = NWDL(IWD,LSTWDL)                                           A09810
 C                                                                         A09820
       REWIND LINFIL                                                       A09830
