@@ -2518,7 +2518,7 @@ C
 C                                                                         A19170
       IMPLICIT REAL*8           (V)                                     ! A19180
 C                                                                         A19190
-      PARAMETER (NTMOL=32,NSPECI=75)                                      A19200
+      PARAMETER (NTMOL=36,NSPECI=85)                                      A19200
 C                                                                         A19210
 C     SUBROUTINE PATH INITIALIZES LINFIL AND INPUTS LAYER PARAMETERS      A19220
 C     SUBROUTINE PATH INPUTS AND OUTPUTS HEADER FROM LINFIL AND           A19230
