@@ -266,8 +266,8 @@ C           prevent double counting for wavenumber region beyond
 C           40800 cm-1.
 C
             IF ((VJ.GT.40815.).AND.(V2.GT.40800)) THEN
-               IFIX = (40800.-V1ABS)/DVABS+1.001
-               DO 62 I=IFIX,NPTABS
+               I_FIX = (40800.-V1ABS)/DVABS+1.001
+               DO 62 I=I_FIX,NPTABS
                   ABSBSV(I) = ABSRB(I)
  62            CONTINUE
             ENDIF
@@ -280,7 +280,7 @@ C           If V2 > 40800 cm-1, replace points with previously
 C           saved values (non-Hartley Huggins contribution)
 C
             IF ((VJ.GT.40815.).AND.(V2.GT.40800)) THEN
-               DO 64 I=IFIX,NPTABS
+               DO 64 I=I_FIX,NPTABS
                   ABSRB(I) = ABSBSV(I)
  64            CONTINUE
             ENDIF
@@ -303,8 +303,8 @@ C           prevent double counting for wavenumber region before
 C           40800 cm-1.
 C
             IF (V1.LT.40800) THEN
-               IFIX = (40800.-V1ABS)/DVABS+1.001
-               DO 72 I=1,IFIX-1
+               I_FIX = (40800.-V1ABS)/DVABS+1.001
+               DO 72 I=1,I_FIX-1
                   ABSBSV(I) = ABSRB(I)
  72            CONTINUE
             ENDIF
@@ -317,7 +317,7 @@ C           If V1 < 40800 cm-1, replace points with previously
 C           saved values (non-Hartley Huggins UV contribution)
 C
             IF (V1.LT.40800) THEN
-               DO 74 I=1,IFIX-1
+               DO 74 I=1,I_FIX-1
                   ABSRB(I) = ABSBSV(I)
  74            CONTINUE
             ENDIF
