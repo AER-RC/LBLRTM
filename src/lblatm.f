@@ -793,10 +793,15 @@ C F1(P) = INTERPOLATION IN LN(P), F2(P) = HYDROSTATIC CALCULATION
             ISTART = 2
 
             DO 160 IP=1,IBMAX
-               PTMP(1:2) = 0.0
-               TTMP(1:2) = 0.0
-               WVTMP(1:2) = 0.0
-               ZTMP(1:2) = 0.0
+               PTMP(1) = 0.0
+               TTMP(1) = 0.0
+               WVTMP(1) = 0.0
+               ZTMP(1) = 0.0
+
+               PTMP(2) = 0.0
+               TTMP(2) = 0.0
+               WVTMP(2) = 0.0
+               ZTMP(2) = 0.0
 
                DO 161 LIP=ISTART,IMMAX
                   IF (PBND(IP) .GT. PM(LIP)) GO TO 162
@@ -835,8 +840,8 @@ C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
      &                       ALOG(PM(LIP)/PM(LIP-1))
                         WVTMP(2) =  DENW(LIP-1) +
      &                       WVIP*ALOG(PBND(IP)/PM(LIP-1))                     
-                        CALL CMPALT(2,PTMP(1:2),TTMP(1:2),
-     &                       WVTMP(1:2),ZTMP(1),REF_LAT,ZTMP(1:2))                     
+                        CALL CMPALT(2,PTMP,TTMP,
+     &                       WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
 
 C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
 
@@ -855,10 +860,15 @@ C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
  160           CONTINUE
 
 C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
-            PTMP(1:2) = 0.0
-            TTMP(1:2) = 0.0
-            WVTMP(1:2) = 0.0
-            ZTMP(1:2) = 0.0
+            PTMP(1) = 0.0
+            TTMP(1) = 0.0
+            WVTMP(1) = 0.0
+            ZTMP(1) = 0.0
+
+            PTMP(2) = 0.0
+            TTMP(2) = 0.0
+            WVTMP(2) = 0.0
+            ZTMP(2) = 0.0
 
             IF (H1 .GT. PM(1)) THEN
                 PRINT 946, H1,PM(1)
@@ -896,15 +906,20 @@ C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
                WVTMP(2) =  DENW(LIP-1) +
      &              WVIP*ALOG(H1/PM(LIP-1))
 
-               CALL CMPALT(2,PTMP(1:2),TTMP(1:2),WVTMP(1:2),
-     &           ZTMP(1),REF_LAT,ZTMP(1:2))
+               CALL CMPALT(2,PTMP,TTMP,WVTMP,
+     &           ZTMP(1),REF_LAT,ZTMP)
                H1 = ZTMP(2)
             ENDIF
 
-            PTMP(1:2) = 0.0
-            TTMP(1:2) = 0.0
-            WVTMP(1:2) = 0.0
-            ZTMP(1:2) = 0.0
+            PTMP(1) = 0.0
+            TTMP(1) = 0.0
+            WVTMP(1) = 0.0
+            ZTMP(1) = 0.0
+
+            PTMP(2) = 0.0
+            TTMP(2) = 0.0
+            WVTMP(2) = 0.0
+            ZTMP(2) = 0.0
 
             DO 168 LIP = 2,IMMAX
                IF (H2 .GT. PM(LIP)) GO TO 169
@@ -930,8 +945,8 @@ C INTERPOLATE H1, H2 ONTO ALTITUDE GRID
                WVTMP(2) =  DENW(LIP-1) -
      &              WVIP*ALOG(H2/PM(LIP-1))
 
-               CALL CMPALT(2,PTMP(1:2),TTMP(1:2),WVTMP(1:2),
-     &           ZTMP(1),REF_LAT,ZTMP(1:2))
+               CALL CMPALT(2,PTMP,TTMP,WVTMP,
+     &           ZTMP(1),REF_LAT,ZTMP)
                H2 = ZTMP(2)
             ENDIF
          ENDIF
@@ -2884,8 +2899,8 @@ C                                                                        FA25240
 C                
 
       IF (IMMAX_B .LT. 0) THEN
-         CALL CMPALT (IMMAX,PM(1:IMMAX),TM(1:IMMAX),DENW(1:IMMAX),
-     &        ZMDL(1),REF_LAT,ZMDL(1:IMMAX))      
+         CALL CMPALT (IMMAX,PM,TM,DENW,
+     &        ZMDL(1),REF_LAT,ZMDL)      
       ENDIF
 
       DO 25 IM = 2,IMMAX
@@ -6435,10 +6450,15 @@ C F1(P) = INTERPOLATION IN LN(P), F2(P) = HYDROSTATIC CALCULATION
             ISTART = 2
 
             DO 160 IP=1,LAYX
-               PTMP(1:2) = 0.0
-               TTMP(1:2) = 0.0
-               WVTMP(1:2) = 0.0
-               ZTMP(1:2) = 0.0
+               PTMP(1) = 0.0
+               TTMP(1) = 0.0
+               WVTMP(1) = 0.0
+               ZTMP(1) = 0.0
+
+               PTMP(2) = 0.0
+               TTMP(2) = 0.0
+               WVTMP(2) = 0.0
+               ZTMP(2) = 0.0
 
                DO 161 LIP=ISTART,IMMAX
                   IF (PX(IP) .GT. PM(LIP)) GO TO 162
@@ -6477,8 +6497,8 @@ C PERFORM ALTITUDE CALCULATION USING HYDROSTATIC EQUATION
                         WVTMP(2) =  DENW(LIP-1) +
      &                       WVIP*ALOG(PX(IP)/PM(LIP-1))                     
 
-                        CALL CMPALT(2,PTMP(1:2),TTMP(1:2),
-     &                       WVTMP(1:2),ZTMP(1),REF_LAT,ZTMP(1:2))                     
+                        CALL CMPALT(2,PTMP,TTMP,
+     &                       WVTMP,ZTMP(1),REF_LAT,ZTMP)                     
 C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
 
                         RATP = ALOG(PX(IP)/PM(LIP-1))/
@@ -6497,9 +6517,7 @@ C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
                   ENDIF
 
                   ISTART = LIP
-
-                  CALL XTRACT (DTMP(1:IXMOLS,IP),JCHAR(1:IXMOLS,IP),
-     &                 ZX(IP))
+                  CALL XTRACT (IP,DTMP,JCHAR,ZX(IP))
                   DO 40 K = 1, IXMOLS                                         
                      DENX(K,IP) = DTMP(K,IP)                                
  40               CONTINUE            
@@ -6508,8 +6526,7 @@ C COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION
 
         ELSE
            DO 171 L=1,LAYX
-            CALL XTRACT (DTMP(1:IXMOLS,L),JCHAR(1:IXMOLS,L),
-     &             ZX(L))
+            CALL XTRACT (L,DTMP,JCHAR,ZX(L))
             DO 41 K = 1, IXMOLS                                        
                DENX(K,L) = DTMP(K,L)                               
    41       CONTINUE                                                   
@@ -6551,12 +6568,12 @@ C                                                                        FX05020
 C
 C     ----------------------------------------------------------------
 C
-      SUBROUTINE XTRACT (DTMP,JCHAR,Z)                                   FX05040
+      SUBROUTINE XTRACT (ILEV,DTMP,JCHAR,Z)                              FX05040
 C                                                                        FX05050
 C     *****************************************************************  FX05060
-C     FOR EACH MOLECULE K FOR WHICH JCHAR(K) IS '1', THIS SUBROUTINE     FX05070
-C     INTERPOLATES THE MIXING RATIO DTMP(K,L) AT THE ALTITUDE Z FROM THE FX05080
-C     STANDARD PROFILE IN AMOLX ON THE ALTITUDE GRID ALTX.               FX05090
+C     FOR EACH MOLECULE K FOR WHICH JCHAR(K,ILEV) IS '1', THIS SUBROUTINEFX05070
+C     INTERPOLATES THE MIXING RATIO DTMP(K,ILEV) AT THE ALTITUDE Z 
+C     FROM THE STANDARD PROFILE IN AMOLX ON THE ALTITUDE GRID ALTX.      FX05090
 C     *****************************************************************  FX05100
 C                                                                        FX05110
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FX05120
@@ -6582,8 +6599,8 @@ C     MOLECULES.                                                         FX05310
 C                                                                        FX05320
       COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(MXMOL),XAMNT(MXMOL,MXLAY)       FX05330
 C                                                                        FX05340
-      DIMENSION DTMP(MXMOL)                                              FX05350
-      CHARACTER*1 JCHAR(MXMOL)                                           FX05360
+      DIMENSION DTMP(MXMOL,MXZMD)                                        FX05350
+      CHARACTER*1 JCHAR(MXMOL,MXZMD)                                     FX05360
 C                                                                        FX05370
 C     FIND SMALLEST ALTX(L) GT Z                                         FX05380
 C                                                                        FX05390
@@ -6595,12 +6612,13 @@ C                                                                        FX05440
    20 CONTINUE                                                           FX05450
 C                                                                        FX05460
       DO 30 K = 1, IXMOLS                                                FX05470
-         IF (JCHAR(K).EQ.'1') THEN                                       FX05480
+         IF (JCHAR(K,ILEV).EQ.'1') THEN                                  FX05480
 C                                                                        FX05490
 C     INTERPOLATE MIXING RATIO FROM STANDARD PROFILE                     FX05500
 C                                                                        FX05510
+
             A = (Z-ALTX(L-1))/(ALTX(L)-ALTX(L-1))                        FX05520
-            CALL EXPINT (DTMP(K),AMOLX(L,IXINDX(K)),                     FX05530
+            CALL EXPINT (DTMP(K,ILEV),AMOLX(L,IXINDX(K)),                FX05530
      *                           AMOLX(L-1,IXINDX(K)),A)                 FX05540
          ENDIF                                                           FX05550
    30 CONTINUE                                                           FX05560
@@ -7512,14 +7530,12 @@ C**************************************************************
       REAL H2O_MIXRAT(MXZMD),COMP_FACTOR(MXZMD),ZTEMP(MXZMD)
 
       REAL Y
-      REAL CHI0,DCHI0
+      REAL CHI0
       REAL T0,DT
       REAL C1,C2,C3
-      REAL A
-      REAL B
-      REAL KB
-      REAL DUM
-      REAL XINT1,XINT2,XINT3,XINT4,XINT_TOT
+      REAL A, B, ALPHA
+      REAL BTZ
+      REAL XINT_TOT
 
       DATA CA0/1.58123E-6/,CA1/-2.9331E-8/,CA2/1.1043E-10/
       DATA CB0/5.707E-6/,CB1/-2.051E-8/
@@ -7528,7 +7544,7 @@ C**************************************************************
 
       DATA XMASS_H2O/0.018015/,XMASS_DRY/0.0289654/
 
-      DATA RGAS/ 8.31441 /, KB/ 1.380662E-23 /
+      DATA RGAS/ 8.31441 /, BTZ/ 1.380662E-23 /
 
 C CALCULATE GRAVITY AT REFERENCE LATITUDE AT SURFACE
 
@@ -7540,7 +7556,7 @@ C IDEAL GAS LAW
       XMASS_RATIO = XMASS_H2O/XMASS_DRY
       DO 10 J=1,ILVL
          DT = TM(J) - 273.15
-         TOTAL_AIR = PM(J)*1.0E-4/(KB*TM(J))
+         TOTAL_AIR = PM(J)*1.0E-4/(BTZ*TM(J))
          DRY_AIR = TOTAL_AIR - DENW(J)
          H2O_MIXRAT(J) = DENW(J)/DRY_AIR
          CHIM = 0.6223*H2O_MIXRAT(J)
@@ -7593,7 +7609,6 @@ C CONVERT REFERENCE ALTITUDE TO METERS
 
          RETURN
 
-      RETURN
       END
 
 
