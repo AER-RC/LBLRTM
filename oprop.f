@@ -998,11 +998,25 @@ C                                                                         B10530
       X10 = -1./16.                                                       B10590
       X11 = 9./16.                                                        B10600
       ISTOP = 0                                                           B10610
-      NNHI = (V2-VFT)/DV+2.5                                              B10620
-      IF (NHI.GE.NNHI) THEN                                               B10630
+C
+C     Test for last panel.  If last, set the last point to one point
+C     greater than V1 specified on TAPE5 (to ensure last point for
+C     every layer is the same)
+C
+      IF ((VFT+(NHI-1)*DVP).GT.V2) THEN
+         NHI = (V2-VFT)/DVP + 1.
+         V2P = VFT+FLOAT(NHI-1)*DVP
+         IF (V2P.LT.V2) THEN
+            V2P = V2P+DVP
+            NHI = NHI+1
+         ENDIF
          ISTOP = 1                                                        B10640
-         NHI = NNHI                                                       B10650
-      ENDIF                                                               B10660
+      ELSE
+         V2P = VFT+FLOAT(NHI-1)*DV
+      ENDIF
+      NLIM = NHI-NLO+1
+      V1P = VFT+FLOAT(NLO-1)*DV
+C
       LIMLO = N1R2                                                        B10670
       IF (N1R2.EQ.1) LIMLO = LIMLO+4                                      B10680
       LIMHI = (NHI/4)+1                                                   B10690
@@ -1028,10 +1042,6 @@ C                                                                         B10700
      *             X00*R2(J2+2)                                           B10890
    20 CONTINUE                                                            B10900
 C                                                                         B10910
-      NLIM = NHI-NLO+1                                                    B10920
-      V1P = VFT+FLOAT(NLO-1)*DV                                           B10930
-      V2P = VFT+FLOAT(NHI-1)*DV                                           B10940
-C                                                                         B10950
 C     IN THE FOLLOWING SECTION THE ABSORPTION COEFFICIENT IS MULTIPIIED   B10960
 C     BY THE RADIATION FIELD                                              B10970
 C                                                                         B10980
@@ -1226,15 +1236,27 @@ C                                                                         B12850
 C                                                                         B12870
       IF (V2P.LE.V2PO+DVP.AND.ILAST.EQ.0.AND.NPPANL.LE.0) GO TO 40        B12880
 C                                                                         B12890
-      IF (V2PO.GT.V2P.AND.V2PO.GT.V2) V2PO = V2P                          B12900
-C     IF (V2PO.GT.V2P) V2PO = V2P-2.*DVP                                  B12910
-      IF (V2PO.GT.V2P) V2PO = V2P-   DVP                                  B12910
-C     NLIM2 = (V2PO-V1PO)/DVOUT+1                                         B12920
-      NLIM2 = (V2PO-V1PO)/DVOUT+1.001                                     B12920
-      NLIM2 = MIN(NLIM2,LIMOUT)                                           B12930
-      V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT                                    B12940
-      IF (V2PO.LT.V2-DVP) ILAST = 0                                       B12950
-C                                                                         B12960
+      IF ((V1PO+(LIMOUT-1)*DVOUT).GT.V2) THEN
+         NLIM2 = (V2-V1PO)/DVOUT + 1.
+         V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT
+         IF (V2PO.LT.V2) THEN
+            V2PO = V2PO+DVOUT
+            NLIM2 = NLIM2+1
+         ENDIF
+      ELSE
+         NLIM2 = LIMOUT
+         V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT
+         IF (V2PO.GT.V2P-DVP) THEN
+            NLIM2 = ((V2P-DVP-V1PO)/DVOUT) + 1.
+            V2PO = V1PO+FLOAT(NLIM2-1)*DVOUT
+            IF (V2PO+DVOUT.LT.V2P-DVP) THEN
+               NLIM2 = NLIM2+1
+               V2PO = V2PO+DVOUT
+            ENDIF
+         ENDIF
+         ILAST = 0
+      ENDIF
+C
       RATDV = DVOUT/DVP                                                   B12970
 C                                                                         B12980
 C     FJJ IS OFFSET BY 2. FOR ROUNDING PURPOSES                           B12990
