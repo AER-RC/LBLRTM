@@ -1,12 +1,12 @@
 
 LBLRTM_v7.03
 
-1) For reading in the spectral line files, there was code implemented to report 
-    and skip over lines that cannot be handled properly by TIPS in LBLRTM.
-    (H. Snell and S.A. Clough)
+1) There was code implemented to report and skip over spectral lines that
+   cannot be handled properly by TIPS in LBLRTM.
+   (H. Snell and S.A. Clough)
 
 2) Pressures adjacent to 35 km in the built in US STD ATMOS was modified. 
-    (W.O. Gallery)
+   (W.O. Gallery)
 
 
 LBLRTM_v7.01
