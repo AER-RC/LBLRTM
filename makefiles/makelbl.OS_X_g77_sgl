@@ -7,29 +7,29 @@ SHELL = /bin/sh
 # Set variables
 ###############################
 
-PLATFORM = SGI
+PLATFORM = OS_X (g77)
 
 
-FC = f90
-FCFLAG = -mips4 -r10000 -lfastm -O3 -64 -r8 -i8 -TENV:X=0
-OUTPUT = lblrtm_v7.01_f90_dbl_voigt
+FC = g77
+FCFLAG = -O2  
+OUTPUT = lblrtm_v7.01_g77_OS_X_sgl
 CPATH = src
-CDOTO = sgi_dbl.o
+CDOTO = os_x_sgl_g77.o
 
 CLBL = lblrtm
-COPR = oprop_voigt
+COPR = oprop
 CCNT = contnm
 CXMG = xmerge
 CTST = testmm
 CATM = lblatm
 CLOW = lbllow
 CPST = postsub
-CFFT = fftscn_dbl
+CFFT = fftscn
 CPLT = pltlbl
-CUTL = util_sgi
+CUTL = util_OS_X
 CDUM = lbldum
 CSOL = solar
-CNLT = nonlte_voigt
+CNLT = nonlte
 
 
 OBJFIL = $(CLBL).o \
@@ -53,7 +53,7 @@ OBPATH = $(CDOTO)/$(CLBL).o \
          $(CDOTO)/$(CXMG).o \
          $(CDOTO)/$(CTST).o \
          $(CDOTO)/$(CATM).o \
-         $(CDOTO)/$(CLOW).o \
+          $(CDOTO)/$(CLOW).o \
          $(CDOTO)/$(CPST).o \
          $(CDOTO)/$(CFFT).o \
          $(CDOTO)/$(CPLT).o \
@@ -84,7 +84,7 @@ MODULE = $(CPATH)/$(CLBL).f \
 
 $(OUTPUT) : \
 	intro makedir $(OBPATH) conclude
-	$(FC) $(FCFLAG) -o $(OUTPUT) $(OBPATH)
+	$(FC) $(FCFLAG) -o $(OUTPUT) $(OBPATH) 
 
 
 ###############################

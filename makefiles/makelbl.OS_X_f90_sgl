@@ -7,14 +7,14 @@ SHELL = /bin/sh
 # Set variables
 ###############################
 
-PLATFORM = OS_X
+PLATFORM = OS_X (Absoft)
 
 
 FC = f90
-FCFLAG = -s -O -N11   
-OUTPUT = lblrtm_v7.00_f90_OS_X_sgl
+FCFLAG = -s -O -N11 -lU77  
+OUTPUT = lblrtm_v7.01_f90_OS_X_sgl
 CPATH = src
-CDOTO = sgl.o
+CDOTO = os_x_sgl.o
 
 CLBL = lblrtm
 COPR = oprop
@@ -84,7 +84,7 @@ MODULE = $(CPATH)/$(CLBL).f \
 
 $(OUTPUT) : \
 	intro makedir $(OBPATH) conclude
-	$(FC) $(FCFLAG) -o $(OUTPUT) $(OBPATH)  -L/Applications/Absoft/lib/ -lU77
+	$(FC) $(FCFLAG) -o $(OUTPUT) $(OBPATH) 
 
 
 ###############################
