@@ -37,8 +37,10 @@ C     ------------------------------------------------------------
 C     SUBROUTINE SOLINT interpolates solar radiances from the binary
 C     file SOLAR.RAD.  The following are input and output options:
 C
-C       INFLAG = 0   => input transmittance from TAPE12 (default).
-C              = 1   => input optical depths from TAPE10 and
+C       INFLAG = 0   => input transmittance from TAPE12 (default,
+C                       where TAPE12 includes the monochromatic radiance
+C                       and transmittance).
+C              = 1   => input optical depths from TAPE12 and
 C                       convert to transmittance.
 C              = 2   => input R1, T1, T2, r1,  where
 C
@@ -58,6 +60,8 @@ C                         r1||/_|/_r3
 C            Ground    ---------------------------
 C                     ///////////////////////////
 C
+C              = 3   => input transmittance from TAPE12 (CHARTS-type
+C                       output)
 C
 C
 C       IOTFLG = 0   => attenuate w/transmittance & output (default).
@@ -312,6 +316,8 @@ c         ENDIF
          WRITE(IPR,927) IFILE,ISLTRN,ISLRFL
          WRITE(IPR,941) DVT2,DVRF
 C
+      ELSEIF (INFLAG.EQ.3) THEN
+         WRITE(IPR,926) IFILE
       ENDIF
       WRITE(IPR,906) DVL,DVK
 C
@@ -357,10 +363,11 @@ C
          IF (LSEOF.LE.0) GO TO 110
 C
 C
-C        If INFLAG = 0, then read radiance and tranmittance
+C        If INFLAG = 0, then read radiance and transmittance
 C        If INFLAG = 1, then read optical depth
-C        If INFLAG = 2, then read radiance and tranmittance
+C        If INFLAG = 2, then read radiance and transmittance
 C                       and call SOLIN to read in r1 and T2
+C        If INFLAG = 3, then read transmittance
 C
          IF (INFLAG.EQ.0) THEN
             CALL SOLIN2 (V1PO,V2PO,DVPO,NLIMO,IFILE,RADO(1),
@@ -383,6 +390,9 @@ C
                WRITE(IPR,*) '  V1T2 = ',V1T2,'  V1RF = ',V1RF
                STOP 'SOLINT: PANELS DO NOT MATCH: SEE TAPE6'
             ENDIF
+         ELSEIF (INFLAG.EQ.3) THEN
+            CALL SOLIN (V1PO,V2PO,DVPO,NLIMO,IFILE,TRAO(1),
+     *           LEOF)
          ENDIF
          CALL CPUTIM (TIMSL3)
          TIMRD = TIMRD+TIMSL3-TIMSL2
@@ -496,10 +506,11 @@ C
    60 CONTINUE
       IPANEM = IPANEM+1
 C     
-C     If INFLAG = 0, then read radiance and tranmittance
+C     If INFLAG = 0, then read radiance and transmittance
 C     If INFLAG = 1, then read optical depth
-C     If INFLAG = 2, then read radiance and tranmittance
+C     If INFLAG = 2, then read radiance and transmittance
 C                    and call SOLIN to read in r1 and T2
+C     If INFLAG = 3, then read transmittance
 C
       IF (INFLAG.EQ.0) THEN
          CALL SOLIN2 (V1PO,V2PO,DVPO,NLIMO,IFILE,RADO(1),
@@ -574,6 +585,10 @@ C
             XRFLT(NPRF+1) = XRFLT(NPRF)
             XRFLT(NPRF+2) = XRFLT(NPRF)
          ENDIF
+      ELSEIF (INFLAG.EQ.3) THEN
+         CALL SOLIN (V1PO,V2PO,DVPO,NLIMO,IFILE,TRAO(1),
+     *        LEOF)
+         IF (LEOF.LE.0) GO TO 110
       ENDIF
 C     -----------------------------------------------------
 C
@@ -845,6 +860,7 @@ C
      *        ' - READ - ',F12.3,' - SOLOUT - ',F12.3)
  920  FORMAT ('0 Radiance and Transmittance read in from unit',I5)
  925  FORMAT ('0 Optical Depths read in from unit',I5)
+ 926  FORMAT ('0 Transmittance read in from unit',I5)
  927  FORMAT ('0 Thermal upwelling Radiance & Transmittance',
      *        ' read in from unit',I5,/,
      *        '  Solar reflectance function read in from unit',

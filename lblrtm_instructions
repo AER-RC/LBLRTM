@@ -381,15 +381,16 @@ C     presently: %H%  %T%
              I5,      I5,  2X, I3
 
 
-              INFLAG       (0,1) input flag for solar radiance calculation
+              INFLAG       (0,1,2,3) input flag for solar radiance calculation
 
                            = 0  input previously calculated radiance and transmittance from TAPE12 (default)
                            = 1  input previously calculated optical depth from TAPE12
                            = 2  input previously calculated upwelling radiance and transmittance from TAPE12,
                                 downwelling radiance and transmittance from 'SOL.PATH.T2', and solar reflection
                                 function from 'SOL.REFLECTANCE' (all binary files).
- 
-              IOTFLG       (0,1) output flag for solar radiance calculation (output to TAPE13)
+                           = 3  input previously calculated transmittance from TAPE12 (CHARTS-type output)
+
+              IOTFLG       (0,1,2) output flag for solar radiance calculation (output to TAPE13)
 
                            = 0  output attenuated solar radiance (default)
                            = 1  output total radiance (requires INFLAG = 0)
