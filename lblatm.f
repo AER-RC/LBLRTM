@@ -662,6 +662,18 @@ C
      *                           (AMOUNT(K,1)/DRAIR,K=8,NMOL)            FA06180
               ENDIF
            ELSE                                                          FA06190
+C
+C             Test to make sure there are no fractional molecular
+C             amounts written out (will cause PATH to assume
+C             mixing ratio)
+C
+              DO 137 K=1,NMOL
+                 IF (AMOUNT(K,1).LT.1.) THEN
+                    WRITE(IPR,1000) K,1
+                    AMOUNT(K,1) = 0.0
+                 ENDIF
+ 137          CONTINUE
+C
               WRITE (IPU,926) PH,TH,IPATH(1),ZH,ZH,                      FA06240
      *             (AMOUNT(K,1),K=1,7),WN2L(1),                          FA06250
      *             (AMOUNT(K,1),K=8,NMOL)                                FA06260
@@ -981,6 +993,18 @@ C
      *                                    (AMOUNT(K,L)/DRAIR,K=8,NMOL)
                   ENDIF
                ELSE
+C
+C                 Test to make sure there are no fractional molecular
+C                 amounts written out (will cause PATH to assume
+C                 mixing ratio)
+C
+                  DO 277 K=1,NMOL
+                     IF (AMOUNT(K,L).LT.1.) THEN
+                        WRITE(IPR,1000) K,L
+                        AMOUNT(K,L) = 0.0
+                     ENDIF
+ 277              CONTINUE
+C
                   WRITE (IPU,978) (AMOUNT(K,L),K=1,7),WN2L(L)            FA10090
                   IF (NMOL.GT.7) WRITE (IPU,978) (AMOUNT(K,L),K=8,NMOL)  FA10100
                ENDIF
@@ -1196,6 +1220,8 @@ C                                                                        FA10530
   992 FORMAT (///,' ERROR: EITHER AVTRAT.LE.1.0 OR TDIFF.LE.0',/,        FA11670
      *        '0PROGRAM STOP  -  AVTRAT = ',E12.6,' TDIFF1 = ',F10.4,    FA11680
      *        ' TDIFF2 = ',F10.4)                                        FA11690
+ 1000 FORMAT ('*** WARNING: Zeroing molecule #',i2.2,' amount ',
+     *        'in layer #',i3.3)
 C                                                                        FA11700
       END                                                                FA11710
 C
@@ -5452,6 +5478,18 @@ C
      *                            (XAMNT(K,1)/DRAIR,K=8,NMOL)
                ENDIF
             ELSE
+C
+C              Test to make sure there are no fractional molecular
+C              amounts written out (will cause PATH to assume
+C              mixing ratio)
+C
+               DO 107 K=1,NMOL
+                  IF (XAMNT(K,1).LT.1.) THEN
+                     WRITE(IPR,1000) K,1
+                     XAMNT(K,1) = 0.0
+                  ENDIF
+ 107           CONTINUE
+C
                WRITE (IPU,955) PH,TH,IPATH(1),ZH,ZH,                     FX02550
      *                         (XAMNT(K,1),K=1,7),WN2L(1),
      *                         (XAMNT(K,1),K=8,NMOL)                     FX02560
@@ -5528,6 +5566,18 @@ C
      *                                 (XAMNT(K,L)/DRAIR,K=8,NMOL)
                ENDIF
             ELSE
+C
+C              Test to make sure there are no fractional molecular
+C              amounts written out (will cause PATH to assume
+C              mixing ratio)
+C
+               DO 127 K=1,NMOL
+                  IF (XAMNT(K,L).LT.1.) THEN
+                     WRITE(IPR,1000) K,L
+                     XAMNT(K,L) = 0.0
+                  ENDIF
+ 127           CONTINUE
+C
                WRITE (IPU,975) (XAMNT(K,L),K=1,7),WN2L(L)                FX03000
                IF (NMOL.GT.7) WRITE (IPU,975) (XAMNT(K,L),K=8,NMOL)      FX03010
             ENDIF
@@ -5603,6 +5653,8 @@ C                                                                        FX03150
      *            3X,'  MOLECULAR MIXING RATIOS BY LAYER',/)
   975 FORMAT (1P8E15.7)                                                  FX03390
   980 FORMAT (//,1X,'TOTAL AMOUNT FOR PATH ',1P8E15.7)                   FX03400
+ 1000 FORMAT ('*** WARNING: Zeroing molecule #',i2.2,' amount ',
+     *        'in layer #',i3.3)
 C                                                                        FX03410
       END                                                                FX03420
 C
