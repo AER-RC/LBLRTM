@@ -110,7 +110,9 @@ C                                                                        FA00990
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FA01020
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FA01030
       COMMON /CNTRL/ I1,I2,I3,I4,NBNDL,I6,I7,NBNDF,I9                    FA01040
-      COMMON /COLUNT/ MUNITS
+      COMMON /PCHINF/ MUNITS,CTYPE(MXLAY)
+C
+      CHARACTER*3 CTYPE
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
@@ -157,6 +159,9 @@ C                                                                        FA01420
   905 FORMAT (A8)                                                        FA01440
 C                                                                        FA01450
       END                                                                FA01460
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE ATMPTH (IEMIT)                                          FA01470
 C                                                                        FA01480
 C**********************************************************************  FA01490
@@ -236,8 +241,8 @@ C     THE NUMBER OF LAYERS AND THE ACCURACY:  THE ACCURACY DEPENDS UPON  FA02220
 C     SUCH FACTORS AS THE SPECTRAL REGION, THE DISTRIBUTION OF THE       FA02230
 C     MOLECULES OF INTEREST, THE PARTICULAR PATH TAKEN, AND WHETHER      FA02240
 C     TRANSMITTANCE OR RADIANCE IS CALCULATED. THE LAYERING CREATED      FA02250
-C     BY THE DEFAULT VALUES OF AVTRAT (2.0) AND TDIFF1 ( 8.0 K) AND      FA02260
-C     TDIFF2 (12.0 K) SHOULD BE CONSIDERED A POINT OF DEPARTURE FOR      FA02270
+C     BY THE DEFAULT VALUES OF AVTRAT (1.5) AND TDIFF1 (5.0 K) AND       FA02260
+C     TDIFF2 (8.0 K) SHOULD BE CONSIDERED A POINT OF DEPARTURE FOR       FA02270
 C     SUBSEQUENT CALCULATIONS. THE USER SHOULD THEN EXPERIMENT WITH      FA02280
 C     DIFFERENT LAYERING UNTIL THE RESULTS ARE CONSISTENT WITH           FA02290
 C     HIS ACCURACY REQUIREMENTS.                                         FA02300
@@ -408,24 +413,25 @@ C                                                                        FA03820
      *              ADOPP(MXFSC),AVOIGT(MXFSC)                           FA03940
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FA03950
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FA03960
-      COMMON /COLUNT/ MUNITS
+      COMMON /PCHINF/ MUNITS,CTYPE(MXLAY)
       DIMENSION XPBAR(NXPBAR),XZOUT(NXZOUT),WMT(MXMOL)                   FA03970
 C                                                                        FA03980
       EQUIVALENCE (PBAR(1),XPBAR(1)) , (ZOUT(1),XZOUT(1))                FA03990
 C                                                                        FA04000
-      CHARACTER*45 CFORM1,CFORM2                                         FA04010
+      CHARACTER*48 CFORM1,CFORM2                                         FA04010
       CHARACTER*8 COTHER                                                 FA04020
       CHARACTER*7 PAFORM(2)                                              FA04030
       CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,PZFORM(5)                  FA04040
+      CHARACTER*3 CTYPE
 C                                                                        FA04050
       DATA COTHER / 'OTHER   '/                                          FA04060
-      DATA AVRATS / 2.0 /,TDIF1S / 8.0 /,TDIF2S / 12.0 /                 FA04070
+      DATA AVRATS / 1.5 /,TDIF1S / 5.0 /,TDIF2S / 8.0 /                  FA04070
       DATA HT1HRZ / ' AT '/,HT2HRZ / ' KM '/,HT1SLT / ' TO '/,           FA04080
      *     HT2SLT / ' KM '/                                              FA04090
       DATA PZFORM / 'F8.6','F8.5','F8.4','F8.3','F8.2'/                  FA04100
       DATA PAFORM / '1PE15.7','  G15.7'/                                 FA04110
-      DATA CFORM1 / '(1PE15.7,0PF10.2,10X,I5,1X,2(F7.3,F8.3,F7.2))'/     FA04120
-      DATA CFORM2 / '(  G15.7,0PF10.2,10X,I5,23X,(F7.3,F8.3,F7.2))'/     FA04130
+      DATA CFORM1 / '(1PE15.7,0PF10.2,10X,A3,I2,1X,2(F7.3,F8.3,F7.2))'/  FA04120
+      DATA CFORM2 / '(  G15.7,0PF10.2,10X,A3,I2,23X,(F7.3,F8.3,F7.2))'/  FA04130
       DATA IERROR / 0 /                                                  FA04140
 C                                                                        FA04150
 C     IAMT = 1: CALCULATE AMOUNTS, IAMT = 2: DO NOT CALCULATE AMOUNTS    FA04160
@@ -497,14 +503,14 @@ C                                                                        FA04800
 C     READ CONTROL CARD 3.1                                              FA04810
 C                                                                        FA04820
          READ (IRD,900) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,     FA04830
-     *                  MUNITS,RE,HSPACE,XVBAR,CO2MX                     FA04840
+     *                  IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX              FA04840
       ENDIF                                                              FA04850
 C                                                                        FA04860
       NOP = NOPRNT                                                       FA04870
       RO = RE                                                            FA04880
       WRITE (IPR,902)                                                    FA04890
       WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA04900
-     *                MUNITS,RE,HSPACE,XVBAR,CO2MX                       FA04910
+     *                IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX                FA04910
       IF (CO2MX.EQ.0.) CO2MX = 330.                                      FA04920
       CO2RAT = CO2MX/330.                                                FA04930
       M = MODEL                                                          FA04940
@@ -529,7 +535,7 @@ C                                                                        FA05070
 C                                                                        FA05130
       WRITE (IPR,906)                                                    FA05140
       WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA05150
-     *                MUNITS,RE,HSPACE,XVBAR,CO2MX                       FA05160
+     *                IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX                FA05160
 C                                                                        FA05170
       IF (ITYPE.EQ.1) THEN                                               FA05180
 C                                                                        FA05190
@@ -866,6 +872,7 @@ C                                                                        FA09490
          PWTD = 0.                                                       FA09620
          TWTD = 0.                                                       FA09630
          WTOT = 0.                                                       FA09640
+C
          DO 280 L = 1, LMAX                                              FA09650
             FACTOR = 1.                                                  FA09660
             IF (IPATH(L).EQ.2) FACTOR = 2.                               FA09670
@@ -881,14 +888,28 @@ C                                                                        FA09490
             PWTD = PWTD+PBAR(L)*WTOTL(L)*FACTOR                          FA09770
             TWTD = TWTD+TBAR(L)*WTOTL(L)*FACTOR                          FA09780
 C
+C           > Determine ITYL(L), if desired (when setting the ratio <
+C           > from layer to layer).  Default is ITYL(L) left blank, <
+C           >                                                       <
+C           >                    CTYPE(L) = '   '                   <
+C
+            CTYPE(L) = '   '
+            IF (IFXTYP.EQ.1) THEN
+               FRH2O  = AMOUNT(1,L)/WTOTL(L)
+               ALFCOR = (PBAR(L)/PZERO)*SQRT(TZERO/TBAR(L))
+               ADBAR = 3.581155E-07*XVBAR*SQRT(TBAR(L)/AVMWT)
+               CALL FIXTYP(IEMIT,FRH2O,ALFCOR,OLDDV,L,CTYPE(L))
+            ENDIF
+C
+C
 C           > Write atmosphere to TAPE6 in column density <
 C
             IF (NMOL.LE.7) THEN                                          FA09790
-               WRITE (IPR,974) L,ZOUT(L),ZOUT(L+1),IPATH(L),             FA09800
+               WRITE (IPR,974) L,ZOUT(L),ZOUT(L+1),CTYPE(L),IPATH(L),    FA09800
      *                         PBAR(L),TBAR(L),RHOSUM(L),                FA09810
      *                         (AMOUNT(K,L),K=1,NMOL),WN2L(L)            FA09820
             ELSE                                                         FA09830
-               WRITE (IPR,976) L,ZOUT(L),ZOUT(L+1),IPATH(L),             FA09840
+               WRITE (IPR,976) L,ZOUT(L),ZOUT(L+1),CTYPE(L),IPATH(L),    FA09840
      *                         PBAR(L),TBAR(L),RHOSUM(L),                FA09850
      *                         (AMOUNT(K,L),K=1,7),WN2L(L),              FA09860
      *                         (AMOUNT(K,L),K=8,NMOL)                    FA09870
@@ -902,18 +923,18 @@ C
                PTST = ALOG10(PZ(LTST))                                   FA09920
                NPTST = PTST+2                                            FA09930
                IF (PTST.LT.0.0) NPTST = 1                                FA09940
-               CFORM1(35:38) = PZFORM(NPTST)                             FA09950
-               CFORM2(35:38) = PZFORM(NPTST)                             FA09960
+               CFORM1(38:41) = PZFORM(NPTST)                             FA09950
+               CFORM2(38:41) = PZFORM(NPTST)                             FA09960
                NPTST = 1                                                 FA09970
                IF (PBAR(L).GE.0.1) NPTST = 2                             FA09980
                CFORM1(2:8) = PAFORM(NPTST)                               FA09990
                CFORM2(2:8) = PAFORM(NPTST)                               FA10000
                IF (L.EQ.1) THEN                                          FA10010
-                  WRITE (IPU,CFORM1) PBAR(L),TBAR(L),IPATH(L),           FA10020
+                  WRITE (IPU,CFORM1) PBAR(L),TBAR(L),CTYPE(L),IPATH(L),  FA10020
      *                               ALTZ(L-1),PZ(L-1),TZ(L-1),          FA10030
      *                               ALTZ(L),  PZ(L),  TZ(L)             FA10040
                ELSE                                                      FA10050
-                  WRITE (IPU,CFORM2) PBAR(L),TBAR(L),IPATH(L),           FA10060
+                  WRITE (IPU,CFORM2) PBAR(L),TBAR(L),CTYPE(L),IPATH(L),  FA10060
      *                               ALTZ(L),  PZ(L),  TZ(L)             FA10070
                ENDIF                                                     FA10080
 C
@@ -967,22 +988,22 @@ C           > (since AMOUNT zero => mixing ratio zero)        <
 C
             IF (DRAIR.EQ.0) THEN
                IF (NMOL.LE.7) THEN
-                  WRITE (IPR,974) L,ZOUT(L),ZOUT(L+1),IPATH(L),
+                  WRITE (IPR,974) L,ZOUT(L),ZOUT(L+1),CTYPE(L),IPATH(L),
      *                            PBAR(L),TBAR(L),RHOSUM(L),
      *                            (AMOUNT(K,L),K=1,NMOL),WN2L(L)
                ELSE
-                  WRITE (IPR,976) L,ZOUT(L),ZOUT(L+1),IPATH(L),
+                  WRITE (IPR,976) L,ZOUT(L),ZOUT(L+1),CTYPE(L),IPATH(L),
      *                            PBAR(L),TBAR(L),RHOSUM(L),
      *                            (AMOUNT(K,L),K=1,7),WN2L(L),
      *                            (AMOUNT(K,L),K=8,NMOL)
                ENDIF
             ELSE
                IF (NMOL.LE.7) THEN
-                  WRITE (IPR,974) L,ZOUT(L),ZOUT(L+1),IPATH(L),
+                  WRITE (IPR,974) L,ZOUT(L),ZOUT(L+1),CTYPE(L),IPATH(L),
      *                            PBAR(L),TBAR(L),RHOSUM(L),
      *                            (AMOUNT(K,L)/DRAIR,K=1,NMOL),WN2L(L)
                ELSE
-                  WRITE (IPR,976) L,ZOUT(L),ZOUT(L+1),IPATH(L),
+                  WRITE (IPR,976) L,ZOUT(L),ZOUT(L+1),CTYPE(L),IPATH(L),
      *                            PBAR(L),TBAR(L),RHOSUM(L),
      *                            (AMOUNT(K,L)/DRAIR,K=1,7),WN2L(L),
      *                            (AMOUNT(K,L)/DRAIR,K=8,NMOL)
@@ -1031,14 +1052,15 @@ C                                                                        FA10490
 C                                                                        FA10510
       STOP ' AVTRAT,TDIFF'                                               FA10520
 C                                                                        FA10530
-  900 FORMAT (8I5,4F10.3)                                                FA10540
+  900 FORMAT (7I5,I2,1X,I2,4F10.3)                                       FA10540
   902 FORMAT (' CONTROL CARD 3.1: MODEL AND OPTIONS ')                   FA10550
   904 FORMAT (/,10X,'MODEL   = ',I5,/,10X,'ITYPE   = ',I5,/,10X,         FA10560
      *        'IBMAX   = ',I5,/,10X,'NOZERO  = ',I5,/,10X,'NOPRNT  = ',  FA10570
      *        I5,/,10X,'NMOL    = ',I5,/,10X,'IPUNCH  = ',I5,/,10X,      FA10580
-     *        'MUNITS  = ',I5,/,10X,'RE      = ',F10.3,' KM',/,10X,      FA10590
-     *        'HSPACE  = ',F10.3,' KM',/,10X,'VBAR    = ',F10.3,         FA10600
-     *        ' CM-1',/,10X,'CO2MX   = ',F10.3,' PPM')                   FA10610
+     *        'IFXTYP  = ',I5,/,10X,'MUNITS  = ',I5,/,10X,'RE      = ',  FA10590
+     *        F10.3,' KM',/,10X,'HSPACE  = ',F10.3,' KM',/,10X,          FA10600
+     *        'VBAR    = ',F10.3,' CM-1',/,10X,'CO2MX   = ',
+     *        F10.3,' PPM')                                              FA10610
   906 FORMAT (///,' CONTROL CARD 3.1 PARAMETERS WITH DEFAULTS:')         FA10620
   908 FORMAT (///,' HORIZONTAL PATH SELECTED')                           FA10630
   910 FORMAT (F10.3,10X,10X,F10.3)                                       FA10640
@@ -1120,18 +1142,22 @@ C                                                                        FA10530
      *        'IPATH = 3 (PATH LOOKING UP)',/,' O2 IS NOT INCLUDED',/,   FA11390
      *        ' IF THE AMOUNTS FOR ALL THE MOLECULES BUT O2 ARE ',       FA11400
      *        'ZEROED, THE REMAINING LAYERS ARE ELIMINATED',///,T13,     FA11410
-     *        'LAYER',T22,'I',/,T4,'L',T10,'BOUNDARIES',T22,'P',T28,     FA11420
-     *        'PBAR',T37,'TBAR',T70,'INTEGRATED AMOUNTS (MOLS CM-2)',    FA11430
-     *        /,T9,'FROM',T18,'TO',T22,'T',/,T9,'(KM)',T17,'(KM)',T22,   FA11440
-     *        'H',T28,'(MB)',T38,'(K)',T50,'AIR',(T54,8(6X,A9)))         FA11450
+     *        'LAYER',T23,'I',T25,'I',/,T4,'L',T10,'BOUNDARIES',T23,     FA11420
+     *        'T',T25,'P',T31,'PBAR',T40,'TBAR',T70,
+     *        'INTEGRATED AMOUNTS (MOLS CM-2)',/,T9,'FROM',T18,          FA11430
+     *        'TO',T23,'Y',T25,'T',/,T9,'(KM)',T17,'(KM)',T23,'P',T25,   FA11440
+     *        'H',T31,'(MB)',T41,'(K)',T53,'AIR',(T59,8(6X,A9)))         FA11450
   972 FORMAT (1X,I1,I3,I5,F10.6,2A8,' H1=',F8.2,' H2=',F8.2,             FA11460
      *        ' ANG=',F8.3,' LEN=',I2)                                   FA11470
-  973 FORMAT ('1',3X,'------------------------------------',/,
-     *            66X,'  MOLECULAR MIXING RATIOS BY LAYER',/,
-     *            T9,'FROM',T18,'TO',T22,'T',/,T9,'(KM)',T17,'(KM)',T22,
-     *            'H',T28,'(MB)',T38,'(K)',T50,'AIR',(T54,8(6X,A9)))
-  974 FORMAT ('0',I3,2F8.3,I2,F11.5,F8.2,1X,1P9E15.7)                    FA11480
-  976 FORMAT ('0',I3,2F8.3,I2,F11.5,F8.2,1X,1P9E15.7,/,(52X,1P8E15.7))   FA11490
+  973 FORMAT  (///,'1',3X,'------------------------------------',/,
+     *        T13,'LAYER',T23,'I',T25,'I',/,T4,'L',T10,'BOUNDARIES',
+     *        T23,'T',T25,'P',T31,'PBAR',T40,'TBAR',
+     *        T68,'MOLECULAR MIXING RATIOS BY LAYER',/,T9,'FROM',
+     *        T18,'TO',T23,'Y',T25,'T',/,T9,'(KM)',T17,'(KM)',T23,'P',
+     *        T25,'H',T31,'(MB)',T41,'(K)',T53,'AIR',(T59,8(6X,A9)))
+  974 FORMAT ('0',I3,2F8.3,A3,I2,F11.5,F8.2,1X,1P9E15.7)                 FA11480
+  976 FORMAT ('0',I3,2F8.3,A3,I2,F11.5,F8.2,1X,1P9E15.7,/,
+     *            (52X,1P8E15.7))                                        FA11490
   978 FORMAT (1P8E15.7)                                                  FA11500
   980 FORMAT ('0',/,'0',T4,'L  PATH BOUNDARIES',T28,'PBAR',T37,'TBAR',   FA11510
      *        T65,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH',/,T9,   FA11520
@@ -1154,6 +1180,9 @@ C                                                                        FA10530
      *        ' TDIFF2 = ',F10.4)                                        FA11690
 C                                                                        FA11700
       END                                                                FA11710
+C
+C     ----------------------------------------------------------------
+C
       BLOCK DATA ATMCON                                                  FA11720
 C                                                                        FA11730
 C     *****************************************************************  FA11740
@@ -1231,6 +1260,9 @@ C                                                                        FA12370
      *              66.01  , 146.05  , 34.08  , 46.03 ,                  FA12460
      *              3*0. /                                               FA12470
       END                                                                FA12480
+C
+C     ----------------------------------------------------------------
+C
       BLOCK DATA MLATMB                                                  FA12490
 C                                                                        FA12500
 C     *****************************************************************  FA12510
@@ -2335,6 +2367,9 @@ C                                                                        FA23390
      *            MXZ50*0.0 /                                            FA23500
 C                                                                        FA23510
       END                                                                FA23520
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE MDLATM (ITYPE,MDL,IREAD,HSPACE,CO2RAT)                  FA23530
 C                                                                        FA23540
 C     *****************************************************************  FA23550
@@ -2438,6 +2473,9 @@ C                                                                        FA24430
   900 FORMAT (3A8)                                                       FA24440
 C                                                                        FA24450
       END                                                                FA24460
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE NSMDL (ITYPE,MDL,CO2RAT)                                FA24470
 C                                                                        FA24480
 C     *****************************************************************  FA24490
@@ -2529,6 +2567,9 @@ C                                                                        FA25350
      *        ' EXCEEDS THE MAXIMUM ALLOWED = ',I5)                      FA25400
 C                                                                        FA25410
       END                                                                FA25420
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE HEADPR (IPR,NOPRNT)                                     FA25430
 C                                                                        FA25440
 C     SUBROUTINE TO WRITE HEADER INFORMATION FOR MODEL  0                FA25450
@@ -2580,6 +2621,9 @@ C                                                                        FA25610
      *        'ATMOSPHERE',/,' JCHAR MUST BE LESS THAN "J"',/)           FA25910
 C                                                                        FA25920
       END                                                                FA25930
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE RDUNIT (IM,ZMDL,PM,TM,NMOL,NOPRNT,CO2RAT)               FA25940
 C                                                                        FA25950
 C     *******************************************************            FA25960
@@ -2752,6 +2796,9 @@ C                                                                        FA27620
   900 FORMAT ('0 INVALID PARAMETER :',2X,A1)                             FA27630
 C                                                                        FA27640
       END                                                                FA27650
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE CHECK (V,IV,KEY)                                        FA27660
 C                                                                        FA27670
 C      UNITS CONVERSION FOR P AND T                                      FA27680
@@ -2800,6 +2847,9 @@ C                                                                        FA28020
       ENDIF                                                              FA28110
 C                                                                        FA28120
       END                                                                FA28130
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE DEFALT (Z,P,T,CO2RAT)                                   FA28140
 C                                                                        FA28150
 C     *****************************************************************  FA28160
@@ -2990,7 +3040,9 @@ C                                                                        FA30000
   900 FORMAT (/,'   *** Z IS GREATER THAN 120 KM ***, Z = ',F10.3)       FA30010
 C                                                                        FA30020
       END                                                                FA30030
-c      SUBROUTINE CONVRT (P,T,JUNIT,WMOL,DENM,IM,NMOL,NOPRNT)             FA30040
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE CONVRT (P,T,JUNIT,WMOL,IM,NMOL,NOPRNT)                  FA30040
 C                                                                        FA30050
 C*************************************************************           FA30060
@@ -3096,6 +3148,9 @@ C                                                                        FA30890
       RETURN
 C
       END                                                                FA30900
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE WATVAP (P,T,JUNIT,WMOL,DENNUM,NOPRNT)                   FA30910
 C                                                                        FA30920
 C**********************************************************************  FA30930
@@ -3230,6 +3285,9 @@ C                                                                        FA32080
      *        G10.3,' IS GREATER THAN 100 PERCENT')                      FA32120
 C                                                                        FA32130
       END                                                                FA32140
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,      FA32150
      *                   IERROR)                                         FA32160
 C                                                                        FA32170
@@ -3446,6 +3504,9 @@ C                                                                        FA33930
      *        '  H1 = ',G12.6,5X,'  H2 = ',G12.6,'  HMIN = ',G12.6)      FA34280
 C                                                                        FA34290
       END                                                                FA34300
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE REDUCE (H1,H2,ANGLE,PHI,ITER)                           FA34310
 C                                                                        FA34320
 C     *****************************************************************  FA34330
@@ -3491,6 +3552,9 @@ C                                                                        FA34680
      *        'ZENITH ANGLE AT ZMAX = ',F10.3,' DEG')                    FA34730
 C                                                                        FA34740
       END                                                                FA34750
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE FDBETA (H1,H2,BETAS,ANGLE,PHI,LEN,HMIN,IERROR)          FA34760
 C                                                                        FA34770
 C     *****************************************************************  FA34780
@@ -3664,6 +3728,9 @@ C                                                                        FA36310
      *        '    BETA = ',F15.9))                                      FA36460
 C                                                                        FA36470
       END                                                                FA36480
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE FNDHMN (H1,ANGLE,H2,LEN,ITER,HMIN,PHI,IERROR)           FA36490
 C                                                                        FA36500
 C     *****************************************************************  FA36510
@@ -3787,6 +3854,9 @@ C                                                                        FA37590
      *        'DC      = ',E12.3,' KM',//,10X,'HT1     = ',F12.5,' KM')  FA37690
 C                                                                        FA37700
       END                                                                FA37710
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE FINDSH (H,SH,GAMMA)                                     FA37720
 C                                                                        FA37730
 C     *****************************************************************  FA37740
@@ -3828,6 +3898,9 @@ C                                                                        FA38090
       RETURN                                                             FA38100
 C                                                                        FA38110
       END                                                                FA38120
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE SCALHT (Z1,Z2,RFNDX1,RFNDX2,SH,GAMMA)                   FA38130
 C                                                                        FA38140
 C     *****************************************************************  FA38150
@@ -3892,6 +3965,9 @@ C                                                                        FA38730
       RETURN                                                             FA38740
 C                                                                        FA38750
       END                                                                FA38760
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE RFPATH (H1,H2,ANGLE,PHI,LEN,HMIN,IAMT,RANGE,BETA,       FA38770
      *                   BENDNG)                                         FA38780
 C                                                                        FA38790
@@ -4061,6 +4137,9 @@ C                                                                        FA40290
      *        F9.3,/)                                                    FA40430
 C                                                                        FA40440
       END                                                                FA40450
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE AMERGE (H1,H2,HMIN,LEN)                                 FA40460
 C                                                                        FA40470
 C     *****************************************************************  FA40480
@@ -4237,6 +4316,9 @@ C                                                                        FA42140
      *        'DIMENSION IPDIM = ',I5)                                   FA42190
 C                                                                        FA42200
       END                                                                FA42210
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE ALAYER (J,SINAI,COSAI,CPATH,SH,GAMMA,IAMT,S,BEND)       FA42220
 C                                                                        FA42230
 C     *****************************************************************  FA42240
@@ -4461,6 +4543,9 @@ C                                                                        FA44400
       RETURN                                                             FA44410
 C                                                                        FA44420
       END                                                                FA44430
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE AUTLAY (HMIN,HMAX,XVBAR,AVTRAT,TDIFF1,TDIFF2,ALTD1,     FA44440
      *                   ALTD2,IERROR)                                   FA44450
 C                                                                        FA44460
@@ -4650,6 +4735,9 @@ C                                                                        FA46160
      *        'THE GENERATED LAYERS FOLLOW')                             FA46300
 C                                                                        FA46310
       END                                                                FA46320
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE HALFWD (Z,XVBAR,P,T,ALORNZ,ADOPP,AVOIGT)                FA46330
 C                                                                        FA46340
 C     *****************************************************************  FA46350
@@ -4707,6 +4795,9 @@ C                                                                        FA46860
       RETURN                                                             FA46870
 C                                                                        FA46880
       END                                                                FA46890
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE FPACK (H1,H2,HMID,LEN,IEMIT,NOZERO)                     FA46900
 C                                                                        FA46910
 C     *****************************************************************  FA46920
@@ -4851,6 +4942,103 @@ C                                                                        FA48290
      *        'IOUTMX = ',I5)                                            FA48310
 C                                                                        FA48320
       END                                                                FA48330
+C
+C     ----------------------------------------------------------------
+C
+C
+      SUBROUTINE FIXTYP(IEMIT,FRH2O,ALFCOR,OLDDV,L,CINP)
+C
+C     *****************************************************************
+C     This subroutine calculates ITYL, the ITYPE (ratio of DV from
+C     one layer to the next) for each layer for output to TAPE7, if
+C     desired (IFXTYP = 1).
+C     *****************************************************************
+C
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=200,MXPDIM=MXLAY+MXZMD,
+     *           IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
+C
+      CHARACTER*3 CINP
+C
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,
+     *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,
+     *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,
+     *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,
+     *              EXTID(10)
+      COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,
+     *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
+C
+      DV = 0.
+C
+C     Correct for water self broadening
+C
+      H2OSLF = (1.-FRH2O+5.*FRH2O)
+      ALBAR = ALZERO*ALFCOR*H2OSLF
+C
+      AVBAR = 0.5*(ALBAR+SQRT(ALBAR*ALBAR+4.*ADBAR*ADBAR))
+C
+      DV = AVBAR/SAMPLE
+C
+      TYPE = 0.
+      ITYPE = 99
+C
+C     DV is assumed to be less than 1
+C     Set DV to 3 significant figures
+C
+      IF (L.EQ.1) THEN
+         ISCAL = ALOG10(DV)-3.
+         SCAL = 10.**ISCAL
+         IDV = (DV/SCAL)+0.5
+C
+C        Set IDV to be even
+C
+         IF (MOD(IDV,2).GT.0) IDV = IDV+1
+         DV = SCAL*FLOAT(IDV)
+      ELSE
+         TYPE = OLDDV/DV
+         TYPMAX = 2.5
+         IF (TYPE.GT.TYPMAX) THEN
+            IPROB = 1
+            ISTOP = 1
+         ELSEIF (TYPE.GE.1.2) THEN
+C
+C           TYPE is between 1.2 and TYPMAX
+C
+            DV = OLDDV
+            ITYPE = 1./(TYPE-1.)+0.5
+            IF (ITYPE.EQ.3) ITYPE = 2
+            DV = OLDDV*FLOAT(ITYPE)/FLOAT(ITYPE+1)
+         ELSEIF (TYPE.GE.0.8) THEN
+C
+C           TYPE is between 0.8 and 1.2 (set to 1.0)
+C
+            DV = OLDDV
+            ITYPE = 0
+         ELSE
+C
+C           TYPE is less than 0.8
+C
+            DV = OLDDV
+            ITYPE = 0
+            IF (IEMIT.NE.1) THEN
+               ITYPE = TYPE/(1.-TYPE)+0.5
+               DV = DV*FLOAT(ITYPE+1)/FLOAT(ITYPE)
+               ITYPE = -ITYPE
+            ENDIF
+         ENDIF
+      ENDIF
+C
+      OLDDV = DV
+C
+      WRITE(CINP,900) ITYPE
+C
+      RETURN
+C
+ 900  FORMAT(I3)
+C
+      END
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE XAMNTS (XV1,XV2)                                        FX00010
 C                                                                        FX00020
 C     *****************************************************************  FX00030
@@ -4937,20 +5125,21 @@ C                                                                        FX00810
       COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(MXMOL),XAMNT(MXMOL,MXLAY)       FX00820
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FX00830
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FX00840
-      COMMON /COLUNT/ MUNITS
+      COMMON /PCHINF/ MUNITS,CTYPE(MXLAY)
 C                                                                        FX00850
       DIMENSION XAMNTT(MXMOL)                                            FX00860
 C                                                                        FX00870
-      CHARACTER*45 CFORM1,CFORM2                                         FX00880
+      CHARACTER*48 CFORM1,CFORM2                                         FX00880
       CHARACTER*10 HOTHER                                                FX00890
       CHARACTER*7 PAFORM(2)                                              FX00900
       CHARACTER*4 PZFORM(5)                                              FX00910
+      CHARACTER*3 CTYPE
 C                                                                        FX00920
       DATA HOTHER / ' OTHER    '/                                        FX00930
       DATA PZFORM / 'F8.6','F8.5','F8.4','F8.3','F8.2'/                  FX00940
       DATA PAFORM / '1PE15.7','  G15.7'/                                 FX00950
-      DATA CFORM1 / '(1PE15.7,0PF10.2,10X,I5,1X,2(F7.3,F8.3,F7.2))'/     FX00960
-      DATA CFORM2 / '(  G15.7,0PF10.2,10X,I5,23X,(F7.3,F8.3,F7.2))'/     FX00970
+      DATA CFORM1 / '(1PE15.7,0PF10.2,10X,A3,I2,1X,2(F7.3,F8.3,F7.2))'/  FX00960
+      DATA CFORM2 / '(  G15.7,0PF10.2,10X,A3,I2,23X,(F7.3,F8.3,F7.2))'/  FX00970
 C                                                                        FX00980
       WRITE (IPR,900)                                                    FX00990
 C                                                                        FX01000
@@ -5139,8 +5328,9 @@ C
      *                            (XAMNT(K,1)/DRAIR,K=8,NMOL)
                ENDIF
             ELSE
-               WRITE (IPU,955) PH,TH,IPATH(1),ZH,ZH,(XAMNT(K,1),K=1,7),  FX02550
-     *                         WN2L(1),(XAMNT(K,1),K=8,NMOL)             FX02560
+               WRITE (IPU,955) PH,TH,IPATH(1),ZH,ZH,                     FX02550
+     *                         (XAMNT(K,1),K=1,7),WN2L(1),
+     *                         (XAMNT(K,1),K=8,NMOL)                     FX02560
             ENDIF
          ELSE                                                            FX02570
             WRITE (IPU,960) IFRMX,LMAX,NMOL,SECNT0,(HMOD(I),I=1,2),      FX02580
@@ -5175,18 +5365,19 @@ C                                                                        FX02800
             PTST = ALOG10(PZ(LTST))                                      FX02840
             NPTST = PTST+2                                               FX02850
             IF (PTST.LT.0.0) NPTST = 1                                   FX02860
-            CFORM1(35:38) = PZFORM(NPTST)                                FX02870
-            CFORM2(35:38) = PZFORM(NPTST)                                FX02880
+            CFORM1(38:41) = PZFORM(NPTST)                                FX02870
+            CFORM2(38:41) = PZFORM(NPTST)                                FX02880
             NPTST = 1                                                    FX02890
             IF (PBAR(L).GE.0.1) NPTST = 2                                FX02900
             CFORM1(2:8) = PAFORM(NPTST)                                  FX02910
             CFORM2(2:8) = PAFORM(NPTST)                                  FX02920
             IF (L.EQ.1) THEN                                             FX02930
-               WRITE (IPU,CFORM1) PBAR(L),TBAR(L),IPATH(L),ALTZ(L-1),    FX02940
-     *                            PZ(L-1),TZ(L-1),ALTZ(L),PZ(L),TZ(L)    FX02950
+               WRITE (IPU,CFORM1) PBAR(L),TBAR(L),CTYPE(L),IPATH(L),
+     *                            ALTZ(L-1),PZ(L-1),TZ(L-1),ALTZ(L),     FX02940
+     *                            PZ(L),TZ(L)                            FX02950
             ELSE                                                         FX02960
-               WRITE (IPU,CFORM2) PBAR(L),TBAR(L),IPATH(L),ALTZ(L),      FX02970
-     *                            PZ(L),TZ(L)                            FX02980
+               WRITE (IPU,CFORM2) PBAR(L),TBAR(L),CTYPE(L),IPATH(L),     FX02970
+     *                            ALTZ(L),PZ(L),TZ(L)                    FX02980
             ENDIF                                                        FX02990
 C
 C           -------------------------------------
@@ -5290,6 +5481,9 @@ C                                                                        FX03150
   980 FORMAT (//,1X,'TOTAL AMOUNT FOR PATH ',1P8E15.7)                   FX03400
 C                                                                        FX03410
       END                                                                FX03420
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE XPROFL (IPRFL)                                          FX03430
 C                                                                        FX03440
 C     *****************************************************************  FX03450
@@ -5451,6 +5645,9 @@ C                                                                        FX04880
   940 FORMAT (2X,8E10.3)                                                 FX05010
 C                                                                        FX05020
       END                                                                FX05030
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE XTRACT (DTMP,JCHAR,Z)                                   FX05040
 C                                                                        FX05050
 C     *****************************************************************  FX05060
@@ -5508,6 +5705,9 @@ C                                                                        FX05570
       RETURN                                                             FX05580
 C                                                                        FX05590
       END                                                                FX05600
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE XINTRP (ZX,DENX,LAYX,IXMOLS)                            FX05610
 C                                                                        FX05620
 C     *****************************************************************  FX05630
@@ -5588,6 +5788,9 @@ C                                                                        FX06330
   900 FORMAT (//,'  XINTPL: CAUTION- EXTRAPOLATING X-SECTION PROFILE')   FX06340
 C                                                                        FX06350
       END                                                                FX06360
+C
+C     ----------------------------------------------------------------
+C
       SUBROUTINE ZINTRP (P,ZMDL,PM,IMMAX,Z)                              FX06370
 C                                                                        FX06380
 C**********************************************************************  FX06390
