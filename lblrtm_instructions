@@ -445,9 +445,9 @@ C     presently: %H%  %T%
 
  
 
- RECORD 1.6a    (required if IMRG = 35-36, 40-41; otherwise omit)
+ RECORD 1.6a    (required if IMRG = 35-36, 40-41, 45-46; otherwise omit)
  
-                             NOTE:  IMRG = 35-36, 40-41 requires seperate optical depth files for each layer
+                             NOTE:  IMRG = 35-36, 40-41, 45-46 require seperate optical depth files for each layer
 
            PTHODL
  
@@ -1723,7 +1723,7 @@ C     presently: %H%  %T%
 
 
 
- RECORD 6.1  (required for IMRG = 35 or 36; otherwise omit)
+ RECORD 6.1  (required for IMRG = 35, 36, 45, or 46; otherwise omit)
 
 
         DIRCOS  
