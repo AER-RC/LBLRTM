@@ -3639,6 +3639,7 @@ C
       TSHRNK = 0.0
       TBUFFR = 0.0
       TMOLN4 = 0.0
+
 C
       CALL CPUTIM (TIMEL0)                                                D00610
 C                                                                         D00620
@@ -3877,6 +3878,7 @@ C                                                                         A09600
 C                                                                         A09640
       lnfil = linfil
       lnfil4= linfil4
+
 c
       REWIND lnfil
 c
@@ -3892,7 +3894,7 @@ c
 
 C     
       IF (V1.GT.FLINHI.OR.V2.LT.FLINLO) THEN                              D00940
-         CALL ENDFIL (LNFIL4)                                             D00950
+         CALL ENDFIL_4 (LNFIL4)
          WRITE (IPR,900) V1,V2,FLINLO,FLINHI                              D00960
          RETURN                                                           D00970
       ENDIF                                                               D00980
