@@ -812,6 +812,11 @@ C                                                                         A06000
       BNDRFL(2) = 0.                                                      A06160
       BNDRFL(3) = 0.                                                      A06170
       IBPROP = 0                                                          A06180
+
+C     Default surface type set to specular for all calculations,
+C     unless changed by following read.
+      surf_refl = 's'
+
       IF (IEMIT.GT.0) THEN                                                A06190
          READ (IRD,971,END=80) TMPBND,(BNDEMI(IBND),IBND=1,3),            A06200
      *                         (BNDRFL(IBND),IBND=1,3), surf_refl
