@@ -155,7 +155,7 @@ C*****SCNHRD carries the header information for the scanned file
 
 C*****PANL carries the information from the panel header
       COMMON /PANL/ V1P,V2P,DVP,NP
-      DIMENSION PNLHDR(1)
+      DIMENSION PNLHDR(4)
       EQUIVALENCE (PNLHDR(1),V1P)
 
 
@@ -1112,7 +1112,7 @@ C*****SCNHRD carries the header information for the scanned file
 
 C*****PANL carries the information from the panel header
       COMMON /PANL/ V1P,V2P,DVP,NP
-      DIMENSION PNLHDR(1)
+      DIMENSION PNLHDR(4)
       EQUIVALENCE (PNLHDR(1),V1P)
 
 
@@ -1245,7 +1245,7 @@ C*****SCNHRD carries the header information for the scanned file
 
 C*****PANL carries the information from the panel header
       COMMON /PANL/ V1P,V2P,DVP,NP
-      DIMENSION PNLHDR(1)
+      DIMENSION PNLHDR(4)
       EQUIVALENCE (PNLHDR(1),V1P)
 
 
@@ -1366,7 +1366,7 @@ C*****SCNHRD carries the header information for the scanned file
 
 C*****PANL carries the information from the panel header
       COMMON /PANL/ V1P,V2P,DVP,NP
-      DIMENSION PNLHDR(1)
+      DIMENSION PNLHDR(4)
       EQUIVALENCE (PNLHDR(1),V1P)
 
 
@@ -2022,12 +2022,17 @@ C     Spectroscopy", J. Opt. Soc. Am., #66, p259-264 (1976) (Corrected)
       If(IAPSC .EQ. -1) Then
 C****     Scanning function
           Write(IPR,*) ' Scnfnt - error: Norton-Beer apodization', 
-     c        '  net yet implemented in spectral domain'
+     c        '  not yet implemented in spectral domain'
           Stop ' Stopped in Scnfnt'
-          Do 85 l=1,LPTS
-              
-              X = X0+L*DX
-  85      Continue
+
+C
+C     THIS CODE IS PLACED HERE FOR FUTURE IMPLEMENTATION
+C     --------------------------------------------------
+C          Do 85 l=1,LPTS
+C              
+C              X = X0+L*DX
+C  85      Continue
+C     --------------------------------------------------
       Else
 C****     Apodization Function
           Do 89 L=1,LPTS-1,2
@@ -2076,13 +2081,17 @@ C*****Note: a value of P = 0 gives cos**2 apodization.
       If(IAPSC .EQ. -1) Then
 C****     Scanning function
           Write(IPR,*) ' SCNFNT - Error: Brault Apodization', 
-     c        '  net yet implemented in spectral domain'
+     c        '  not yet implemented in spectral domain'
           Stop ' Stopped in SCNFNT'
 
-          Do 95 l=1,LPTS
+C
+C     THIS CODE IS PLACED HERE FOR FUTURE IMPLEMENTATION
+C     --------------------------------------------------
+C          Do 95 l=1,LPTS
 C****         Insert code for scanning function here
-              X = X0+L*DX
-  95      Continue
+C              X = X0+L*DX
+C  95      Continue
+C     --------------------------------------------------
       Else
 C****     Apodization Function
           X1 = PARM1/A
@@ -2118,12 +2127,17 @@ C*****The valid range of P is [2,4].
       If(IAPSC .EQ. -1) Then
 C****     Scanning function
           Write(IPR,*) ' Scnfnt - error: Kaiser-Bessel Apodization', 
-     c        '  net yet implemented in spectral domain'
+     c        '  not yet implemented in spectral domain'
           Stop ' Stopped in Scnfnt'
-          Do 105 l=1,LPTS
-              
-              X = X0+L*DX
- 105      Continue
+
+C
+C     THIS CODE IS PLACED HERE FOR FUTURE IMPLEMENTATION
+C     --------------------------------------------------
+c          Do 105 l=1,LPTS
+c              
+c              X = X0+L*DX
+c 105      Continue
+C     --------------------------------------------------
       Else
 C****     Apodization Function
 C****     Expansion for the Bessel function is from 'Numerical Recipies'
@@ -2488,7 +2502,7 @@ C*****SCNHRD carries the header information for the scanned file
 
 C*****PANL carries the information from the panel header
       COMMON /PANL/ V1P,V2P,DVP,NP
-      DIMENSION PNLHDR(1)
+      DIMENSION PNLHDR(4)
       EQUIVALENCE (PNLHDR(1),V1P)
 
 
