@@ -2621,10 +2621,13 @@ C                                                                         A22130
          IF (IHIRAC.EQ.2) DV = ALBAR/SAMPLE                               A22160
          IF (IHIRAC.EQ.3) DV = ADBAR/SAMPLE                               A22170
 C                                                                         A22180
-C     SKIP TO NEXT LAYER IF IOD=2 (OPTICAL DEPTH FLAG)
-C     AND IMRG = 1
+C     Skip to next layer if IOD=2 (OPTICAL DEPTH FLAG FOR EXACT DV)
+C     and IMRG = 1, or if IOD=1 and DVOUT nonzero (OPTICAL DEPTH FLAG
+C     FOR INTERPOLATED DV).  This bypasses ITYPE assignment from one
+C     layer to the next.
 C
-         IF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
+         IF ((IOD.EQ.2.AND.IMRG.EQ.1).OR.
+     *        ((IOD.EQ.1).AND.(DVOUT.NE.0.))) THEN
             DVL(L) = DV
             TYPE = 0.
             ITYPE = -99
@@ -2693,7 +2696,7 @@ C     TYPE IS LESS THAN 0.8                                               A22680
 C                                                                         A22690
                DV = OLDDV                                                 A22700
                ITYPE = 0                                                  A22710
-               IF ((IEMIT.EQ.0).AND.(DVOUT.EQ.0.)) THEN                   A22720
+               IF (IEMIT.EQ.0) THEN                                       A22720
                   ITYPE = TYPE/(1.-TYPE)+0.5                              A22730
                   DV = DV*FLOAT(ITYPE+1)/FLOAT(ITYPE)                     A22740
                   ITYPE = -ITYPE                                          A22750
