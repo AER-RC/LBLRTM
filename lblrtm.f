@@ -309,6 +309,15 @@ C                                                                         A02940
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,
      *                MXTRAC=22,MXSPC=3)
 C
+C     ----------------------------------------------------------------
+C     Parameter and common blocks for direct input of emission and
+C     reflection function values
+C
+      PARAMETER (NMAXCO=4040)
+      COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
+      COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
+C     ----------------------------------------------------------------
+C
 C     -------------------------
 C
       DIMENSION IDCNTL(14),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2)      A03280
@@ -482,6 +491,7 @@ C
          CALL SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG)
          GOTO 60
       ENDIF
+C     **************************************************************
 C                                                                         A04340
 C    OPEN LINFIL DEPENDENT UPON IHIRAC AND ITEST                          A04350
 C                                                                         A04360
@@ -636,19 +646,43 @@ C                                                                         A06220
          BNDTST = ABS(BNDRFL(1))+ABS(BNDRFL(2))+ABS(BNDRFL(3))            A06230
          IF (BNDTST.NE.0.) IBPROP = 1                                     A06240
 C                                                                         A06250
-C     CHECK TO SEE IF EMISSIVITY AND REFLECTIVITY ARE REASONABLE          A06260
+C     **************************************************************
+C        If BNDEMI(1) < 0, read in coefficients from file 'EMISSION'
+C        If BNDEMI(1) > 0, check to see if emissivity is reasonable       A06260
 C                                                                         A06270
-         XVMID = (V1+V2)/2.                                               A06280
-         EMITST = BNDEMI(1)+BNDEMI(2)*XVMID+BNDEMI(3)*XVMID*XVMID         A06290
-         REFTST = BNDRFL(1)+BNDRFL(2)*XVMID+BNDRFL(3)*XVMID*XVMID         A06300
-         IF (EMITST.LT.0..OR.EMITST.GT.1.) THEN                           A06310
-            WRITE (IPR,975) XVMID,EMITST                                  A06320
-            STOP 'BNDEMI'                                                 A06330
-         ENDIF                                                            A06340
-         IF (REFTST.LT.0..OR.REFTST.GT.1.) THEN                           A06350
-            WRITE (IPR,980) XVMID,REFTST                                  A06360
-            STOP 'BNDRFL'                                                 A06370
-         ENDIF                                                            A06380
+C        UNIT ICOEF used for input files
+C
+         ICOEF = 13
+C         
+         IF (BNDEMI(1).LT.0) THEN
+            OPEN (UNIT=ICOEF,FILE='EMISSION',STATUS='OLD')
+            CALL READEM(ICOEF)
+            CLOSE (ICOEF)
+         ELSE
+            XVMID = (V1+V2)/2.                                            A06280
+            EMITST = BNDEMI(1)+BNDEMI(2)*XVMID+BNDEMI(3)*XVMID*XVMID      A06290
+            IF (EMITST.LT.0..OR.EMITST.GT.1.) THEN                        A06300
+               WRITE (IPR,975) XVMID,EMITST                               A06310
+               STOP 'BNDEMI'                                              A06320
+            ENDIF                                                         A06330
+         ENDIF
+C
+C        If BNDRFL(1) < 0, read in coefficients from file 'REFLECTION'
+C        If BNDRFL(1) > 0, check to see if reflectivity is reasonable
+C     
+         IF (BNDRFL(1).LT.0) THEN
+            OPEN (UNIT=ICOEF,FILE='REFLECTION',STATUS='OLD')
+            CALL READRF(ICOEF)
+            CLOSE (ICOEF)
+         ELSE
+            REFTST = BNDRFL(1)+BNDRFL(2)*XVMID+BNDRFL(3)*XVMID*XVMID      A06340
+            IF (REFTST.LT.0..OR.REFTST.GT.1.) THEN                        A06350
+               WRITE (IPR,980) XVMID,REFTST                               A06360
+               STOP 'BNDRFL'                                              A06370
+            ENDIF                                                         A06380
+
+         ENDIF
+C     **************************************************************
 C                                                                         A06390
 C     TBOUND IS THE BOUNDARY TEMPERATURE. TBOUND=0. FOR NO BOUNDARY       A06400
 C     EMISIV IS THE BOUNDARY EMISSIVITY                                   A06410
@@ -852,6 +886,9 @@ C                                                                         A08700
       STOP ' NWDL - IWD,ILAST '                                           A08710
 C                                                                         A08720
       END                                                                 A08730
+C
+C     -------------------------------------------------------------
+C
       SUBROUTINE ENDFIL (IFILE)                                           A08740
 C                                                                         A08750
       DIMENSION IDUM(6)                                                   A08760
@@ -862,6 +899,9 @@ C                                                                         A08800
       RETURN                                                              A08810
 C                                                                         A08820
       END                                                                 A08830
+C
+C     -------------------------------------------------------------
+C
       SUBROUTINE SKIPFL (NUMFL,IFILE,IEOF)                                A08840
 C                                                                         A08850
       DIMENSION DUM(1)                                                    A08860
@@ -876,6 +916,9 @@ C                                                                         A08940
       RETURN                                                              A08950
 C                                                                         A08960
       END                                                                 A08970
+C
+C     -------------------------------------------------------------
+C
       SUBROUTINE COPYFL (NPTS,KFILE,MFILE)                                A08980
 C                                                                         A08990
       IMPLICIT DOUBLE PRECISION (V)                                     ! A09000
@@ -1054,6 +1097,9 @@ C                                                                         A10080
      *        /,3X,52('*'))                                               A10240
 C                                                                         A10250
       END                                                                 A10260
+C
+C     -------------------------------------------------------------
+C
       SUBROUTINE EXPINT (X,X1,X2,A)                                       A10600
 C                                                                         A10610
 C**********************************************************************   A10620
@@ -1071,6 +1117,9 @@ C                                                                         A10730
       RETURN                                                              A10740
 C                                                                         A10750
       END                                                                 A10760
+C
+C     -------------------------------------------------------------
+C
       SUBROUTINE XLAYER (MPTS,NPTS,LFILE,MFILE,NFILE)                     A11210
 C                                                                         A11220
       IMPLICIT DOUBLE PRECISION (V)                                     ! A11230
@@ -1861,6 +1910,9 @@ C                                                                         A16720
      *        'LAYTOT = ',I4,'NLAYD1 = ',I4)
 C                                                                         A16850
       END                                                                 A16860
+C
+C     -------------------------------------------------------------
+C
       SUBROUTINE OPPATH                                                   A16870
 C                                                                         A16880
       IMPLICIT DOUBLE PRECISION (V)                                     ! A16890
@@ -2098,7 +2150,7 @@ C                                                                         A19000
      *        '0 SAMPLE   =',F13.4,/'0 DVSET    =',F13.6,/,               A19040
      *        '0 ALFAL0   =',F13.4,/'0 AVMASS   =',F13.4,/,               A19050
      *        '0 DPTMIN   =',1P,E13.4,13X,'  DPTFAC   =',0P,F13.6)        A19060
-  915 FORMAT ('0 V2-V1 .GT. 2000. ')                                      A19070
+  915 FORMAT ('0 V2-V1 .GT. 2020. ')                                      A19070
   920 FORMAT ('0',1X,7('*'),' LAST ',I5,' MOLECULES ON LINFIL NOT ',      A19080
      *        'SELECTED')                                                 A19090
   925 FORMAT ('0',1X,53('*'),/,'0',1X,14('*'),I5,' MOLECULES ',           A19100
@@ -2107,6 +2159,9 @@ C                                                                         A19000
   930 FORMAT (2(/),'  V1 RESET ',F10.3,'  V2 RESET ',F10.3)               A19130
 C                                                                         A19140
       END                                                                 A19150
+C
+C     -------------------------------------------------------------
+C
       SUBROUTINE PATH                                                     A19160
 C                                                                         A19170
       IMPLICIT DOUBLE PRECISION (V)                                     ! A19180
@@ -3048,6 +3103,9 @@ C                                                                         A24470
       DATA JCNVF4 / 0 /                                                   A24800
 C                                                                         A24470
       END                                                                 A24450
+C
+C     -------------------------------------------------------------
+C
       SUBROUTINE OPDPTH (MPTS)                                            A24460
 C                                                                         A24470
       IMPLICIT DOUBLE PRECISION (V)                                     ! A24480
@@ -3173,3 +3231,72 @@ C                                                                         A25580
      *        F15.3)                                                      A25680
 C                                                                         A25690
       END                                                                 A25700
+C
+C     -------------------------------------------------------------
+C
+      SUBROUTINE READEM(ICOEF)
+C
+C     Reads in emission function values directly from file "EMISSION"
+C
+      IMPLICIT DOUBLE PRECISION (V)
+C
+C     ----------------------------------------------------------------
+C     Parameter and common blocks for direct input of emission
+C     function values
+C
+      PARAMETER (NMAXCO=4040)
+      COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
+C     ----------------------------------------------------------------
+C
+C     Read header information
+C
+      READ (ICOEF,900) V1EMIS,V2EMIS,DVEMIS,NLIMEM
+C
+C     Read in emissivity values
+C
+      DO 100 NGNU = 1,NLIMEM
+         READ (ICOEF,910) ZEMIS(NGNU)
+ 100  CONTINUE
+C
+      RETURN
+C
+C     FORMAT statements
+C
+ 900  FORMAT (3E10.3,5X,I5)
+ 910  FORMAT (E15.7)
+C
+      END
+C     -------------------------------------------------------------
+C
+      SUBROUTINE READRF(ICOEF)
+C
+C     Reads in reflection function values directly from file "REFLECTION"
+C
+      IMPLICIT DOUBLE PRECISION (V)
+C
+C     ----------------------------------------------------------------
+C     Parameter and common blocks for direct input of reflection
+C     function values
+C
+      PARAMETER (NMAXCO=4040)
+      COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
+C     ----------------------------------------------------------------
+C
+C     Read header information
+C
+      READ (ICOEF,900) V1RFLT,V2RFLT,DVRFLT,NLIMRF
+C
+C     Read in reflectivity values
+C
+      DO 100 NGNU = 1,NLIMRF
+         READ (ICOEF,910) ZRFLT(NGNU)
+ 100  CONTINUE
+C
+      RETURN
+C
+C     FORMAT statements
+C
+ 900  FORMAT (3E10.3,5X,I5)
+ 910  FORMAT (E15.7)
+C
+      END
