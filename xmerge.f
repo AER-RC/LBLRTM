@@ -2,6 +2,7 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
+C
       SUBROUTINE XMERGE (NPTS,LFILE,MFILE,JPATHL)                         H00010
 C                                                                         H00020
       IMPLICIT DOUBLE PRECISION (V)                                     ! H00030
@@ -3993,7 +3994,7 @@ C                                                                         H39550
 C     ROUTINE TO BUFFER IN AEROSOL ABSORPTION AND SCATTERRING             H39560
 C     FROM TAPE 20 INTO COMMON ABSORB SCATTR, AND ASYMT                   H39570
 C                                                                         H39580
-      COMMON /PNLHDR/ V1P,V2P,DVP,NLIM                                    H39590
+      COMMON /PNLHDR/ V1P,V2P,DVP,NLIM,LDUM                               H39590
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   H39600
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       H39610
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H39620
@@ -4092,7 +4093,7 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFLD,IEXFLD,        H40610
      *              NLTEFL,LNFIL4,LNGTH4                                  H40620
 C                                                                         H40630
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & H40640
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H40640
 C                                                                         H40650
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H40660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H40670
@@ -4191,7 +4192,7 @@ C                                                                         H41580
       COMMON /SCATTA/ V1SC,V2SC,DVSC,NPTSC,SCTTR(2025)                    H41600
       COMMON /ASYMMA/ V1AS,V2AS,DVAS,NPTAS,ASYMT(2025)                    H41610
 C                                                                         H41620
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID,HDATE,HTIME          & H41630
+      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H41630
 C                                                                         H41640
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H41650
      *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1 ,V2 ,TBOUND,   H41660
