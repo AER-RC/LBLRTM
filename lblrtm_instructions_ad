@@ -255,7 +255,7 @@ C     presently: %H%  %T%
  
  
  
-             V1,     V2,   SAMPLE,   DVSET,  ALFALO,   AVMASS,   DPTMIN,   DPTFAC,   ILNFLG
+             V1,     V2,   SAMPLE,   DVSET,  ALFAL0,   AVMASS,   DPTMIN,   DPTFAC,   ILNFLG
  
            1-10,  11-20,    21-30,   31-40,   41-50,    51-60,    61-70,    71-80,     85
  
@@ -334,6 +334,7 @@ C     presently: %H%  %T%
  
                              REFLECTIVITY = SRREFL(1) + SRREFL(2)*V + SRREFL(3)*(V**2)
  
+  
  
  *****************************************************************************
  ******  these records applicable only if LBLATM not selected (IATM=0)  ******
@@ -614,11 +615,11 @@ C     presently: %H%  %T%
  RECORD 3.1
  
  
-      MODEL,  ITYPE, IBMAX,  NOZERO,  NOPRNT,  NMOL, IPUNCH, MUNITS,    RE, HSPACE,  VBAR, CO2MX
+      MODEL,  ITYPE, IBMAX,  NOZERO,  NOPRNT,  NMOL, IPUNCH, IFXTYP,   MUNITS,    RE, HSPACE,  VBAR, CO2MX
  
-          5,     10,    15,      20,      25,    30,     35,     40, 41-50,  51-60, 61-70, 71-80
+          5,     10,    15,      20,      25,    30,     35,  36-37,    39-40, 41-50,  51-60, 61-70, 71-80
  
-         I5,     I5,    I5,      I5,      I5,    I5,     I5,     I5, F10.3,  F10.3, F10.3, F10.3
+         I5,     I5,    I5,      I5,      I5,    I5,     I5,     I2,   1X, I2, F10.3,  F10.3, F10.3, F10.3
  
  
            MODEL   selects atmospheric profile
@@ -654,8 +655,20 @@ C     presently: %H%  %T%
            IPUNCH    = 0  layer data not written (default)
                      = 1  layer data written to unit IPU (TAPE7)
 
-           MUNITS    = 0  write molecular column amounts to TAPE7 (default)
-                     = 1  write molecular mixing ratios to TAPE7
+           IFXTYP    = 0  leave ITYL(L) and ITYX(L) fields blank on TAPE7 (if IPUNCH = 1, default)
+                     = 1  calculate and write ITYL(L) and ITYX(L) to TAPE7 (if IPUNCH = 1)
+
+                          NOTE: See RECORD 2.1.1 and RECORD 2.2.3 for ITYL(L) and ITYX(L)
+
+
+           MUNITS    = 0  write molecular column amounts to TAPE7 (if IPUNCH = 1, default)
+                     = 1  write molecular mixing ratios to TAPE7 (if IPUNCH = 1)
+
+
+ 
+ RECORD 3.1 (Continued)
+
+
 
            RE        radius of earth (km)
                      defaults for RE=0: 
@@ -664,11 +677,6 @@ C     presently: %H%  %T%
                      b)        1          RE = 6378.39 km
                      c)        4,5        RE = 6356.91 km
  
-
-
- 
- RECORD 3.1 (Continued)
-
            HSPACE    altitude definition for space (default = 100 km)
                      internal models defined to 120 km
 
@@ -740,13 +748,13 @@ C     presently: %H%  %T%
  
  
           AVTRAT  maximum Voigt width ratio across a layer
-                  (if zero, default = 2.0)
+                  (if zero, default = 1.5)
  
           TDIFF1  maximum layer temperature difference at
-                  ALTD1 (if zero, default =  8 K)
+                  ALTD1 (if zero, default =  5 K)
  
           TDIFF2  maximum layer temperature difference at
-                  ALTD2 (if zero, default = 12 K)
+                  ALTD2 (if zero, default = 8 K)
  
           ALTD1   altitude of TDIFF1 (if zero, default = 0 Km)
  
@@ -1943,7 +1951,7 @@ C     presently: %H%  %T%
  
  
           MRAT    ratio of HWHM of the scanning function to the halfwidth of the boxcar; for prescanning with a
-                    boxcar (default = 12.).  If MXRAT < 0., no boxcaring is performed.
+                    boxcar (default = 12.).  If MRAT < 0., no boxcaring is performed.
 
          DVOUT    output grid spacing (NOT USED, reserved for future use)
   
