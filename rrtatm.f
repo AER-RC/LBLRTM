@@ -1,7 +1,7 @@
 C     path:      /home/rc1/aer_lblrtm/src/SCCS/s.lblatm.f                       
-C     revision:  3.14                                                           
-C     created:   17 Feb 1997  11:21:11                                          
-C     presently: 17 Feb 1997  11:21:42                                          
+C     revision:  3.19                                                           
+C     created:   03/16/98  12:25:29                                             
+C     presently: 03/16/98  12:25:49                                             
       SUBROUTINE RRTATM
 C
 C     This routine has been modified from lblatm.f for use with RRTM,
@@ -134,7 +134,7 @@ C
 C                                                                               
 C     ASSIGN SCCS VERSION NUMBER TO MODULE                                      
 C                                                                               
-      HVRATM = '3.14'                                                           
+      HVRATM = '3.19'                                                           
 C                                                                        FA01050
 C     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM         FA01060
 C     IOUTDM IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                      FA01070
@@ -436,8 +436,11 @@ C                                                                        FA03820
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FA03950
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FA03960
       COMMON /PCHINF/ MUNITS,CTYPE(MXLAY)                                       
+      COMMON /FIXITYL/ IFXTYP                                                   
       DIMENSION XZOUT(NXZOUT),WMT(MXMOL)
       DIMENSION X1(NX1),X2(NX2),X3(NX3)
+                                                                                
+      dimension densave(mxzmd)                                                  
 C                                                                        FA03980
       EQUIVALENCE (ZOUT(1),XZOUT(1))
       EQUIVALENCE (PBAR(1),X1(1)),(COLDRY(1),X2(1)),(DVL(1),X3(1))
@@ -457,6 +460,7 @@ C                                                                        FA04050
       DATA CFORM1 / '(1PE15.7,0PF10.2,10X,A3,I2,1X,2(F7.3,F8.3,F7.2))'/  FA04120
       DATA CFORM2 / '(  G15.7,0PF10.2,10X,A3,I2,23X,(F7.3,F8.3,F7.2))'/  FA04130
       DATA IERROR / 0 /                                                  FA04140
+      DATA T296 /296.0/                                                         
 C                                                                        FA04150
 C     IAMT = 1: CALCULATE AMOUNTS, IAMT = 2: DO NOT CALCULATE AMOUNTS    FA04160
 C                                                                        FA04170
@@ -720,7 +724,7 @@ C                                                                        FA06870
 C      >  READ IN CONTROL CARD 3.2 CONTAINING SLANT PATH PARAMETERS <    FA06880
 C                                                                        FA06890
          IF (IREAD.LE.0)                                                 FA06900
-     *         READ (IRD,932) H1F,H2F,ANGLEF,RANGEF,BETAF,LENF           FA06910
+     *         READ (IRD,932) H1F,H2F,ANGLEF,RANGEF,BETAF,LENF,HOBS      FA06910
          IF (H1F.GE.H2F) THEN
             STOP 'H2 MUST BE > H1'
          ENDIF
@@ -822,14 +826,31 @@ C                                                                        FA08520
 C        > DENG=DENM(1,IM)*2.989641E-17 <                                FA08530
 C                                                                        FA08540
             DENAIR = ALOSMT*(PM(IM)/PZERO)*(TZERO/TM(IM))                FA08550
+            densave(im) = denair                                                
             WRITE (IPR,954) IM,ZMDL(IM),PM(IM),TM(IM),RFNDXM(IM),        FA08560
      *                      DENAIR,(DENM(K,IM),K=1,NMOL)                 FA08570
+                                                                                
+                                                                                
   180    CONTINUE                                                        FA08580
+                                                                                
+         WRITE (IPR,951) (HMOLS(K),K=1,NMOL)                                    
+                                                                                
+         DO 188 IM = 1, IMMAX                                                   
+                                                                                
+c           Calculate mixing ratio, using dry air                               
+                                                                                
+            dry_air = densave(im)-denm(1,im)                                    
+            WRITE (IPR,954) IM,ZMDL(IM),PM(IM),TM(IM),RFNDXM(IM),               
+     *                      DENsave(im),                                        
+     *                      (DENM(K,IM)/DRY_AIR,K=1,NMOL)                       
+                                                                                
+ 188     continue                                                               
   190    CONTINUE                                                        FA08590
 C                                                                        FA08600
 C        > REDUCE SLANT PATH PARAMETERS TO STANDARD FORM <               FA08610
 C                                                                        FA08620
-         CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,IERROR)  FA08630
+         CALL FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,IERROR,         
+     *                HOBS)                                                     
          IF (IERROR.NE.0) GO TO 310                                      FA08640
 C                                                                        FA08650
 C        > SET UP LBLRTM LAYER BOUNDARIES <                              FA08660
@@ -934,6 +955,19 @@ C                                                                        FA09490
          TWTD = 0.                                                       FA09630
          WTOT = 0.                                                       FA09640
 C                                                                               
+c                                                                               
+c        Read from/Write to "IFIXTYPE" file: if IFXTYP = -2, use                
+C        preset ITYL values; if IFXTYP = 2, calculate and write out             
+C        ITYL values.                                                           
+                                                                                
+         IF (IFXTYP.eq.-2) then                                                 
+            open(99,file='IFIXTYPE',status='old',                               
+     *           form='formatted')                                              
+         elseif (IFXTYP.eq.2) then                                              
+            open(99,file='IFIXTYPE',status='unknown',                           
+     *           form='formatted')                                              
+         endif                                                                  
+                                                                                
          DO 280 L = 1, LMAX                                              FA09650
             FACTOR = 1.                                                  FA09660
             IF (IPATH(L).EQ.2) FACTOR = 2.                               FA09670
@@ -957,9 +991,20 @@ C
             CTYPE(L) = '   '                                                    
             IF (IFXTYP.EQ.1) THEN                                               
                FRH2O  = AMOUNT(1,L)/WTOTL(L)                                    
-               ALFCOR = (PBAR(L)/PZERO)*SQRT(TZERO/TBAR(L))                     
+               ALFCOR = (PBAR(L)/PZERO)*SQRT(T296/TBAR(L))                      
                ADBAR = 3.581155E-07*XVBAR*SQRT(TBAR(L)/AVMWT)                   
                CALL FIXTYP(IEMIT,FRH2O,ALFCOR,OLDDV,L,CTYPE(L))                 
+               read(ctype(L),1100) ityl(l)                                      
+            elseif (ifxtyp.eq.2) then                                           
+               FRH2O  = AMOUNT(1,L)/WTOTL(L)                                    
+               ALFCOR = (PBAR(L)/PZERO)*SQRT(T296/TBAR(L))                      
+               ADBAR = 3.581155E-07*XVBAR*SQRT(TBAR(L)/AVMWT)                   
+               CALL FIXTYP(IEMIT,FRH2O,ALFCOR,OLDDV,L,CTYPE(L))                 
+               read(ctype(l),1100) ityl(l)                                      
+               write(99,1100) ityl(l)                                           
+            elseif (ifxtyp.eq.-2) then                                          
+               read(99,1100) ityl(l)                                            
+               write(ctype(l),1100) ityl(l)                                     
             ENDIF                                                               
 C                                                                               
 C                                                                               
@@ -1041,6 +1086,14 @@ C
                ENDIF                                                            
             ENDIF                                                        FA10110
   280    CONTINUE                                                        FA10120
+                                                                                
+                                                                                
+C        Close "IFIXTYPE" file, if used                                         
+         IF (abs(IFXTYP).eq.2) then                                             
+            rewind(99)                                                          
+            close(99)                                                           
+         endif                                                                  
+                                                                                
 C                                                                               
 C        > Write atmosphere to TAPE6 in mixing ratio <                          
 C                                                                               
@@ -1159,11 +1212,11 @@ C                                                                        FA10530
   928 FORMAT (//,' MULTIPLE SCATTERING TURNED OFF, HMIN = ',F10.6,       FA10810
      *        ' > HMAXMS = ',F10.6,/)                                    FA10820
   930 FORMAT (///,' SLANT PATH SELECTED, ITYPE = ',I5)                   FA10830
-  932 FORMAT (5F10.4,I5)                                                 FA10840
+  932 FORMAT (5F10.4,I5,5X,F10.4)                                        FA10840
   934 FORMAT (///' CONTROL CARD 3.2:  SLANT PATH PARAMETERS',//,10X,     FA10850
-     *        'H1      = ',F10.4,' KM',/,10X,'H2      = ',F10.4,' KM',   FA10860
-     *        /,10X,'ANGLE   = ',F10.4,' DEG',/,10X,'RANGE   = ',F10.4,  FA10870
-     *        ' KM',/,10X,'BETA    = ',F10.4,' DEG',/,10X,'LEN     = ',  FA10880
+     *        'H1      = ',F12.6,' KM',/,10X,'H2      = ',F12.6,' KM',   FA10860
+     *        /,10X,'ANGLE   = ',F12.6,' DEG',/,10X,'RANGE   = ',F12.6,  FA10870
+     *        ' KM',/,10X,'BETA    = ',F12.6,' DEG',/,10X,'LEN     = ',  FA10880
      *        I10)                                                       FA10890
   936 FORMAT (5F10.3)                                                    FA10900
   938 FORMAT (///,' AUTOLAYERING SELECTED',//,10X,'AVTRAT    = ',F8.2,   FA10910
@@ -1179,6 +1232,12 @@ C                                                                        FA10530
   948 FORMAT ('1ATMOSPHERIC PROFILE SELECTED IS: M = ',I3,5X,3A8)        FA11010
   950 FORMAT (/,T4,'I',T11,'Z',T20,'P',T29,'T',T35,'REFRACT',T73,        FA11020
      *        'DENSITY  (MOLS CM-3)',/,T35,'INDEX-1',/,T10,'(KM)',T19,   FA11030
+     *        '(MB)',T28,'(K)',T35,'*1.0E6',T47,'AIR',(T54,8(1X,A9)))    FA11040
+ 951  FORMAT (/,T4,'I',T11,'Z',T20,'P',T29,'T',T35,'REFRACT',T45,               
+     *        'DENSITY',T70,'MIXING RATIO (BASED UPON DRY AIR)',/,              
+     *        T35,'INDEX-1',T44,                                                
+     *        '(MOL CM-3)'/,T10,                                                
+     *        '(KM)',T19,                                                       
      *        '(MB)',T28,'(K)',T35,'*1.0E6',T47,'AIR',(T54,8(1X,A9)))    FA11040
   952 FORMAT (/)                                                         FA11050
   954 FORMAT (I4,F9.3,F11.5,F8.2,6PF9.2,1X,1P9E10.3,/,(52X,1P8E10.3))    FA11060
@@ -1201,12 +1260,12 @@ C                                                                        FA10530
   964 FORMAT (I5,2F10.3,1P9E10.3,/,(35X,1P8E10.3))                       FA11230
   966 FORMAT ('0TOTAL',F9.3,F10.3,1P9E10.3,/,(35X,1P8E10.3))             FA11240
   968 FORMAT ('1 SUMMARY OF THE GEOMETRY CALCULATION',//,10X,            FA11250
-     *        'MODEL   = ',4X,3A8,/10X,'H1      = ',F10.3,' KM',/,10X,   FA11260
-     *        'H2      = ',F10.3,' KM',/,10X,'ANGLE   = ',F10.3,' DEG',  FA11270
-     *        /,10X,'RANGE   = ',F10.3,' KM',/,10X,'BETA    = ',F10.3,   FA11280
-     *        ' DEG',/,10X,'PHI     = ',F10.3,' DEG',/,10X,              FA11290
-     *        'HMIN    = ',F10.3,' KM',/,10X,'BENDING = ',F10.3,' DEG',  FA11300
-     *        /,10X,'LEN     = ',I10,/,10X,'AIRMAS  = ',G10.3,           FA11310
+     *        'MODEL   = ',4X,3A8,/10X,'H1      = ',F12.6,' KM',/,10X,   FA11260
+     *        'H2      = ',F12.6,' KM',/,10X,'ANGLE   = ',F12.6,' DEG',  FA11270
+     *        /,10X,'RANGE   = ',F12.6,' KM',/,10X,'BETA    = ',F12.6,   FA11280
+     *        ' DEG',/,10X,'PHI     = ',F12.6,' DEG',/,10X,              FA11290
+     *        'HMIN    = ',F12.6,' KM',/,10X,'BENDING = ',F12.6,' DEG',  FA11300
+     *        /,10X,'LEN     = ',I10,/,10X,'AIRMAS  = ',G12.6,           FA11310
      *        'RELATIVE TO A VERTICAL PATH , GROUND TO SPACE')           FA11320
   970 FORMAT ('0FINAL SET OF LAYERS FOR INPUT TO LBLRTM',/,              FA11330
      *        ' A LAYER AMOUNT MAY BE SET TO ZERO IF THE CUMULATIVE ',   FA11340
@@ -1255,6 +1314,8 @@ C                                                                        FA10530
      *        ' TDIFF2 = ',F10.4)                                        FA11690
  1000 FORMAT ('*** WARNING: Zeroing molecule #',i2.2,' amount ',                
      *        'in layer #',i3.3)                                                
+ 1100 format (i3)                                                               
+ 1101 format (a3)                                                               
 C                                                                        FA11700
       END                                                                FA11710
 C                                                                               
@@ -1282,7 +1343,11 @@ C                                                                        FA11900
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA11910
      *               JUNITT                                              FA11920
       COMMON /HMOLC/ HMOLC(MXMOL)                                        FA11930
+      COMMON /FIXITYL/ IFXTYP                                                   
       CHARACTER*8 HMOLC                                                  FA11940
+                                                                                
+C     IFXTYP is the flag for fixing the value of ITYL                           
+      DATA IFXTYP /0/                                                           
 C                                                                        FA11950
 C     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM         FA11960
 C     IOUTDM IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                      FA11970
@@ -1306,7 +1371,7 @@ C     ALZERO IS THE MEAN LORENTZ HALFWIDTH AT PZERO AND 296.0 K.         FA12140
 C     AVMWT IS THE MEAN MOLECULAR WEIGHT USED TO AUTOMATICALLY           FA12150
 C     GENERATE THE LBLRTM BOUNDARIES IN AUTLAY                           FA12160
 C                                                                        FA12170
-      DATA ALZERO / 0.1 /,AVMWT / 36.0 /                                 FA12180
+      DATA ALZERO / 0.04 /,AVMWT / 36.0 /                                FA12180
 C                                                                        FA12190
 C     ORDER OF MOLECULES H2O(1), CO2(2), O3(3), N2O(4), CO(5), CH4(6),   FA12200
 C         O2(7), NO(8), SO2(9), NO2(10), NH3(11), HNO3(12), OH(13),      FA12210
@@ -2777,8 +2842,8 @@ C                                                                        FA26650
 C                                                                        FA26670
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA26680
      *               JUNITT                                              FA26690
-      CHARACTER*1 JCHAR,JCHARP,JCHART                                    FA26700
-      COMMON /MCHAR/ JCHAR(MXMOL),JCHARP,JCHART                          FA26710
+      CHARACTER*1 JCHAR,JCHARP,JCHART,JLONG                              FA26700
+      COMMON /MCHAR/ JCHAR(MXMOL),JCHARP,JCHART,JLONG                    FA26710
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA26720
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA26730
 C                                                                        FA26740
@@ -2802,7 +2867,8 @@ C     INPUT READ FOR 'MODEL = 0", I.E. USER-SUPPLIED VERITCAL            FA26910
 C                                                                        FA26920
 C     **********************************************************         FA26930
 C                                                                        FA26940
-      READ (IRD,900) ZMDL,PM,TM,JCHARP,JCHART,(JCHAR(K),K=1,MXMOL)       FA26950
+      READ (IRD,900) ZMDL,PM,TM,JCHARP,JCHART,JLONG,                            
+     *               (JCHAR(K),K=1,MXMOL)                                FA26950
       ISAME = 0                                                          FA26960
       JUNITP = JOU(JCHARP)                                               FA26970
       JUNITT = JOU(JCHART)                                               FA26980
@@ -2815,11 +2881,25 @@ C                                                                        FA27030
          KUNIT(K) = JUNIT(K)+1                                           FA27050
    10 CONTINUE                                                           FA27060
 C                                                                        FA27070
-      READ (IRD,905) (WMOL(K),K=1,NMOL)                                  FA27080
+C     Read in moleclar information at E15.8 format for flag JLONG='L'           
+      IF (JLONG.EQ.'L') THEN                                                    
+         READ (IRD,906) (WMOL(K),K=1,NMOL)                                      
+      ELSEIF (JLONG.EQ.' ') THEN                                                
+         READ (IRD,905) (WMOL(K),K=1,NMOL)                                      
+      ELSE                                                                      
+         WRITE(*,*) 'INVALID VALUE FOR JLONG ON RECORD 3.5: ',JLONG             
+         STOP 'RDUNIT'                                                          
+      ENDIF                                                                     
       IF (IM.EQ.0) WRITE (IPR,910)                                       FA27090
 C                                                                        FA27100
-      WRITE (IPR,915) IM,ZMDL,JCHARP,PM,JCHART,TM,                       FA27110
-     *                (K,JCHAR(K),WMOL(K),K=1,NMOL)                      FA27120
+      IF (JLONG.EQ.'L') THEN                                                    
+         WRITE (IPR,916) IM,ZMDL,JCHARP,PM,JCHART,TM,                           
+     *                   (K,JCHAR(K),WMOL(K),K=1,NMOL)                          
+      ELSE                                                                      
+         WRITE (IPR,915) IM,ZMDL,JCHARP,PM,JCHART,TM,                           
+     *                   (K,JCHAR(K),WMOL(K),K=1,NMOL)                          
+      ENDIF                                                                     
+                                                                                
       DO 20 I = 1, NMOL                                                  FA27130
          JOLD(I) = JUNIT(I)                                              FA27140
    20 CONTINUE                                                           FA27150
@@ -2831,13 +2911,16 @@ C                                                                        FA27200
       CALL DEFALT (ZMDL,PM,TM,CO2RAT)                                    FA27210
       RETURN                                                             FA27220
 C                                                                        FA27230
-  900 FORMAT (3E10.3,5X,2A1,3X,35A1)                                     FA27240
+  900 FORMAT (3E10.3,5X,2A1,1X,A1,1X,35A1)                               FA27240
   905 FORMAT (8E10.3)                                                    FA27250
+ 906  FORMAT (8E15.8)                                                    FA27250
   910 FORMAT (//,'  ECHO INPUT PARAMETERS FOR USER PROVIDED MODEL',/,    FA27260
      *        '0   (P : UNIT)=   ',5X,'(T : UNIT)=   ',5X,               FA27270
      *        '(MOLECULE NUMBER : UNIT)=   ')                            FA27280
   915 FORMAT ('0',I3,1X,'(ALT:KM)=',F7.3,4X,'(P:',A1,')=',G11.5,4X,      FA27290
      *        '(T:',A1,')=',F8.3,/,(4X,7(' (',I2,':',A1,')=',1PE10.3)))  FA27300
+ 916  FORMAT ('0',I3,1X,'(ALT:KM)=',F7.3,4X,'(P:',A1,')=',G11.5,4X,      FA27290
+     *        '(T:',A1,')=',F8.3,/,(4X,7(' (',I2,':',A1,')=',1PE15.8)))  FA27300
 C                                                                        FA27310
       END                                                                FA27320
       FUNCTION JOU (CHAR)                                                FA27330
@@ -3281,13 +3364,11 @@ C                                                                        FA31360
       IF (JUNIT.NE.10) GO TO 10                                          FA31410
 C                                                                        FA31420
 C     GIVEN VOL. MIXING RATIO                                            FA31430
-C     Convert using density of dry air.  The following quadratic is             
-C     equivalent to the iterative scheme:                                       
-C           DENNUM = WMOL*RHOAIR*1.E-6                                          
-C           DRYAIR = RHOAIR - DENNUM                                            
-C           DENNUM = WMOL*DRYAIR*1.E-6                                          
-C                                                                        FA31440
-      DENNUM = ((WMOL*1.E-6) - (WMOL*1.E-6)**2)*RHOAIR                   FA31450
+                                                                                
+C     Convert using density of dry air.                                         
+                                                                                
+      WMOL = WMOL*1.E-06                                                        
+      DENNUM = (WMOL/(1.+WMOL))*RHOAIR                                          
       GO TO 90                                                           FA31460
    10 IF (JUNIT.NE.11) GO TO 20                                          FA31470
 C                                                                        FA31480
@@ -3299,13 +3380,11 @@ C                                                                        FA31500
       IF (JUNIT.NE.12) GO TO 30                                          FA31540
 C                                                                        FA31550
 C     GIVEN MASS MIXING RATIO (GM KG-1)                                  FA31560
+                                                                                
 C     Convert using density of dry air.  The following quadratic is             
-C     equivalent to the iterative scheme:                                       
-C           DENNUM = R*WMOL*1.0E-3*RHOAIR                                       
-C           DRYAIR = RHOAIR - DENNUM                                            
-C           DENNUM = R*WMOL*1.0E-3*DRYAIR                                       
 C                                                                        FA31570
-      DENNUM = ((R*WMOL*1.0E-3) - (R*WMOL*1.0E-3)**2)*RHOAIR             FA31580
+      WMOL = WMOL*R*1.0E-3                                                      
+      DENNUM = (WMOL/(1.+WMOL))*RHOAIR                                          
       GO TO 90                                                           FA31590
    30 CONTINUE                                                           FA31600
       IF (JUNIT.NE.13) GO TO 40                                          FA31610
@@ -3366,7 +3445,7 @@ C
 C     ----------------------------------------------------------------          
 C                                                                               
       SUBROUTINE FSCGEO (H1,H2,ANGLE,RANGE,BETA,ITYPE,LEN,HMIN,PHI,      FA32150
-     *                   IERROR)                                         FA32160
+     *                   IERROR,HOBS)                                    FA32160
 C                                                                        FA32170
 C     -------------------------------------------------------------             
 C     This routine was modified for LBLRTM to reflect changes                   
@@ -3565,8 +3644,29 @@ C                                                                        FA33650
 C                                                                        FA33680
 C     At this point the following parameters are defined-                FA33690
 C         H1,H2,ANGLE,PHI,HMIN,LEN                                       FA33700
+C                                                                               
+C     Calculate sin(PHI) and sin(ANGLE) and output                              
 C                                                                        FA33710
-      WRITE (IPR,935) H1,H2,ANGLE,PHI,HMIN,LEN                           FA33720
+      radconv = 2.*pi/360.                                                      
+      sinphi = sin(radconv*phi)                                                 
+      sinangle = sin(radconv*angle)                                             
+      WRITE (IPR,935) H1,H2,ANGLE,sinangle,PHI,sinphi,HMIN,LEN           FA33720
+                                                                                
+C                                                                               
+C     Calculate and output geometry from satellite above 120km.                 
+C     Subtract from 180 degrees to correctly place angle in the                 
+C     3rd quadrant.                                                             
+C                                                                               
+      if (hobs.gt.0.) then                                                      
+         sinphi_sat = ((re+h1)/(re+hobs))*sinphi                                
+         phi_sat = 180. - asin(sinphi_sat)/radconv                              
+         sinphi_sat = sin(radconv*phi_sat)                                      
+         diffangle = phi_sat - phi                                              
+         WRITE (IPR,937) hobs,phi_sat,sinphi_sat,diffangle                      
+      endif                                                                     
+                                                                                
+                                                                                
+C                                                                               
       RETURN                                                             FA33730
 C                                                                        FA33740
 C     Error messages                                                     FA33750
@@ -3602,11 +3702,20 @@ C                                                                        FA33930
   930 FORMAT (//,' CASE 2C: GIVEN H1, H2, RANGE',//,10X,                 FA34050
      *        'NOTE: ANGLE IS COMPUTED FROM H1, H2, AND RANGE ',         FA34060
      *        'ASSUMING NO REFRACTION')                                  FA34070
-  935 FORMAT (///,' SLANT PATH PARAMETERS IN STANDARD FORM',//,10X,      FA34080
-     *        'H1      = ',F10.3,' KM',/,10X,'H2      = ',F10.3,' KM',   FA34090
-     *        /,10X,'ANGLE   = ',F10.3,' DEG',/,10X,'PHI     = ',F10.3,  FA34100
-     *        ' DEG',/,10X,'HMIN    = ',F10.3,' KM',/,10X,'LEN     = ',  FA34110
-     *        I10)                                                       FA34120
+  935 FORMAT (///,' SLANT PATH PARAMETERS IN STANDARD FORM',/            FA34080
+     *        /,10X,'H1         = ',F12.6,' KM',                                
+     *        /,10X,'H2         = ',F12.6,' KM',                                
+     *        /,10X,'ANGLE      = ',F12.6,' DEG',                               
+     *        /,10X,'sin(ANGLE) = ',F12.6,                                      
+     *        /,10X,'PHI        = ',F12.6,' DEG',                               
+     *        /,10X,'sin(PHI)   = ',F12.6,                                      
+     *        /,10X,'HMIN       = ',F12.6,' KM',                                
+     *        /,10X,'LEN        = ',I10)                                        
+ 937  FORMAT (///,' SLANT PATH PARAMETERS AT SATELLITE',/                       
+     *        /,10X,'H_SAT        = ',F12.6,' KM',                              
+     *        /,10X,'PHI_SAT      = ',F12.6,' DEG'                              
+     *        /,10X,'sin(PHI_SAT) = ',F12.6,                                    
+     *        /,10X,'PHI_SAT-PHI  = ',F12.6,' DEG')                             
   940 FORMAT ('0FSCGEO: CASE 3B (H1,HMIN,SPACE): ERROR IN INPUT DATA',   FA34130
      *        //,10X,'H1 = ',F12.6,'    IS LESS THAN HMIN = ',F12.6)     FA34140
   945 FORMAT ('0FSCGEO: ERROR IN INPUT DATA, ITYPE NOT EQUAL TO ',       FA34150
