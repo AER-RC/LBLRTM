@@ -30,7 +30,9 @@ c
       DIMENSION C0(2050),C1(2050),C2(2050)
       DIMENSION SH2OT0( 2 ),SH2OT1( 2 ),FH2O( 2 ),      
      *          CN2T0( 2 ),FCO2( 2 ),CT1( 2 ),CT2( 2 ) 
-      DIMENSION CCH0(3080),CCH1(3080),CCH2(3080)
+      DIMENSION CCH0(3150),CCH1(3150),CCH2(3150)
+C
+      REAL ABSBSV(2030)
 C                                                                         F00230
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
@@ -260,8 +262,34 @@ C                                                                         F01400
             IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01420
             C(J) = C(J)*(1.+CT1(J)*TC+CT2(J)*TC*TC)                       F01430
    60    CONTINUE                                                         F01440
+C
+C        Save non-Hartley Huggins optical depth contribution to prevent
+C        double counting for wavenumber region beyond 40800 cm-1.
+C
+         IF ((VJ.GT.40815.).AND.(V2.GT.40800)) THEN
+            IFIX = (40800.-V1ABS)/DVABS+1.001
+            DO 62 I=IFIX,NPTABS
+               ABSBSV(I) = ABSRB(I)
+ 62         CONTINUE
+         ENDIF
+C
+C        Combine Hartley Huggins with previous optical depths
+C
          CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01450
-      ELSEIF (V1.GE.40800.) THEN                                          F01460
+C
+C        If V2 > 40800 cm-1, replace points with previously
+C        saved values (non-Hartley Huggins contribution)
+C
+         IF ((VJ.GT.40815.).AND.(V2.GT.40800)) THEN
+            DO 64 I=IFIX,NPTABS
+               ABSRB(I) = ABSBSV(I)
+ 64         CONTINUE
+         ENDIF
+      ENDIF
+C
+C     If V2 > 40800 cm-1, add UV Hartley Huggins contribution
+C
+      IF (V2.GT.40800..AND.V1.LT.54000.) THEN
          WO3 = WK(3)                                                      F01470
          CALL O3HHUV (V1C,V2C,DVC,NPTO3,C0)                               F01480
 C                                                                         F01490
@@ -270,11 +298,33 @@ C                                                                         F01490
             VJ = V1C+DVC*FLOAT(J-1)                                       F01520
             IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                      F01530
    70    CONTINUE                                                         F01540
+C
+C        Save non-Hartley Huggins UV optical depth contribution to
+C        prevent double counting for wavenumber region before 40800 cm-1.
+C
+         IF (V1.LT.40800) THEN
+            IFIX = (40800.-V1ABS)/DVABS+1.001
+            DO 72 I=1,IFIX-1
+               ABSBSV(I) = ABSRB(I)
+ 72         CONTINUE
+         ENDIF
+C
+C        Combine UV Hartley Huggins with previous optical depths
+C
          CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         F01550
+C
+C        If V1 < 40800 cm-1, replace points with previously
+C        saved values (non-Hartley Huggins UV contribution)
+C
+         IF (V1.LT.40800) THEN
+            DO 74 I=1,IFIX-1
+               ABSRB(I) = ABSBSV(I)
+ 74         CONTINUE
+         ENDIF
 C                                                                         F01560
       ENDIF                                                               F01570
 C                                                                         F01580
-C     Skip to Herzberg if PAVE is greater than 350.0 K.  Values greater
+C     Skip to Herzberg if TAVE is greater than 350.0 K.  Values greater
 C     than 350 introduce large error into the Drayson derived O2
 C     coefficients, which are calculated using a temperature dependent
 C     quadratic.
@@ -417,11 +467,13 @@ C
       DATA CINFO4/
      *     '  O3 CHAPPUIS CHANGED TO VALUES FROM MODTRAN3      ',
      *     '                             (09 FEB 1996)         ',
+     *     '  INTERPOLATION EFFECTS BETWEEN HARTLEY HUGGINS DAT',
+     *     'A AROUND 40800 CM-1         (18 SEPT 1996)'         ,
      *     '                                                   ',
      *     '                                                   ',
      *     '  -------------------------------------------------',
      *     '------------------------------------------         ',
-     *     12*' ' /
+     *     10*' ' /
 C
       END
 C
