@@ -5081,9 +5081,9 @@ C                                                                         E07820
                      XSTEMP(NT2,NS,NI) = TEMP                             E08170
                      XSMAX(NT2,NS,NI) = SMAX                              E08180
                      IF (SOURCE(3).EQ.CTORR) THEN
-                        PDX(NT1,NS,NI) = PRES*PTORMB                      E08190
+                        PDX(NT2,NS,NI) = PRES*PTORMB                      E08190
                      ELSE
-                        PDX(NT1,NS,NI) = PRES
+                        PDX(NT2,NS,NI) = PRES
                      ENDIF
                   ENDIF                                                   E08200
                ENDIF                                                      E08210
@@ -5150,9 +5150,9 @@ C                                                                         E08260
                      XSTEMP(NT2,NS,NI) = TEMP                             E08780
                      XSMAX(NT2,NS,NI) = SMAX                              E08790
                      IF (SOURCE(3).EQ.CTORR) THEN
-                        PDX(NT1,NS,NI) = PRES*PTORMB                      E08800
+                        PDX(NT2,NS,NI) = PRES*PTORMB                      E08800
                      ELSE
-                        PDX(NT1,NS,NI) = PRES
+                        PDX(NT2,NS,NI) = PRES
                      ENDIF
                   ENDIF                                                   E08810
                ENDIF                                                      E08820
