@@ -258,10 +258,10 @@ C
          REWIND KFILE                                                     B02270
          DVSAV = DV                                                       B02280
          DVOUT = DVSET                                                    B02290
-         DV = DVOUT                                                       B02300
+         IF (DVOUT.NE.0.0) DV=DVOUT                                       B02300
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)                             B02310
-         DV = DVSAV                                                       B02320
-         IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3                B02330
+         IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3                   B02320
+         DV = DVSAV                                                       B02330
       ELSE                                                                B02340
          IF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
             WRITE(KDFLYR,'(A4,I2.2)') KDFIL,LAYER
