@@ -1,7 +1,8 @@
-C     path:      /stormrc1/aer_lblrtm/src/SCCS/s.fftscn.f
-C     revision:  5.5
-C     created:   8/13/99  15:28:00
-C     presently: 8/13/99  15:28:51
+C     path:      $Source$
+C     author:    $Author$
+C     revision:  $Revision$
+C     created:   $Date$
+
       Subroutine FFTSCN (IFILE,JFILE)
 C**********************************************************************
 C     FFTSCN and its associated subroutines convolve an LBLRTM spectrum
@@ -295,7 +296,7 @@ C*****coarser grid
       Data MDVHW /12/
 
 C*****Assign SCCS version number to module fftscn.f
-      HVRFFT = '5.5' 
+      HVRFFT =  '$RCSfile$ $Revision$'
 
       Write(IPR,'(''1FFTSCN: SPECTRAL SMOOTHING IN THE '',
      1            ''FOURIER DOMAIN*****'')')
