@@ -356,14 +356,6 @@ C
      *            (IWD4(1),V1LD)                                          A03410
       EQUIVALENCE (CXID,CXIDA(1))                                         A03470
 C                                                                         A03480
-C     ASSIGN SCCS VERSION NUMBER TO MODULES
-C
-      DATA HVRLBL / '$Revision$' /,      HVRCNT / 'NOT USED' /,
-     *     HVRFFT / 'NOT USED' /, HVRATM / 'NOT USED' /,
-     *     HVRLOW / 'NOT USED' /, HVRNCG / 'NOT USED' /,
-     *     HVROPR / 'NOT USED' /, HVRPST / 'NOT USED' /,
-     *     HVRPLT / 'NOT USED' /, HVRTST / 'NOT USED' /,
-     *     HVRUTL / 'NOT USED' /, HVRXMR / 'NOT USED' /
       DATA IDCNTL / ' HIRAC',' LBLF4',' CNTNM',' AERSL',' EMISS',         A03500
      *              ' SCNFN',' FILTR','  PLOT','  TEST','  IATM',         A03510
      *              '  IMRG','  ILAS',' OPDEP',' XSECT' /                 A03520
@@ -730,12 +722,12 @@ C                                                                         A07280
   990 FORMAT (F20.8)                                                      A07560
   995 FORMAT ('0 TIME LEAVING LBLRTM ',F15.4,' TOTAL',F15.4)              A07570
  1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,5X,
-     *         'lblrtm.f: ',8X,A8,10X, 'contnm.f: ',8X,A8,/,5X
-     *         'fftscn.f: ',8X,A8,10X, 'lblatm.f: ',8X,A8,/,5X
-     *         'lbllow.f: ',8X,A8,10X, 'ncargks.f: ',7X,A8,/,5X,
-     *         'oprop.f: ',9X,A8,10X,  'postsub.f: ',7X,A8,/,5X,
-     *         'pltlbl.f: ',8X,A8,10X, 'testmm.f: ',8X,A8,/,5X,
-     *         'xmerge.f: ',8X,A8,10X, 'util_xxx.f: ',6X,A8,/ )
+     *         'lblrtm.f: ',6X,A8,10X, '  contnm.f: ',6X,A8,/,5X,
+     *         'fftscn.f: ',6X,A8,10X, '  lblatm.f: ',6X,A8,/,5X,
+     *         'lbllow.f: ',6X,A8,10X, ' ncargks.f: ',6X,A8,/,5X,
+     *         ' oprop.f: ',6X,A8,10X, ' postsub.f: ',6X,A8,/,5X,
+     *         'pltlbl.f: ',6X,A8,10X, '  testmm.f: ',6X,A8,/,5X,
+     *         'xmerge.f: ',6X,A8,10X, 'util_xxx.f: ',6X,A8,/ )
 C                                                                         A07580
       END                                                                 A07590
       BLOCK DATA                                                          A07600
@@ -743,10 +735,14 @@ C                                                                         A07580
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(203),MSPNL1(203),  A07610
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   A07620
      *                JEFILE,KEFILE                                       A07630
+      COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
+     *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           A07640
 C                                                                         A07650
-C#    DATA CFORM / 'BUFFERED   '/                                         A03570
       CHARACTER CFORM*11                                                  A03430
+      CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
+     *                HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
+C
       DATA CFORM / 'UNFORMATTED'/                                         A03580
       DATA PLANCK / 6.626176E-27 /,BOLTZ / 1.380662E-16 /,                A07660
      *     CLIGHT / 2.99792458E10 /,AVOG / 6.022045E23 /                  A07670
@@ -754,6 +750,15 @@ C#    DATA CFORM / 'BUFFERED   '/                                         A03570
      *     MSPANL /203*0 /,MSPNL1 /203*0 /,ISFILE / 0 /,JSFILE / 0 /,
      *     KSFILE / 0 /,LSFILE / 0 /,MSFILE / 0 /,IEFILE / 0 /,           A07690
      *     JEFILE / 0 /,KEFILE / 0 /,MSLAY1 / 0 /                         A07700
+C
+C     ASSIGN SCCS VERSION NUMBER TO MODULES
+C
+      DATA HVRLBL / '$Revision$' /,      HVRCNT / 'NOT USED' /,
+     *     HVRFFT / 'NOT USED' /, HVRATM / 'NOT USED' /,
+     *     HVRLOW / 'NOT USED' /, HVRNCG / 'NOT USED' /,
+     *     HVROPR / 'NOT USED' /, HVRPST / 'NOT USED' /,
+     *     HVRPLT / 'NOT USED' /, HVRTST / 'NOT USED' /,
+     *     HVRUTL / 'NOT USED' /, HVRXMR / 'NOT USED' /
 C                                                                         A07710
       END                                                                 A07720
       FUNCTION NWDL (IWD,ILAST)                                           A08590
@@ -1929,6 +1934,41 @@ C                                                                         A20610
             READ (IRD,927) (WKL(M,L),M=1,7),WBRODL(L)
             IF (NMOL.GT.7) READ (IRD,927) (WKL(M,L),M=8,NMOL)
          ENDIF
+C
+C     --------------------------------------------------------------
+C
+C                     MIXING RATIO INPUT
+C
+C
+C     First calculate the column amount of dry air ("WDRAIR")
+C     Initialize WDRAIR to WBRODL(L) (automatically in column density)
+C     Determine if each molecule is in column density.
+C        - if so, just add to WDRAIR
+C        - if not, convert mixing ratio on the fly in determining WDRAIR
+C
+C     NOTE that if WKL is greater than one, then column density
+C               if WKL is less than or equal to one, then mixing ratio
+C
+         WDRAIR = WBRODL(L)
+         DO 22 M = 2,NMOL
+            IF (WKL(M,L).GT.1) THEN
+               WDRAIR = WDRAIR + WKL(M,L)
+            ELSEIF (WKL(M,L).LT.1) THEN
+               WDRAIR = WDRAIR + WKL(M,L)*WBRODL(L)/(1-WKL(M,L))
+            ELSE
+               WDRAIR = WBRODL(L)
+            ENDIF
+ 22      CONTINUE
+C
+C     NOW CONVERT ALL OTHER MOLECULES WHICH MAY BE IN MIXING RATIO
+C     TO MOLECULAR DENSITY USING WDRAIR
+C
+         DO 25 M = 1,NMOL
+            IF (WKL(M,L).LE.1) WKL(M,L) = WKL(M,L)*WDRAIR
+ 25      CONTINUE
+C
+C     --------------------------------------------------------------
+C
    30 CONTINUE                                                            A20740
 C                                                                         A20750
       IF (IATM.EQ.0.AND.IXSECT.GE.1) THEN                                 A20760
@@ -1979,7 +2019,27 @@ C                                                                         A20990
                READ (IRD,927) (XAMNT(M,L),M=1,7),WBRODX
                IF (IXMOL.GT.7) READ (IRD,927) (XAMNT(M,L),M=8,IXMOL)
             ENDIF
-   40    CONTINUE                                                         A21090
+C
+C     --------------------------------------------------------------
+C
+C             MIXING RATIO INPUT FOR CROSS SECTIONAL MOLECULES
+C
+C
+C     The column amount of dry air ("WDRAIR") has already been
+C     calculated above, so just convert all cross sectional
+C     molecules which may be in mixing ratio to molecular density
+C     using WDRAIR
+C
+C     NOTE that if XAMNT is greater than one, then column density
+C               if XAMNT is less than or equal to one, then mixing ratio
+C
+         DO 35 M = 1,IXMOL
+            IF (XAMNT(M,L).LE.1) XAMNT(M,L) = XAMNT(M,L)*WDRAIR
+ 35      CONTINUE
+C
+C     --------------------------------------------------------------
+C
+ 40   CONTINUE                                                            A21090
       ENDIF                                                               A21100
 C                                                                         A21110
    50 WRITE (IPR,945) XID,(YID(M),M=1,2)                                  A21120
@@ -2251,6 +2311,12 @@ C
       ELSE                                                                A23460
          WRITE (IPR,945) XID,(YID(M),M=1,2)                               A23470
       ENDIF                                                               A23480
+C
+C     --------------------------------------------------------------
+C
+C     Write out column densities for molecules to TAPE6
+C
+C
       WRITE (IPR,975) (HMOLID(I),I=1,7),HOLN2                             A23490
       DO 150 L = 1, NLAYRS                                                A23500
          IF (IFORM.EQ.1) THEN
@@ -2297,6 +2363,60 @@ C
   170    CONTINUE                                                         A23800
       ENDIF                                                               A23810
 C
+C     --------------------------------------------------------------
+C
+C     Write out mixing ratios for molecules to TAPE6
+C
+C
+      WRITE (IPR,976) (HMOLID(I),I=1,7),HOLN2
+C
+      DO 172 L = 1, NLAYRS
+C
+C        Reset WDRAIR for each layer (WKL(M,L) now in column density)
+C
+         WDRAIR = WBRODL(L)
+         DO 171 M = 2,NMOL
+            WDRAIR = WDRAIR + WKL(M,L)
+ 171     CONTINUE
+C
+         IF (IFORM.EQ.1) THEN
+            WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *           TAVEL(L),
+     *           IPTH(L),(WKL(M,L)/WDRAIR,M=1,7),WBRODL(L)
+         ELSE
+            WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *           TAVEL(L),
+     *           IPTH(L),(WKL(M,L)/WDRAIR,M=1,7),WBRODL(L)
+         ENDIF
+ 172  CONTINUE
+C
+      IF (NMOL.GT.7) THEN
+         DO 174 MLO = 8, NMOL, 8
+            MHI = MLO+7
+            MHI = MIN(MHI,NMOL)
+            IF (NLAYRS.LT.5) THEN
+               WRITE (IPR,970)
+            ELSE
+               WRITE (IPR,945) XID,(YID(M),M=1,2)
+            ENDIF
+            WRITE (IPR,976) (HMOLID(I),I=MLO,MHI)
+            DO 173 L = 1, NLAYRS
+               IF (IFORM.EQ.1) THEN
+                  WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR,M=MLO,MHI)
+               ELSE
+                  WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *                 TAVEL(L),IPTH(L),(WKL(M,L)/WDRAIR,M=MLO,MHI)
+               ENDIF
+ 173        CONTINUE
+ 174     CONTINUE
+      ENDIF
+C
+C     --------------------------------------------------------------
+C
+C     Write out column densities for cross sectional molecules to TAPE6
+C
+C
       IF (IXSECT.GE.1) THEN                                               A23820
          DO 190 MLO = 1, IXMOLS, 8                                        A23830
             MHI = MLO+7                                                   A23840
@@ -2323,6 +2443,29 @@ C
      *                         (WXT(M),M=MLO,MHI)                         A24000
             ENDIF                                                         A24010
   190    CONTINUE                                                         A24020
+C
+C     --------------------------------------------------------------
+C
+C        Write out mixing ratios for cross sectional
+C             molecules to TAPE6
+C
+C
+         DO 195 MLO = 1, IXMOLS, 8
+            MHI = MLO+7
+            MHI = MIN(MHI,IXMOLS)
+            WRITE (IPR,976) (XSNAME(I),I=MLO,MHI)
+            DO 195 L = 1, NLAYRS
+               IF (IFRMX.EQ.1) THEN
+                  WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *                 TAVEL(L),IPTH(L),(XAMNT(M,L)/WDRAIR,M=MLO,MHI)
+               ELSE
+                  WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
+     *                 TAVEL(L),IPTH(L),(XAMNT(M,L)/WDRAIR,M=MLO,MHI)
+               ENDIF
+ 195        CONTINUE
+C
+C     --------------------------------------------------------------
+C
       ENDIF                                                               A24030
       RETURN                                                              A24040
 C                                                                         A24050
@@ -2331,14 +2474,14 @@ C                                                                         A24050
      *        15A4)                                                       A24080
   905 FORMAT (A6)                                                         A24090
   907 FORMAT ('0 SECANT   =',F13.4)                                       A24100
-  910 FORMAT (1P,E15.7,0P,F10.4,F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))
+  910 FORMAT (E15.7,F10.4,F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))
   911 FORMAT (3F10.4,A3,I2,1X,2(F7.2,F8.3,F7.2))                          A24110
   912 FORMAT ('0   ********* ITYPE(L) IS SET FROM INPUT ******** ')       A24120
-  915 FORMAT (1P,E15.7,0P,F10.4,F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))
+  915 FORMAT (E15.7,F10.4,F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))
   916 FORMAT (3F10.4,A3,I2,23X,(F7.2,F8.3,F7.2))                          A24130
   917 FORMAT (A4)                                                         A24140
   920 FORMAT (I3)                                                         A24150
-  925 FORMAT (1P,8E15.7,0P)
+  925 FORMAT (8E15.7)
   927 FORMAT (8E10.3)                                                     A24160
   930 FORMAT (I5,5X,I5)                                                   A24170
   932 FORMAT (/,'  THE CROSS-SECTION MOLECULES SELECTED ARE: ',/,/,(5X,   A24180
@@ -2370,10 +2513,13 @@ C                                                                         A24050
   970 FORMAT (////)                                                       A24360
   975 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,29X,    A24370
      *        'P(MB)',7X,'T(K)',1X,'IPATH',1X,8(1X,A6,3X))                A24380
-  980 FORMAT ('0',I3,2(F7.3,A3),0PF15.7,F9.2,I5,2X,1P8E15.7)
-  982 FORMAT ('0',I3,2(F7.3,A3),0PF12.5,F9.2,I5,2X,1P8E10.3)              A24390
+  976 FORMAT (/,'1',54X,'----------------------------------',
+     *         /,'0',60X,'MIXING RATIOS BY LAYER ',/,29X,
+     *        'P(MB)',7X,'T(K)',1X,'IPATH',1X,8(1X,A6,3X))
+  980 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,I5,2X,1P,8E15.7,0P)
+  982 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,I5,2X,1P,8E10.3,0P)            A24390
   985 FORMAT ('0',54X,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH')     A24400
-  990 FORMAT ('0',I3,2(F7.3,A3),0PF12.5,F9.2,7X,1P8E10.3)                 A24410
+  990 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,7X,1P,8E10.3,0P)               A24410
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                    A24420
      *        '     *****  CROSS SECTIONS  *****      ')                  A24430
 C                                                                         A24440
