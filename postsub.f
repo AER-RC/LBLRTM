@@ -3153,7 +3153,7 @@ C                                                                         L00080
       CHARACTER*11 CFORM                                                  I00300
       CHARACTER*8 HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,HVROPR,
      *            HVRPLT,HVRPST,HVRTST,HVRUTL,HVRXMR
-      character ctape*4,fltinf*7,fltout*7,cout*4
+      character ctape*4,fltinf*7,fltout*7
 C                                                                         L00250
       EQUIVALENCE (FILHDR(1),XID(1)) , (FSCDID(5),IEMIT),                 L00260
      *            (FSCDID(6),ISCAN) , (FSCDID(7),IPLOT),                  L00270
@@ -3163,7 +3163,7 @@ C                                                                         L00250
 
 
       DATA FLTINF / '       '/,FLTOUT / '       ' /,
-     *     CTAPE / 'TAPE'/,cout / 'TOUT' /
+     *     CTAPE / 'TAPE'/
 
 C                                                                         L00310
 C
@@ -3175,7 +3175,7 @@ C
       NREN = 0                                                            L00330
       IPRT = 1                                                            L00340
       NSHIFT = 0                                                          L00350
-   10 READ (IRD,900) V1F,DVF,NPTF,JEMIT,IUNIT,IFILST,NIFILS,HEDDR         L00360
+   10 READ (IRD,900) V1F,DVF,NPTF,JEMIT,IUNIT,IFILST,NIFILS,junit,HEDDR   L00360
 C
 C     Test to ensure NPTF is less than NFLTPT, the maximum number
 C     of filter points allowed
@@ -3232,13 +3232,15 @@ C                                                                         L00470
          OPEN (IFILE,FILE=FLTINF,STATUS='UNKNOWN',FORM=CFORM)
          REWIND IFILE
       ENDIF
-      JFILE = IFILE+1
+
+      JFILE = junit
       inquire(jfile,opened=op)
-      IF (.NOT.OP) THEN
-         WRITE (FLTOUT,970) COUT,IFILE
-         OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
-         rewind jfile
-      endif
+      if (op) close(jfile)
+
+      fltout = 'FLT_OUT'
+      OPEN (JFILE,FILE=FLTOUT,STATUS='UNKNOWN')
+      rewind jfile
+
       IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  L00500
       IEOFSC = 0                                                          L00510
       ISTOP = 0                                                           L00520
@@ -3329,7 +3331,7 @@ C                                                                         L01000
       IF (IEOFSC.LT.0) GO TO 60                                           L01360
       GO TO 10                                                            L01370
 C                                                                         L01380
-  900 FORMAT (2F10.4,5I5,8A4,A3)                                          L01390
+  900 FORMAT (2F10.4,6I5,8A4,A3)                                          L01390
   905 FORMAT ('1',/'   ***  FILTER ***',8(' ********** '))                L01400
   910 FORMAT ('0   V1F=',F10.4,' V2F=',F10.4,',DVF=',F10.4,',NPTF =',     L01410
      *        I5,/,'0',10X,', JEMIT= ',I2,', JABS= ',I2,                  L01420
