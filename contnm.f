@@ -56,7 +56,28 @@ C                                                                         F00480
       RFRGN = PFRGN*(T0/TAVE)                                             F00520
       XKT = TAVE/RADCN2                                                   F00530
       TFAC = (TAVE-T0)/(260.-T0)                                          F00540
+c
+c--------------------------------------------------------------------
+c                             Self
+
       ALPHA2 = 200.**2                                                    F00550
+c
+      Alphs2= 120.**2
+      v0s=1310.
+      factrs= 0.6
+c     xfact= 1.-factrs
+c     print *, ' xfact,  v0s,  alphs, ns  ',  xfact ,v0s,alphs,ns
+c
+c--------------------------------------------------------------------
+c                             Foreign
+      Alphf2= 330.**2
+      v0f =1130.
+      factrf = 0.97
+c     xfact= 1.- factrf
+c     print *, ' xfact,  v0,  alphf, nf  ',  xfact ,v0,alphf,nf
+c     scal=1.e-20
+c--------------------------------------------------------------------
+c
       DO 20 J = 1, NPTC                                                   F00560
          VJ = V1C+DVC*FLOAT(J-1)                                          F00570
          SH2O = 0.                                                        F00580
@@ -64,14 +85,16 @@ C                                                                         F00480
             SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC                  F00600
 C                                                                         F00610
 C     CORRECTION TO SELF CONTINUUM (1 SEPT 85); FACTOR OF 0.78 AT 1000    F00620
+c                             and  .......
 C                                                                         F00630
-            SH2O = SH2O*(1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2)))       F00640
+            SH2O = SH2O*(1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *     F00640
+     c                  (1.-factrs*(ALPHs2/((VJ-v0s  )**2+ALPHs2))) 
          ENDIF                                                            F00650
 C                                                                         F00660
 C     CORRECTION TO FOREIGN CONTINUUM                                     F00670
 C                                                                         F00680
-         CALL FUDGE (VJ,FDG)                                              F00690
-         FH2O(J) = FH2O(J)+FDG                                            F00700
+          fH2O(j)=fH2O(j)* (1.-factrf*(ALPHf2/((VJ-v0f)**2+ALPHf2)))
+c                                                                         F00700
          C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)                              F00710
 C                                                                         F00720
 C     RADIATION FIELD                                                     F00730
@@ -197,32 +220,6 @@ C                                                                         F01920
       RETURN                                                              F01930
 C                                                                         F01940
       END                                                                 F01950
-      SUBROUTINE FUDGE (V,SUMY)                                           F01960
-C                                                                         F01970
-      IMPLICIT DOUBLE PRECISION (V)                                     ! F01980
-C                                                                         F01990
-C     TO CALCULATE A NEW FUDGE FACTOR BASED ON THE SUMS OF EXPONENTIALS   F02000
-C                                                                         F02010
-C     THIS FUNCTION IS WITHIN 5% OF THE ORIGINAL "FUDGE" BETWEEN 0 AND    F02020
-C     3000CM-1, PRESERVING THAT VALIDATION.                               F02030
-C     THE NEW FUNCTION IS 0.01 OF THE ORIGINAL NEAR 10000CM-1 (1.06NM),   F02040
-C     IN ACCORDANCE WITH THE MEASUREMENTS OF JAYCOR, FUNDED BY SDIO.      F02050
-C                                                                         F02060
-      Y0(V) = EXP(ALOG(3.159E-8)-(2.75E-4)*V)                             F02070
-      Y1(V) = EXP(ALOG(1.0036*3.159E-8)-(2.75E-4)*V)                      F02080
-      Y2(V) = EXP(ALOG(8.97E-6)-(1.300E-3)*V)                             F02090
-C                                                                         F02100
-C     YO=Y0(V)                                                            F02110
-C                                                                         F02120
-      YA = Y1(V)                                                          F02130
-      YB = Y2(V)                                                          F02140
-      YAINV = 1/YA                                                        F02150
-      YBINV = 1/YB                                                        F02160
-      SUMY = 1./(1.*YAINV+1.*YBINV)                                       F02170
-C                                                                         F02180
-      RETURN                                                              F02190
-C                                                                         F02200
-      END                                                                 F02210
       SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                               F02220
 C                                                                         F02230
       IMPLICIT DOUBLE PRECISION (V)                                     ! F02240
