@@ -6328,7 +6328,7 @@ C       Define 3 domains: 4, 16, and 64 voigt halfwidths from the line center
 	pi = 2.0d0*asin(1.0d0)
 
 c       This constant is related to Doppler halfwidth
-	const = sqrt(dlog(2.0D0))
+	const = sqrt(log(2.0D0))
 
 C************************************************************************
 c       The scaled frequency variable x = const*v/AD 
@@ -6372,7 +6372,7 @@ c       AD1 is doppler width at the 1/e point
 	   end if
 c       Normalization factors: 
 c       Note: Fucntion returned is the generalized voigt function u(zeta,x)
-c       Voigt line shape function = sqrt(alog(2.0)/pi)/AD *u(zeta,x)
+c       Voigt line shape function = sqrt(log(2.0)/pi)/AD *u(zeta,x)
 
 	   cnorm1 = const/sqrt(pi)*AV
 
@@ -6540,7 +6540,7 @@ c
 
 c     y = Lorenz width / Doppler width (1/e point) 
 	if (zeta .ne. 1.0) then
-            y = sqrt(dlog(2.0d0))*zeta/(1.d0-zeta)
+            y = sqrt(log(2.0d0))*zeta/(1.d0-zeta)
 	else 
             y = 100.0
 	endif 
@@ -6621,8 +6621,8 @@ c
 	   R=T(I)-X
 	   S=T(I)+X
 	   G=G+(4.0*T(I)**2-2.0)*(R*ATAN(R/Y)+S*ATAN(S/Y)-
- 	1	0.5*Y*(DLOG(Y2+R**2)+
-	2	DLOG(Y2+S**2)))*W(I) 
+ 	1	0.5*Y*(LOG(Y2+R**2)+
+	2	LOG(Y2+S**2)))*W(I) 
  2100	CONTINUE
 	K2=0.318309886D0*G 	
 c
