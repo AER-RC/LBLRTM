@@ -52,6 +52,7 @@ C                                                                         B00450
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B00460
 C                                                                         B00470
 C                                                                         B00480
+      COMMON /RCNTRL/ ILNFLG
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    B00490
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    B00500
      *       ZETAI(250),IZETA(250)                                        B00510
@@ -493,6 +494,8 @@ C                                                                         B04820
 C                                                                         B04850
       IMPLICIT DOUBLE PRECISION (V)                                     ! B04860
 C                                                                         B04870
+      CHARACTER*1 FREJ(250),HREJ,HNOREJ
+      COMMON /RCNTRL/ ILNFLG
       COMMON VNU(250),S(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),     B04880
      *       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),    B04890
      *       ZETAI(250),IZETA(250)                                        B04900
@@ -532,6 +535,7 @@ C                                                                         B05240
 C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         B05250
 C                                                                         B05260
       DATA TEMPLC / 200.0,250.0,296.0,340.0 /                             B05270
+      DATA HREJ /'0'/,HNOREJ /'1'/
 C                                                                         B05280
       NLNCR = NLNCR+1                                                     B05290
       IF (NLNCR.EQ.1) THEN                                                B05300
@@ -560,6 +564,8 @@ C                                                                         B05510
          TMPDIF = TAVE-TEMPLC(ILC)                                        B05530
 C                                                                         B05540
       ENDIF                                                               B05550
+C
+      IF (ILNFLG.EQ.2) READ(15)(FREJ(J),J=ILO,IHI)
 C                                                                         B05560
       DO 30 J = ILO, IHI                                                  B05570
          YI = 0.                                                          B05580
@@ -669,15 +675,28 @@ C                                                                         B06500
      *                        EXP(-EPP(I)*BETACR)*(1.-EXP(-VNU(I)/XKT))   B06620
 C                                                                         B06630
          IF (IFLAG.EQ.0) THEN                                             B06640
-            SPEAK = SUI*RECALF(I)                                         B06650
-            IF (DVR4.LE.0.) THEN                                          B06660
-               IF (SPEAK.LE.DPTMN) SUI = 0.                               B06670
-            ELSE                                                          B06680
-               JJ = (VNU(I)-V1R4)/DVR4+1.                                 B06690
-               JJ = MAX(JJ,1)                                             B06700
-               JJ = MIN(JJ,NPTR4)                                         B06710
-               IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ))) SUI = 0.                B06720
-            ENDIF                                                         B06730
+            IF (ILNFLG.LE.1) THEN
+               FREJ(J) = HNOREJ
+               SPEAK = SUI*RECALF(I)                                      B06650
+               IF (DVR4.LE.0.) THEN                                       B06660
+                  IF (SPEAK.LE.DPTMN) THEN 
+                     SUI = 0.                                             B06670
+                     FREJ(J) = HREJ
+                  ENDIF
+               ELSE                                                       B06680
+                  JJ = (VNU(I)-V1R4)/DVR4+1.                              B06690
+                  JJ = MAX(JJ,1)                                          B06700
+                  JJ = MIN(JJ,NPTR4)                                      B06710
+                  IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ))) THEN
+                     SUI = 0.                                             B06720
+                     FREJ(J) = HREJ
+                  ENDIF
+               ENDIF                                                      B06730
+            ELSE
+C      "ELSE" IS TRUE WHEN "ILNFLG" EQUALS 2
+C
+               IF (FREJ(J).EQ.HREJ) SUI = 0.
+            ENDIF
             IF (SUI.EQ.0.) THEN                                           B06740
                SP(I) = 0.                                                 B06750
                SPPSP(I) = 0.                                              B06760
@@ -698,6 +717,7 @@ C                                                                         B06900
    30 CONTINUE                                                            B06910
 C                                                                         B06920
       NCHNG = NMINUS+NPLUS                                                B06930
+      IF (ILNFLG.EQ.1) WRITE(15)(FREJ(J),J=ILO,IHI)
 C                                                                         B06940
       RETURN                                                              B06950
 C                                                                         B06960
@@ -3810,6 +3830,8 @@ C                                                                         D06280
 C                                                                         D06300
 C     SUBROUTINE CONVF4 CONVOLVES THE LINE DATA WITH FUNCTION F4          D06310
 C                                                                         D06320
+      CHARACTER*1 FREJ(1250),HREJ,HNOREJ
+      COMMON /RCNTRL/ ILNFLG
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D06330
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D06340
      *               DPTFC,ILIN4,ILIN4T                                   D06350
@@ -3821,6 +3843,7 @@ C                                                                         D06390
 C                                                                         D06410
       DATA ZBND / 64. /                                                   D06420
       DATA ASUBL / 0.623 /,BSUBL / 0.410 /                                D06430
+      DATA HREJ /'0'/,HNOREJ /'1'/
 C                                                                         D06440
       VNULST = V2R4+BOUND4                                                D06450
 C                                                                         D06460
@@ -3867,6 +3890,8 @@ C                                                                         D06850
 C                                                                         D06870
 C     START OF LOOP OVER LINES                                            D06880
 C                                                                         D06890
+      IF (ILNFLG.EQ.2) READ(16)(FREJ(I),I=ILO,IHI)
+C
       DO 60 I = ILO, IHI                                                  D06900
 C                                                                         D06910
          IF (S(I).EQ.0..AND.SPP(I).EQ.0.) GO TO 60                        D06920
@@ -3890,7 +3915,17 @@ C                                                                         D07090
          JJ = (VNU(I)-V1R4)/DVR4+1.                                       D07100
          JJ = MAX(JJ,1)                                                   D07110
          JJ = MIN(JJ,NPTR4)                                               D07120
-         IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ))) GO TO 60                      D07130
+C
+         IF (ILNFLG.LE.1) THEN
+            FREJ(I) = HNOREJ
+            IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ))) THEN
+               FREJ(I) = HREJ
+               GO TO 60                                                   D07130
+            ENDIF
+         ELSE
+            IF (FREJ(I).EQ.HREJ) GOTO 60
+         ENDIF
+C
          ILIN4 = ILIN4+1                                                  D07140
 C                                                                         D07150
          VNUI = VNU(I)                                                    D07160
@@ -3958,11 +3993,14 @@ C                                                                         D07760
 C                                                                         D07780
    60 CONTINUE                                                            D07790
 C                                                                         D07800
+      IF (ILNFLG.EQ.1) WRITE(16)(FREJ(I),I=ILO,IHI)
       RETURN                                                              D07810
 C                                                                         D07820
 C     IF END OF CONVOLUTION, SET IHI=-1 AND RETURN                        D07830
 C                                                                         D07840
-   70 IHI = -1                                                            D07850
+   70 CONTINUE
+      IF (ILNFLG.EQ.1) WRITE(16)(FREJ(I),I=ILO,IHI)
+      IHI = -1                                                            D07850
 C                                                                         D07860
       RETURN                                                              D07870
 C                                                                         D07880
