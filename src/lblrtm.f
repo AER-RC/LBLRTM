@@ -1198,7 +1198,7 @@ C
       RETURN
 C
  900  FORMAT (' QNTIFY: PATH NOT LEFT JUSTIFIED: ',A55)
- 910  FORMAT ('(A',I2.2,',I2.2)')
+ 910  FORMAT ('(A',I2.2,',I3.3)')
 C
       END
 C
@@ -3231,6 +3231,7 @@ C
             DVL(L) = DV
             TYPE = 0.
             ITYPE = -99
+            ZETA = ALBL(L)/(ALBL(L)+ADBL(L))
             IF (IFORM.EQ.1) THEN
                WRITE (IPR,960) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *              TAVEL(L),ALBL(L),ADBL(L),AVBL(L),ZETA,
