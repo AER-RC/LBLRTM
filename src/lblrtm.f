@@ -1154,6 +1154,7 @@ C                                                                         A09050
 C                                                                         A09130
       DIMENSION XFILHD(2),PNLHD(2)                                        A09140
       EQUIVALENCE (FSCDID(5),IEMIT) , (FSCDID(6),ISCAN)                   A09150
+      equivalence (fscdid(12), xscid)
       EQUIVALENCE (XFILHD(1),XID(1)) , (PNLHD(1),V1P)                     A09160
 C                                                                         A09170
       CALL CPUTIM (TIME)                                                  A09180
@@ -1166,7 +1167,10 @@ C                                                                         A09220
       CALL BUFOUT (MFILE,PNLHD(1),NPHDRF)                                 A09250
       CALL BUFIN (KFILE,KEOF,TR(1),NLIMO)                                 A09260
       CALL BUFOUT (MFILE,TR(1),NLIMO)                                     A09270
-      IF (IEMIT.EQ.0.OR.ISCAN.GT.0) GO TO 10                              A09280
+c     Testing to see if there is just 1 data blocks (i.e.trans) or
+c     if there are 2 (i.e. trans. and rad) to read in
+C     IF (IEMIT.EQ.0.OR.ISCAN.GT.0) GO TO 10                              A09280
+      if (iemit.eq.0.or.xscid.gt.0) go to 10
       CALL BUFIN (KFILE,KEOF,TR(1),NLIMO)                                 A09290
       CALL BUFOUT (MFILE,TR(1),NLIMO)                                     A09300
       GO TO 10                                                            A09310
