@@ -35,7 +35,7 @@ C     FACTOR = A MULTIPLICATIVE FACTOR TO CHANGE SIZE OT PLOTTING.        NC0290
 C                                                                         NC0300
 C----------------------------------------------------------------------   NC0310
 C                                                                         NC0320
-      IMPLICIT DOUBLE PRECISION (V)                                     [ NC0330
+      IMPLICIT REAL*8           (V)                                     [ NC0330
 C                                                                         NC0340
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -98,7 +98,7 @@ C                                                                         NC0840
       END                                                                 NC0850
       SUBROUTINE PLOT (X,Y,IPEN)                                          NC0860
 C                                                                         NC0870
-      IMPLICIT DOUBLE PRECISION (V)                                     [ NC0880
+      IMPLICIT REAL*8           (V)                                     [ NC0880
 C                                                                         NC0890
 C----------------------------------------------------------------------   NC0900
 C                                                                         NC0910
@@ -166,7 +166,7 @@ C                                                                         NC1520
       END                                                                 NC1530
       SUBROUTINE LINE (X,Y,N,K,J)                                         NC1540
 C                                                                         NC1550
-      IMPLICIT DOUBLE PRECISION (V)                                     [ NC1560
+      IMPLICIT REAL*8           (V)                                     [ NC1560
 C                                                                         NC1570
 C----------------------------------------------------------------------   NC1580
 C                                                                         NC1590

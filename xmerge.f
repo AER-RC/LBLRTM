@@ -7,7 +7,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE XMERGE (NPTS,LFILE,MFILE,JPATHL)                         H00010
 C                                                                         H00020
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H00030
+      IMPLICIT REAL*8           (V)                                     ! H00030
 C                                                                         H00040
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H00050
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        H00060
@@ -21,7 +21,8 @@ C                                                                         H00100
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H00140
      *              EXTID(10)                                             H00150
 C                                                                         H00160
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H00170
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H00180
       COMMON /HVERSN/  HVRLBL,HVRCNT,HVRFFT,HVRATM,HVRLOW,HVRNCG,
      *                HVROPR,HVRPST,HVRPLT,HVRTST,HVRUTL,HVRXMR
@@ -147,7 +148,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE XMERGI (NPTS,LFILE,MFILE,JPATHL)                         H00810
 C                                                                         H00820
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H00830
+      IMPLICIT REAL*8           (V)                                     ! H00830
 C                                                                         H00840
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
@@ -168,7 +169,8 @@ C                                                                         H00900
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   H00970
      *                JEFILE,KEFILE                                       H00980
 C                                                                         H00990
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H01000
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H01010
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H01020
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H01030
@@ -234,7 +236,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE ABINIT (NPTS,MFILE,JPATHL)                               H01600
 C                                                                         H01610
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H01620
+      IMPLICIT REAL*8           (V)                                     ! H01620
 C                                                                         H01630
       COMMON ODLAY(-2:2407)                                               H01640
       COMMON /MANE/ P0,TEMP0,NLAYER,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   H01650
@@ -244,7 +246,8 @@ C                                                                         H01630
      *              EXTID(10)                                             H01690
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H01700
 C                                                                         H01710
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H01720
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H01730
       COMMON /ABSHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H01740
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H01750
@@ -398,7 +401,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE ABSMRG (NPTS,LFILE,MFILE,JPATHL)                         H02590
 C                                                                         H02600
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H02610
+      IMPLICIT REAL*8           (V)                                     ! H02610
 C                                                                         H02620
 C     SUBROUTINE ABSMRG MERGES ABSORPTION VALUES FROM KFILE INTO LFILE    H02630
 C                                                                         H02640
@@ -410,7 +413,8 @@ C                                                                         H02640
      *              EXTID(10)                                             H02700
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H02710
 C                                                                         H02720
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H02730
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H02740
       COMMON /ABSHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H02750
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H02760
@@ -644,7 +648,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE ABSINT (NPTS,LFILE,MFILE,JPATHL)                         H05020
 C                                                                         H05030
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H05040
+      IMPLICIT REAL*8           (V)                                     ! H05040
 C                                                                         H05050
       COMMON NEWOD(2410),ODLAY(-2:2407)                                   H05060
       COMMON /MANE/ P0,TEMP0,NLAYER,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   H05070
@@ -654,7 +658,8 @@ C                                                                         H05050
      *              EXTID(10)                                             H05110
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H05120
 C                                                                         H05130
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H05140
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H05150
       COMMON /ABSHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H05160
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H05170
@@ -876,7 +881,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE ABSOUT (V1PO,V2PO,DVPO,NLIMO,JLO,MFILE,NPTS,R1,NPANLS)   H07310
 C                                                                         H07320
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H07330
+      IMPLICIT REAL*8           (V)                                     ! H07330
 C                                                                         H07340
 C     SUBROUTINE ABSOUT OUPUTS THE MERGED RESULT (R1) ONTO MFILE          H07350
 C                                                                         H07360
@@ -924,7 +929,7 @@ C     ----------------------------------------------------------------
 C
       FUNCTION BBFN (VI,DVI,V2I,XKT,VINEW,BBDEL,BBLAST)                   H07760
 C                                                                         H07770
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H07780
+      IMPLICIT REAL*8           (V)                                     ! H07780
 C                                                                         H07790
 C     FUNCTION BBFN CALCULATES BLACK BODY FN FOR WAVENUMBER VALUE VI      H07800
 C     AND CALCULATES THE WAVENUMBER VALUE (VINEW) FOR NEXT BBFN CALC.     H07810
@@ -1060,7 +1065,7 @@ C     ---------------------------------------------------------------
 C
       FUNCTION BBAD(BBVAL,VI,DVI,V2I,XKT,VDNEW,BBADDL,BBADOL)
 C                                                                     
-      IMPLICIT DOUBLE PRECISION (V)                                   
+      IMPLICIT REAL*8           (V)                                   
 C                                                                     
 C     FUNCTION BBAD calculates the derivative of the black body fn
 C     analytically for wavenumber value VI 
@@ -1202,7 +1207,7 @@ C     ----------------------------------------------------------------
 C
       FUNCTION EMISFN (VI,DVI,VINEM,EMDEL,EMLAST)                         H08940
 C                                                                         H08950
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H08960
+      IMPLICIT REAL*8           (V)                                     ! H08960
 C                                                                         H08970
 C     FUNCTION EMISFN CALCULATES BOUNDARY EMISSIVITY FOR WAVE NUMBER      H08980
 C     VALUE CORRESPONDING TO VI AND VINEM, AND THEN CALCULATES THE        H08990
@@ -1338,7 +1343,7 @@ C     ----------------------------------------------------------------
 C
       FUNCTION REFLFN (VI,DVI,VINRF,RFDEL,RFLAST)                         H09780
 C                                                                         H09790
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H09800
+      IMPLICIT REAL*8           (V)                                     ! H09800
 C                                                                         H09810
 C     FUNCTION REFLFN CALCULATES BOUNDARY REFLECTIVITY FOR WAVE NUMBER    H09820
 C     VALUE CORRESPONDING TO VI AND VINRF, AND THEN CALCULATES THE        H09830
@@ -1475,7 +1480,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)      H10630
 C                                                                         H10640
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H10650
+      IMPLICIT REAL*8           (V)                                     ! H10650
 C                                                                         H10660
 C     SUBROUTINE EMIN INPUTS OPTICAL DEPTH VALUES FROM KFILE AND          H10670
 C       CALCULATES SOURCE FUNCTION FOR THE LAYER.                         H10680
@@ -1510,7 +1515,8 @@ C                                                                         H10960
 C                                                                         H10970
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10980
 C                                                                         H10990
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H11000
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H11010
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H11020
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H11030
@@ -1973,7 +1979,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)                          H16260
 C                                                                         H16270
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H16280
+      IMPLICIT REAL*8           (V)                                     ! H16280
 C                                                                         H16290
 C                                                                         H16300
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H16310
@@ -2012,7 +2018,8 @@ C                                                                         H16580
      *              EXTID(10)                                             H16640
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H16650
 C                                                                         H16660
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H16670
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H16680
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H16690
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H16700
@@ -2170,12 +2177,9 @@ C                                                                         H18210
          ENDIF
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18230
 C                                                                         H18240
-c         write(*,*) '  -- EMINIT --'
          DO 50 J = NLIM1, NLIM2                                           H18250
             V=VI+FLOAT(J-1)*DVPO
             NEWEM(J) = EMLAYR(J)+TRLAYR(J)*BB*EMISIV                      H18260
-c            vpat = v1po+dvpo*(j-1)
-c            write(*,*) j,vpat, newem(j)
 C
 C           Increment interpolation value
 C
@@ -2265,7 +2269,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE RADMRG (NPTS,LFILE,MFILE,JPATHL,TBND)                    H19090
 C                                                                         H19100
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H19110
+      IMPLICIT REAL*8           (V)                                     ! H19110
 C                                                                         H19120
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H19130
 C                                                                         H19140
@@ -2303,7 +2307,8 @@ C                                                                         H19400
      *              EXTID(10)                                             H19460
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H19470
 C                                                                         H19480
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H19490
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H19500
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H19510
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H19520
@@ -2562,7 +2567,7 @@ C
       SUBROUTINE RADNN (RADLYR,TRALYR,RADO,TRAO,RADLYB,NLIM,NDIM,ND2,     H22020
      *                  V1P,DVP,IPATHL,A1,A2,A3,A4,LL,NPL)                H22030
 C                                                                         H22040
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H22050
+      IMPLICIT REAL*8           (V)                                     ! H22050
 C                                                                         H22060
 C     THIS SUBROUTINE CALCULATES THE NEW RADIANCE AND TRANSMISSION        H22070
 C                                                                         H22080
@@ -2811,7 +2816,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE RADINT (NPTS,LFILE,MFILE,JPATHL,TBND)                    H24160
 C                                                                         H24170
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H24180
+      IMPLICIT REAL*8           (V)                                     ! H24180
 C                                                                         H24190
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H24200
 C                                                                         H24210
@@ -2849,7 +2854,8 @@ C                                                                         H24470
      *              EXTID(10)                                             H24530
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H24540
 C                                                                         H24550
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H24560
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H24570
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H24580
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H24590
@@ -3128,7 +3134,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE EMBND (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,TBND)            H27290
 C                                                                         H27300
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H27310
+      IMPLICIT REAL*8           (V)                                     ! H27310
 C                                                                         H27320
 C                                                                         H27330
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H27340
@@ -3218,7 +3224,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE EMOUT (V1P,V2P,DVP,NLIM,NEWEM,NEWTR,MFILE,NPTS,NPANLS)   H28130
 C                                                                         H28140
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H28150
+      IMPLICIT REAL*8           (V)                                     ! H28150
 C                                                                         H28160
 C     SUBROUTINE EMOUT OUTPUTS MERGED EMISSION AND TRANSMITTANCE RESULT   H28170
 C     TO MFILE                                                            H28180
@@ -3442,7 +3448,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)      H10630
 C                                                                         H10640
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H10650
+      IMPLICIT REAL*8           (V)                                     ! H10650
 C                                                                         H10660
 C     SUBROUTINE EMDM INPUTS OPTICAL DEPTH VALUES FROM KFILE AND          H10670
 C       CALCULATES SOURCE FUNCTION FOR THE LAYER.                         H10680
@@ -3477,7 +3483,8 @@ C                                                                         H10960
 C                                                                         H10970
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10980
 C                                                                         H10990
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H11000
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H11010
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H11020
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H11030
@@ -3955,7 +3962,7 @@ C
 C     ---------------------------------------------------------------
       SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)      H10630
 C                                                                         H10640
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H10650
+      IMPLICIT REAL*8           (V)                                     ! H10650
 C                                                                         H10660
 C     SUBROUTINE EMDT inputs optical depth values from kfile and          H10670
 C       calculates source function for the layer.                         H10680
@@ -3973,7 +3980,8 @@ C                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139          H10840
 C                                                                         H10850
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H10980
 C                                                                         H10990
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H11000
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H11010
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H11020
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H11030
@@ -4463,7 +4471,7 @@ C     ---------------------------------------------------------------
 C
       SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)                          H16260
 C                                                                         H16270
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H16280
+      IMPLICIT REAL*8           (V)                                     ! H16280
 C
 C     Calculates radiance and radiance derivative for first layer
 C                                                                         H16290
@@ -4485,7 +4493,8 @@ C                                                                         H16580
      *              EXTID(10)                                             H16640
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H16650
 C                                                                         H16660
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H16670
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H16680
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H16690
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H16700
@@ -4668,12 +4677,9 @@ C                                                                         H18210
          ENDIF
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18230
 C                                                                         H18240
-c         write(*,*) '  -- EMADL1 --'
          DO 50 J = NLIM1, NLIM2                                           H18250
             OLDEM(J) = BB*EMISIV
             NEWEM(J) = EMLAYR(J)+TRLAYR(J)*OLDEM(J)                       H18280
-c            vpat = v1po+dvpo*(j-1)
-c            write(*,*) j,vpat, newem(j)
 C
 C           Increment interpolation values
 C
@@ -4798,7 +4804,7 @@ C     ---------------------------------------------------------------
 C
       SUBROUTINE EMADMG (NPTS,LFILE,MFILE,JPATHL,TBND)                    H19090
 C                                                                         H19100
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H19110
+      IMPLICIT REAL*8           (V)                                     ! H19110
 C
 C     Merges layer radiances when calculating layer
 C     radiance derivatives.
@@ -4820,7 +4826,8 @@ C                                                                         H19400
      *              EXTID(10)                                             H19460
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H19470
 C                                                                         H19480
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H19490
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H19500
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H19510
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H19520
@@ -5128,8 +5135,9 @@ C     KFILE and total transmittance from KODTOT (if there is more
 C     than one layer between the present layer and the observer),
 C     and then calculates the radiance derivatives
 C
-      IMPLICIT DOUBLE PRECISION (V)
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      &
+      IMPLICIT REAL*8           (V)
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C
       REAL KSUBL(0:ND2)
 C
@@ -5317,8 +5325,9 @@ C     (calculated in SUBROUTINE EMDT) and the layer transmittance
 C     and then calculates the radiance derivatives with respect to
 C     temperature
 C
-      IMPLICIT DOUBLE PRECISION (V)
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      &
+      IMPLICIT REAL*8           (V)
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C
       REAL KSUBL(0:ND2)
 C
@@ -5444,7 +5453,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)         H28650
 C                                                                         H28660
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H28670
+      IMPLICIT REAL*8           (V)                                     ! H28670
 C                                                                         H28680
 C     SUBROUTINE FLXIN INPUTS OPTICAL DEPTH VALUES FROM KFILE AND         H28690
 C     CALCULATES FLUX FOR THE LAYER. THIS VERSION WORKS FOR AEROSOLS.     H28700
@@ -5478,7 +5487,8 @@ C                                                                         H28970
 C                                                                         H28980
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H28990
 C                                                                         H29000
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H29010
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H29020
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H29030
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H29040
@@ -5640,7 +5650,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND)                          H30700
 C                                                                         H30710
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H30720
+      IMPLICIT REAL*8           (V)                                     ! H30720
 C                                                                         H30730
 C                                                                         H30740
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H30750
@@ -5680,7 +5690,8 @@ C                                                                         H31030
      *              EXTID(10)                                             H31090
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H31100
 C                                                                         H31110
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H31120
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H31130
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H31140
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H31150
@@ -5851,7 +5862,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND)                    H32750
 C                                                                         H32760
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H32770
+      IMPLICIT REAL*8           (V)                                     ! H32770
 C                                                                         H32780
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H32790
 C                                                                         H32800
@@ -5890,7 +5901,8 @@ C                                                                         H33070
      *              EXTID(10)                                             H33130
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H33140
 C                                                                         H33150
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H33160
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H33170
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H33180
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H33190
@@ -6119,7 +6131,7 @@ C
       SUBROUTINE FLUXNN (RADLYR,TRALYR,RADO,TRAO,NLIM,NDIM,ND2,V1P,DVP,   H35390
      *                  IPATHL,A1,A2,A3,A4,LL,NPL)                        H35400
 C                                                                         H35410
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H35420
+      IMPLICIT REAL*8           (V)                                     ! H35420
 C                                                                         H35430
 C     THIS SUBROUTINE CALCULATES THE NEW RADIANCE AND TRANSMISSION        H35440
 C                                                                         H35450
@@ -6208,7 +6220,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE FLUXDN (NPTS,LFILE,MFILE,JPATHL,TBND)                    H36260
 C                                                                         H36270
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H36280
+      IMPLICIT REAL*8           (V)                                     ! H36280
 C                                                                         H36290
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H36300
 C                                                                         H36310
@@ -6247,7 +6259,8 @@ C                                                                         H36580
      *              EXTID(10)                                             H36640
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOG,RADCN1,RADCN2           H36650
 C                                                                         H36660
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H36670
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H36680
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H36690
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H36700
@@ -6529,7 +6542,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE GETEXT (IEXFIL,LYRNOW,IEMITT)                            H39430
 C                                                                         H39440
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H39450
+      IMPLICIT REAL*8           (V)                                     ! H39450
 C                                                                         H39460
 C     THIS SUBROUTINE HAS BEEN MODIFIED TO ALSO READ IN THE ASYMMETRY     H39470
 C     FACTORS AND TO SEARCH FOR THE PROPER LAYER IF DESIRED.              H39480
@@ -6550,7 +6563,8 @@ C                                                                         H39580
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H39630
      *              EXTID(10)                                             H39640
 C                                                                         H39650
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H39660
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H39670
       COMMON /FILHDA/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H39680
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H39690
@@ -6621,7 +6635,7 @@ C     ----------------------------------------------------------------
 C
       SUBROUTINE ADARSL (NNPTS,IEXFIL,MFILE,IAFIL,IEMIT)                  H40420
 C                                                                         H40430
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H40440
+      IMPLICIT REAL*8           (V)                                     ! H40440
 C                                                                         H40450
 C     ROUTINE TO ADD ABSORPTION AND SCATTERING TO THE TRANSMITTANCE       H40460
 C     VALUES AT EACH POINT. THE AEROSOL VALUES ARE STORED IN              H40470
@@ -6645,7 +6659,8 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFLD,IEXFLD,        H40610
      *              NLTEFL,LNFIL4,LNGTH4                                  H40620
 C                                                                         H40630
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H40640
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H40650
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H40660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H40670
@@ -6731,7 +6746,7 @@ C     ----------------------------------------------------------------
 C
       FUNCTION AERF (VI,DVI,VINXT,ADEL,TAUSCT,TDEL,GFACT,GDEL)            H41460
 C                                                                         H41470
-      IMPLICIT DOUBLE PRECISION (V)                                     ! H41480
+      IMPLICIT REAL*8           (V)                                     ! H41480
 C                                                                         H41490
 C     THIS FUNCTION CORRELATES THE AEROSOL FREQ. WITH THE LBLRTM          H41500
 C     FREQ.  AND ADDS THE ABSORPTION TO THE                               H41510
@@ -6746,7 +6761,8 @@ C                                                                         H41580
       COMMON /SCATTA/ V1SC,V2SC,DVSC,NPTSC,SCTTR(2025)                    H41600
       COMMON /ASYMMA/ V1AS,V2AS,DVAS,NPTAS,ASYMT(2025)                    H41610
 C                                                                         H41620
-      DOUBLE PRECISION XID,SECANT,HMOLID,XALTZ,YID                      & H41630
+      character*8      XID,       HMOLID,      YID
+      real*8               SECANT,       XALTZ 
 C                                                                         H41640
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H41650
      *                WK(60),PZL,PZU,TZL,TZU,WN2   ,DV ,V1 ,V2 ,TBOUND,   H41660
@@ -6794,7 +6810,7 @@ C
 C     Linearly interpolates emission and reflection values which
 C     are directly read in from ASCII files
 C
-      IMPLICIT DOUBLE PRECISION (V)
+      IMPLICIT REAL*8           (V)
 C
 C     ZDEL is the slope of the line
 C
