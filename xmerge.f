@@ -69,20 +69,21 @@ C                                                                         H00520
          IF (IAERSL.GE.1) CALL GETEXT (IEXFIL,LAYER,IEMIT)                H00550
 C                                                                         H00560
          TBND = 0.                                                        H00570
-         IF (IPATHL.EQ.1.AND.LAYER.EQ.1)   TBND = TMPBND                  H00580
-         IF (IPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND                  H00590
-         IF (LAYER.EQ.1) THEN                                             H00600
-            IF (IMRG.NE.36) THEN                                          H00610
-               CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                       H00620
-            ELSE                                                          H00630
-               CALL FLINIT (NPTS,MFILE,JPATHL,TBND)                       H00640
+         IF (IMRG.NE.36) THEN                                             H00580
+            IF (LAYER.EQ.1) THEN                                          H00590
+               IF (IPATHL.EQ.1) TBND = TMPBND                             H00600
+               CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                       H00610
+            ELSE                                                          H00620
+               IF (IPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND            H00630
+               CALL RADMRG (NPTS,LFILE,MFILE,JPATHL,TBND)                 H00640
             ENDIF                                                         H00650
          ELSE                                                             H00660
-            IF (IMRG.NE.36) THEN                                          H00670
-               CALL RADMRG (NPTS,LFILE,MFILE,JPATHL,TBND)                 H00680
-            ELSE                                                          H00690
-               CALL FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND)                 H00700
-            ENDIF                                                         H00710
+            IF (LAYER.EQ.1) THEN                                          H00670
+               TBND = TMPBND                                              H00680
+               CALL FLINIT (NPTS,MFILE,JPATHL,TBND)                       H00690
+            ELSE                                                          H00700
+               CALL FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND)                 H00710
+            ENDIF
          ENDIF                                                            H00720
 C                                                                         H00730
       ENDIF                                                               H00740
@@ -152,17 +153,18 @@ C                                                                         H01290
 C                                                                         H01340
       TBND = 0.                                                           H01350
 C                                                                         H01360
-      IF (JPATHL.EQ.1.AND.LAYER.EQ.1)   TBND = TMPBND                     H01370
-      IF (JPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND                     H01380
-      IF (LAYER.EQ.LH1.AND.IANT.NE.-1) THEN                               H01390
-         IF (IMRG.NE.35) THEN                                             H01400
-            CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                          H01410
-         ELSE                                                             H01420
-            CALL FLINIT (NPTS,MFILE,JPATHL,TBND)                          H01430
+      IF (IMRG.NE.35) THEN                                                H01370
+         IF (LAYER.EQ.LH1.AND.IANT.NE.-1) THEN                            H01380
+            IF (JPATHL.EQ.1.AND.LAYER.EQ.1)   TBND = TMPBND               H01390
+            CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                          H01400
+         ELSE                                                             H01410
+            IF (JPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND               H01420
+            CALL RADINT (NPTS,LFILE,MFILE,JPATHL,TBND)                    H01430
          ENDIF                                                            H01440
       ELSE                                                                H01450
-         IF (IMRG.NE.35) THEN                                             H01460
-            CALL RADINT (NPTS,LFILE,MFILE,JPATHL,TBND)                    H01470
+         IF (LAYER.EQ.LH1.AND.IANT.NE.-1) THEN                            H01460
+            TBND = TMPBND
+            CALL FLINIT (NPTS,MFILE,JPATHL,TBND)                          H01470
          ELSE                                                             H01480
             CALL FLUXDN (NPTS,LFILE,MFILE,JPATHL,TBND)                    H01490
          ENDIF                                                            H01500
