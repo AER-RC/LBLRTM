@@ -420,6 +420,7 @@ C                                                                        FA03820
       COMMON /ZOUTP/ ZOUT(MXLAY),SOUT(MXLAY),RHOSUM(MXLAY),              FA03950
      *               AMTTOT(MXMOL),AMTCUM(MXMOL),ISKIP(MXMOL)            FA03960
       COMMON /PCHINF/ MUNITS,CTYPE(MXLAY)
+      COMMON /FIXITYL/ IFXTYP
       DIMENSION XPBAR(NXPBAR),XZOUT(NXZOUT),WMT(MXMOL)                   FA03970
 
       dimension densave(mxzmd)
@@ -923,6 +924,19 @@ C                                                                        FA09490
          TWTD = 0.                                                       FA09630
          WTOT = 0.                                                       FA09640
 C
+c
+c        Read from/Write to "IFIXTYPE" file: if IFXTYP = -2, use
+C        preset ITYL values; if IFXTYP = 2, calculate and write out
+C        ITYL values.
+
+         IF (IFXTYP.eq.-2) then
+            open(99,file='IFIXTYPE',status='old',
+     *           form='formatted')
+         elseif (IFXTYP.eq.2) then
+            open(99,file='IFIXTYPE',status='unknown',
+     *           form='formatted')
+         endif
+
          DO 280 L = 1, LMAX                                              FA09650
             FACTOR = 1.                                                  FA09660
             IF (IPATH(L).EQ.2) FACTOR = 2.                               FA09670
@@ -949,6 +963,17 @@ C
                ALFCOR = (PBAR(L)/PZERO)*SQRT(T296/TBAR(L))
                ADBAR = 3.581155E-07*XVBAR*SQRT(TBAR(L)/AVMWT)
                CALL FIXTYP(IEMIT,FRH2O,ALFCOR,OLDDV,L,CTYPE(L))
+               read(ctype(L),1100) ityl(l)
+            elseif (ifxtyp.eq.2) then
+               FRH2O  = AMOUNT(1,L)/WTOTL(L)
+               ALFCOR = (PBAR(L)/PZERO)*SQRT(T296/TBAR(L))
+               ADBAR = 3.581155E-07*XVBAR*SQRT(TBAR(L)/AVMWT)
+               CALL FIXTYP(IEMIT,FRH2O,ALFCOR,OLDDV,L,CTYPE(L))
+               read(ctype(l),1100) ityl(l)
+               write(99,1100) ityl(l)
+            elseif (ifxtyp.eq.-2) then
+               read(99,1100) ityl(l)
+               write(ctype(l),1100) ityl(l)
             ENDIF
 C
 C
@@ -1030,6 +1055,14 @@ C
                ENDIF
             ENDIF                                                        FA10110
   280    CONTINUE                                                        FA10120
+
+
+C        Close "IFIXTYPE" file, if used
+         IF (abs(IFXTYP).eq.2) then
+            rewind(99)
+            close(99)
+         endif
+
 C
 C        > Write atmosphere to TAPE6 in mixing ratio <
 C
@@ -1248,6 +1281,8 @@ C                                                                        FA10530
      *        ' TDIFF2 = ',F10.4)                                        FA11690
  1000 FORMAT ('*** WARNING: Zeroing molecule #',i2.2,' amount ',
      *        'in layer #',i3.3)
+ 1100 format (i3)
+ 1101 format (a3)
 C                                                                        FA11700
       END                                                                FA11710
 C
@@ -1275,7 +1310,11 @@ C                                                                        FA11900
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA11910
      *               JUNITT                                              FA11920
       COMMON /HMOLC/ HMOLC(MXMOL)                                        FA11930
+      COMMON /FIXITYL/ IFXTYP
       CHARACTER*8 HMOLC                                                  FA11940
+
+C     IFXTYP is the flag for fixing the value of ITYL
+      DATA IFXTYP /0/
 C                                                                        FA11950
 C     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM         FA11960
 C     IOUTDM IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                      FA11970
@@ -2770,8 +2809,8 @@ C                                                                        FA26650
 C                                                                        FA26670
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA26680
      *               JUNITT                                              FA26690
-      CHARACTER*1 JCHAR,JCHARP,JCHART                                    FA26700
-      COMMON /MCHAR/ JCHAR(MXMOL),JCHARP,JCHART                          FA26710
+      CHARACTER*1 JCHAR,JCHARP,JCHART,JLONG                              FA26700
+      COMMON /MCHAR/ JCHAR(MXMOL),JCHARP,JCHART,JLONG                    FA26710
       COMMON /CONSTN/ PZERO,TZERO,AVOGAD,ALOSMT,GASCON,PLANK,BOLTZ,      FA26720
      *                CLIGHT,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)       FA26730
 C                                                                        FA26740
@@ -2795,7 +2834,8 @@ C     INPUT READ FOR 'MODEL = 0", I.E. USER-SUPPLIED VERITCAL            FA26910
 C                                                                        FA26920
 C     **********************************************************         FA26930
 C                                                                        FA26940
-      READ (IRD,900) ZMDL,PM,TM,JCHARP,JCHART,(JCHAR(K),K=1,MXMOL)       FA26950
+      READ (IRD,900) ZMDL,PM,TM,JCHARP,JCHART,JLONG,
+     *               (JCHAR(K),K=1,MXMOL)                                FA26950
       ISAME = 0                                                          FA26960
       JUNITP = JOU(JCHARP)                                               FA26970
       JUNITT = JOU(JCHART)                                               FA26980
@@ -2808,11 +2848,25 @@ C                                                                        FA27030
          KUNIT(K) = JUNIT(K)+1                                           FA27050
    10 CONTINUE                                                           FA27060
 C                                                                        FA27070
-      READ (IRD,905) (WMOL(K),K=1,NMOL)                                  FA27080
+C     Read in moleclar information at E15.8 format for flag JLONG='L'
+      IF (JLONG.EQ.'L') THEN
+         READ (IRD,906) (WMOL(K),K=1,NMOL)
+      ELSEIF (JLONG.EQ.' ') THEN
+         READ (IRD,905) (WMOL(K),K=1,NMOL)
+      ELSE
+         WRITE(*,*) 'INVALID VALUE FOR JLONG ON RECORD 3.5: ',JLONG
+         STOP 'RDUNIT'
+      ENDIF
       IF (IM.EQ.0) WRITE (IPR,910)                                       FA27090
 C                                                                        FA27100
-      WRITE (IPR,915) IM,ZMDL,JCHARP,PM,JCHART,TM,                       FA27110
-     *                (K,JCHAR(K),WMOL(K),K=1,NMOL)                      FA27120
+      IF (JLONG.EQ.'L') THEN
+         WRITE (IPR,916) IM,ZMDL,JCHARP,PM,JCHART,TM,
+     *                   (K,JCHAR(K),WMOL(K),K=1,NMOL)
+      ELSE
+         WRITE (IPR,915) IM,ZMDL,JCHARP,PM,JCHART,TM,
+     *                   (K,JCHAR(K),WMOL(K),K=1,NMOL)
+      ENDIF
+
       DO 20 I = 1, NMOL                                                  FA27130
          JOLD(I) = JUNIT(I)                                              FA27140
    20 CONTINUE                                                           FA27150
@@ -2824,13 +2878,16 @@ C                                                                        FA27200
       CALL DEFALT (ZMDL,PM,TM,CO2RAT)                                    FA27210
       RETURN                                                             FA27220
 C                                                                        FA27230
-  900 FORMAT (3E10.3,5X,2A1,3X,35A1)                                     FA27240
+  900 FORMAT (3E10.3,5X,2A1,1X,A1,1X,35A1)                               FA27240
   905 FORMAT (8E10.3)                                                    FA27250
+ 906  FORMAT (8E15.8)                                                    FA27250
   910 FORMAT (//,'  ECHO INPUT PARAMETERS FOR USER PROVIDED MODEL',/,    FA27260
      *        '0   (P : UNIT)=   ',5X,'(T : UNIT)=   ',5X,               FA27270
      *        '(MOLECULE NUMBER : UNIT)=   ')                            FA27280
   915 FORMAT ('0',I3,1X,'(ALT:KM)=',F7.3,4X,'(P:',A1,')=',G11.5,4X,      FA27290
      *        '(T:',A1,')=',F8.3,/,(4X,7(' (',I2,':',A1,')=',1PE10.3)))  FA27300
+ 916  FORMAT ('0',I3,1X,'(ALT:KM)=',F7.3,4X,'(P:',A1,')=',G11.5,4X,      FA27290
+     *        '(T:',A1,')=',F8.3,/,(4X,7(' (',I2,':',A1,')=',1PE15.8)))  FA27300
 C                                                                        FA27310
       END                                                                FA27320
       FUNCTION JOU (CHAR)                                                FA27330
@@ -3274,13 +3331,11 @@ C                                                                        FA31360
       IF (JUNIT.NE.10) GO TO 10                                          FA31410
 C                                                                        FA31420
 C     GIVEN VOL. MIXING RATIO                                            FA31430
-C     Convert using density of dry air.  The following quadratic is
-C     equivalent to the iterative scheme:
-C           DENNUM = WMOL*RHOAIR*1.E-6
-C           DRYAIR = RHOAIR - DENNUM
-C           DENNUM = WMOL*DRYAIR*1.E-6
-C                                                                        FA31440
-      DENNUM = ((WMOL*1.E-6) - (WMOL*1.E-6)**2)*RHOAIR                   FA31450
+
+C     Convert using density of dry air.
+
+      WMOL = WMOL*1.E-06
+      DENNUM = (WMOL/(1.+WMOL))*RHOAIR
       GO TO 90                                                           FA31460
    10 IF (JUNIT.NE.11) GO TO 20                                          FA31470
 C                                                                        FA31480
@@ -3292,13 +3347,11 @@ C                                                                        FA31500
       IF (JUNIT.NE.12) GO TO 30                                          FA31540
 C                                                                        FA31550
 C     GIVEN MASS MIXING RATIO (GM KG-1)                                  FA31560
+
 C     Convert using density of dry air.  The following quadratic is
-C     equivalent to the iterative scheme:
-C           DENNUM = R*WMOL*1.0E-3*RHOAIR
-C           DRYAIR = RHOAIR - DENNUM
-C           DENNUM = R*WMOL*1.0E-3*DRYAIR
 C                                                                        FA31570
-      DENNUM = ((R*WMOL*1.0E-3) - (R*WMOL*1.0E-3)**2)*RHOAIR             FA31580
+      WMOL = WMOL*R*1.0-3
+      DENNUM = (WMOL/(1.+WMOL))*RHOAIR
       GO TO 90                                                           FA31590
    30 CONTINUE                                                           FA31600
       IF (JUNIT.NE.13) GO TO 40                                          FA31610
