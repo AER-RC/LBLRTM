@@ -5,7 +5,7 @@ C     presently: 03/18/96  18:32:37
       SUBROUTINE RRTATM
 C
 C     This routine has been modified from lblatm.f for use with RRTM,
-C      using the translation code, lbl2r.f, version 1.7
+C      using the translation code, lbl2r.f, version 1.8
 C
 C     path:      %P%
 C     revision:  $Revision$
@@ -535,6 +535,7 @@ C                                                                        FA04820
      *                  IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX              FA04840
          XVBAR = 1.0
          ITYPE = 2
+         NOZERO = 1
       ENDIF                                                              FA04850
 C                                                                        FA04860
       NOP = NOPRNT                                                       FA04870
