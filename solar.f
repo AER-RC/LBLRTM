@@ -43,7 +43,7 @@ C       IOTFLG = 0   => attenuate w/transmittance & output (default).
 C              = 1   => attenuate and add to radiance from TAPE12
 C                       (requires INFLAG = 1).
 C
-C     Output radiance goes to TAPE11.
+C     Output radiance goes to TAPE13.
 C
 C     ------------------------------------------------------------
 C
@@ -83,7 +83,8 @@ C
       EQUIVALENCE (TRAN(1),TRAO(1)),(RADN(1),RADO(1)),
      *            (OPTN(1),OPTO(1)),
      *            (FSCDID(4),IAERSL),(FSCDID(5),IEMIT),
-     *            (FSCDID(7),IPLOT),(FSCDID(8),IPATHL),
+     *            (FSCDID(6),ISCHDR),(FSCDID(7),IPLOT),
+     *            (FSCDID(8),IPATHL),(FSCDID(12),XSCID),
      *            (FSCDID(16),LAYR1)
 C
 C     ************************************************************
@@ -153,6 +154,12 @@ C
       IEMIT = 1
       SECANT = 0.
       DV = DVL
+C
+C     Set XSCID and ISCHDR to values which allow for potential 
+C     interpolation of output file
+C
+      XSCID = 100.01
+      ISCHDR = 10
 C
 C     Output file header
 C
@@ -322,21 +329,9 @@ c
             FJJ = FJ1DIF+RATDV*FLOAT(II-1)
             JJ = IFIX(FJJ)-2
             JP = (FJJ-FLOAT(JJ))*100.-199.5
-c            write(*,*) 'TAPE11:'
-c            write(*,*) '   ',v1po+dvpo*(ii),rado(ii),trao(ii)
-c            write(*,*) 'SOLAR:'
-c            write(*,*) '   ',v1p+dvp*(jj-2),solar(jj-1)
-c            write(*,*) '   ',v1p+dvp*(jj-1),solar(jj)
-c            write(*,*) '   ',v1p+dvp*(jj),solar(jj+1)
-c            write(*,*) '   ',v1p+dvp*(jj+1),solar(jj+2)
-c
             SOLRAD(II) = (A1(JP)*SOLAR(JJ-1)+A2(JP)*SOLAR(JJ)+
      *           A3(JP)*SOLAR(JJ+1)+A4(JP)*SOLAR(JJ+2))*TRAN(II)+
      *           RADN(II)
-c
-c            write(*,*) 'SOLRAD:'
-c            write(*,*) '   ',v1po+dvpo*(ii),solrad(ii)
-c            write(*,*) ' ---'
  91      CONTINUE
       ENDIF
 C
