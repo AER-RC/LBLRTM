@@ -12,7 +12,7 @@ C     presently: %H%  %T%
                                     PRELIMINARY
                            USER INSTRUCTIONS FOR LBLRTM
  
-                                   23 July 1993
+                                  25 August 1993
  
  
  
@@ -37,7 +37,7 @@ C     presently: %H%  %T%
  RECORD 1.2
  
  
-      IHIRAC, ILBLF4, ICNTNM, IAERSL,  IEMIT,  ISCAN, IFILTR, IPLOT, ITEST,  IATM,  IMRG,  ILAS,   IMS, IXSECT,  MPTS,  NPTS
+      IHIRAC, ILBLF4, ICNTNM, IAERSL,  IEMIT,  ISCAN, IFILTR, IPLOT, ITEST,  IATM,  IMRG,  ILAS,   IOD, IXSECT,  MPTS,  NPTS
  
            5,     10,     15,     20,     25,     30,     35,    40,    45,    50, 54-55,    60,    65,     70, 72-75, 77-80
  
@@ -255,7 +255,7 @@ C     presently: %H%  %T%
  
  
  
-             V1,     V2,   SAMPLE,   DVSET,   ALFAO,   AVMASS,   DPTMIN,   DPTFAC,   ILNFLG
+             V1,     V2,   SAMPLE,   DVSET,  ALFALO,   AVMASS,   DPTMIN,   DPTFAC,   ILNFLG
  
            1-10,  11-20,    21-30,   31-40,   41-50,    51-60,    61-70,    71-80,     85
  
@@ -278,10 +278,10 @@ C     presently: %H%  %T%
  
                         If negative, final DV = abs(DVSET).  However, this option causes
                         line width readjustment which may effect the validity of the
-                        reults. Use with extreme caution.
+                        results. Use with extreme caution.
  
-               ALFA0    average collision broadened halfwidth (cm - 1/atm) (default = 0.08)
-                           (for cases with line coupling set ALFA0 = 0.05)
+              ALFAL0    average collision broadened halfwidth (cm - 1/atm) (default = 0.04)
+                           (for cases with line coupling set ALFAL0 = 0.05)
  
               AVMASS    average molecular mass (amu) for Doppler halfwidth (default = 36)
  
@@ -349,14 +349,15 @@ C     presently: %H%  %T%
           1X,I1    I3,    I5,   F10.2,  15A4
  
  
-               IFORM      (0,1) line rejection flag
+               IFORM      (0,1) column amount format flag
 
 			  = 0  read PAVE, WKL(M,L), WBROADL(L) in F10.4, E10.3, E10.3 formats (default)
 			  = 1  read PAVE, WKL(M,L), WBROADL(L) in E15.7 format
  
               NLAYRS      number of layers (maximum of 200)
  
-                NMOL      number of molecules (default = 7; maximum of 35)
+                NMOL      value of highest molecule number used (default = 7; maximum of 35)
+                                 See Table I for molecule numbers.
  
               SECNTO      user entered scale factor for the column amount for the layers defined by NLAYRS
                                  if positive, looking up
@@ -364,7 +365,6 @@ C     presently: %H%  %T%
                           normal value = 1.0
  
                HEDDR      60 character user identification
- 
  
  RECORD 2.1.1
   
@@ -375,9 +375,9 @@ C     presently: %H%  %T%
          F10.4,  F10.4,    F10.4,     A3,     I2,    1X,F7.2,      F8.3,    F7.2,     F7.2,   F8.3,   F7.2
  
  
-                PAVE   ave. pressure of layer (millibars)
+                PAVE   average pressure of layer (millibars)
  
-                TAVE   ave. temperature of layer (K)
+                TAVE   average temperature of layer (K)
  
               SECNTK   if SECNTK .ne. 0, it is the value of the column amount
                        scale factor that will be used in the calculation for this layer
@@ -1414,7 +1414,7 @@ C     presently: %H%  %T%
             FORMAT (4I5)
  
           IREG      =  specifies which of the four altitude regions a user defined
-                       aerosol or clould model will use
+                       aerosol or cloud model will use
  
                        ** Note: regions default to    1)   0 -   2 km
                                                       2)   3 -  10 km
@@ -1857,7 +1857,7 @@ C     presently: %H%  %T%
 
 			NORTON-BEER FUNCTIONS:
 			_____________________
-		    					sum{Ci*(1-(xa)**2)**i}
+		    					sum{Ci*(1-(x*a)**2)**i}
 							  from i=0 to 4, for
 							  0 =< x =< 1/a
 								and
@@ -2355,13 +2355,22 @@ C     presently: %H%  %T%
  
  
  
-    NOTE: for machines with 32 bit words the following variables may have been set to double precision: 
+    NOTES:
+
+      1.  for machines with 32 bit words the following variables may have been set to double precision: 
  
                                   XID(10),SEC,HMOL(64),V1V,V2V,YID(10)
                                   V1P,V2P
  
  
-    NOTE: the character '%' signals the end of TAPE5 and terminates LBLRTM.
+      2.  fftscn.f has parameters that are hardware dependent.  Before compiling, check to make sure
+           the appropriate statement is uncommented.
+ 
+ 
+      3.  the placement of the decimal point in the input supercedes that of a given format.
+ 
+ 
+      4.  the character '%' signals the end of TAPE5 and terminates LBLRTM.
 
  
  _________________________________________________________________________________________________________________________________
