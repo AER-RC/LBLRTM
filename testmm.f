@@ -115,17 +115,20 @@ C
 C     FO2 IS TO BRING THE RESULTS IN CONFORMITY WITH THE WESTWATER DATA
 C     AND PROVIDES ESSENTIAL AGREEMENT WITH ROSENKRANZ FOR THE Y'S
 C
+C     FO2 Modified to properly account for the 2.75K space black
+C     body (01/94)
+C
 C**********************
             IF (MOLK.EQ.7) THEN
-               DATA Y0RES/0.017/, FO2/1.3/
+               DATA Y0RES/0.017/, FO2/1.22/
 C**********************
                IF ((VNU(K-1) .GT. 0.000011) .AND. (IFLG(K).EQ.-1)) THEN
+                  YY = Y0RES
                   IF (VNU(K-1) .GT. 3.9) YY = Y0RES/2
                   VNU(K)  = FO2 * VNU(K)  - YY
                   ALF(K)  = FO2 * ALF(K)  - YY
                   AMOL(K) = FO2 * AMOL(K) - YY
                   TMPALF(K) = FO2 * TMPALF(K) - YY
-                  YY = Y0RES
                ENDIF
 C*********************
             ENDIF
@@ -281,7 +284,7 @@ C                                                                         N02630
       DATA CHMOL / '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ',          N02640
      *             '  CH4 ','   O2 ',57*'      ' /                        N02650
       DATA CHID / ' LINES FOR LBLRTM IN THE 0-50 CM-1 SPE',               N02660
-     *            'CTRAL REGION:   TESTMM          TSTMM86I' /            N02670
+     *            'CTRAL REGION: 1/31/94 f=1.22    TSTMM86I' /            N02670
       DATA CHID1 / '03/22/88','16.09.41' /                                N02680
       DATA NMOL,ILIN,ILINLC,ILINNL,IREC,IRECTL / 7,1277,41,0,1318,1318/   N02690
 C                                                                         N02700
