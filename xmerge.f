@@ -118,7 +118,7 @@ C
 C                                                                         H00820
       IMPLICIT DOUBLE PRECISION (V)                                     ! H00830
 C                                                                         H00840
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H00850
@@ -4170,7 +4170,7 @@ C     ROUTINE TO ADD ABSORPTION AND SCATTERING TO THE TRANSMITTANCE       H40460
 C     VALUES AT EACH POINT. THE AEROSOL VALUES ARE STORED IN              H40470
 C     COMMON ABSORB AND COMMON SCATTR.                                    H40480
 C                                                                         H40490
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
       COMMON R1(2410)                                                     H40500

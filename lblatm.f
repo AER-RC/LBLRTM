@@ -51,7 +51,7 @@ C     MXPDIM IS THE MAXIMUM NUMBER OF LEVELS IN THE PROFILE ZPTH         FA00460
 C         OBTAINED BY MERGING ZMDL AND ZOUT                              FA00470
 C     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT    FA00480
 C                                                                        FA00490
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA00500
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA00500
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA00510
 C                                                                        FA00520
       COMMON /PATHD/ PBAR(MXLAY),TBAR(MXLAY),AMOUNT(MXMOL,MXLAY),        FA00530
@@ -349,7 +349,7 @@ C                                                       AFGL-TR-80-0067  FA03290
 C                                                                        FA03300
 C**********************************************************************  FA03310
 C                                                                        FA03320
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA03330
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA03330
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA03340
       PARAMETER (NXPBAR=MXLAY*(14+MXMOL)+2,NXZOUT=MXLAY*3+MXMOL*3)       FA03350
 C                                                                        FA03360
@@ -1191,7 +1191,7 @@ C     PROGRAM. CONSTANTS RELATING TO THE ATMOSPHERIC PROFILES ARE STORE  FA11760
 C     IN BLOCK DATA MLATMB.                                              FA11770
 C     *****************************************************************  FA11780
 C                                                                        FA11790
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA11800
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA11800
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA11810
 C                                                                        FA11820
       COMMON /PARMTR/ PI,DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,     FA11830
@@ -1273,7 +1273,7 @@ C     'SUPPLEMENTS 1966'), PLUS COLLECTED CONSTITUENT PROFILES (REF)     FA12550
 C     AND SETS OTHER CONSTANTS RELATED TO THE ATMOSPHERIC PROFILES       FA12560
 C     *****************************************************************  FA12570
 C                                                                        FA12580
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA12590
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA12590
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA12600
       PARAMETER (MXZ50=MXZMD-50)                                         FA12610
 C                                                                        FA12620
@@ -2377,7 +2377,7 @@ C     THIS SUBROUTINE LOADS ONE OF THE 6 BUILT IN ATMOSPHERIC PROFILES   FA23560
 C     OR CALLS NSMDL TO READ IN A USER SUPPLIED PROFILE.                 FA23570
 C     *****************************************************************  FA23580
 C                                                                        FA23590
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA23600
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA23600
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA23610
 C                                                                        FA23620
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA23630
@@ -2498,7 +2498,7 @@ C     SEE DETAILS IN RDUNIT ON CARDS 3.5 AND 3.6.1 ... 3.6.N             FA24650
 C                                                                        FA24660
 C     *****************************************************************  FA24670
 C                                                                        FA24680
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA24690
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA24690
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA24700
 C                                                                        FA24710
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA24720
@@ -2576,7 +2576,7 @@ C     SUBROUTINE TO WRITE HEADER INFORMATION FOR MODEL  0                FA25450
 C                                                                        FA25460
       DOUBLE PRECISION HMOLS                                            &FA25470
 C                                                                        FA25480
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA25490
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA25490
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA25500
 C                                                                        FA25510
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,       FA25520
@@ -2689,7 +2689,7 @@ C     *************************************************************      FA26550
 C     *************************************************************      FA26560
 C                                                                        FA26570
 C                                                                        FA26580
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA26590
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA26590
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA26600
 C                                                                        FA26610
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA26620
@@ -2890,7 +2890,7 @@ C     ***  A POSSIBLE MISAPPLICATION OF TEMPERATURE UNITS, (K) VS (C)    FA28500
 C                                                                        FA28510
 C     *****************************************************************  FA28520
 C                                                                        FA28530
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA28540
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA28540
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA28550
 C                                                                        FA28560
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA28570
@@ -3065,7 +3065,7 @@ C        J       19    REQUEST DEFAULT TO SPECIFIED MODEL ATMOSPHERE     FA30220
 C                                                                        FA30230
 C***************************************************************         FA30240
 C                                                                        FA30250
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA30260
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA30260
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA30270
 C                                                                        FA30280
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA30290
@@ -3184,7 +3184,7 @@ C       'JUNIT' GOVERNS CHOICE OF UNITS -                                FA31200
 C                                                                        FA31210
 C**********************************************************************  FA31220
 C                                                                        FA31230
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA31240
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA31240
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA31250
 C                                                                        FA31260
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA31270
@@ -3563,7 +3563,7 @@ C     CALCULATES THE INITIAL ZENITH ANGLE AT H1 THROUGH AN ITERATIVE     FA34800
 C     PROCEDURE                                                          FA34810
 C     *****************************************************************  FA34820
 C                                                                        FA34830
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA34840
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA34840
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA34850
 C                                                                        FA34860
       DOUBLE PRECISION RA,RB,SG,ANGLE1,ANGLE2,BETA,DBETA                !FA34870
@@ -3866,7 +3866,7 @@ C     HEIGHT (SH) AND THE VALUE AT THE GROUND (GAMMA+1) FOR THE          FA37770
 C     REFRACTIVITY (INDEX OF REFRACTION -1)                              FA37780
 C     *****************************************************************  FA37790
 C                                                                        FA37800
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA37810
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA37810
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA37820
 C                                                                        FA37830
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA37840
@@ -3983,7 +3983,7 @@ C     FOR THE REFRACTED PATH FROM H1 TO H2, AND BENDNG IS THE TOTAL      FA38880
 C     BENDING ALONG THE PATH                                             FA38890
 C     *****************************************************************  FA38900
 C                                                                        FA38910
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA38920
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA38920
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA38930
 C                                                                        FA38940
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA38950
@@ -4151,7 +4151,7 @@ C     INTERPOLATING TO THE LEVELS ZOUT WHEN NECESSARY.  THE RAY          FA40530
 C     TRACE IS CALCULATED USING THE PROFILE IN ZPTH.                     FA40540
 C     *****************************************************************  FA40550
 C                                                                        FA40560
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA40570
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA40570
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA40580
 C                                                                        FA40590
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA40600
@@ -4335,7 +4335,7 @@ C     BENDING THROUGH THE LAYER. IAMT CONTROLS WHETHER AMOUNTS ARE       FA42340
 C     CALCULATED OR NOT.                                                 FA42350
 C     *****************************************************************  FA42360
 C                                                                        FA42370
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA42380
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA42380
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA42390
 C                                                                        FA42400
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA42410
@@ -4563,7 +4563,7 @@ C     NOTE THAT THESE TESTS APPLY TO THE LAYER BOUNDARIES                FA44570
 C     NOT TO THE AVERAGE VALUES FROM ONE LAYER TO THE NEXT.              FA44580
 C     *****************************************************************  FA44590
 C                                                                        FA44600
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA44610
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA44610
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA44620
 C                                                                        FA44630
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA44640
@@ -4750,7 +4750,7 @@ C     AN AVERAGE LORENTZ WIDTH ALZERO AND AN AVERAGE MOLECULAR           FA46410
 C     WEIGHT AVMWT ARE ASSUMED                                           FA46420
 C     *****************************************************************  FA46430
 C                                                                        FA46440
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA46450
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA46450
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA46460
 C                                                                        FA46470
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA46480
@@ -4808,7 +4808,7 @@ C     THAN 0.1 PERCENT OF THE TOTAL FOR THAT MOLECULE, UNLESS THE        FA46960
 C     NOZERO OPTION IS SELECTED.                                         FA46970
 C     *****************************************************************  FA46980
 C                                                                        FA46990
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FA47000
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FA47000
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FA47010
 C                                                                        FA47020
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,        FA47030
@@ -4954,7 +4954,7 @@ C     one layer to the next) for each layer for output to TAPE7, if
 C     desired (IFXTYP = 1).
 C     *****************************************************************
 C
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                 
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                 
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)
 C
       CHARACTER*3 CINP
@@ -5053,7 +5053,7 @@ C                                                                        FX00110
 C                             A.E.R. INC.     (AUGUST 1990)              FX00120
 C    *****************************************************************   FX00130
 C                                                                        FX00140
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FX00150
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FX00150
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FX00160
 C                                                                        FX00170
       IMPLICIT DOUBLE PRECISION (V)                                     !FX00171
@@ -5496,7 +5496,7 @@ C     IPRFL IS A FLAG INDICATING THAT THE STANDARD PROFILES (0) OR A     FX03510
 C     USER-INPUT PROFILE (1) IS TO BE USED.                              FX03520
 C     *****************************************************************  FX03530
 C                                                                        FX03540
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FX03550
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FX03550
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FX03560
 C                                                                        FX03570
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16)      FX03580
@@ -5656,7 +5656,7 @@ C     INTERPOLATES THE MIXING RATIO DTMP(K) AT THE ALTITUDE Z FROM THE   FX05080
 C     STANDARD PROFILE IN AMOLX ON THE ALTITUDE GRID ALTX.               FX05090
 C     *****************************************************************  FX05100
 C                                                                        FX05110
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FX05120
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FX05120
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FX05130
 C                                                                        FX05140
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES        FX05150
@@ -5716,7 +5716,7 @@ C     GRID ZX INTO DENM ON THE GRID ZMDL.  EXPONENTIAL INTERPOLATION     FX05650
 C     IS USED.                                                           FX05660
 C     *****************************************************************  FX05670
 C                                                                        FX05680
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FX05690
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FX05690
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FX05700
 C                                                                        FX05710
 C     IFIL CARRIES FILE INFORMATION                                      FX05720
@@ -5832,7 +5832,7 @@ C                                                                        FX06740
 C     AMOLX(L,I)=MIXING RATIO (PPMV) OF THE I'TH MOLECULE FOR THE L'TH   FX06750
 C     LEVEL, ALTX(L)= ALTITUDE OF THE L'TH LEVEL, LAYXMX LEVELS MAX      FX06760
 C                                                                        FX06770
-      PARAMETER (MXFSC=3400,MXLAY=MXFSC+3,MXZMD=3400,                    FX06780
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,                    FX06780
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,MXTRAC=22)     FX06790
       PARAMETER (MXZ50=MXZMD-50)                                         FX06800
 C                                                                        FX06810
