@@ -1,4 +1,44 @@
 
+LBLRTM_v8.0
+
+
+1) The partition function routine has been changed to TIPS_2003
+    Fischer,J., R.R. Gamache, A. Goldman, L.S. Rothman and A. Perrin.
+    Total internal partition sums for molecular species in the 2000
+    edition of the HITRAN database, JQSRT 2003;82:401-412.
+    (S.A. Clough)
+
+2) The number of molecules that can be handled is 38, consistent with 
+   HITRAN 2000.
+   (S.A. Clough)
+
+3) The chi factor for carbon dioxide has been modified.  The chi factor is 
+   now computed in a separate subroutine.
+   (S.A. Clough)
+
+4) The cumulus cloud option is now working. 
+   (S.A. Clough and M.W. Shephard)
+
+5) The line coupling coefficients for the oxygen lines in the microwave 
+   region have been modified based on the data of Cimini et al. (2003).
+   (K. Cady-Pereira and S.A. Clough)
+
+6) The method of handling the temperature correction for transitions with  
+   unknown lower state energies has been modified.
+   (S.A. Clough and M.W. Shephard)
+
+7) The CO2 Mixing Ratio parameter read from TAPE5 (if non zero) prevails 
+   over all other input values.  This provides a ready means to globally 
+   change the carbon dioxide mixing ratio.
+   (S.A. Clough)
+
+8) Spectral range over which carbon dioxide continuum has been increased 
+   by a factor of 7.0 has been extended to 0-1200 cm-1.
+   (S.A. Clough)
+
+________________________________________________________
+
+
 LBLRTM_v7.04
 
 1) The interface between LBLRTM and LOWTRAN7 has been updated to 
@@ -22,8 +62,8 @@ LBLRTM_v7.03
 
 LBLRTM_v7.01
 
-1) Completely new water vapor continuum model (0-20,000cm-1):  MT_CKD_1.00
-    See the release notes for the mt_ckd continuum for further details.
+1) Completely new water vapor continuum model (0-20,000 cm-1):  MT_CKD_1.00
+    See the release notes for the MT_CKD continuum for further details.
     (E.J. Mlawer, D.C Tobin and S.A. Clough)
 
 2) LBLRTM modified to read the single precision SOLAR.RAD file when

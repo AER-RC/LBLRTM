@@ -12,7 +12,7 @@ PLATFORM = SUN
 
 FC = f90
 FCFLAG = -fast
-OUTPUT = lblrtm_v7.04_f90_sun_sgl
+OUTPUT = lblrtm_v8.0_f90_sun_sgl
 CPATH = src
 CDOTO = sun_f90_sgl.o
 

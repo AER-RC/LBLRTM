@@ -49,7 +49,6 @@ C
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
       COMMON /R4SUB/ VLOF4,VHIF4,ILOF4,IST,IHIF4,LIMIN4,LIMOUT,ILAST,     B00820
      *               DPTMN4,DPTFC4,ILIN4,ILIN4T                           B00830
-
 c
       CHARACTER*18 hnmnlte,hvnlte
       COMMON /CVNLTE/ HNMNLTE,HVNLTE
@@ -209,375 +208,262 @@ C      CALL CHKLNC(VLOF4,VHIF4,(SAMPLE*DV),0)
   930 FORMAT(//)                                                          601080
       RETURN                                                              601090
       END                                                                 601100
-
+c
 c ----------------------------------------------------------------
-      SUBROUTINE LINF4Q (V1L4,V2L4)                                        D00010
-C                                                                         D00020
-      IMPLICIT REAL*8           (V)                                     ! D00030
-C                                                                         D00040
-C     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4    D00050
-C                                                                         D00060
-      PARAMETER (NTMOL=36,NSPECI=85)                                      D00070
-C                                                                         D00080
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISONM(NTMOL),           D00090
-     *                SMASSI(NSPECI)                                      D00100
-      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D00110
-C                                                                         D00120
-      REAL*8            HID,HMOLIL,HID1,HLINHD,VMNCPL,VMXCPL,EXTSPC     & D00130
-C                                                                         D00140
-      COMMON /BUFID/ HID(10),HMOLIL(64),MOLCNT(64),MCNTLC(64),            D00150
-     *               MCNTNL(64),SUMSTR(64),NMOI,FLINLO,FLINHI,            D00160
-     *               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL        D00170
-C                                                                         D00180
-      COMMON VNU(1250),SP(1250),ALFA0(1250),EPP(1250),MOL(1250),          D00190
-     *       SPP(1250),SRAD(1250)                                         D00200
-C                                                                         D00210
-      COMMON /IOU/ IOUT(250)                                              D00220
-      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   D00230
-     *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       D00240
-     *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       D00250
-     *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D00260
-     *              EXTID(10)                                             D00270
-C                                                                         D00280
+c
+      SUBROUTINE VIBPOP(XKT,HT,NLTEFLAG,NUM,HOL,NDEG,EH,RAT,TITMOL)       604860
+C                                                                         604870
+C                                                                         604880
+C     SUBROUTINE VIBPOP USES THE NON-LTE POPULATION DATA FROM             604890
+C     TAPE4 TO CALCULATE THE VIBRATIONAL POPULATION ENHANCEMENT           604900
+C     RATIOS FOR SELECTED VIBRATIONAL STATES OF H2O,CO2,NO AND O3.        604910
+C                                                                         604920
+      IMPLICIT REAL*8           (V)                                     ! B00030
+
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
+     *              NLTEFL,LNFIL4,LNGTH4                                  B00860
+
+      CHARACTER*(*) HOL                                                   604960
       CHARACTER*8      XID,       HMOLID,      YID   
-      Real*8               SEC   ,       XALTZ
-C                                                                         D00300
-      COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),       D00310
-     *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1 ,V2 ,TBOUND,    D00320
-     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    D00330
+      Real*8               SECANT,       XALTZ
+C
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
+     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
-      COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D00350
-     *               DPTFC,ILIN4,ILIN4T                                   D00360
-      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D00370
-     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        D00380
-     *              NLTEFL,LNFIL4,LNGTH4                                  D00390
-      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4                             D00400
-      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),       D00410
-     *              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)          D00420
-      COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D                          D00430
-      COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER
-      COMMON /VBNLTE/ RATH2O(8),RATCO2(26),RATO3(18),RATCO(3),RATNO(3),   600110
-     &               NUMH2O,NUMCO2,NUMO3,NUMCO,NUMNO                      600120
-C                                                                         D00440
-      REAL L4TIM,L4TMR,L4TMS,LOTHER
-      DIMENSION MEFDP(64)                                                 D00450
-      DIMENSION SCOR(NSPECI),RHOSLF(NSPECI),ALFD1(NSPECI)                 D00460
-      DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4)
-      DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2),AMOLB(250)             D00480
-C                                                                         D00490
-      DIMENSION SABS(2)
-      EQUIVALENCE (ALFA0(1),ALFAL(1)) , (EPP(1),ALFAD(1))                 D00500
-      EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2))                 D00510
-      EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                       D00520
-     *            (HLINHD(1),HID(1),IWD(1)) , (MOLB(1),AMOLB(1)),          D00530
-     &    (SP(1),SABS(1))
-C                                                                         D00540
-      DATA MEFDP / 64*0 /                                                 D00550
-C                                                                         D00560
-C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         D00570
-C                                                                         D00580
-      DATA TEMPLC / 200.0,250.0,296.0,340.0 /                             D00590
-C                                                                         D00600
-C     Initialize timing for the group "OTHER" in the TAPE6 output
-C
-      LOTHER = 0.0
-      TSHRNK = 0.0
-      TBUFFR = 0.0
-      TMOLN4 = 0.0
-C
-      CALL CPUTIM (TIMEL0)                                                D00610
-C                                                                         D00620
-      ILS2D = -654321
-      NLNGT4 = NWDL(IWD3,ILS2D)*1250                                      D00630
-      LNGTH4 = NLNGT4                                                     D00640
-      PAVP0 = PAVE/P0                                                     D00650
-      PAVP2 = PAVP0*PAVP0                                                 D00660
-      DPTMN = DPTMIN/RADFN(V2,TAVE/RADCN2)                                D00670
-      DPTFC = DPTFAC                                                      D00680
-      LIMIN = 1000                                                        D00690
-      CALL CPUTIM(TPAT0)
-      CALL MOLEC (1,SCOR,RHOSLF,ALFD1)                                    D00700
-      CALL CPUTIM(TPAT1)
-      TMOLN4 = TMOLN4 + TPAT1-TPAT0
-C                                                                         D00710
-      TIMR = 0.                                                           D00720
-      TIMS = 0.                                                           D00730
-      SUMS = 0.                                                           D00740
-      ILAST = 0                                                           D00750
-      ILINLO = 0                                                          D00760
-      ILINHI = 0                                                          D00770
-      ILO = 1                                                             D00780
-      IST = 1                                                             D00790
-      NLINS = 0                                                           D00800
-      NLIN = 0                                                            D00810
-C                                                                         D00820
-      VLO = V1L4                                                          D00830
-      VHI = V2L4                                                          D00840
-C                                                                         D00850
-      CALL CPUTIM(TPAT0)
-c
-      call lnfilhd_4(linfil,lnfil4,v1,v2)
-c
-      CALL CPUTIM(TPAT1)
-      TBUFFR = TBUFFR + TPAT1-TPAT0
-C                                                                         D01000
-C       TEMPERATURE CORRECTION TO INTENSITY                               D01010
-C       TEMPERATURE AND PRESSURE CORRECTION TO HALF-WIDTH                 D01020
-C                                                                         D01030
-      TRATIO = TAVE/TEMP0                                                 D01040
-      RHORAT = (PAVE/P0)*(TEMP0/TAVE)                                     D01050
-C                                                                         D01060
-      BETA = RADCN2/TAVE                                                  D01070
-      BETA0 = RADCN2/TEMP0                                                D01080
-      BETACR = BETA-BETA0                                                 D01090
-      DELTMP = ABS(TAVE-TEMP0)                                            D01100
-      CALL CPUTIM(TPAT0)
-      CALL MOLEC (2,SCOR,RHOSLF,ALFD1)                                    D01110
-      CALL CPUTIM(TPAT1)
-      TMOLN4 = TMOLN4 + TPAT1-TPAT0
-C                                                                         D01120
-C     FIND CORRECT TEMPERATURE AND INTERPOLATE FOR Y AND G                D01130
-C                                                                         D01140
-      DO 10 ILC = 1, 4                                                    D01150
-         IF (TAVE.LE.TEMPLC(ILC)) GO TO 20                                D01160
-   10 CONTINUE                                                            D01170
-   20 IF (ILC.EQ.1) ILC = 2                                               D01180
-      IF (ILC.EQ.5) ILC = 4                                               D01190
-      RECTLC = 1.0/(TEMPLC(ILC)-TEMPLC(ILC-1))                            D01200
-      TMPDIF = TAVE-TEMPLC(ILC)                                           D01210
-C                                                                         D01220
-      IJ = 0                                                              D01230
-   30 CALL CPUTIM (TIM0)                                                  D01240
-      CALL RDLNFL (IEOF,ILINLO,ILINHI)                                    D01250
-      CALL CPUTIM (TIM1)                                                  D01260
-      TIMR = TIMR+TIM1-TIM0                                               D01270
-C                                                                         D01280
-      IF (IEOF.GE.1) GO TO 60                                             D01290
-C                                                                         D01300
-      DO 50 J = ILINLO, ILINHI                                            D01310
-         YI = 0.                                                          D01320
-         GI = 0.                                                          D01330
-         GAMMA1 = 0.                                                      D01340
-         GAMMA2 = 0.                                                      D01350
-         I = IOUT(J)                                                      D01360
-         IFLAG = IFLG(I)                                                  D01370
-         IF (I.LE.0) GO TO 50                                             D01380
-C                                                                         D01390
-         MFULL = MOLB(I)
-         M = MOD(MOLB(I),100)                                             D01400
-C                                                                         D01410
-C     ISO=(MOD(MOLB(I),1000)-M)/100   IS PROGRAMMED AS:                   D01420
-C                                                                         D01430
-         ISO = MOD(MOLB(I),1000)/100                                      D01440
-         ILOC = ISOVEC(M)+ISO                                             D01450
-         IF ((M.GT.NMOL).OR.(M.LT.1)) GO TO 50                            D01460
-         SUI = SB(I)*W(M)                                                 D01470
-         IF (SUI.EQ.0.) GO TO 50                                          D01480
-         IF (VNUB(I).LT.VLO) GO TO 50                                     D01490
-         IJ = IJ+1                                                        D01500
-C                                                                         D01510
-C     Y'S AND G'S ARE STORED IN I+1 POSTION OF VNU,S,ALFA0,EPP...         D01520
-C      A(1-4),  B(1-4) CORRESPOND TO TEMPERATURES TEMPLC(1-4) ABOVE       D01530
-C                                                                         D01540
-         IF (IFLAG.EQ.1.OR.IFLAG.EQ.3) THEN                               D01550
-            A(1) = VNUB(I+1)                                              D01560
-            B(1) = SB(I+1)                                                D01570
-            A(2) = ALB(I+1)                                               D01580
-            B(2) = EPPB(I+1)                                              D01590
-            A(3) = AMOLB(I+1)                                             D01600
-            B(3) = HWHMB(I+1)                                             D01610
-            A(4) = TMPALB(I+1)                                            D01620
-            B(4) = PSHIFB(I+1)                                            D01630
-C                                                                         D01640
-C     CALCULATE SLOPE AND EVALUATE                                        D01650
-C                                                                         D01660
-            SLOPEY = (A(ILC)-A(ILC-1))*RECTLC                             D01670
-            SLOPEG = (B(ILC)-B(ILC-1))*RECTLC                             D01680
-            IF (IFLAG.EQ.1) THEN                                          D01690
-               YI = A(ILC)+SLOPEY*TMPDIF                                  D01700
-               GI = B(ILC)+SLOPEG*TMPDIF                                  D01710
-            ELSE                                                          D01720
-               GAMMA1 = A(ILC)+SLOPEY*TMPDIF                              D01730
-               GAMMA2 = B(ILC)+SLOPEG*TMPDIF                              D01740
-            ENDIF                                                         D01750
-         ENDIF                                                            D01760
-C                                                                         D01770
-C     IFLAG = 2 IS RESERVED FOR LINE COUPLING COEFFICIENTS ASSOCIATED     D01780
-C               WITH AN EXACT TREATMENT (NUMERICAL DIAGONALIZATION)       D01790
-C                                                                         D01800
-C     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS           D01810
-C                                                                         D01820
-         
-         VNU(IJ) = VNUB(I)+RHORAT*PSHIFB(I)                               D01830
-         ALFA0(IJ) = ALB(I)                                               D01840
-         EPP(IJ) = EPPB(I)                                                D01850
-         MOL(IJ) = M                                                      D01860
-C                                                                         D01870
-         IF (VNU(IJ).EQ.0.) SUI = 2.*SUI                                  D01880
-C                                                                         D01890
-C     TREAT TRANSITIONS WITH UNKNOWN EPP AS SPECIAL CASE                  D01900
-C                                                                         D01910
-         IF (EPP(IJ).GE.0.) GO TO 40                                      D01920
-         IF (DELTMP.LE.10.) EPP(IJ) = 0.                                  D01930
-         IF (DELTMP.GT.10.) MEFDP(M) = MEFDP(M)+1                         D01940
-         IF (DELTMP.GT.10.) SUI = 0.                                      D01950
-   40    SUI = SUI*SCOR(ILOC)*EXP(-EPP(IJ)*BETACR)*                       D01960
-     *         (1.+EXP(-VNU(IJ)*BETA))                                    D01970
-C                                                                         D01980
-         SUMS = SUMS+SUI                                                  D01990
-C                                                                         D02000
-C     TEMPERATURE CORRECTION OF THE HALFWIDTH                             D02010
-C     SELF TEMP DEPENDENCE TAKEN THE SAME AS FOREIGN                      D02020
-C                                                                         D02030
-         TMPCOR = TRATIO**TMPALB(I)                                       D02040
-         ALFA0I = ALFA0(IJ)*TMPCOR                                        D02050
-         HWHMSI = HWHMB(I)*TMPCOR                                         D02060
-         ALFAL(IJ) = ALFA0I*(RHORAT-RHOSLF(ILOC))+HWHMSI*RHOSLF(ILOC)     D02070
-C                                                                         D02080
-         IF (IFLAG.EQ.3)                                                  D02090
-     *        ALFAL(IJ) = ALFAL(IJ)*(1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)       D02100
-C                                                                         D02110
-         ALFAD(IJ) = VNU(IJ)*ALFD1(ILOC)                                  D02120
-         NLIN = NLIN+1                                                    D02130
-         SP(IJ) = SUI*(1.+GI*PAVP2)                                       D02140
-         SPP(IJ) = SUI*YI*PAVP0                                           D02150
-         SRAD(IJ) = 0.0
-
-C  For NLTE lines:
-         FREQ=VNU(IJ)
-         RLOW=1.0
-         RUPP=1.0
-
-         IF (MFULL.GE.1000) THEN
-             NLOW=MOD(MFULL/1000,100)
-             NUPP=MFULL/100000
-c             DELTA=EXP(-FREQ/XKT)
-c xkt=tave/radcn2=1/beta 
-             DELTA=EXP(-FREQ*BETA)
-C 
-C     PICK OUT MOLECULAR TYPE
-C
-C     H2O LINE 
-C
-             IF (M.EQ.1) THEN
-                 IF (NLOW.GT.NUMH2O) STOP 'NLOW GT NUMH2O IN LNCO2Q'
-                 IF (NLOW.GT.0) RLOW=RATH2O(NLOW)
-                 IF (NUPP.GT.NUMH2O) STOP 'NUPP GT NUMH2O IN LNCO2Q'
-                 IF (NUPP.GT.0) RUPP=RATH2O(NUPP)
-C
-C     CO2 LINE
-C
-             ELSE IF (M.EQ.2) THEN
-                 IF (NLOW.GT.NUMCO2) STOP 'NLOW GT NUMCO2 IN LNCO2Q'
-                 IF (NLOW.GT.0) RLOW=RATCO2(NLOW)
-                 IF (NUPP.GT.NUMCO2) STOP 'NUPP GT NUMCO2 IN LNCO2Q'
-                 IF (NUPP.GT.0) RUPP=RATCO2(NUPP)
-C
-C     O3 LINE
-C
-             ELSE IF (M.EQ.3) THEN
-                 IF (NLOW.GT.NUMO3) STOP 'NLOW GT NUMO3 IN LNCO2Q' 
-                 IF (NLOW.GT.0) RLOW=RATO3(NLOW) 
-                 IF (NUPP.GT.NUMO3) STOP 'NUPP GT NUMO3 IN LNCO2Q' 
-                 IF (NUPP.GT.0) RUPP=RATO3(NUPP)
-C
-C     CO LINE
-C
-             ELSE IF (M.EQ.5) THEN 
-                 IF (NLOW.GT.NUMCO ) STOP 'NLOW GT NUMCO  IN LNCO2Q'
-                 IF (NLOW.GT.0) RLOW=RATCO (NLOW) 
-                 IF (NUPP.GT.NUMCO ) STOP 'NUPP GT NUMCO  IN LNCO2Q' 
-                 IF (NUPP.GT.0) RUPP=RATCO (NUPP) 
-C
-C     NO LINE
-C
-             ELSE IF (M.EQ.8) THEN
-                 IF (NLOW.GT.NUMNO) STOP 'NLOW GT NUMNO IN LNCO2Q' 
-                 IF (NLOW.GT.0) RLOW=RATNO(NLOW)
-                 IF (NUPP.GT.NUMNO) STOP 'NUPP GT NUMNO IN LNCO2Q' 
-                 IF (NUPP.GT.0) RUPP=RATNO(NUPP) 
-             ELSE
-                 RLOW=0.
-                 RUPP=0.
-             END IF
-C
-C     RLOW AND RUPP NOW SET
-C
-             FNLTE=SP(IJ)/(1.0-DELTA)
-             SABS(IJ)=FNLTE*(RLOW-RUPP*DELTA)
-             SRAD(IJ)=FNLTE*(RLOW-RUPP)
-          ENDIF
-
-         IF (VNU(IJ).GT.VHI) THEN                                         D02160
-            IEOF = 1                                                      D02170
-            GO TO 60                                                      D02180
-         ENDIF                                                            D02190
-
-   50 CONTINUE                                                            D02200
-      IF (IJ.LT.LIMIN.AND.IEOF.EQ.0) THEN
-         CALL CPUTIM (TIM2)
-         TIMS = TIMS+TIM2-TIM1
-         GO TO 30                                                         D02210
+      DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),
+     *          VPNE1(26),VPNE2(26),VQNEST(26)
+      DIMENSION NDEG(*),EH(*),RAT(*)
+      CHARACTER*10 TITMOL,HMNLTE                                          605020
+C                                                                         605040
+C     SKIP TO BEGINNING OF VIBRATIONAL DATA                               605050
+C                                                                         605060
+       CALL RDSKIP(NLTEFLAG)                                              605070
+C                                                                         605080
+C   READ NLTE VIB POPULATIONS                                             605090
+C                                                                         605100
+      XKT= TAVE/RADCN2                                                    605030
+      READ (NLTEFLAG,902)  HMNLTE                                         605110
+      READ (NLTEFLAG,904)  ALT1,(VPNE1(I),I=1,NUM)                        605120
+  10  READ (NLTEFLAG,904)  ALT2,(VPNE2(I),I=1,NUM)                        605140
+C*****WOG, 11/06/2000: ALT1 -> AL2:
+C     IF( ALT1.LT.HT) THEN
+      IF( ALT2.LE.HT) THEN
+          ALT1 = ALT2                                                     605170
+          DO 20 I=1,NUM                                                   605180
+              VPNE1(I) = VPNE2(I)                                         605190
+  20      CONTINUE
+          GO TO 10                                                        605200
       ENDIF
-   60 CALL CPUTIM (TIM2)                                                  D02220
-      IHI = IJ                                                            D02230
-      TIMS = TIMS+TIM2-TIM1                                               D02240
-C                                                                         D02250
-      CALL CPUTIM(TPAT0)
-      CALL SHRINQ                                                         D02260
-      CALL CPUTIM(TPAT1)
-      TSHRNK = TSHRNK + TPAT1-TPAT0
-      IJ = ILO-1                                                          D02270
-      IF (IHI.LT.LIMIN.AND.IEOF.EQ.0) GO TO 30                            D02280
-C                                                                         D02290
-      VNULO = VNU(1)                                                      D02300
-      VNUHI = VNU(IHI)                                                    D02310
-      JLIN = IHI                                                          D02320
-C                                                                         D02330
-      IF (JLIN.GT.0) THEN                                                 D02340
-         CALL CPUTIM(TPAT0)
-         CALL BUFOUT (LNFIL4,RCDHDR(1),NPHDRL)                            D02350
-         CALL BUFOUT (LNFIL4,VNU(1),NLNGT4)                               D02360
-         CALL CPUTIM(TPAT1)
-         TBUFFR = TBUFFR + TPAT1-TPAT0
-      ENDIF                                                               D02370
-      NLINS = NLINS+IHI-IST+1                                             D02380
-C                                                                         D02390
-      IF (IEOF.EQ.1) GO TO 70                                             D02400
-      IJ = 0                                                              D02410
-      ILO = 1                                                             D02420
-      GO TO 30                                                            D02430
-   70 CONTINUE                                                            D02440
-C                                                                         D02450
-      DO 80 M = 1, NMOL                                                   D02460
-         IF (MEFDP(M).GT.0) WRITE (IPR,905) MEFDP(M),M                    D02470
-   80 CONTINUE                                                            D02480
-      CALL CPUTIM (TIMEL1)                                                D02490
-      TIME = TIMEL1-TIMEL0                                                D02500
-      IF (NOPR.EQ.0) THEN
-         WRITE (IPR,910) TIME,TIMR,TIMS,NLIN,NLINS                        D02510
-         L4TIM=TIME
-         L4TMR=TIMR
-         L4TMS=TIMS
-         L4NLN=NLIN
-         L4NLS=NLINS
-         LOTHER = TSHRNK+TBUFFR+TMOLN4
-      ENDIF
-      RETURN                                                              D02520
-C                                                                         D02530
-  900 FORMAT ('0  *****  LINF4 - VNU LIMITS DO NOT INTERSECT WITH ',      D02540
-     *        'LINFIL - LINF4 NOT USED *****',/,'   VNU = ',F10.3,        D02550
-     *        ' - ',F10.3,' CM-1     LINFIL = ',F10.3,' - ',F10.3,        D02560
-     *        ' CM-1')                                                    D02570
-  905 FORMAT ('0*************************',I5,' STRENGTHS FOR',           D02580
-     *        '  TRANSITIONS WITH UNKNOWN EPP FOR MOL =',I5,              D02590
-     *        ' SET TO ZERO')                                             D02600
-  910 FORMAT ('0',20X,'TIME',11X,'READ',9X,'SHRINQ',6X,'NO. LINES',3X,    D02610
-     *        'AFTER SHRINQ',/,2X,'LINF4 ',2X,3F15.3,2I15)                D02620
-C                                                                         D02630
-      END                                                                 D02640
+C     CALL LININT(HT,ALT1,ALT2,NUM,VPNE1,VPNE2,VQNE)                      605220
+      A = (HT-ALT1)/(ALT2-ALT1)                                           605230
+      DO 30 I=1,NUM                                                       605240
+          CALL EXPINT(VQNE(I),VPNE1(I),VPNE2(I),A )                       605250
+  30  CONTINUE
+C                                                                         605270
+      POPEQ=0.0                                                           605280
+      POPNE=0.0                                                           605290
+C                                                                         605300
+      DO 50 LVL=1,NUM                                                     605310
+          VQEQ(LVL)=NDEG (LVL)*EXP(-EH(LVL)/XKT)                          605320
+          VQNEST(LVL)=VQNE(LVL)                                           605330
+          POPEQ=POPEQ + VQEQ(LVL)                                         605340
+          POPNE=POPNE + VQNE (LVL)                                        605350
+  50  CONTINUE                                                            605360
+C                                                                         605370
+C    NORMALIZE POPULATIONS AND CALCULATE RATIOS                           605380
+C                                                                         605390
+      WRITE(IPR,906) TITMOL                                               605400
+      WRITE(IPR,935)                                                      605410
+      DO 100 LVL=1,NUM                                                    605420
+          I=LVL                                                           605430
+          VQEQ(LVL)=VQEQ(LVL)/POPEQ                                       605440
+          VQNE (LVL)=VQNE(LVL)/POPNE                                      605450
+          RAT(I)=VQNE(I)/VQEQ(I)                                          605460
+          IF(LVL.EQ.1) THEN                                         
+              VST1=VQNE(1)                                                605480
+              TNE(I)=TAVE                                                 605490
+              WRITE(IPR,920)HOL(I),EH(I),VQEQ(I),VQNE(I),RAT(I),TNE(I),   605500
+     &            VQNEST(I)                                               605510
+          ELSE                                                            605520
+              DEN=(NDEG(1)*VQNE(LVL)/(NDEG(LVL)*VST1))                    605530
+              TNE(I)=-RADCN2*EH(LVL)/ LOG(DEN)                            605540
+              WRITE(IPR,920)HOL(I),EH(I),VQEQ(I),VQNE(I),RAT(I),TNE(I),   605550
+     &            VQNEST(I)                                               605560
+          END IF                                                          605570
+  100 CONTINUE                                                            605580
+C                                                                         605590
+      RETURN                                                              605600
+C                                                                         605610
+  902 FORMAT(A10)                                                         605620
+  904 FORMAT (F7.0,1P,7E11.4,     /(18X, 6E11.4))                         605630
+  906 FORMAT(//,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))                  605640
+  920 FORMAT(2X,A10,4G15.5,F10.2,G15.5)                                   605660
+  935 FORMAT (2X,'VIB',10X,'E(CM-1)',11X,'POP LTE',7X,                    605680
+     & 'POP NLTE',6X,'NLTE/LTE',7X,'NLTE TMP',7X,'NLTE POP ORIG')         605690
+C                                                                         605700
+      END                                                                 605710
+c
 c ----------------------------------------------------------------
+c
+      SUBROUTINE VIBTMP(XKT,HT,NLTEFLAG,NUM,HOL,NDEG,EH,RAT,TITMOL)       605720
+C                                                                         604870
+C                                                                         604880
+C     SUBROUTINE VIBTMP USES THE NON-LTE TEMPERATURE DATA FROM            604890
+C     TAPE4 TO CALCULATE THE VIBRATIONAL POPULATION ENHANCEMENT           604900
+C     RATIOS FOR SELECTED VIBRATIONAL STATES OF H2O, CO2, NO AND          604910
+C     O3.  THE NLTE VIBRATIONAL TEMPERATURES ARE WITH RESPECT TO          604910
+C     THE GROUND VIBRATIONAL STATE.                                       604910
+C                                                                         604920
+      IMPLICIT REAL*8           (V)                                     ! B00030
+
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
+     *              NLTEFL,LNFIL4,LNGTH4                                  B00860
+
+      CHARACTER*(*) HOL                                                   604960
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SECANT,       XALTZ
+C                                                                         E09670
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       E09680
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   E09690
+     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    E09700
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   E09710
+     *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       E09720
+     *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       E09730
+     *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E09740
+     *              EXTID(10)                                             E09750
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),TNESAV(26),
+     *          TEM1(26),TEM2(26) 
+      DIMENSION NDEG(*),EH(*),RAT(*)
+      CHARACTER*10 TITMOL,HMNLTE                                          605820
+C                                                                         605830
+C     SKIP TO BEGINNING OF VIBRATIONAL DATA                               605840
+C                                                                         605850
+       CALL RDSKIP(NLTEFLAG)                                              605860
+C                                                                         605870
+C   READ NLTE VIB TEMPERATURE                                             605880
+C                                                                         605890
+      XKT= TAVE/RADCN2                                                    605900
+      READ (NLTEFLAG,902)  HMNLTE                                         605910
+      READ (NLTEFLAG,904)  ALT1,(TEM1(I),I=1,NUM)                         605920
+  10  READ (NLTEFLAG,904)  ALT2,(TEM2(I),I=1,NUM)                         605930
+C*****WOG, 11/06/2000: ALT1 -> AL2:
+C     IF( ALT1.LT.HT) THEN
+      IF( ALT2.LE.HT) THEN
+          ALT1 = ALT2                                                     605960
+          DO 20 I=1,NUM                                                   605970
+              TEM1(I) = TEM2(I)                                           605980
+  20      CONTINUE
+          GO TO 10                                                        605990
+      ENDIF   
+C                                                                         606010
+C     SET ZERO TEMP TO AMBIENT TEMP                                       606020
+C                                                                         606030
+      CALL  STAMB(NUM,TAVE,TEM1)                                          606040
+      CALL  STAMB(NUM,TAVE,TEM2)                                          606050
+      CALL LININT(HT,ALT1,ALT2,NUM,TEM1,TEM2,TNESAV)                      606060
+      WRITE(IPR,906) TITMOL                                               606070
+C                                                                               
+CC     CORRECT TEMP TO ATMOSPHERIC                                              
+C                                                                               
+      RATTV = TAVE /TNESAV(1)
+c loop 40 corrects the input temperatures when the input
+c  level temperature does not match the computed layer
+c  temperature
+c      write(*,*) ' temperature not corrected'
+      
+      DO 40 I = 1,NUM 
+          TNE(I) = TNESAV(I) * RATTV 
+  40  CONTINUE
+C                                                                               
+      SUMQ=0                                                              606080
+      SUMNQ=0                                                             606090
+      DO 50 I=1,NUM                                                       606100
+          VQNE(I)=1.                                                      606110
+          IF (TNE(I).GT.0.0) 
+     &        VQNE(I)=NDEG(I)*EXP(-RADCN2*EH(I)/TNE(I))                   606130
+          VQEQ(I)=NDEG(I)*EXP(-EH(I)/XKT)                                 606140
+          SUMQ=SUMQ+VQEQ(I)                                               606150
+          SUMNQ=SUMNQ+VQNE(I)                                             606160
+  50  CONTINUE                                                            606170
+      WRITE(IPR,935)                                                      606180
+      DO 100 I=1,NUM                                                      606190
+          VQNE(I)=VQNE(I)/SUMNQ                                           606200
+          VQEQ(I)=VQEQ(I)/SUMQ                                            606210
+          RAT(I)=VQNE(I)/VQEQ(I)                                          606220
+          WRITE(IPR,920)HOL(I),EH(I),VQEQ(I),VQNE(I),RAT(I),
+     &        TNESAV(I), TNE(I)                                           606230
+  100 CONTINUE                                                            606240
+C                                                                         606250
+      RETURN                                                              606260
+C                                                                         606270
+  902 FORMAT(A10)                                                         606280
+  904 FORMAT(F7.0,7F11.3/(18X,6F11.3))                                    606290
+  906 FORMAT(//,5X,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))               606300
+  920 FORMAT(2X,A10,4G12.5,2F9.2)                                         606320
+  935 FORMAT (9X,'VIB E(CM-1)',9X,'POP LTE    POP NLTE NLTE/LTE',         606340
+     &   '    NLTE TMP 2-STATE NLTE TMP')                                 606350
+C                                                                         606360
+      END                                                                 606370
+
+c ----------------------------------------------------------------
+
+      SUBROUTINE RDSKIP(NTAPE)                                            606380
+      CHARACTER *1 HRD,HMINUS                                             606390
+      DATA HMINUS /'-'/                                                   606400
+  10  READ(NTAPE,900) HRD                                                 606410
+  900 FORMAT(2X,A1)                                                       606420
+      IF(HRD.EQ.HMINUS) RETURN                                            606430
+      GO TO 10                                                            606440
+      END                                                                 606450
+
+c ----------------------------------------------------------------
+
+      SUBROUTINE LININT(HT,ALT1,ALT2,NUM,T1,T2,TNE)                       606460
+      DIMENSION T1(26),T2(26),TNE(26)                                     606470
+C*****WOG 11/03/2000
+C*****Correct for divide by zero if two altitudes are the same
+C*****0.001 = 1 meter, small enough to use average, large enough to
+c     prevent numerical error. 
+      IF (ABS(ALT2-ALT1) .LE. 0.001) THEN
+          AM = 0.5
+      ELSE 
+          AM = (HT-ALT1)/(ALT2-ALT1) 
+      ENDIF
+      
+      DO 10 I=1,NUM
+          TNE(I)=T1(I)+AM*(T2(I)-T1(I))
+  10  CONTINUE
+
+C     DO 10 I=1,NUM                                                       606480
+C         AM = (T2(I)-T1(I))/(ALT2-ALT1)                                  606490
+C         C=T1(I)-AM*ALT1                                                 606500
+C         TNE(I)=AM*HT+C                                                  606510
+C  10  CONTINUE
+      RETURN                                                              606520
+      END                                                                 606530
+
+c ----------------------------------------------------------------
+
+      SUBROUTINE STAMB(NUM,T1AMB,T1)                                      606540
+      DIMENSION T1(*)                                                    ?606550
+
+C*****WOG, 11/3/2000
+C*****Why start from 2 instead of 1???
+C     DO 10 I=2,NUM                                                       606560
+      DO 10 I=1,NUM
+          IF(T1(I).LE.0.) T1(I)=T1AMB                                     606570
+  10  CONTINUE                                                            606580
+      RETURN                                                              606590
+      END                                                                 606600
+c
+c ----------------------------------------------------------------
+c
       SUBROUTINE HIRACQ (MPTS)                                            B00010
 C                                                                         B00020
       IMPLICIT REAL*8           (V)                                     ! B00030
@@ -604,7 +490,7 @@ C                                                                         B00250
 C             ALGORITHM REVISIONS:    S.A. CLOUGH                         B00260
 C                                     R.D. WORSHAM                        B00270
 C                                     J.L. MONCET                         B00280
-C                                                                         B00290
+C                                     M.W.SHEPHARD                        B00290
 C                                                                         B00300
 C                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.         B00310
 C                     131 Hartwell Ave,  Lexington,  MA   02421           B00320
@@ -679,11 +565,10 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
 C                                                                         B00870
-      PARAMETER (NTMOL=36,NSPECI=85)   
+      PARAMETER (NTMOL=38)   
 C                                                                         B00890
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISO_MAX(NTMOL),           B00900
-     *                SMASSI(NSPECI)                                      B00910
-      COMMON /LNC1/ RHOSLF(NSPECI),ALFD1(NSPECI),SCOR(NSPECI),ALFMAX,     B00920
+      COMMON /ISVECT/ ISO_MAX(NTMOL),SMASSI(ntmol,9)
+      COMMON /LNC1/ RHOSLF(ntmol),ALFD1(42,9),SCOR(42,9),ALFMAX,  
      *              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,      B00930
      *              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,       B00940
      *              PAVP2,RECTLC,TMPDIF,ILC                               B00950
@@ -723,6 +608,8 @@ C
 C                                                                         B01120
       DATA MEFDP / 64*0 /                                                 B01130
 C                                                                         B01140
+      DATA I_10/10/
+C
       PTHODI = 'ODint_'
       PTHODE = 'ODexact_'
       PTHODD = 'ODdeflt_'
@@ -985,7 +872,7 @@ C                                                                         B02490
 C                                                                         B02580
       V1R4ST = V1R4                                                       B02590
       V2R4ST = V2R4                                                       B02600
-      IF (ILBLF4.GE.1) CALL LBLFQ (JRAD,V1R4ST,V2R4ST)                    B02610
+      IF (ILBLF4.GE.1) CALL LBLF4Q (JRAD,V1R4ST,V2R4ST)                    B02610
 C                                                                         B02620
       IFPAN = 1                                                           B02630
 C                                                                         B02640
@@ -1076,7 +963,7 @@ C                                                                         B03350
             VF1 = VFT-2.*DVR4                                             B03380
             VF2 = VFT+2.*DVR4+ REAL(N2R3+4)*DVR3                          B03390
             IF (VF2.GT.V2R4.AND.V2R4.NE.V2R4ST) THEN                      B03400
-               CALL LBLFQ (JRAD,VF1,V2R4ST)                               B03410
+               CALL LBLF4Q (JRAD,VF1,V2R4ST)                               B03410
                IF (IXSECT.GE.1.AND.IR4.EQ.1) THEN                         B03420
                   CALL CPUTIM (TIME0)                                     B03430
                   CALL XSECTM (IFST,IR4)                                  B03440
@@ -1195,6 +1082,10 @@ C                                                                         B03750
      *        2x,'LINF4',3X,2F15.3,15X,2F15.3,2I15,/,
      *        2X,'XSECT ',2X,4F15.3,/,2X,'LBLF4 ',2X,4F15.3,15X,2I15,/,   B03830
      *        2X,'HIRAC1',2X,5F15.3,3I15)                                 B03840
+ 921  FORMAT (2x,'LINF4',3X,2F15.3,15X,2F15.3,
+     *        2X,'XSECT ',2X,4F15.3,
+     *        2X,'LBLF4 ',2X,4F15.3,
+     *        2X,'HIRAC1',2X,5F15.3)
   922 FORMAT ('0',20X,'TIME',11X,'READ',4X,'CONVOLUTION',10X,'PANEL',     
      *        9X,'OTHER+',/,      
      *        2x,'LINF4',3X,2F15.3,15X,2F15.3,/,
@@ -1235,7 +1126,10 @@ C                                                                         B05000
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B05010
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B05020
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B05030
-      COMMON /XSUB/ VBOT,VTOP,VFT,DUM(7)
+      COMMON /IFIL/   IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B04100
+     *                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B04110
+     *                NLTEFL,LNFIL4,LNGTH4                                  B04120
+      COMMON /XSUB/   VBOT,VTOP,VFT,DUM(7)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
@@ -1249,11 +1143,10 @@ C                                                                         B05000
      &               NUMH2O,NUMCO2,NUMO3,NUMCO,NUMNO                      603430
 
 C                                                                         B05080
-      PARAMETER (NTMOL=36,NSPECI=85) 
+      PARAMETER (NTMOL=38) 
 C                                                                         B05100
-      COMMON /ISVECT/ ISOVEC(NTMOL),ISO82(NSPECI),ISO_MAX(NTMOL),           B05110
-     *                SMASSI(NSPECI)                                      B05120
-      COMMON /LNC1/ RHOSLF(NSPECI),ALFD1(NSPECI),SCOR(NSPECI),ALFMAX,     B05130
+      COMMON /ISVECT/ ISO_MAX(NTMOL),SMASSI(ntmol,9)
+      COMMON /LNC1/ RHOSLF(ntmol),ALFD1(42,9),SCOR(42,9),ALFMAX, 
      *              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,      B05140
      *              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,       B05150
      *              PAVP2,RECTLC,TMPDIF,ILC                               B05160
@@ -1321,11 +1214,10 @@ C                                                                         B05650
 C     ISO=(MOD(MOL(I),1000)-M)/100   IS PROGRAMMED AS:                    B05660
 C                                                                         B05670
          ISO = MOD(MOL(I),I_1000)/100                                       B05680
-         ILOC = ISOVEC(M)+ISO                                             B05690
 C
 c     check if lines are within allowed molecular and isotopic limits
 c
-         if (m.gt.nmol .or. m.lt. 1) then
+         if (m.gt.ntmol .or. m.lt. 1) then
             call line_exception (1,ipr,h_lncor1,m,nmol,iso,iso_max)
             go to 25
          else if (iso .gt. iso_max(m)) then
@@ -1334,7 +1226,9 @@ c
          endif
 C
          MOL(I) = M                                                       B05760
+C
          SUI = S(I)*WK(M)                                                 B05770
+         IF (JRAD.EQ.1) SUI = SUI*VNU(I)
 C
          IF (SUI.EQ.0.) GO TO 25
 C
@@ -1380,11 +1274,11 @@ C                                                                         B06210
          TMPCOR = TRATIO**TMPALF(I)                                       B06220
          ALFA0I = ALFA0(I)*TMPCOR                                         B06230
          HWHMSI = HWHMS(I)*TMPCOR                                         B06240
-         ALFL = ALFA0I*(RHORAT-RHOSLF(ILOC))+HWHMSI*RHOSLF(ILOC)          B06250
+         ALFL = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m)  
 C                                                                         B06260
          IF (IFLAG.EQ.3) ALFL = ALFL*(1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)      B06270
 C                                                                         B06280
-         ALFAD = VNU(I)*ALFD1(ILOC)                                       B06290
+         ALFAD = VNU(I)*ALFD1(m,iso)                                       B06290
          ZETA = ALFL/(ALFL+ALFAD)                                         B06300
          ZETAI(I) = ZETA                                                  B06310
          FZETA = 100.*ZETA
@@ -1409,20 +1303,27 @@ C
 C
          RECALF(I) = 1./ALFV                                              B06470
 C                                                                         B06480
-C     TREAT TRANSITIONS WITH UNKNOWN EPP AS SPECIAL CASE                  B06490
+C     TREAT TRANSITIONS WITH negative EPP AS SPECIAL CASE 
 C                                                                         B06500
-         IF (EPP(I).LT.0.) THEN                                           B06510
-            IF (DELTMP.LE.10.) THEN                                       B06520
-               EPP(I) = 0.                                                B06530
-            ELSE                                                          B06540
-               MEFDP(M) = MEFDP(M)+1                                      B06560
-               GO TO 25
-            ENDIF                                                         B06570
-         ENDIF                                                            B06580
-         IF (JRAD.NE.1) SUI = SUI*SCOR(ILOC)*                             B06590
-     *                        EXP(-EPP(I)*BETACR)*(1.+EXP(-VNU(I)/XKT))   B06600
-         IF (JRAD.EQ.1) SUI = SUI*SCOR(ILOC)*VNU(I)*                      B06610
-     *                        EXP(-EPP(I)*BETACR)*(1.-EXP(-VNU(I)/XKT))   B06620
+c>>   an epp value between -0.9999 and 0.  cm-1 is taken as valid 
+c
+c>>   an epp value of -1. is assumed set by hitran indicating an unknown 
+c     value: no temperature correction is performed
+c
+c>>   for an epp value of less than -1., it is assumed that value has
+c     been provided as a reasonable value to be used for purposes of 
+c     temperature correction.  epp is set positive
+c
+         if (epp(i).le.-1.001)  epp(i) = abs(epp(i))
+
+         if (epp(i).le.-0.999)  MEFDP(M) = MEFDP(M)+1 
+
+c     temperature correction:
+
+         if (epp(i) .gt. -0.999) then
+            SUI = SUI*SCOR(m,iso)*  
+     *              EXP(-EPP(I)*BETACR)*(1.+EXP(-VNU(I)/XKT))
+         endif
 C                                                                         B06860
          SPI = SUI*(1.+GI*PAVP2)                                          B06870
          SPPI = SUI*YI*PAVP0                                              B06880
@@ -1715,8 +1616,8 @@ C                                                                         B08360
                   STRDR = STRDR*CLC1*DPTRAT                               B08410
                   STRVRR = STRVRR*CLC1*DPTRAT                             B08420
 C                                                                         B08430
-C                                                                         B08440
                   DO 20 J1 = JMIN1, JMAX1                                 B08450
+c
                      J2 = J1-J2SHFT                                       B08460
                      J3 = J1-J3SHFT                                       B08470
                      ZF3L = ZF3L+ZSLOPE                                   B08480
@@ -1969,7 +1870,529 @@ C                                                                         B11690
       RETURN                                                              B11700
 C                                                                         B11710
       END                                                                 B11720
-      SUBROUTINE LBLFQ (JRAD,V1,V2)                                       D04440
+
+c ----------------------------------------------------------------
+      SUBROUTINE LINF4Q (V1L4,V2L4)                                        D00010
+C                                                                         D00020
+      IMPLICIT REAL*8           (V)                                     ! D00030
+C                                                                         D00040
+C     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4    D00050
+C                                                                         D00060
+      PARAMETER (NTMOL=38) 
+C                                                                         D00080
+      COMMON /ISVECT/ ISO_MAX(NTMOL),SMASSI(ntmol,9)
+      COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D00110
+C                                                                         D00120
+      REAL*8            HID,HMOLIL,HID1,HLINHD,VMNCPL,VMXCPL,EXTSPC     & D00130
+C                                                                         D00140
+      COMMON /BUFID/ HID(10),HMOLIL(64),MOLCNT(64),MCNTLC(64),            D00150
+     *               MCNTNL(64),SUMSTR(64),NMOI,FLINLO,FLINHI,            D00160
+     *               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL        D00170
+C                                                                         D00180
+      COMMON VNU(1250),SP(1250),ALFA0(1250),EPP(1250),MOL(1250),          D00190
+     *       SPP(1250),SRAD(1250)                                         D00200
+C                                                                         D00210
+      COMMON /IOU/ IOUT(250)                                              D00220
+      COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   D00230
+     *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       D00240
+     *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       D00250
+     *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D00260
+     *              EXTID(10)                                             D00270
+C                                                                         D00280
+      CHARACTER*8      XID,       HMOLID,      YID   
+      Real*8               SEC   ,       XALTZ
+C                                                                         D00300
+      COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),       D00310
+     *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1 ,V2 ,TBOUND,    D00320
+     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    D00330
+      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
+     *                RADCN1,RADCN2 
+      COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D00350
+     *               DPTFC,ILIN4,ILIN4T                                   D00360
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D00370
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        D00380
+     *              NLTEFL,LNFIL4,LNGTH4                                  D00390
+      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4                             D00400
+      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),       D00410
+     *              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)          D00420
+      COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D                          D00430
+      COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER
+      COMMON /VBNLTE/ RATH2O(8),RATCO2(26),RATO3(18),RATCO(3),RATNO(3),   600110
+     &               NUMH2O,NUMCO2,NUMO3,NUMCO,NUMNO                      600120
+C                                                                         D00440
+      REAL L4TIM,L4TMR,L4TMS,LOTHER
+      DIMENSION MEFDP(64)                                                 D00450
+      DIMENSION SCOR(42,9),RHOSLF(ntmol),ALFD1(42,9)
+      DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4)               D00470
+      DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2),AMOLB(250)             D00480
+C                                                                         D00490
+      DIMENSION SABS(2)
+      EQUIVALENCE (ALFA0(1),ALFAL(1)) , (EPP(1),ALFAD(1))                 D00500
+      EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2))                 D00510
+      EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                       D00520
+     *            (HLINHD(1),HID(1),IWD(1)) , (MOLB(1),AMOLB(1)),          D00530
+     &    (SP(1),SABS(1))
+c                                                                          D00540
+      character*8 h_linf4
+c
+      data h_linf4/' linf4  '/
+      DATA MEFDP / 64*0 /                                                 D00550
+C                                                                         D00560
+C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         D00570
+C                                                                         D00580
+      DATA TEMPLC / 200.0,250.0,296.0,340.0 /                             D00590
+C                                                                         D00600
+      DATA I_100/100/, I_1000/1000/
+C
+C     Initialize timing for the group "OTHER" in the TAPE6 output
+C
+      LOTHER = 0.0
+      TSHRNK = 0.0
+      TBUFFR = 0.0
+      TMOLN4 = 0.0
+C
+      CALL CPUTIM (TIMEL0)                                                D00610
+C                                                                         D00620
+      ILS2D = -654321
+      NLNGT4 = NWDL(IWD3,ILS2D)*1250                                      D00630
+      LNGTH4 = NLNGT4                                                     D00640
+      PAVP0 = PAVE/P0                                                     D00650
+      PAVP2 = PAVP0*PAVP0                                                 D00660
+      DPTMN = DPTMIN/RADFN(V2,TAVE/RADCN2)                                D00670
+      DPTFC = DPTFAC                                                      D00680
+      LIMIN = 1000                                                        D00690
+      CALL CPUTIM(TPAT0)
+      CALL MOLEC (1,SCOR,RHOSLF,ALFD1)                                    D00700
+      CALL CPUTIM(TPAT1)
+      TMOLN4 = TMOLN4 + TPAT1-TPAT0
+C                                                                         D00710
+      TIMR = 0.                                                           D00720
+      TIMS = 0.                                                           D00730
+      SUMS = 0.                                                           D00740
+      ILAST = 0                                                           D00750
+      ILINLO = 0                                                          D00760
+      ILINHI = 0                                                          D00770
+      ILO = 1                                                             D00780
+      IST = 1                                                             D00790
+      NLINS = 0                                                           D00800
+      NLIN = 0                                                            D00810
+C                                                                         D00820
+      VLO = V1L4                                                          D00830
+      VHI = V2L4                                                          D00840
+C                                                                         D00850
+      CALL CPUTIM(TPAT0)
+c
+      call lnfilhd_4(linfil,lnfil4,v1,v2)
+c
+      CALL CPUTIM(TPAT1)
+      TBUFFR = TBUFFR + TPAT1-TPAT0
+C                                                                         D01000
+C       TEMPERATURE CORRECTION TO INTENSITY                               D01010
+C       TEMPERATURE AND PRESSURE CORRECTION TO HALF-WIDTH                 D01020
+C                                                                         D01030
+      TRATIO = TAVE/TEMP0                                                 D01040
+      RHORAT = (PAVE/P0)*(TEMP0/TAVE)                                     D01050
+C                                                                         D01060
+      BETA = RADCN2/TAVE                                                  D01070
+      BETA0 = RADCN2/TEMP0                                                D01080
+      BETACR = BETA-BETA0                                                 D01090
+      DELTMP = ABS(TAVE-TEMP0)                                            D01100
+      CALL CPUTIM(TPAT0)
+      CALL MOLEC (2,SCOR,RHOSLF,ALFD1)                                    D01110
+      CALL CPUTIM(TPAT1)
+      TMOLN4 = TMOLN4 + TPAT1-TPAT0
+C                                                                         D01120
+C     FIND CORRECT TEMPERATURE AND INTERPOLATE FOR Y AND G                D01130
+C                                                                         D01140
+      DO 10 ILC = 1, 4                                                    D01150
+         IF (TAVE.LE.TEMPLC(ILC)) GO TO 20                                D01160
+   10 CONTINUE                                                            D01170
+   20 IF (ILC.EQ.1) ILC = 2                                               D01180
+      IF (ILC.EQ.5) ILC = 4                                               D01190
+      RECTLC = 1.0/(TEMPLC(ILC)-TEMPLC(ILC-1))                            D01200
+      TMPDIF = TAVE-TEMPLC(ILC)                                           D01210
+C                                                                         D01220
+      IJ = 0                                                              D01230
+   30 CALL CPUTIM (TIM0)                                                  D01240
+
+      CALL RDLNFL (IEOF,ILINLO,ILINHI)                                    D01250
+      CALL CPUTIM (TIM1)                                                  D01260
+      TIMR = TIMR+TIM1-TIM0                                               D01270
+C                                                                         D01280
+      IF (IEOF.GE.1) GO TO 60                                             D01290
+C                                                                         D01300
+      DO 50 J = ILINLO, ILINHI                                            D01310
+         YI = 0.                                                          D01320
+         GI = 0.                                                          D01330
+         GAMMA1 = 0.                                                      D01340
+         GAMMA2 = 0.                                                      D01350
+         I = IOUT(J)                                                      D01360
+         IFLAG = IFLG(I)                                                  D01370
+         IF (I.LE.0) GO TO 50                                             D01380
+C                                                                         D01390
+         MFULL = MOLB(I)
+         M = MOD(MOLB(I),I_100)                                             D01400
+C                                                                         D01410
+C     ISO=(MOD(MOLB(I),I_1000)-M)/100   IS PROGRAMMED AS:                   D01420
+C                                                                         D01430
+         ISO = MOD(MOLB(I),I_1000)/100                                      D01440
+C
+c     check if lines are within allowed molecular and isotopic limits
+c
+         if (m.gt.ntmol .or. m.lt. 1) then
+            call line_exception (1,ipr,h_linf4,m,nmol,iso,iso_max)
+            go to 50
+         else if (iso .gt. iso_max(m)) then
+            call line_exception (2,ipr,h_linf4,m,nmol,iso,iso_max)
+            go to 50
+         endif
+C
+         SUI = SB(I)*W(M)                                                 D01470
+         IF (SUI.EQ.0.) GO TO 50                                          D01480
+         IF (VNUB(I).LT.VLO) GO TO 50                                     D01490
+         IJ = IJ+1                                                        D01500
+C                                                                         D01510
+C     Y'S AND G'S ARE STORED IN I+1 POSTION OF VNU,S,ALFA0,EPP...         D01520
+C      A(1-4),  B(1-4) CORRESPOND TO TEMPERATURES TEMPLC(1-4) ABOVE       D01530
+C                                                                         D01540
+         IF (IFLAG.EQ.1.OR.IFLAG.EQ.3) THEN                               D01550
+            A(1) = VNUB(I+1)                                              D01560
+            B(1) = SB(I+1)                                                D01570
+            A(2) = ALB(I+1)                                               D01580
+            B(2) = EPPB(I+1)                                              D01590
+            A(3) = AMOLB(I+1)                                             D01600
+            B(3) = HWHMB(I+1)                                             D01610
+            A(4) = TMPALB(I+1)                                            D01620
+            B(4) = PSHIFB(I+1)                                            D01630
+C                                                                         D01640
+C     CALCULATE SLOPE AND EVALUATE                                        D01650
+C                                                                         D01660
+            SLOPEY = (A(ILC)-A(ILC-1))*RECTLC                             D01670
+            SLOPEG = (B(ILC)-B(ILC-1))*RECTLC                             D01680
+            IF (IFLAG.EQ.1) THEN                                          D01690
+               YI = A(ILC)+SLOPEY*TMPDIF                                  D01700
+               GI = B(ILC)+SLOPEG*TMPDIF                                  D01710
+            ELSE                                                          D01720
+               GAMMA1 = A(ILC)+SLOPEY*TMPDIF                              D01730
+               GAMMA2 = B(ILC)+SLOPEG*TMPDIF                              D01740
+            ENDIF                                                         D01750
+         ENDIF                                                            D01760
+C                                                                         D01770
+C     IFLAG = 2 IS RESERVED FOR LINE COUPLING COEFFICIENTS ASSOCIATED     D01780
+C               WITH AN EXACT TREATMENT (NUMERICAL DIAGONALIZATION)       D01790
+C                                                                         D01800
+C     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS           D01810
+C                                                                         D01820
+         VNU(IJ) = VNUB(I)+RHORAT*PSHIFB(I)                               D01830
+         ALFA0(IJ) = ALB(I)                                               D01840
+         EPP(IJ) = EPPB(I)                                                D01850
+         MOL(IJ) = M                                                      D01860
+c
+         IF (JRAD.EQ.1) SUI = SUI*VNU(ij)
+C                                                                         D01870
+         IF (VNU(IJ).EQ.0.) SUI = 2.*SUI                                  D01880
+C                                                                         D01890
+C     TREAT TRANSITIONS WITH UNKNOWN EPP AS SPECIAL CASE                  D01900
+C                                                                         D01910
+c>>   an epp value between -0.9999 and 0.  cm-1 is taken as valid 
+c
+c>>   an epp value of -1. is assumed set by hitran indicating an unknown 
+c     value: no temperature correction is performed
+c
+c>>   for an epp value of less than -1., it is assumed that value has
+c     been provided as a reasonable value to be used for purposes of 
+c     temperature correction.  epp is set positive
+c
+         if (epp(ij).le.-1.001)  epp(ij) = abs(epp(ij))
+
+         if (epp(ij).le.-0.999)  MEFDP(M) = MEFDP(M)+1 
+
+c     temperature correction:
+
+         if (epp(ij) .gt. -0.999) then
+            SUI = SUI*SCOR(m,iso)*  
+     *              EXP(-EPP(ij)*BETACR)*(1.+EXP(-VNU(ij)*BETA))
+         endif
+C                                                                         D01980
+         SUMS = SUMS+SUI                                                  D01990
+C                                                                         D02000
+C     TEMPERATURE CORRECTION OF THE HALFWIDTH                             D02010
+C     SELF TEMP DEPENDENCE TAKEN THE SAME AS FOREIGN                      D02020
+C                                                                         D02030
+         TMPCOR = TRATIO**TMPALB(I)                                       D02040
+         ALFA0I = ALFA0(IJ)*TMPCOR                                        D02050
+         HWHMSI = HWHMB(I)*TMPCOR                                         D02060
+         ALFAL(IJ) = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m)
+C                                                                         D02080
+         IF (IFLAG.EQ.3)                                                  D02090
+     *        ALFAL(IJ) = ALFAL(IJ)*(1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)       D02100
+C                                                                         D02110
+         ALFAD(IJ) = VNU(IJ)*ALFD1(m,iso)                                  D02120
+         NLIN = NLIN+1                                                    D02130
+         SP(IJ) = SUI*(1.+GI*PAVP2)                                       D02140
+         SPP(IJ) = SUI*YI*PAVP0                                           D02150
+         SRAD(IJ) = 0.0
+
+C  For NLTE lines:
+         FREQ=VNU(IJ)
+         RLOW=1.0
+         RUPP=1.0
+
+         IF (MFULL.GE.1000) THEN
+             NLOW=MOD(MFULL/1000,100)
+             NUPP=MFULL/100000
+c             DELTA=EXP(-FREQ/XKT)
+c     xkt=tave/radcn2=1/beta 
+             DELTA=EXP(-FREQ*BETA)
+C 
+C     PICK OUT MOLECULAR TYPE
+C
+C     H2O LINE 
+C
+             IF (M.EQ.1) THEN
+                 IF (NLOW.GT.NUMH2O) STOP 'NLOW GT NUMH2O IN LNCO2Q'
+                 IF (NLOW.GT.0) RLOW=RATH2O(NLOW)
+                 IF (NUPP.GT.NUMH2O) STOP 'NUPP GT NUMH2O IN LNCO2Q'
+                 IF (NUPP.GT.0) RUPP=RATH2O(NUPP)
+C
+C     CO2 LINE
+C
+             ELSE IF (M.EQ.2) THEN
+                 IF (NLOW.GT.NUMCO2) STOP 'NLOW GT NUMCO2 IN LNCO2Q'
+                 IF (NLOW.GT.0) RLOW=RATCO2(NLOW)
+                 IF (NUPP.GT.NUMCO2) STOP 'NUPP GT NUMCO2 IN LNCO2Q'
+                 IF (NUPP.GT.0) RUPP=RATCO2(NUPP)
+C
+C     O3 LINE
+C
+             ELSE IF (M.EQ.3) THEN
+                 IF (NLOW.GT.NUMO3) STOP 'NLOW GT NUMO3 IN LNCO2Q' 
+                 IF (NLOW.GT.0) RLOW=RATO3(NLOW) 
+                 IF (NUPP.GT.NUMO3) STOP 'NUPP GT NUMO3 IN LNCO2Q' 
+                 IF (NUPP.GT.0) RUPP=RATO3(NUPP)
+C
+C     CO LINE
+C
+             ELSE IF (M.EQ.5) THEN 
+                 IF (NLOW.GT.NUMCO ) STOP 'NLOW GT NUMCO  IN LNCO2Q'
+                 IF (NLOW.GT.0) RLOW=RATCO (NLOW) 
+                 IF (NUPP.GT.NUMCO ) STOP 'NUPP GT NUMCO  IN LNCO2Q' 
+                 IF (NUPP.GT.0) RUPP=RATCO (NUPP) 
+C
+C     NO LINE
+C
+             ELSE IF (M.EQ.8) THEN
+                 IF (NLOW.GT.NUMNO) STOP 'NLOW GT NUMNO IN LNCO2Q' 
+                 IF (NLOW.GT.0) RLOW=RATNO(NLOW)
+                 IF (NUPP.GT.NUMNO) STOP 'NUPP GT NUMNO IN LNCO2Q' 
+                 IF (NUPP.GT.0) RUPP=RATNO(NUPP) 
+             ELSE
+                 RLOW=0.
+                 RUPP=0.
+             END IF
+C
+C     RLOW AND RUPP NOW SET
+C
+             FNLTE=SP(IJ)/(1.0-DELTA)
+             SABS(IJ)=FNLTE*(RLOW-RUPP*DELTA)
+             SRAD(IJ)=FNLTE*(RLOW-RUPP)
+          ENDIF
+
+         IF (VNU(IJ).GT.VHI) THEN                                         D02160
+            IEOF = 1                                                      D02170
+            GO TO 60                                                      D02180
+         ENDIF                                                            D02190
+
+   50 CONTINUE                                                            D02200
+      IF (IJ.LT.LIMIN.AND.IEOF.EQ.0) THEN
+         CALL CPUTIM (TIM2)
+         TIMS = TIMS+TIM2-TIM1
+         GO TO 30                                                         D02210
+      ENDIF
+   60 CALL CPUTIM (TIM2)                                                  D02220
+      IHI = IJ                                                            D02230
+      TIMS = TIMS+TIM2-TIM1                                               D02240
+C                                                                         D02250
+      CALL CPUTIM(TPAT0)
+
+      CALL SHRINQ                                                         D02260
+
+      CALL CPUTIM(TPAT1)
+      TSHRNK = TSHRNK + TPAT1-TPAT0
+      IJ = ILO-1                                                          D02270
+      IF (IHI.LT.LIMIN.AND.IEOF.EQ.0) GO TO 30                            D02280
+C                                                                         D02290
+      VNULO = VNU(1)                                                      D02300
+      VNUHI = VNU(IHI)                                                    D02310
+      JLIN = IHI                                                          D02320
+C                                                                         D02330
+      IF (JLIN.GT.0) THEN                                                 D02340
+         CALL CPUTIM(TPAT0)
+         CALL BUFOUT (LNFIL4,RCDHDR(1),NPHDRL)                            D02350
+         CALL BUFOUT (LNFIL4,VNU(1),NLNGT4)                               D02360
+         CALL CPUTIM(TPAT1)
+         TBUFFR = TBUFFR + TPAT1-TPAT0
+      ENDIF                                                               D02370
+      NLINS = NLINS+IHI-IST+1                                             D02380
+C                                                                         D02390
+      IF (IEOF.EQ.1) GO TO 70                                             D02400
+      IJ = 0                                                              D02410
+      ILO = 1                                                             D02420
+      GO TO 30                                                            D02430
+   70 CONTINUE                                                            D02440
+C                                                                         D02450
+      DO 80 M = 1, NMOL                                                   D02460
+         IF (MEFDP(M).GT.0) WRITE (IPR,905) MEFDP(M),M                    D02470
+   80 CONTINUE                                                            D02480
+      CALL CPUTIM (TIMEL1)                                                D02490
+      TIME = TIMEL1-TIMEL0                                                D02500
+      IF (NOPR.EQ.0) THEN
+         WRITE (IPR,910) TIME,TIMR,TIMS,NLIN,NLINS                        D02510
+         L4TIM=TIME
+         L4TMR=TIMR
+         L4TMS=TIMS
+         L4NLN=NLIN
+         L4NLS=NLINS
+         LOTHER = TSHRNK+TBUFFR+TMOLN4
+      ENDIF
+      RETURN                                                              D02520
+C                                                                         D02530
+  900 FORMAT ('0  *****  LINF4 - VNU LIMITS DO NOT INTERSECT WITH ',      D02540
+     *        'LINFIL - LINF4 NOT USED *****',/,'   VNU = ',F10.3,        D02550
+     *        ' - ',F10.3,' CM-1     LINFIL = ',F10.3,' - ',F10.3,        D02560
+     *        ' CM-1')                                                    D02570
+  905 FORMAT ('0*************************',I5,' STRENGTHS FOR',           D02580
+     *        '  TRANSITIONS WITH UNKNOWN EPP FOR MOL =',I5,              D02590
+     *        ' SET TO ZERO')                                             D02600
+  910 FORMAT ('0',20X,'TIME',11X,'READ',9X,'SHRINQ',6X,'NO. LINES',3X,    D02610
+     *        'AFTER SHRINQ',/,2X,'LINF4 ',2X,3F15.3,2I15)                D02620
+C                                                                         D02630
+      END                                                                 D02640
+c___________________________________________________________________
+c
+      SUBROUTINE SHRINQ                                                   D03250
+C                                                                         D03260
+      IMPLICIT REAL*8           (V)                                     ! D03270
+C                                                                         D03280
+C     SUBROUTINE SHRINK COMBINES LINES FALLING IN A WAVENUMBER INTERVAL   D03290
+C     DVR4/2 INTO A SINGLE EFFECTIVE LINE TO REDUCE COMPUTATION           D03300
+C                                                                         D03310
+      COMMON VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250),         D03320
+     *       SPP(1250)                                                    D03330
+      COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D03340
+     *               DPTFC,ILIN4,ILIN4T                                   D03350
+      COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        D03360
+C                                                                         D03370
+      J = ILO-1                                                           D03380
+      DV = DVR4/2.                                                        D03390
+      VLMT = VNU(ILO)+DV                                                  D03400
+C                                                                         D03410
+C     INITIALIZE NON-CO2 SUMS                                             D03420
+C                                                                         D03430
+      SUMAL = 0.                                                          D03440
+      SUMAD = 0.                                                          D03450
+      SUMS = 0.                                                           D03460
+      SUMV = 0.                                                           D03470
+      SUMC = 0.                                                           D03480
+C                                                                         D03490
+C     INITIALIZE CO2 SUMS                                                 D03500
+C                                                                         D03510
+      SUMAL2 = 0.                                                         D03520
+      SUMAD2 = 0.                                                         D03530
+      SUMS2 = 0.                                                          D03540
+      SUMV2 = 0.                                                          D03550
+      SUMC2 = 0.                                                          D03560
+C                                                                         D03570
+      DO 20 I = ILO, IHI                                                  D03580
+C                                                                         D03590
+C     IF LINE COUPLING, DON'T SHRINK LINE                                 D03600
+C                                                                         D03610
+         IF (SPP(I).NE.0.0) THEN                                          D03620
+            J = J+1                                                       D03630
+            VNU(J) = VNU(I)                                               D03640
+            S(J) = S(I)                                                   D03650
+            ALFAL(J) = ALFAL(I)                                           D03660
+            ALFAD(J) = ALFAD(I)                                           D03670
+            SPP(J) = SPP(I)                                               D03680
+            MOL(J) = MOL(I)                                               D03690
+            IF (MOL(J).NE.2) MOL(J) = 0                                   D03700
+c
+            GO TO 10                                                      D03710
+         ENDIF                                                            D03720
+C                                                                         D03730
+C     NON-CO2 LINES OF MOLECULAR INDEX IT.NE.2   ARE LOADED               D03740
+C     INTO SUMS IF THE FREQUENCY WITHIN DV GROUP                          D03750
+C                                                                         D03760
+         IF (MOL(I).NE.2) THEN                                            D03770
+            SUMV = SUMV+VNU(I)*S(I)                                       D03780
+            SUMS = SUMS+S(I)                                              D03790
+            SUMAL = SUMAL+S(I)*ALFAL(I)                                   D03800
+            SUMAD = SUMAD+S(I)*ALFAD(I)                                   D03810
+            SUMC = SUMC+SPP(I)                                            D03820
+         ELSE                                                             D03830
+C                                                                         D03840
+C     CO2 LINES LOADED     (MOL .EQ. 2)                                   D03850
+C                                                                         D03860
+            SUMV2 = SUMV2+VNU(I)*S(I)                                     D03870
+            SUMS2 = SUMS2+S(I)                                            D03880
+            SUMAL2 = SUMAL2+S(I)*ALFAL(I)                                 D03890
+            SUMAD2 = SUMAD2+S(I)*ALFAD(I)                                 D03900
+            SUMC2 = SUMC2+SPP(I)                                          D03910
+         ENDIF                                                            D03920
+C                                                                         D03930
+C     IF LAST LINE OR VNU GREATER THAN LIMIT THEN STORE SUMS              D03940
+C                                                                         D03950
+   10    IF (I.LT.IHI) THEN                                               D03960
+            IF (VNU(I+1).LE.VLMT) GO TO 20                                D03970
+         ENDIF                                                            D03980
+C                                                                         D03990
+         VLMT = VNU(I)+DV                                                 D04000
+C                                                                         D04010
+C     ASSIGN NON-CO2 LINE AVERAGES TO 'GROUP' LINE J                      D04020
+C                                                                         D04030
+         IF (SUMS.GT.0.) THEN                                             D04040
+            J = J+1                                                       D04050
+            S(J) = SUMS                                                   D04060
+            ALFAL(J) = SUMAL/SUMS                                         D04070
+            ALFAD(J) = SUMAD/SUMS                                         D04080
+            VNU(J) = SUMV/SUMS                                            D04090
+            SPP(J) = SUMC                                                 D04100
+            MOL(J) = 0                                                    D04110
+            SUMAL = 0.                                                    D04120
+            SUMAD = 0.                                                    D04130
+            SUMS = 0.                                                     D04140
+            SUMV = 0.                                                     D04150
+            SUMC = 0.                                                     D04160
+         ENDIF                                                            D04170
+C                                                                         D04180
+C     ASSIGN CO2 LINE AVERAGES                                            D04190
+C                                                                         D04200
+         IF (SUMS2.GT.0.) THEN                                            D04210
+            J = J+1                                                       D04220
+            S(J) = SUMS2                                                  D04230
+            ALFAL(J) = SUMAL2/SUMS2                                       D04240
+            ALFAD(J) = SUMAD2/SUMS2                                       D04250
+            VNU(J) = SUMV2/SUMS2                                          D04260
+            MOL(J) = 2                                                    D04270
+            SPP(J) = SUMC2                                                D04280
+            SUMAL2 = 0.                                                   D04290
+            SUMAD2 = 0.                                                   D04300
+            SUMS2 = 0.                                                    D04310
+            SUMV2 = 0.                                                    D04320
+            SUMC2 = 0.                                                    D04330
+         ENDIF                                                            D04340
+C                                                                         D04350
+   20 CONTINUE                                                            D04360
+C                                                                         D04370
+      ILO = J+1                                                           D04380
+      IHI = J                                                             D04390
+C                                                                         D04400
+      RETURN                                                              D04410
+C                                                                         D04420
+      END                                                                 D04430
+c_________________________________________________________________
+c
+      SUBROUTINE LBLF4Q (JRAD,V1,V2)                                       D04440
 C                                                                         D04450
       IMPLICIT REAL*8           (V)                                     ! D04460
 C                                                                         D04470
@@ -1999,7 +2422,7 @@ C                                                                         D04610
      *               DPTFC,ILIN4,ILIN4T                                   D04690
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        D04700
       COMMON /VOICOM/ AVRAT(102),DUMMY(5,102)                             D04710
-      COMMON /CONVF/ CHI(251),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4            D04720
+      COMMON /CONVF/ CHI(0:250),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4            D04720
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D04730
      *              NLNGTH,KFILE,KPANEL,LINFIO,NFILE,IAFIL,IEXFIL,        D04740
      *              NLTEFL,LNFIL4,LNGTH4                                  D04750
@@ -2096,7 +2519,7 @@ C                                                                         D05640
       END                                                                 D05650
       SUBROUTINE RDLN4Q (IEOF)                                            D05660
 C                                                                         D05670
-      IMPLICIT REAL*8           (V)                                     ! D02670
+      IMPLICIT REAL*8           (V)                                     ! D05680
 C                                                                         D05690
 C     SUBROUTINE RDLIN4Q INPUTS THE LINE DATA FROM LNFIL4                 D05700
 C                                                                         D05710
@@ -2135,6 +2558,7 @@ C                                                                         D05990
             RETURN                                                        D06000
 C                                                                         D06010
          ENDIF                                                            D06020
+         if (negepp_flag.eq.1) CALL BUFIN (LNFIL4,LEOF,DUM(1),1)
       ENDIF                                                               D06030
       IEOF = 0                                                            D06040
       ILO = 1                                                             D06050
@@ -2156,10 +2580,11 @@ C                                                                         D06190
 C                                                                         D06210
    20 IEOF = 1                                                            D06220
 C                                                                         D06230
+ 950  FORMAT (8a1)
+
       RETURN                                                              D06240
 C                                                                         D06250
       END                                                                 D06260
-
 
       SUBROUTINE CNVF4Q (VNU,SABS,ALFAL,ALFAD,MOL,SPP,SRAD)               D06270
 C                                                                         D06280
@@ -2174,7 +2599,7 @@ C                                                                         D06320
      *               DPTFC,ILIN4,ILIN4T                                   D06350
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        D06360
       COMMON /VOICOM/ AVRAT(102),DUMMY(5,102)                             D06370
-      COMMON /CONVF/ CHI(251),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4            D06380
+      COMMON /CONVF/ CHI(0:250),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4            D06380
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D05820
      *              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,        D05830
      *              NLTEFL,LNFIL4,LNGTH4                                  D05840
@@ -2182,51 +2607,31 @@ C                                                                         D06390
       DIMENSION VNU(*),SABS(*),ALFAL(*),ALFAD(*),MOL(*),SPP(*),SRAD(*)    D06400
 C                                                                         D06410
       DATA ZBND / 64. /                                                   D06420
-      DATA ASUBL / 0.623 /,BSUBL / 0.410 /                                D06430
       DATA HREJ /'0'/,HNOREJ /'1'/
 C                                                                         D06440
-      DATA I_1/1/, I_251/251/
+      DATA I_1/1/, I_250/250/
 C
       VNULST = V2R4+BOUND4                                                D06450
 C                                                                         D06460
-      IF (JCNVF4.NE.0) GO TO 20                                           D06470
-      JCNVF4 = 1                                                          D06480
-C                                                                         D06490
-C     SET UP CHI SUB-LORENTZIAN FORM FACTOR FOR CARBON DIOXIDE            D06500
-C     POLYNOMIAL MATCHED TO AN EXPONENTIAL AT X0 = 8 CM-1                 D06510
-C                                                                         D06520
-      X0 = 8.                                                             D06530
-      Y0 = EXP(-ASUBL*X0**BSUBL)                                          D06540
-      F = ASUBL*BSUBL*X0**(BSUBL-1)                                       D06550
-      Y1 = -F*Y0                                                          D06560
-      Y2 = Y1*((BSUBL-1)/X0-F)                                            D06570
-      Z0 = (Y0-1)/X0**2                                                   D06580
-      Z1 = Y1/(2*X0)                                                      D06590
-      Z2 = Y2/2.                                                          D06600
-      C6 = (Z0-Z1+(Z2-Z1)/4.)/X0**4                                       D06610
-      C4 = (Z1-Z0)/X0**2-2.*X0**2*C6                                      D06620
-      C2 = Z0-X0**2*C4-X0**4*C6                                           D06630
-      DVCHI = 0.1                                                         D06640
-      RDVCHI = 1./DVCHI                                                   D06650
-C                                                                         D06660
-      DO 10 ISUBL = 1, 251                                                D06670
-         FI = DVCHI* REAL(ISUBL-1)                                        D06680
-         IF (FI.LT.X0) THEN                                               D06690
-            CHI(ISUBL) = 1.+C2*FI**2+C4*FI**4+C6*FI**6                    D06700
-         ELSE                                                             D06710
-            FNI = ASUBL*(FI**BSUBL)                                       D06720
-            CHI(ISUBL) = EXP(-FNI)                                        D06730
-         ENDIF                                                            D06740
-   10 CONTINUE                                                            D06750
-C                                                                         D06760
-C     CONSTANTS FOR FOURTH FUNCTION LINE SHAPE                            D06770
-C                                                                         D06780
-      RECPI = 1./(2.*ASIN(1.))                                            D06790
-      ZSQBND = ZBND*ZBND                                                  D06800
-      A3 = (1.+2.*ZSQBND)/(1.+ZSQBND)**2                                  D06810
-      B3 = -1./(1.+ZSQBND)**2                                             D06820
-C                                                                         D06830
-   20 CONTINUE                                                            D06840
+      IF (JCNVF4.NE.1234) then
+c
+         JCNVF4 = 1234       
+c
+C        Obtain CHI SUB-LORENTZIAN FORM FACTOR FOR CARBON DIOXIDE: 
+c
+         dvchi  = 0.1
+         rdvchi = 1./dvchi
+
+         call chi_fn (chi,dvchi)
+C                                                                            D06760
+C        CONSTANTS FOR FOURTH FUNCTION LINE SHAPE:                           D06770
+C                                                                            D06780
+         RECPI = 1./(2.*ASIN(1.))                                            D06790
+         ZSQBND = ZBND*ZBND                                                  D06800
+         A3 = (1.+2.*ZSQBND)/(1.+ZSQBND)**2                                  D06810
+         B3 = -1./(1.+ZSQBND)**2                                             D06820
+C                                                                            D06830
+      endif
 C                                                                         D06850
       BNDSQ = BOUND4*BOUND4                                               D06860
 C                                                                         D06870
@@ -2259,12 +2664,13 @@ C                                                                         D07090
          JJ = MAX(JJ,I_1)                                                   D07110
          JJ = MIN(JJ,NPTR4)                                               D07120
 C
+C     SPEAK is used for line rejection
          IF (ILNFLG.LE.1) THEN
             FREJ(I) = HNOREJ
 c     No rejection for line-coupled lines (SPP ne. 0)
             IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ)) .and. spp(i).eq.0.) THEN
-                FREJ(I) = HREJ
-                GO TO 60                                                  D07130
+               FREJ(I) = HREJ
+               GO TO 60                                                   D07130
             ENDIF
          ELSE
             IF (FREJ(I).EQ.HREJ) GOTO 60
@@ -2297,27 +2703,17 @@ C                                                                         D07360
 
          dptrat = spp(i)/(sabs(i)*alfavi)
          dptrat_r =  spp(i)/(srad(i)*alfavi)
+
          rec_alfvi2 = 1./ALFVI2
          siv_a3 = SIV*A3
          siv_b3 = SIV*B3
          srv_a3 = srv*a3
          srv_b3 = srv*b3
 c
-c     Reduce the CO2 chi by a factor of 0.5 for the nu 2 region
-c
-         data chi_fac_sav / 0.5 /
-c
-         chi_fac = 1.
-      
-         if (vnui .gt .500. .and. vnui .lt. 900.) then
-            chi_fac = chi_fac_sav
-         endif
-c
-c
          DO 40 JJ = JMIN, JMAX                                            D07370
             XM = (XJJ-XNUI)                                               D07380
             XMSQ = XM*XM                                                  D07390
-            ZVSQ = XMSQ * rec_ALFVI2 
+            ZVSQ = XMSQ * rec_alfvi2  
 C                                                                         D07410
             IF (ZVSQ.LE.ZSQBND) THEN                                      D07420
                F4FN = (siv_A3 + ZVSQ * siv_B3) - F4BND
@@ -2339,16 +2735,13 @@ C                                                                         D07510
 C                                                                         D07530
 C     ASSIGN ARGUMENT ISUBL OF THE FORM FACTOR FOR CO2 LINES              D07540
 C                                                                         D07550
-               ISUBL = RDVCHI*ABS(XM)+1.5                                 D07560
-               ISUBL = MIN(ISUBL,251)                                     D07570
+               ISUBL = RDVCHI*ABS(XM)+0.5                                 D07560
+               ISUBL = MIN(ISUBL,i_250)                                     D07570
 C                                                                         D07580
-c               R4(JJ) = R4(JJ)+F4FN*CHI(ISUBL)                            D07590
-               R4(JJ) = R4(JJ)+F4FN*( 1.+chi_fac*(CHI(ISUBL)-1.) )
-c               RR4(JJ) = RR4(JJ)+F4FR*CHI(ISUBL)                          D07590
-               RR4(JJ) = RR4(JJ)+F4FR*( 1.+chi_fac*(CHI(ISUBL)-1.) )
+               R4(JJ) = R4(JJ)+F4FN*CHI(ISUBL)                            D07590
+               RR4(JJ) = RR4(JJ)+F4FR*CHI(ISUBL)                          D07590
             ELSE                                                          D07600
                R4(JJ) = R4(JJ)+F4FN                                       D07610
-               RR4(JJ) = RR4(JJ)+F4FR                                     D07610
             ENDIF                                                         D07620
 C                                                                         D07630
 C                                                                         D07640
@@ -2381,367 +2774,3 @@ C                                                                         D07860
       RETURN                                                              D07870
 C                                                                         D07880
       END                                                                 D07890
-      SUBROUTINE SHRINQ                                                   D03250
-C                                                                         D03260
-      IMPLICIT REAL*8           (V)                                     ! D03270
-C                                                                         D03280
-C     SUBROUTINE SHRINK COMBINES LINES FALLING IN A WAVENUMBER INTERVAL   D03290
-C     DVR4/2 INTO A SINGLE EFFECTIVE LINE TO REDUCE COMPUTATION           D03300
-C                                                                         D03310
-      COMMON VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250),         D03320
-     *       SPP(1250)                                                    D03330
-      COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D03340
-     *               DPTFC,ILIN4,ILIN4T                                   D03350
-      COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        D03360
-C                                                                         D03370
-      J = ILO-1                                                           D03380
-      DV = DVR4/2.                                                        D03390
-      VLMT = VNU(ILO)+DV                                                  D03400
-C                                                                         D03410
-C     INITIALIZE NON-CO2 SUMS                                             D03420
-C                                                                         D03430
-      SUMAL = 0.                                                          D03440
-      SUMAD = 0.                                                          D03450
-      SUMS = 0.                                                           D03460
-      SUMV = 0.                                                           D03470
-      SUMC = 0.                                                           D03480
-C                                                                         D03490
-C     INITIALIZE CO2 SUMS                                                 D03500
-C                                                                         D03510
-      SUMAL2 = 0.                                                         D03520
-      SUMAD2 = 0.                                                         D03530
-      SUMS2 = 0.                                                          D03540
-      SUMV2 = 0.                                                          D03550
-      SUMC2 = 0.                                                          D03560
-C                                                                         D03570
-      DO 20 I = ILO, IHI                                                  D03580
-C                                                                         D03590
-C     IF LINE COUPLING, DON'T SHRINK LINE                                 D03600
-C                                                                         D03610
-         IF (SPP(I).NE.0.0) THEN                                          D03620
-            J = J+1                                                       D03630
-            VNU(J) = VNU(I)                                               D03640
-            S(J) = S(I)                                                   D03650
-            ALFAL(J) = ALFAL(I)                                           D03660
-            ALFAD(J) = ALFAD(I)                                           D03670
-            SPP(J) = SPP(I)                                               D03680
-            MOL(J) = MOL(I)                                               D03690
-            IF (MOL(J).NE.2) MOL(J) = 0                                   D03700
-            GO TO 10                                                      D03710
-         ENDIF                                                            D03720
-C                                                                         D03730
-C     NON-CO2 LINES OF MOLECULAR INDEX IT.NE.2   ARE LOADED               D03740
-C     INTO SUMS IF THE FREQUENCY WITHIN DV GROUP                          D03750
-C                                                                         D03760
-         IF (MOL(I).NE.2) THEN                                            D03770
-            SUMV = SUMV+VNU(I)*S(I)                                       D03780
-            SUMS = SUMS+S(I)                                              D03790
-            SUMAL = SUMAL+S(I)*ALFAL(I)                                   D03800
-            SUMAD = SUMAD+S(I)*ALFAD(I)                                   D03810
-            SUMC = SUMC+SPP(I)                                            D03820
-         ELSE                                                             D03830
-C                                                                         D03840
-C     CO2 LINES LOADED     (MOL .EQ. 2)                                   D03850
-C                                                                         D03860
-            SUMV2 = SUMV2+VNU(I)*S(I)                                     D03870
-            SUMS2 = SUMS2+S(I)                                            D03880
-            SUMAL2 = SUMAL2+S(I)*ALFAL(I)                                 D03890
-            SUMAD2 = SUMAD2+S(I)*ALFAD(I)                                 D03900
-            SUMC2 = SUMC2+SPP(I)                                          D03910
-         ENDIF                                                            D03920
-C                                                                         D03930
-C     IF LAST LINE OR VNU GREATER THAN LIMIT THEN STORE SUMS              D03940
-C                                                                         D03950
-   10    IF (I.LT.IHI) THEN                                               D03960
-            IF (VNU(I+1).LE.VLMT) GO TO 20                                D03970
-         ENDIF                                                            D03980
-C                                                                         D03990
-         VLMT = VNU(I)+DV                                                 D04000
-C                                                                         D04010
-C     ASSIGN NON-CO2 LINE AVERAGES TO 'GROUP' LINE J                      D04020
-C                                                                         D04030
-         IF (SUMS.GT.0.) THEN                                             D04040
-            J = J+1                                                       D04050
-            S(J) = SUMS                                                   D04060
-            ALFAL(J) = SUMAL/SUMS                                         D04070
-            ALFAD(J) = SUMAD/SUMS                                         D04080
-            VNU(J) = SUMV/SUMS                                            D04090
-            SPP(J) = SUMC                                                 D04100
-            MOL(J) = 0                                                    D04110
-            SUMAL = 0.                                                    D04120
-            SUMAD = 0.                                                    D04130
-            SUMS = 0.                                                     D04140
-            SUMV = 0.                                                     D04150
-            SUMC = 0.                                                     D04160
-         ENDIF                                                            D04170
-C                                                                         D04180
-C     ASSIGN CO2 LINE AVERAGES                                            D04190
-C                                                                         D04200
-         IF (SUMS2.GT.0.) THEN                                            D04210
-            J = J+1                                                       D04220
-            S(J) = SUMS2                                                  D04230
-            ALFAL(J) = SUMAL2/SUMS2                                       D04240
-            ALFAD(J) = SUMAD2/SUMS2                                       D04250
-            VNU(J) = SUMV2/SUMS2                                          D04260
-            MOL(J) = 2                                                    D04270
-            SPP(J) = SUMC2                                                D04280
-            SUMAL2 = 0.                                                   D04290
-            SUMAD2 = 0.                                                   D04300
-            SUMS2 = 0.                                                    D04310
-            SUMV2 = 0.                                                    D04320
-            SUMC2 = 0.                                                    D04330
-         ENDIF                                                            D04340
-C                                                                         D04350
-   20 CONTINUE                                                            D04360
-C                                                                         D04370
-      ILO = J+1                                                           D04380
-      IHI = J                                                             D04390
-C                                                                         D04400
-      RETURN                                                              D04410
-C                                                                         D04420
-      END                                                                 D04430
-c ----------------------------------------------------------------
-
-      SUBROUTINE VIBPOP(XKT,HT,NLTEFLAG,NUM,HOL,NDEG,EH,RAT,TITMOL)       604860
-C                                                                         604870
-C                                                                         604880
-C     SUBROUTINE VIBPOP USES THE NON-LTE POPULATION DATA FROM             604890
-C     TAPE4 TO CALCULATE THE VIBRATIONAL POPULATION ENHANCEMENT           604900
-C     RATIOS FOR SELECTED VIBRATIONAL STATES OF H2O,CO2,NO AND O3.        604910
-C                                                                         604920
-      IMPLICIT REAL*8           (V)                                     ! B00030
-
-      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
-     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
-     *              NLTEFL,LNFIL4,LNGTH4                                  B00860
-
-      CHARACTER*(*) HOL                                                   604960
-      CHARACTER*8      XID,       HMOLID,      YID   
-      Real*8               SECANT,       XALTZ
-      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
-     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
-     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
-      DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),
-     *          VPNE1(26),VPNE2(26),VQNEST(26)
-      DIMENSION NDEG(*),EH(*),RAT(*)
-      CHARACTER*10 TITMOL,HMNLTE                                          605020
-C                                                                         605040
-C     SKIP TO BEGINNING OF VIBRATIONAL DATA                               605050
-C                                                                         605060
-       CALL RDSKIP(NLTEFLAG)                                              605070
-C                                                                         605080
-C   READ NLTE VIB POPULATIONS                                             605090
-C                                                                         605100
-      XKT= TAVE/RADCN2                                                    605030
-      READ (NLTEFLAG,902)  HMNLTE                                         605110
-      READ (NLTEFLAG,904)  ALT1,(VPNE1(I),I=1,NUM)                        605120
-  10  READ (NLTEFLAG,904)  ALT2,(VPNE2(I),I=1,NUM)                        605140
-C*****WOG, 11/06/2000: ALT1 -> AL2:
-C     IF( ALT1.LT.HT) THEN
-      IF( ALT2.LE.HT) THEN
-          ALT1 = ALT2                                                     605170
-          DO 20 I=1,NUM                                                   605180
-              VPNE1(I) = VPNE2(I)                                         605190
-  20      CONTINUE
-          GO TO 10                                                        605200
-      ENDIF
-C     CALL LININT(HT,ALT1,ALT2,NUM,VPNE1,VPNE2,VQNE)                      605220
-      A = (HT-ALT1)/(ALT2-ALT1)                                           605230
-      DO 30 I=1,NUM                                                       605240
-          CALL EXPINT(VQNE(I),VPNE1(I),VPNE2(I),A )                       605250
-  30  CONTINUE
-C                                                                         605270
-      POPEQ=0.0                                                           605280
-      POPNE=0.0                                                           605290
-C                                                                         605300
-      DO 50 LVL=1,NUM                                                     605310
-          VQEQ(LVL)=NDEG (LVL)*EXP(-EH(LVL)/XKT)                          605320
-          VQNEST(LVL)=VQNE(LVL)                                           605330
-          POPEQ=POPEQ + VQEQ(LVL)                                         605340
-          POPNE=POPNE + VQNE (LVL)                                        605350
-  50  CONTINUE                                                            605360
-C                                                                         605370
-C    NORMALIZE POPULATIONS AND CALCULATE RATIOS                           605380
-C                                                                         605390
-      WRITE(IPR,906) TITMOL                                               605400
-      WRITE(IPR,935)                                                      605410
-      DO 100 LVL=1,NUM                                                    605420
-          I=LVL                                                           605430
-          VQEQ(LVL)=VQEQ(LVL)/POPEQ                                       605440
-          VQNE (LVL)=VQNE(LVL)/POPNE                                      605450
-          RAT(I)=VQNE(I)/VQEQ(I)                                          605460
-          IF(LVL.EQ.1) THEN                                         
-              VST1=VQNE(1)                                                605480
-              TNE(I)=TAVE                                                 605490
-              WRITE(IPR,920)HOL(I),EH(I),VQEQ(I),VQNE(I),RAT(I),TNE(I),   605500
-     &            VQNEST(I)                                               605510
-          ELSE                                                            605520
-              DEN=(NDEG(1)*VQNE(LVL)/(NDEG(LVL)*VST1))                    605530
-              TNE(I)=-RADCN2*EH(LVL)/ LOG(DEN)                            605540
-              WRITE(IPR,920)HOL(I),EH(I),VQEQ(I),VQNE(I),RAT(I),TNE(I),   605550
-     &            VQNEST(I)                                               605560
-          END IF                                                          605570
-  100 CONTINUE                                                            605580
-C                                                                         605590
-      RETURN                                                              605600
-C                                                                         605610
-  902 FORMAT(A10)                                                         605620
-  904 FORMAT (F7.0,1P,7E11.4,     /(18X, 6E11.4))                         605630
-  906 FORMAT(//,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))                  605640
-  920 FORMAT(2X,A10,4G15.5,F10.2,G15.5)                                   605660
-  935 FORMAT (2X,'VIB',10X,'E(CM-1)',11X,'POP LTE',7X,                    605680
-     & 'POP NLTE',6X,'NLTE/LTE',7X,'NLTE TMP',7X,'NLTE POP ORIG')         605690
-C                                                                         605700
-      END                                                                 605710
-c ----------------------------------------------------------------
-
-      SUBROUTINE VIBTMP(XKT,HT,NLTEFLAG,NUM,HOL,NDEG,EH,RAT,TITMOL)       605720
-C                                                                         604870
-C                                                                         604880
-C     SUBROUTINE VIBTMP USES THE NON-LTE TEMPERATURE DATA FROM            604890
-C     TAPE4 TO CALCULATE THE VIBRATIONAL POPULATION ENHANCEMENT           604900
-C     RATIOS FOR SELECTED VIBRATIONAL STATES OF H2O, CO2, NO AND          604910
-C     O3.  THE NLTE VIBRATIONAL TEMPERATURES ARE WITH RESPECT TO          604910
-C     THE GROUND VIBRATIONAL STATE.                                       604910
-C                                                                         604920
-      IMPLICIT REAL*8           (V)                                     ! B00030
-
-      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
-     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
-     *              NLTEFL,LNFIL4,LNGTH4                                  B00860
-
-      CHARACTER*(*) HOL                                                   604960
-      CHARACTER*8      XID,       HMOLID,      YID   
-      Real*8               SECANT,       XALTZ
-      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
-     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
-     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
-      DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),TNESAV(26),
-     *          TEM1(26),TEM2(26) 
-      DIMENSION NDEG(*),EH(*),RAT(*)
-      CHARACTER*10 TITMOL,HMNLTE                                          605820
-C                                                                         605830
-C     SKIP TO BEGINNING OF VIBRATIONAL DATA                               605840
-C                                                                         605850
-       CALL RDSKIP(NLTEFLAG)                                              605860
-C                                                                         605870
-C   READ NLTE VIB TEMPERATURE                                             605880
-C                                                                         605890
-      XKT= TAVE/RADCN2                                                    605900
-      READ (NLTEFLAG,902)  HMNLTE                                         605910
-      READ (NLTEFLAG,904)  ALT1,(TEM1(I),I=1,NUM)                         605920
-  10  READ (NLTEFLAG,904)  ALT2,(TEM2(I),I=1,NUM)                         605930
-C*****WOG, 11/06/2000: ALT1 -> AL2:
-C     IF( ALT1.LT.HT) THEN
-      IF( ALT2.LE.HT) THEN
-          ALT1 = ALT2                                                     605960
-          DO 20 I=1,NUM                                                   605970
-              TEM1(I) = TEM2(I)                                           605980
-  20      CONTINUE
-          GO TO 10                                                        605990
-      ENDIF   
-C                                                                         606010
-C     SET ZERO TEMP TO AMBIENT TEMP                                       606020
-C                                                                         606030
-      CALL  STAMB(NUM,TAVE,TEM1)                                          606040
-      CALL  STAMB(NUM,TAVE,TEM2)                                          606050
-      CALL LININT(HT,ALT1,ALT2,NUM,TEM1,TEM2,TNESAV)                      606060
-      WRITE(IPR,906) TITMOL                                               606070
-C                                                                               
-CC     CORRECT TEMP TO ATMOSPHERIC                                              
-C                                                                               
-      RATTV = TAVE /TNESAV(1)
-c loop 40 corrects the input temperatures when the input
-c  level temperature does not match the computed layer
-c  temperature
-c      write(*,*) ' temperature not corrected'
-      
-      DO 40 I = 1,NUM 
-          TNE(I) = TNESAV(I) * RATTV 
-  40  CONTINUE
-C                                                                               
-      SUMQ=0                                                              606080
-      SUMNQ=0                                                             606090
-      DO 50 I=1,NUM                                                       606100
-          VQNE(I)=1.                                                      606110
-          IF (TNE(I).GT.0.0) 
-     &        VQNE(I)=NDEG(I)*EXP(-RADCN2*EH(I)/TNE(I))                   606130
-          VQEQ(I)=NDEG(I)*EXP(-EH(I)/XKT)                                 606140
-          SUMQ=SUMQ+VQEQ(I)                                               606150
-          SUMNQ=SUMNQ+VQNE(I)                                             606160
-  50  CONTINUE                                                            606170
-      WRITE(IPR,935)                                                      606180
-      DO 100 I=1,NUM                                                      606190
-          VQNE(I)=VQNE(I)/SUMNQ                                           606200
-          VQEQ(I)=VQEQ(I)/SUMQ                                            606210
-          RAT(I)=VQNE(I)/VQEQ(I)                                          606220
-          WRITE(IPR,920)HOL(I),EH(I),VQEQ(I),VQNE(I),RAT(I),
-     &        TNESAV(I), TNE(I)                                           606230
-  100 CONTINUE                                                            606240
-C                                                                         606250
-      RETURN                                                              606260
-C                                                                         606270
-  902 FORMAT(A10)                                                         606280
-  904 FORMAT(F7.0,7F11.3/(18X,6F11.3))                                    606290
-  906 FORMAT(//,5X,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))               606300
-  920 FORMAT(2X,A10,4G12.5,2F9.2)                                         606320
-  935 FORMAT (9X,'VIB E(CM-1)',9X,'POP LTE    POP NLTE NLTE/LTE',         606340
-     &   '    NLTE TMP 2-STATE NLTE TMP')                                 606350
-C                                                                         606360
-      END                                                                 606370
-
-c ----------------------------------------------------------------
-
-      SUBROUTINE RDSKIP(NTAPE)                                            606380
-      CHARACTER *1 HRD,HMINUS                                             606390
-      DATA HMINUS /'-'/                                                   606400
-  10  READ(NTAPE,900) HRD                                                 606410
-  900 FORMAT(2X,A1)                                                       606420
-      IF(HRD.EQ.HMINUS) RETURN                                            606430
-      GO TO 10                                                            606440
-      END                                                                 606450
-
-c ----------------------------------------------------------------
-
-      SUBROUTINE LININT(HT,ALT1,ALT2,NUM,T1,T2,TNE)                       606460
-      DIMENSION T1(26),T2(26),TNE(26)                                     606470
-C*****WOG 11/03/2000
-C*****Correct for divide by zero if two altitudes are the same
-C*****0.001 = 1 meter, small enough to use average, large enough to
-c     prevent numerical error. 
-      IF (ABS(ALT2-ALT1) .LE. 0.001) THEN
-          AM = 0.5
-      ELSE 
-          AM = (HT-ALT1)/(ALT2-ALT1) 
-      ENDIF
-      
-      DO 10 I=1,NUM
-          TNE(I)=T1(I)+AM*(T2(I)-T1(I))
-  10  CONTINUE
-
-C     DO 10 I=1,NUM                                                       606480
-C         AM = (T2(I)-T1(I))/(ALT2-ALT1)                                  606490
-C         C=T1(I)-AM*ALT1                                                 606500
-C         TNE(I)=AM*HT+C                                                  606510
-C  10  CONTINUE
-      RETURN                                                              606520
-      END                                                                 606530
-
-c ----------------------------------------------------------------
-
-      SUBROUTINE  STAMB(NUM,T1AMB,T1)                                     606540
-      DIMENSION T1(*)                                                    ?606550
-
-C*****WOG, 11/3/2000
-C*****Why start from 2 instead of 1???
-C     DO 10 I=2,NUM                                                       606560
-      DO 10 I=1,NUM
-          IF(T1(I).LE.0.) T1(I)=T1AMB                                     606570
-  10  CONTINUE                                                            606580
-      RETURN                                                              606590
-      END                                                                 606600
-

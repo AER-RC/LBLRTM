@@ -795,6 +795,8 @@ C                                                                         I06720
 C                                                                         I06770
       CHARACTER*12 BCD,HTRANS,HABSRB,HRADIA                               I06780
 C                                                                         I06790
+      DATA I_1000/1000/
+c
       DATA HTRANS / 'TRANSMISSION'/,HABSRB / ' ABSORPTION '/,             I06800
      *     HRADIA / ' RADIANCE   '/                                       I06810
 C                                                                         I06820

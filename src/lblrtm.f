@@ -329,7 +329,7 @@ C
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
-     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=35,
+     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,
      *                MXTRAC=22,MXSPC=3)
 C
 C     ----------------------------------------------------------------
@@ -455,7 +455,8 @@ C
      *     '   OH ','   HF ','  HCL ','  HBR ','   HI ','  CLO ',
      *     '  OCS ',' H2CO ',' HOCL ','   N2 ','  HCN ','CH3CL ',
      *     ' H2O2 ',' C2H2 ',' C2H6 ','  PH3 ',' COF2 ','  SF6 ',
-     *     '  H2S ','HCOOH ','      ','      ','      ' /
+     *     '  H2S ','HCOOH ','  HO2 ','    O ','ClONO2','   NO+',
+     *     ' HOBr ',' C2H4 '/
       DATA CSPC   / 'T LAYR','T SURF','LOW PR' /
 C
       KODFIL = 17
@@ -947,7 +948,8 @@ C
       IF (IHIRAC+IATM+IMRG.GT.0)                                          A06630
      *    CALL XLAYER (MPTS,NPTS,LFILE,MFILE,NFILE)                       A06640
 C                                                                         A06650
-      IF ((IAERSL.EQ.1.OR.IAERSL.EQ.7).AND.IEMIT.EQ.0) THEN               A06760
+      IF ((IAERSL.EQ.1.OR.IAERSL.EQ.7) .AND. (IEMIT.EQ.0)
+     *                        .and. (ihirac+imrg.gt.0)) THEN               A06760
          REWIND MFILE                                                     A06770
          REWIND IAFIL                                                     A06780
          REWIND IEXFIL                                                    A06790
@@ -1328,7 +1330,7 @@ C                                                                         A09440
 C                                                                         A09460
 C     PRLNHD PRINTS OUT LINE FILE HEADER                                  A09470
 C                                                                         A09480
-      PARAMETER (MXMOL=35)
+      PARAMETER (MXMOL=38)
 C
 C     Common blocks for analytic derivative
 C     -------------------------
@@ -1515,7 +1517,7 @@ C**********************************************************************
 C                                                                         A11260
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
-     *                MXMOL=35,MXTRAC=22)
+     *                MXMOL=38,MXTRAC=22)
 C
       CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR,PTHRAD,PATH1,PATH2
       CHARACTER*10 HFMODI,HFMODT,HFMRDR,HFMRAD,HFORM1,HFORM2
@@ -2560,7 +2562,7 @@ C     OPPATH CALLS LBLATM AND CALLS PATH FIRST                            A16910
 C                                                                         A11260
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
-     *                MXMOL=35,MXTRAC=22)
+     *                MXMOL=38,MXTRAC=22)
 C                                                                         A16920
       COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(MXMOL,MXLAY),
      *               WBRODL(MXLAY),DVL(MXLAY),                            A16930
@@ -2576,14 +2578,14 @@ C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     A17000
 C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         A17010
 C     MOLECULES.                                                          A17020
 C                                                                         A17030
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(35),XAMNT(35,MXLAY)              A17040
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(38),XAMNT(38,MXLAY)              A17040
 C                                                                         A17050
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         A17060
 C     FOR THE CROSS-SECTION MOLECULES.                                    A17070
 C                                                                         A17080
-      COMMON /XSECTR/ V1FX(5,35),V2FX(5,35),DVFX(5,35),WXM(35),           A17090
-     *                NTEMPF(5,35),NSPECR(35),IXFORM(5,35),               A17100
-     *                XSMASS(35),XDOPLR(5,35),NUMXS,IXSBIN                A17105
+      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           A17090
+     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               A17100
+     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                A17105
 C                                                                         A17110
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A17120
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       A17130
@@ -2778,7 +2780,7 @@ C                                                                         A18350
          LH2SAV = LH2                                                     A18410
 C                                                                         A18420
          NMOLIN = NMOL+1                                                  A18430
-         DO 20 MOL = NMOLIN, 35                                           A18440
+         DO 20 MOL = NMOLIN, 38                                           A18440
             DO 19 ILAYR = 1, NLAYRS                                       A18450
                WKL(MOL,ILAYR) = 0.                                        A18460
  19         continue
@@ -2870,7 +2872,7 @@ C     INPUTS AND OUTPUTS PATH PARAMETERS FOR EACH LAYER                   A19240
 C                                                                         A19250
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
-     *                MXMOL=35,MXTRAC=22)
+     *                MXMOL=38,MXTRAC=22)
 C
       COMMON COMSTR(250,9)                                                A19260
       COMMON R1(3600),R2(900),R3(225)                                     A19270
@@ -2921,16 +2923,16 @@ C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     A19500
 C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         A19510
 C     MOLECULES.                                                          A19520
 C                                                                         A19530
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(35),XAMNT(35,MXLAY)              A19540
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(38),XAMNT(38,MXLAY)              A19540
 C                                                                         A19550
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         A19560
 C     FOR THE CROSS-SECTION MOLECULES.                                    A19570
 C                                                                         A19580
       CHARACTER*10 XSFILE,XSNAME,ALIAS                                    A19590
-      COMMON /XSECTF/ XSFILE(6,5,35),XSNAME(35),ALIAS(4,35)               A19600
-      COMMON /XSECTR/ V1FX(5,35),V2FX(5,35),DVFX(5,35),WXM(35),           A19610
-     *                NTEMPF(5,35),NSPECR(35),IXFORM(5,35),               A19620
-     *                XSMASS(35),XDOPLR(5,35),NUMXS,IXSBIN                A19625
+      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               A19600
+      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           A19610
+     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               A19620
+     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                A19625
       COMMON /IODFLG/ DVOUT
 C                                                                         A19630
       CHARACTER*20 HEAD20
@@ -2943,7 +2945,7 @@ C                                                                         A19630
       CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,  ht1,ht2
       CHARACTER*3 CINP,CINPX,CBLNK                                        A19680
       DIMENSION FILHDR(2),AMOUNT(2),AMTSTR(2)                             A19690
-      DIMENSION HEDXS(15),WMT(35),SECL(MXFSC),WXT(35),WTOTX(MXLAY)
+      DIMENSION HEDXS(15),WMT(38),SECL(MXFSC),WXT(38),WTOTX(MXLAY)
       DIMENSION WDRAIR(MXLAY)
 C                                                                         A19710
       EQUIVALENCE (XID(1),FILHDR(1))                                      A19720
@@ -2974,7 +2976,7 @@ C                                                                         A19900
          ISET = 1                                                         A19950
       ENDIF                                                               A19960
 C                                                                         A19970
-      DO 10 M = 1, 35                                                     A19980
+      DO 10 M = 1, 38                                                     A19980
          WMT(M) = 0.                                                      A19990
          WK(M) = 0.                                                       A20000
          WXM(M) = 0.                                                      A20010
@@ -3019,7 +3021,7 @@ C
          CALL YDIH1(ZH1,ZH2,ZANGLE,YID)
 c
          IF (IHIRAC.EQ.9) THEN                                            A20230
-            CALL VECISO                                                   A20240
+c
             DO 20 M = 1, NMOL                                             A20250
                READ (MOLID(M),905) HMOLID(M)                              A20260
    20       CONTINUE                                                      A20270

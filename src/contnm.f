@@ -203,7 +203,7 @@ C                                                                         F00830
 c****2.4.+++  The co2 continuum has been increased by a factor of 7. in the 
 c                   nu2 band
 
-               if (vj.gt.500 .and. vj.lt.900)  then
+               if (vj.gt.0 .and. vj.lt.1200)  then
                   c(j) = 7.*c(j)
                endif
 

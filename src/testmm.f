@@ -66,6 +66,11 @@ C
       HVRTST = '$Revision$' 
 C
       linfil_4 = linfil
+c     this definition is so that the tape # is always integer*4
+c     required by some compilers
+
+c
+      OPEN (LINFIL,FILE='TAPE3',STATUS='NEW',FORM='unformatted')                 LN02330
 c
       lstwdp = -654321
       ilngthp = NWDL_4 (rcdhdr(1),LSTWDp) 
@@ -115,38 +120,67 @@ C                                                                         N00700
                GO TO 30                                                   N00750
             ENDIF                                                         N00760
          ENDIF                                                            N00770
+c
          K = K+1                                                          N00780
-         VNU(K) = XLINC(2,I)                                              N00790
-         STR(K) = XLINC(3,I)                                              N00800
-         ALF(K) = XLINC(4,I)                                              N00810
-         EPP(K) = XLINC(5,I)                                              N00820
-         HWHMS(K) = XLIND(3,I)                                            N00830
-         TMPALF(K) = XLIND(4,I)                                           N00840
-         PSHIFT(K) = XLIND(5,I)                                           N00850
-         IFLG(K) = XLIND(6,I)                                             N00860
-         IF (IFLG(K).GE.0) THEN                                           N00870
+         IFLGK  = XLIND(6,I)                                              N00860
+
+         IF (IFLGK.GE.0) THEN  
+
             iso(k) = xlinc(1,i)/100.
             MOL(K) = mod(XLINC(1,I),x_100)         
+
+            VNU(K) = XLINC(2,I)                                              N00790
+            STR(K) = XLINC(3,I)                                              N00800
+            ALF(K) = XLINC(4,I)                                              N00810
+            EPP(K) = XLINC(5,I)                                              N00820
+            HWHMS(K) = XLIND(3,I)                                            N00830
+            TMPALF(K) = XLIND(4,I)                                           N00840
+            PSHIFT(K) = XLIND(5,I)                                           N00850
+            IFLG(K) = XLIND(6,I)                                             N00860
 C                                                                         N00890
 C     ADD ISOTOPE TO MOLECULE FOR USE BY LBLRTM                           N00900
 C                                                                         N00910
             MOL(K) = MOL(K)+ISO(k)*100                                    N00920
+c
          ELSE                                                             N00930
+c
+c     -modify the oxygen line coupling coefficients based on the data of 
+c      Cimini et al. 2003 (kcp and sac)
+c
             MOLK = mod(XLINC(1,I),x_100)
-            AMOL(K) = XLIND(1,I)                                          N00940
-C**********************
-C     CORRECTIONS TO THE LINE COUPLING FOR OXYGEN  (21 AUG 92; SAC)
-C
-C     Y0RES IS TO CORRECT FOR THE NEGLECTED CONTRIBUTION OF
-C     THE NONRESONANT LINES
-C
-C     FO2 IS TO BRING THE RESULTS IN CONFORMITY WITH THE WESTWATER DATA
-C     AND PROVIDES ESSENTIAL AGREEMENT WITH ROSENKRANZ FOR THE Y'S
-C
-C     FO2 Modified to properly account for the 2.75K space black
-C     body (01/94)
-C
-C**********************
+
+            y1 = XLINC(2,I)  
+            g1 = XLINC(3,I)  
+            y2 = XLINC(4,I)  
+            g2 = XLINC(5,I)  
+            y3 = XLIND(1,I)  
+            g3 = XLIND(3,I)  
+            y4 = XLIND(4,I)  
+            g4 = XLIND(5,I)   
+c
+c     -line coupling for zero frequency oxygen line is not modified  based on
+c      Cimini et al. 2003 (kcp and sac)
+
+            if (i.eq.2) then
+               y_fac = 1.
+               g_fac = 1.
+            else
+               y_fac = 0.87
+               g_fac = 0.
+            endif
+c
+            VNU(K)    = y_fac*y1
+            STR(K)    = g_fac*g1
+            ALF(K)    = y_fac*y2
+            EPP(K)    = g_fac*g2
+
+            AMOL(K)   = y_fac*y3
+            HWHMS(K)  = g_fac*g3
+            TMPALF(K) = y_fac*y4
+            PSHIFT(K) = g_fac*g4
+
+            IFLG(K) = XLIND(6,I)                                             N00860
+c
          ENDIF                                                            N00950
 C                                                                         N00960
 C     CHECK LAST LINE - TO SEE IF FIRST RECORD OF LINE COUPLED LINE       N00970

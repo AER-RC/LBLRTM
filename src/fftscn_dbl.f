@@ -889,7 +889,7 @@ C*****            Get another record from LFILE
   200     Continue
 
           J = J+1
-          BOX(J) = SUM/ REAL(M)
+          BOX(J) = SUM/ Real(M)
 
           If(J .EQ. LPTSMX) Then
 C*****        Write out a record
@@ -1013,7 +1013,7 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
       
-      LOGICAL OP,EX
+      Logical OP,EX
       Character FILNAM*60,CTAPE*4
 
 C*****CTAPEdefines the default prefix for LBLRTM FILENAMEs, e.g. TAPE12
@@ -1416,7 +1416,7 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
-      LOGICAL OP
+      Logical OP
 
       Do 100 I=61,99
           Inquire(UNIT=i,OPENED=OP)
@@ -2547,6 +2547,7 @@ C*****            Start at -(VSAVE+DV)
 
 C*****    Calculate FUNCT for the middle block, if there is one (LREC
 C*****    is odd.) Includes LREC = 1.          
+c
           If(MOD(LREC,I_2) .EQ. 1) Then
               VSAVE = V
 C*****        Calculate the positive frequencies.
@@ -2892,8 +2893,7 @@ C
 
       DATA I_1000/1000/
 
-      LOGICAL OP
-
+      Logical OP
 
       IERR = 0
       IBOUND = 4
@@ -3297,8 +3297,6 @@ C     ICSUBZ = SIZE OF SUB-BLOCKS (COMPLEX) WHICH IS ICOMSZ/NBLK AT STAR
 C     NPASS = NUMBER OF PASSES OVER THE DATA
 C     THIS SECTION OF CODE SORTS OUT EVER NBLK'TH POINT IN A BLOCK AND
 C     AND PUTS THE SUB-BLOCKS IN BIT INVERTED ORDER
-C 
-      DATA I_2/2/
 C
       ICOMSZ=IBLKSZ/2
       ICSUBZ=ICOMSZ/NBLK
@@ -3356,12 +3354,16 @@ C
 C     
                   
       FUNCTION INVER(IVER,N)
+c
 C     THIS FUNCTION TAKES "IVER" AND INVERTS THE BITS
 C     N IS THE NUMBER OF BITS IN THE WORD
 C     THE VALUES OF IVER AND N ARE UNCHANGED
 C     THIS FUNCTION WILL NOT WORK FOR NEGATIVE NUMBERS
 C     This version uses standard FORTRAN 77.  It would be easier to
 C     use a SHIFT and OR function, but they are not standard FORTRAN 77.
+C 
+      DATA I_2/2/
+c
       IVE=IVER
       INV=0
       DO 10 I=1,N

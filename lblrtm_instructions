@@ -2878,7 +2878,7 @@ Molecule	State             Energy	Degeneracies
 
 
 
-TAPE4-RECORD 1.1
+TAPE4(RECORD 1.1)
 
 	TIT
 
@@ -2886,12 +2886,12 @@ TAPE4-RECORD 1.1
 
 	A80
 
-		TIT:	80 characters of user indetification
+		TIT:	80 characters of user indentification
 
 REPEAT TAPE4-RECORD 1.1 for a total of three times
 
 
-TAPE4-RECORD 1.2
+TAPE4(RECORD 1.2)
 
 	IVIB,	MOLNEQ
 
@@ -2901,15 +2901,17 @@ TAPE4-RECORD 1.2
 
 		IVIB:	(0,1) selects input for vibrational data:
                           
-                           = 0 (kinetic temepratures (K) )
+                           = 1 (vibrational temperatures (K))
 			
-			   = 1 (population)
+			   = 0 (population)
 
 		MOLNEQ:  place holder for future input 
 
- ******  these records applicable only if IVIB eq 1 ***
+--------------------------------------------------------------------------------
+******  these records applicable only if IVIB eq 1 ***
+--------------------------------------------------------------------------------
 
-TAPE4-RECORD 2.1 
+TAPE4(RECORD 2.1) 
 
  	CHRD(1)
 
@@ -2926,7 +2928,7 @@ TAPE4-RECORD 2.1
 	 even if not used in NLTE calculations.
   
           
-TAPE4-RECORD 2.2 
+TAPE4(RECORD 2.2) 
 
 	HMNLTE
 
@@ -2936,26 +2938,31 @@ TAPE4-RECORD 2.2
 
 		HMNLTE: 	molecule name
 
-TAPE4-RECORD 2.3
+TAPE4(RECORD 2.3)
 
-	ALT,   (TEM(I),I=1,NUM)
+	ALT,  (TEM(I),I=1,NUM)
 
            (F7.0,7F11.3/(18X,6F11.3))
 
 		ALT:	altitude (km)
 
-		TEM(I):	Temperature difference from ground state (K) for each mode I. Set to zero if the mode
-			is not desired. See Table IV for allowed modes and input order. 
+	        TEM(1): Kinetic Temperature (K)
 
-REPEAT TAPE4-RECORD 2.3 for all altitudes; the altitude range must match the atmospheric
+		TEM(2:NUM): Two state vibrational temperature with respect to the ground state (K) 
+                            for each mode I.  Set to zero if the mode is not desired. 
+                            See Table IV for allowed modes/upper-states and their input order. 
+
+
+REPEAT TAPE4(RECORD 2.3) for all altitudes; the altitude range must match the atmospheric
 profile input in TAPE5
 
-REPEAT TAPE4-RECORDS 2.1, 2.2 and 2.3 for each molecule : H2O, CO2, O3, C0 and NO
+REPEAT TAPE4(RECORDS 2.1, 2.2 and 2.3) for each molecule : H2O, CO2, O3, C0 and NO
 
-
+--------------------------------------------------------------------------------
  ******  these records applicable only if IVIB eq 2 ***
+--------------------------------------------------------------------------------
 
-TAPE4-RECORD 3.1 
+TAPE4(RECORD 3.1) 
 
  	CHRD(1)
 
@@ -2972,7 +2979,7 @@ TAPE4-RECORD 3.1
 	 even if not used in NLTE calculations.
   
           
-TAPE4-RECORD 3.2 
+TAPE4(RECORD 3.2) 
 
 	HMNLTE
 
@@ -2982,7 +2989,7 @@ TAPE4-RECORD 3.2
 
 		HMNLTE: 	molecule name
 
-TAPE4-RECORD 3.3
+TAPE4(RECORD 3.3)
 
 	ALT,   (VPNE(I),I=1,NUM)
 
@@ -2990,13 +2997,17 @@ TAPE4-RECORD 3.3
 
 		ALT:	 altitude (km)
 
-		VPNE(I): population for each mode I. Set to zero if the mode
-			 is not desired. See Table IV for allowed modes and input order. 
+	        VPNE(1): population at the kinetic temperature (K)
 
-REPEAT TAPE4-RECORD 3.3 for all altitudes; the altitude range must match the atmospheric
+		VPNE(2:NUM): Two state population with respect to the ground state 
+                            for each mode I.  Set to zero if the mode is not desired. 
+                            See Table IV for allowed modes/upper-states and their input order. 
+
+
+REPEAT TAPE4(RECORD 3.3) for all altitudes; the altitude range must match the atmospheric
 profile input in TAPE5
 
-REPEAT TAPE4-RECORDS 3.1, 3.2 and 3.3 for each molecule : H2O, CO2, O3, C0 and NO
+REPEAT TAPE4(RECORDS 3.1, 3.2 and 3.3) for each molecule : H2O, CO2, O3, C0 and NO
 
  _________________________________________________________________________________________________________________________________
 
