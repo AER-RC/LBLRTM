@@ -35,7 +35,7 @@ C                                                                         H00260
      *            (FSCDID(11),IMRG) , (FSCDID(16),LAYR1),                 H00310
      *            (FSCDID(17),NLAYHD)                                     H00320
 C                                                                         H00330
-      IMS = 0                                                             H00340
+      IOD = 0                                                             H00340
 C                                                                         H00350
       IEXFIL = 20                                                         H00360
       IAFIL = 14                                                          H00370
@@ -56,7 +56,7 @@ C     IEMIT = 1 TO REACH THIS STATEMENT                                   H00510
 C                                                                         H00520
          WRITE (IPR,900) XID,(YID(M),M=1,2)                               H00530
          IF (LAYER.EQ.1.AND.IAERSL.GE.1) REWIND IEXFIL                    H00540
-         IF (IAERSL.GE.1) CALL GETEXT (IEXFIL,LAYER,IEMIT,IMS)            H00550
+         IF (IAERSL.GE.1) CALL GETEXT (IEXFIL,LAYER,IEMIT)                H00550
 C                                                                         H00560
          TBND = 0.                                                        H00570
          IF (LAYER.EQ.1.AND.IANT.EQ.0) TBND = TMPBND                      H00580
@@ -97,7 +97,7 @@ C                                                                         H00900
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H00930
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H00940
      *              EXTID(10)                                             H00950
-      COMMON /MSACCT/ IMS,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    H00960
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    H00960
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   H00970
      *                JEFILE,KEFILE                                       H00980
 C                                                                         H00990
@@ -134,7 +134,7 @@ C                                                                         H01290
    10 CONTINUE                                                            H01300
       WRITE (IPR,900) XID,(YID(M),M=1,2)                                  H01310
       IF (LAYER.EQ.1.AND.IAERSL.GE.1) REWIND IEXFIL                       H01320
-      IF (IAERSL.GE.1) CALL GETEXT (IEXFIL,LAYER,IEMIT,IMS)               H01330
+      IF (IAERSL.GE.1) CALL GETEXT (IEXFIL,LAYER,IEMIT)                   H01330
 C                                                                         H01340
       TBND = 0.                                                           H01350
 C                                                                         H01360
@@ -3952,7 +3952,7 @@ C                                                                         H39320
      *        F12.3)                                                      H39400
 C                                                                         H39410
       END                                                                 H39420
-      SUBROUTINE GETEXT (IEXFIL,LYRNOW,IEMITT,IMS)                        H39430
+      SUBROUTINE GETEXT (IEXFIL,LYRNOW,IEMITT)                            H39430
 C                                                                         H39440
       IMPLICIT DOUBLE PRECISION (V)                                     ! H39450
 C                                                                         H39460
@@ -4009,15 +4009,6 @@ C                                                                         H39940
       ENDIF                                                               H39970
 C                                                                         H39980
       LAYER = 0                                                           H39990
-      IF (IMS.EQ.-1) THEN                                                 H40000
-         REWIND IEXFIL                                                    H40010
-         CALL BUFIN (IEXFIL,IEOF,AFILHD(1),NFHDRF)                        H40020
-C                                                                         H40030
-C     MOVE YID INTO EXTID                                                 H40040
-C                                                                         H40050
-         WRITE (CEXT,'(5A8)') (YID(I),I=3,7)                              H40060
-         READ (CEXT,'(10A4)') EXTID                                       H40070
-      ENDIF                                                               H40080
 C                                                                         H40090
    10 DO 20 I = 1, 2025                                                   H40100
          ABSRB(I) = 0.                                                    H40110
@@ -4034,7 +4025,6 @@ C                                                                         H40200
       CALL BUFIN (IEXFIL,IEOF,SCTTR(1),NLIM)                              H40220
       CALL BUFIN (IEXFIL,IEOF,ASYMT(1),NLIM)                              H40230
 C                                                                         H40240
-      IF (IMS.EQ.-1.AND.LAYER.NE.LYRNOW) GO TO 10                         H40250
       V1ABS = V1P                                                         H40260
       V1SC = V1P                                                          H40270
       V1AS = V1P                                                          H40280
@@ -4066,7 +4056,7 @@ C                                                                         H40490
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H40540
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H40550
      *              EXTID(10)                                             H40560
-      COMMON /MSACCT/ IMS,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    H40570
+      COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(67),MSPNL1(67),    H40570
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   H40580
      *                JEFILE,KEFILE                                       H40590
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H40600
@@ -4087,7 +4077,7 @@ C                                                                         H40740
       DIMENSION PNLHD(4),XFILHD(2)                                        H40750
 C                                                                         H40760
       XKT0 = 0.6951*296.                                                  H40770
-      CALL GETEXT (IEXFIL,LAYRS,IEMIT,IMS)                                H40780
+      CALL GETEXT (IEXFIL,LAYRS,IEMIT)                                    H40780
       CALL BUFIN (MFILE,IEOF,XFILHD(1),NFHDRF)                            H40790
 C                                                                         H40800
 C     FOR AEROSOL RUNS, MOVE EXTID INTO YID                               H40810
