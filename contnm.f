@@ -63,14 +63,16 @@ C                             SELF
       ALPHA2 = 200.**2                                                    F00550
 C
       ALPHS2= 120.**2
+      BETAS = 5.E-06
       V0S=1310.
-      FACTRS= 0.6
+      FACTRS= 0.4
 C     XFACT= 1.-FACTRS
 C     PRINT *, ' XFACT,  V0S,  ALPHS, NS  ',  XFACT ,V0S,ALPHS,NS
 C
 C--------------------------------------------------------------------
 C                             FOREIGN
       ALPHF2= 330.**2
+      BETAF = 5.E-06
       V0F =1130.
       FACTRF = 0.97
 C     XFACT= 1.- FACTRF
@@ -80,6 +82,7 @@ C--------------------------------------------------------------------
 C
       DO 20 J = 1, NPTC                                                   F00560
          VJ = V1C+DVC*FLOAT(J-1)                                          F00570
+         VS2 = (VJ-V0S)**2
          SH2O = 0.                                                        F00580
          IF (SH2OT0(J).GT.0.) THEN                                        F00590
             SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC                  F00600
@@ -88,12 +91,13 @@ C     CORRECTION TO SELF CONTINUUM (1 SEPT 85); FACTOR OF 0.78 AT 1000    F00620
 C                             AND  .......
 C                                                                         F00630
             SH2O = SH2O*(1.-0.2333*(ALPHA2/((VJ-1050.)**2+ALPHA2))) *     F00640
-     C                  (1.-FACTRS*(ALPHS2/((VJ-V0S  )**2+ALPHS2))) 
+     C                  (1.-FACTRS*(ALPHS2/(VS2+(BETAS*VS2**2)+ALPHS2))) 
          ENDIF                                                            F00650
 C                                                                         F00660
 C     CORRECTION TO FOREIGN CONTINUUM                                     F00670
 C                                                                         F00680
-          FH2O(J)=FH2O(J)* (1.-FACTRF*(ALPHF2/((VJ-V0F)**2+ALPHF2)))
+        VF2 = (VJ-V0F)**2
+        FH2O(J)=FH2O(J)*(1.-FACTRF*(ALPHF2/(VF2+(BETAF*VF2**2)+ALPHF2)))
 C                                                                         F00700
          C(J) = W1*(SH2O*RH2O+FH2O(J)*RFRGN)                              F00710
 C                                                                         F00720
@@ -220,6 +224,52 @@ C                                                                         F01920
       RETURN                                                              F01930
 C                                                                         F01940
       END                                                                 F01950
+      SUBROUTINE PRCNTM                                                   A10270
+C                                                                         A10280
+C     THIS SUBROUTINE PRINTS THE CONTINUUM INFORMATION TO FILE IPR        A10290
+C                                                                         A10300
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A10310
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NDFLE,IAFIL,IEXFIL,        A10320
+     *              NLTEFL,LNFIL4,LNGTH4                                  A10330
+C                                                                         A10340
+      WRITE (IPR,900)                                                     A10350
+      WRITE (IPR,901)                                                     A10350
+C                                                                         A10360
+      RETURN                                                              A10370
+C                                                                         A10380
+  900 FORMAT (//,'0  *****  CONTINUA:  ',//,20X,                          A10390
+C
+     *        ' H2O   SELF  (T)      0 - 20000 CM-1',/,20X,               A10400
+     *        '       AIR   (T)      0 - 20000 CM-1',/,20X,               A10410
+     *        ' CO2   AIR            0 - 20000 CM-1',/,20X,               A10420
+C
+     *        ' N2    AIR         2020 -  2800 CM-1',20X,                 A10430
+     *        '  (01 JULY  1982)  ',/,20X,                                A10440
+C
+     *        ' O2    AIR   (T)   1390 -  1760 CM-1',/,20X,               A10450
+     *        '       O2/N2      36000 -  >>>> CM-1',2X,                  A10452
+     *        '  HERZBERG',/,20X,                                         A10454
+C
+     *        ' O3    AIR        13000 - 23600 CM-1',2X,                  A10460
+     *        '  CHAPPUIS',/,20X,                                         A10470
+     *        '             (T)  27370 - 40800 CM-1',2X,                  A10480
+     *        '  HARTLEY HUGGINS ',/,20X,                                 A10490
+     *        '                  40800 - 54000 CM-1',2X,                  A10500
+     *        '  HARTLEY HUGGINS '          )                             A10510
+C
+  901  FORMAT( //,
+     *        '  H2O SELF HAS BEEN REDUCED IN THE 800-1200 CM-1',         A10520
+     *        ' REGION',21X,'  (01 SEPT  1985)  ',/,                      A10530
+     *        '  03       TEMPERATURE DEPENDENCE HAS BEEN CORRECTED',     A10540
+     *        8X,16X,'  (01 MAY   1987)  ',/,                             A10550
+     *        '  02       (1390-1760) HAS BEEN REDUCED (FACTOR = 0.78)',  A10560
+     *        5x,16X,'  (07 MARCH 1990)  ',/,                             A10570
+     *        '  H2O SELF HAS BEEN REDUCED IN THE 1100-1500 CM-1',        A10520
+     *        ' REGION',20X,'  (01 APRIL 1993)  ',/,                      A10530
+     *        '  H2O FOREIGN HAS BEEN REDUCED AT ~1300 CM-1 AND',         A10520
+     *        ' IN ALL THE WINDOW REGIONS  ','  (01 APRIL 1993) ' )       A10530
+C                                                                         A10580
+      END                                                                 A10590
       SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                               F02220
 C                                                                         F02230
       IMPLICIT DOUBLE PRECISION (V)                                     ! F02240
