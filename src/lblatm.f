@@ -6,7 +6,7 @@ C     presently: %H%  %T%
 C
 C  --------------------------------------------------------------------------
 C |                                                                          |
-C |  Copyright 2002, 2003, Atmospheric & Environmental Research, Inc. (AER). |
+C |  Copyright 2002 - 2004, Atmospheric & Environmental Research, Inc. (AER).|
 C |  This software may be used, copied, or redistributed as long as it is    |
 C |  not sold and this copyright notice is reproduced on each copy made.     |
 C |  This model is provided as is without any express or implied warranties. |
@@ -457,6 +457,10 @@ C                                                                        FA03820
       COMMON /FIXITYL/ IFXTYP
       DIMENSION XPBAR(NXPBAR),XZOUT(NXZOUT),WMT(MXMOL)                   FA03970
       DIMENSION TTMP(2),WVTMP(2),PTMP(2),ZTMP(2)
+
+c common block for layer-to-level analytical jacobians
+      common /dlaydlev/ilevdq,imoldq,iupdwn,
+     &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
       dimension densave(mxzmd)
 C                                                                        FA03980
@@ -1085,7 +1089,7 @@ C                                                                        FA08460
 c
          IF (NOPRNT.EQ.0) THEN
             WRITE (IPR,950) (HMOLS(K),K=1,NMOL)                             FA08490
-c            WRITE (IPR,952)                                                 FA08500
+            WRITE (IPR,952)                                                 FA08500
          ENDIF
 c
          DO 180 IM = 1, IMMAX                                            FA08510
@@ -1440,6 +1444,72 @@ C                                                                        FA10260
 C                                                                        FA10300
       ENDIF                                                              FA10310
 C                                                                        FA10320
+c-----------------------------------------------------------
+c compute layer-to-level conversion for analytical jacobians
+c pbar,tbar
+c only go into this if imoldq was set in lblrtm
+      if (imoldq.eq.-99) then
+          write(*,*) 'lay2lev in lblatm: ',ipmax,nmol
+          ilevdq=ipmax-1
+          imoldq=nmol
+          do 500 i=1,ilevdq
+
+              rhoU=pbnd(i+1)/(tbnd(i+1)*1.3806503E-19)
+              rhoL=pbnd(i)/(tbnd(i)*1.3806503E-19)
+              alpha=rhoU/rhoL
+              alphaT=-(tbnd(i)-tbnd(i+1))/alog(alpha)
+
+c molecules
+              do 501 k=1,nmol
+                  
+                  if (denm(k,i).ne.0.0) then
+
+                      ratU=denm(k,i+1)/rhoU
+                      ratL=denm(k,i)/rhoL
+
+                      dqdL(i,k)=(ratL/(ratL-alpha*ratU))
+     &                    +1.0/alog(alpha*ratU/ratL)
+
+                      dqdU(i,k)=((-alpha*ratU)/(ratL-alpha*ratU))
+     &                    -1.0/alog(alpha*ratU/ratL)
+
+                      write(*,*) i,k,((dqdL(i,k)*ratL)
+     &                    +(dqdU(i,k)*ratU)),
+     &                    ratL,ratU
+                      write(*,*) '      ',denm(k,i+1),rhoU
+                      write(*,*) '      ',denm(k,i),rhoL
+
+                  else
+                      dqdL(i,k)=0.0
+                      dqdU(i,k)=0.0
+                  endif
+
+  501         continue
+
+c temperature
+
+c from ATBD
+c              dqdL(i,0)=((tbar(i)+alphaT)/tbnd(i))
+c     &            *(rhoL/(rhoL-rhoU))
+c     &            +(1.0+alphaT/tbnd(i))/alog(alpha)
+
+c              dqdU(i,0)=((tbar(i)-alphaT)/tbnd(i+1))
+c     &                  *(rhoL/(rhoL-rhoU))
+c     &            +(1.0-alphaT/tbnd(i+1))/alog(alpha)
+
+c from TES DFM #217
+              dqdL(i,0)=(tbar(i)/tbnd(i))*
+     &            ( (1.0/alog(alpha))+(1.0/(1.0-alpha)))
+
+              dqdU(i,0)=(tbar(i)/tbnd(i+1))*
+     &            ( (-1.0/alog(alpha))-(alpha/(1.0-alpha)))
+
+              write(*,*) 'T: ',dqdl(i,0),dqdu(i,0)
+              
+  500     continue
+      endif
+c-----------------------------------------------------------
+
       RETURN                                                             FA10330
 C                                                                        FA10340
 C     ERROR MESSAGES                                                     FA10350
@@ -2837,6 +2907,9 @@ C                                                                        FA23620
 
       COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
+c common block for layer-to-level analytical jacobians
+      common /dlaydlev/ilevdq,imoldq,iupdwn,
+     &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 c
       character*1 jchar_st
 c      
@@ -2905,6 +2978,15 @@ C                                                                        FA24180
 C                                                                        FA24210
    40 CALL NSMDL (ITYPE,MDL)
 C                                                                        FA24230
+      if (imoldq.eq.-99) then
+          if (immax.ne.ibmax) then
+              write(ipr,*) 'Error in Atmosphere Specification:'
+              write(ipr,*) '   Desired levels must match input grid'
+              write(ipr,*) '   for analytic jacobian calculation'
+              stop 'error in level grid:  see TAPE6'
+          endif
+      endif
+
    50 ZMIN = ZMDL(1)                                                     FA24240
 C                                                                        FA24250
       DO 70 I = 1, IMMAX                                                 FA24260

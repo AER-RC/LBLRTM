@@ -7,7 +7,7 @@ C
 C
 C  --------------------------------------------------------------------------
 C |                                                                          |
-C |  Copyright 2002, 2003, Atmospheric & Environmental Research, Inc. (AER). |
+C |  Copyright 2002 - 2004, Atmospheric & Environmental Research, Inc. (AER).|
 C |  This software may be used, copied, or redistributed as long as it is    |
 C |  not sold and this copyright notice is reproduced on each copy made.     |
 C |  This model is provided as is without any express or implied warranties. |
@@ -38,6 +38,18 @@ C                                                                         F00120
      *              NLTEFL,LNFIL4,LNGTH4                                  F00190
 
       common /cntscl/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
+
+c------------------------------------
+c for analytic derivative calculation
+c note: ipts  = same dimension as ABSRB
+c       ipts2 = same dimension as C
+      parameter (ipts=5050,ipts2=6000)
+      common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
+     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,dTco2C(ipts)
+
+      real ctmp(ipts2),cself(ipts),cforeign(ipts),ch2o(ipts2)
+      real ctmp2(ipts2),ctmp3(ipts2)
+c------------------------------------
 c
       DIMENSION C0(5050),C1(5050),C2(5050)
       DIMENSION SH2OT0(5050),SH2OT1(5050),FH2O(5050),      
@@ -101,14 +113,27 @@ c
 C
 C=======================================================================
 C                             SELF
-C
-C--------------------------------------------------------------------
-c
-c
+
+c use ch2o to store self+foreign continuum (without the radiation
+c field) for derivative calculation
+      if ((icflg.eq.1).or.(icflg.eq.0)) then
+          w1=wk(1)*1.0e-20
+          do j=1,ipts
+              ch2o(j)=0.0
+          enddo
+      endif
+
+
 C        Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
 c
          if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
 c
+             if ((icflg.eq.1).or.(icflg.eq.0)) then
+                 do j=1,ipts
+                     cself(j)=0.0
+                 enddo
+             endif
+
             CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0)                          F00410
             CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1)                          F00420
 C                                                                         F00440
@@ -134,7 +159,11 @@ C              ---------------------------------------------------------
 
                ENDIF
 c
+c
                C(J) = WK(1)*(SH2O*RH2O)
+C                                                                         F00720
+               ctmp(j)=sh2o*xself
+               ctmp3(j)=c(j)
 C                                                                         F00720
 C              ---------------------------------------------------------
 C              Radiation field                                            F00730
@@ -147,6 +176,13 @@ C
 c           Interpolate to total optical depth grid
 
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F00770
+
+            if ((icflg.eq.1).or.(icflg.eq.0)) then
+                CALL XINT (V1C,V2C,DVC,ctmp,1.0,V1ABS,DVABS,
+     &              cself,1,NPTABS)
+                CALL XINT (V1C,V2C,DVC,Ctmp3,1.0,V1ABS,DVABS,
+     &              ch2o,1,NPTABS)
+            endif
 
          endif
 C                                                                         F00780
@@ -161,12 +197,19 @@ C        Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
 c
          if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
 
+             do j=1,ipts
+                 cforeign(j)=0.0
+             enddo
+
             CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O)         
 C                                                               
             DO 24 J = 1, NPTC                                         
                VJ = V1C+DVC* REAL(J-1)                                    F00570
 C     
                C(J) = WK(1)*(FH2O(J)*RFRGN)
+C                                          
+               ctmp(j)=fh2o(j)*xfrgn
+               ctmp3(j)=c(j)
 C                                          
 C              ---------------------------------------------------------
 C              Radiation field                                                  
@@ -179,12 +222,62 @@ C
 C           ------------------------------------------------------------
 c
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
+
+            if ((icflg.eq.1).or.(icflg.eq.0)) then
+                CALL XINT (V1C,V2C,DVC,ctmp,1.0,V1ABS,DVABS,
+     &              cforeign,1,NPTABS)
+                CALL XINT (V1C,V2C,DVC,ctmp3,1.0,V1ABS,DVABS,
+     &              ch2o,1,NPTABS)
+            endif
 C           ------------------------------------------------------------
 C                                                                         F00780
-
-
 C                                                                   
          endif
+
+
+c compute H2O continuum derivatives
+         if ((icflg.eq.1).or.(icflg.eq.0)) then
+             if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
+                 wq=h2o_fac !w1/wtot
+                 wq1=1.0-wq
+
+c w.r.t. amount (just as easy to do this here as anywhere else)
+c  (this term needs to be multiplied by total h2o optical depth)
+                 dUh2o=-1.0/(1.0+(1.609/wq))
+
+                 v1absc=v1abs
+                 v2absc=v2abs
+                 dvabsc=dvabs
+                 nptabsc=nptabs
+
+
+                 do j=1,nptabs
+
+c w.r.t. temperature
+                     VJ = V1ABS+DVABS* REAL(J-1)
+                     radtmp=RADFN(VJ,XKT)
+                     dRdT=((radcn2/2.0)/(tave**2))*((radtmp**2)-vj**2)
+                     dcdt=(rh2o*(cself(j)*alog(cself(j)))/(260.0-T0))
+     &                   -(ch2o(j)/tave)
+                     dTh2oC(j)=(dRdT*ch2o(j)+radtmp*dcdt)
+     &                   *wk(1)*1.0e-20
+
+c w.r.t. ln(q)
+                     dqh2oC(j)=w1*(ch2o(j)*radtmp)*
+     &                   (wq*(cself(j)-cforeign(j)))/
+     &                   (wq*cself(j)+wq1*cforeign(j))
+
+                 enddo
+             else
+                 write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                 write(ipr,*) ' v1 - v2 out of range for H2O continuum'
+                 write(ipr,*) '  (error trap - 1)'
+                 do j=1,nptabs
+                     dTh2oC(j)=0.0
+                     dqh2oC(j)=0.0
+                 enddo                 
+             endif ! v1,v2 range
+         endif ! icflg
 
 C=======================================================================
 
@@ -204,15 +297,18 @@ c
                VJ = V1C+DVC* REAL(J-1)                                    F00860
                C(J) = FCO2(J)*WCO2
 
+               ctmp(j)=fco2(j)
+
 c****2.4.+++  The co2 continuum has been increased by a factor of 7. in the 
 c                   nu2 band
 
                if (vj.gt.0 .and. vj.lt.1200)  then
                   c(j) = 7.*c(j)
+                  ctmp(j)=7.*ctmp(j)
                endif
 
-
 c****2.4.+++
+
 C                                                                         F00880
 C              Radiation field                                            F00890
 C                                                                         F00900
@@ -221,6 +317,37 @@ C                                                                         F00900
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F00930
 
          endif
+
+c derivative of co2 continuum w.r.t. temperature
+         if (icflg.eq.0) then
+             if ((V2.gt.-20.0).and.(V1.lt.10000.)) then
+                do j=1,nptabs
+                    ctmp2(j)=0.0
+                    dTco2C(j)=0.0
+                enddo
+
+                CALL XINT (V1C,V2C,DVC,ctmp,1.0,
+     &              V1ABS,DVABS,ctmp2,1,NPTABS)
+
+                do j=1,nptabs
+                    VJ = V1ABS+DVABS* REAL(J-1)
+                    radtmp=RADFN(VJ,XKT)
+                    dRdT=((radcn2/2.0)/(tave**2))*((radtmp**2)-vj**2)
+
+                    dTco2C(j)=(drdt*ctmp2(j)
+     &                  +(radfn(vj,xkt)*(-1.0*ctmp2(j)/tave)))
+     &                  *wk(2)*1.0e-20
+                enddo
+            else
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' v1 - v2 out of range for CO2 continuum'
+                write(ipr,*) '  (error trap - 2)'
+                do j=1,nptabs
+                    dTco2C(j)=0.0
+                enddo
+            endif   ! v1,v2 range
+        endif ! icflg
+
 
 C                                                                         F00940
 C     ********    DIFFUSE OZONE  ********                                 F01180
@@ -241,6 +368,21 @@ c
                IF (JRAD.EQ.1) CCH0(J) = CCH0(J)*RADFN(VJ,XKT)             F01270
  50         CONTINUE                                                      F01280
             CALL XINT (V1C,V2C,DVC,CCH0,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)   F01290
+
+            if (icflg.eq.3) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O3 continuum'
+                write(ipr,*) '  (error trap - 3)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O3 continuum'
+                write(ipr,*) '  (error trap - 4)'
+            endif
+                
          ENDIF
 C                                                                         F01300
          IF (V2.GT.27370..AND.V1.LT.40800.) THEN                          F01310
@@ -281,6 +423,21 @@ C
                   ABSRB(I) = ABSBSV(I)
  64            CONTINUE
             ENDIF
+
+            if (icflg.eq.3) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O3 continuum'
+                write(ipr,*) '  (error trap - 5)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O3 continuum'
+                write(ipr,*) '  (error trap - 6)'
+            endif
+                
          ENDIF
 C
 C        If V2 > 40800 cm-1, add UV Hartley Huggins contribution
@@ -319,6 +476,20 @@ C
  74            CONTINUE
             ENDIF
 C                                                                         F01560
+            if (icflg.eq.3) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O3 continuum'
+                write(ipr,*) '  (error trap - 7)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O3 continuum'
+                write(ipr,*) '  (error trap - 8)'
+            endif
+                
          ENDIF                                                            F01570
 C                                                                         F01580
 
@@ -368,6 +539,20 @@ c
  80         CONTINUE
 
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
+
+            if (icflg.eq.7) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 9)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 10)'
+            endif
          endif
 
 
@@ -408,6 +593,20 @@ C
 c 
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
 c
+            if (icflg.eq.7) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 11)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 12)'
+            endif
+
          endif
 C
 C        O2 continuum formulated by Mlawer et al. over the spectral region
@@ -438,6 +637,20 @@ c
 c
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
 c
+            if (icflg.eq.7) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 13)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 14)'
+            endif
+
          endif
 C
 C        O2 continuum formulated by Greenblatt et al. over the spectral region
@@ -470,6 +683,20 @@ c
 c 
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)         
 c
+            if (icflg.eq.7) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 15)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 16)'
+            endif
+
          endif
 c
 C        Only calculate if V2 > 36000. cm-1
@@ -489,6 +716,20 @@ C                                                                         F01880
  90         CONTINUE                                                      F01900
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01910
 
+            if (icflg.eq.7) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 17)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'O2 continuum'
+                write(ipr,*) '  (error trap - 18)'
+            endif
+
          endif
 c
 C     *********************  NITROGEN CONTINUA  ********************
@@ -498,6 +739,10 @@ c
          ELSE                                                             F01020
             WN2 = WBROAD                                                  F01030
          ENDIF                                                            F01040
+
+c don't want to include N2 if running a molecular derivative,
+c unless, of course, it is for N2!
+         if ((icflg.ge.1).and.(icflg.ne.22)) WN2=0.0
 C                                                                         F00460
 C                                                                         F00940
 C     ******** NITROGEN COLLISION INDUCED PURE ROTATION BAND  ********
@@ -540,6 +785,20 @@ C                                                                         F01130
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01140
  40         CONTINUE                                                      F01150
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01160
+
+            if (icflg.eq.22) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'N2 continuum'
+                write(ipr,*) '  (error trap - 19)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'N2 continuum'
+                write(ipr,*) '  (error trap - 20)'
+            endif
 
          endif
 C                                                                         F01170
@@ -588,6 +847,20 @@ C
 C
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
 c
+            if (icflg.eq.22) then
+                write(ipr,*) 'ERROR:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'N2 continuum'
+                write(ipr,*) '  (error trap - 20)'
+                stop
+            endif
+            if (icflg.eq.0) then
+                write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
+                write(ipr,*) ' Not properly implemented for ',
+     &              'N2 continuum'
+                write(ipr,*) '  (error trap - 21)'
+            endif
+
          endif
 c
 C     ********** Rayleigh Scattering calculation **********
@@ -628,25 +901,33 @@ c     Rayleigh scattering in the direct beam is only calculated for
 c     model runs > 3100 cm-1.
 c
          If (iaersl .eq.0 .and. v2.ge.3100.) then
+            if (icflg.ne.-999) then
+               
+               write(ipr,*) 'ANALYTIC DERIVATIVE / CONTNM'
+               write(ipr,*) ' Turn off Rayleigh term...'
+               
+            else
+c     
+c     Thus the current formulation is
+               
+               conv_cm2mol = xrayl*1.E-20/(2.68675e-1*1.e5)
 c
-c        Thus the current formulation is
-
-            conv_cm2mol = xrayl*1.E-20/(2.68675e-1*1.e5)
-c
-            do 95 i=1,nptabs
-               vrayleigh = v1abs+(i-1)*dvabs
-               xvrayleigh = vrayleigh/1.e4
-           ray_ext = (xvrayleigh**3/(9.38076E2-10.8426*xvrayleigh**2))
-     *                 *(wtot*conv_cm2mol)
+               do 95 i=1,nptabs
+                  vrayleigh = v1abs+(i-1)*dvabs
+                  xvrayleigh = vrayleigh/1.e4
+                  ray_ext = (xvrayleigh**3*(wtot*conv_cm2mol))/
+     *                               (9.38076E2-10.8426*xvrayleigh**2)
 
 C           Radiation field
 
-               IF (JRAD.EQ.1) ray_ext = ray_ext*xvrayleigh
+                  IF (JRAD.EQ.1) ray_ext = ray_ext*xvrayleigh
 
-            absrb(i) = absrb(i)+ray_ext
- 95      continue
+                  absrb(i) = absrb(i)+ray_ext
+ 95            continue
+c     
+            endif               ! skip if icflg <> -999
 c
-      endif
+         endif
 C                                                                         F01920
  100     continue
       RETURN                                                              F01930

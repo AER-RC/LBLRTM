@@ -7,7 +7,7 @@ C     presently: %H%  %T%
 
                            USER INSTRUCTIONS FOR LBLRTM
 
-                                  2 FEBRUARY 2002 
+                                  23 May 2004 
  
  
 
@@ -144,12 +144,17 @@ C     presently: %H%  %T%
                      = 7  user defined aerosol models
                      = 9  use precalculated aerosols (TAPE20 from a previous aerosol run)
 
-          IEMIT   (0,1,2)
+          IEMIT   (0,1,2,3)
  
                      = 0  optical depth only
                      = 1  radiance and transmittance
                      = 2  solar radiance (requires previously calculated optical depths or transmittances and binary
                                solar radiation file SOLAR.RAD)
+                     = 3  radiance derivative
+                               - requires IMRG=40 or IMRG=41 	
+                               Note: - requires previously calculated optical depths files 
+                                       (created by setting IEMIT=0, IMRG=10, IOD=3)
+                                     
  
           ISCAN   (0,1,2,3) flag for SCANFN    1 = scanning function
                                   or INTRPL    2 = interpolating procedure
@@ -184,10 +189,10 @@ C     presently: %H%  %T%
                           ** uses merge path as defined by precalculated KFILE **
                    = 9  radiance merge with aerosols; precalculated KFILE
                           ** uses merge path as defined by precalculated KFILE **
-
-
-
-
+                   = 10 optical depths only; results for each layer on different files
+                          layer optical depth file = "ODint_"
+                          upwelling total optical depth file = "ODtoupw_"
+                          downwelling total optical depth file = "ODtodnw_"
 
                          ---------------------------------------------------------
                          |                                                       |
@@ -200,6 +205,9 @@ C     presently: %H%  %T%
                          |               ODint_    for IMRG=1  and IOD=1         |
                          |               ODint_    for IMRG=1  and IOD=3         |
                          |               ODint_    for IMRG=1  and IOD=4         |
+                         |               ODint_    for IMRG=10 and IOD=3         |
+                         |               ODtodnw_  for IMRG=10 and IOD=3         |
+                         |               ODtoupw_  for IMRG=10 and IOD=3         |
                          |               ODexact_  for IMRG=1  and IOD=2         |
                          ---------------------------------------------------------
 
@@ -239,6 +247,9 @@ C     presently: %H%  %T%
                                           OBSERVER PATH:       uplooking          downlooking        limb       on file
                                                             ---------------     ---------------     -------       -------
                            monochromatic (total merged)           40                  41                           MFILE
+
+                          For radiance derivatives (IMRG.eq.40 .or. IMRG.eq.41), a previous run with IMRG.eq.10 is required
+                          to set the proper optical depth files.
 
 
  
@@ -426,6 +437,25 @@ C     presently: %H%  %T%
              XRAYL  Rayleigh extinction multiplicative factor
  
  
+
+
+
+ RECORD 1.2b   (required if IEMIT=3 and IMRG=40,41)
+ 
+
+             NSPCRT
+
+                1-5
+ 
+                 I5
+
+	Specices number for radiance derivative
+
+             -2 = surface reflectivity
+             -1 = surface emissivity and surface skin temperature
+              0 = atmospheric temperature profile
+         1 -> N = reference number in TABLE 1 for molecular species
+
 
 
  RECORD 1.2.1    (required if IEMIT = 2; otherwise omit)
@@ -620,6 +650,38 @@ C     presently: %H%  %T%
 
               LAYTOT       total number of layers used in radiative transfer
 
+          *** NOTE *** LAYTOT ignored for IEMIT = 3
+
+ 
+ RECORD 1.6b, 1.6c, and 1.6d   (required if IMRG = 40,41 and IEMIT=3;  otherwise omit)
+
+        Note:  requires separate optical depth files for each layer (use IMRG = 10 prior to this run)
+
+           PTHODL
+
+             1-55
+
+              A55
+
+        PTHODTupw
+
+             1-55
+
+              A55
+
+        PTHODTdnw
+
+             1-55
+
+              A55
+
+
+  PTHODL = layer optical depth file (e.g., "ODint_")
+  PTHODTupw = upwelling total optical depth file (e.g., "ODtoupw_)
+  PTHODTdnw = downwelling total optical depth file (e.g, "ODtodnw_")
+
+
+  Example:  ODintUPW_  will look for the file "ODintUPW_003" for layer 3
 
  
  *****************************************************************************

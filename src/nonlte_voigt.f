@@ -7,7 +7,7 @@ C     created:   $Date$
 C
 C  --------------------------------------------------------------------------
 C |                                                                          |
-C |  Copyright 2002, 2003, Atmospheric & Environmental Research, Inc. (AER). |
+C |  Copyright 2002 - 2003, Atmospheric & Environmental Research, Inc. (AER).|
 C |  This software may be used, copied, or redistributed as long as it is    |
 C |  not sold and this copyright notice is reproduced on each copy made.     |
 C |  This model is provided as is without any express or implied warranties. |
@@ -523,7 +523,7 @@ C                                                                         B00470
 C                                                                         B00480
 C     Common blocks from analytic derivatives
 C     -------------------------
-      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODT,PTHRDR
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
 C     -------------------------
       COMMON /RCNTRL/ ILNFLG
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    B00490
@@ -593,7 +593,7 @@ c     Total timing array for layer line-by-line calculation
       common /timing_lay_nlte/ time_lay_lbl(20)
 C                                                                         B00970
       REAL L4TIM,L4TMR,L4TMS,LOTHER
-      CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR
+      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
       CHARACTER*10 HFMODL
       CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
       LOGICAL OP                                                          B00990
@@ -1852,6 +1852,9 @@ C
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B11310
          CALL BUFOUT (KFILE,R1(NLO),NLIM)                                 B11320
          CALL BUFOUT (KFILE,RR1(NLO),NLIM)                                B11320
+
+c for continuum derivative terms
+         call derivint(1,v1p,v2p,dvp,nlo,nlim,r1(nlo))
 C                                                                         B11330
          IF (NPTS.GT.0) CALL R1PRNT (V1P,DVP,NLIM,R1,NLO,NPTS,KFILE,
      *                               IENTER)                              B11340

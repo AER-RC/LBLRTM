@@ -6,7 +6,7 @@ C     presently: %H%  %T%
 C
 C  --------------------------------------------------------------------------
 C |                                                                          |
-C |  Copyright 2002, 2003, Atmospheric & Environmental Research, Inc. (AER). |
+C |  Copyright 2002 - 2004, Atmospheric & Environmental Research, Inc. (AER).|
 C |  This software may be used, copied, or redistributed as long as it is    |
 C |  not sold and this copyright notice is reproduced on each copy made.     |
 C |  This model is provided as is without any express or implied warranties. |
@@ -61,7 +61,7 @@ C                                                                         B00470
 C                                                                         B00480
 C     Common blocks from analytic derivatives
 C     -------------------------
-      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODT,PTHRDR
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
 C     -------------------------
       COMMON /RCNTRL/ ILNFLG
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),    B00490
@@ -129,7 +129,7 @@ c     Total timing array for layer line-by-line calculation
       common /timing_lay/ time_lay_lbl(20)
 C                                                                         B00970
       REAL L4TIM,L4TMR,L4TMS,LOTHER
-      CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR
+      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
       CHARACTER*10 HFMODL
       CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
       CHARACTER*18 HNAMOPR,HVROPR
@@ -1396,6 +1396,9 @@ C
       IF (DVOUT.EQ.0.) THEN                                               B11300
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B11310
          CALL BUFOUT (KFILE,R1(NLO),NLIM)                                 B11320
+
+c for continuum derivative terms
+         call derivint(1,v1p,v2p,dvp,nlo,nlim,r1(nlo))
 C                                                                         B11330
          IF (NPTS.GT.0) CALL R1PRNT (V1P,DVP,NLIM,R1,NLO,NPTS,KFILE,
      *                               IENTER)                              B11340
@@ -1431,6 +1434,93 @@ C                                                                         B11690
       RETURN                                                              B11700
 C                                                                         B11710
       END                                                                 B11720
+c______________________________________________________________________________
+      subroutine derivint(iflg,v1p,v2p,dvp,nlo,npts,r1)
+c
+c interpolate continuum derivative terms to appropriate grid
+c and write to TAPE81
+c
+c if iflg = 0, no interpolation necessary
+c
+      implicit real*8 (v)
+      parameter (mxmol=38)
+
+
+c------------------------------------
+c for analytic derivative calculation
+c note: from continuum module
+c          ipts  = same dimension as ABSRB
+c          ipts2 = same dimension as C
+      parameter (ipts=5050,ipts2=6000,ipnl=2400)
+      common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
+     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,dTco2C(ipts)
+
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
+     *              NLNGTH,KDUMM,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
+     *              NLTEFL,LNFIL4,LNGTH4
+
+c use this for easy bufout of panel header
+      common /dummy/v1px,v2px,dvpx,nout
+
+      dimension r1(*)
+      real pnlhdr(2)
+      real dout(ipnl)
+      equivalence (v1px,pnlhdr(1))
+c-----------------------------------------------------------------
+
+c skip entirely if not derivative calculation
+      if (icflg.eq.-999) return
+
+      v1px=v1p
+      v2px=v2p
+      dvpx=dvp
+
+c partial of continuum w.r.t. h2o
+      if (icflg.eq.1) then
+          do i=nlo,npts
+              dout(i)=r1(i)+r1(i)*dUh2o
+          enddo
+          if (iflg.eq.0) then
+              do i=nlo,npts
+                  dout(i)=dout(i)+dqh2oC(i)
+              enddo
+          else
+              CALL XINT(V1ABSc,V2ABSc,DVABSc,dqh2oC,1.,
+     &            v1p,dvp,dout,nlo,npts)
+          endif
+      endif
+
+c temperature derivative
+      if (icflg.eq.0) then
+          do i=nlo,npts
+              dout(i)=0.0
+          enddo
+
+c partial of continuum w.r.t. temperature
+          if (iflg.eq.0) then
+              do i=nlo,npts
+                  dout(i)=dout(i)+dTh2oC(i)+dTco2C(i)
+              enddo
+          else
+              CALL XINT(V1ABSc,V2ABSc,DVABSc,dTh2oC,1.,
+     &            v1p,dvp,dout,nlo,npts)
+              CALL XINT(V1ABSc,V2ABSc,DVABSc,dTco2C,1.,
+     &            v1p,dvp,dout,nlo,npts)
+          endif
+      endif
+
+      nout=npts-nlo+1
+
+      CALL BUFOUT(IUF,PNLHDR(1),NPHDRF)
+      CALL BUFOUT(IUF,DOUT(NLO),NOUT)
+
+c for debugging
+c      write(iuf,*) v1p,v2p,dvp,nout
+c      write(iuf,*) (dout(i),i=nlo,npts)
+
+      return
+      end
+c______________________________________________________________________________
       SUBROUTINE PNLINT (R1,IENTER)                                       B11730
 C                                                                         B11740
       IMPLICIT REAL*8           (V)                                     ! B11750
@@ -1517,6 +1607,10 @@ C                                                                         B12410
          IF (NPTS.GT.0) CALL R1PRNT (V1P,DVP,NLIM,R1,1,NPTS,KFILE,
      *                               IENTER)                              B12420
 C                                                                         B12430
+c for continuum derivative terms
+         nlo=1
+         call derivint(0,v1p,v2p,dvp,nlo,nlim,r1(1))
+
          GO TO 40                                                         B12440
       ENDIF                                                               B12460
 C                                                                         B12470
@@ -1632,6 +1726,11 @@ C
          CALL PMNMX (R1OUT,NLIM2,RMINO,RMAXO)                             B13230
          CALL BUFOUT (KFILE,PNLHDO(1),NPHDRF)                             B13240
          CALL BUFOUT (KFILE,R1OUT(1),NLIM2)                               B13250
+
+c for continuum derivative terms
+         nlo=1
+         call derivint(1,v1pO,v2pO,dvpO,nlo,nlim2,r1out(1))
+
          IF (NPTS.GT.0) CALL R1PRNT (V1PO,DVOUT,NLIM2,R1OUT,1,NPTS,
      *        KFILE,IENTER)                                               B13260
          NLIM1 = 1                                                        B13270
@@ -2812,6 +2911,7 @@ C                                                                         D00620
       DPTMN = DPTMIN/RADFN(V2,TAVE/RADCN2)                                D00670
       DPTFC = DPTFAC                                                      D00680
       LIMIN = 1000                                                        D00690
+c
       CALL CPUTIM(TPAT0)
       CALL MOLEC (1,SCOR,RHOSLF,ALFD1)                                    D00700
       CALL CPUTIM(TPAT1)
@@ -10049,10 +10149,12 @@ c
       ENDIF 
    50 CONTINUE
   100 CONTINUE
+c
 ccc      write(2,*) 'F1, F2, F3, H1, H2, H3 =',B(J-2),B(J-1),B(J),
 ccc     + A(J-2), A(J-1), A(J)
 ccc      write(2,*) 'A0, A1, A2, bb =',A0,A1,A2,bb
 c
       RETURN
       END 
-c
+c______________________________________________________________________________
+

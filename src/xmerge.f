@@ -9,7 +9,7 @@ C
 C
 C  --------------------------------------------------------------------------
 C |                                                                          |
-C |  Copyright 2002, 2003, Atmospheric & Environmental Research, Inc. (AER). |
+C |  Copyright 2002 - 2004, Atmospheric & Environmental Research, Inc. (AER).|
 C |  This software may be used, copied, or redistributed as long as it is    |
 C |  not sold and this copyright notice is reproduced on each copy made.     |
 C |  This model is provided as is without any express or implied warranties. |
@@ -41,8 +41,8 @@ C                                                                         H00180
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H00200
      *                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF    H00210
 C                                                                         H00220
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac 
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac 
 c
       character*1 surf_refl
       character*3 pad_3
@@ -140,13 +140,22 @@ C        -----------------------------------------------------------
 C                                                                         H00750
 C        IEMIT = 3  =>  Radiance, Transmittance and Radiance
 C                       derivative calculated
-C        
+C                       ipathl=1 = downlooking (upwelling)
+C                       ipathl=3 = uplooking (downwelling)
          IF (IEMIT.EQ.3) THEN
             IF (LAYER.EQ.1) THEN
                IF (IPATHL.EQ.1) TBND = TMPBND
+
+                write(*,*) 'layer = 1'
+                write(*,*) 'ipathl,jpathl,tbnd: ',ipathl,jpathl,tbnd
+
                CALL EMADL1 (NPTS,MFILE,JPATHL,TBND)
             ELSE
                IF (IPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND
+
+                write(*,*) 'layer <> 1'
+                write(*,*) 'ipathl,jpathl,tbnd: ',ipathl,jpathl,tbnd
+
                CALL EMADMG (NPTS,LFILE,MFILE,JPATHL,TBND)
             ENDIF
          ENDIF
@@ -154,8 +163,12 @@ C
 C
 C     --------------------------------------------------------------
 C
- 1234 continue
-c
+c this is here for debugging purposes
+c 1234 continue      
+c      write(ipr,*) 'here'
+c      write(*,*) 'done with job'
+c      stop
+
       RETURN                                                              H00760
 C                                                                         H00770
   900 FORMAT (///,1X,10A8,2X,2(1X,A8,1X))                                 H00780
@@ -197,8 +210,8 @@ C                                                                         H01050
       COMMON /XMI/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(4819)                   H01060
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac 
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac 
 c
       character*1 surf_refl
       character*3 pad_3
@@ -1280,8 +1293,8 @@ C
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO)
 C     ----------------------------------------------------------------
 C
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac
 c
       character*1 surf_refl
       character*3 pad_3
@@ -1424,8 +1437,8 @@ C
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO)
 C     ----------------------------------------------------------------
 C
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac 
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac 
 c
       character*1 surf_refl
       character*3 pad_3
@@ -1572,8 +1585,8 @@ C                                                                         H11010
       COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF                            H11090
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H11100
 C                                                                         H11110
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac
 c
       character*1 surf_refl
       character*3 pad_3
@@ -2361,6 +2374,8 @@ c     table is equally spaced in tau_fn
 
  15   continue
 
+c------
+c coding for analytic derivative
       tau_sav(0)=0.0
       tau_sav(nn_tbl)=od_hi+1.0
 
@@ -2371,11 +2386,12 @@ c     table is equally spaced in tau_fn
 
       dtau_tbl(0)=0.0
       dtau_tbl(nn_tbl)=0.0
-c     
+
       do 20 i=1,nn_tbl-1
           dtau_tbl(i)=(tau_tbl(i+1)-tau_tbl(i-1))/
-     &        (2.0*(tau_sav(i+1)-tau_sav(i-1)))
+     &        (tau_sav(i+1)-tau_sav(i-1))
   20  continue
+c------
 
       return
 
@@ -2726,8 +2742,8 @@ C                                                                         H19500
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H19510
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H19520
      *               EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF     H19530
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac
 c
       character*1 surf_refl
       character*3 pad_3
@@ -3018,8 +3034,8 @@ C                                                                         H22280
 C                                                                         H22290
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H22300
 C                                                                         H22310
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac
 c
       character*1 surf_refl
       character*3 pad_3
@@ -3887,7 +3903,7 @@ C
 C     -------------------------
 C     Common block for analytic derivative
 C     -------------------------
-      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
 C     -------------------------
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
@@ -3971,27 +3987,43 @@ C
 C
 C     ---------------------------------------------------------------
 C
-      SUBROUTINE OPNDRV(NLAYER,LAYER,LAYTOT)
+      SUBROUTINE OPNDRV(NLAYER,LAYER,LAYTOT,ipathl)
 C
 C     This subroutine opens file for calculating the layer derivatives
 C     (IEMIT = 3)
 C
       LOGICAL OP
-      CHARACTER*57 FILE1,FILE2,FILE3
+      CHARACTER*57 FILE1,FILE2,FILE3,FILE4
       CHARACTER*11 CFORM
-      CHARACTER*55 CDUM1,PTHODI,PTHODT,PTHRDR
-      CHARACTER*10 HFMODI,HFMODT,HFMRDR
+      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      CHARACTER*10 HFMODI,HFMODTU,HFMODTD,HFMRDR
 C
 C     Common block for analytic derivatives
 C     -------------------------
-      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODT,PTHRDR
-      COMMON /ADRFRM/ HFMODI,HFMODT,HFMRDR
-      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
+      COMMON /ADRPNM/ CDUM1,PTHODI,PTHODTU,PTHODTD,PTHRDRU,PTHRDRD
+      COMMON /ADRFRM/ HFMODI,HFMODTU,HFMODTD,HFMRDR
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
+      COMMON /IADFLG/ IANDER,NSPCRT
 C     -------------------------
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
+
+c---
+c this common must be changed if the FILHDR common is changed
+c it is only here for a dummy read to make sure nothing important
+c gets changed by accident
+      character*8     XIDj,HMOLIDj,YIDj
+      real*8          SECANTj,XALTZj 
+      COMMON /DUMHDR/ XIDj(10),SECANTj,PAVEj,TAVEj,HMOLIDj(60),
+     &    XALTZj(4),WKj(60),PZLj,PZUj,TZLj,TZUj,WBROADj,DVj,V1j,
+     &    V2j,TBOUNDj,EMISIVj,FSCDIDj(17),NMOLj,LAYRSj,YI1j,
+     &    YIDj(10),LSTWDF
+      dimension FILHDRj(2)
+      equivalence (filhdrj(1),xidj(1))
+c---
+
 C
 C           123456789-123456789-123456789-123456789-123456789-1234567
       DATA FILE1 /
@@ -4000,8 +4032,16 @@ C           123456789-123456789-123456789-123456789-123456789-1234567
      *     '                                                         '/,
      *     FILE3 /
      *     '                                                         '/
+     *     FILE4 /
+     *     '                                                         '/
       DATA CFORM / 'UNFORMATTED' /
 C
+ 
+      write(*,*) '-----------------'
+      write(*,*) 'in opndrv'
+      write(*,*) 'ipathl: ',ipathl
+      write(*,*) 'nlayer,layer,laytot ',nlayer,layer,laytot
+
       WRITE(IPR,910) LAYER,NLAYER
       INQUIRE (UNIT=KODFIL,OPENED=OP)
       IF (OP) CLOSE (KODFIL)
@@ -4009,33 +4049,86 @@ C
       OPEN(UNIT=KODFIL,FILE=FILE1,FORM=CFORM,STATUS='OLD')
 C
       IF (LAYER.NE.NLAYER) THEN
-         INQUIRE (UNIT=KODTOT,OPENED=OP)
-         IF (OP) CLOSE (KODTOT)
-         WRITE(FILE2,HFMODT) PTHODT,LAYTOT
-         OPEN(UNIT=KODTOT,FILE=FILE2,FORM=CFORM,STATUS='OLD')
-      ELSE
-         FILE2 = 'NOT USED'
-      ENDIF
+
+c open total od files
+c----
+c downlooking/upwelling
+
+          if (ipathl.eq.1) then
+              write(*,*) 'layer,nlayer',layer,nlayer
+              INQUIRE (UNIT=KODTOT,OPENED=OP)
+              IF (OP) CLOSE (KODTOT)
+              WRITE(FILE2,HFMODTD) PTHODTD,LAYTOT
+              OPEN(UNIT=KODTOT,FILE=FILE2,FORM=CFORM,STATUS='OLD')
+          endif
+
+c uplooking/downwelling
+
+          if (ipathl.eq.3) then
+              INQUIRE (UNIT=KODTOT,OPENED=OP)
+              IF (OP) CLOSE (KODTOT)
+              WRITE(FILE2,HFMODTU) PTHODTU,LAYTOT
+              OPEN(UNIT=KODTOT,FILE=FILE2,FORM=CFORM,STATUS='OLD')
+          endif
+
+      endif
 C
       INQUIRE (UNIT=KTEMP,OPENED=OP)
       IF (OP) CLOSE (KTEMP)
       OPEN(UNIT=KTEMP,FILE='mono_ad.TMP',FORM=CFORM,STATUS='unknown')
 C
-      INQUIRE (UNIT=KFILAD,OPENED=OP)
-      IF (OP) CLOSE (KFILAD)
-      WRITE(FILE3,HFMRDR) PTHRDR,LAYER
-      OPEN(UNIT=KFILAD,FILE=FILE3,FORM=CFORM,STATUS='UNKNOWN')
-C
-C     Write procedure
-C
-      WRITE(IPR,900) FILE1,FILE2,FILE3
+
+c analytic derivative file
+c  (not necessary for surface terms)
+
+      if (nspcrt.ge.0) then
+          INQUIRE (UNIT=KFILAD,OPENED=OP)
+          IF (OP) CLOSE (KFILAD)
+
+c downlooking/upwelling: ipathl = 1;  uplooking/downwelling: ipathl = 3
+          if (ipathl.eq.1) then
+              WRITE(FILE3,HFMRDR) PTHRDRD,LAYER
+          else
+              WRITE(FILE3,HFMRDR) PTHRDRU,LAYER
+          endif
+          OPEN(UNIT=KFILAD,FILE=FILE3,FORM=CFORM,STATUS='UNKNOWN')
+
+c if upwelling, open appropriate downwelling file for merge
+c also open temporary file for surface terms
+          IF (IPATHL.EQ.1) THEN
+              INQUIRE (UNIT=KFILAD2,OPENED=OP)
+              IF (OP) CLOSE (KFILAD2)
+              WRITE(FILE4,HFMRDR) PTHRDRU,LAYER
+              OPEN(UNIT=KFILAD2,FILE=FILE4,FORM=CFORM,STATUS='UNKNOWN')
+
+c buffer over header
+              CALL BUFIN(KFILAD2,KEOF,FILHDRJ(1),NFHDRF)
+              
+              INQUIRE (UNIT=KSFCTMP,OPENED=OP)
+              IF (OP) CLOSE (KSFCTMP)
+              OPEN(UNIT=KSFCTMP,FILE='sfcterm.TMP',
+     &            FORM=CFORM,STATUS='UNKNOWN')
+
+          ENDIF
+
+c write file info to TAPE6
+          WRITE(IPR,900) FILE1,FILE2,FILE3
+          IF (IPATHL.EQ.1) WRITE(IPR,901) FILE4
+      else
+          WRITE(IPR,902) FILE1,FILE2
+      endif
 C
       RETURN
 C
  900  FORMAT ('          Opened layer optical depth file:  ',A57,/,
      *        '    Opened accumulated optical depth file:  ',A57,/,
      *        '    Opened layer analytic derivative file:  ',A57)
- 910  FORMAT ('LAYER ',I5,' OF ',I5,':')
+
+  901 FORMAT ('   Opened downwelling layer analytic file:  ',A57)
+
+  902 FORMAT ('          Opened layer optical depth file:  ',A57,/,
+     *        '    Opened accumulated optical depth file:  ',A57)
+  910 FORMAT ('LAYER ',I5,' OF ',I5,':')
 C
       END
 C
@@ -4090,7 +4183,7 @@ C                                                                         H11010
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           H11080
       COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF                            H11090
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H11100
-      COMMON /EMDMSV/ BBSAV(2410),BBASAV(2410),XXSAV(2410)
+      COMMON /EMDMSV/ EMSV(2410),BBSAV(2410),BBASAV(2410),XXSAV(2410)
 
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *    angle_path, secant_diffuse, secant_path, diffuse_fac
@@ -4247,8 +4340,6 @@ C                                                                         H12500
 C                                                                         H12530
             DO 20 I = NLIM1, NLIM2                                        H12540
                ODVI = TR(I)+EXT*RADFN0                                    H12550
-c new follows
-c 
 c      
 c       for odvi ouside the range of the table,  set optical depth to bound
 c
@@ -4259,21 +4350,33 @@ c       otherwise:
                if (odvi .le. od_lo) then                              ! analytic regime
                   tr(i) = 1. - odvi + 0.5*odvi*odvi
                   em(i) = (1.-tr(i))*(bb+ bb_dif*rec_6*odvi)
-                  
+                  emsv(i) = (bb+ bb_dif*rec_6*odvi)
+                  tau_fn = odvi/(aa_inv+odvi)
+                  i_tbl = xnn * tau_fn + .5
+                  XXSAV(I)  = dtau_tbl(i_tbl)
+
                else                                                   ! use tables
                   tau_fn = odvi/(aa_inv+odvi)
                   i_tbl = xnn * tau_fn + .5
                   tr(i) = exp_tbl(i_tbl)                              ! tri = exp(-odvi)
                   em(i) = (1.-tr(i)) * (bb+bb_dif*tau_tbl(i_tbl))
+                  emsv(i) = (bb+bb_dif*tau_tbl(i_tbl))
+                  XXSAV(I)  = dtau_tbl(i_tbl)
                   
                end if
+
+c               vtest = v1p + dvp*(i-1)
+c               if ((vtest.ge.743.19).and.(vtest.le.744.2)) then
+c                   write(126,*) i,vtest,xxsav(i),i_tbl
+c                   write(126,*) '    ',rec_6*odvi
+c                   write(126,*) '    ',odvi,od_lo,tau_fn
+c                   write(126,*) '    ',tr(i),ext,radfn0
+c               endif
 c
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = bb+bb_dif
 c---
 
 C              Increment interpolation values
@@ -4352,8 +4455,6 @@ C                                                                         H13420
             DO 40 I = NLIM1, NLIM2                                        H13430
                ODVI = TR(I)+EXT*RADFN0                                    H13450
 
-c new follows
-c               goto 9874
 c              em(i) contains the ratio differences from 
 c                                              lte of the state populations
                c_nlte = em(i)
@@ -4372,6 +4473,12 @@ c       otherwise:
                   tau_fn = rec_6*odvi
                   em(i)  = (absvi - (c_nlte*(1.-odvi_a))) * 
      *                                        (bb+bb_dif * tau_fn)
+                  emsv(i)  = ((absvi - (c_nlte*(1.-odvi_a))) * 
+     *                (bb+bb_dif * tau_fn))/absvi
+                  tau_fn = odvi/(aa_inv+odvi)
+                  i_tbl = xnn * tau_fn + .5
+                  XXSAV(I)  = dtau_tbl(i_tbl)
+
                else                                                     ! use tables
                   tau_fn = odvi/(aa_inv+odvi)
                   i_tbl = xnn * tau_fn + .5
@@ -4379,15 +4486,17 @@ c       otherwise:
 
                   em(i)  = ( 1.0- c_nlte/odvi ) * (1.-tr(i)) * 
      *                                   (bb+bb_dif * tau_tbl(i_tbl))
+                  emsv(i)  = ( 1.0- c_nlte/odvi ) *  
+     *                (bb+bb_dif * tau_tbl(i_tbl))
+
+                  XXSAV(I)  = dtau_tbl(i_tbl)
 
                end if
 c
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = bb+bb_dif
 c---
 
 C              Increment interpolation values
@@ -4396,8 +4505,6 @@ C
                RADFN0 = RADFN0+RDEL                                       H13450
                BB = BB+BBDEL                                              H13470
                bb_dif = bb_dif + bb_dif_del
-c new above
-c
    40       CONTINUE                                                      H13550
 C                                                                         H13560
             IF (NLIM2.LT.NLIM) GO TO 30                                   H13570
@@ -4503,8 +4610,6 @@ C                                                                         H14690
             bb_dif_a_del = bbdla-bbdel
             bb_dif_b_del = bbdlb-bbdel
 C                                                                         H14720
-c new follows
-c            goto 9872
 cccc
 c     This calculation  is for specular reflection for the downwelling 
 cccc
@@ -4526,7 +4631,11 @@ c       otherwise:
                        taufn  = rec_6*odvi
                        emx = (1.-tr(i))
                        em(i)  = emx * (bb+ bb_dif_a * taufn)
+                       emsv(i)  = (bb+ bb_dif_a * taufn)
                        emb(i) = emx * (bb+ bb_dif_b * taufn)
+                       tau_fn = odvi/(aa_inv+odvi)
+                       i_tbl = xnn * tau_fn + .5
+                       XXSAV(I)  = dtau_tbl(i_tbl)
 c
                     else                                              ! use tables
                        tau_fn = odvi/(aa_inv+odvi) 
@@ -4535,14 +4644,14 @@ c
                        tau_fn = tau_tbl(i_tbl)
                        emx = (1.-tr(i))
                        em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                       emsv(i)  =  (bb+bb_dif_a * tau_fn)
                        emb(i) = emx * (bb+bb_dif_b * tau_fn)
+                       XXSAV(I)  = tau_fn
                     endif
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = BB+bb_dif_a
 c---
 C     
 C     Increment interpolation values
@@ -4586,6 +4695,7 @@ c       otherwise:
                         emx = (1.-tr(i))
                         emx_d = (1.-tr_d)
                         em(i)  = emx * (bb+ bb_dif_a * taufn)
+                        emsv(i)  = (bb+ bb_dif_a * taufn)
                         emb(i) = emx_d * (bb+ bb_dif_b * taufn_d)
 c
                     else                                              ! use tables
@@ -4601,15 +4711,17 @@ c
                         tau_fn_d = tau_tbl(i_tbl_d)
                         tr_d  = exp_tbl(i_tbl_d)
                         em(i)  = (1.-tr(i)) * (bb+bb_dif_a * tau_fn)
+                        emsv(i)  = (bb+bb_dif_a * tau_fn)
                         emb(i) = (1.-tr_d)  * (bb+bb_dif_b * tau_fn_d)
                         
                     end if
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
-               BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+                  tau_fn = odvi/(aa_inv+odvi)
+                  i_tbl = xnn * tau_fn + .5
+                  XXSAV(I)  = dtau_tbl(i_tbl)
+                  BBSAV(I)  = BB
+                  BBASAV(I) = BB+bb_dif_a
 c---
 C   
 C     Increment interpolation values
@@ -4626,7 +4738,6 @@ C
                 WRITE (IPR,906) surf_refl     
                 STOP 'INVALID SURFACE REFLECTIVITY FLAG'                 
             endif
-c new above
 C                                                                         H14890
             IF (NLIM2.LT.NLIM) GO TO 50                                   H14900
 C                                                                         H14910
@@ -4723,8 +4834,6 @@ C                                                                         H15940
             bb_dif_a_del = bbdla-bbdel
             bb_dif_b_del = bbdlb-bbdel
 C                                                                         H15970
-c new follows
-c            goto 9870
 cccc
 c     This calculation  is for specular reflection for the downwelling 
 cccc
@@ -4755,8 +4864,11 @@ c       otherwise:
                         tau_fn = rec_6*odvi
                         emx    = (absvi - (c_nlte*(1.-odvi_a)))
                         em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                        emsv(i)  = (emx*(bb+bb_dif_a * tau_fn))/absvi
                         emb(i) = emx * (bb+bb_dif_b * tau_fn)
-
+                        tau_fn = odvi/(aa_inv+odvi)
+                        i_tbl = xnn * tau_fn + .5
+                        XXSAV(I)  = dtau_tbl(i_tbl)
                     else                                              ! use tables
                         tau_fn = odvi/(aa_inv+odvi)
                         i_tbl = xnn * tau_fn + .5
@@ -4764,15 +4876,16 @@ c       otherwise:
                         tau_fn = tau_tbl(i_tbl)
                         emx = ( 1.0 - c_nlte/odvi ) * ( 1.-tr(i) )
                         em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                        emsv(i)  = ( 1.0 - c_nlte/odvi )
+     &                      *(bb+bb_dif_a * tau_fn)
                         emb(i) = emx * (bb+bb_dif_b * tau_fn)
+                        XXSAV(I)  = tau_fn
                         
                     end if
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = BB+bb_dif_a
 c---
 c
 C     Increment interpolation values
@@ -4826,8 +4939,11 @@ c       otherwise:
                         emx    = (absvi - (c_nlte*(1.-odvi_a)))
                         emx_d  = (absvi_d - (c_nlte*(1.-odvi_a_d)))
                         em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                        emsv(i)  = (emx*(bb+bb_dif_a * tau_fn))/absvi
                         emb(i) = emx_d * (bb+bb_dif_b * tau_fn_d)
-
+                        tau_fn = odvi/(aa_inv+odvi)
+                        i_tbl = xnn * tau_fn + .5
+                        XXSAV(I)  = dtau_tbl(i_tbl)
                     else                                              ! use tables
                         tau_fn = odvi/(aa_inv+odvi)
                         i_tbl = xnn * tau_fn + .5
@@ -4844,15 +4960,17 @@ c       otherwise:
                         emx = (1.0 - c_nlte/odvi) * (1.-tr(i))
                         emx_d = (1.0 - c_nlte/odvi_d) * (1.-tr_d)
                         em(i)  = emx * (bb+bb_dif_a * tau_fn)
+                        emsv(i)  = (1.0 - c_nlte/odvi)
+     &                      *(bb+bb_dif_a * tau_fn)
                         emb(i) = emx_d * (bb+bb_dif_b * tau_fn_d)
-                        
+                        tau_fn = odvi/(aa_inv+odvi)
+                        i_tbl = xnn * tau_fn + .5
+                        XXSAV(I)  = dtau_tbl(i_tbl)
                     end if
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
-               BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+                    BBSAV(I)  = BB
+                    BBASAV(I) = BB+bb_dif_a
 c---
 c     
 C     Increment interpolation values
@@ -4871,7 +4989,6 @@ C
                 STOP 'INVALID SURFACE REFLECTIVITY FLAG'                 
 
             endif
-c new above
 C                                                                         H16140
             IF (NLIM2.LT.NLIM) GO TO 70                                   H16150
 C                                                                         H16160
@@ -4920,11 +5037,11 @@ C                                                                         H11010
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           H11080
       COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF                            H11090
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H11100
-      COMMON /EMDMSV/ BBSAV(2410),BBASAV(2410),XXSAV(2410)
-      COMMON /EMDTSV/ BBDSAV(2410)
+      COMMON /EMDMSV/ EMSV(2410),BBSAV(2410),BBASAV(2410),XXSAV(2410)
+      COMMON /EMDTSV/ BBDSAV(2410),FSAV(2410),BBDLSAV(2410)
 C                                                                         H11110
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac
 c
       character*1 surf_refl
       character*3 pad_3
@@ -4967,6 +5084,13 @@ C                                                                         H11300
       BBDLB = 0.                                                          H11400
       BBD = 0.
       BBADDL = 0.
+
+      bbud = 0.
+      bbud1= 0.
+      bbud2= -1.
+      vbbud= v1p-dvp ! vi
+      vidd = v1p-dvp ! vi
+      bbadol=-1.
 C                                                                         H11410
       V1P = V1PBF                                                         H11420
       V2P = V2PBF                                                         H11430
@@ -5026,6 +5150,7 @@ C                                                                         H11850
                IF (XKTA.GT.0.) THEN                                       H11890
                   VIBB = -VIDV                                            H11900
                   BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H11910
+                  bbud = BBAD(BB,VI,DVP,V2P,XKTA,vbbud,bbud1,bbud2)
                ELSE                                                       H11920
                   BBA = BB                                                H11930
                   BBDLA = BBDEL                                           H11940
@@ -5036,6 +5161,7 @@ C                                                                         H11850
                IF (XKTA.GT.0.) THEN                                       H12000
                   VIBB = -VIDV                                            H12010
                   BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12020
+                  bbud = BBAD(BB,VI,DVP,V2P,XKTA,vbbud,bbud1,bbud2)
                ELSE                                                       H12030
                   BBA = BB                                                H12040
                   BBDLA = BBDEL                                           H12050
@@ -5052,6 +5178,7 @@ C                                                                         H11850
                IF (XKTA.GT.0.) THEN                                       H12200
                   VIBB = -VIDV                                            H12210
                   BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12220
+                  bbud = BBAD(BB,VI,DVP,V2P,XKTA,vbbud,bbud1,bbud2)
                ELSE                                                       H12230
                   BBA = BB                                                H12240
                   BBDLA = BBDEL                                           H12250
@@ -5066,6 +5193,7 @@ C                                                                         H11850
                IF (XKTA.GT.0.) THEN                                       H12370
                   VIBB = -VIDV                                            H12380
                   BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)           H12390
+                  bbud = BBAD(BB,VI,DVP,V2P,XKTA,vbbud,bbud1,bbud2)
                ELSE                                                       H12400
                   BBA = BB                                                H12410
                   BBDLA = BBDEL                                           H12420
@@ -5082,8 +5210,6 @@ C                                                                         H12500
 C                                                                         H12530
             DO 20 I = NLIM1, NLIM2                                        H12540
                ODVI = TR(I)+EXT*RADFN0                                    H12550
-c new follows
-c               goto 9869
 c      
 c       for odvi ouside the range of the table,  set optical depth to bound
 c
@@ -5104,10 +5230,15 @@ c       otherwise:
                end if
 c---
 C Store BB, BBA, and XX for derivative source term
+               emsv(i)=em(i)/(1.-tr(i))
+               tau_fn = odvi/(aa_inv+odvi)
+               i_tbl = xnn * tau_fn + .5
                XXSAV(I)  = dtau_tbl(i_tbl)
+               FSAV(i) = tau_tbl(i_tbl)
+               bbdsav(i) = bbd
+               bbdlsav(i) = bbud
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = BB+bb_dif
 c---
 c
 C              Increment interpolation values
@@ -5116,8 +5247,8 @@ C
                RADFN0 = RADFN0+RDEL                                       H12560
                BB = BB+BBDEL                                              H12580
                bb_dif = bb_dif + bb_dif_del
-c
-c new above
+               bbd = bbd+bbaddl
+               bbud=bbud+bbud1
 c
    20       CONTINUE                                                      H12660
 C                                                                         H12670
@@ -5188,8 +5319,6 @@ C                                                                         H13420
             DO 40 I = NLIM1, NLIM2                                        H13430 
 c              tr(i) contains the layer optical depths at this stage
               ODVI = TR(I)+EXT*RADFN0                                    H13440
-c new follows
-c              goto 9871
 c
 c              em(i) contains the ratio differences from 
 c                                              lte of the state populations
@@ -5220,10 +5349,12 @@ c       otherwise:
                end if
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
+               emsv(i)=em(i)/(1.-tr(i))
+                  tau_fn = odvi/(aa_inv+odvi)
+                  i_tbl = xnn * tau_fn + .5
+                  XXSAV(I)  = dtau_tbl(i_tbl)
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = BB+bb_dif
 c---
 c
 C              Increment interpolation values
@@ -5232,8 +5363,6 @@ C
                RADFN0 = RADFN0+RDEL                                       H13450
                BB = BB+BBDEL                                              H13470
                bb_dif = bb_dif + bb_dif_del
-c new above
-c
    40       CONTINUE                                                      H13550
 C                                                                         H13560
             IF (NLIM2.LT.NLIM) GO TO 30                                   H13570
@@ -5341,8 +5470,6 @@ C                                                                         H14690
             bb_dif_a_del = bbdla-bbdel
             bb_dif_b_del = bbdlb-bbdel
 C                                                                         H14720
-c new follows
-c            goto 9873
 cccc
 c     This calculation  is for specular reflection for the downwelling 
 cccc
@@ -5377,10 +5504,14 @@ c
                     endif
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
+               emsv(i)=em(i)/(1.-tr(i))
+                  tau_fn = odvi/(aa_inv+odvi)
+                  i_tbl = xnn * tau_fn + .5
+                  XXSAV(I)  = dtau_tbl(i_tbl)
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = BB+bb_dif_a
+c               BBASAV(I) = BBA
+c               BBA = BBA+BBDLA
 c---
 C     
 C     Increment interpolation values
@@ -5444,10 +5575,12 @@ c
                     end if
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
+               emsv(i)=em(i)/(1.-tr(i))
+                  tau_fn = odvi/(aa_inv+odvi)
+                  i_tbl = xnn * tau_fn + .5
+                  XXSAV(I)  = dtau_tbl(i_tbl)
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = BB+bb_dif_a
 c---
 C   
 C     Increment interpolation values
@@ -5464,7 +5597,6 @@ C
                 WRITE (IPR,906) surf_refl     
                 STOP 'INVALID SURFACE REFLECTIVITY FLAG'                 
             endif
-c new above
 C                                                                         H14890
             IF (NLIM2.LT.NLIM) GO TO 50                                   H14900
 C                                                                         H14910
@@ -5561,8 +5693,6 @@ C                                                                         H15940
             bb_dif_a_del = bbdla-bbdel
             bb_dif_b_del = bbdlb-bbdel
 C                                                                         H15970
-c new follows
-c            goto 9875
 cccc
 c     This calculation  is for specular reflection for the downwelling 
 cccc
@@ -5607,10 +5737,12 @@ c       otherwise:
                     end if
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
+               emsv(i)=em(i)/(1.-tr(i))
+                  tau_fn = odvi/(aa_inv+odvi)
+                  i_tbl = xnn * tau_fn + .5
+                  XXSAV(I)  = dtau_tbl(i_tbl)
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = BB+bb_dif_a
 c---
 c
 C     Increment interpolation values
@@ -5687,10 +5819,12 @@ c       otherwise:
                     end if
 c---
 C Store BB, BBA, and XX for derivative source term
-               XXSAV(I)  = dtau_tbl(i_tbl)
+               emsv(i)=em(i)/(1.-tr(i))
+                  tau_fn = odvi/(aa_inv+odvi)
+                  i_tbl = xnn * tau_fn + .5
+                  XXSAV(I)  = dtau_tbl(i_tbl)
                BBSAV(I)  = BB
-               BBASAV(I) = BBA
-               BBA = BBA+BBDLA
+               BBASAV(I) = BB+bb_dif_a
 c---
 c     
 C     Increment interpolation values
@@ -5709,7 +5843,6 @@ C
                 STOP 'INVALID SURFACE REFLECTIVITY FLAG'                 
 
             endif
-c new above
 C                                                                         H16140
             IF (NLIM2.LT.NLIM) GO TO 70                                   H16150
 C                                                                         H16160
@@ -5771,8 +5904,17 @@ c
      *              NLTEFL,LNFIL4,LNGTH4                                  H16760
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H16770
 
-      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
       COMMON /IADFLG/ IANDER,NSPCRT
+      common /DNWTRMS/ EMTRM(2410),RFTRM(2410),raddnw(2410),tradnw(2410)
+      common /pnldum/v1dnw,v2dnw,dvdnw,nlimdnw
+      dimension xdnwin(2)
+      equivalence (xdnwin(1),v1dnw)
+      logical op
+
+      CHARACTER*11 CFORM
+      DATA CFORM / 'UNFORMATTED' /
+      
 C                                                                         H16780
       CHARACTER*40 CEXT,CYID                                              H16790
 C                                                                         H16800
@@ -5800,6 +5942,8 @@ C     IPATHL = 1 IS FOR THE LOOKING DOWN CASE (TO DENSER LAYERS)          H17020
 C     IPATHL = 2 IS FOR THE SYMMETRIC TANGENT PATH CASE                   H17030
 C     IPATHL = 3 IS FOR THE LOOKING UP CASE (TO LESS DENSE LAYERS         H17040
 C                                                                         H17050
+c------------------------------------------------------------------------
+c------------------------------------------------------------------------
       CALL CPUTIM (TIME)                                                  H17060
 C                                                                         H17070
 C      ** NOTE ON IPATHL =2                                               H17080
@@ -5888,7 +6032,8 @@ C     Call EMDM for molecular retrieval
 C
 C
       CALL CPUTIM (TIMEM1)                                                H17750
-      IF (NSPCRT.EQ.29) THEN
+c
+      IF (NSPCRT.LE.0) THEN
          CALL EMDT (V1PO,V2PO,DVPO,NLIMO,KODFIL,EMLAYR,EMLAYB,
      *        TRLAYR,KEOF,NPANLS)
       ELSEIF (NSPCRT.GT.0) THEN
@@ -5905,6 +6050,20 @@ C
       BBLAST = -1.                                                        H17850
       EMLAST = -1.                                                        H17860
       RFLAST = -1.                                                        H17870
+
+c check to see if this is upwelling case (ksfctmp file will be open)
+c write panel size to sfc file, initialize emisout,reflout
+      inquire(unit=ksfctmp,opened=op)
+      if (op) then
+          write(ksfctmp) NLIMO
+
+          call bufin(k12tmp,keof,xdnwin(1),nphdrf)
+          write(*,*) v1dnw,v2dnw,dvdnw,nlimdnw
+          write(*,*) 'ipathl: ',ipathl
+          call bufin(k12tmp,keof,raddnw(1),nlimdnw)
+          call bufin(k12tmp,keof,tradnw(1),nlimdnw)
+      endif
+
       IF (IPATHL.EQ.2.AND.IANT.EQ.0) THEN                                 H17880
          DO 30 J = 1, NLIMO                                               H17890
             TRJ = TRLAYR(J)                                               H17900
@@ -5945,6 +6104,14 @@ C                                                                         H18240
          DO 50 J = NLIM1, NLIM2                                           H18250
             OLDEM(J) = BB*EMISIV
             NEWEM(J) = EMLAYR(J)+TRLAYR(J)*OLDEM(J)                       H18280
+
+c output to temp file
+            if (op) then
+                emtrm(j)=BB*EMISIV*tradnw(j)
+                rftrm(j)=0.0
+                write(ksfctmp) emtrm(j),rftrm(j)
+            endif
+
 C
 C           Increment interpolation values
 C
@@ -5952,6 +6119,7 @@ C
             BB = BB+BBDEL                                                 H18270
 
    50    CONTINUE                                                         H18290
+         write(*,*) 'bb,emisiv,tradnw: ',bb,emisiv,tradnw(nlim2)
 C                                                                         H18300
          IF (NLIM2.LT.NLIMO) GO TO 40                                     H18310
 C                                                                         H18320
@@ -6000,8 +6168,16 @@ C                                                                         H18780
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18800
 C                                                                         H18810
          DO 70 J = NLIM1, NLIM2                                           H18820
+            oldem(j) = 0.0
             NEWEM(J) = EMLAYR(J)+EMLAYB(J)*REFLCT*TRLAYR(J)+              H18860
      *                 TRLAYR(J)*BB*EMISIV                                H18870
+c output to temp file
+            if (op) then
+                emtrm(j)=(BB*EMISIV+reflct*raddnw(j))*tradnw(j)
+                rftrm(j)=reflct*tradnw(j)
+
+                write(ksfctmp) emtrm(j),rftrm(j)
+            endif
 C
 C           Increment interpolation values
 C
@@ -6010,6 +6186,8 @@ C
             REFLCT = REFLCT+RFDEL                                         H18840
    70    CONTINUE                                                         H18880
 C                                                                         H18890
+         
+         write(*,*) 'emadl1: emtrm,rftrm: ',emtrm(1),rftrm(1)
          IF (NLIM2.LT.NLIMO) GO TO 60                                     H18900
 C                                                                         H18910
       ENDIF                                                               H18920
@@ -6029,22 +6207,27 @@ C     Call TDERIV for temperature retrieval
 C     Call ADERIV for molecular retrieval
 C
 C     If molecular retrieval:
-C     Input layer absorptance coefficients and accumulated
+C     Input layer optical depth and accumulated
 C     transmittances and calculate layer derivatives
+C       (see lblrtm.f: default is d(log-x) so layer optical depth
+C        is needed.  If d(x) is needed, then absorption coeffients
+C        rather than optical depth will be used)
 C
 C     If temperature retrieval:
 C     Input Planck function derivative and layer
 C     transmittances and calculate layer derivatives
 C
-      IF (NSPCRT.EQ.29) THEN
+      IF (NSPCRT.EQ.0) THEN
 
-         CALL TDERIV (KFILE,KODTOT,RPRIME,OLDEM,TRLAYR,
-     *        NLIMO,NDIM,ND2,IPATHL,LAYER,NLAYER,v1po,dvpo)
+         CALL TDERIV (KFILE,KODTOT,KFILAD2,
+     &        RPRIME,OLDEM,TRLAYR,
+     *        NLIMO,NDIM,ND2,IPATHL,LAYER,NLAYER,V1PO,DVPO)
 
       ELSEIF (NSPCRT.GT.0) THEN
 
-         CALL ADERIV (KFILE,KODTOT,RPRIME,OLDEM,TRLAYR,
-     *        NLIMO,NDIM,ND2,IPATHL,LAYER,NLAYER,v1po,dvpo)
+         CALL ADERIV (KFILE,KODTOT,KFILAD2,
+     &        RPRIME,OLDEM,TRLAYR,
+     *        NLIMO,NDIM,ND2,IPATHL,LAYER,NLAYER,V1PO,DVPO)
 
       ENDIF
 C
@@ -6101,8 +6284,8 @@ C                                                                         H19500
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H19510
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H19520
      *               EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF     H19530
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac
 c
       character*1 surf_refl
       character*3 pad_3
@@ -6115,9 +6298,14 @@ c
       COMMON /XME/ v1_pad,v2_pad,dv_pad,n_pad,TRAO(0:5000)
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H19610
 c
-      COMMON /EMDMSV/ BBSAV(2410),BBASAV(2410),XXSAV(2410)
-      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD
+      COMMON /EMDMSV/ EMSV(2410),BBSAV(2410),BBASAV(2410),XXSAV(2410)
+      COMMON /ADRFIL/ KODFIL,KODTOT,KTEMP,KFILAD,KFILAD2,KSFCTMP,K12TMP
       COMMON /IADFLG/ IANDER,NSPCRT
+      common /DNWTRMS/ EMTRM(2410),RFTRM(2410),raddnw(2410),tradnw(2410)
+      common /pnldum/v1dnw,v2dnw,dvdnw,nlimdnw
+      dimension xdnwin(2)
+      equivalence (xdnwin(1),v1dnw)
+      logical op
 C                                                                         H19620
       DIMENSION RADLYB(2410)                                              H19630
       DIMENSION XFILHD(2),PNLHDR(2),OPNLHD(2)                             H19640
@@ -6155,6 +6343,8 @@ C          IF  IANT.EQ. 1  THEN POSTERIOR MERGE                           H19980
 C          IF  IANT.EQ. 0  THEN NORMAL MERGE                              H19990
 C          IF  IANT.EQ.-1  THEN ANTERIOR MERGE                            H20000
 C                                                                         H20010
+c------------------------------------------------------------------------
+c------------------------------------------------------------------------
       CALL CPUTIM (TIME)                                                  H20020
       WRITE (IPR,900) TIME                                                H20030
       NPANLS = 0                                                          H20040
@@ -6268,6 +6458,11 @@ C                                                                         H21110
       V2PO = 0.0                                                          H21160
       DVPO = 0.0                                                          H21170
 C                                                                         H21180
+
+      inquire(unit=ksfctmp,opened=op)
+      if (op) rewind(ksfctmp)
+
+
    40 CONTINUE                                                            H21190
 C                                                                         H21200
 C
@@ -6310,6 +6505,22 @@ C                                                                         H21490
          TRAO(NPE+1) = TRAO(NPE)                                          H21530
          TRAO(NPE+2) = TRAO(NPE)                                          H21540
       ENDIF                                                               H21550
+
+      inquire(unit=ksfctmp,opened=op)
+      if (op) then
+          read(ksfctmp) NLIMsfc
+          do j=1,nlimsfc
+              read(ksfctmp) emtrm(j),rftrm(j)
+          enddo
+          write(*,*) 'emadmg: emtrm,rftrm: ',emtrm(1),rftrm(1)
+          call bufin(k12tmp,keof,xdnwin(1),nphdrf)
+          write(*,*) v1dnw,v2dnw,dvdnw,nlimdnw
+          call bufin(k12tmp,keof,raddnw(1),nlimdnw)
+          call bufin(k12tmp,keof,tradnw(1),nlimdnw)
+      endif
+
+
+
 C                                                                         H21560
 C     -------------------------------
 C     Analytic Derivative calculation
@@ -6319,22 +6530,27 @@ C     Call TDERIV for temperature retrieval
 C     Call ADERIV for molecular retrieval
 C
 C     If molecular retrieval:
-C     Input layer absorptance coefficients and accumulated
+C     Input layer optical depth and accumulated
 C     transmittances and calculate layer derivatives
+C       (see lblrtm.f: default is d(log-x) so layer optical depth
+C        is needed.  If d(x) is needed, then absorption coeffients
+C        rather than optical depth will be used)
 C
 C     If temperature retrieval:
 C     Input Planck function derivative and layer
 C     transmittances and calculate layer derivatives
 C
-      IF (NSPCRT.EQ.29) THEN
+      IF (NSPCRT.EQ.0) THEN
 
-         CALL TDERIV (KFILE,KODTOT,RPRIME,RADO,TRALYR,
-     *        NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,v1p,dvp)
+         CALL TDERIV (KFILE,KODTOT,KFILAD2,
+     &        RPRIME,RADO,TRALYR,
+     *        NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,V1P,DVP)
 
       ELSEIF (NSPCRT.GT.0) THEN
 
-         CALL ADERIV (KFILE,KODTOT,RPRIME,RADO,TRALYR,
-     *        NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,v1p,dvp)
+         CALL ADERIV (KFILE,KODTOT,KFILAD2,
+     &        RPRIME,RADO,TRALYR,
+     *        NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,V1P,DVP)
 
       ENDIF
 C
@@ -6408,8 +6624,9 @@ C                                                                         H22000
 C
 C     ---------------------------------------------------------------
 C
-      SUBROUTINE ADERIV (KFILE,KODTOT,RPRIME,RADO,TRALYR,
-     *                  NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,v1po,dvpo)
+      SUBROUTINE ADERIV (KFILE,KODTOT,KFILAD2,
+     &                   RPRIME,RADO,TRALYR,
+     *                   NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,V1PO,DVPO)
 C                                                                    
 C     This subroutine inputs abosrption coefficient values from
 C     KFILE and total transmittance from KODTOT (if there is more
@@ -6420,12 +6637,12 @@ C
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
 C
-      REAL KSUBL(0:ND2)
+      REAL KSUBL(0:ND2),ADDNW(0:ND2),DMDNW(0:ND2)
 C
       DIMENSION RADO(0:ND2),OPDT(0:ND2)
       DIMENSION RPRIME(NDIM)
       DIMENSION TRALYR(*)
-      DIMENSION PNLHDR(2) !,XKMOLC(2),ODACUM(2)
+      DIMENSION PNLHDR(2)
 C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,
@@ -6434,11 +6651,46 @@ C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
-      COMMON /EMDMSV/ BBSAV(2410),BBASAV(2410),XXSAV(2410)
-C
+      COMMON /EMDMSV/ EMSV(2410),BBSAV(2410),BBASAV(2410),XXSAV(2410)
+
+      common /DNWTRMS/ EMTRM(2410),RFTRM(2410),raddnw(2410),tradnw(2410)
+
       EQUIVALENCE (PNLHDR(1),V1P)
+
+      logical op  ! used for check of kfilad2
+
+
+c note: from continuum module
+c          ipts  = same dimension as ABSRB
+c          ipts2 = same dimension as C
+      parameter (ipts=5050,ipts2=6000)
+      common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
+     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,dTco2C(ipts)
+c---------------------------------------------------------------------      
 C
-      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
+
+c see if this calculation requires downwelling derivatives
+c to be incorporated into the upwelling calculation
+      inquire(unit=kfilad2,opened=op)
+      if (op) then
+          idwn=1
+
+c get downwelling term
+          CALL BUFIN(kfilad2,KEOF,PNLHDR(1),NPHDRF)
+          CALL BUFIN (kfilad2,KEOF,ADDNW(1),NLIMP)
+          CALL BUFIN (kfilad2,KEOF,DMDNW(1),NLIMP) ! dummy read
+
+      else
+          idwn=0
+      endif
+
+c if water, ksubl modified to include all h2o terms
+      if (icflg.eq.1) then
+          CALL BUFIN(iuf,KEOF,PNLHDR(1),NPHDRF)
+      else
+          CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
+      endif
+
 
       IF (KEOF.LE.0) THEN
          WRITE(*,*) 'End of KFILE ',KFILE
@@ -6462,7 +6714,14 @@ C
 C
 C     Read in absorptance coefficients
 C
-      CALL BUFIN (KFILE,KEOF,KSUBL(1),NLIMP)
+
+c if water, ksubl modified to include all h2o terms
+      if (icflg.eq.1) then
+          CALL BUFIN (iuf,KEOF,KSUBL(1),NLIMP)
+      else
+          CALL BUFIN (KFILE,KEOF,KSUBL(1),NLIMP)
+      endif
+
 C
 C     Read in total optical depths if LAYER < NLAYER
 C
@@ -6529,38 +6788,57 @@ C
 C     When calculating the derivative of the layer nearest the observer,
 C     omit the total accumulated transmittance, TRACCM
 C
- 10   AA = 0.278
+
+c note:  comments above are out of date!
+
+ 10   CONTINUE
+
 c
-      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3) THEN
+      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3.or.ipathl.eq.-1) THEN
 c
-c *** new below
          IF (LAYER.NE.NLAYER) THEN
             DO 20 I = 1, NLIM
-               vtest = v1po + dvpo*(i-1)
+
                TRACCM = EXP(-OPDT(I))
 
-               SRCNON = KSUBL(I)*TRALYR(I)*RADO(I)
+               SOURCE=(1.0-TRALYR(I))
+     &             *(BBASAV(I)-BBSAV(I))*XXSAV(I)
 
-               SOURCE = (BBASAV(I)-BBSAV(I))*XXSAV(I)*KSUBL(I)
+               SRCNON=(EMSV(I)-RADO(I))*TRALYR(I)
 
-               RPRIME(I) = TRACCM*(SOURCE - SRCNON)
+               RPRIME(I)=(SOURCE+SRCNON)*TRACCM*KSUBL(I)
 
  20         CONTINUE
          ELSE
             DO 30 I = 1, NLIM
-               vtest = v1po + dvpo*(i-1)
-               SRCNON = KSUBL(I)*TRALYR(I)*RADO(I)
-               SOURCE = (BBASAV(I)-BBSAV(I))*XXSAV(I)*KSUBL(I)
-               RPRIME(I) = SOURCE - SRCNON
+
+               SOURCE=(1.0-TRALYR(I))
+     &             *(BBASAV(I)-BBSAV(I))*XXSAV(I)
+
+               SRCNON=(EMSV(I)-RADO(I))*TRALYR(I)
+
+               RPRIME(I)=(SOURCE+SRCNON)*KSUBL(I)
+
  30         CONTINUE
          ENDIF
+
+c for upwelling, add contribution from 'backside' downwelling term
+c  rftrm = refl*T(0,L)
+c  addnw = dr/dlnq for downwelling
+c  emtrm = (emis*Bsfc + refl*Bdwn)*T(0,L)
+c  ksubl = tau(layer) as above (to convert to ln-mixing ratio)
+c T(0,L) = H1 to H2 transmission (e.g. surface to space)
+
+         if (idwn.eq.1) then
+             write(*,*) 'idwn=1'
+             do i=1,nlim
+                 rprime(i)=rprime(i)+(rftrm(i)*addnw(i)
+     &               -emtrm(i)*ksubl(i))
+             enddo
+         endif
 c
       ELSEIF (IPATHL.EQ.2) THEN
-         STOP 'ADERIV NOT SET FOR IPATHL = 2'
-c      ELSEIF (IPATHL.EQ.3) THEN
-c         STOP 'ADERIV NOT SET FOR IPATHL = 3'
-      ELSEIF (IPATHL.EQ.-1) THEN
-         STOP 'ADERIV NOT SET FOR IPATHL = -1'
+         STOP 'ADERIV NOT SET FOR IPATHL = 2'  ! limb case
       ENDIF
 C
       RETURN
@@ -6572,9 +6850,9 @@ C
 C
 C     ---------------------------------------------------------------
 C
-      SUBROUTINE TDERIV (KFILE,KODTOT,RPRIME,RADO,TRALYR,
-     *                  NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,
-     *     v1po,dvpo)
+      SUBROUTINE TDERIV (KFILE,KODTOT,KFILAD2,RPRIME,RADO,TRALYR,
+     *                   NLIM,NDIM,ND2,IPATHL,LAYER,NLAYER,
+     *                   V1PO,DVPO)
 C                                                                    
 C     This subroutine combines the Planck function derivative
 C     (calculated in SUBROUTINE EMDT) and the layer transmittance
@@ -6585,12 +6863,12 @@ C
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
 C
-      REAL KSUBL(0:ND2)
+      REAL KSUBL(0:ND2),ADDNW(0:ND2),DMDNW(0:ND2)
 C
       DIMENSION RADO(0:ND2),OPDT(0:ND2)
       DIMENSION RPRIME(NDIM)
       DIMENSION TRALYR(*)
-      DIMENSION PNLHDR(2) ! ,XKMOLC(2),ODACUM(2)
+      DIMENSION PNLHDR(2)
 C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,
@@ -6599,10 +6877,64 @@ C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
-      COMMON /EMDMSV/ BBSAV(2410),BBASAV(2410),XXSAV(2410)
-      COMMON /EMDTSV/ BBDSAV(2410)
+      COMMON /EMDMSV/ EMSV(2410),BBSAV(2410),BBASAV(2410),XXSAV(2410)
+      COMMON /EMDTSV/ BBDSAV(2410),FSAV(2410),BBDLSAV(2410)
 C
+      common /DNWTRMS/ EMTRM(2410),RFTRM(2410),raddnw(2410),tradnw(2410)
+
       EQUIVALENCE (PNLHDR(1),V1P)
+C
+      logical op  ! used for check of kfilad2
+
+c note: from continuum module
+c          ipts  = same dimension as ABSRB
+c          ipts2 = same dimension as C
+      parameter (ipts=5050,ipts2=6000)
+      common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
+     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,dTco2C(ipts)
+
+      real dtaudT(2400)
+
+c for layer2level (if imoldq <> -99)
+      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=38)
+      common /dlaydlev/ilevdq,imoldq,iupdwn,
+     &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
+
+c---------------------------------------------------------------------      
+
+c see if this calculation requires downwelling derivatives
+c to be incorporated into the upwelling calculation
+      inquire(unit=kfilad2,opened=op)
+      if (op) then
+          idwn=1
+
+c get downwelling term
+          CALL BUFIN(kfilad2,KEOF,PNLHDR(1),NPHDRF)
+          CALL BUFIN (kfilad2,KEOF,ADDNW(1),NLIMP)
+          CALL BUFIN (kfilad2,KEOF,DMDNW(1),NLIMP) ! dummy read
+
+      else
+          idwn=0
+      endif
+
+c file with dtaudT info
+      CALL BUFIN (iuf,KEOF,PNLHDR(1),NPHDRF)
+
+c compute inverse of layer-to-level conversion
+c (dt-upper / dt-avg)
+c set to zero if level information is unknown
+      if (dqdu(layer,0).ne.0.0) then
+          dtudtave=dqdu(layer,0)
+      else
+          dtudtave=0.0
+      endif
+
+c
+c      CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
+c      IF (KEOF.LE.0) THEN
+c         WRITE(*,*) 'End of KFILE ',KFILE
+c         GOTO 10
+c      ENDIF
 C
 C     Set number of words to be input as 2400 or the number of
 C     points between the absolute end point V2 and the panel
@@ -6618,6 +6950,10 @@ C
       ELSE
          NLIMP = XLIMP
       ENDIF
+
+c read in dtaudT
+      CALL BUFIN (iuf,KEOF,dtaudT(1),NLIMP)
+
 C
 C     Read in absorptance coefficients
 C
@@ -6663,34 +6999,73 @@ C
 C     When calculating the derivative of the layer nearest the observer,
 C     omit the total accumulated transmittance, TRACCM
 C
+c  drsat/dT = (drdtau)(dtaudT)+(drdb)(dbdT) = srcnon + source
+
+c note:  comments above are out of date!
+
+
  10   AA = 0.278
-      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3) THEN
+
+      IF (IPATHL.EQ.1.OR.IPATHL.EQ.3.or.ipathl.eq.-1) THEN
          IF (LAYER.NE.NLAYER) THEN
             DO 20 I = 1, NLIM
                vtest = v1po + dvpo*(i-1)
-c               Y  = 1./(1.+XXSAV(I))
-c               YZ = Y*AA*(BBASAV(I)-BBSAV(I))
                TRACCM = EXP(-OPDT(I))
-               SOURCE = BBDSAV(I)*(1.-TRALYR(I))
-c               SRCNON = 
-               RPRIME(I) = TRACCM*SOURCE
+
+               drdtau=((1.0-TRALYR(I))
+     &             *(BBASAV(I)-BBSAV(I))*XXSAV(I))
+     &             +((EMSV(I)-RADO(I))*TRALYR(I))*TRACCM
+
+               srcnon=drdtau*dtaudT(i)
+
+               drdb = (1.-TRALYR(I))*TRACCM
+
+               dbdT = bbdsav(i)+fsav(i)*
+     &             ((bbdLsav(i)*dtudtave)-bbdsav(i))
+
+               source = drdb*dbdT
+
+               RPRIME(I) = srcnon + source
+
  20         CONTINUE
          ELSE
             DO 30 I = 1, NLIM
                vtest = v1po + dvpo*(i-1)
-c               Y  = 1./(1.+XXSAV(I))
-c               YZ = Y*AA*(BBASAV(I)-BBSAV(I))
-               SOURCE = BBDSAV(I)*(1.-TRALYR(I))
-c               SRCNON = 
-               RPRIME(I) = SOURCE
+
+               drdtau=((1.0-TRALYR(I))
+     &             *(BBASAV(I)-BBSAV(I))*XXSAV(I))
+     &             +((EMSV(I)-RADO(I))*TRALYR(I))
+
+               srcnon=drdtau*dtaudT(i)
+
+               drdb = (1.-TRALYR(I))
+
+               dbdT = bbdsav(i)+fsav(i)*
+     &             ((bbdLsav(i)*dtudtave)-bbdsav(i))
+
+               source = drdb*dbdT
+
+               RPRIME(I) = srcnon + source
+
  30         CONTINUE
          ENDIF
+
+c for upwelling, add contribution from 'backside' downwelling term
+c  rftrm = refl*T(0,L)
+c  addnw = dr/dtemp for downwelling
+c  emtrm = (emis*Bsfc + refl*Bdwn)*T(0,L)
+c dtaudT = dtau / dtemp
+c T(0,L) = H1 to H2 transmission (e.g. surface to space)
+
+         if (idwn.eq.1) then
+             do i=1,nlim
+                 rprime(i)=rprime(i)+(rftrm(i)*addnw(i)
+     &               -emtrm(i)*dtaudT(i))
+             enddo
+         endif
+
       ELSEIF (IPATHL.EQ.2) THEN
-         STOP 'TDERIV NOT SET FOR IPATHL = 2'
-c      ELSEIF (IPATHL.EQ.3) THEN
-c         STOP 'TDERIV NOT SET FOR IPATHL = 3'
-      ELSEIF (IPATHL.EQ.-1) THEN
-         STOP 'TDERIV NOT SET FOR IPATHL = -1'
+         STOP 'TDERIV NOT SET FOR IPATHL = 2'  ! limb case
       ENDIF
 C
       RETURN
@@ -6981,8 +7356,8 @@ C                                                                         H31130
       COMMON /EMIHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       H31140
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   H31150
      *                EMISIV,FSCDID(17),NMOL,LAYDUM,YI1,YID(10),LSTWDF    H31160
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac
 c
       character*1 surf_refl
       character*3 pad_3
@@ -7198,8 +7573,8 @@ C                                                                         H33170
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),        H33180
      *               WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,    H33190
      *               EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF     H33200
-      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
-     *    angle_path, secant_diffuse, secant_path, diffuse_fac
+      COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
+     &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac
 c
       character*1 surf_refl
       character*3 pad_3
