@@ -431,7 +431,7 @@ C                                                                         M03230
       REWIND LFILE                                                        M03240
       CALL SKIPFL (LSKIPF,LFILE,IEOF)                                     M03250
       IEOF = LSKIPF                                                       M03260
-      CALL BUFIN (LFILE,LEOF,1,NFHDRF,PLTHDR)                             M03270
+      CALL BUFIN (LFILE,LEOF,PLTHDR(1),NFHDRF)                            M03270
 C                                                                         M03280
       ICNTNM = MOD(IXSCNT,10)                                             M03290
       IXSECT = IXSCNT/10                                                  M03300
@@ -499,7 +499,7 @@ C                                                                         M03780
             V2V = V2                                                      M03920
             ISCAN = ISCAN+1000                                            M03930
             IF (I4P.EQ.1) DVT = DVT/4.                                    M03940
-            CALL BUFOUT (JPLTFL,1,NFHDRF,PLTHDR)                          M03950
+            CALL BUFOUT (JPLTFL,PLTHDR(1),NFHDRF)                         M03950
             V1V = V1S                                                     M03960
             V2V = V2S                                                     M03970
             DVT = DVS                                                     M03980
@@ -563,13 +563,13 @@ C                                                                         M04390
          GO TO 230                                                        M04560
       ENDIF                                                               M04570
 C                                                                         M04580
-   40 CALL BUFIN (LFILE,LEOF,1,NPHDRF,PNLHDR)                             M04590
+   40 CALL BUFIN (LFILE,LEOF,PNLHDR(1),NPHDRF)                            M04590
       IF (LEOF.LE.0) GO TO 220                                            M04600
       IF (V2P.GE.V1) GO TO 50                                             M04610
-      CALL BUFIN (LFILE,LEOF,1,2,DUM)                                     M04620
+      CALL BUFIN (LFILE,LEOF,DUM(1),2)                                    M04620
       IF (ISCAN.GE.1) GO TO 40                                            M04630
       IF (MOD(IGO+1,3).NE.0) GO TO 40                                     M04640
-      CALL BUFIN (LFILE,LEOF,1,2,DUM)                                     M04650
+      CALL BUFIN (LFILE,LEOF,DUM(1),2)                                    M04650
       GO TO 40                                                            M04660
    50 NLO = J                                                             M04670
       NHI = NLIM+J-1                                                      M04680
@@ -577,12 +577,12 @@ C                                                                         M04580
       IF (ISCAN.GE.1) GO TO 60                                            M04700
       IF (MOD(IGO+1,3).NE.0) GO TO 60                                     M04710
       IF (MOD(IGO+1,6).EQ.0) GO TO 60                                     M04720
-      CALL BUFIN (LFILE,LEOF,1,2,DUM)                                     M04730
-   60 CALL BUFIN (LFILE,LEOF,NLO,NLIM,Y)                                  M04740
+      CALL BUFIN (LFILE,LEOF,DUM(1),2)                                    M04730
+   60 CALL BUFIN (LFILE,LEOF,Y(NLO),NLIM)                                 M04740
       IF (ISCAN.GE.1) GO TO 70                                            M04750
       IF (MOD(IGO+1,3).NE.0) GO TO 70                                     M04760
       IF (MOD(IGO+1,6).NE.0) GO TO 70                                     M04770
-      CALL BUFIN (LFILE,LEOF,1,2,DUM)                                     M04780
+      CALL BUFIN (LFILE,LEOF,DUM(1),2)                                    M04780
 C                                                                         M04790
    70 JMIN = J                                                            M04800
       JMAX = J                                                            M04810
@@ -802,7 +802,7 @@ C                                                                         M06690
       IJEOF = JSKIPF                                                      M06740
       ILEOF = LSKIPF                                                      M06750
       WRITE (IPR,900) JFILE                                               M06760
-      CALL BUFIN (JFILE,JEOF,1,NFHDRF,PLTHDR)                             M06770
+      CALL BUFIN (JFILE,JEOF,PLTHDR(1),NFHDRF)                            M06770
 C                                                                         M06780
       ICNTNM = MOD(IXSCNT,10)                                             M06790
       IXSECT = IXSCNT/10                                                  M06800
@@ -817,13 +817,13 @@ C                                                                         M06810
       WRITE (IPR,905)                                                     M06890
 C                                                                         M06900
       WRITE (IPR,930) LFILE                                               M06910
-      CALL BUFIN (LFILE,LEOF,1,NFHDRF,PLTHDR)                             M06920
+      CALL BUFIN (LFILE,LEOF,PLTHDR(1),NFHDRF)                            M06920
 C                                                                         M06930
       ICNTNM = MOD(IXSCNT,10)                                             M06940
       IXSECT = IXSCNT/10                                                  M06950
 C                                                                         M06960
       READ (COPT(IOPT-1),935) XID(10)                                     M06970
-      CALL BUFOUT (MFILE,1,NFHDRF,PLTHDR)                                 M06980
+      CALL BUFOUT (MFILE,PLTHDR(1),NFHDRF)                                M06980
       WRITE (IPR,905) XID,(YID(M),M=1,2)                                  M06990
       WRITE (IPR,910) LAYR1,NLAYER                                        M07000
       WRITE (IPR,915) SEC,P0,T0,DVT,V1V,V2V                               M07010
@@ -844,19 +844,19 @@ C                                                                         M06960
       NLIML = 0                                                           M07160
 C                                                                         M07170
    10 IF (J.GE.NLIMJ) THEN                                                M07180
-         CALL BUFIN (JFILE,JEOF,1,NPHDRF,PNLHDJ)                          M07190
+         CALL BUFIN (JFILE,JEOF,PNLHDJ(1),NPHDRF)                         M07190
          WRITE (IPR,950) V1PJ,V2PJ,DVJ,NLIMJ,JFILE,JEOF                   M07200
          IF (JEOF.LE.0.AND.M.NE.0) GO TO 50                               M07210
          IF (JEOF.LE.0) GO TO 60                                          M07220
-         CALL BUFIN (JFILE,JEOF,NLOW,NLIMJ,YJ)                            M07230
+         CALL BUFIN (JFILE,JEOF,YJ(NLOW),NLIMJ)                           M07230
          J = 0                                                            M07240
       ENDIF                                                               M07250
       IF (L.GE.NLIML) THEN                                                M07260
-         CALL BUFIN (LFILE,LEOF,1,NPHDRF,PNLHDL)                          M07270
+         CALL BUFIN (LFILE,LEOF,PNLHDL(1),NPHDRF)                         M07270
          WRITE (IPR,950) V1PL,V2PL,DVL,NLIML,LFILE,LEOF                   M07280
          IF (LEOF.LE.0.AND.M.NE.0) GO TO 50                               M07290
          IF (LEOF.LE.0) GO TO 60                                          M07300
-         CALL BUFIN (LFILE,LEOF,NLOW,NLIML,YL)                            M07310
+         CALL BUFIN (LFILE,LEOF,YL(NLOW),NLIML)                           M07310
          L = 0                                                            M07320
       ENDIF                                                               M07330
 C                                                                         M07340
@@ -954,8 +954,8 @@ C                                                                         M08210
       V1PJ = XX(1)                                                        M08260
       V2PJ = XX(NPTS)                                                     M08270
       NLIMJ = NPTS                                                        M08280
-      CALL BUFOUT (MFILE,1,NPHDRF,PNLHDJ)                                 M08290
-      CALL BUFOUT (MFILE,NLOW,NPTS,YY)                                    M08300
+      CALL BUFOUT (MFILE,PNLHDJ(1),NPHDRF)                                M08290
+      CALL BUFOUT (MFILE,YY(NLOW),NPTS)                                   M08300
       M = 0                                                               M08310
       IF (V2PJ.LT.V2) THEN                                                M08320
          V1PJ = V1PJS                                                     M08330
@@ -1896,8 +1896,8 @@ C                                                                         M17630
          NLOW = NLO-1                                                     M17680
          NLIM = NPTS-NLOW                                                 M17690
          IF (JOUT.LE.2) THEN                                              M17700
-            CALL BUFOUT (JPLTFL,1,NPHDRF,PNLHDR)                          M17710
-            CALL BUFOUT (JPLTFL,NLO,NPTS,YY)                              M17720
+            CALL BUFOUT (JPLTFL,PNLHDR(1),NPHDRF)                         M17710
+            CALL BUFOUT (JPLTFL,YY(NLO),NPTS)                             M17720
          ELSE                                                             M17730
             DO 10 II = NLO, NPTS                                          M17740
                VOUT = V1P+FLOAT(II-NLO)*DVP                               M17750
