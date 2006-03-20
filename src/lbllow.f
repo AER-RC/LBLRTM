@@ -2499,6 +2499,10 @@ c     initialize flag for buffering out and output layer count
       i_bufout = 1
       laycnt   = 1
 C                                                                        FL21560
+      do nv = 1,nlim
+         sumext(nv) = 0.
+      enddo
+
       DO 130 IK = IKLO, IKMAX                                            FL21570
          W7 = WPATH(IK,7)                                                FL21580
          W12 = WPATH(IK,12)                                              FL21590
@@ -2683,7 +2687,8 @@ c  _____________________________________________
          IF (((IEMISS.GE.1).OR.(IK.EQ.IKMAX)) ) THEN      
 
             if (i_bufout .eq. -1) then
-c     store absorption, scattering and asymmetry for layer reduction
+c     a thin layer has been identified
+c     obtain absorption, scattering and asymmetry for combined layer
                do 110 i=1,nlim
 
                   abst_st(i) = abst_st(i)+abst(i)

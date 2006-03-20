@@ -1172,7 +1172,7 @@ C                                                                         B05190
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),                B05210
      *            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),                B05220
      *            (JRAD,FSCDID(9)) , (XID(1),FILHDR(1))                   B05230
-c                                                                          D00540
+c                                   
       character*8 h_lncor1
 c
       data h_lncor1/' lncor1 '/
@@ -1832,17 +1832,10 @@ C                                                                         B11260
 C     V1P IS FIRST FREQ OF PANEL                                          B11270
 C     V2P IS LAST FREQ OF PANEL                                           B11280
 C                                                                         B11290
-C     If DVOUT (carried in from COMMON BLOCK /IODFLG/) is zero,
-C     then no interpolation is necessary.  For nozero DVOUT
-C     (in case of IOD>0 and IMRG=1), call PNLINT.
-C
       IF (DVOUT.EQ.0.) THEN                                               B11300
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B11310
          CALL BUFOUT (KFILE,R1(NLO),NLIM)                                 B11320
          CALL BUFOUT (KFILE,RR1(NLO),NLIM)                                B11320
-
-c for continuum derivative terms
-         call derivint(1,v1p,v2p,dvp,nlo,nlim,r1(nlo))
 C                                                                         B11330
          IF (NPTS.GT.0) CALL R1PRNT (V1P,DVP,NLIM,R1,NLO,NPTS,KFILE,
      *                               IENTER)                              B11340
@@ -1957,7 +1950,7 @@ c
 c
       data jrad4 /0/
 c     the fourth function is always computed without the radiation field
-CC                                                                         D00560
+C                                                                         D00560
 C     TEMPERATURES FOR LINE COUPLING COEFFICIENTS                         D00570
 C                                                                         D00580
       DATA TEMPLC / 200.0,250.0,296.0,340.0 /                             D00590
@@ -1981,6 +1974,7 @@ C                                                                         D00620
       DPTMN = DPTMIN/RADFN(V2,TAVE/RADCN2)                                D00670
       DPTFC = DPTFAC                                                      D00680
       LIMIN = 1000                                                        D00690
+c
       CALL CPUTIM(TPAT0)
       CALL MOLEC (1,SCOR,RHOSLF,ALFD1)                                    D00700
       CALL CPUTIM(TPAT1)

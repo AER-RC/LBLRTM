@@ -120,7 +120,7 @@ C                                                                        FA00870
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,        FA00950
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                     FA00960
 
-      COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
+      COMMON /c_drive/ ref_lat,hobs,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
 c
       character*1 jchar_st
@@ -398,7 +398,7 @@ C                                                                        FA03360
      *                ANGLEF,RANGEF,BETAF,LENF,V1,V2,RO,IPUNCH,XVBAR,    FA03460
      *                HMINF,PHIF,IERRF,HSPACE                            FA03470
 
-      COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
+      COMMON /c_drive/ ref_lat,hobs,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
 c
       character*1 jchar_st
@@ -458,10 +458,7 @@ C                                                                        FA03820
       DIMENSION XPBAR(NXPBAR),XZOUT(NXZOUT),WMT(MXMOL)                   FA03970
       DIMENSION TTMP(2),WVTMP(2),PTMP(2),ZTMP(2)
 
-c common block for layer-to-level analytical jacobians
-      common /dlaydlev/ilevdq,imoldq,iupdwn,
-     &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
-
+      COMMON /IADFLG/ NSPCRT,IMRGSAV
       dimension densave(mxzmd)
 C                                                                        FA03980
       EQUIVALENCE (PBAR(1),XPBAR(1)) , (ZOUT(1),XZOUT(1))                FA03990
@@ -554,7 +551,20 @@ C                                                                        FA04800
 C     READ CONTROL CARD 3.1                                              FA04810
 C                                                                        FA04820
          READ (IRD,900) MODEL,ITYPE,IBMAX_B,NOZERO,NOPRNT,NMOL,IPUNCH,   FA04830
-     *                  IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX,REF_LAT      FA04840
+     *                  IFXTYP,MUNITS,RE,HSPACE,XVBAR,dumrd,REF_LAT 
+
+c     check to see that a value for dumrd, formerly co2mx, 
+c     has not been entered. Specified mixing ratios and accumulated
+c     column amounts are now handled in lblrtm for all molecules.
+
+         if (dumrd .ne. 0.) then
+            write (*,*) ' - a value has been read for co2mx'
+            write (*,*) ' - this option has been replaced by a' 
+            write (*,*) '   similar option for all molecular species'
+            write (*,*) ' - see latest instructions  '
+            stop ' lblatm.f:  co2mx '
+         endif
+
          IBMAX = ABS(IBMAX_B)
       ENDIF                                                              FA04850
 C                                                                        FA04860
@@ -564,7 +574,7 @@ C                                                                        FA04860
       IF (NOPRNT.GE.0) THEN
          WRITE (IPR,902)                                                    FA04890
          WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA04900
-     *                   IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX,REF_LAT        FA04910
+     *                   IFXTYP,MUNITS,RE,HSPACE,XVBAR,REF_LAT 
       ENDIF
 c
       M = MODEL                                                          FA04940
@@ -573,13 +583,27 @@ c
       IF (M.LT.0.OR.M.GT.6) GO TO 290                                    FA04970
       IF (IBMAX.GT.IBDIM) GO TO 290                                      FA04980
       IF (NMOL.GT.KDIM) GO TO 290                                        FA04990
-      IF (IPUNCH.EQ.1) then
+
+      IF (IPUNCH.ge.1 .and. ipass.eq.0) then
+
 c        Tape7 only opened if ipu selected and first time through
-         if (ipass.eq.0) 
-     *          OPEN (UNIT=IPU,FILE='TAPE7',STATUS='UNKNOWN') 
-        ipass = ipass + 1
-      if (ipunch .eq. 1)
-     *  write (ipu,905) ipass, xid
+         ipass = 1
+         OPEN (UNIT=IPU,FILE='TAPE7',STATUS='UNKNOWN') 
+         write (ipu,905) ipass, xid
+      endif
+c
+      if (ipunch.eq.2 .and. ipass.eq.1) then
+
+c     open these files if derivatives are being calculated
+         ipass = 2
+         open (97,FILE='AJ_atmosphere',
+     *                          STATUS='UNKNOWN',FORM='UNFORMATTED')
+         write (97)    xid
+
+         if (IXSECT.GE.1) then
+            open (20,file='AJ_xs_amnts',
+     *                        status='unknown',form = 'unformatted')
+         endif
       endif
 c
       IF (RE.NE.0.0) GO TO 60                                            FA05010
@@ -600,7 +624,7 @@ C                                                                        FA05130
       IF (NOPRNT.GE.0) THEN
          WRITE (IPR,906)    
          WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA05150
-     *                   IFXTYP,MUNITS,RE,HSPACE,XVBAR,CO2MX,REF_LAT        FA05160
+     *                   IFXTYP,MUNITS,RE,HSPACE,XVBAR,REF_LAT              FA05160
       ENDIF
 C                                                                        FA05170
       IF (ITYPE.EQ.1) THEN                                               FA05180
@@ -699,7 +723,7 @@ C                                                                        FA05950
 C                                                                        FA06050
 C        > Write atmosphere to TAPE7 (in E15.7 format) <                 FA06060
 C                                                                        FA06070
-         IF (IPUNCH.EQ.1) THEN                                           FA06080
+         IF (IPUNCH.ge.1) THEN                                           FA06080
            IFORM = 1
            WRITE (IPU,924) IFORM,LMAX,NMOL,SECNT0,HMOD,RANGE,ZH          FA06090
 C
@@ -1226,11 +1250,16 @@ C                                                                        FA09490
             if (noprnt.ge.0) WRITE (IPR,970) (HMOLS(K),K=1,7),COTHER,
      *                                       (HMOLS(K),K=8,NMOL)     
          ENDIF                                                           FA09560
-         IF (IPUNCH.EQ.1) THEN                                           FA09570
+         IF (IPUNCH.ge.1) THEN                                           FA09570
             IFORM = 1
             WRITE (IPU,972) IFORM,LMAX,NMOL,SECNT0,(HMOD(I),I=1,2),      FA09580
      *                      H1,H2,ANGLE,LEN                              FA09590
          ENDIF
+
+         IF (IPUNCH.eq.2) THEN                                           FA09570
+            WRITE (97) LMAX,NMOL,SECNT0,(HMOD(I),I=1,2),H1,H2,ANGLE,LEN
+         ENDIF
+
          SUMN2 = 0.                                                      FA09600
          SUMRS = 0.                                                      FA09610
          PWTD = 0.                                                       FA09620
@@ -1307,7 +1336,7 @@ C
 C
 C           > Write atmosphere to TAPE7 <
 C
-            IF (IPUNCH.EQ.1) THEN                                        FA09890
+            IF (IPUNCH.ge.1) THEN                                        FA09890
                LTST = L                                                  FA09900
                IF (L.EQ.1) LTST = 0                                      FA09910
                PTST =  LOG10(PZ(LTST))                                   FA09920
@@ -1442,69 +1471,18 @@ C                                                                        FA10260
          HT1 = HT1SLT
          HT2 = HT2SLT
 C                                                                        FA10300
+c-----------------------------------------------------------
+c write to ATMOSPHERE file (97) information needed for level to layer calculation
+
+         if (ipunch.eq.2) then
+            write (97) ibmax,(pbar(l),tbar(l),l=1,ibmax-1)
+            write (97) (pbnd(l),tbnd(l),(denm(k,l),k=1,nmol),l=1,ibmax)
+            close (97)
+         endif
+c-----------------------------------------------------------
+
       ENDIF                                                              FA10310
 C                                                                        FA10320
-c-----------------------------------------------------------
-c compute layer-to-level conversion for analytical jacobians
-c pbar,tbar
-c only go into this if imoldq was set in lblrtm
-c 
-c note that the dqdl and dqdu arrays are indexed by mol-id
-c number with the "0" index eserved for temperature
-c
-      if (imoldq.eq.-99) then
-c          write(*,*) 'lay2lev in lblatm: ',ibmax,nmol
-          ilevdq=ibmax-1
-          imoldq=nmol
-          do 500 i=1,ilevdq
-
-              rhoU=pbnd(i+1)/(tbnd(i+1)*1.3806503E-19)
-              rhoL=pbnd(i)/(tbnd(i)*1.3806503E-19)
-              alpha=rhoU/rhoL
-              alphaT=-(tbnd(i+1)-tbnd(i))/alog(alpha)
-
-c molecules
-              do 501 k=1,nmol
-                  
-                  if (denm(k,i).ne.0.0) then
-
-                      ratU=denm(k,i+1)/rhoU
-                      ratL=denm(k,i)/rhoL
-
-                      dqdL(i,k)=(ratL/(ratL-alpha*ratU))
-     &                    +1.0/alog(alpha*ratU/ratL)
-
-                      dqdU(i,k)=((-alpha*ratU)/(ratL-alpha*ratU))
-     &                    -1.0/alog(alpha*ratU/ratL)
-
-c                      write(*,*) i,k,((dqdL(i,k)*ratL)
-c     &                    +(dqdU(i,k)*ratU)),
-c     &                    ratL,ratU
-c                      write(*,*) '      ',denm(k,i+1),rhoU
-c                      write(*,*) '      ',denm(k,i),rhoL
-
-                  else
-                      dqdL(i,k)=0.0
-                      dqdU(i,k)=0.0
-                  endif
-
-  501         continue
-
-c temperature
-              dqdL(i,0)=((tbar(i)-alphaT)/tbnd(i))
-     &            *(rhoL/(rhoL-rhoU))
-     &            +(1.0-alphaT/tbnd(i))/alog(alpha)
-
-              dqdU(i,0)=((tbar(i)-alphaT)/tbnd(i+1))
-     &                  *(-rhoU/(rhoL-rhoU))
-     &            -(1.0-alphaT/tbnd(i+1))/alog(alpha)
-
-c              write(*,*) 'T: ',dqdl(i,0),dqdu(i,0)
-              
-  500     continue
-      endif
-c-----------------------------------------------------------
-
       RETURN                                                             FA10330
 C                                                                        FA10340
 C     ERROR MESSAGES                                                     FA10350
@@ -1542,8 +1520,8 @@ C                                                                        FA10530
      *        I5,/,10X,'NMOL    = ',I5,/,10X,'IPUNCH  = ',I5,/,10X,      FA10580
      *        'IFXTYP  = ',I5,/,10X,'MUNITS  = ',I5,/,10X,'RE      = ',  FA10590
      *        F10.3,' KM',/,10X,'HSPACE  = ',F10.3,' KM',/,10X,          FA10600
-     *        'VBAR    = ',F10.3,' CM-1',/,10X,'CO2MX   = ',
-     *        F10.3,' PPM',/,10X,'REF_LAT = ',F10.3, ' DEG')             FA10610
+     *        'VBAR    = ',F10.3,' CM-1',
+     *                     /,10X,'REF_LAT = ',F10.3, ' DEG') 
   905 format('$',i5, 10a8)
   906 FORMAT (///,' CONTROL CARD 3.1 PARAMETERS WITH DEFAULTS:')         FA10620
   908 FORMAT (///,' HORIZONTAL PATH SELECTED')                           FA10630
@@ -2900,11 +2878,11 @@ C                                                                        FA23620
       COMMON /MSCONS/ AIRMSS(MXLAY),TGRND,SEMIS(3),HMINMS,HMAXMS,        FA23720
      *                MSFLAG,MSWIT,IODFIL,MSTGLE                         FA23730
 
-      COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
+      COMMON /c_drive/ ref_lat,hobs,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
 c common block for layer-to-level analytical jacobians
-      common /dlaydlev/ilevdq,imoldq,iupdwn,
-     &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
+      common /dlaydlev/ilevdx,imoldx,iupdwn,
+     &    dxdL(mxlay,0:mxmol),dxdU(mxlay,0:mxmol)
 c
       character*1 jchar_st
 c      
@@ -2935,11 +2913,6 @@ C     ZST /MLATM/ ORIGINAL LBLRTM ALTITUDES                              FA23970
 C                                                                        FA23980
       IF (MDL.EQ.0) GO TO 40                                             FA23990
       IF (MDL.GE.1) IMMAX = 50                                           FA24000
-c
-c     set scaling factor, co2rat, to adjust model vmr (ppm) to that specified
-      co2rat = 1.
-      if (co2mx .gt. 0.) co2rat = co2mx/330.
-c
       DO 30 I = 1, IMMAX                                                 FA24010
          ZMDL(I) = ALT(I)                                                FA24020
          PM(I) = PMDL(I,MDL)                                             FA24030
@@ -2973,7 +2946,7 @@ C                                                                        FA24180
 C                                                                        FA24210
    40 CALL NSMDL (ITYPE,MDL)
 C                                                                        FA24230
-      if (imoldq.eq.-99) then
+      if (imoldx.eq.-99) then
           if (immax.ne.ibmax) then
               write(ipr,*) 'Error in Atmosphere Specification:'
               write(ipr,*) '   Desired levels must match input grid'
@@ -3036,7 +3009,7 @@ C                                                                        FA24710
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,       FA24730
      *              NLTEFL,LNFIL4,LNGTH4                                 FA24740
 
-      COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
+      COMMON /c_drive/ ref_lat,hobs,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
 c
       character*1 jchar_st
@@ -3087,7 +3060,7 @@ C                                                                        FA25130
 C                                                                        FA25150
 C     CONVERSION OF GENERIC UNITS TO DENSITIES FOR LBLRTM RUNS           FA25200
 C                                                                        FA25210
-         CALL CONVRT (PM(IM),TM(IM),JUNIT,WMOL,IM,NMOL,NOPRNT,co2mx)
+         CALL CONVRT (PM(IM),TM(IM),JUNIT,WMOL,IM,NMOL,NOPRNT)
 C                                                                        FA25240
          DENW(IM) = DENM(1,IM)                                           FA25250
    20 CONTINUE                                                           FA25270
@@ -3269,7 +3242,7 @@ C                                                                        FA24900
 c
       COMMON /MCHAR/ JCHAR(MXMOL),JCHARP,JCHART,JLONG                    FA26710
 
-      COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_dum,
+      COMMON /c_drive/ ref_lat,hobs,ibmax_b,immax_dum,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
 c
       character*1 jchar_st
@@ -3834,7 +3807,7 @@ C
 C     ----------------------------------------------------------------
 C
       
-      SUBROUTINE CONVRT (P,T,JUNIT,WMOL,IM,NMOL,NOPRNT,co2mx)
+      SUBROUTINE CONVRT (P,T,JUNIT,WMOL,IM,NMOL,NOPRNT)
 C                                                                        FA30050
 C*************************************************************           FA30060
 C                                                                        FA30070
@@ -3934,9 +3907,6 @@ C
          ENDIF                                                           FA30840
 C                                                                        FA30850
  70   CONTINUE                                                           FA30860
-c
-c     set the co2 mixing ratio to specified value
-      if (co2mx .gt. 0.)  denm(2,im) = co2mx*dryair(im)*1.e-06
 C                                                                        FA30870
   900 FORMAT (/,'   **** ERROR IN CONVRT ****, JUNIT(',I5,') = ',I5)     FA30880
 C                                                                        FA30890
@@ -6313,7 +6283,7 @@ C                                                                        FX02470
 C     CROSS-SECTION AMOUNTS ARE NOW IN XAMNT. PRINT THEM OUT.            FX02480
 C                      (in E15.7 format)
 C                                                                        FX02490
-      IF (IPUNCH.EQ.1) THEN                                              FX02500
+      IF (IPUNCH.ge.1) THEN                                              FX02500
          IFRMX = 1
          WRITE (IPU,940) IXMOLS,IXSBIN                                   FX02510
          WRITE (IPU,945) (XSNAME(K),K=1,7),HOTHER,(XSNAME(K),K=8,NMOL)   FX02520
@@ -6388,7 +6358,7 @@ C
             XAMNTT(K) = XAMNTT(K)+FAC*XAMNT(K,L)                         FX02780
   120    CONTINUE                                                        FX02790
 C                                                                        FX02800
-         IF (IPUNCH.EQ.1.AND.ITYPE.NE.1) THEN                            FX02810
+         IF (IPUNCH.ge.1.AND.ITYPE.NE.1) THEN                            FX02810
             LTST = L                                                     FX02820
             IF (L.EQ.1) LTST = 0                                         FX02830
             PTST =  LOG10(PZ(LTST))                                      FX02840
@@ -6451,6 +6421,21 @@ C
          ENDIF                                                           FX03020
 C                                                                        FX03030
   130 CONTINUE                                                           FX03040
+c
+c_______________________________________________________________________ 
+c     write cross sections to ifil_xs = 20 for derivatives
+
+      if (ipunch.eq.2) then
+
+         open (20,file='AJ_xs_amnts',
+     *                        status='unknown',form = 'unformatted')
+         write (20) IXMAX,IXMOLS,
+     *        ( IXINDX(mol),(XAMNT(mol,l),l=1,nlayrs),mol=1,ixmols )
+
+         close (20)
+
+      endif
+c_______________________________________________________________________ 
 C                                                                        FX03050
 C     > Write atmosphere to TAPE6 in mixing ratio <
 C
@@ -6563,7 +6548,7 @@ C     LAMCHN CARRIES HARDWARE SPECIFIC PARAMETERS                        FX03750
 C                                                                        FX03760
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                          FX03770
 
-      COMMON /c_drive/ ref_lat,hobs,co2mx,ibmax_b,immax_b,
+      COMMON /c_drive/ ref_lat,hobs,ibmax_b,immax_b,
      *                 lvl_1_2,jchar_st(10,2),wm(mxzmd)
 c
       character*1 jchar_st

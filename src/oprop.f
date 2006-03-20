@@ -145,7 +145,8 @@ C                                                                         B01020
      *            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),                B01040
      *            (JRAD,FSCDID(9)) , (IMRG,FSCDID(11)),                   B01050
      *            (IATM,FSCDID(15)) , (YI1,IOD) , (XID(1),FILHDR(1)),     B01060
-     *            (V1P,IWD(1)) , (NPNLXP,LSTWDX)                          B01070
+     *            (V1P,IWD(1)) , (NPNLXP,LSTWDX),                          B01070
+     *            (YID(10),LTNSAV, dv_lbl) 
       EQUIVALENCE (R1(1), RR1(2049)),(R2(1),RR2(1025)),(R3(1),RR3(129))
 C                                                                         B01080
 C
@@ -363,10 +364,10 @@ C
             IF (OP) CLOSE (KFILE)
             OPEN (KFILE,FILE=KODLYR,FORM=CFORM,STATUS='UNKNOWN')
             REWIND KFILE
-            DVSAV = DV
+            dv_lbl = DV
             DV = DVOUT
             CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
-            DV = DVSAV
+            DV = dv_lbl
             IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3
          ELSEIF (IMRG.GE.40) THEN
             DVSAV = DV
@@ -1213,8 +1214,8 @@ C                                                                         B08360
                   STRD = STRD*CLC1*DPTRAT                                 B08410
                   STRVER = STRVER*CLC1*DPTRAT                             B08420
 C                                                                         B08430
-C                                                                         B08440
                   DO 20 J1 = JMIN1, JMAX1                                 B08450
+c
                      J2 = J1-J2SHFT                                       B08460
                      J3 = J1-J3SHFT                                       B08470
                      ZF3L = ZF3L+ZSLOPE                                   B08480
@@ -1392,16 +1393,9 @@ C                                                                         B11260
 C     V1P IS FIRST FREQ OF PANEL                                          B11270
 C     V2P IS LAST FREQ OF PANEL                                           B11280
 C                                                                         B11290
-C     If DVOUT (carried in from COMMON BLOCK /IODFLG/) is zero,
-C     then no interpolation is necessary.  For nozero DVOUT
-C     (in case of IOD=1,3), call PNLINT.
-C
       IF (DVOUT.EQ.0.) THEN                                               B11300
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B11310
          CALL BUFOUT (KFILE,R1(NLO),NLIM)                                 B11320
-
-c for continuum derivative terms
-         call derivint(1,v1p,v2p,dvp,nlo,nlim,r1(nlo))
 C                                                                         B11330
          IF (NPTS.GT.0) CALL R1PRNT (V1P,DVP,NLIM,R1,NLO,NPTS,KFILE,
      *                               IENTER)                              B11340
@@ -1438,159 +1432,7 @@ C                                                                         B11690
 C                                                                         B11710
       END                                                                 B11720
 c______________________________________________________________________________
-      subroutine derivint(iflg,v1p,v2p,dvp,nlo,npts,r1)
 c
-c interpolate continuum derivative terms to appropriate grid
-c and write to TAPE81
-c
-c if iflg = 0, no interpolation necessary
-c
-      implicit real*8 (v)
-      parameter (mxmol=38)
-
-
-c------------------------------------
-c for analytic derivative calculation
-c note: from continuum module
-c          ipts  = same dimension as ABSRB
-c          ipts2 = same dimension as C
-      parameter (ipts=5050,ipts2=6000,ipnl=2400)
-      common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,
-     &    dqh2oC(ipts),dTh2oC(ipts),dUh2o,
-     &    dqco2C(ipts),dTco2C(ipts),
-     &    dqo3C(ipts),dTo3C(ipts),
-     &    dqo2C(ipts),dTo2C(ipts),
-     &    dqn2C(ipts),dTn2C(ipts)
-
-      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
-     *              NLNGTH,KDUMM,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
-     *              NLTEFL,LNFIL4,LNGTH4
-
-c use this for easy bufout of panel header
-      common /dummy/v1px,v2px,dvpx,nout
-
-      dimension r1(*)
-      real pnlhdr(2)
-      real dout(ipnl)
-      equivalence (v1px,pnlhdr(1))
-c-----------------------------------------------------------------
-
-c skip entirely if not derivative calculation
-      if (icflg.eq.-999) return
-
-      v1px=v1p
-      v2px=v2p
-      dvpx=dvp
-
-c temperature derivative
-      if (icflg.eq.0) then
-          do i=nlo,npts
-              dout(i)=0.0
-          enddo
-
-c partial of continuum w.r.t. temperature
-          if (iflg.eq.0) then
-              do i=nlo,npts
-                  dout(i)=dout(i)+dTh2oC(i)+dTco2C(i)
-     &                +dTo3C(i)+dTo2C(i)+dTn2C(i)
-              enddo
-          else
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dTh2oC,1.,
-     &            v1p,dvp,dout,nlo,npts)
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dTco2C,1.,
-     &            v1p,dvp,dout,nlo,npts)
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dTo3C,1.,
-     &            v1p,dvp,dout,nlo,npts)
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dTo2C,1.,
-     &            v1p,dvp,dout,nlo,npts)
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dTn2C,1.,
-     &            v1p,dvp,dout,nlo,npts)
-          endif
-      endif
-
-c partial of continuum w.r.t. h2o
-      if (icflg.eq.1) then
-          do i=nlo,npts
-              dout(i)=r1(i)+r1(i)*dUh2o
-          enddo
-          if (iflg.eq.0) then
-              do i=nlo,npts
-                  dout(i)=dout(i)+dqh2oC(i)
-              enddo
-          else
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dqh2oC,1.,
-     &            v1p,dvp,dout,nlo,npts)
-          endif
-      endif
-
-c partial of continuum w.r.t. co2
-      if (icflg.eq.2) then
-          do i=nlo,npts
-              dout(i)=r1(i) !0.0
-          enddo
-          if (iflg.eq.0) then
-              do i=nlo,npts
-                  dout(i)=dout(i)+dqco2C(i)
-              enddo
-          else
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dqco2C,1.,
-     &            v1p,dvp,dout,nlo,npts)
-          endif
-      endif
-
-c partial of continuum w.r.t. o3
-      if (icflg.eq.3) then
-          do i=nlo,npts
-              dout(i)=r1(i) !0.0
-          enddo
-          if (iflg.eq.0) then
-              do i=nlo,npts
-                  dout(i)=dout(i)+dqo3C(i)
-              enddo
-          else
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dqo3C,1.,
-     &            v1p,dvp,dout,nlo,npts)
-          endif
-      endif
-
-c partial of continuum w.r.t. o2
-      if (icflg.eq.7) then
-          do i=nlo,npts
-              dout(i)=r1(i) !0.0
-          enddo
-          if (iflg.eq.0) then
-              do i=nlo,npts
-                  dout(i)=dout(i)+dqo2C(i)
-              enddo
-          else
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dqo2C,1.,
-     &            v1p,dvp,dout,nlo,npts)
-          endif
-      endif
-
-c partial of continuum w.r.t. n2
-      if (icflg.eq.22) then
-          do i=nlo,npts
-              dout(i)=r1(i) !0.0
-          enddo
-          if (iflg.eq.0) then
-              do i=nlo,npts
-                  dout(i)=dout(i)+dqn2C(i)
-              enddo
-          else
-              CALL XINT(V1ABSc,V2ABSc,DVABSc,dqn2C,1.,
-     &            v1p,dvp,dout,nlo,npts)
-          endif
-      endif
-
-      nout=npts-nlo+1
-
-      CALL BUFOUT(IUF,PNLHDR(1),NPHDRF)
-      CALL BUFOUT(IUF,DOUT(NLO),NOUT)
-
-      return
-      end
-c______________________________________________________________________________
       SUBROUTINE PNLINT (R1,IENTER)                                       B11730
 C                                                                         B11740
       IMPLICIT REAL*8           (V)                                     ! B11750
@@ -1671,16 +1513,13 @@ C     1/1 ratio only                                                      B12350
 C                                                                         B12360
       IF (ATYPE.EQ.0.) THEN                                               B12370
          CALL PMNMX (R1,NLIM,RMIN,RMAX)                                   B12380
+c
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B12390
          CALL BUFOUT (KFILE,R1(1),NLIM)                                   B12400
 C                                                                         B12410
          IF (NPTS.GT.0) CALL R1PRNT (V1P,DVP,NLIM,R1,1,NPTS,KFILE,
      *                               IENTER)                              B12420
 C                                                                         B12430
-c for continuum derivative terms
-         nlo=1
-         call derivint(0,v1p,v2p,dvp,nlo,nlim,r1(1))
-
          GO TO 40                                                         B12440
       ENDIF                                                               B12460
 C                                                                         B12470
@@ -1794,12 +1633,9 @@ C           outgoing panel
 C
       IF (NLIM2.EQ.LIMOUT.OR.ILAST.EQ.1) THEN                             B13220
          CALL PMNMX (R1OUT,NLIM2,RMINO,RMAXO)                             B13230
+C
          CALL BUFOUT (KFILE,PNLHDO(1),NPHDRF)                             B13240
          CALL BUFOUT (KFILE,R1OUT(1),NLIM2)                               B13250
-
-c for continuum derivative terms
-         nlo=1
-         call derivint(1,v1pO,v2pO,dvpO,nlo,nlim2,r1out(1))
 
          IF (NPTS.GT.0) CALL R1PRNT (V1PO,DVOUT,NLIM2,R1OUT,1,NPTS,
      *        KFILE,IENTER)                                               B13260
@@ -4183,6 +4019,149 @@ C                                                                         E02350
       RETURN                                                              E02360
 C                                                                         E02370
       END                                                                 E02380
+c______________________________________________________________________
+c
+      subroutine xs_set (v1,v2)
+C                                                                         E00020
+      IMPLICIT REAL*8           (V)                                     ! E00030
+C                                                                         E00040
+C**********************************************************************   E00050
+C     THIS SUBROUTINE READS IN THE DESIRED "CROSS-SECTION"                E00060
+C     MOLECULES WHICH ARE THEN MATCHED TO THE DATA CONTAINED              E00070
+C     ON INPUT FILE FSCDXS for the analytic Jacobian option
+C**********************************************************************   E00090
+C                                                                         E00100
+C     IFIL CARRIES FILE INFORMATION                                       E00110
+C                                                                         E00120
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
+C
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         E00130
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        E00140
+     *              NLTEFL,LNFIL4,LNGTH4                                  E00150
+C                                                                         E00160
+C     IXMAX=MAX NUMBER OF X-SECTION MOLECULES, IXMOLS=NUMBER OF THESE     E00170
+C     MOLECULES SELECTED, IXINDX=INDEX VALUES OF SELECTED MOLECULES       E00180
+C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     E00190
+C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         E00200
+C     MOLECULES.                                                          E00210
+C                                                                         E00220
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(38),XAMNT(38,MXLAY)              E00230
+C                                                                         E00240
+C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         E00250
+C     FOR THE CROSS-SECTION MOLECULES.                                    E00260
+C     XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES          E00270
+C                                                                         E00280
+c%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat
+      CHARACTER*10 XSFILE,XSNAME,ALIAS,XNAME,XFILS(6),BLANK               E00290
+      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               E00300
+      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           E00310
+     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               E00320
+     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                E00325
+C                                                                         E00330
+      DIMENSION IXFLG(38)                                                 E00340
+C                                                                         E00350
+      CHARACTER*120 XSREC                                                 E00360
+      CHARACTER*1 CFLG,CASTSK,CPRCNT,CFRM,CN,CF                           E00370
+      EQUIVALENCE (CFLG,XSREC)                                            E00380
+C                                                                         E00390
+      DATA CASTSK / '*'/,CPRCNT / '%'/,CN / 'N'/,CF / 'F'/                E00400
+      DATA BLANK / '          '/                                          E00410
+C                                                                         E00411
+C     T296 IS TEMPERATURE FOR INITAL CALCULATIN OF DOPPLER WIDTHS         E00412
+C                                                                         E00413
+      DATA T296 / 296.0 /                                                 E00414
+C                                                                         E00420
+      IXMAX = 38                                                          E00430
+
+      xv1 = v1
+      xv2 = v2
+C                                                                         E00870
+C     READ IN "CROSS SECTION" MASTER FILE FSCDXS                          E00880
+C                                                                         E00890
+      IXFIL = 8                                                           E00900
+      OPEN (IXFIL,FILE='FSCDXS',STATUS='OLD',FORM='FORMATTED',
+     *       IOSTAT=iostat)
+        if (IOSTAT.gt.0) stop 'FSCDXS does not exist - oprop.f'
+      REWIND IXFIL                                                        E00920
+      READ (IXFIL,905)                                                    E00930
+C                                                                         E00940
+   50 READ (IXFIL,910,END=80) XSREC                                       E00950
+C                                                                         E00960
+      IF (CFLG.EQ.CASTSK) GO TO 50                                        E00970
+      IF (CFLG.EQ.CPRCNT) GO TO 80                                        E00980
+C                                                                         E00990
+      READ (XSREC,915) XNAME,V1X,V2X,DVX,NTEMP,IFRM,CFRM,                 E01000
+     *                 (XFILS(I),I=1,NTEMP)                               E01010
+C                                                                         E01020
+C     LEFT-JUSTIFY INPUTED NAME                                           E01030
+C                                                                         E01040
+      CALL CLJUST (XNAME,10)                                              E01050
+C                                                                         E01060
+C     CHECK MASTER FILE FOR CROSS SECTION AND STORE DATA                  E01070
+C                                                                         E01080
+      NUMXS = IXMOLS                                                      E01090
+      DO 70 I = 1, IXMOLS                                                 E01100
+         IF ((XNAME.EQ.ALIAS(1,IXINDX(I))) .OR.                           E01110
+     *       (XNAME.EQ.ALIAS(2,IXINDX(I))) .OR.                           E01120
+     *       (XNAME.EQ.ALIAS(3,IXINDX(I))) .OR.                           E01130
+     *       (XNAME.EQ.ALIAS(4,IXINDX(I)))) THEN                          E01140
+            IXFLG(I) = 1                                                  E01150
+            IF (V2X.GT.XV1.AND.V1X.LT.XV2) THEN                           E01160
+               NSPECR(I) = NSPECR(I)+1                                    E01170
+               IF (NSPECR(I).GT.6) THEN                                   E01180
+                  WRITE (IPR,920) I,XSNAME(I),NSPECR(I)                   E01190
+                  STOP ' XSREAD - NSPECR .GT. 6'                          E01200
+               ENDIF                                                      E01210
+               IXFORM(NSPECR(I),I) = 91                                   E01220
+               IF (IFRM.EQ.86) IXFORM(NSPECR(I),I) = IFRM                 E01230
+               IF (CFRM.NE.CN)                                            E01240
+     *             IXFORM(NSPECR(I),I) = IXFORM(NSPECR(I),I)+100          E01250
+               IF (CFRM.EQ.CF)                                            E01260
+     *             IXFORM(NSPECR(I),I) = -IXFORM(NSPECR(I),I)             E01270
+               NTEMPF(NSPECR(I),I) = NTEMP                                E01280
+               V1FX(NSPECR(I),I) = V1X                                    E01290
+               V2FX(NSPECR(I),I) = V2X                                    E01300
+C                                                                         E01301
+C     3.58115E-07 = SQRT( 2.* LOG(2.)*AVOGAD*BOLTZ/(CLIGHT*CLIGHT) ) 
+C                                                                         E01303
+               XDOPLR(NSPECR(I),I)=3.58115E-07*(0.5*(V1X+V2X))*           E01304
+     *                             SQRT(T296/XSMASS(IXINDX(I)))           E01305
+C                                                                         E01306
+               DO 60 J = 1, NTEMP                                         E01310
+                  XSFILE(J,NSPECR(I),I) = XFILS(J)                        E01320
+   60          CONTINUE                                                   E01330
+            ENDIF                                                         E01340
+         ENDIF                                                            E01350
+   70 CONTINUE                                                            E01360
+C                                                                         E01370
+      GO TO 50                                                            E01380
+C                                                                         E01390
+   80 IXFLAG = 0                                                          E01400
+      DO 90 I = 1, IXMOLS                                                 E01410
+         IF (IXFLG(I).EQ.0) THEN                                          E01420
+            WRITE (IPR,925) XSNAME(I)                                     E01430
+            IXFLAG = 1                                                    E01440
+         ENDIF                                                            E01450
+   90 CONTINUE                                                            E01460
+      IF (IXFLAG.EQ.1) STOP ' IXFLAG - XSREAD '                           E01470
+C                                                                         E01480
+      RETURN                                                              E01490
+C                                                                         E01500
+  900 FORMAT (/,'  THE NAME: ',A10, ' IS NOT ONE OF THE ',                E01510
+     *        'CROSS SECTION MOLECULES. CHECK THE SPELLING.')             E01520
+  905 FORMAT (/)                                                          E01530
+  910 FORMAT (A120)                                                       E01540
+  915 FORMAT (A10,2F10.4,F10.8,I5,5X,I5,A1,4X,6A10)                       E01550
+  920 FORMAT (/,'******* ERROR IN xs_set ** MOLECULE SECLECTED -',A10,    E01560
+     *        '- HAS ',I2,' SPECTRAL REGIONS ON FILE FSCDXS, BUT THE',    E01570
+     *        ' MAXIMUM ALLOWED IS 6 *******',/)                          E01580
+  925 FORMAT (/,'******* MOLECULE SELECTED -',A10,'- IS NOT FOUND ON',    E01590
+     *        ' FILE FSCDXS *******',/)                                   E01600
+C                                                                         E01610
+      END                                                                 E01620
+c______________________________________________________________________
+c
       SUBROUTINE XSECTM (IFST,IR4)                                        E02390
 C                                                                         E02400
       IMPLICIT REAL*8           (V)                                     ! E02410
@@ -5800,9 +5779,9 @@ c
       ENDIF 
 c
       IF(MOL.EQ.34) THEN 
-c...not applicable to O
-      gi=0
-      QT = 0.
+c...not applicable to O; set to 1
+      gi=1
+      QT = 1.
       go to 100
       ENDIF 
 c
@@ -5828,7 +5807,15 @@ C
 C 
  100  continue
 c
-      if (QT .le. 0.) stop ' partition sum less than 0.'
+      if (QT .le. 0.) then 
+
+         Write(*,900) MOLID(Mol), mol, iso, iso82(mol,iso),Temp, QT, gi
+ 900     format(5x,A6, 2i4,i8,
+     *        '   Q(',f7.1,' K) = ',1pE12.6,5x,0pf7.1)
+
+      stop ' partition sum less than 0.'
+
+      endif
 c
 c      if(QT .gt. 0.) then
 c        Write(*,900) MOLID(Mol), mol, iso, iso82(mol,iso),Temp, QT, gi
@@ -10219,10 +10206,6 @@ c
       ENDIF 
    50 CONTINUE
   100 CONTINUE
-c
-ccc      write(2,*) 'F1, F2, F3, H1, H2, H3 =',B(J-2),B(J-1),B(J),
-ccc     + A(J-2), A(J-1), A(J)
-ccc      write(2,*) 'A0, A1, A2, bb =',A0,A1,A2,bb
 c
       RETURN
       END 
