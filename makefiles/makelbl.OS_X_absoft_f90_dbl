@@ -12,7 +12,7 @@ PLATFORM = OS_X (Absoft)
 
 FC = f90
 FCFLAG = -s -O -N11 -i8 -N113  
-OUTPUT = lblrtm_v9.4_f90_OS_X_dbl
+OUTPUT = lblrtm_v10.0_f90_OS_X_dbl
 CPATH = src
 CDOTO = os_x_dbl.o
 

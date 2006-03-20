@@ -11,7 +11,7 @@ PLATFORM = IBM
 
 FC = f77
 FCFLAG = -O -L/u/bobk/AER/aer_lblrtm -ltimedate
-OUTPUT = lblrtm_v6.12_f77_sgl
+OUTPUT = lblrtm_v10.0_f77_sgl
 CPATH = src
 CDOTO = sgl.o
 
