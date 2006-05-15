@@ -1,4 +1,23 @@
 
+LBLRTM_v10.0
+
+1) Modified the Analytic Jacobian calculations to be more efficient and accurate.
+   (S.A. Clough)
+
+2) Added the capability to scale the molecular profile values
+   (S.A. Clough)
+
+3) MT_CKD_v1.3 : Modified CO2 continuum based primarly on LBLRTM validations with SHIS/TES/AIRS observations
+   (M.W. Shephard)
+
+4) Correction for horizontal propagation with aerosols for any altitude above 1 m (0.001 km).
+   (T. Scharlemann and S.A. Clough)   
+
+5) Modified LBLRTM implementation of TIPS so that it can handle molecules with HITRAN
+   molecule numbers larger than 33.
+   (S.A. Clough and M.W. Shephard)
+
+
 LBLRTM_v9.4
 
 1) Fixed a minor bug in the hydrostatic calculation where a variable name was
@@ -17,9 +36,6 @@ LBLRTM_v9.2
 1) A correction to the collision induced nitrogen absorption in the 0-350 cm-1 region
    has been implemented.  The magnitude of the increase is ~35% from 0 to 250 cm-1.
    (S.A. Clough and R. Tipping)
-
-2) A number of programming bugs have been corrected.
-   (S.A. Clough)
 
 LBLRTM_v9.1
 
