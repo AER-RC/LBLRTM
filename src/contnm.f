@@ -285,14 +285,21 @@ c
                VJ = V1C+DVC* REAL(J-1)                                    F00860
                C(J) = FCO2(J)*WCO2
 
-c****2.4.+++  The co2 continuum has been increased by a factor of 7. in the 
-c                   nu2 band
+c****2.4.+++  The co2 continuum had been increased by a factor of 7.0 from
+c             the values in the data statements for the nu2 band. 
+c             This change is based on U  Wisc0nsin AERI_xr at ARM NSA site
+c             the AFWEX (DC-8) measurement.
 
+c**mt_ckd_1.3 Based on more recent validation studies, the scaling of the
+c             continuum has been changed to 4.5.  This change principally
+c             results from a validation with SHIS and lblrtm for the 
+c             November 2005 AVE campaign.
+c
+c
                if (vj.gt.0 .and. vj.lt.1200)  then
-                  c(j) = 7.*c(j)
+                  c(j) = 4.5*c(j)
                endif
-
-c****2.4.+++
+c**********
 
 C                                                                         F00880
 C              Radiation field                                            F00890
@@ -772,13 +779,13 @@ C                                                                         A10300
 C
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
-      CHARACTER*18 cnam3(9),cnam4(16)
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,16)
+      CHARACTER*18 cnam3(9),cnam4(17)
+      CHARACTER*51 CINFO1(2,10),CINFO2(2,11),CINFO3(2,9),CINFO4(2,17)
 C                                                                         A10340
-      WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,9)
+      WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,10)
       WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11)
       WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
-      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,16)
+      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,17)
 C                                                                         A10360
       RETURN                                                              A10370
 C                                                                         A10380
@@ -793,8 +800,8 @@ C     --------------------------------------------------------------
 C
 C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 C
-      CHARACTER*18 cnam3(9),cnam4(16)
-      CHARACTER*51 CINFO1(2,9),CINFO2(2,11),CINFO3(2,9),CINFO4(2,16)
+      CHARACTER*18 cnam3(9),cnam4(17)
+      CHARACTER*51 CINFO1(2,10),CINFO2(2,11),CINFO3(2,9),CINFO4(2,17)
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
       DATA cnam3/
@@ -822,11 +829,12 @@ c           123456789-123456789-123456789-123456789-123456789-1
      9     '     "           ',
      *     ' ckd_2.4.2   5.17',
      1     '     "           ',
-     2     ' mt_ckd_1.00 1.00',
+     2     ' mt_ckd_1.00 7.01',
      3     '     "           ',
      4     ' mt_ckd_1.1  9.1 ',
      5     ' mt_ckd_1.2  9.2 ',
-     6     '                 '/
+     6     ' mt_ckd_1.3 10.0 ',
+     7     '                 '/
 c
       DATA CINFO1/
 c           123456789-123456789-123456789-123456789-123456789-1
@@ -834,7 +842,7 @@ c           123456789-123456789-123456789-123456789-123456789-1
      2     '                                                   ',
      3     '                                                   ',
      4     '                                                   ',
-     5     '   *****  CONTINUA mt_ckd_1.2                      ',
+     5     '   *****  CONTINUA mt_ckd_1.3                      ',
      6     '                                                   ',
      7     '                                                   ',
      8     '                                                   ',
@@ -844,10 +852,12 @@ c           123456789-123456789-123456789-123456789-123456789-1
      2     ' CM-1    mt_ckd_1.1                  (August 2004) ',
      3     '                     CO2   AIR            0 - 20000',
      4     ' CM-1    co2 nu2 increased * 7         (July 2002) ',
-     5     '                     N2    SELF           0 -   350',
-     6     ' CM-1    BORYSOW FROMMHOLD                         ',
-     7     '                           AIR         2085 -  2670',
-     8     ' CM-1                                 (March 1998) ' /
+     5     '                           AIR            0 - 20000',
+     6     ' CM-1    co2 nu2 decreased: now * 4.5   (May 2006) ',
+     7     '                     N2    SELF           0 -   350',
+     8     ' CM-1    BORYSOW FROMMHOLD                         ',
+     9     '                           AIR         2085 -  2670',
+     *     ' CM-1                                 (March 1998) ' /
 C
       DATA CINFO2/
      1     '                     O2    AIR   (T)   1340 -  1850',
@@ -919,8 +929,10 @@ C
      4     'results now consistent with ckd_2.4.1 (August 2004)',
      5     '  Collision induced nitrogen 0-350 cm-1 increased (',
      5     '~1.35):  Boissoles at al., 2003    (September 2004)',
-     6     '  -------------------------------------------------',
-     6     '---------------------------------------------------'/
+     6     '  Nu2 CO2: with P-R line coupling included, factor ',
+     6     'of 7 increase has been reduceed to 4.5   (May 2006)',
+     7     '  -------------------------------------------------',
+     7     '---------------------------------------------------'/
 C
       END
 C

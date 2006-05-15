@@ -1563,9 +1563,9 @@ C                                                                        FA10530
      *        10X,'ALTD1     = ',F8.2,/,10X,'ALTD2     = ',F8.2)         FA10930
   940 FORMAT (8F10.3)                                                    FA10940
   942 FORMAT (///,' USER DEFINED BOUNDARIES FOR LBLRTM LAYERS',/,10X,    FA10950
-     *        'I',4X,'Z (KM)',//,(10X,I4,F10.4))                         FA10960
+     *        'I',4X,'Z (KM)',//,(10X,I4,F15.8))                         FA10960
   943  FORMAT (///,' USER DEFINED BOUNDARIES FOR LBLRTM LAYERS',/,10X, 
-     *        'I',4X,'P (MB)',//,(10X,I4,F10.4))                       
+     *        'I',4X,'P (MB)',//,(10X,I4,F15.8))                       
   944 FORMAT (' ERROR IN USER INPUT BOUNDARIES ')                        FA10970
   946 FORMAT (' BOUNDARIES ARE OUTSIDE THE RANGE OF THE ATMOSPHERE',/,   FA10980
      *        ' BOUNDARY = ',F10.2,' ATMOSPHERE =',F10.2,/,              FA10990
