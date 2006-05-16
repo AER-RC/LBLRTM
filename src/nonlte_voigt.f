@@ -239,9 +239,9 @@ C                                                                         604920
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
 C
-      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      
-     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,  
-     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF   
+      COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
+     *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
+     *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
       DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),
@@ -1172,7 +1172,7 @@ C                                                                         B05190
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),                B05210
      *            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),                B05220
      *            (JRAD,FSCDID(9)) , (XID(1),FILHDR(1))                   B05230
-c                                                                          D00540
+c                                   
       character*8 h_lncor1
 c
       data h_lncor1/' lncor1 '/
@@ -1855,9 +1855,6 @@ C
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B11310
          CALL BUFOUT (KFILE,R1(NLO),NLIM)                                 B11320
          CALL BUFOUT (KFILE,RR1(NLO),NLIM)                                B11320
-
-c for continuum derivative terms
-         call derivint(1,v1p,v2p,dvp,nlo,nlim,r1(nlo))
 C                                                                         B11330
          IF (NPTS.GT.0) CALL R1PRNT (V1P,DVP,NLIM,R1,NLO,NPTS,KFILE,
      *                               IENTER)                              B11340
@@ -1996,6 +1993,7 @@ C                                                                         D00620
       DPTMN = DPTMIN/RADFN(V2,TAVE/RADCN2)                                D00670
       DPTFC = DPTFAC                                                      D00680
       LIMIN = 1000                                                        D00690
+c
       CALL CPUTIM(TPAT0)
       CALL MOLEC (1,SCOR,RHOSLF,ALFD1)                                    D00700
       CALL CPUTIM(TPAT1)
