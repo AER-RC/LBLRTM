@@ -17,6 +17,18 @@ LBLRTM_v10.0
    molecule numbers larger than 33.
    (S.A. Clough and M.W. Shephard)
 
+6) Also, available for the LBLRTM calculations are additonal CO2 P/Q/R line coupling adapted
+   from Niro et al. (2005) for the CO2 v2 (600-800 cm-1). The line coupling
+   parameters are provide with LNFL (www.rtweb.aer.com).  LNFL will merges the line
+   coupling paramters with a spectroscopic line database to create input spectroscopic 
+   parameters for LBLRTM.
+   (M.W. Shephard and S.A. Clough)
+	 
+   F. Niro, K. Jucks, J.-M. Hartmann, Spectra calculations in
+          central and wing regions of CO2 IR bands. IV : Software and
+          database for the computation of atmospheric spectra, in
+          J Quant Spectrosc Radiat Transfer. Vol. 95, 2005, pp. 469-481
+
 
 LBLRTM_v9.4
 
