@@ -571,22 +571,6 @@ C                                                                         A03910
       ILST3D = -654321
       NPHDRL = NWDL(IWD4,ILST3D)                                          A03970
 
-      imrg = 0 ! use to be sure imrg is initialized properly
-c
-c---------------
-c imrg=10 used for analytic derivatives and creation of od files
-c if imrg=10, a number of key files are closed
-c this if-block will re-open these files so that multiple
-c runs may be done from within a single TAPE5 file
-      IF (IMRG.EQ.10) THEN
-          KFILE = 10
-          OPEN (KFILE,FILE='TAPE10',STATUS='UNKNOWN',FORM=CFORM)
-          LFILE = 11
-          OPEN (LFILE,FILE='TAPE11',STATUS='UNKNOWN',FORM=CFORM)
-          MFILE = 12
-          OPEN (MFILE,FILE='TAPE12',STATUS='UNKNOWN',FORM=CFORM)
-      ENDIF
-c---------------
 C                                                                         A04020
       LOWFLG = 0                                                          A04030
       IREAD = 0                                                           A04040
@@ -4856,7 +4840,7 @@ C     the monochromatic DV (and thus ensuring enough monochromatic points
 C     are available to reach the V2 endpoint for the interpolated
 C     spectrum).
 c
-c Special case:  if imrg=10,40-43, the user is doing analytic jacobians
+c Special case:  if imrg=40-43, the user is doing analytic jacobians
 c    ---> set dvout to be slightly smaller than dv
 c    ---> negative dvset implies the user wants a specific value,
 c         (this is tested for above, and iset=1 for this case)
@@ -4864,14 +4848,13 @@ c         so use that one rather than re-setting to dv
 c         (for this case at this point in the code, dvset>0 and
 c          dvout=dvset, so nothing needs to be done)
 C
-      IF (IOD.eq.1 .or. IOD.ge.3) THEN
-          if ((imrg.eq.1).or.(imrg.eq.10).or.
-     &        ((imrg.ge.40).and.(imrg.le.43))) then
+      IF (IOD.ge.3) THEN
+          if ((imrg.eq.1).or.((imrg.ge.40).and.(imrg.le.43))) then
               if (iset.eq.0) then
                   write(ipr,*) 'Reset DVOUT to 0.999*DV for IMRG=',imrg
                   write(ipr,*) 'and reset DVSET to DVOUT'
 
-                  idvout=1.0e8*(0.999*dv)
+                  idvout=1.0e8*(0.9999*dv)
                   dvout=idvout/1.0e8
                   dvset=dvout
                   write(ipr,*) 'new dvout, dvset, and dv: ',
