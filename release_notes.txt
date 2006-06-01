@@ -1,4 +1,10 @@
 
+LBLRTM_v10.1
+
+1) Modifed the program so that the layer optical depth calculation options
+   work as specified in the instructions and are consistent with versions previous to LBLRTM_v10.0.
+
+
 LBLRTM_v10.0
 
 1) Modified the Analytic Jacobian calculations to be more efficient and accurate.
@@ -30,7 +36,7 @@ LBLRTM_v10.0
           J Quant Spectrosc Radiat Transfer. Vol. 95, 2005, pp. 469-481
 
 
-LBLRTM_v9.4
+Lblrtm_v9.4
 
 1) Fixed a minor bug in the hydrostatic calculation where a variable name was
    mistyped.
