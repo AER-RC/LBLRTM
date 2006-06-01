@@ -11,7 +11,7 @@ PLATFORM = OS_X (IBM Compiler)
 
 FC =xlf90
 FCFLAG = -qfixed -s -O -qmaxmem=-1
-OUTPUT = lblrtm_v10.0_f90_OS_X_ibm_xl_sgl
+OUTPUT = lblrtm_v10.1_f90_OS_X_ibm_xl_sgl
 CPATH = src
 CDOTO = os_x_ibm_sgl.o
 
