@@ -283,7 +283,6 @@ C                                                                         F00830
 c
             DO 30 J = 1, NPTC                                             F00850
                VJ = V1C+DVC* REAL(J-1)                                    F00860
-               C(J) = FCO2(J)*WCO2
 
 c****2.4.+++  The co2 continuum had been increased by a factor of 7.0 from
 c             the values in the data statements for the nu2 band. 
@@ -295,12 +294,12 @@ c             continuum has been changed to 4.5.  This change principally
 c             results from a validation with SHIS and lblrtm for the 
 c             November 2005 AVE campaign.
 c
-c
                if (vj.gt.0 .and. vj.lt.1200)  then
-                  c(j) = 4.5*c(j)
+                  fco2(j) = 4.5*fco2(j)
                endif
 c**********
-
+c
+               C(J) = FCO2(J)*WCO2
 C                                                                         F00880
 C              Radiation field                                            F00890
 C                                                                         F00900
@@ -748,16 +747,9 @@ C           Radiation field
 c
       endif
 C                                                                         F01920
- 100     continue
+ 100  continue
 
-
-
-
-
-
-
-
-       RETURN                                                              F01930
+      RETURN                                                              F01930
 C                                                                         F01940
  900  FORMAT (/,'0    *********************************************',/,
      *          '     *      BYPASS O2 CONTINUUM TO HERZBERG      *',/,
