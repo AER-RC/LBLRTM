@@ -12,7 +12,7 @@ PLATFORM = LINUX
 
 FC = pgf90
 FCFLAG =  -fast 
-OUTPUT = lblrtm_v10.1_f90_pgi_linux_sgl
+OUTPUT = lblrtm_v10.2_f90_pgi_linux_sgl
 CPATH = src
 CDOTO = pgi_linux_sgl.o
 

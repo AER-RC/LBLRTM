@@ -12,7 +12,7 @@ PLATFORM = LINUX
 
 FC = ifc
 FCFLAG = -w -Vaxlib
-OUTPUT = lblrtm_v10.1_intel_linux_sgl
+OUTPUT = lblrtm_v10.2_intel_linux_sgl
 CPATH = src
 CDOTO = intel_linux_sgl.o
 

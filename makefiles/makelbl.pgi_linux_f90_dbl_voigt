@@ -12,7 +12,7 @@ PLATFORM = LINUX
 
 FC = pgf90
 FCFLAG =  -fast -r8 -i8
-OUTPUT = lblrtm_v10.1_f90_pgi_linux_dbl_voigt
+OUTPUT = lblrtm_v10.2_f90_pgi_linux_dbl_voigt
 CPATH = src
 CDOTO = pgi_linux_dbl.o
 
