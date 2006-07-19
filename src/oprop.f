@@ -311,18 +311,9 @@ C       Use PTHODE as the name of the optical depth files.
 C       This requires the format HFMODL, which is produced by
 C       calling the SUBROUTINE QNTIFY.
 C
-C     - If calculating layer optical depths and cumulative layer
-C       optical depths for an analytic derivative calculation
-C       (IOD=3, IMRG=10), or when using the same criteria but not
-C       calculating the cumulative optical depths (IOD=3),
-C       then use PTHODI as the name of the optical depth files.
-C       This requires the format HFMODL, which is produced by
-C       calling the SUBROUTINE QNTIFY.
-C
-C     - If calculating layer absorptance coefficients for an
-C       analytic derivative calculation (IEMIT=3, IOD=3, and
-C       IMRG>40), then use TAPE10 as the name of the layer
-C       absorptance coefficient files.
+C     - If IOD=3 and IMRG=1 then calculate layer optical depths and 
+C       and interpolate all layers to the dv of the final layer
+C       (used for analytic derivative calculation)
 C
 C     - If calculating optical depths using the default procedure,
 C       sending output to a different file for each layer (IEMIT=0,
@@ -357,7 +348,7 @@ C
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3
       ELSEIF (IOD.EQ.3) THEN
-         IF ((IMRG.EQ.10).OR.(IMRG.EQ.1)) THEN
+         IF (IMRG.EQ.1) THEN
             CALL QNTIFY(PTHODI,HFMODL)
             WRITE (KODLYR,HFMODL) PTHODI,LAYER
             INQUIRE (UNIT=KFILE,OPENED=OP)

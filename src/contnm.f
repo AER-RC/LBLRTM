@@ -97,11 +97,22 @@ c
 C
       RHOAVE = (PAVE/P0)*(T0/TAVE)                                        F00300
       XKT = TAVE/RADCN2                                                   F00310
+
+c     the amagat value is used for the broadenening component for a number
+c     of the collision induced continua
+c
+      amagat = (Pave/P0)*(273./Tave) 
 c
       WTOT = WBROAD                                                       F00320
       DO 10 M = 1, NMOL                                                   F00330
          WTOT = WTOT+WK(M)                                                F00340
    10 CONTINUE                                                            F00350
+
+      x_vmr_h2o = wk(1)/wtot
+      x_vmr_o2  = wk(7)/wtot
+      x_vmr_n2  = 1. - x_vmr_h2o - x_vmr_o2
+
+      wn2 = x_vmr_n2 * wtot
 
 c zero derivative arrays and initialize panel information
       if (icflg.ne.-999) then
@@ -421,13 +432,11 @@ c
 C        Only calculate if V2 > 1340. cm-1 and V1 <  1850. cm-1
 
          if (((V2.gt.1340.0).and.(V1.lt.1850.))) then
-            
-            rhofac = (Pave/P0)*(273./Tave)
 c     
-            tau_fac = Wk(7) * 1.e-20 * rhofac * xo2cn 
+            tau_fac = xo2cn *  Wk(7) * 1.e-20 * amagat 
 c
 c           Wk(7) is the oxygen column amount in units of molec/cm2
-c           rhofac is in units of amagats (air)
+c           amagat is in units of amagats (air)
 c
 c           The temperature correction is done in the subroutine o2_ver_1:
 c
@@ -472,22 +481,18 @@ C        Only calculate if V2 > 7536. cm-1 and V1 <  8500. cm-1
 c
          if (((V2.gt.7536.0).and.(V1.lt.8500.))) then
 c
-             IF (NMOL.GE.22) THEN
-                 WN2 = WK(22)
-             ELSE
-                 WN2 = WBROAD
-             ENDIF
+            a_o2  = 1./0.446
+            a_n2  = 0.3/0.446
+            a_h2o = 1.
 
-            WO2 = (WK(7)/xlosmt) * ((pave/1013.)*(273./tave)) * xo2cn
-            CHIO2 =  WK(7)/WTOT 
-            CHIN2 =  WN2/WTOT 
-            ADJFAC = (CHIO2+0.3*CHIN2)/0.446
-            ADJWO2 = ADJFAC * WO2
+            tau_fac = xn2cn * (Wk(7)/xlosmt) * amagat * 
+     &           (a_o2*x_vmr_o2+a_n2*x_vmr_n2+a_h2o*x_vmr_h2o)
+
 c
             CALL O2INF1 (V1C,V2C,DVC,NPTC,C0)                     
 c
             DO 92 J = 1, NPTC                                                
-               C(J) = C0(J)*ADJWO2
+               C(J) = taufac * C0(J)*ADJWO2
                VJ = V1C+DVC* REAL(J-1)                                       
 C                                                                      
 C              Radiation field
@@ -511,10 +516,8 @@ c
          if ((V2.gt.9100.0).and.(V1.lt.11000.)) then
 c
             CALL O2INF2 (V1C,V2C,DVC,NPTC,C0)                      
-            WO2 = RHOAVE*WK(7)*1.e-20*xo2cn
-            CHIO2 =  WK(7)/WTOT 
-            ADJFAC = CHIO2/0.209
-            ADJWO2 = ADJFAC * WO2
+            WO2 = xo2cn * (WK(7)*1.e-20) * RHOAVE
+            ADJWO2 = (WK(7)/WTOT) * (1./0.209) * WO2
 c
             DO 93 J = 1, NPTC                                                
                C(J) = C0(J)*ADJWO2
@@ -582,12 +585,6 @@ C                                                                         F01880
          endif
 c
 C     *********************  NITROGEN CONTINUA  ********************
-c
-         IF (NMOL.GE.22) THEN                                             F01000
-            WN2 = WK(22)                                                  F01010
-         ELSE                                                             F01020
-            WN2 = WBROAD                                                  F01030
-         ENDIF                                                            F01040
 C                                                                         F00460
 C                                                                         F00940
 C     ******** NITROGEN COLLISION INDUCED PURE ROTATION BAND  ********
@@ -616,30 +613,34 @@ c
 c
 C           The following puts WXN2 units in 1./(CM AMAGAT)
 C
-            WXN2 = (WN2/XLOSMT)*xn2cn
-C                                                                         F00480
-C           RHOFAC units are AMAGATS
-C
-            RHOFAC = (WN2/WTOT)*(PAVE/P0)*(273./TAVE)
-C     
-            TFAC = (TAVE-T0)/(220.-T0)
+c           c1(j) represents the relative broadening efficiency of o2
+c           a_h2o represents the relative broadening efficiency of h2o
 
-            CALL N2R296 (V1C,V2C,DVC,NPTC,C0)
-            CALL N2R220 (V1C,V2C,DVC,NPTC,C1)
+            a_h2o = 1.
+
+c     correct formulation for consistency with LBLRTM (per molec/cm^2)
+c
+            tau_fac =  xn2cn * (Wn2/xlosmt)
+C                                                                         F00480
+            CALL xn2_r (V1C,V2C,DVC,NPTC,c0,c1,Tave)
+c
+c           fo2 is  ~ the ration of alpha(n2-o2)/alpha(n2-n2)
+c           Eq's 7 and 8 in the Boissoles paper.
 C
             DO 40 J = 1, NPTC                                             F01080
                VJ = V1C+DVC* REAL(J-1)                                    F01090
 C
-               C(J) = 0.
-               IF (C0(J).GT.0. .AND. C1(J).GT.0.) then
-                   C(J) = (WXN2*RHOFAC*C0(J)*(C1(J)/C0(J))**TFAC)
-               endif
+               C(J) = tau_fac * C0(J) *
+     &            amagat * (x_vmr_n2 + c1(j)*x_vmr_o2 + a_h2o*x_vmr_h2o)
 C                                                                         F01110
 C              Radiation field                                            F01120
 C                                                                         F01130
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01140
+
  40         CONTINUE                                                      F01150
+
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)      F01160
+
          endif
 C                                                                         F01170
 C                                                                         F00940
@@ -656,18 +657,30 @@ c
 C        Only calculate if V2 > 2085. cm-1 and V1 <  2670. cm-1
 C
          if ((V2.gt.2085.0).and.(V1.lt.2670.)) then
-
-            rhofac = (Pave/P0)*(273./Tave)
+c
+c           The absorption coefficients from the Lafferty et al. reference 
+c           are for pure nitrogen (absorber and broadener)
 c     
-            tau_fac = Wn2 * 1.e-20 * rhofac *xn2cn
+c           a_o2  represents the relative broadening efficiency of o2
+c           a_h2o represents the relative broadening efficiency of h2o
+
+            a_o2  = 1.294 - 0.4545*Tave/296.
+            a_h2o = 1.
+
+c     correct formulation for consistency with LBLRTM (per molec/cm^2)
+c
+            tau_fac =  xn2cn* (Wn2/xlosmt) *
+     &           amagat * (x_vmr_n2+a_o2*x_vmr_o2+a_h2o*x_vmr_h2o)
+
 c
 c           Wn2 is in units of molec/cm2
-c           rhofac is in units of amagats (air)
+c           amagat is in units of amagats (air)
 c
-c           The temperature correction is done in subroutine n2_ver_1:
+c           The temperature correction of the absorption coefficient is 
+c           done in subroutine n2_ver_1:
 c
             call n2_ver_1 (v1c,v2c,dvc,nptc,c0,tave)
-C
+c
 c           c0 are the nitrogen absorption coefficients at 
 c           temperature tave 
 c              - these absorption coefficients are in units of
@@ -679,10 +692,11 @@ c                   loshmidt of air (273K)
 c
             DO 45 J = 1, NPTC
                VJ = V1C+DVC* REAL(J-1)
-               C(J) = tau_fac * c0(J) 
+               C(J) = tau_fac * c0(J)
 C              Radiation field
 C
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)
+
  45         CONTINUE
 C
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
@@ -937,24 +951,28 @@ C                                                                         F02250
       COMMON /SH2O/ V1S,V2S,DVS,NPTS,S(2003)                              F02270
       DIMENSION C(*)                                                      F02280
 C                                                                         F02290
-      DVC = DVS                                                           F02300
-      V1C = V1ABS-DVC                                                     F02310
-      V2C = V2ABS+DVC                                                     F02320
-C                                                                         F02330
-      I1 = (V1C-V1S)/DVS                                                  F02340
-      IF (V1C.LT.V1S) I1 = -1 
+      DVC = DVS
+      V1C = V1ABS-DVC
+      V2C = V2ABS+DVC
+C
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F02410
-         I = I1+J                                                         F02420
+         I = I1+(J-1)                                                         F02420
          C(J) = 0.                                                        F02430
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F02440
          C(J) = S(I)                                                      F02450
+
    10 CONTINUE                                                            F02460
 C                                                                         F02470
       RETURN                                                              F02480
@@ -1444,17 +1462,20 @@ C                                                                         F07240
       V1C = V1ABS-DVC                                                     F07260
       V2C = V2ABS+DVC                                                     F07270
 C                                                                         F07280
-      I1 = (V1C-V1S)/DVS                                                  F07290
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F07360
-         I = I1+J                                                         F07370
+         I = I1+(J-1)                                                         F07370
          C(J) = 0.                                                        F07380
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F07390
          C(J) = S(I)                                                      F07400
@@ -1947,17 +1968,20 @@ C
       V1C = V1ABS-DVC                   
       V2C = V2ABS+DVC                  
 C                                     
-      I1 = (V1C-V1S)/DVS             
-      IF (V1C.LT.V1S) I1 = -1
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)
-      I2 = (V2C-V1S)/DVS    
-      NPTC = I2-I1+3       
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
+      NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC   
-         I = I1+J        
+         I = I1+(J-1)        
          C(J) = 0.                                                        F12340
          IF ((I.GE.1).AND.(I.LE.NPTS)) THEN                               F12350
             C(J) = S(I)                                                   F12360
@@ -2451,17 +2475,20 @@ C                                                                         F17160
       V1C = V1ABS-DVC                                                     F17180
       V2C = V2ABS+DVC                                                     F17190
 C                                                                         F17200
-      I1 = (V1C-V1S)/DVS                                                  F17210
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F17280
-         I = I1+J                                                         F17290
+         I = I1+(J-1)                                                         F17290
          C(J) = 0.                                                        F17300
          IF ((I.GE.1).AND.(I.LE.NPTS)) THEN                               F17310
             C(J) = S(I)                                                   F17320
@@ -2720,7 +2747,7 @@ C                                                                         F19800
 C
 C     --------------------------------------------------------------
 C
-      SUBROUTINE N2R296 (V1C,V2C,DVC,NPTC,C)
+      SUBROUTINE xn2_r (V1C,V2C,DVC,NPTC,C,fo2,Tave)
 C
 C     Model used:
 C      Borysow, A, and L. Frommhold, "Collision-induced
@@ -2735,42 +2762,61 @@ c         Theoretical CAlculations of the Translation-Rotation
 c         Collision-Induced Absorption in N2-N2, O2-O2 and N2-O2 Pairs, 
 c         J.Quant. Spec. Rad. Transfer, 82,505 (2003).
 c
+c     The scale factors are reported to account for the efect of o2-o2
+c     and n2-o2 collision induced effects.
 c     The values for scale factor values (sf296) for 296K are based on 
 c     linear interpolation of Boissoles at al. values at 250K and 300K
 c
       IMPLICIT REAL*8           (V)
 C
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
-      COMMON /N2RT0/ V1S,V2S,DVS,NPTS,S(73),sf296(73)
-      DIMENSION C(*)
+      COMMON /ABSORB/  V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)     
+      COMMON /N2RT296/ V1S,V2S,DVS,NPTS,C_296(73),sf_296(73)
+      COMMON /N2RT220/ V1b,V2b,DVb,NPTb,C_220(73),sf_220(73)
+      DIMENSION C(*),fo2(*)
 C
+      data xo2 / 0.21/, xn2 / 0.79/, T_296 / 296./, T_220 / 220./
+
+      tfac = (TAVE-T_296)/(T_220-T_296)
+
       DVC = DVS
       V1C = V1ABS-DVC
       V2C = V2ABS+DVC
 C
-      I1 = (V1C-V1S)/DVS
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
 c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2 
 c
       DO 10 J = 1, NPTC
-         I = I1+J
+         I = I1+(J-1)
          C(J) = 0.
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10
-         C(J) = S(I)*sf296(i)
+         C(J)   =  C_296(J)*(( C_220(J)/ C_296(J))**tfac)
+         sf_T   = sf_296(J)*((sf_220(J)/sf_296(J))**tfac)
+
+c        correct for incorporation of air mixing ratios in sf
+c        fo2 is now ~ the ration of alpha(n2-o2)/alpha(n2-n2)
+c        Eq's 7 and 8 in the Boissoles paper.
+
+c        fo2(J) = (sf_T - 1.)*(xn2**2)/(xn2*xo2)
+         fo2(J) = (sf_T - 1.)*(xn2)/(xo2)
+
    10 CONTINUE
 C
       RETURN
 C
       END
 C
-      BLOCK DATA BN2T0
+      BLOCK DATA BN2T296
 C
       IMPLICIT REAL*8           (V)
 C
@@ -2778,9 +2824,10 @@ c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2
 C
 C           THESE DATA ARE FOR 296K
 C
-      COMMON /N2RT0/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT296(73),sf296(73)
+      COMMON /N2RT296/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT296(73),sf_296(73)
 C
-      DATA V1N2CR,V2N2CR,DVN2CR,NPTN2C / -10., 350., 5.0, 73 /
+      DATA V1N2CR,V2N2CR,DVN2CR,NPTN2C /
+     &      -10.,  350.,  5.0,   73 /
 C
       DATA CT296/
      *     0.4303E-06, 0.4850E-06, 0.4979E-06, 0.4850E-06, 0.4303E-06,
@@ -2799,7 +2846,7 @@ C
      *     0.5100E-09, 0.4572E-09, 0.4115E-09, 0.3721E-09, 0.3339E-09,
      *     0.3005E-09, 0.2715E-09, 0.2428E-09/
 C
-      DATA sf296/
+      DATA sf_296/
      *         1.3534,     1.3517,     1.3508,     1.3517,     1.3534,
      *         1.3558,     1.3584,     1.3607,     1.3623,     1.3632,
      *         1.3634,     1.3632,     1.3627,     1.3620,     1.3612,
@@ -2818,57 +2865,7 @@ C
 C
       END
 C
-      SUBROUTINE N2R220 (V1C,V2C,DVC,NPTC,C)
-C
-C     Model used:
-C      Borysow, A, and L. Frommhold, "Collision-induced
-C         rototranslational absorption spectra of N2-N2
-C         pairs for temperatures from 50 to 300 K", The
-C         Astrophysical Journal, 311, 1043-1057, 1986.
-C
-c     Uodated 2004/09/22 based on:
-c
-c      Boissoles, J., C. Boulet, R.H. Tipping, A. Brown and Q. Ma, 
-c         Theoretical CAlculations of the Translation-Rotation 
-c         Collision-Induced Absorption in N2-N2, O2-O2 and N2-O2 Pairs, 
-c         J.Quant. Spec. Rad. Transfer, 82,505 (2003).
-c
-c     The values for scale factor values (sf220) for 220K are based on 
-c     linear interpolation of Boissoles at al. values at 200K and 250K
-c
-      IMPLICIT REAL*8           (V)
-C
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
-      COMMON /N2RT1/ V1S,V2S,DVS,NPTS,S(73),sf220(73)
-      DIMENSION C(*)
-C
-      DVC = DVS
-      V1C = V1ABS-DVC
-      V2C = V2ABS+DVC
-C
-      I1 = (V1C-V1S)/DVS
-      IF (V1C.LT.V1S) I1 = -1 
-C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
-      NPTC = I2-I1+3                 
-      IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
-c
-c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2 
-c
-      DO 10 J = 1, NPTC
-         I = I1+J
-         C(J) = 0.
-         IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10
-         C(J) = S(I)*sf220(i)
-   10 CONTINUE
-C
-      RETURN
-C
-      END
-C
-      BLOCK DATA BN2T1
+      BLOCK DATA BN2T220
 C
       IMPLICIT REAL*8           (V)
 C
@@ -2876,7 +2873,7 @@ c*******  ABSORPTION COEFFICIENT IN UNITS OF CM-1 AMAGAT-2
 C
 C         THESE DATA ARE FOR 220K
 C
-      COMMON /N2RT1/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT220(73),sf220(73)
+      COMMON /N2RT220/ V1N2CR,V2N2CR,DVN2CR,NPTN2C,CT220(73),sf_220(73)
 C
       DATA V1N2CR,V2N2CR,DVN2CR,NPTN2C / -10., 350., 5.0, 73 /
 C
@@ -2897,7 +2894,7 @@ C
      *     0.2155E-09, 0.1895E-09, 0.1678E-09, 0.1493E-09, 0.1310E-09,
      *     0.1154E-09, 0.1019E-09, 0.8855E-10/ 
 C
-      DATA sf220/
+      DATA sf_220/
      *         1.3536,     1.3515,     1.3502,     1.3515,     1.3536,
      *         1.3565,     1.3592,     1.3612,     1.3623,     1.3626,
      *         1.3623,     1.3616,     1.3609,     1.3600,     1.3591,
@@ -2924,7 +2921,7 @@ c
 c
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
 c
-      COMMON /n2_f/ V1S,V2S,DVS,NPTS,xn2(118),xn2t(118)
+      COMMON /n2_f/ V1S,V2S,DVS,NPTS,xn2_272(179),xn2_228(179)
 c
       dimension c(*)
 c
@@ -2935,46 +2932,54 @@ c        Infrared collision-induced absorption by N2 near 4.3 microns for
 c        atmospheric applications: measurements and emprirical modeling, 
 c         Appl. Optics, 35, 5911-5917, (1996).
 c
-      DATA  To/ 296./, xlosmt/ 2.68675e+19/, vmr_n2/ 0.78 /
+      DATA  T_272/ 272./, T_228/ 228./
 c
-      xktfac = (1./To)-(1./T)
+      xtfac  = ((1./T)-(1./T_272))/((1./T_228)-(1./T_272))
+      xt_lin = (T-T_272)/(T_228-T_272)
 c     
-      a1 = 0.8387
-      a2 = 0.0754
-c
-c     correct formulation for consistency with LBLRTM:
-c
-      factor = (1.e+20 /xlosmt) * (1./vmr_n2) * (a1-a2*(T/To))
-      factor2 = (1.e+20 /xlosmt) * (1./vmr_n2) * (a1-(a2/To))
-c
-c     Lafferty et al. reference  assumes that the
-c     column amount is that for air 
-
+c     The absorption coefficients from the Lafferty et al. reference 
+c     are for pure nitrogen (absorber and broadener)
 C                           
       DVC = DVS             
       V1C = V1ABS-DVC       
       V2C = V2ABS+DVC       
 C                           
-      I1 = (V1C-V1S)/DVS    
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       do 10 j=1,nptc
-         i = i1+j
+         i = i1+(j-1)
          C(J) = 0.                                                        F41620
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F41630
          VJ = V1C+DVC* REAL(J-1)                                          F41640
-c     the radiation field is removed with 1/vj
 c
-         c(j) = factor * xn2(i)* exp(xn2t(i)*xktfac) / vj
+         if ((xn2_272(i).gt.0.) .and. (xn2_228(i) .gt. 0.)) then
+c           logarithmic interpolation in reciprical of temperature
+
+            c(j) = xn2_272(i) *(xn2_228(i)/xn2_272(i))**xtfac  
+
+         else
+c           linear interpolation  (note xn2_272 or xn2_228 is zero to arrive here)
+
+            c(j) = xn2_272(i) + (xn2_228(i)-xn2_272(i))*xt_lin
+
+         endif
+
+c     the radiation field is removed with 1/vj
+
+         c(j) = c(j)/vj
 c
  10   end do
- 920  format (f10.2,1p,e12.2,0p,f10.2,1p2e12.2)
+ 
       return
 
       end
@@ -2983,68 +2988,87 @@ c
                                                                         
       IMPLICIT REAL*8 (v)                                                    
                                                                         
-      COMMON /n2_f/ V1n2f,V2n2f,DVn2f,NPTn2f,                                      
-     *          xn0001(50),xn0051(50),xn0101(18),
-     *          xnt0001(50),xnt0051(50),xnt0101(18)
+      COMMON /n2_f/ V1n2f,V2n2f,DVn2f,NPTn2f,         
+     *          xn2_272(179),xn2_228(179)
                                                                         
-      DATA V1n2f,V2n2f,DVn2f,NPTn2f /2085.000,2670.000, 5.000, 118/              
-      DATA xn0001/                                                       
-     *      0.000E+00,  2.000E-10,  5.200E-09,  1.020E-08,  1.520E-08,  
-     *      2.020E-08,  2.520E-08,  3.020E-08,  4.450E-08,  5.220E-08,  
-     *      6.460E-08,  7.750E-08,  9.030E-08,  1.060E-07,  1.210E-07,  
-     *      1.370E-07,  1.570E-07,  1.750E-07,  2.010E-07,  2.300E-07,  
-     *      2.590E-07,  2.950E-07,  3.260E-07,  3.660E-07,  4.050E-07,  
-     *      4.470E-07,  4.920E-07,  5.340E-07,  5.840E-07,  6.240E-07,  
-     *      6.670E-07,  7.140E-07,  7.260E-07,  7.540E-07,  7.840E-07,  
-     *      8.090E-07,  8.420E-07,  8.620E-07,  8.870E-07,  9.110E-07,  
-     *      9.360E-07,  9.760E-07,  1.030E-06,  1.110E-06,  1.230E-06,  
-     *      1.390E-06,  1.610E-06,  1.760E-06,  1.940E-06,  1.970E-06/  
-      DATA xn0051/                                                       
-     *      1.870E-06,  1.750E-06,  1.560E-06,  1.420E-06,  1.350E-06,  
-     *      1.320E-06,  1.290E-06,  1.290E-06,  1.290E-06,  1.300E-06,  
-     *      1.320E-06,  1.330E-06,  1.340E-06,  1.350E-06,  1.330E-06,  
-     *      1.310E-06,  1.290E-06,  1.240E-06,  1.200E-06,  1.160E-06,  
-     *      1.100E-06,  1.040E-06,  9.960E-07,  9.380E-07,  8.630E-07,  
-     *      7.980E-07,  7.260E-07,  6.550E-07,  5.940E-07,  5.350E-07,  
-     *      4.740E-07,  4.240E-07,  3.770E-07,  3.330E-07,  2.960E-07,  
-     *      2.630E-07,  2.340E-07,  2.080E-07,  1.850E-07,  1.670E-07,  
-     *      1.470E-07,  1.320E-07,  1.200E-07,  1.090E-07,  9.850E-08,  
-     *      9.080E-08,  8.180E-08,  7.560E-08,  6.850E-08,  6.140E-08/  
-      DATA xn0101/                                                       
-     *      5.830E-08,  5.770E-08,  5.000E-08,  4.320E-08,  3.140E-08,  
-     *      2.890E-08,  2.640E-08,  2.390E-08,  2.140E-08,  1.890E-08,  
-     *      1.640E-08,  1.390E-08,  1.140E-08,  8.900E-09,  6.400E-09,  
-     *      3.900E-09,  1.400E-09,  0.000E+00/                          
-                                                                        
-c     temperature coefficients:
+      DATA V1n2f,V2n2f,DVn2f,NPTn2f 
+     *     /2001.766357, 2710.466309, 3.981461525, 179/ 
+      DATA xn2_272/                                                       
+     *      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,
+     *      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,
+     *      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,  9.280E-11,
+     *      3.660E-10,  8.130E-10,  1.430E-09,  2.230E-09,  3.210E-09,
+     *      4.370E-09,  5.750E-09,  7.340E-09,  9.190E-09,  1.130E-08,
+     *      1.370E-08,  1.650E-08,  1.960E-08,  2.310E-08,  2.710E-08,
+     *      3.160E-08,  3.660E-08,  4.230E-08,  4.860E-08,  5.570E-08,
+     *      6.350E-08,  7.230E-08,  8.200E-08,  9.270E-08,  1.050E-07,
+     *      1.180E-07,  1.320E-07,  1.480E-07,  1.650E-07,  1.840E-07,
+     *      2.040E-07,  2.270E-07,  2.510E-07,  2.770E-07,  3.060E-07,
+     *      3.360E-07,  3.670E-07,  4.010E-07,  4.330E-07,  4.710E-07,
+     *      5.050E-07,  5.450E-07,  5.790E-07,  6.200E-07,  6.540E-07,
+     *      6.940E-07,  7.240E-07,  7.610E-07,  7.880E-07,  8.220E-07,
+     *      8.440E-07,  8.720E-07,  8.930E-07,  9.190E-07,  9.370E-07,
+     *      9.620E-07,  9.870E-07,  1.020E-06,  1.060E-06,  1.110E-06,
+     *      1.180E-06,  1.280E-06,  1.400E-06,  1.570E-06,  1.750E-06,
+     *      1.880E-06,  2.020E-06,  2.080E-06,  2.060E-06,  1.960E-06,
+     *      1.860E-06,  1.710E-06,  1.570E-06,  1.490E-06,  1.440E-06,
+     *      1.410E-06,  1.390E-06,  1.380E-06,  1.380E-06,  1.390E-06,
+     *      1.390E-06,  1.410E-06,  1.420E-06,  1.430E-06,  1.420E-06,
+     *      1.430E-06,  1.410E-06,  1.400E-06,  1.370E-06,  1.350E-06,
+     *      1.310E-06,  1.270E-06,  1.220E-06,  1.170E-06,  1.120E-06,
+     *      1.060E-06,  1.010E-06,  9.470E-07,  8.910E-07,  8.290E-07,
+     *      7.740E-07,  7.160E-07,  6.620E-07,  6.090E-07,  5.600E-07,
+     *      5.130E-07,  4.680E-07,  4.290E-07,  3.900E-07,  3.560E-07,
+     *      3.240E-07,  2.950E-07,  2.680E-07,  2.440E-07,  2.230E-07,
+     *      2.030E-07,  1.850E-07,  1.690E-07,  1.540E-07,  1.410E-07,
+     *      1.290E-07,  1.180E-07,  1.080E-07,  9.950E-08,  9.100E-08,
+     *      8.380E-08,  7.700E-08,  7.100E-08,  6.510E-08,  6.010E-08,
+     *      5.550E-08,  5.110E-08,  4.710E-08,  4.340E-08,  3.980E-08,
+     *      3.660E-08,  3.380E-08,  3.110E-08,  2.840E-08,  2.610E-08,
+     *      2.390E-08,  2.210E-08,  2.010E-08,  1.830E-08,  1.710E-08,
+     *      1.550E-08,  1.450E-08,  1.320E-08,  1.250E-08,  1.140E-08,
+     *      1.070E-08,  1.000E-08,  8.100E-09,  6.400E-09,  4.900E-09,
+     *      3.600E-09,  2.500E-09,  1.600E-09,  9.000E-10,  4.000E-10,
+     *      1.000E-10,  0.000E+00,  0.000E+00,  0.000E+00/
 
-      DATA xnt0001/                                                       
-     *      1.040E+03,  1.010E+03,  9.800E+02,  9.500E+02,  9.200E+02,  
-     *      8.900E+02,  8.600E+02,  8.300E+02,  8.020E+02,  7.610E+02,  
-     *      7.220E+02,  6.790E+02,  6.460E+02,  6.090E+02,  5.620E+02,  
-     *      5.110E+02,  4.720E+02,  4.360E+02,  4.060E+02,  3.770E+02,  
-     *      3.550E+02,  3.380E+02,  3.190E+02,  2.990E+02,  2.780E+02,  
-     *      2.550E+02,  2.330E+02,  2.080E+02,  1.840E+02,  1.490E+02,  
-     *      1.070E+02,  6.600E+01,  2.500E+01, -1.300E+01, -4.900E+01,  
-     *     -8.200E+01, -1.040E+02, -1.190E+02, -1.300E+02, -1.390E+02,  
-     *     -1.440E+02, -1.460E+02, -1.460E+02, -1.470E+02, -1.480E+02,  
-     *     -1.500E+02, -1.530E+02, -1.600E+02, -1.690E+02, -1.810E+02/  
-      DATA xnt0051/                                                       
-     *     -1.890E+02, -1.950E+02, -2.000E+02, -2.050E+02, -2.090E+02,  
-     *     -2.110E+02, -2.100E+02, -2.100E+02, -2.090E+02, -2.050E+02,  
-     *     -1.990E+02, -1.900E+02, -1.800E+02, -1.680E+02, -1.570E+02,  
-     *     -1.430E+02, -1.260E+02, -1.080E+02, -8.900E+01, -6.300E+01,  
-     *     -3.200E+01,  1.000E+00,  3.500E+01,  6.500E+01,  9.500E+01,  
-     *      1.210E+02,  1.410E+02,  1.520E+02,  1.610E+02,  1.640E+02,  
-     *      1.640E+02,  1.610E+02,  1.550E+02,  1.480E+02,  1.430E+02,  
-     *      1.370E+02,  1.330E+02,  1.310E+02,  1.330E+02,  1.390E+02,  
-     *      1.500E+02,  1.650E+02,  1.870E+02,  2.130E+02,  2.480E+02,  
-     *      2.840E+02,  3.210E+02,  3.720E+02,  4.490E+02,  5.140E+02/  
-      DATA xnt0101/                                                       
-     *      5.690E+02,  6.090E+02,  6.420E+02,  6.730E+02,  7.000E+02,  
-     *      7.300E+02,  7.600E+02,  7.900E+02,  8.200E+02,  8.500E+02,  
-     *      8.800E+02,  9.100E+02,  9.400E+02,  9.700E+02,  1.000E+03,  
-     *      1.030E+03,  1.060E+03,  1.090E+03/                          
+                                                                        
+      DATA xn2_228/                                                       
+     *      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,
+     *      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,
+     *      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,  1.880E-10,
+     *      7.160E-10,  1.530E-09,  2.580E-09,  3.840E-09,  5.270E-09,
+     *      6.850E-09,  8.550E-09,  1.040E-08,  1.230E-08,  1.440E-08,
+     *      1.650E-08,  1.880E-08,  2.130E-08,  2.400E-08,  2.690E-08,
+     *      3.010E-08,  3.360E-08,  3.750E-08,  4.180E-08,  4.670E-08,
+     *      5.210E-08,  5.830E-08,  6.520E-08,  7.290E-08,  8.170E-08,
+     *      9.150E-08,  1.030E-07,  1.150E-07,  1.290E-07,  1.440E-07,
+     *      1.610E-07,  1.800E-07,  2.020E-07,  2.250E-07,  2.510E-07,
+     *      2.790E-07,  3.090E-07,  3.430E-07,  3.770E-07,  4.160E-07,
+     *      4.540E-07,  4.990E-07,  5.370E-07,  5.850E-07,  6.250E-07,
+     *      6.750E-07,  7.130E-07,  7.610E-07,  7.970E-07,  8.410E-07,
+     *      8.720E-07,  9.100E-07,  9.380E-07,  9.720E-07,  9.940E-07,
+     *      1.020E-06,  1.050E-06,  1.080E-06,  1.120E-06,  1.170E-06,
+     *      1.240E-06,  1.340E-06,  1.470E-06,  1.660E-06,  1.870E-06,
+     *      2.040E-06,  2.220E-06,  2.300E-06,  2.290E-06,  2.160E-06,
+     *      2.050E-06,  1.870E-06,  1.710E-06,  1.620E-06,  1.580E-06,
+     *      1.550E-06,  1.540E-06,  1.540E-06,  1.550E-06,  1.560E-06,
+     *      1.570E-06,  1.590E-06,  1.590E-06,  1.600E-06,  1.580E-06,
+     *      1.570E-06,  1.540E-06,  1.510E-06,  1.470E-06,  1.430E-06,
+     *      1.370E-06,  1.310E-06,  1.250E-06,  1.180E-06,  1.110E-06,
+     *      1.040E-06,  9.740E-07,  9.020E-07,  8.360E-07,  7.650E-07,
+     *      7.050E-07,  6.430E-07,  5.860E-07,  5.320E-07,  4.820E-07,
+     *      4.370E-07,  3.950E-07,  3.570E-07,  3.220E-07,  2.910E-07,
+     *      2.630E-07,  2.390E-07,  2.160E-07,  1.960E-07,  1.780E-07,
+     *      1.620E-07,  1.480E-07,  1.330E-07,  1.220E-07,  1.120E-07,
+     *      1.020E-07,  9.280E-08,  8.420E-08,  7.700E-08,  6.990E-08,
+     *      6.390E-08,  5.880E-08,  5.380E-08,  4.840E-08,  4.380E-08,
+     *      4.020E-08,  3.690E-08,  3.290E-08,  3.050E-08,  2.720E-08,
+     *      2.490E-08,  2.260E-08,  2.020E-08,  1.810E-08,  1.620E-08,
+     *      1.500E-08,  1.310E-08,  1.100E-08,  1.020E-08,  8.730E-09,
+     *      8.190E-09,  6.630E-09,  5.960E-09,  5.110E-09,  4.500E-09,
+     *      3.810E-09,  2.680E-09,  3.050E-09,  2.480E-09,  1.370E-09,
+     *      1.550E-09,  4.690E-10,  5.120E-10,  0.000E+00,  0.000E+00,
+     *      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00/
 
       END
 C
@@ -3062,17 +3086,20 @@ C                                                                         F20590
       V1C = V1ABS-DVC                                                     F20610
       V2C = V2ABS+DVC                                                     F20620
 C                                                                         F20630
-      I1 = (V1C-V1S)/DVS                                                  F20640
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F20710
-         I = I1+J                                                         F20720
+         I = I1+(J-1)                                                         F20720
          IF ((I.LT.1).OR.(I.GT.NPTS)) THEN
              C0(J) = 0.
              C1(J)=0.
@@ -5220,17 +5247,20 @@ C                                                                         F21190
       V1C = V1ABS-DVC                                                     F21210
       V2C = V2ABS+DVC                                                     F21220
 C                                                                         F21230
-      I1 = (V1C-V1S)/DVS                                                  F21240
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)          
 c
       DO 10 J = 1, NPTC                                                   F21310
-         I = I1+J                                                         F21320
+         I = I1+(J-1)                                                         F21320
          C(J) = 0.                                                        F21330
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F21340
          VJ = V1C+DVC* REAL(J-1)                                          F21350
@@ -5902,17 +5932,20 @@ C                                                                         F27900
       V1C = V1ABS-DVC                                                     F27920
       V2C = V2ABS+DVC                                                     F27930
 C                                                                         F27940
-      I1 = (V1C-V1S)/DVS                                                  F27950
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F28020
-         I = I1+J                                                         F28030
+         I = I1+(J-1)                                                         F28030
          C(J) = 0.                                                        F28040
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F28050
          C(J) = S(I)                                                      F28060
@@ -6542,17 +6575,20 @@ C                                                                         F34190
       V1C = V1ABS-DVC                                                     F34210
       V2C = V2ABS+DVC                                                     F34220
 C                                                                         F34230
-      I1 = (V1C-V1S)/DVS                                                  F34240
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F34310
-         I = I1+J                                                         F34320
+         I = I1+(J-1)                                                         F34320
          C(J) = 0.                                                        F34330
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F34340
          C(J) = S(I)                                                      F34350
@@ -7182,17 +7218,20 @@ C                                                                         F40480
       V1C = V1ABS-DVC                                                     F40500
       V2C = V2ABS+DVC                                                     F40510
 C                                                                         F40520
-      I1 = (V1C-V1S)/DVS                                                  F40530
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F40600
-         I = I1+J                                                         F40610
+         I = I1+(J-1)                                                         F40610
          C(J) = 0.                                                        F40620
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F40630
          VJ = V1C+DVC* REAL(J-1)                                          F40640
@@ -7289,14 +7328,17 @@ C
       V1C = V1ABS-DVC       
       V2C = V2ABS+DVC       
 C                           
-      I1 = (V1C-V1S)/DVS        
-      IF (V1C.LT.V1S) I1 = -1 
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
 C                                    
-      V1C = V1S+DVS* REAL(I1)        
-      I2 = (V2C-V1S)/DVS             
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
       NPTC = I2-I1+3                 
       IF (NPTC.GT.NPTS) NPTC=NPTS+1
-      V2C = V1C+DVS* REAL(NPTC-1)       
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       do 10 j=1,nptc
          i = i1+j
@@ -7406,16 +7448,20 @@ C
       V1C = V1ABS-DVC                                                    
       V2C = V2ABS+DVC                                                    
 C                                                                        
-      I1 = (V1C-V1S)/DVS                                                 
-      IF (V1C.LT.V1S) I1 = I1-1                                          
-C                                                                        
-      V1C = V1S+DVS* REAL(I1)                                            
-      I2 = (V2C-V1S)/DVS                                                 
-      NPTC = I2-I1+3                                                     
-      V2C = V1C+DVS* REAL(NPTC-1)                                        
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
+C                                    
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F34310
-         I = I1+J                                                         F34320
+         I = I1+(J-1)                                                         F34320
          C(J) = 0.                                                        F34330
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F34340
          vj = v1c + dvc* REAL(j-1)
@@ -7569,7 +7615,7 @@ C
       V1C = V1ABS-DVC                                                    
       V2C = V2ABS+DVC                                                    
 C                                                                        
-      NPTC = (v2c-v1c)/dvc + 3.
+      NPTC = (v2c-v1c)/dvc + 3.01
       V2C = V1C+DVc* REAL(NPTC-1)                                        
 c
       DO 10 J = 1, NPTC                                                  
@@ -7629,16 +7675,20 @@ C
       V1C = V1ABS-DVC                                                    
       V2C = V2ABS+DVC                                                    
 C                                                                        
-      I1 = (V1C-V1S)/DVS                                                 
-      IF (V1C.LT.V1S) I1 = I1-1                                          
-C                                                                        
-      V1C = V1S+DVS* REAL(I1)                                            
-      I2 = (V2C-V1S)/DVS                                                 
-      NPTC = I2-I1+3                                                     
-      V2C = V1C+DVS* REAL(NPTC-1)                                        
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
+C                                    
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C + DVS*REAL(NPTC-1)       
 c
       DO 10 J = 1, NPTC                                                   F34310
-         I = I1+J                                                         F34320
+         I = I1+(J-1)                                                         F34320
          C(J) = 0.                                                        F34330
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10                            F34340
          vj = v1c + dvc* REAL(j-1)
@@ -8016,15 +8066,20 @@ C                                                                         F42370
       V1C = V1ABS-DVC                                                     F42380
       V2C = V2ABS+DVC                                                     F42390
 C                                                                         F42400
-      I1 = (V1C-V1S)/DVS                                                  F42410
-      IF (V1C.LT.V1S) I1 = I1-1                                           F42420
-C                                                                         F42430
-      V1C = V1S+DVS* REAL(I1)                                             F42440
-      I2 = (V2C-V1S)/DVS                                                  F42450
-      NPTC = I2-I1+3                                                      F42460
-      V2C = V1C+DVS* REAL(NPTC-1)                                         F42470
+      IF (V1C.LT.V1S) then
+         I1 = -1 
+      else
+         I1 = (V1C-V1S)/DVS + 0.01
+      end if
+C                                    
+      V1C = V1S + DVS*REAL(I1-1)        
+      I2 = (V2C-V1S)/DVS + 0.01            
+      NPTC = I2-I1+3                 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+1
+      V2C = V1C + DVS*REAL(NPTC-1)       
+c
       DO 10 J = 1, NPTC                                                   F42480
-         I = I1+J                                                         F42490
+         I = I1+(J-1)                                                         F42490
          C(J) = 0.                                                        F42500
          IF (I.LT.1) GO TO 10                                             F42510
          VJ = V1C+DVC* REAL(J-1)                                          F42520

@@ -626,7 +626,6 @@ C                                                                         B01120
 C                                                                         B01140
       DATA I_10/10/
 C
-      PTHODI = 'ODint_'
       PTHODE = 'ODexact_'
       PTHODD = 'ODdeflt_'
       DATA KODLYR /
@@ -773,18 +772,9 @@ C       Use PTHODE as the name of the optical depth files.
 C       This requires the format HFMODL, which is produced by
 C       calling the SUBROUTINE QNTIFY.
 C
-C     - If calculating layer optical depths and cumulative layer
-C       optical depths for an analytic derivative calculation
-C       (IOD=3, IMRG=10), or when using the same criteria but not
-C       calculating the cumulative optical depths (IOD=3),
-C       then use PTHODI as the name of the optical depth files.
-C       This requires the format HFMODL, which is produced by
-C       calling the SUBROUTINE QNTIFY.
-C
-C     - If calculating layer absorptance coefficients for an
-C       analytic derivative calculation (IEMIT=3, IOD=3, and
-C       IMRG>40), then use TAPE10 as the name of the layer
-C       absorptance coefficient files.
+C     - If IOD=3 and IMRG=1 then calculate layer optical depths and 
+C       and interpolate all layers to the dv of the final layer
+C       (used for analytic derivative calculation)
 C
 C     - If calculating optical depths using the default procedure,
 C       sending output to a different file for each layer (IEMIT=0,
@@ -819,17 +809,17 @@ C
          CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
          IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DVOUT,BOUNF3
       ELSEIF (IOD.EQ.3) THEN
-         IF ((IMRG.EQ.10).OR.(IMRG.EQ.1)) THEN
+         IF (IMRG.EQ.1) THEN
             CALL QNTIFY(PTHODI,HFMODL)
             WRITE (KODLYR,HFMODL) PTHODI,LAYER
             INQUIRE (UNIT=KFILE,OPENED=OP)
             IF (OP) CLOSE (KFILE)
             OPEN (KFILE,FILE=KODLYR,FORM=CFORM,STATUS='UNKNOWN')
             REWIND KFILE
-            DVSAV = DV
+            dv_lbl = DV
             DV = DVOUT
             CALL BUFOUT (KFILE,FILHDR(1),NFHDRF)
-            DV = DVSAV
+            DV = dv_lbl
             IF (NOPR.EQ.0) WRITE (IPR,900) KFILE,DV,BOUNF3
          ELSEIF (IMRG.GE.40) THEN
             DVSAV = DV
@@ -872,8 +862,6 @@ C                                                                         B02450
       VFT = V1- REAL(NSHIFT)*DV                                           B02460
       VBOT = V1-BOUND                                                     B02470
       VTOP = V2+BOUND                                                     B02480
-C CHECK TO SEE IF VBOT OR VTOP FALLS IN LINE COUPLING REGION
-C     CALL CHKLNC(VBOT,VTOP,(SAMPLE*DV),1)
 C                                                                         B02490
       LINCNT = 0                                                          B02500
       NLIN = 0                                                            B02510
@@ -1667,7 +1655,7 @@ C     ************Interpolate voigt subfunctions to zeta
 
                   ENDIF
 
- 20               CONTINUE                                                B08580
+   20             CONTINUE                                                B08580
 C                                                                         B08590
                ENDIF                                                      B08600
             ENDIF                                                         B08610
@@ -1847,10 +1835,6 @@ C                                                                         B11260
 C     V1P IS FIRST FREQ OF PANEL                                          B11270
 C     V2P IS LAST FREQ OF PANEL                                           B11280
 C                                                                         B11290
-C     If DVOUT (carried in from COMMON BLOCK /IODFLG/) is zero,
-C     then no interpolation is necessary.  For nozero DVOUT
-C     (in case of IOD>0 and IMRG=1), call PNLINT.
-C
       IF (DVOUT.EQ.0.) THEN                                               B11300
          CALL BUFOUT (KFILE,PNLHDR(1),NPHDRF)                             B11310
          CALL BUFOUT (KFILE,R1(NLO),NLIM)                                 B11320

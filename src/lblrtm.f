@@ -958,32 +958,26 @@ C                                                                         A06540
       ENDIF                                                               A06600
       IF (ILAS.EQ.2) ILASRD = 1                                           A06610
 C                                                                         A06620
-C     If IOD = 1, then set DVOUT to DVSET as flag for interpolation
-C     in PNLINT, and reset DVSET to zero to avoid ratio error message
-C     in SUBROUTINE PATH.
-C
+c     check that dvset and dvout isare set properly
+c
+      IF (IOD.EQ.0) THEN
+         IF (DVOUT.ne.0.) STOP 'DVOUT MUST BE ZERO FOR IOD=0'
+      ENDIF
       IF (IOD.EQ.1) THEN
-         IF (DVSET.NE.0.) STOP 'DVSET MUST BE ZERO FOR IOD=1'
+         IF (DVSET.NE.0)  STOP 'DVSET MUST BE ZERO FOR IOD=1'
          IF (DVOUT.EQ.0.) STOP 'DVOUT MUST BE NONZERO FOR IOD=1'
+      ENDIF
+      IF (IOD.EQ.2) THEN
+         IF (DVSET.NE.0)  STOP 'DVSET MUST BE ZERO FOR IOD=2'
+         IF (DVOUT.ne.0.) STOP 'DVOUT MUST BE ZERO FOR IOD=2'
+      ENDIF
+      IF (IOD.EQ.3) THEN
+         IF (DVOUT.ne.0.) STOP 'DVOUT MUST BE ZERO FOR IOD=3 '
       ENDIF
       IF (IOD.EQ.4) THEN
          IF (DVOUT.EQ.0.) STOP 'DVOUT MUST BE NONZERO FOR IOD=4'
       ENDIF
-C
-C     If IOD = 3 (Analytic Derivative optical depth pass or
-C     Analytic Derivative absorptance coefficient flag), then
-C     set DVOUT to DVSET as flag for interpolation in PNLINT,
-C     and preserve value of DVSET for use in SUBROUTINE PATH.
-C
-      if ((imrg.eq.10).and.(iod.eq.1))
-     &    STOP 'IOD MUST BE 3 FOR IMRG=10'
-
-      IF (IOD.EQ.3) THEN
-c         IF (DVSET.EQ.0.) STOP 'DVSET MUST BE NONZERO FOR IOD=3'
-c         IF (DVOUT.NE.0.) STOP 'DVOUT MUST BE ZERO FOR IOD=3'
-         DVOUT = ABS(DVSET)
-      ENDIF
-C
+C                                                                         A06620
 C     -------------------------------------------------------------
 C                              CALL TREE
 C     XLAYER                   ---------
@@ -2559,9 +2553,6 @@ C
          iemit  = 3
          ipathl = 1
          jpathl = 1
-
-c     setting dvout to dvset triggers the interpolation of the od_s.
-c         dvout = dvset
 C
          IF (2*(NLAYER/2).eq.NLAYER) then
             MSTOR = MFILE
@@ -2593,7 +2584,7 @@ c        d1 comes from FILHD1 and specifies the grid for the interpolated output
 c        dv_lbl1 comes from FILHD1 and specifies the grid for the lbl calculation
 
          dvout = d1
-         dvset = dvout
+
          dv_lbl= dv_lbl1
          dv    = dv_lbl1
 
@@ -2880,9 +2871,6 @@ C
          iemit  = 3
          ipathl = 3
          jpathl = 3
-
-c     setting dvout to dvset triggers the interpolation of the od_s.
-c         dvout = dvset
 C
          IF (2*(NLAYER/2).eq.NLAYER) then
             MSTOR = MFILE
@@ -2914,7 +2902,7 @@ c        d1 comes from FILHD1 and specifies the grid for the interpolated output
 c        dv_lbl1 comes from FILHD1 and specifies the grid for the lbl calculation
 
          dvout = d1
-         dvset = dvout
+
          dv_lbl= dv_lbl1
          dv    = dv_lbl1
 
@@ -4557,14 +4545,11 @@ C                                                                         A21550
       PWTX = 0.                                                           A21600
       TWTX = 0.                                                           A21610
       WTOX = 0.                                                           A21620
-C                                                                         A21630
-C     DVTST=DVSET                                                         A21640
 C                                                                         A21650
 C     Write message if IOD=2 (Optical depth flag) and IMRG = 1
-C
+C                                                                         A21630
       IF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
          WRITE(IPR,953)
-         IF (DVSET.NE.0) WRITE(IPR,954) DVSET
       ENDIF
 c_______________________________________________________________________
 
@@ -4834,37 +4819,30 @@ C
       IF (ISTOP.EQ.1) WRITE (IPR,965)                                     A23110
       IF (ISTOP.EQ.1) STOP 'PATH; ISTOP EQ 1'                             A23120
 C
-C     If DVOUT is nonzero (IOD=1,3,4 -> interpolate optical depths to
+C     If DVOUT is nonzero (IOD=1 or 4:  interpolate optical depths to
 C     value of DVOUT), then test to be sure that DVOUT is finer than
 C     the monochromatic DV (and thus ensuring enough monochromatic points
 C     are available to reach the V2 endpoint for the interpolated
 C     spectrum).
+
+      IF (IOD.EQ.1.AND.DV.LT.DVOUT) THEN
+         WRITE (IPR,968) DVOUT,DV
+      endif
 c
 c Special case:  if imrg=40-43, the user is doing analytic jacobians
-c    ---> set dvout to be slightly smaller than dv
-c    ---> negative dvset implies the user wants a specific value,
-c         (this is tested for above, and iset=1 for this case)
+c    ---> non zero dvset implies the user wants a specific value,
+c         (this is tested for above)
 c         so use that one rather than re-setting to dv
 c         (for this case at this point in the code, dvset>0 and
 c          dvout=dvset, so nothing needs to be done)
 C
       IF (IOD.ge.3) THEN
-          if ((imrg.eq.1).or.((imrg.ge.40).and.(imrg.le.43))) then
-              if (iset.eq.0) then
-                  write(ipr,*) 'Reset DVOUT to 0.999*DV for IMRG=',imrg
-                  write(ipr,*) 'and reset DVSET to DVOUT'
-
-                  idvout=1.0e8*(0.9999*dv)
-                  dvout=idvout/1.0e8
-                  dvset=dvout
-                  write(ipr,*) 'new dvout, dvset, and dv: ',
-     &                dvout,dvset,dv
-              endif
-          else
-              IF (DV.LT.DVOUT) THEN
-                  WRITE (IPR,968) DVOUT,DV
-                  STOP 'PATH; DVOUT ERROR, SEE TAPE6'
-              endif
+         if ((imrg.eq.1).or.((imrg.ge.40).and.(imrg.le.43))) then
+            if (iset.eq.0) then
+               dvout = dv
+               write(ipr,*) 'new dvout, dvset, and dv: ',
+     &              dvout,dvset,dv
+            endif
          ENDIF
       ENDIF
 C
@@ -5178,10 +5156,6 @@ C                                                                         A24050
      *        4X,'ALPHV',3X,'ZETA',2X,'CALC DV',2X,'H2OSLF',5X,'DV',5X,   A24270
      *        'TYPE',' ITYPE IPATH ',3X,'SECANT'/)                        A24280
   953 FORMAT ('0 ***** EXACT CALCULATED DV USED IN CALCULATION *****')
-  954 FORMAT ('0 *** DVSET =',F10.4,' ***',/,
-     *        '  *** OPTICAL DEPTHS FOR EACH LAYER WILL BE ',
-     *        'CALCULATED USING THE EXACT DV, SO THE VALUE ',
-     *        'OF DVSET HAS BEEN IGNORED ***')
   955 FORMAT (/,'0 **** CALC DV WAS RESET TO PREVIOUS DV',F12.6,/,        A24290
      *        '  AT ALT=  ',2(F7.3,A3),' AND ABOVE')                      A24300
   960 FORMAT ('0',I5,2(F7.3,A3),1P,E15.7,0P,F8.2,3F9.6,F6.3,
@@ -5956,7 +5930,10 @@ c--------------------------------------------------------------------
 
       write(ipr,*) ' '
       write(ipr,*) 'Surface Property Derivative Output:'
-      write(ipr,'(a14)') fileout
+      write(ipr,'(a24)') filoutt
+      write(ipr,'(a24)') filoute
+      write(ipr,'(a24)') filoutr
+      write(ipr,'(a24)') filoute_r
       write(ipr,*) ' '
 
 c set up files

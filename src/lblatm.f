@@ -1571,17 +1571,17 @@ C                                                                        FA10530
      *        ' BOUNDARY = ',F10.2,' ATMOSPHERE =',F10.2,/,              FA10990
      *        ' RESET BOUNDARY GT THAN ATMOSPHERE')                      FA11000
   948 FORMAT ('1ATMOSPHERIC PROFILE SELECTED IS: M = ',I3,5X,3A8)        FA11010
-  950 FORMAT (/,T4,'I',T13,'Z',T22,'P',T34,'T',T42,'REFRACT',T73,        FA11020
-     *        'DENSITY  (MOLS CM-3)',/,T42,'INDEX-1',/,T12,'(KM)',T21,   FA11030
-     *        '(MB)',T33,'(K)',T42,'*1.0E6',T59,'AIR',(T64,8(6X,A9)))    FA11040
- 951  FORMAT (/,T4,'I',T13,'Z',T22,'P',T34,'T',T42,'REFRACT',T55,
+  950 FORMAT (/,T4,'I',T13,'Z',T24,'P',T38,'T',T46,'REFRACT',T73
+     *        'DENSITY  (MOLS CM-3)',/,T46,'INDEX-1',/,T12,'(KM)',T23,
+     *        '(MB)',T37,'(K)',T46,'*1.0E6',T63,'AIR',(T68,8(6X,A9))) 
+ 951  FORMAT (/,T4,'I',T13,'Z',T24,'P',T38,'T',T46,'REFRACT',T55,
      *        'DENSITY',T70,'MIXING RATIO (BASED UPON DRY AIR) (ppmv)',/,
-     *        T42,'INDEX-1',T52,
+     *        T46,'INDEX-1',T56,
      *        '(MOL CM-3)'/,T12,
-     *        '(KM)',T21,
-     *        '(MB)',T33,'(K)',T42,'*1.0E6',T57,'AIR',(T64,8(6X,A9)))    FA11040
+     *        '(KM)',T23,
+     *        '(MB)',T37,'(K)',T46,'*1.0E6',T61,'AIR',(T68,8(6X,A9)))    FA11040
   952 FORMAT (/)                                                         FA11050
-  954 FORMAT (I4,F11.5,F11.5,F11.5,6P,F11.5,1P,E15.7,(T64,1P,8E15.7))  
+  954 FORMAT (I4,F11.5,F15.8,F11.5,6P,F11.5,1P,E15.7,(T68,1P,8E15.7))  
   956 FORMAT (///,' HALFWIDTH INFORMATION ON THE USER SUPPLIED ',        FA11070
      *        'LBLRTM BOUNDARIES',/,' THE FOLLOWING VALUES ARE ',        FA11080
      *        'ASSUMED:')                                                FA11090
