@@ -2,6 +2,7 @@ C     path:      %P%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
+C
       SUBROUTINE LBLATM                                                  FA00010
 C
 C  --------------------------------------------------------------------------
@@ -2927,7 +2928,7 @@ C
             IF (K.GT.NMOL) GO TO 10                                      FA24060
             DENM(K,I) = AMOL(I,K,MDL)*1.0E-6*DRYAIR(I)                   FA24070
    10    CONTINUE                                                        FA24080
-         IF (NMOL.GT.1) DENM(2,I) = DENM(2,I)*CO2RAT                     FA24090
+
          DENW(I) = DENM(1,I)                                             FA24100
          DO 20 K = 8, 28                                                 FA24110
             IF (K.GT.NMOL) GO TO 30                                      FA24120

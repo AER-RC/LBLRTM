@@ -4560,21 +4560,33 @@ c     at this point scale profile if option selected
 c  *** It should be noted that no attempt has been made to keep the
 c      mass in a given layer constant, i.e. level pressure nor retained ***
 
-c        obtain accumulated amounts by molecule
+c      obtain accumulated amounts by molecule
+
+         do m = 1, nmol
+            wmt(m) = 0.
+            do l = 1, nlayrs
+               wmt(m) = wmt(m) + wkl(m,l)
+            enddo
+         enddo
 
          wsum_brod = 0.
          do l = 1, nlayrs
-            do m = 1, nmol
-               wmt(m) = wmt(m) + wkl(m,l)
-            enddo
             wsum_brod = wsum_brod + wbrodl(l)
          enddo
 
 c        obtain dry air sum
-         wsum_drair = wsum_brod
+c             check to see if nitrogen is included in the selected molecules
+
+         if (nmol.ge.22) then
+            wsum_drair = wsum_brod
+         else
+            wsum_drair = 0.
+         endif
+
          do m = 2, nmol
             wsum_drair = wsum_drair + wmt(m)
          enddo
+
 
          write (ipr,*)
          write (ipr,*) '   ',
