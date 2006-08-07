@@ -958,7 +958,7 @@ C                                                                         A06540
       ENDIF                                                               A06600
       IF (ILAS.EQ.2) ILASRD = 1                                           A06610
 C                                                                         A06620
-c     check that dvset and dvout isare set properly
+c     check that dvset and dvout are set properly
 c
       IF (IOD.EQ.0) THEN
          IF (DVOUT.ne.0.) STOP 'DVOUT MUST BE ZERO FOR IOD=0'
@@ -4578,9 +4578,9 @@ c        obtain dry air sum
 c             check to see if nitrogen is included in the selected molecules
 
          if (nmol.ge.22) then
-            wsum_drair = wsum_brod
+            wsum_drair = 0.0
          else
-            wsum_drair = 0.
+            wsum_drair = wsum_brod
          endif
 
          do m = 2, nmol
@@ -4612,7 +4612,8 @@ c             check to see if nitrogen is included in the selected molecules
 
             if ((hmol_scal(m).eq.'P' .or .hmol_scal(m).eq.'p')            ! PWV for water vapor (cm)
      *                                                .and. m.eq.1)
-     *           xmol_scal(m) = (xmol_scal_m/2.99163e-23)/wmt(m)
+c                value from vpayne 2006/07/24
+     *           xmol_scal(m) = (xmol_scal_m/2.99150e-23)/wmt(m)
 
             if (hmol_scal(m).eq.'D' .or. hmol_scal(m).eq.'d')              ! Dobson Units (du)
      *           xmol_scal(m) =  (xmol_scal_m*2.68678 e16)/wmt(m)

@@ -492,7 +492,7 @@ c
             CALL O2INF1 (V1C,V2C,DVC,NPTC,C0)                     
 c
             DO 92 J = 1, NPTC                                                
-               C(J) = taufac * C0(J)
+               C(J) = tau_fac * C0(J)
                VJ = V1C+DVC* REAL(J-1)                                       
 C                                                                      
 C              Radiation field
