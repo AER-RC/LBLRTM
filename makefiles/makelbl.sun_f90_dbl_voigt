@@ -12,7 +12,7 @@ PLATFORM = SUN
 
 FC = f90
 FCFLAG = -fast -xtypemap=real:64,double:64,integer:64
-OUTPUT = lblrtm_v10.2_f90_sun_dbl_voigt
+OUTPUT = lblrtm_v10.3_f90_sun_dbl_voigt
 CPATH = src
 CDOTO = sun_f90_dbl.o
 

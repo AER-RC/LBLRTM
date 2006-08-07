@@ -12,7 +12,7 @@ PLATFORM = OS_X (g95)
 
 FC = g95
 FCFLAG = -O2  
-OUTPUT = lblrtm_v10.1_g95_OS_X_sgl
+OUTPUT = lblrtm_v10.3_g95_OS_X_sgl
 CPATH = src
 CDOTO = os_x_sgl_g95.o
 
@@ -26,7 +26,7 @@ CLOW = lbllow
 CPST = postsub
 CFFT = fftscn
 CPLT = pltlbl
-CUTL = util_OS_X
+CUTL = util_OS_X_g95
 CDUM = lbldum
 CSOL = solar
 CNLT = nonlte
