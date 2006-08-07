@@ -334,7 +334,7 @@ c%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat
       CHARACTER*55 PTHT3M,PTHODI,PTHODTU,PTHODTD,CTAPE3
       CHARACTER*11 PTHRDRU,PTHRDRD
       CHARACTER*3 PTHDIR,AJID
-      CHARACTER*17 FULLPTH  ! change if PTHDIR//PTHRDRD//AJID changes size
+      CHARACTER*17 FULLPTH                   ! change if PTHDIR//PTHRDRD//AJID changes size
       CHARACTER*10 HFMODI,HFMODTU,HFMODTD,HFMRDR
       CHARACTER*9 CT6FIL
       CHARACTER*18 HNAMLBL,HNAMCNT,HNAMFFT,HNAMATM,HNAMLOW,HNAMNCG,
@@ -384,7 +384,7 @@ C     -------------------------
       COMMON /ADRFRM/ HFMODI,HFMODTU,HFMODTD,HFMRDR
       COMMON /IADFLG/ NSPCRT,IMRGSAV
       COMMON /ADRFIL/ KODFIL,kradtot,KTEMP,KFILAD,K_REFTRA,k_rddn_sfc
-      COMMON /RETINF/ SPCRT
+
       common /dlaydlev/ilevdx,imoldx,iup_dn,
      &    dxdL(mxlay,0:mxmol),dxdU(mxlay,0:mxmol)
 c note: from continuum module
@@ -1525,6 +1525,8 @@ C
 C     This subroutine opens file for calculating the layer derivatives
 C     (IEMIT = 3)
 C
+      IMPLICIT REAL*8 (V)
+
       LOGICAL OP
       CHARACTER*57 FILE1,FILE2,FILE3,FILE4
       CHARACTER*11 CFORM
@@ -1553,6 +1555,7 @@ c---
 c this common must be changed if the FILHDR common is changed
 c it is only here for a dummy read to make sure nothing important
 c gets changed by accident
+
       character*8     XIDj,HMOLIDj,YIDj
       real*8          SECANTj,XALTZj
       COMMON /DUMHDR/ XIDj(10),SECANTj,PAVEj,TAVEj,HMOLIDj(60),
@@ -5526,7 +5529,7 @@ c
 
       data iu1,iu2,iu3/82,83,84/  ! i/o file unit numbers
 
-      CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD
+      CHARACTER*55 PTH3TM,PTHODI,PTHODTU,PTHODTD
       CHARACTER*11 PTHRDRU,PTHRDRD
       CHARACTER*3  PTHDIR,AJID
       CHARACTER*17 FULLPTH  ! change if PTHDIR//PTHRDRD//AJID changes size
