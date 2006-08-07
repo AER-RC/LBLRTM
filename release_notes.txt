@@ -1,11 +1,39 @@
 
+LBLRTM_v10.3
+
+1) Treatment of mixing ratios has been made more consistent and the volume molar
+   density has been treated more precisely.  For example, the coding was modified 
+   to allow for variable mixing ratios of nitrogen and oxygen.  This is useful for
+   mixing ratios of nitrogen and oxygen different from earth values.
+   (S.A. Clough)
+
+2) Continuum module was also made more flexible for atmospheres that do not have
+   fixed nitrogen and oxygen values. (S.A. Clough)
+
+3) The nitrogen collision induced fundamental has been modified using data provided
+   by Walter Lafferty at NIST.  There is minimal change in the results from the previous implementation. 
+   (S.A. Clough, W. Lafferty, and E.J. Mlawer)
+
+4) Fixed an error in the coding of the subroutines that load the continuum coefficients into the arrays.  
+   Roundoff protection was not provided and in certain cases the loading of the array could be in error by one element.
+   (S.A. Clough)
+
+5) Fixed an associated with the new scaling capability has been found and fixed.
+   (S.A. Clough and M.W. Shephard)     
+   
+6) The role of IOD=3 has been made more general and more robust. (see instructions)
+   (K.E. Cady-Pereira and S.A. Clough)
+
+7) IMRG=10 is no longer an available option.  The same results can be obtained with IMRG=1.
+   (S.A. Clough and K.E. Cady-Pereira)
+
 LBLRTM_v10.1
 
 1) Modifed the program so that the layer optical depth calculation options
    work as specified in the instructions and are consistent with versions previous to LBLRTM_v10.0.
+   (S.A. Clough and M.W. Shephard)
 
-
-LBLRTM_v10.0
+Lblrtm_v10.0
 
 1) Modified the Analytic Jacobian calculations to be more efficient and accurate.
    (S.A. Clough)
@@ -25,8 +53,9 @@ LBLRTM_v10.0
 
 6) Also, available for the LBLRTM calculations are additonal CO2 P/Q/R line coupling adapted
    from Niro et al. (2005) for the CO2 v2 (600-800 cm-1). The line coupling
-   parameters are provide with LNFL (www.rtweb.aer.com).  LNFL will merges the line
-   coupling paramters with a spectroscopic line database to create input spectroscopic 
+   parameters are provide with the spectroscopic line parameters and in the LNFL
+   (www.rtweb.aer.com) example.  LNFL merges the line coupling paramters with a
+   spectroscopic line database to create input spectroscopic  
    parameters for LBLRTM.
    (M.W. Shephard and S.A. Clough)
 	 
