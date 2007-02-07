@@ -7,14 +7,13 @@ SHELL = /bin/sh
 # Set variables
 ###############################
 
-PLATFORM = LINUX
+PLATFORM = OS_X (gfortran)
 
-
-FC = ifc
-FCFLAG = -r8 -i8 -w -Vaxlib
-OUTPUT = lblrtm_v10.5_intel_linux_dbl
+FC = gfortran
+FCFLAG = -O3
+OUTPUT = lblrtm_v10.5_gfortran_OS_X_sgl
 CPATH = src
-CDOTO = intel_linux_dbl.o
+CDOTO = os_x_sgl_gfortran.o
 
 CLBL = lblrtm
 COPR = oprop
@@ -24,9 +23,9 @@ CTST = testmm
 CATM = lblatm
 CLOW = lbllow
 CPST = postsub
-CFFT = fftscn_dbl
+CFFT = fftscn
 CPLT = pltlbl
-CUTL = util_linux_intel
+CUTL = util_gfortran
 CDUM = lbldum
 CSOL = solar
 CNLT = nonlte
@@ -53,7 +52,7 @@ OBPATH = $(CDOTO)/$(CLBL).o \
          $(CDOTO)/$(CXMG).o \
          $(CDOTO)/$(CTST).o \
          $(CDOTO)/$(CATM).o \
-         $(CDOTO)/$(CLOW).o \
+          $(CDOTO)/$(CLOW).o \
          $(CDOTO)/$(CPST).o \
          $(CDOTO)/$(CFFT).o \
          $(CDOTO)/$(CPLT).o \
@@ -84,7 +83,7 @@ MODULE = $(CPATH)/$(CLBL).f \
 
 $(OUTPUT) : \
 	intro makedir $(OBPATH) conclude
-	$(FC) $(FCFLAG) -o $(OUTPUT) $(OBPATH)
+	$(FC) $(FCFLAG) -o $(OUTPUT) $(OBPATH) 
 
 
 ###############################

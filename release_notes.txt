@@ -1,4 +1,26 @@
 
+LBLRTM_v10.5
+
+1) Number of input levels (sonde levels) has been increased to 6000.
+   (S.A. Clough and J. Delamere)
+
+2) A test has been added for ikmax to provide a proper result for a horizontal (or single) layer with aerosols.
+   (S.A. Clough)
+
+3) Capability to scale cross section (xs) profiles has been added.
+   (S. A. Clough)
+
+4) Incorrect implementation of IMRG 40 and 41 (42 and 43) option  for Analytic Jacobians has been corrected.
+   (S. A. Clough)
+
+5) A change was made to enable execution with g95 in single and double precision.
+
+6) A change was made to enable the proper opening/closing of file. 
+   (M.W. Shephard, J. Gu, and D. Feldman) 
+
+7) Variable specifications were modified to be consistent within the module and to ensure proper performance with the single precision solar file for both single and double versions of lblrtm.
+   (S. A. Clough)
+
 LBLRTM_v10.3
 
 1) Treatment of mixing ratios has been made more consistent and the volume molar
@@ -54,7 +76,7 @@ Lblrtm_v10.0
 6) Also, available for the LBLRTM calculations are additonal CO2 P/Q/R line coupling adapted
    from Niro et al. (2005) for the CO2 v2 (600-800 cm-1). The line coupling
    parameters are provide with the spectroscopic line parameters and in the LNFL
-   (www.rtweb.aer.com) example.  LNFL merges the line coupling paramters with a
+   (www.rtweb.aer.com) example.  LNFL merges the line coupling parameters with a
    spectroscopic line database to create input spectroscopic  
    parameters for LBLRTM.
    (M.W. Shephard and S.A. Clough)

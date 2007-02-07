@@ -3749,7 +3749,7 @@ C**********************************************************************   E00090
 C                                                                         E00100
 C     IFIL CARRIES FILE INFORMATION                                       E00110
 C                                                                         E00120
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         E00130
@@ -4024,7 +4024,7 @@ C**********************************************************************   E00090
 C                                                                         E00100
 C     IFIL CARRIES FILE INFORMATION                                       E00110
 C                                                                         E00120
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         E00130

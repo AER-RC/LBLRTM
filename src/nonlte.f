@@ -153,9 +153,6 @@ C                                                                         600800
 C
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
-      hvnlte = '$Revision$'
-      hnmnlte= '         nonlte.f:'
-
       NUMH2O =  8
       NUMCO2 = 26
       NUMO3  = 18
@@ -551,6 +548,7 @@ C                                                                         B00630
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
 C                                                                         B00650
+      COMMON /CVNLTE/ HNMNLTE,HVNLTE
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
@@ -597,6 +595,7 @@ C                                                                         B00970
       CHARACTER*3  PTHDIR,AJID
       CHARACTER*10 HFMODL
       CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55                    B00980
+      CHARACTER*18 HNMNLTE,HVNLTE
       LOGICAL OP                                                          B00990
 C                                                                         B01000
       DIMENSION MEFDP(64),FILHDR(2),IWD(2)                                B01010
@@ -632,6 +631,11 @@ C
 C                                                                         B01160
       CALL CPUTIM (TIMEH0)                                                B01170
 C                                                                         B01180
+C     ASSIGN NAME and CVS VERSION NUMBER TO MODULE 
+C
+      HNMNLTE = '         nonlte.f:'
+      HVNLTE  = '$Revision$'
+C
 C     Initialize timing for the group "OTHER" in the TAPE6 output
 C
       TLNCOR = 0.0

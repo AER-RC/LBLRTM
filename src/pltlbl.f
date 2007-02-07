@@ -1296,7 +1296,7 @@ C                                                                         M11250
       IF (ISTEP.GE.6) ISTEP = 10+10*((ISTEP-5)/10)                        M11350
       STEP =  REAL(ISTEP)/(10.**NDP)                                      M11360
       IF (NDP.LE.0) NDP = -1                                              M11370
-      TOP = TOP-AMOD(TOP,STEP)                                            M11380
+      TOP = TOP-(int(TOP/STEP))*step                                            M11380
    20 BOT = 10000./TOP                                                    M11390
       IF (BOT.GT.V2) GO TO 60                                             M11400
       XINCH = (BOT-V1)/DX                                                 M11410

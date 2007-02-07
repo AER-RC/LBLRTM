@@ -41,7 +41,7 @@ C                                                                         F00120
      *              NLTEFL,LNFIL4,LNGTH4                                  F00190
 
       common /cntscl/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
-
+c
 c------------------------------------
 c for analytic derivative calculation
 c note: ipts  = same dimension as ABSRB
@@ -51,6 +51,17 @@ c       ipts2 = same dimension as C
      &    dqh2oC(ipts),dUh2o
 
       real cself(ipts),cfrgn_aj(ipts)
+c------------------------------------
+c
+c for cloud calculation
+c note: ipts  = same dimension as ABSRB
+c
+      parameter (n_lyr=200,n_cld=500)
+c
+      COMMON /cld_rd/ i_cld,n_freq, v_cloud_freq(n_cld),
+     &     cloudodlayer(n_lyr,n_cld)
+      DIMENSION c_cld(ipts) 
+c
 c------------------------------------
 c
       DIMENSION C0(5050),C1(5050),C2(5050)
@@ -76,6 +87,7 @@ c
      1     1.003,1.009,1.015,1.023,1.029,1.033,
      2     1.037,1.039,1.040,1.046,1.036,1.027,
      3     1.01,1.002,1.00/
+C
 C                                                                         F00290
 C     ASSIGN SCCS VERSION NUMBER TO MODULE 
 C
@@ -126,7 +138,32 @@ c zero derivative arrays and initialize panel information
           dvabsc=dvabs
           nptabsc=nptabs
       endif
-C                                                                         F00380
+
+C                                                                       
+C=======================================================================
+C
+C**** CLOUD EFFECTIVE OPTICAL DEPTH  FROM "in_lblrtm_cld" file  ********
+C=======================================================================
+c
+      call cld_od (V1C,V2C,DVC,NPTC,c_cld,layer,xkt)
+
+      if (i_cld .eq.1) then
+
+C        ---------------------------------------------------------
+C        Radiation field                                           
+C                                                                  
+         do j = 1, nptc
+            vj = v1c +real(j-1)*dvc
+            IF (JRAD.EQ.1) c_cld(j) = c_cld(j)*RADFN(VJ,XKT)        
+         enddo
+C        ---------------------------------------------------------
+
+c        Interpolate to total optical depth grid
+
+         CALL XINT (V1C,V2C,DVC,c_cld,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)  
+
+      endif
+C        
 C=======================================================================
 
 C               ********    WATER VAPOR   ********                        F00390
@@ -485,7 +522,7 @@ c
             a_n2  = 0.3/0.446
             a_h2o = 1.
 
-            tau_fac = xn2cn * (Wk(7)/xlosmt) * amagat * 
+            tau_fac = xo2cn * (Wk(7)/xlosmt) * amagat * 
      &           (a_o2*x_vmr_o2+a_n2*x_vmr_n2+a_h2o*x_vmr_h2o)
 
 c
@@ -8185,5 +8222,115 @@ C                                                                         F43280
       RETURN                                                              F43290
 C                                                                         F43300
       END                                                                 F43310
+C
+C
+C     --------------------------------------------------------------
+      subroutine cld_od(V1C,V2C,DVC,NPTC,C,layer,xkt)
+C     --------------------------------------------------------------
+C
+      IMPLICIT REAL*8           (V)       
+C
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(5050)
+c
+      parameter (n_lyr=200,n_cld=500)
+c
+      COMMON /cld_rd/ i_cld,n_freq, v_cloud_freq(n_cld),
+     &     cloudodlayer(n_lyr,n_cld) 
+      DIMENSION C(*) 
+C
+      logical EX
+      character*55 in_cld_file
+      dimension i_layer(n_lyr), pres_layer_dum(n_lyr), v_cntnm(n_lyr)
+C
+      data in_cld_file /'in_lblrtm_cld'/
+      data dvs /5./
+C
+C     ----------------------------------------------------------
+C     Read in TES cloud effective optical depth file
+C     ----------------------------------------------------------
+c
+      if (layer .eq. 1) then
+         INQUIRE (FILE=in_cld_file,EXIST=EX)  
+
+         if (EX) then
+            i_cld = 1
+            write (*,*)  '** Cloud Information Being Read **'
+            open (35,FILE=in_cld_file,STATUS='OLD')
+            read (35,*) n_freq
+            read (35,*) (v_cloud_freq(j),j=1,n_freq)
+            read (35,*) n_layer
+
+            do l =1,n_layer
+               read (35,*) i_layer(l), pres_layer_dum(l)
+               read (35,*) (cloudodlayer(l,j),j=1,n_freq)
+            enddo
+            close (35)
+         else
+            i_cld = 0
+            return
+         endif
+
+      endif
+
+      if (i_cld.eq.1) then
+c
+C        ----------------------------------------------------------
+C        Generated output continuum grid  
+C        ----------------------------------------------------------
+C
+         DVC = DVS                                                     
+         V1C = V1ABS-10.                                               
+         V2C = V2ABS+10.
+         NPTC = ((V2C - V1C)/DVC) + 1
+
+         do J = 1, NPTC                                         
+            v_cntnm(j) = V1C+DVC* REAL(J-1)                 
+         enddo
+C
+C        ----------------------------------------------------------
+C        Linearly interpolate TES cloud effective optical depth onto continuum grid
+C        ----------------------------------------------------------
+
+         ilo = 1
+         do j=1, NPTC 
+            IF (v_cntnm(j).LE.v_cloud_freq(1))      THEN  
+               C(j) = cloudodlayer(layer,1)
+               GO TO 10
+            ELSE IF (v_cntnm(j).GT.v_cloud_freq(n_freq)) THEN  
+               C(j) = cloudodlayer(layer,n_freq)
+               GO TO 10            
+            END IF
+         
+            do i=ilo, n_freq
+               IF (v_cntnm(j).LE.v_cloud_freq(i))  THEN   
+                  v_m=(cloudodlayer(layer,i)-cloudodlayer(layer,i-1))/
+     *                 (v_cloud_freq(i)-v_cloud_freq(i-1))
+                  C(j) = cloudodlayer(layer,i-1)+
+     *                 (v_cntnm(j)-v_cloud_freq(i-1))*v_m
+                  ilo = i-1
+                  GO TO 10
+               END IF
+            enddo
+            
+ 10         continue
+c     
+            if (v_cntnm(j).eq.0.) then
+               C(j) = 0.
+            else
+               C(j) = C(j)/RADFN(v_cntnm(j),XKT)   
+            endif
+
+            if (ilo.lt.1) ilo = 1
+c
+         enddo
+
+      endif
+C                                                            
+      RETURN
+      END                                                    
+C
+
+
+
 
 

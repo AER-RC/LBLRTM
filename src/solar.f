@@ -961,12 +961,15 @@ C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
-      COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF
+      COMMON /BUFPNL_s/ V1PBF,V2PBF,DVPBF,NLIMBF
 C
       DIMENSION PNLHDR(2),XARRAY(*)
 C
       EQUIVALENCE (PNLHDR(1),V1PBF)
 C
+      real*4 dvpbf,pnlhdr
+      integer*4 nlimbf
+c
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
       IF (KEOF.LE.0) RETURN
       CALL BUFIN (KFILE,KEOF,XARRAY(1),NLIMBF)
@@ -1012,13 +1015,12 @@ C     SUBROUTINE SOLIN_sgl inputs files for use with solar radiation
 C     calculations for interpolation in SOLINT.  Reads files with
 C     one record per panel. SOLIN_sgl reads single precision files
 C
-      COMMON /BUFPNL/ V1PBF,V2PBF,dvpbf,nlimbf
+      COMMON /BUFPNL_s/ V1PBF,V2PBF,dvpbf,nlimbf
 C
       DIMENSION PNLHDR(2),XARRAY(*),xarray_s(2410)
 C
       EQUIVALENCE (PNLHDR(1),V1PBF)
 C
-
       real*4 dvpbf,pnlhdr,xarray_s
 
       integer*4 kfil_s,keof_s,nphdr_s,nphdrf,nlimbf
@@ -1094,12 +1096,15 @@ C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
-      COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF
+      COMMON /BUFPNL_s/ V1PBF,V2PBF,DVPBF,NLIMBF
 C
       DIMENSION PNLHDR(2),XARAY1(*),XARAY2(2)
 C
       EQUIVALENCE (PNLHDR(1),V1PBF)
 C
+      real*4 dvpbf,pnlhdr
+      integer*4 nlimbf
+c
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
       IF (KEOF.LE.0) RETURN
       CALL BUFIN (KFILE,KEOF,XARAY1(1),NLIMBF)
@@ -1145,7 +1150,7 @@ C
 C     SUBROUTINE SOLOUT OUTPUTS ATTENUATED SOLAR RADIANCE (INTERPOLATED)
 C     TO LFILE
 C
-      COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF
+      COMMON /BUFPNL_s/ V1PBF,V2PBF,DVPBF,NLIMBF
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
@@ -1156,6 +1161,9 @@ C
 C
       REAL SOLRAD
 C
+      real*4 dvpbf,pnlhdr
+      integer*4 nlimbf
+c
       NPANLS = NPANLS+1
       V1PBF = V1P
       V2PBF = V2P

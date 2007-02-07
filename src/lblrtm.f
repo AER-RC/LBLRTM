@@ -349,7 +349,7 @@ C
       CHARACTER*1 CONE,CTWO,CTHREE,CFOUR,CA,CB,CC,CDOL,CPRCNT,CBLNK       A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,
      *                MXTRAC=22,MXSPC=5)
 C
@@ -421,7 +421,7 @@ C
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
 c
-      character*1 hmol_scal
+      character*1 hmol_scal,h_xs_scal
       character*1 surf_refl
       character*3 pad_3
 c
@@ -448,7 +448,8 @@ c
       COMMON /FLFORM/ CFORM                                               A03270
       COMMON /IODFLG/ DVOUT
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
-      common /profil_scal/ nmol_scal,hmol_scal(64),xmol_scal(64)
+      common /profil_scal/ nmol_scal,hmol_scal(64),xmol_scal(64),
+     &                     n_xs_scal,h_xs_scal(64),x_xs_scal(64)
 
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       A03070
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A03080
@@ -819,7 +820,8 @@ C                                                                         A05910
       IF ((IHIRAC+IAERSL+IEMIT+IATM+ILAS).GT.0) THEN                      A05930
 C                                                                         A05940
          READ (IRD,970,END=80,err=82) V1,V2,SAMPLE,DVSET,ALFAL0,AVMASS,
-     *                             DPTMIN, DPTFAC,ILNFLG,DVOUT,nmol_scal
+     *                             DPTMIN, DPTFAC,ILNFLG,DVOUT,
+     *                             nmol_scal,n_xs_scal
 
 c_______________________________________________________________________
 c     read information to scale the entire profile for indicated species
@@ -828,6 +830,12 @@ c
             if (nmol_scal .gt. 38) stop ' nmol_scal .gt. 38 '
             read (ird,972) (hmol_scal(m),m=1,nmol_scal)
             read (ird,973) (xmol_scal(m),m=1,nmol_scal)
+         endif
+c
+         if (n_xs_scal .gt. 0 ) then
+            if (n_xs_scal .gt. 38) stop ' nmol_scal .gt. 38 '
+            read (ird,972) (h_xs_scal(m),m=1,n_xs_scal)
+            read (ird,973) (x_xs_scal(m),m=1,n_xs_scal)
          endif
 c_______________________________________________________________________
 C                                                                         A05970
@@ -1068,32 +1076,32 @@ C                                                                         A07240
       IF (IENDPL.EQ.1) CALL ENDPLT                                        A07260
       STOP ' LBLRTM EXIT '                                                A07270
 C                                                                         A07280
-  900 FORMAT ('1')                                                        A07290
-  905 FORMAT (A80)                                                        A07300
-  910 FORMAT (10A8)                                                       A07310
-  915 FORMAT ('0',10A8,2X,2(1X,A8,1X))                                    A07320
-  920 FORMAT ('0  TIME ENTERING LBLRTM  ',F15.4)                          A07330
-  925 FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4)                      A07340
-  930 FORMAT (I1)                                                         A07350
-  935 FORMAT (14(A6,3X))                                                  A07360
-  940 FORMAT (1X,I4,13I9)                                                 A07370
-  950 FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,                 A07400
+ 900  FORMAT ('1')                                                        A07290
+ 905  FORMAT (A80)                                                        A07300
+ 910  FORMAT (10A8)                                                       A07310
+ 915  FORMAT ('0',10A8,2X,2(1X,A8,1X))                                    A07320
+ 920  FORMAT ('0  TIME ENTERING LBLRTM  ',F15.4)                          A07330
+ 925  FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4)                      A07340
+ 930  FORMAT (I1)                                                         A07350
+ 935  FORMAT (14(A6,3X))                                                  A07360
+ 940  FORMAT (1X,I4,13I9)                                                 A07370
+ 950  FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,                 A07400
      *        '  CHANGE IEMIT TO 1 OR IHIRAC TO 1 ')                      A07410
-  970 FORMAT (8E10.3,4X,I1,5x,e10.3,3X,i2)
-  971 FORMAT (7E10.3,4X,A1)
+ 970  FORMAT (8E10.3,4X,I1,5x,e10.3,3X,i2,3x,i2)
+ 971  FORMAT (7E10.3,4X,A1)
  972  FORMAT (64a1)
  973  FORMAT (7e15.7,/,(8e15.7,/))
-  975 FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,            A07470
+ 975  FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,            A07470
      *        ' AND IS NOT BOUNDED BY (0.,1.) ')                          A07480
-  980 FORMAT ('0 FOR VNU = ',F10.3,' THE REFLECTIVITY = ',E10.3,          A07490
+ 980  FORMAT ('0 FOR VNU = ',F10.3,' THE REFLECTIVITY = ',E10.3,          A07490
      *        ' AND IS NOT BOUNDED BY (0.,1.) ')                          A07500
-  985 FORMAT (5(/),'0*********** BOUNDARY PROPERTIES ***********',/,      A07510
+ 985  FORMAT (5(/),'0*********** BOUNDARY PROPERTIES ***********',/,      A07510
      *        '0 V1(CM-1) = ',F12.4,/,'0 V2(CM-1) = ',F12.4,/,            A07520
      *        '0 TBOUND   = ',F12.4,5X,'BOUNDARY EMISSIVITY   = ',        A07530
      *        3(1PE11.3),/,'0',29X,'BOUNDARY REFLECTIVITY = ',            A07540
      *        3(1PE11.3),/,'0',29X,' SURFACE REFLECTIVITY = ', A1)
-  990 FORMAT (F20.8)                                                      A07560
-  995 FORMAT ('0 TIME  LEAVING LBLRTM ',F15.4,' TOTAL',F15.4)              A07570
+ 990  FORMAT (F20.8)                                                      A07560
+ 995  FORMAT ('0 TIME  LEAVING LBLRTM ',F15.4,' TOTAL',F15.4)              A07570
  1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,
      *         7(5X,a18,2X,A18,10X, a18,2X,A18,/))
  1010 FORMAT (2I5,2X,I3)
@@ -1884,7 +1892,7 @@ C**********************************************************************
 C     XLAYER CONTROLS LAYER BY LAYER CALCULATION                          A11250
 C**********************************************************************
 C                                                                         A11260
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
      *                MXMOL=38,MXTRAC=22,mxspc=5)
 C
@@ -2100,15 +2108,15 @@ C      IMRG=36 --- GROUND TO SPACE MERGE FROM PRESTORED OPTICAL DEPTHS    A12540
 C                                                                         A12550
 C        ****  RADIANCE/DERIVATIVE CALCULATIONS  ****
 C
-C      IMRG=40 --- Downwelling radiance from prestored optical depths,
+C      IMRG=40 --- Upwelling radiance from prestored optical depths,
 C                  monochromatic
-C      IMRG=41 --- Downwelling & Upwelling radiance from prestored optical
-C                  depths,monochromatic
+C      IMRG=41 --- Downwelling radiance from prestored optical depths,
+C                  monochromatic
 C
-C      IMRG=42 --- Downwelling radiance from prestored optical depths,
+C      IMRG=42 --- Upwelling radiance from prestored optical depths,
 C                  scanned
-C      IMRG=43 --- Downwelling & Upwelling radiance from prestored optical
-C                  depths,scanned
+C      IMRG=43 --- Downwelling radiance from prestored optical depths,
+C                  scanned
 C
 C  Note for IMRG=40,41:  Monochromatic radiance & derivative calculations
 C  Note for IMRG=42,43:  Only the derivative calculations are scanned
@@ -2278,7 +2286,7 @@ C
       IF (IMRG.GE.35 .and. iemit.ne.3) THEN
 
 c     Get the pathname for the optical depth files
-         READ (IRD,945) PATH1
+         READ (IRD,945) PATH1, laytot
          CALL QNTIFY(PATH1,HFORM1)
 
 c                    nlayr, layr,
@@ -2288,16 +2296,18 @@ c     Get the maximum number of layers from the optical depth file for layer 1
          REWIND kodfil
          CALL BUFIN (kodfil,KEOF,FILDU1(1),NFHDRF)
 
+         close (kodfil)
+
          nlayer = nlayd1
 
       ENDIF
 C
+c****************************************************************************
+c****************************************************************************
+
 c radiance merge from space to surface using precalculated ODint files
 
-C     ---------------------
-C                                     SPECIAL CASE -> IMRG=40-43, IEMIT=1
-c
-      IF (((IMRG.eq.41.or.IMRG.eq.43)) .AND. (IEMIT.EQ.1)) THEN
+      IF ((IMRG.eq.40.or.IMRG.eq.42) .AND. (IEMIT.EQ.1)) THEN
 
          iemit_sav = iemit
          iemit  = 1
@@ -2375,6 +2385,166 @@ c        RDDN files have been created
          surf_refl = surf_refl_sav
 
       ENDIF
+
+c************************************************************************
+c************************************************************************
+
+
+c radiance merge from surface to space using precalculated ODint files
+
+c downwelling radiance at the surface must first be calculated for reflected component
+
+C     ---------------------
+C                                     SPECIAL CASE -> IMRG=41-43, IEMIT=1
+c
+      IF (((IMRG.eq.41.or.IMRG.eq.43)) .AND. (IEMIT.EQ.1)) THEN
+
+c     First compute the downwelling radiance at the lower boundary, e.g. the surface
+
+         iemit_sav = iemit
+         iemit  = 1
+C
+         lh1 = 1
+         lh2 = nlayer
+
+         tmpbndsav = tmpbnd
+
+         ipathl_sav = ipathl
+         jpathl_sav = jpathl
+
+         surf_refl_sav = surf_refl
+
+         ipathl = 3
+         jpathl = ipathl
+
+c     set up format for file name
+         CALL QNTIFY(PATH1,HFORM1)
+
+c     set path name for rad up files
+         PTHRAD = 'RDUPlayer_'
+         CALL QNTIFY(PTHRAD,HFMRAD)
+
+         kfile = kodfil
+
+         IF (2*(NLAYER/2).eq.NLAYER) then
+            MSTOR = MFILE
+            MFILE = LFILE
+            LFILE = MSTOR
+         endif
+
+         LAYER = 0
+
+c***************Loop over Layers ************
+ 725     LAYER = LAYER+1
+
+         REWIND MFILE
+         REWIND LFILE
+         WRITE (IPR,900)
+         WRITE (IPR,905)
+
+c     open appropriate optical depth file
+         CALL OPNODF(NLAYER,LAYER,PATH1,HFORM1,-iemit)
+         WRITE (IPR,905)
+
+         CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
+
+         IF (LAYER.EQ.lh2) go to 728
+
+         MSTOR = MFILE
+         MFILE = LFILE
+         LFILE = MSTOR
+C
+C        END OF LOOP OVER LAYERS
+C
+         GO TO 725
+
+ 728     continue
+
+         k_rddn = 27
+
+         OPEN(UNIT=k_rddn,FILE='RDDN_sfc',FORM='unformatted',
+     &        STATUS='UNKNOWN')
+
+         rewind mfile
+         CALL COPYFL (NPTS,MFILE,k_rddn)
+         close (k_rddn)
+c_______________________________________________________________
+
+c     Now create upwelling radiance files
+
+         iemit  = 1
+         ipathl = 1
+C
+         lh1 = 1
+         lh2 = nlayer
+
+         tmpbndsav = tmpbnd
+
+         ipathl_sav = ipathl1
+         jpathl_sav = jpathl
+
+         surf_refl_sav = surf_refl
+
+         jpathl = ipathl
+
+c     set up format for file name
+         CALL QNTIFY(PATH1,HFORM1)
+
+c     set path name for rad up files
+         PTHRAD = 'RDUPlayer_'
+         CALL QNTIFY(PTHRAD,HFMRAD)
+
+         kfile = kodfil
+
+         IF (2*(NLAYER/2).eq.NLAYER) then
+            MSTOR = MFILE
+            MFILE = LFILE
+            LFILE = MSTOR
+         endif
+
+         LAYER = 0
+
+c***************Loop over Layers ************
+ 735     LAYER = LAYER+1
+
+         REWIND MFILE
+         REWIND LFILE
+         WRITE (IPR,900)
+         WRITE (IPR,905)
+
+c     open appropriate optical depth file
+         CALL OPNODF(NLAYER,LAYER,PATH1,HFORM1,-iemit)
+         WRITE (IPR,905)
+
+         CALL XMERGE (NPTS,LFILE,MFILE,JPATHL)
+
+         CALL OPNRAD(nfile,NLAYER,LAYER)
+
+         rewind mfile
+         CALL COPYFL (NPTS,MFILE,NFILE)                                 A14220
+         close (nfile)
+
+         IF (LAYER.EQ.lh2) go to 738
+
+         MSTOR = MFILE
+         MFILE = LFILE
+         LFILE = MSTOR
+C
+C        END OF LOOP OVER LAYERS
+C
+         GO TO 735
+
+ 738     continue
+
+c        RDUP files have been created
+
+         tmpbnd = tmpbndsav
+         surf_refl = surf_refl_sav
+
+      ENDIF
+
+c************************************************************************
+C
 C
 C     ****************** ANALYTIC DERIVATIVE ***********************
 C
@@ -3747,7 +3917,7 @@ C                                                                         A16880
 C                                                                         A16900
 C     OPPATH CALLS LBLATM AND CALLS PATH FIRST                            A16910
 C                                                                         A11260
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
      *                MXMOL=38,MXTRAC=22)
 C                                                                         A16920
@@ -4111,7 +4281,7 @@ C     SUBROUTINE PATH INITIALIZES LINFIL AND INPUTS LAYER PARAMETERS      A19220
 C     SUBROUTINE PATH INPUTS AND OUTPUTS HEADER FROM LINFIL AND           A19230
 C     INPUTS AND OUTPUTS PATH PARAMETERS FOR EACH LAYER                   A19240
 C                                                                         A19250
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
      *                MXMOL=38,MXTRAC=22)
 C
@@ -4125,9 +4295,10 @@ C
      *              EXTID(10)                                             A19320
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
-      common /profil_scal/ nmol_scal,hmol_scal(64),xmol_scal(64)
+      common /profil_scal/ nmol_scal,hmol_scal(64),xmol_scal(64),
+     &                     n_xs_scal,h_xs_scal(64),x_xs_scal(64)
 c
-      character*1 hmol_scal
+      character*1 hmol_scal,h_xs_scal
       character*1 surf_refl
       character*3 pad_3
 C                                                                         A17260
@@ -4494,6 +4665,179 @@ C
       ENDIF                                                               A21100
 C                                                                         A21110
    50 WRITE (IPR,945) XID,(YID(M),M=1,2)                                  A21120
+
+c_______________________________________________________________________
+
+c     at this point scale profile if option selected
+
+      if (nmol_scal.gt.0 .or. n_xs_scal.gt.0) then
+
+c  *** It should be noted that no attempt has been made to keep the
+c      mass in a given layer constant, i.e. level pressure nor retained ***
+
+c      obtain accumulated amounts by molecule
+
+         do m = 1, nmol
+            wmt(m) = 0.
+            do l = 1, nlayrs
+               wmt(m) = wmt(m) + wkl(m,l)
+            enddo
+         enddo
+
+         wsum_brod = 0.
+         do l = 1, nlayrs
+            wsum_brod = wsum_brod + wbrodl(l)
+         enddo
+
+c        obtain dry air sum
+c             check to see if nitrogen is included in the selected molecules
+
+         if (nmol.ge.22) then
+            wsum_drair = 0.0
+         else
+            wsum_drair = wsum_brod
+         endif
+
+         do m = 2, nmol
+            wsum_drair = wsum_drair + wmt(m)
+         enddo
+
+         write (ipr,*)
+         write (ipr,*) '   ',
+     *         '******************************************************'
+         write (ipr,*)
+         write (ipr,*) '               Profile Scaling          '
+
+         write (ipr,956)
+ 956     format (/,4x,' molecule',
+     *        2x,'hmol_scale',3x, 'xmol_scal_in',3x, 'scale factor',/)
+
+         do m = 1, nmol_scal
+            xmol_scal_m = xmol_scal(m)
+            xmol_scal(m) = -999.
+            if (hmol_scal(m).eq.' ') xmol_scal(m) = 1.
+            if (hmol_scal(m).eq.'0') xmol_scal(m) = 0.
+            if (hmol_scal(m).eq.'1') xmol_scal(m) = xmol_scal_m           ! Scale factor
+
+            if (hmol_scal(m).eq.'C' .or. hmol_scal(m).eq.'c')             ! Column Amount (molec/cm^2)
+     *           xmol_scal(m) = xmol_scal_m/wmt(m)
+
+            if (hmol_scal(m).eq.'M' .or. hmol_scal(m).eq.'m')             ! Mixing ratio (molec/molec(dry_air))
+     *           xmol_scal(m) = xmol_scal_m/(wmt(m)/wsum_drair)
+
+            if ((hmol_scal(m).eq.'P' .or .hmol_scal(m).eq.'p')            ! PWV for water vapor (cm)
+     *                                                .and. m.eq.1)
+c                value from vpayne 2006/07/24
+     *           xmol_scal(m) = (xmol_scal_m/2.99150e-23)/wmt(m)
+
+            if (hmol_scal(m).eq.'D' .or. hmol_scal(m).eq.'d')              ! Dobson Units (du)
+     *           xmol_scal(m) =  (xmol_scal_m*2.68678 e16)/wmt(m)
+
+            if ((hmol_scal(m).eq.'P' .or .hmol_scal(m).eq.'p')             | Error
+     *                                                .and. m.ne.1) then
+
+               write (ipr,*) 'm = ', m
+               stop ' (hmol_scal(m).eq."P" .and. m.ne.1) '
+            endif
+
+            write (ipr,957) m, hmol_scal(m), xmol_scal_m, xmol_scal(m)
+ 957        format (5x,i5,9x,a1,5x,1p, 4e15.7)
+
+           if (xmol_scal(m) .lt. -998.) then                             | Error
+               write (ipr,*) 'm = ', m,' h_mol_scal(m) not valid '
+               write (  *,*) 'm = ', m,' h_mol_scal(m) not valid '
+               stop
+            endif
+
+            do l = 1, nlayrs
+               wkl(m,l) = wkl(m,l) * xmol_scal(m)
+            enddo
+
+         enddo
+
+         write (ipr,*)
+         write (ipr,*) '   ',
+     *           '*****************************************************'
+         write (ipr,*)
+
+      endif
+C
+
+c     at this point scale cross section profiles if option selected
+
+      if (n_xs_scal.gt.0 .and. ixsect.ge.1) then
+
+c  *** It should be noted that no attempt has been made to keep the
+c      mass in a given layer constant, i.e. level pressure nor retained ***
+
+c      obtain accumulated amounts by cross section species
+
+         do m = 1, n_xs_scal
+            wmt(m) = 0.
+            do l = 1, nlayrs
+               wmt(m) = wmt(m) + xamnt(m,l)
+            enddo
+         enddo
+
+         write (ipr,958)
+ 958     format (/,4x,'  species',
+     *        2x,'h_xs_scale',3x, 'x_xs_scal_in',3x, 'scale factor',/)
+
+         do m = 1, n_xs_scal
+            x_xs_scal_m = x_xs_scal(m)
+            x_xs_scal(m) = -999.
+            if (h_xs_scal(m).eq.' ') x_xs_scal(m) = 1.
+            if (h_xs_scal(m).eq.'0') x_xs_scal(m) = 0.
+            if (h_xs_scal(m).eq.'1') x_xs_scal(m) = x_xs_scal_m           ! Scale factor
+
+            if (h_xs_scal(m).eq.'C' .or. h_xs_scal(m).eq.'c')             ! Column Amount (_xsec/cm^2)
+     *           x_xs_scal(m) = x_xs_scal_m/wmt(m)
+
+            if (h_xs_scal(m).eq.'M' .or. h_xs_scal(m).eq.'m')             ! Mixing ratio (_xsec/_xsec(dry_air))
+     *           x_xs_scal(m) = x_xs_scal_m/(wmt(m)/wsum_drair)
+
+            if (h_xs_scal(m).eq.'D' .or. h_xs_scal(m).eq.'d')             ! Dobson Units (du)
+     *           x_xs_scal(m) =  (x_xs_scal_m*2.68678 e16)/wmt(m)
+
+            if ((h_xs_scal(m).eq.'P' .or .h_xs_scal(m).eq.'p')            | Error
+     *                                           .and. m.ne.1) then
+               write (ipr,*) 'm = ', m
+               stop ' (h_xs_scal(m).eq."P" .and. m.ne.1) '
+            endif
+
+           if (x_xs_scal(m) .lt. -998.) then                              | Error
+               write (ipr,*) 'm = ', m,' h_xs_scal(m) not valid '
+               write (  *,*) 'm = ', m,' h_xs_scal(m) not valid '
+               stop
+            endif
+
+            write (ipr,959) m, h_xs_scal(m), x_xs_scal(m), x_xs_scal_m
+ 959        format (5x,i5,9x,a1,5x,1p, 4e15.7)
+
+            x_xs_scal(m) = x_xs_scal_m
+
+            do l = 1, nlayrs
+               xamnt(m,l) = xamnt(m,l) * x_xs_scal(m)
+            enddo
+
+         enddo
+
+         write (ipr,*)
+         write (ipr,*) '   ',
+     *         '******************************************************'
+         write (ipr,*)
+
+c        reset the accumulated array to zero
+
+         do m = 1,mxmol
+            wmt(m) = 0.
+         enddo
+
+      endif
+c_______________________________________________________________________
+c     end of profile scaling
+
+
       IF (IFORM.EQ.1) THEN
          WRITE (IPR,950)
       ELSE
@@ -4554,102 +4898,6 @@ C                                                                         A21630
       IF (IOD.EQ.2.AND.IMRG.EQ.1) THEN
          WRITE(IPR,953)
       ENDIF
-c_______________________________________________________________________
-
-c     at this point scale profile if option selected
-
-      if (nmol_scal .gt.0) then
-
-c  *** It should be noted that no attempt has been made to keep the
-c      mass in a given layer constant, i.e. level pressure nor retained ***
-
-c      obtain accumulated amounts by molecule
-
-         do m = 1, nmol
-            wmt(m) = 0.
-            do l = 1, nlayrs
-               wmt(m) = wmt(m) + wkl(m,l)
-            enddo
-         enddo
-
-         wsum_brod = 0.
-         do l = 1, nlayrs
-            wsum_brod = wsum_brod + wbrodl(l)
-         enddo
-
-c        obtain dry air sum
-c             check to see if nitrogen is included in the selected molecules
-
-         if (nmol.ge.22) then
-            wsum_drair = 0.0
-         else
-            wsum_drair = wsum_brod
-         endif
-
-         do m = 2, nmol
-            wsum_drair = wsum_drair + wmt(m)
-         enddo
-
-
-         write (ipr,*)
-         write (ipr,*) '   ',
-     *         '******************************************************'
-         write (ipr,*)
-         write (ipr,*) '               Profile Scaling          '
-
-         write (ipr,956)
- 956     format (/,4x,' molecule',
-     *        2x,'hmol_scale',3x, 'xmol_scal_in',3x, 'scale factor',/)
-
-         do m = 1, nmol_scal
-            xmol_scal_m = xmol_scal(m)
-            if (hmol_scal(m).eq.' ') xmol_scal(m) = 1.
-            if (hmol_scal(m).eq.'0') xmol_scal(m) = 0.
-            if (hmol_scal(m).eq.'1') xmol_scal(m) = xmol_scal_m           ! Scale factor
-
-            if (hmol_scal(m).eq.'C' .or. hmol_scal(m).eq.'c')             ! Column Amount (molec/cm^2)
-     *           xmol_scal(m) = xmol_scal_m/wmt(m)
-
-            if (hmol_scal(m).eq.'M' .or. hmol_scal(m).eq.'m')             ! Mixing ratio (molec/molec(dry_air))
-     *           xmol_scal(m) = xmol_scal_m/(wmt(m)/wsum_drair)
-
-            if ((hmol_scal(m).eq.'P' .or .hmol_scal(m).eq.'p')            ! PWV for water vapor (cm)
-     *                                                .and. m.eq.1)
-c                value from vpayne 2006/07/24
-     *           xmol_scal(m) = (xmol_scal_m/2.99150e-23)/wmt(m)
-
-            if (hmol_scal(m).eq.'D' .or. hmol_scal(m).eq.'d')              ! Dobson Units (du)
-     *           xmol_scal(m) =  (xmol_scal_m*2.68678 e16)/wmt(m)
-
-            if ((hmol_scal(m).eq.'P' .or .hmol_scal(m).eq.'p')             | Error
-     *                                                .and. m.ne.1) then
-
-               write (ipr,*) 'm = ', m
-               stop ' (hmol_scal(m).eq."P" .and. m.ne.1) '
-            endif
-
-            write (ipr,957) m, hmol_scal(m), xmol_scal_m, xmol_scal(m)
- 957        format (5x,i5,9x,a1,5x,1p, 4e15.7)
-
-            do l = 1, nlayrs
-               wkl(m,l) = wkl(m,l) * xmol_scal(m)
-            enddo
-
-         enddo
-
-         write (ipr,*)
-         write (ipr,*) '   ',
-     *         '******************************************************'
-         write (ipr,*)
-
-c        reset the accumulated array to zero
-
-         do m = 1,mxmol
-            wmt(m) = 0.
-         enddo
-
-      endif
-c_______________________________________________________________________
 C
 C     LOOP OVER LAYERS                                                    A21660
 C                                                                         A21670
@@ -5595,7 +5843,7 @@ c subroutine to convert layer derivatives to level derivatives
 c
       IMPLICIT REAL*8 (V)
 
-      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=4000,
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
 
 c iup_dn is used to determine what to map
@@ -5631,6 +5879,8 @@ c
       DIMENSION XFILHD(2),PNLHD(2)
       EQUIVALENCE (XFILHD(1),XID(1)) , (PNLHD(1),V1P)
 
+      character*4 ht1,ht2
+c
       LOGICAL op
       CHARACTER*61 FILE1,FILE2,FILE3
 

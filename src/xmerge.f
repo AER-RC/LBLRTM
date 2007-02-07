@@ -118,7 +118,14 @@ C
 C        IEMIT = 1  =>  Radiance and Transmittance calculated
 C
          IF (IEMIT.EQ.1) THEN
-            IF (IMRG.NE.36.AND.IMRG.NE.46) THEN                           H00580
+            IF (IMRG.eq.36 .or. IMRG.eq.46) THEN                           H00580
+               IF (LAYER.EQ.1) THEN                                       H00670
+                  TBND = TMPBND                                           H00680
+                  CALL FLINIT (NPTS,MFILE,JPATHL,TBND)                    H00690
+               ELSE                                                       H00700
+                  CALL FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND)              H00710
+               ENDIF                                                      H00720
+            ELSE                                                          H00660
                IF (LAYER.EQ.lh1) THEN                                       H00590
                   IF (IPATHL.EQ.1) TBND = TMPBND                          H00600
                   CALL EMINIT (NPTS,MFILE,JPATHL,TBND)                    H00610
@@ -126,13 +133,6 @@ C
                   IF (IPATHL.EQ.3.AND.LAYER.EQ.LH2) TBND = TMPBND         H00630
                   CALL RADMRG (NPTS,LFILE,MFILE,JPATHL,TBND)              H00640
                ENDIF                                                      H00650
-            ELSE                                                          H00660
-               IF (LAYER.EQ.1) THEN                                       H00670
-                  TBND = TMPBND                                           H00680
-                  CALL FLINIT (NPTS,MFILE,JPATHL,TBND)                    H00690
-               ELSE                                                       H00700
-                  CALL FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND)              H00710
-               ENDIF                                                      H00720
             ENDIF                                                         H00730
          ENDIF                                                            H00740
 C
@@ -165,7 +165,7 @@ C
 C                                                                         H00820
       IMPLICIT REAL*8           (V)                                     ! H00830
 C                                                                         H00840
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H00850
@@ -282,6 +282,7 @@ C                                                                         H01810
       DIMENSION ODLAYR(2)                                                 H01830
 C                                                                         H01840
       CHARACTER*40 CEXT,CYID                                              H01850
+      CHARACTER*8  EXTID
 C                                                                         H01860
       EQUIVALENCE (XFILHD(1),XID(1)) , (PNLHDR(1),V1P)                    H01870
       EQUIVALENCE (ODLAY(1),ODLAYR(1)) , (FSCDID(4),IAERSL),              H01880
@@ -2454,16 +2455,22 @@ c
       character*3 pad_3
 c
       COMMON /OPANL/ V1PO,V2PO,DVPO,NLIMO                                 H16730
+c
+      common /rddn_pnl/ v1pdn,v2pdn,dvpdn,nlimdn,
+     &                  rddn_sfc(2400),tr_sfc(2400)
+c
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H16740
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        H16750
      *              NLTEFL,LNFIL4,LNGTH4                                  H16760
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H16770
 C                                                                         H16780
       CHARACTER*40 CEXT,CYID                                              H16790
+      CHARACTER*8  EXTID
 C                                                                         H16800
       DIMENSION EMLAYB(2410)                                              H16810
       DIMENSION XFILHD(2),OPNLHD(2)                                       H16820
       DIMENSION EMLAYR(2),TRALYR(2)                                       H16830
+      dimension xdn_dum(2),tr_dum(2)
 C                                                                         H16840
       EQUIVALENCE (XFILHD(1),XID(1)) , (OPNLHD(1),V1PO)                   H16850
       EQUIVALENCE (NEWEM(1),EMLAYR(1)) , (NEWTR(1),TRALYR(1)),            H16860
@@ -2513,11 +2520,32 @@ C                                                                         H17250
          CYID(19:40) = CEXT(19:40)                                        H17290
          READ (CYID,'(5A8)') (YID(I),I=3,7)                               H17300
       ENDIF                                                               H17310
+c
+      imrg_sfc = 0
+
+c check to see if this is upwelling case: open 'RDDN_SFC file 
+
+      IF (imrg.eq.41 .and. IBPROP.EQ.1.AND.IPATHL.EQ.1) then
+         k_rddn = 27
+
+         OPEN(UNIT=k_rddn,FILE='RDDN_SFC',FORM='UNFORMATTED',
+     &        STATUS='OLD',iostat=ios)
+
+         if (ios.gt.0) then
+            stop 'not able to open RDDN_SFC'
+         endif
+
+         imrg_sfc = 1
+c        buffer past file header
+         call bufin(k_rddn,keof,xdn_dum(1),1)
+
+      endif
 C                                                                         H17320
 C     IF BOUNDARY PROPERTIES ARE SUPPLIED, AND DOWNWARD LOOKING           H17330
 C     CASE; SET IPATHL TO REFLECTED ATMOSPHERE CASE                       H17340
 C                                                                         H17350
-      IF (IBPROP.EQ.1.AND.IPATHL.EQ.1) IPATHL = -1                        H17360
+      IF (imrg.ne.41 .and. IBPROP.EQ.1.AND.IPATHL.EQ.1) IPATHL = -1
+
       IEMIT = 1                                                           H17370
       FACT = 1.                                                           H17380
       TIMEM = 0.0                                                         H17390
@@ -2618,7 +2646,7 @@ C
 C                                                                         H18300
          IF (NLIM2.LT.NLIMO) GO TO 40                                     H18310
 C                                                                         H18320
-      ELSEIF (IPATHL.EQ.-1) then
+      ELSEIF (IPATHL.EQ.-1 .or. imrg_sfc.gt.0) then
 C                                                                         H18340
          NLIM1 = 0                                                        H18350
          NLIM2 = 0                                                        H18360
@@ -2662,23 +2690,49 @@ C                                                                         H18780
          ENDIF
          NLIM2 = MIN(NLIM2,NLIMO)                                         H18800
 C                                                                         H18810
-         DO 70 J = NLIM1, NLIM2                                           H18820
-            V=V1PO+ REAL(J-1)*DVPO
-            NEWEM(J) = EMLAYR(J)+EMLAYB(J)*REFLCT*TRALYR(J)+              H18830
-     *                 TRALYR(J)*BB*EMISIV                                H18840
+c     check to see if contribution from reflected precalculated 
+c     downwelling radiance at the surface (RDDN_SFC) is to be included
+
+         if (imrg_sfc .eq. 0 ) then
+            
+            DO 70 J = NLIM1, NLIM2                                           H18820
+               V=V1PO+ REAL(J-1)*DVPO
+               NEWEM(J) = EMLAYR(J)+EMLAYB(J)*REFLCT*TRALYR(J)+              H18830
+     *                    TRALYR(J)*BB*EMISIV                                H18840
 C
-C           Increment interpolation value
+C              Increment interpolation value
 C
-            EMISIV = EMISIV+EMDEL                                         H18850
-            REFLCT = REFLCT+RFDEL                                         H18860
-            BB = BB+BBDEL                                                 H18870
-   70    CONTINUE                                                         H18880
-C                                                                         H18890
+               EMISIV = EMISIV+EMDEL                                         H18850
+               REFLCT = REFLCT+RFDEL                                         H18860
+               BB = BB+BBDEL                                                 H18870
+ 70         CONTINUE                                                         H18880
+C                                                                            H18890
+         else
+
+            call bufin(k_rddn,keof,xdn_dum(1),nphdrf)
+            call bufin(k_rddn,keof,rddn_sfc(1),nlimdn)
+            call bufin(k_rddn,keof,tr_dum(1),1)
+            
+            DO 72 J = NLIM1, NLIM2                                           H18820
+               V=V1PO+ REAL(J-1)*DVPO
+               NEWEM(J) = EMLAYR(J)+rddn_sfc(j)*REFLCT*TRALYR(J)+                H18830
+     *                    TRALYR(J)*BB*EMISIV                                H18840
+C     
+C                  Increment interpolation value
+C
+               EMISIV = EMISIV+EMDEL                                         H18850
+               REFLCT = REFLCT+RFDEL                                         H18860
+               BB = BB+BBDEL                                                 H18870
+ 72         CONTINUE                                                         H18880
+
+         endif
+c     
          IF (NLIM2.LT.NLIMO) GO TO 60                                     H18900
 C                                                                         H18910
       ENDIF                                                               H18920
       CALL EMOUT (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,MFILE,NPTS,NPANLS)     H18930
       GO TO 20                                                            H18940
+
    80 CALL CPUTIM (TIME1)                                                 H18950
       TIME = TIME1-TIME                                                   H18960
       WRITE (IPR,915) TIME,TIMEM                                          H18970
@@ -5705,6 +5759,7 @@ c
       
 C                                                                         H16780
       CHARACTER*40 CEXT,CYID                                              H16790
+      CHARACTER*8  EXTID
 C                                                                         H16800
       DIMENSION EMLAYB(2410)                                              H16810
       DIMENSION XFILHD(2),OPNLHD(2),XFHDUM(2)                             H16820
@@ -7414,6 +7469,7 @@ c
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H31220
 C                                                                         H31230
       CHARACTER*40 CEXT,CYID                                              H31240
+      CHARACTER*8  EXTID
 C                                                                         H31250
       REAL NEWEM,NEWTR                                                    H31260
 C                                                                         H31270
@@ -8296,6 +8352,7 @@ C                                                                         H39670
       DIMENSION APNLHD(2),AFILHD(2)                                       H39740
 C                                                                         H39750
       CHARACTER*40 CEXT                                                   H39760
+      CHARACTER*8  EXTID
 C                                                                         H39770
       EQUIVALENCE (APNLHD(1),V1P) , (AFILHD(1),XID(1))                    H39780
 C                                                                         H39790
@@ -8362,7 +8419,7 @@ C     ROUTINE TO ADD ABSORPTION AND SCATTERING TO THE TRANSMITTANCE       H40460
 C     VALUES AT EACH POINT. THE AEROSOL VALUES ARE STORED IN              H40470
 C     COMMON ABSORB AND COMMON SCATTR.                                    H40480
 C                                                                         H40490
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=3400,
+      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
 C
       COMMON R1(2410)                                                     H40500
@@ -8391,6 +8448,7 @@ C                                                                         H40690
       EQUIVALENCE (FSCDID(4),IAERSL)                                      H40710
 C                                                                         H40720
       CHARACTER*40 CEXT,CYID                                              H40730
+      CHARACTER*8  EXTID
 C                                                                         H40740
       DIMENSION PNLHD(4),XFILHD(2)                                        H40750
 C                                                                         H40760

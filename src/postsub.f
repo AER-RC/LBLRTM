@@ -51,7 +51,7 @@ C                                                                         I00280
       CHARACTER*11 CFORM                                                  I00300
       CHARACTER*8 HSCNID(0:6)                                             I00310
       CHARACTER*18 HNAMPST,HVRPST
-      CHARACTER SCNOUT*7,SCNINF*7,CTAPE*4                                 I00320
+      CHARACTER h_ifil*7,SCNOUT*7,SCNINF*7,CTAPE*4  
       LOGICAL OP                                                          I00330
 C                                                                         I00340
       DIMENSION FILHDR(2),SUMR(4)                                         I00350
@@ -284,6 +284,12 @@ C                                                                         I02110
 C                                                                         I02160
 C     SKIP TO SELECTED 'FILE'                                             I02170
 C                                                                         I02180
+      inquire(ifile,opened=op)
+      IF (.NOT.OP) THEN
+         WRITE (h_ifil,940) CTAPE,IFILE
+         OPEN (IFILE,FILE=h_ifil,STATUS='UNKNOWN',FORM=CFORM)
+      ENDIF
+
       REWIND IFILE                                                        I02190
       IF (IFILST.GT.1) CALL SKIPFL (IFILST-1,IFILE,IEOF)                  I02200
 C                                                                         I02210
