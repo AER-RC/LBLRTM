@@ -11,7 +11,7 @@ PLATFORM = OS_X (gfortran)
 
 FC = gfortran
 FCFLAG = -O3
-OUTPUT = lblrtm_v10.5_gfortran_OS_X_sgl
+OUTPUT = lblrtm_v10.6_gfortran_OS_X_sgl
 CPATH = src
 CDOTO = os_x_sgl_gfortran.o
 

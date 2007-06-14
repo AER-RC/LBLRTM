@@ -387,6 +387,11 @@ C     -------------------------
 
       common /dlaydlev/ilevdx,imoldx,iup_dn,
      &    dxdL(mxlay,0:mxmol),dxdU(mxlay,0:mxmol)
+
+      parameter (n_lyr=200,n_cld=500)
+      COMMON /cld_rd/ i_cld,n_freq, v_cloud_freq(n_cld),
+     &     cloudodlayer(n_lyr,n_cld)
+
 c note: from continuum module
 c          ipts  = same dimension as ABSRB
 c          ipts2 = same dimension as C
@@ -602,6 +607,15 @@ C                                                                         A04280
       READ(IRD,925,END=80) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,             A04290
      *                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,      A04300
      *                      IOD,IXSECT,IRAD,MPTS,NPTS                     A04310
+c
+c     use iaersl=2 to trigger new option of reading layer optical depths
+c                  into the continuum module
+
+      i_cld = 0
+      if (iaersl.eq.2) then
+         i_cld  = 1
+         iaersl = 0
+      endif
 C                                                                         A04320
 C     Set continuum flags as needed
 
@@ -773,12 +787,14 @@ C                                                                         A05430
          REWIND IEXFIL                                                    A05470
          LOWFLG = 1                                                       A05480
       ENDIF                                                               A05490
+
       NFILE = 13                                                          A05500
       MMRG = MOD(IMRG,I_10)                                                 A05510
       IF (MMRG.GE.3) THEN                                                 A05520
          OPEN (NFILE,FILE='TAPE13',STATUS='UNKNOWN',FORM=CFORM)           A05530
          REWIND NFILE                                                     A05540
       ENDIF                                                               A05550
+
       NLTEFL = 4                                                          A05560
       IF (IHIRAC.EQ.4) THEN                                               A05570
          OPEN (NLTEFL,FILE='TAPE4',STATUS='OLD')                          A05580
@@ -863,10 +879,12 @@ C                                                                         A06000
          IF (DPTFAC.LT.0.) DPTFAC = .001                                  A06020
          IF (V2.LE.V1.AND.ILAS.EQ.0) ILAS = 1                             A06030
       ENDIF                                                               A06040
+
       IF (ILAS.GT.0) THEN                                                 A06050
          V2 = V1                                                          A06060
          VLAS = V1                                                        A06070
       ENDIF                                                               A06080
+
       TBOUND = 0.                                                         A06090
       TMPBND = 0.                                                         A06100
       EMISIV = 0.                                                         A06110
@@ -1707,11 +1725,6 @@ C                                                                         A09460
 C     PRLNHD PRINTS OUT LINE FILE HEADER                                  A09470
 C                                                                         A09480
       PARAMETER (MXMOL=38)
-C
-C     Common blocks for analytic derivative
-C     -------------------------
-      COMMON /IADFLG/ NSPCRT,IMRGSAV
-      COMMON /RETINF/ SPCRT
 C     -------------------------
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A09490
@@ -1810,17 +1823,6 @@ C                                                                         A09970
 C     When calculating derivative, check make sure the
 C     appropriate molecule is included in the linefile.
 C     If not, then stop and issue message.
-C
-      IF ((IEMIT.EQ.3).AND.
-     &    ((NSPCRT.GT.0).and.(NSPCRT.LE.MXMOL))) THEN
-         DO 20 M = 1,LINMOL
-            WRITE(CDUM,'(A6)') BMOLID(M)
-            IF (CDUM.EQ.SPCRT) GOTO 30
- 20      CONTINUE
-         WRITE(IPR,940) SPCRT
-         WRITE(IPR,945) (BMOLID(I),I=1,LINMOL)
-         STOP 'Molecule to be retrieved not in line file'
-      ENDIF
 C
 C     CHECK HEADER FOR FLAG INDICATING COMPATIBILITY WITH ISOTOPES        A09980
 C                                                                         A09990
@@ -1999,6 +2001,18 @@ c
 c
       character*1 surf_refl,surf_refl_sav,h_blank
       character*3 pad_3
+c                                                                         A09600
+      integer *4 molcnt,mcntlc,
+     *           mcntnl,linmol,
+     *           lincnt,ilinlc,ilinnl,irec,irectl
+c                                                                         A17240
+      real *4    sumstr,flinlo,flinhi
+c
+      CHARACTER*8     HLINID,BMOLID,HID1
+C                                                                         A17260
+      COMMON /LINHDR/ HLINID(10),BMOLID(64),MOLCNT(64),MCNTLC(64),        A09610
+     *                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,         A09620
+     *                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL     A09630
 C                                                                         A11610
       DIMENSION FILDUM(2),FILDU1(2)                                       A11620
       DIMENSION NTAN(160)                                                 A11630
@@ -2573,6 +2587,35 @@ C
             STOP
          ENDIF
 
+
+c     write information on variable for analytic derivative
+
+         write (ipr,*) '                                              '
+         write (ipr,*) '**********************************************'
+         write (ipr,*) '****** Analytic Derivative *******************'
+         write (ipr,*) '******                           *************'
+         write (ipr,*) '****** variable number =    ',nspcrt,
+     &                                                '  *************'
+         write (ipr,*) '******   variable name = ',spcrt,
+     &                                                '  *************'
+         write (ipr,*) '***********************************************'
+         write (ipr,*) '                                              '
+c
+c     check that molec ule is in the line file:
+
+         IF ((NSPCRT.GT.0).and.(NSPCRT.LE.MXMOL)) THEN
+            DO  M = 1,LINMOL
+               if (m.eq.nspcrt .and. molcnt(m).gt.0) go to 739
+            ENDDO
+
+            write (ipr,*)  'Molecule to be retrieved not in line file'
+            WRITE(IPR,*)           'nspcrt,  spcrt,  linmol'
+            WRITE(IPR,'(i5,a8,i5)') nspcrt,  spcrt,  linmol
+            STOP 'Molecule to be retrieved not in line file'
+         ENDIF
+C
+ 739     continue
+c
          if ((nspcrt.ge.0).and.(nspcrt.le.9)) then
             write(ajid,'(a1,i1,a1)') '0',nspcrt,'_' ! need to change if ajid size changes
          else
@@ -4901,6 +4944,10 @@ C                                                                         A21630
 C
 C     LOOP OVER LAYERS                                                    A21660
 C                                                                         A21670
+      do m = 1,nmol
+         wmt(m) = 0.
+      enddo
+
       DO 130 L = 1, NLAYRS                                                A21680
          IPROB = 0                                                        A21690
          FACTOR = 1.                                                      A21700
