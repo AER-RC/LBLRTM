@@ -1,8 +1,8 @@
 
-LBLRTM_v10.6
+LBLRTM_v10.7
 
 1)  The option for reading spectral cloud optical depths has been changed:
-    IAERSL must now be set to 2 to invoke this option
+    IAERSL must now be set to 5 to invoke this option
     (S.A. Clough)
 
 2) Modification was made so that the correct 'plotting' of transmittances from

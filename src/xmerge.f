@@ -108,8 +108,10 @@ C
 C     IEMIT > 0 TO REACH THIS STATEMENT                                   H00510
 C                                                                         H00520
          WRITE (IPR,900) XID,(YID(M),M=1,2)                               H00530
-         IF (LAYER.EQ.1.AND.IAERSL.GE.1) REWIND IEXFIL                    H00540
-         IF (IAERSL.GE.1) CALL GETEXT (IEXFIL,LAYER,IEMIT)                H00550
+         IF (IAERSL.GE.1 .and. iaersl.ne.5) then
+            IF (LAYER.EQ.1) REWIND IEXFIL
+            CALL GETEXT (IEXFIL,LAYER,IEMIT)               
+         ENDIF
 C                                                                         H00560
          TBND = 0.                                                        H00570
 C
@@ -222,9 +224,11 @@ C     IEMIT = 1 TO REACH THIS STATEMENT                                   H01280
 C                                                                         H01290
    10 CONTINUE                                                            H01300
       WRITE (IPR,900) XID,(YID(M),M=1,2)                                  H01310
-      IF (LAYER.EQ.1.AND.IAERSL.GE.1) REWIND IEXFIL                       H01320
-      IF (IAERSL.GE.1) CALL GETEXT (IEXFIL,LAYER,IEMIT)                   H01330
-C                                                                         H01340
+      IF (IAERSL.GE.1 .and. iaersl.ne.5) then
+         IF (LAYER.EQ.1) REWIND IEXFIL
+         CALL GETEXT (IEXFIL,LAYER,IEMIT)               
+      ENDIF
+C
       TBND = 0.                                                           H01350
 C                                                                         H01360
       IF (IMRG.NE.35.AND.IMRG.NE.45) THEN                                 H01370
@@ -306,7 +310,7 @@ C                                                                         H02010
 C                                                                         H02060
 C     FOR AEROSOL RUNS, MOVE EXTID INTO YID                               H02070
 C                                                                         H02080
-      IF (IAERSL.GT.0) THEN                                               H02090
+      IF (iaersl.ge.1 .and. iaersl.ne.5) THEN
          WRITE (CEXT,'(10A4)') EXTID                                      H02100
          WRITE (CYID,'(5A8)') (YID(I),I=3,7)                              H02110
          CYID(19:40) = CEXT(19:40)                                        H02120
@@ -476,9 +480,11 @@ C                                                                         H02930
 C                                                                         H03090
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H03100
 C                                                                         H03110
-      IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H03120
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H03120
       CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H03130
-      IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H03140
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 READ (CYID,'(5A8)') (YID(I),I=3,7)                 H03140
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H03150
       PLAY = PAVE                                                         H03160
       TLAY = TAVE                                                         H03170
@@ -733,9 +739,11 @@ C                                                                         H05480
 C                                                                         H05610
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H05620
 C                                                                         H05630
-      IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H05640
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H05640
       CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H05650
-      IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H05660
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 READ (CYID,'(5A8)') (YID(I),I=3,7)                 H05660
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H05670
       PLAY = PAVE                                                         H05680
       TLAY = TAVE                                                         H05690
@@ -1620,8 +1628,13 @@ C                                                                         H11230
 C                                                                         H11250
 C     EM contains the optical depth corrections for nlte at this stage    H11260
 C                                                                         H11270
-      IF (NPANLS.LT.1.AND.IAERSL.EQ.0) WRITE (IPR,900)                    H11280
-      IF (NPANLS.LT.1.AND.IAERSL.NE.0) WRITE (IPR,905)                    H11290
+      IF (NPANLS.LT.1) then
+         if (IAERSL.EQ.0 .or. iaersl.eq.5)  then
+            WRITE (IPR,900)                                               H11280
+         else
+            WRITE (IPR,905)                                               H11290
+         endif
+      ENDIF
 C                                                                         H11300
       EXT = 0.                                                            H11310
       ADEL = 0.                                                           H11320
@@ -1662,7 +1675,7 @@ c
       if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 c ************************************************************************
 C                                                                         H11610
-      IF (IAERSL.EQ.0) THEN                                               H11620
+      IF (IAERSL.EQ.0 .or. iaersl.eq.5) THEN 
          IAFBB = -1                                                       H11630
       ELSE                                                                H11640
          BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       H11650
@@ -2514,7 +2527,7 @@ C                                                                         H17160
 C                                                                         H17230
 C     FOR AEROSOL RUNS, MOVE EXTID INTO YID                               H17240
 C                                                                         H17250
-      IF (IAERSL.GT.0) THEN                                               H17260
+      IF (iaersl.ge.1 .and. iaersl.ne.5) THEN
          WRITE (CEXT,'(10A4)') EXTID                                      H17270
          WRITE (CYID,'(5A8)') (YID(I),I=3,7)                              H17280
          CYID(19:40) = CEXT(19:40)                                        H17290
@@ -2875,9 +2888,11 @@ C                                                                         H20200
 C                                                                         H20230
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H20240
 C                                                                         H20250
-      IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H20260
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H20260
       CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H20270
-      IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H20280
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 READ (CYID,'(5A8)') (YID(I),I=3,7)                 H20280
 C                                                                         H20290
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H20300
       PLAY = PAVE                                                         H20310
@@ -3589,9 +3604,11 @@ C                                                                         H24970
 C                                                                         H25100
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H25110
 C                                                                         H25120
-      IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H25130
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &     WRITE (CYID,'(5A8)') (YID(I),I=3,7)                            H25130
       CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H25140
-      IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H25150
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &     READ (CYID,'(5A8)') (YID(I),I=3,7)                             H25150
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H25160
       PLAY = PAVE                                                         H25170
       TLAY = TAVE                                                         H25180
@@ -4036,8 +4053,13 @@ C                                                                         H11230
 C                                                                         H11250
 C     EM contains the optical depth corrections for nlte at this stage    H11260
 C                                                                         H11270
-      IF (NPANLS.LT.1.AND.IAERSL.EQ.0) WRITE (IPR,900)                    H11280
-      IF (NPANLS.LT.1.AND.IAERSL.NE.0) WRITE (IPR,905)                    H11290
+      IF (NPANLS.LT.1) then
+         if (IAERSL.EQ.0 .or. iaersl.eq.5)  then
+            WRITE (IPR,900)                                               H11280
+         else
+            WRITE (IPR,905)                                               H11290
+         endif
+      ENDIF
 C                                                                         H11300
       EXT = 0.                                                            H11310
       ADEL = 0.                                                           H11320
@@ -4078,7 +4100,7 @@ c
       if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 c ************************************************************************
 C                                                                         H11610
-      IF (IAERSL.EQ.0) THEN                                               H11620
+      IF (IAERSL.EQ.0 .or. iaersl.eq.1) THEN
          IAFBB = -1                                                       H11630
       ELSE                                                                H11640
          BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       H11650
@@ -4886,8 +4908,13 @@ C                                                                         H11230
 C                                                                         H11250
 C     EM contains the optical depth corrections for nlte at this stage    H11260
 C                                                                         H11270
-      IF (NPANLS.LT.1.AND.IAERSL.EQ.0) WRITE (IPR,900)                    H11280
-      IF (NPANLS.LT.1.AND.IAERSL.NE.0) WRITE (IPR,905)                    H11290
+      IF (NPANLS.LT.1) then
+         if (IAERSL.EQ.0 .or. iaersl.eq.5)  then
+            WRITE (IPR,900)                                               H11280
+         else
+            WRITE (IPR,905)                                               H11290
+         endif
+      ENDIF
 C                                                                         H11300
       EXT = 0.                                                            H11310
       ADEL = 0.                                                           H11320
@@ -4939,7 +4966,7 @@ c
       if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 c ************************************************************************
 C                                                                         H11610
-      IF (IAERSL.EQ.0) THEN                                               H11620
+      IF (IAERSL.EQ.0 .or.iaersl.eq.5) THEN
          IAFBB = -1                                                       H11630
       ELSE                                                                H11640
          BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       H11650
@@ -5815,7 +5842,7 @@ C
 C                                                                         H17230
 C     FOR AEROSOL RUNS, MOVE EXTID INTO YID                               H17240
 C                                                                         H17250
-      IF (IAERSL.GT.0) THEN                                               H17260
+      IF (iaersl.ge.1 .or.iaersl.ne.5) THEN 
          WRITE (CEXT,'(10A4)') EXTID                                      H17270
          WRITE (CYID,'(5A8)') (YID(I),I=3,7)                              H17280
          CYID(19:40) = CEXT(19:40)                                        H17290
@@ -6206,7 +6233,8 @@ C                                                                         H20200
 C                                                                         H20230
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H20240
 C                                                                         H20250
-      IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H20260
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H20260
 C
 C     Read in file headers for layer absorptance coefficients, layer
 C     optical depths, and total optical depths (if there is more than
@@ -6216,7 +6244,8 @@ C
       CALL BUFIN (KODFIL,KEOF,XFILHD(1),NFHDRF)             
       IF (LAYER.LT.NLAYER) CALL BUFIN (kradtot,KEOF,XFHDUM(1),2)
 C
-      IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H20280
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 READ (CYID,'(5A8)') (YID(I),I=3,7)                 H20280
 C                                                                         H20290
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H20300
       PLAY = PAVE                                                         H20310
@@ -7249,8 +7278,13 @@ C                                                                         H29240
 C                                                                         H29260
 C     EM CONTAINS THE OPTICAL DEPTH CORRECTIONS FOR NLTE AT THIS STAGE    H29270
 C                                                                         H29280
-      IF (NPANLS.LT.1.AND.IAERSL.EQ.0) WRITE (IPR,900)                    H29290
-      IF (NPANLS.LT.1.AND.IAERSL.NE.0) WRITE (IPR,905)                    H29300
+      IF (NPANLS.LT.1) then
+         if (IAERSL.EQ.0 .or. iaersl.eq.5)  then
+            WRITE (IPR,900)                                               H11280
+         else
+            WRITE (IPR,905)                                               H11290
+         endif
+      ENDIF
 C                                                                         H29310
       EXT = 0.                                                            H29320
       ADEL = 0.                                                           H29330
@@ -7288,7 +7322,7 @@ c
       if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 C                                                                         H29590
       BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                          H29600
-      IF (IAERSL.NE.0) THEN                                               H29610
+      IF (iaersl.ge.1 .and. iaersl.ne.5) THEN
          RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDDUM)                     H29620
          EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)              H29630
          IAFBB = 0                                                        H29640
@@ -7503,7 +7537,7 @@ C                                                                         H31480
 C                                                                         H31550
 C     FOR AEROSOL RUNS, MOVE EXTID INTO YID                               H31560
 C                                                                         H31570
-      IF (IAERSL.GT.0) THEN                                               H31580
+      IF (iaersl.ge.1 .and. iaersl.ne.5) THEN 
          WRITE (CEXT,'(10A4)') EXTID                                      H31590
          WRITE (CYID,'(5A8)') (YID(I),I=3,7)                              H31600
          CYID(19:40) = CEXT(19:40)                                        H31610
@@ -7737,9 +7771,11 @@ C                                                                         H33740
 C                                                                         H33770
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H33780
 C                                                                         H33790
-      IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H33800
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &     WRITE (CYID,'(5A8)') (YID(I),I=3,7)                            H33800
       CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H33810
-      IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H33820
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 READ (CYID,'(5A8)') (YID(I),I=3,7)                 H33820
 C                                                                         H33830
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H33840
       PLAY = PAVE                                                         H33850
@@ -8093,9 +8129,11 @@ C                                                                         H37060
 C                                                                         H37200
 C     FOR AEROSOL RUNS, MOVE YID (LFILE) INTO YID (MFILE)                 H37210
 C                                                                         H37220
-      IF (IAERSL.GT.0) WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H37230
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &                 WRITE (CYID,'(5A8)') (YID(I),I=3,7)                H37230
       CALL BUFIN (KFILE,KEOF,XFILHD(1),NFHDRF)                            H37240
-      IF (IAERSL.GT.0) READ (CYID,'(5A8)') (YID(I),I=3,7)                 H37250
+      IF (iaersl.ge.1 .and. iaersl.ne.5)
+     &     READ (CYID,'(5A8)') (YID(I),I=3,7)                             H37250
       IF (JPATHL.GE.1) IPATHL = JPATHL                                    H37260
       PLAY = PAVE                                                         H37270
       TLAY = TAVE                                                         H37280

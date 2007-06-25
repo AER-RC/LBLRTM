@@ -388,10 +388,6 @@ C     -------------------------
       common /dlaydlev/ilevdx,imoldx,iup_dn,
      &    dxdL(mxlay,0:mxmol),dxdU(mxlay,0:mxmol)
 
-      parameter (n_lyr=200,n_cld=500)
-      COMMON /cld_rd/ i_cld,n_freq, v_cloud_freq(n_cld),
-     &     cloudodlayer(n_lyr,n_cld)
-
 c note: from continuum module
 c          ipts  = same dimension as ABSRB
 c          ipts2 = same dimension as C
@@ -607,15 +603,6 @@ C                                                                         A04280
       READ(IRD,925,END=80) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,             A04290
      *                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,      A04300
      *                      IOD,IXSECT,IRAD,MPTS,NPTS                     A04310
-c
-c     use iaersl=2 to trigger new option of reading layer optical depths
-c                  into the continuum module
-
-      i_cld = 0
-      if (iaersl.eq.2) then
-         i_cld  = 1
-         iaersl = 0
-      endif
 C                                                                         A04320
 C     Set continuum flags as needed
 
@@ -775,13 +762,13 @@ C     Set IMULT equal to IOD, the flag for optical depth DV
 C
       IMULT = IOD
 C
-      IF (IAERSL.GE.1) LOWFLG = 1                                         A04870
+      IF (IAERSL.GE.1 .and. iaersl.ne.5) LOWFLG = 1
 C                                                                         A05310
       IAFIL = 14                                                          A05400
 C                                                                         A05410
 C     IEXFIL=20                                                           A05420
 C                                                                         A05430
-      IF (IAERSL.GE.1) THEN                                               A05440
+      IF (IAERSL.GE.1 .and. iaersl.ne.5) THEN
          OPEN (IAFIL,FILE='TAPE14',STATUS='UNKNOWN',FORM=CFORM)           A05450
          OPEN (IEXFIL,FILE='TAPE20',STATUS='UNKNOWN',FORM=CFORM)          A05460
          REWIND IEXFIL                                                    A05470
@@ -1034,11 +1021,12 @@ C                                                                         A06840
       IF (ILAS.GT.0) THEN                                                 A06870
          IATM = 9                                                         A06880
          JAERSL = 0                                                       A06890
-         IF (IAERSL.GE.1.AND.IEMIT.EQ.1) JAERSL = 1                       A06900
+         IF (IAERSL.GE.1 .and. iaersl.ne.5 .AND. IEMIT.EQ.1) JAERSL = 1
 C                                                                         A06910
          CALL LASER (VLAS,MFILE,JAERSL)                                   A06920
 C                                                                         A06930
-         IF (IAERSL.GE.1.AND.IEMIT.EQ.0) CALL LASER (VLAS,IAFIL,1)        A06940
+         IF (IAERSL.GE.1 .and. iaersl.ne.5 .AND.IEMIT.EQ.0)
+     &                                   CALL LASER (VLAS,IAFIL,1)
 C                                                                         A06950
          IF (ILAS.GE.2) GO TO 40                                          A06960
       ENDIF                                                               A06970
@@ -3889,7 +3877,7 @@ C     START LOOP OVER LAYERS                                              A16400
 C     ALL MERGING DONE HERE                                               A16410
 C                                                                         A16420
   150 REWIND MFILE                                                        A16430
-      IF (IAERSL.NE.0) THEN                                               A16440
+      IF (IAERSL.GE.1  .and. iaersl.ne.5  ) THEN
          REWIND 20                                                        A16450
          IREAD = 0                                                        A16460
          LOWFLG = 3                                                       A16470
@@ -4086,7 +4074,7 @@ C
      *     WRITE (IPR,890) SAMPLE,ALFAL0,AVMASS
 C
       IF (LAYER.LE.0) THEN                                                A17620
-         IF (IAERSL.EQ.0.OR.IAERSL.EQ.9) THEN                             A17640
+         IF (IAERSL.EQ.0  .or. iaersl.eq.5 .OR.IAERSL.EQ.9) THEN
 C                                                                         A17650
 C           IF LAYER GT 0 SAVE THE VECTORS                                A17660
 C                                                                         A17670

@@ -12,7 +12,7 @@ PLATFORM = OS_X (g95)
 
 FC = g95
 FCFLAG = -O3  
-OUTPUT = lblrtm_v10.6_g95_OS_X_sgl
+OUTPUT = lblrtm_v10.7_g95_OS_X_sgl
 CPATH = src
 CDOTO = os_x_sgl_g95.o
 
