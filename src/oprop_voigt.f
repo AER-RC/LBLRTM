@@ -3717,6 +3717,11 @@ C
          ELSE                                                             D06710
             CHI(ISUBL) = asubl*EXP(-fi/bsubl) 
          ENDIF                                                            D06740
+
+c**%%$$
+
+         chi(isubl) = 1.
+
 c
    10 CONTINUE                                                            D06750
 c
