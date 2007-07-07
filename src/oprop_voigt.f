@@ -10226,64 +10226,64 @@ C----------------------------------------------------------------------
 
       implicit real*8 (a-e,g-h, o-z)
 
-	dimension  x(0:nx), z(0:nx)
-	dimension xf_voigt_armstr(0:nx)
-
-c       Need fv and dfv at point nx in order to compute the second derivative 
-c       as was previously done.  Store dfv at last 3 points for each of 3 separate domains
-	dimension xfv(0:nx, 0:nzeta-1)
-	dimension xfv_tmp(0:4, 0:ndom-1, 0:nzeta-1)
-	dimension dfv(0:ndom-1, 0:nzeta-1)
-c	dimension d2fv(0:ndom-1, 0:nzeta-1)
-c       Store fv(nx-1) for domain 1: need it to calculate the a coefficients
-c       For the other domains, it can be obtained from the fv for domain 4.  
-	dimension domain(0:ndom-1)
-
-c       f1, f2, f3 dimensioned nxmx=1.3*nx, extra points are to allow for 
-c       subscript overrun without overwriting other arrays.
-
-	dimension f1(0:nxmx-1, 0:nzeta-1), f2(0:nxmx-1, 0:nzeta-1),
-	1    f3(0:nxmx-1, 0:nzeta-1)
-c
-	dimension q1(0:nx-1), q2(0:nx-1), q3(0:nx-1)
-	dimension             AVC(0:nzeta)
-	common /voigt_cf/
-	1    a_1(0:nzeta-1), a_2(0:nzeta-1), a_3(0:nzeta-1),
-	2    b_1(0:nzeta-1), b_2(0:nzeta-1), b_3(0:nzeta-1)
+      dimension  x(0:nx), z(0:nx)
+      dimension xf_voigt_armstr(0:nx)
+      
+c     Need fv and dfv at point nx in order to compute the second derivative 
+c     as was previously done.  Store dfv at last 3 points for each of 3 separate domains
+      dimension xfv(0:nx, 0:nzeta-1)
+      dimension xfv_tmp(0:4, 0:ndom-1, 0:nzeta-1)
+      dimension dfv(0:ndom-1, 0:nzeta-1)
+c     dimension d2fv(0:ndom-1, 0:nzeta-1)
+c     Store fv(nx-1) for domain 1: need it to calculate the a coefficients
+c     For the other domains, it can be obtained from the fv for domain 4.  
+      dimension domain(0:ndom-1)
+      
+c     f1, f2, f3 dimensioned nxmx=1.3*nx, extra points are to allow for 
+c     subscript overrun without overwriting other arrays.
+      
+      dimension f1(0:nxmx-1, 0:nzeta-1), f2(0:nxmx-1, 0:nzeta-1),
+     $     f3(0:nxmx-1, 0:nzeta-1)
+c     
+      dimension q1(0:nx-1), q2(0:nx-1), q3(0:nx-1)
+      dimension             AVC(0:nzeta)
+      common /voigt_cf/
+     $     a_1(0:nzeta-1), a_2(0:nzeta-1), a_3(0:nzeta-1),
+     $     b_1(0:nzeta-1), b_2(0:nzeta-1), b_3(0:nzeta-1)
 C
-C       AVC transforms lorentz and doppler halfwidths to voigt
-C       halfwidths: AV = AVC*(AL + AD)
+C     AVC transforms lorentz and doppler halfwidths to voigt
+C     halfwidths: AV = AVC*(AL + AD)
 
-        DATA AVC/                                                         
-	1    .10000E+01,  .99535E+00,  .99073E+00,  .98613E+00,  .98155E+00, 
-	2    .97700E+00,  .97247E+00,  .96797E+00,  .96350E+00,  .95905E+00, 
-	3    .95464E+00,  .95025E+00,  .94589E+00,  .94156E+00,  .93727E+00,
-	4    .93301E+00,  .92879E+00,  .92460E+00,  .92045E+00,  .91634E+00,
-	5    .91227E+00,  .90824E+00,  .90425E+00,  .90031E+00,  .89641E+00,
-	6    .89256E+00,  .88876E+00,  .88501E+00,  .88132E+00,  .87768E+00,
-	7    .87410E+00,  .87058E+00,  .86712E+00,  .86372E+00,  .86039E+00,
-	8    .85713E+00,  .85395E+00,  .85083E+00,  .84780E+00,  .84484E+00,
-	9    .84197E+00,  .83919E+00,  .83650E+00,  .83390E+00,  .83141E+00,
-	1    .82901E+00,  .82672E+00,  .82454E+00,  .82248E+00,  .82053E+00,
-	2    .81871E+00,  .81702E+00,  .81547E+00,  .81405E+00,  .81278E+00,
-	3    .81166E+00,  .81069E+00,  .80989E+00,  .80925E+00,  .80879E+00,
-	4    .80851E+00,  .80842E+00,  .80852E+00,  .80882E+00,  .80932E+00,
-	5    .81004E+00,  .81098E+00,  .81214E+00,  .81353E+00,  .81516E+00,
-	6    .81704E+00,  .81916E+00,  .82154E+00,  .82418E+00,  .82708E+00,
-	7    .83025E+00,  .83370E+00,  .83742E+00,  .84143E+00,  .84572E+00,
-	8    .85029E+00,  .85515E+00,  .86030E+00,  .86573E+00,  .87146E+00,
-	9    .87747E+00,  .88376E+00,  .89035E+00,  .89721E+00,  .90435E+00,
-	1    .91176E+00,  .91945E+00,  .92741E+00,  .93562E+00,  .94409E+00,
-	2    .95282E+00,  .96179E+00,  .97100E+00,  .98044E+00,  .99011E+00,
-	3    .10000E+01,  .10000E+01/                                       
+      DATA AVC/                                                         
+     $  .10000E+01,  .99535E+00,  .99073E+00,  .98613E+00,  .98155E+00, 
+     $  .97700E+00,  .97247E+00,  .96797E+00,  .96350E+00,  .95905E+00, 
+     $  .95464E+00,  .95025E+00,  .94589E+00,  .94156E+00,  .93727E+00,
+     $  .93301E+00,  .92879E+00,  .92460E+00,  .92045E+00,  .91634E+00,
+     $  .91227E+00,  .90824E+00,  .90425E+00,  .90031E+00,  .89641E+00,
+     $  .89256E+00,  .88876E+00,  .88501E+00,  .88132E+00,  .87768E+00,
+     $  .87410E+00,  .87058E+00,  .86712E+00,  .86372E+00,  .86039E+00,
+     $  .85713E+00,  .85395E+00,  .85083E+00,  .84780E+00,  .84484E+00,
+     $  .84197E+00,  .83919E+00,  .83650E+00,  .83390E+00,  .83141E+00,
+     $  .82901E+00,  .82672E+00,  .82454E+00,  .82248E+00,  .82053E+00,
+     $  .81871E+00,  .81702E+00,  .81547E+00,  .81405E+00,  .81278E+00,
+     $  .81166E+00,  .81069E+00,  .80989E+00,  .80925E+00,  .80879E+00,
+     $  .80851E+00,  .80842E+00,  .80852E+00,  .80882E+00,  .80932E+00,
+     $  .81004E+00,  .81098E+00,  .81214E+00,  .81353E+00,  .81516E+00,
+     $  .81704E+00,  .81916E+00,  .82154E+00,  .82418E+00,  .82708E+00,
+     $  .83025E+00,  .83370E+00,  .83742E+00,  .84143E+00,  .84572E+00,
+     $  .85029E+00,  .85515E+00,  .86030E+00,  .86573E+00,  .87146E+00,
+     $  .87747E+00,  .88376E+00,  .89035E+00,  .89721E+00,  .90435E+00,
+     $  .91176E+00,  .91945E+00,  .92741E+00,  .93562E+00,  .94409E+00,
+     $  .95282E+00,  .96179E+00,  .97100E+00,  .98044E+00,  .99011E+00,
+     $  .10000E+01,  .10000E+01/                                       
 
-C       Define 3 domains: 4, 16, and 64 voigt halfwidths from the line center 
-	DATA domain / 4.0, 16.0, 64.0, 256.0/
+C     Define 3 domains: 4, 16, and 64 voigt halfwidths from the line center 
+      DATA domain / 4.0, 16.0, 64.0, 256.0/
 
-	pi = 2.0d0*asin(1.0d0)
+      pi = 2.0d0*asin(1.0d0)
 
-c       This constant is related to Doppler halfwidth
-	const = sqrt(log(2.0D0))
+c     This constant is related to Doppler halfwidth
+      const = sqrt(log(2.0D0))
 
 C************************************************************************
 c       The scaled frequency variable x = const*v/AD 
@@ -10295,137 +10295,137 @@ c       For LBLRTM we want the function converted to the variable z = v/AV.
 c       Thus, x=const*z*(AV/AD)
 C************************************************************************
 	
-c       Loop over zeta from 0 to 1 in steps of 1/(nzeta-1) ;0.01
-c       dble is just a function to convert from integer to double precision
+c     Loop over zeta from 0 to 1 in steps of 1/(nzeta-1) ;0.01
+c     dble is just a function to convert from integer to double precision
 
-	do 100 izet = 0,nzeta-1
-	   zeta = dble(izet)/dble(nzeta-1)
+      do 100 izet = 0,nzeta-1
+         zeta = dble(izet)/dble(nzeta-1)
 	   
-c       Force Doppler Halfwidth to 1.
+c     Force Doppler Halfwidth to 1.
 
-	   if (zeta .lt. 1.00) then 
-	      AD = 1.
-	      AL = zeta/(1-zeta)
-	   end if
+         if (zeta .lt. 1.00) then 
+            AD = 1.
+            AL = zeta/(1-zeta)
+         end if
 	   
-c       zeta = 1: pure lorenz, AD=0
-	   if (zeta .eq. 1.00) then 
-	      AD = 0.
-	      AL = 1.00
-	   end if
+c     zeta = 1: pure lorenz, AD=0
+         if (zeta .eq. 1.00) then 
+            AD = 0.
+            AL = 1.00
+         end if
 	   
-c       Calculate the voigt halwidth from AVC, AD, AL
-c       The following works only for nzeta=101
-	   AV = AVC(izet)*(AD + AL)
+c     Calculate the voigt halwidth from AVC, AD, AL
+c     The following works only for nzeta=101
+         AV = AVC(izet)*(AD + AL)
 
-c       AD1 is doppler width at the 1/e point
-	   AD1 = AD/const
-	   if (AD1 .ne. 0) then
-	      ep = AL/AD1
-	   else
-	      ep = 0.0
-	   end if
-c       Normalization factors: 
-c       Note: Fucntion returned is the generalized voigt function u(zeta,x)
-c       Voigt line shape function = sqrt(log(2.0)/pi)/AD *u(zeta,x)
+c     AD1 is doppler width at the 1/e point
+         AD1 = AD/const
+         if (AD1 .ne. 0) then
+            ep = AL/AD1
+         else
+            ep = 0.0
+         end if
+c     Normalization factors: 
+c     Note: Fucntion returned is the generalized voigt function u(zeta,x)
+c     Voigt line shape function = sqrt(log(2.0)/pi)/AD *u(zeta,x)
 
-	   cnorm1 = const/sqrt(pi)*AV
+         cnorm1 = const/sqrt(pi)*AV
 
-c       Loop over the 3 domains 4, 16, and 64 voigt widths calculating f1, f2,
-c       f3 respectively
-c
-	   do 70 id=0, ndom-2
-c
-C       SETUP PARAMETERS FOR CALL TO VOIGT GENERATOR 
-	      
-c       Define the range of x: nx frequency points equals domain(id) voigt
-c       halfwidths. vmax = nvm*AV, xmax = const*domain(id)*AV/AD = dx*(nx-1)
-c       dx = (const*AV)/AD*domain(id)/ REAL(nx-1)
-c       where dx = (const*AV)/AD*dz;   therefore dz = domain(id)/ REAL(nx-1)
+c     Loop over the 3 domains 4, 16, and 64 voigt widths calculating f1, f2,
+c     f3 respectively
+c     
+         do 70 id=0, ndom-2
+c     
+C     SETUP PARAMETERS FOR CALL TO VOIGT GENERATOR 
+            
+c     Define the range of x: nx frequency points equals domain(id) voigt
+c     halfwidths. vmax = nvm*AV, xmax = const*domain(id)*AV/AD = dx*(nx-1)
+c     dx = (const*AV)/AD*domain(id)/ REAL(nx-1)
+c     where dx = (const*AV)/AD*dz;   therefore dz = domain(id)/ REAL(nx-1)
 
-	      if (AD .ne. 0.0) then 
-		 dx = (const*AV)/AD*(domain(id)/ REAL(nx-1))
-	      else 
-		 dx = (const*AV)*(domain(id)/ REAL(nx-1))
-	      endif 
-
-	      dz=domain(id)/ REAL(nx-1)
-
-	      do 20 i=0,nx
-		 x(i) = dble(i)*dx
-		 z(i) = dble(i)*domain(id)/dble(nx-1)
- 20	      continue
-
+            if (AD .ne. 0.0) then 
+               dx = (const*AV)/AD*(domain(id)/ REAL(nx-1))
+            else 
+               dx = (const*AV)*(domain(id)/ REAL(nx-1))
+            endif 
+            
+            dz=domain(id)/ REAL(nx-1)
+            
+            do 20 i=0,nx
+               x(i) = dble(i)*dx
+               z(i) = dble(i)*domain(id)/dble(nx-1)
+ 20         continue
+            
 C*****************************************************************************
 C       Compute the Voigt Function
 C*****************************************************************************
 
-C       FOR ARMSTRONG:
-C       see paper by B. H. Armstrong, J. Quant. Spectrosc. Radiat. Transfer. 
-c       Vol. 7, pp 61-88, 1967 for the Armstrong routine
-c       returns back a real part of the voigt function "v_arm"
-	      
-	      call armstrong(nx+1,x,zeta,xf_voigt_armstr)
-	      
-c       Normalize the Voigt Profile and get the first derivative
-c       The scaled frequency variable x = const*v/AD is required by the humlicek 
-c       and Armstrong routine.  We want it scaled by z by using the cnorm1
-c       (first derivative actually only needed at 3 points: i=nx-1, nx+1, nx)
-	      if (zeta .lt. 1.00) then
-		  do 30 i = 0,nx
-		      xfv(i,izet) = xf_voigt_armstr(i)*cnorm1
-  30		  continue
-
-c       First derivative computed using ( symmetric finite difference = f(y+x)-f(y-x)/2x )
-		  do 36 i=0,2
-		      i2=i+nx-2
-		      xfv_tmp(i,id,izet) = xfv(i2,izet)
-   36		  continue
-
-		  dfv(id,izet) =.5*(xfv_tmp(2,id,izet) 
-	1	      - xfv_tmp(0,id,izet))/(dz)	
-	      endif
+C     FOR ARMSTRONG:
+C     see paper by B. H. Armstrong, J. Quant. Spectrosc. Radiat. Transfer. 
+c     Vol. 7, pp 61-88, 1967 for the Armstrong routine
+c     returns back a real part of the voigt function "v_arm"
+            
+            call armstrong(nx+1,x,zeta,xf_voigt_armstr)
+            
+c     Normalize the Voigt Profile and get the first derivative
+c     The scaled frequency variable x = const*v/AD is required by the humlicek 
+c     and Armstrong routine.  We want it scaled by z by using the cnorm1
+c     (first derivative actually only needed at 3 points: i=nx-1, nx+1, nx)
+            if (zeta .lt. 1.00) then
+               do 30 i = 0,nx
+                  xfv(i,izet) = xf_voigt_armstr(i)*cnorm1
+ 30            continue
+               
+c     First derivative computed using ( symmetric finite difference = f(y+x)-f(y-x)/2x )
+               do 36 i=0,2
+                  i2=i+nx-2
+                  xfv_tmp(i,id,izet) = xfv(i2,izet)
+ 36            continue
+               
+               dfv(id,izet) =.5*(xfv_tmp(2,id,izet) 
+     $              - xfv_tmp(0,id,izet))/(dz)	
+            endif
 c.................................................................................
-c       FOR ZETA=1
-c       Just use the straight Lorenz function at zeta=1 (AD=0, AL=1) 
-c       xfv(i,izet) = (1./pi)*(1./(1.+z(i)**2))
+c     FOR ZETA=1
+c     Just use the straight Lorenz function at zeta=1 (AD=0, AL=1) 
+c     xfv(i,izet) = (1./pi)*(1./(1.+z(i)**2))
 c.................................................................................
-	      
-	      if (zeta .eq. 1.00) then 
-		  do 40 i = 0,nx
-			  xfv(i,izet) = (1./pi)*(1./(1.+z(i)**2))
-  40		  continue
-
-c       Pick the last few points as this is where you want the functions 
-c       to merge (4,16,64,256)
-c
-		  do 46 i=0,2
-		      i2=i+nx-2
-		      xfv_tmp(i,id,izet) = xfv(i2,izet)
-   46		  continue
-
-		  dfv(id,izet) =.5*(xfv_tmp(2,id,izet) 
-	1	      - xfv_tmp(0,id,izet))/(dz)	
-	      endif
-
-c       For now, set xfvbnd = 0
-c	      xfvbnd(izet) = 0.0
-
-c       Now decompose voigt profile into subfunctions
-
-	      if (id .eq.0) then
-		  b_1(izet) = dfv(0,izet)/(2*domain(0))
-		  a_1(izet) = xfv(nx-1,izet) - b_1(izet)
-	1	      *domain(0)**2 
-	      else if (id .eq. 1) then
-		  b_2(izet) = dfv(1,izet)/(2*domain(1))
-		  a_2(izet) = xfv(nx-1,izet) - b_2(izet)
-	1	      *domain(1)**2 
-	      else if (id .eq. 2) then
-		  b_3(izet) = dfv(2,izet)/(2*domain(2))
-		  a_3(izet) = xfv(nx-1,izet) - b_3(izet)
-	1	      *domain(2)**2
-	      endif
+            
+            if (zeta .eq. 1.00) then 
+               do 40 i = 0,nx
+                  xfv(i,izet) = (1./pi)*(1./(1.+z(i)**2))
+ 40            continue
+               
+c     Pick the last few points as this is where you want the functions 
+c     to merge (4,16,64,256)
+c     
+               do 46 i=0,2
+                  i2=i+nx-2
+                  xfv_tmp(i,id,izet) = xfv(i2,izet)
+ 46            continue
+               
+               dfv(id,izet) =.5*(xfv_tmp(2,id,izet) 
+     $              - xfv_tmp(0,id,izet))/(dz)	
+            endif
+            
+c     For now, set xfvbnd = 0
+c     xfvbnd(izet) = 0.0
+            
+c     Now decompose voigt profile into subfunctions
+            
+            if (id .eq.0) then
+               b_1(izet) = dfv(0,izet)/(2*domain(0))
+               a_1(izet) = xfv(nx-1,izet) - b_1(izet)
+     $              *domain(0)**2 
+            else if (id .eq. 1) then
+               b_2(izet) = dfv(1,izet)/(2*domain(1))
+               a_2(izet) = xfv(nx-1,izet) - b_2(izet)
+     $              *domain(1)**2 
+            else if (id .eq. 2) then
+               b_3(izet) = dfv(2,izet)/(2*domain(2))
+               a_3(izet) = xfv(nx-1,izet) - b_3(izet)
+     $              *domain(2)**2
+            endif
 
 c       Compute the subfunctions f1, f2, f3, f4 (f4 not used but carried for debugging)
 c       Note: the subfunctions should equal zero at the domain boundaries.
@@ -10434,39 +10434,39 @@ c       due to roundoff or truncation error.  Here they will be set
 c       identically to zero by restricting the loop to nx-2. The assumption
 c       is that the arrays are initialized to zero.
  
-	      do 60 iz = 0,nx-2
-c
-		  q1(iz) = a_1(izet) + b_1(izet)*z(iz)**2 
-		  q2(iz) = a_2(izet) + b_2(izet)*z(iz)**2 
-		  q3(iz) = a_3(izet) + b_3(izet)*z(iz)**2 
-c		  
-		  if (id .eq. 0) then 
-		      f1(iz, izet) = xfv(iz, izet) - q1(iz)
-		  else if (id .eq. 1) then
-		      if (z(iz) .le. domain(0)) then
-			  f2(iz, izet) = q1(iz) - q2(iz)
-		      else
-			  f2(iz, izet) = xfv(iz, izet) - q2(iz)
-		      endif
-		  else if (id .eq. 2) then
-		      if (z(iz) .le. domain(1)) then 
-			  f3(iz, izet) = q2(iz) - q3(iz)
-		      else 
-			  f3(iz, izet) = xfv(iz, izet) - q3(iz)
-		      endif 
-		  endif
-  60	      continue
-c             end of iz loop
-  70	  continue
-c         end of id loop
-100	continue
-c       end of zeta loop
-
-	end
+            do 60 iz = 0,nx-2
+c     
+               q1(iz) = a_1(izet) + b_1(izet)*z(iz)**2 
+               q2(iz) = a_2(izet) + b_2(izet)*z(iz)**2 
+               q3(iz) = a_3(izet) + b_3(izet)*z(iz)**2 
+c     
+               if (id .eq. 0) then 
+                  f1(iz, izet) = xfv(iz, izet) - q1(iz)
+               else if (id .eq. 1) then
+                  if (z(iz) .le. domain(0)) then
+                     f2(iz, izet) = q1(iz) - q2(iz)
+                  else
+                     f2(iz, izet) = xfv(iz, izet) - q2(iz)
+                  endif
+               else if (id .eq. 2) then
+                  if (z(iz) .le. domain(1)) then 
+                     f3(iz, izet) = q2(iz) - q3(iz)
+                  else 
+                     f3(iz, izet) = xfv(iz, izet) - q3(iz)
+                  endif 
+               endif
+ 60         continue
+c     end of iz loop
+ 70      continue
+c     end of id loop
+ 100  continue
+c     end of zeta loop
+      
+      end
 
 C*************************************************************************
 C*************************************************************************
-	Subroutine armstrong(nx,xx,zeta,f_voigt)
+      Subroutine armstrong(nx,xx,zeta,f_voigt)
 C
 C
 c       Calculates the voigt function using the Armstrong algorithm
@@ -10485,135 +10485,135 @@ C
 C************************************************************************
 C************************************************************************
 
-	implicit real*8 (a-h, o-z)
-	REAL*8 K1, K2, K3
-	
-	COMMON /armstrng/ W(10),T(10)
-c
-	dimension xx(nx), f_voigt(nx)
-	Dimension C(34)
-
+      implicit real*8 (a-h, o-z)
+      REAL*8 K1, K2, K3
+      
+      COMMON /armstrng/ W(10),T(10)
+c     
+      dimension xx(nx), f_voigt(nx)
+      Dimension C(34)
+      
 c     y = Lorenz width / Doppler width (1/e point) 
-	if (zeta .ne. 1.0) then
-            y = sqrt(log(2.0d0))*zeta/(1.d0-zeta)
-	else 
-            y = 100.0
-	endif 
+      if (zeta .ne. 1.0) then
+         y = sqrt(log(2.0d0))*zeta/(1.d0-zeta)
+      else 
+         y = 100.0
+      endif 
 c     
-	do 100 iz=1, nx
-	    x = xx(iz)
+      do 100 iz=1, nx
+         x = xx(iz)
 c     
-	    IF(Y .LT. 1.0 .AND. X .LT. 4.0 .OR. Y .LT. 1.8/(X+1.0)) then 
+         IF(Y .LT. 1.0 .AND. X .LT. 4.0 .OR. Y .LT. 1.8/(X+1.0)) then 
 c     
 c     F3(T)=EXP(T**2-X**2)
-		Y2=Y**2
-		IF((X**2-Y2) .GT. 70.0) GO TO 1002
-		U1=EXP(-X**2+Y2)*COS(2.0*X*Y)
-                GO TO 1005
- 1002           U1=0.0
- 1005           IF(X.GT.5.0) GO TO 1100
+            Y2=Y**2
+            IF((X**2-Y2) .GT. 70.0) GO TO 1002
+            U1=EXP(-X**2+Y2)*COS(2.0*X*Y)
+            GO TO 1005
+ 1002       U1=0.0
+ 1005       IF(X.GT.5.0) GO TO 1100
 C     FROM HERE TO STATEMENT 30 WE CALCULATE DAWSONS FUNCTION
 C     ENTER HUMMERS CHEBYSHEV COEFFICIENTS C(I)
-	data C/0.1999999999972224, -0.1840000000029998, 
-	1    0.1558399999965025, -0.1216640000043988,
-	2    0.0877081599940391, -0.0585141248086907, 
-	3    0.0362157301623914, -0.0208497654398036, 
-	4    0.0111960116346270, -0.56231896167109D-2,
-	5    0.26487634172265D-2,-0.11732670757704D-2,
-	6    0.4899519978088D-3, -0.1933630801528D-3, 
-	7    0.722877446788D-4,  -0.256555124979D-4, 
-	8    0.86620736841D-5,   -0.27876379719D-5, 
-	9    0.8566873627D-6,    -0.2518433784D-6, 
-	1    0.709360221D-7,     -0.191732257D-7,
-	2    0.49801256D-9,      -0.12447734D-8,
-	3    0.2997777D-9,       -0.696450D-10, 
-	4    0.156262D-10,       -0.33897D-11, 
-	5    0.7116D-12,         -0.1447D-12, 
-	6    0.285D-13,          -0.55D-14,
-	7    0.10D-14,           -0.2D-15/
-C       CLENSHAWS ALGORITHM AS GIVEN BY HUMMER
-	BN01=0.0D0
-	BN02=0.0D0
-	X1=X/5.0D0
-	COEF=4.0D0*X1**2-2.0D0
-	DO 20 I=1,34
-	   II=35-I
-	   BN=COEF*BN01-BN02+C(II)
-	   BN02=BN01
-	   BN01=BN
- 20	CONTINUE
- 	F=X1*(BN-BN02)
- 	DN01=1.0D0-2.0D0*X*F
- 	DN02=F
-	GO TO 1200
- 1100	DN01=-(.5/X**2+.75/X**4+1.875/X**6+6.5625/X**8+29.53125/X**10+
-	1    162.4218/X**12+1055.7421/X**14)
-	DN02 = (1.0D0-DN01)/(2.0D0*X)
- 1200	FUNCT=Y*DN01
-	IF(Y .LE. 1.0D-08) GO TO 1800
-	Q=1.0
-	YN=Y
-	DO 1600 I=2,50
-	   DN=(X*DN01+DN02)*(-2.)/ REAL(I)
-	   DN02=DN01
-	   DN01=DN
-	   IF(MOD(I,2)) 1600, 1600, 1500
- 1500	   Q=-Q
-	   YN=YN*Y2
-	   G=DN*YN
-	   FUNCT=FUNCT+Q*G
-	   IF(ABS(G/FUNCT) .LE. 1.0E-08) GO TO 1800
- 1600	CONTINUE
- 1800	K1=U1-1.12837917D0*FUNCT
-c
-	f_voigt(iz) = K1
-c
-	    else IF(Y .LT. 2.5 .AND. X .LT. 4.0) then 
-
-	Y2=Y**2
-	G=0.0
-	DO 2100 I=1,10
-	   R=T(I)-X
-	   S=T(I)+X
-	   G=G+(4.0*T(I)**2-2.0)*(R*ATAN(R/Y)+S*ATAN(S/Y)-
- 	1	0.5*Y*(LOG(Y2+R**2)+
-	2	LOG(Y2+S**2)))*W(I) 
- 2100	CONTINUE
-	K2=0.318309886D0*G 	
-c
-	f_voigt(iz) = K2
-c
-	    else 
-	Y2=Y**2
-	G=0.0
-	DO 3100 I=1,10
-	   G=G+(1.0D0/((X-T(I))**2+Y2)+1.0/((X+T(I))**2+Y2))*W(I)
- 3100	CONTINUE
-	K3=0.318309886D0*Y*G
-c
-	f_voigt(iz) = K3
-c
-	    endif 
-c
- 100	continue
-	return 
-	end 
+            data C/0.1999999999972224, -0.1840000000029998, 
+     $           0.1558399999965025, -0.1216640000043988,
+     $           0.0877081599940391, -0.0585141248086907, 
+     $           0.0362157301623914, -0.0208497654398036, 
+     $           0.0111960116346270, -0.56231896167109D-2,
+     $           0.26487634172265D-2,-0.11732670757704D-2,
+     $           0.4899519978088D-3, -0.1933630801528D-3, 
+     $           0.722877446788D-4,  -0.256555124979D-4, 
+     $           0.86620736841D-5,   -0.27876379719D-5, 
+     $           0.8566873627D-6,    -0.2518433784D-6, 
+     $           0.709360221D-7,     -0.191732257D-7,
+     $           0.49801256D-9,      -0.12447734D-8,
+     $           0.2997777D-9,       -0.696450D-10, 
+     $           0.156262D-10,       -0.33897D-11, 
+     $           0.7116D-12,         -0.1447D-12, 
+     $           0.285D-13,          -0.55D-14,
+     $           0.10D-14,           -0.2D-15/
+C     CLENSHAWS ALGORITHM AS GIVEN BY HUMMER
+            BN01=0.0D0
+            BN02=0.0D0
+            X1=X/5.0D0
+            COEF=4.0D0*X1**2-2.0D0
+            DO 20 I=1,34
+               II=35-I
+               BN=COEF*BN01-BN02+C(II)
+               BN02=BN01
+               BN01=BN
+ 20         CONTINUE
+            F=X1*(BN-BN02)
+            DN01=1.0D0-2.0D0*X*F
+            DN02=F
+            GO TO 1200
+ 1100       DN01=-(.5/X**2+.75/X**4+1.875/X**6+6.5625/X**8+29.53125/X**10+
+     $           162.4218/X**12+1055.7421/X**14)
+            DN02 = (1.0D0-DN01)/(2.0D0*X)
+ 1200       FUNCT=Y*DN01
+            IF(Y .LE. 1.0D-08) GO TO 1800
+            Q=1.0
+            YN=Y
+            DO 1600 I=2,50
+               DN=(X*DN01+DN02)*(-2.)/ REAL(I)
+               DN02=DN01
+               DN01=DN
+               IF(MOD(I,2)) 1600, 1600, 1500
+ 1500          Q=-Q
+               YN=YN*Y2
+               G=DN*YN
+               FUNCT=FUNCT+Q*G
+               IF(ABS(G/FUNCT) .LE. 1.0E-08) GO TO 1800
+ 1600       CONTINUE
+ 1800       K1=U1-1.12837917D0*FUNCT
+c     
+            f_voigt(iz) = K1
+c     
+         else IF(Y .LT. 2.5 .AND. X .LT. 4.0) then 
+            
+            Y2=Y**2
+            G=0.0
+            DO 2100 I=1,10
+               R=T(I)-X
+               S=T(I)+X
+               G=G+(4.0*T(I)**2-2.0)*(R*ATAN(R/Y)+S*ATAN(S/Y)-
+     $              0.5*Y*(LOG(Y2+R**2)+
+     $              LOG(Y2+S**2)))*W(I) 
+ 2100       CONTINUE
+            K2=0.318309886D0*G 	
+c     
+            f_voigt(iz) = K2
+c     
+         else 
+            Y2=Y**2
+            G=0.0
+            DO 3100 I=1,10
+               G=G+(1.0D0/((X-T(I))**2+Y2)+1.0/((X+T(I))**2+Y2))*W(I)
+ 3100       CONTINUE
+            K3=0.318309886D0*Y*G
+c     
+            f_voigt(iz) = K3
+c     
+         endif 
+c     
+ 100  continue
+      return 
+      end 
 
 c==============================================================================
-	BLOCK DATA ARMCOEFF
+      BLOCK DATA ARMCOEFF
 
-	implicit real*8 (a-h, o-z)
+      implicit real*8 (a-h, o-z)
 
 c*******************************************************************************
 
-	COMMON /armstrng/ W(10),T(10)
-	DATA W/4.62243670E-1, 2.86675505E-1, 1.09017206E-1, 
-	1      2.48105209E-2, 3.24377334E-3, 2.28338636E-4,  
-	2      7.80255648E-6, 1.08606937E-7, 4.39934099E-10, 
-	3      2.22939365E-13/
-        DATA T/0.245340708, 0.737473729, 1.23407622, 1.73853771, 
-	1      2.25497400,  2.78880606,  3.34785457, 3.94476404, 
-	2      4.60368245,  5.38748089/
-	END 
+      COMMON /armstrng/ W(10),T(10)
+      DATA W/4.62243670E-1, 2.86675505E-1, 1.09017206E-1, 
+     $     2.48105209E-2, 3.24377334E-3, 2.28338636E-4,  
+     $     7.80255648E-6, 1.08606937E-7, 4.39934099E-10, 
+     $     2.22939365E-13/
+      DATA T/0.245340708, 0.737473729, 1.23407622, 1.73853771, 
+     $     2.25497400,  2.78880606,  3.34785457, 3.94476404, 
+     $     4.60368245,  5.38748089/
+      END 
 c______________________________________________________________________________
-
+      

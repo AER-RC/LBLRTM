@@ -1001,6 +1001,17 @@ C
 C                                                                         H08120
       DATA FACTOR / 0.003 /                                               H08130
 C                                                                         H08140
+c     if xkt small, e.g. xkt = 0., trap and return
+
+      if (xkt.lt.1.e-6) then
+         bblast = 0.
+         bbfn   = 0.
+
+         bbdel  = 0.
+         vinew  = 6.0E+5
+         return
+      endif
+
       XVI = VI
       XVIOKT = XVI/XKT
       EXPNEG = EXP(-XVIOKT)
