@@ -9,14 +9,14 @@ SHELL = /bin/sh
 
 PLATFORM = OS_X (IBM Compiler)
 
-FC =xlf90
+FC = xlf90
 FCFLAG = -qfixed -s -O -qmaxmem=-1
 
 CPATH = ../src/
 exec_path = ../
 
 CDOTO = os_x_ibm_sgl.o/
-exec  = lblrtm_v11.1_OS_X_ibm_xlf_sgl
+exec  = lblrtm_v11.1_OS_X_ibm_xlf90_sgl
 
 OUTPUT = $(exec_path)$(exec)
 
@@ -57,7 +57,7 @@ OBPATH = $(CDOTO)$(CLBL).o \
          $(CDOTO)$(CXMG).o \
          $(CDOTO)$(CTST).o \
          $(CDOTO)$(CATM).o \
-          $(CDOTO)$(CLOW).o \
+         $(CDOTO)$(CLOW).o \
          $(CDOTO)$(CPST).o \
          $(CDOTO)$(CFFT).o \
          $(CDOTO)$(CPLT).o \
@@ -149,8 +149,7 @@ $(CDOTO)$(CSOL).o : $(CPATH)$(CSOL).f
 	\mv $(CSOL).o $(CDOTO)
 
 $(CDOTO)$(CNLT).o : $(CPATH)$(CNLT).f
-	$(FC) $(FCFLAG) -c $(CPATH)
-$(CNLT).f
+	$(FC) $(FCFLAG) -c $(CPATH)$(CNLT).f
 	\mv $(CNLT).o $(CDOTO)
 
 
