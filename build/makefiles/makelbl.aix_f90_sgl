@@ -10,7 +10,7 @@ SHELL = /bin/sh
 PLATFORM = AIX
 
 FC = xlf90
-FCFLAG = -O2 -qfixed=72 -qmaxmem=-1 -qrealsize=8 -qintsize=8
+FCFLAG = -O2 -qfixed=72 -qmaxmem=-1 
 
 CPATH = ../src/
 exec_path = ../
