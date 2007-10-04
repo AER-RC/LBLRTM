@@ -189,7 +189,7 @@ C***********************************************************************
       PARAMETER (LSIZE = 65536)
 C*****Following line for computers where the blocksize is measured
 C*****in words, e.g. VAX, CDC/NOS/VE
-c     PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX,LPTSM8=LPTSMX/8)
+C     PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX,LPTSM8=LPTSMX/8)
 
 C*****Following line for computers where the blocksize is measured 
 C***** in bytes, e.g. MS FORTRAN, SUN, Alliant
@@ -197,6 +197,8 @@ C      PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*4,LPTSM8=LPTSMX/8)
 
 C*****Following line for computers with 64 bit words where the blocksize is 
 C*****measured in bytes, e.g. CRAY
+c*****Also for 32 bit machines running in real*8 mode
+
       PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 
       Parameter (JFNMAX = 13)
@@ -842,6 +844,7 @@ C      PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*4,LPTSM8=LPTSMX/8)
 
 C*****Following line for computers with 64 bit words where the blocksize is 
 C*****measured in bytes, e.g. CRAY
+c*****Also for 32 bit machines running in real*8 mode
       PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 C*****IFIL carries file information
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL, 
@@ -1146,6 +1149,7 @@ C      PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*4,LPTSM8=LPTSMX/8)
 
 C*****Following line for computers with 64 bit words where the blocksize is 
 C*****measured in bytes, e.g. CRAY
+c*****Also for 32 bit machines running in real*8 mode
       PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 C*****IFIL carries file information
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL, 
@@ -1537,6 +1541,7 @@ C      PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*4,LPTSM8=LPTSMX/8)
 
 C*****Following line for computers with 64 bit words where the blocksize is 
 C*****measured in bytes, e.g. CRAY
+c*****Also for 32 bit machines running in real*8 mode
       PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 
       DIMENSION SPECT(LPTSMX)
@@ -1786,6 +1791,8 @@ c      PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*4,LPTSM8=LPTSMX/8)
 
 C*****Following line for computers with 64 bit words where the blocksize is 
 C*****measured in bytes, e.g. CRAY
+c*****Also for 32 bit machines running in real*8 mode
+
       PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 
       COMPLEX FNCT1(LPTSMX/2),FNCT2(LPTSMX/2)
@@ -2480,6 +2487,8 @@ c      PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*4,LPTSM8=LPTSMX/8)
 
 C*****Following line for computers with 64 bit words where the blocksize is 
 C*****measured in bytes, e.g. CRAY
+c*****Also for 32 bit machines running in real*8 mode
+
       PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 
 C*****IFIL carries file information
@@ -2742,6 +2751,8 @@ C      PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*4,LPTSM8=LPTSMX/8)
 
 C*****Following line for computers with 64 bit words where the blocksize is 
 C*****measured in bytes, e.g. CRAY
+c*****Also for 32 bit machines running in real*8 mode
+
       PARAMETER (LPTSMX=LSIZE,IBLKSZ=LPTSMX*8,LPTSM8=LPTSMX/8)
 
       Dimension SPECT(LPTSMX)
@@ -3363,7 +3374,6 @@ C     OPERATE ON BLOCK A AND BLOCK B
 C     
 C     
 C     
-                  
       FUNCTION INVER(IVER,N)
 c
 C     THIS FUNCTION TAKES "IVER" AND INVERTS THE BITS

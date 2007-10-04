@@ -284,7 +284,7 @@ C*****V2 (effectively, V2 wraps around to V1).  Like CRATIO, these
 C*****values are educated guesses (except for the triangle, where the
 C*****bound of the scanning function is exactly 2*HWHM.)
       Data CLIMIT/0., 2., 3., 40., 160., 20., 20., 20.,
-     1   40., 40., 20., 100., 10., 160/
+     1   40., 40., 20., 100., 10., 160./
 
 C*****Note: the values of C, CRATIO, and CLIMIT for JFN=11 (Brault) 
 C*****corespond to a value of PARM of about .9, in which case the 
@@ -303,8 +303,9 @@ C*****will interpolate onto a fine grid but then boxcar back onto a
 C*****coarser grid
       Data MDVHW /12/
 
-C*****Assign CVS version number to module fftscn.f
+C*****Assign CVS name and version number to module fftscn.f
 
+      HNAMFFT=  '         fftscn.f:'
       HVRFFT = '$Revision$' 
  
       Write(IPR,'(''1FFTSCN: SPECTRAL SMOOTHING IN THE '',
@@ -658,7 +659,7 @@ C*****on LFILE1
 C*****If the spectrum has been pre-scanned with a rectangle, remove the
 C*****effects of the rectangle by deconvolving, i.e. divide the 
 C*****transform of the scanned spectrum by the transform of the 
-C*****rectangle.  This later function is a very broad sinc.
+C*****rectangle.  This latter function is a very broad sinc.
       If(M .GE. 2 .AND. NOBOX.EQ.0 .AND. NOFIX .EQ. 0) Then
 
 C*****    Calculate transform of the boxcar which is a rectangle of
@@ -758,7 +759,6 @@ C*****Read next scan request
       Stop 'Stopped in FFTSCN'
 
   122 Continue
-   
       Write(IPR,*) ' FFTSCN: Error in reading scan fn parameters'
       Stop 'Stopped in FFTSCN'
 
@@ -883,7 +883,7 @@ C*****            Get another record from LFILE
   200     Continue
 
           J = J+1
-          BOX(J) = SUM/ REAL(M)
+          BOX(J) = SUM/ Real(M)
 
           If(J .EQ. LPTSMX) Then
 C*****        Write out a record
@@ -1007,7 +1007,7 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
       
-      LOGICAL OP,EX
+      Logical OP,EX
       Character FILNAM*60,CTAPE*4
 
 C*****CTAPEdefines the default prefix for LBLRTM FILENAMEs, e.g. TAPE12
@@ -1152,6 +1152,7 @@ C     EQUIVALENCE (SPECT,IWORK)
 C*****    Use FFT from Numerical Recipies.  REALFT(DATA,N,IDIR)  expects
 C*****    DATA to be dimensioned 2*N.
           If(LPTFFT .gt. LPTSMX) Goto 900              
+
           Call REALFT(SPECT,LPTFFT/2,IDIR)
       Else
 C*****    Use file based FFT from M. Esplin
@@ -1409,7 +1410,7 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
-      LOGICAL OP
+      Logical OP
 
       Do 100 I=61,99
           Inquire(UNIT=i,OPENED=OP)
@@ -2540,9 +2541,11 @@ C*****            Start at -(VSAVE+DV)
 
 C*****    Calculate FUNCT for the middle block, if there is one (LREC
 C*****    is odd.) Includes LREC = 1.          
+c
           If(MOD(LREC,I_2) .EQ. 1) Then
               VSAVE = V
 C*****        Calculate the positive frequencies.
+
               Call Scnfnt(JFN,A,-1,V,DV,LPTS/2+1,FUNCT,
      1                    PARM1,PARM2,PARM3)
               
@@ -2884,8 +2887,7 @@ C
 
       DATA I_1000/1000/
 
-      LOGICAL OP
-
+      Logical OP
 
       IERR = 0
       IBOUND = 4
@@ -3025,7 +3027,6 @@ C                                                                         I07930
       SUBROUTINE REALFT(DATA,N,ISIGN)
       REAL*8           WR,WI,WPR,WPI,WTEMP,THETA
       PARAMETER (PI2=6.28318530717959D0)
-C*****PARAMETER (PI2=6.283185)
       DIMENSION DATA(*)
       
       THETA=PI2/(2.0*N)
@@ -3077,6 +3078,7 @@ C*****Normalize
       ENDIF
       RETURN
       END
+C********************************************************
       SUBROUTINE FOUR1(DATA,NN,ISIGN)
       REAL*8           WR,WI,WPR,WPI,WTEMP,THETA
       PARAMETER (PI2=6.28318530717959D0)
@@ -3289,7 +3291,7 @@ C     ICSUBZ = SIZE OF SUB-BLOCKS (COMPLEX) WHICH IS ICOMSZ/NBLK AT STAR
 C     NPASS = NUMBER OF PASSES OVER THE DATA
 C     THIS SECTION OF CODE SORTS OUT EVER NBLK'TH POINT IN A BLOCK AND
 C     AND PUTS THE SUB-BLOCKS IN BIT INVERTED ORDER
-C 
+C
       ICOMSZ=IBLKSZ/2
       ICSUBZ=ICOMSZ/NBLK
       NPASS=LLOG2(NBLK)
@@ -3344,17 +3346,17 @@ C     OPERATE ON BLOCK A AND BLOCK B
 C     
 C     
 C     
-                  
       FUNCTION INVER(IVER,N)
+c
 C     THIS FUNCTION TAKES "IVER" AND INVERTS THE BITS
 C     N IS THE NUMBER OF BITS IN THE WORD
 C     THE VALUES OF IVER AND N ARE UNCHANGED
 C     THIS FUNCTION WILL NOT WORK FOR NEGATIVE NUMBERS
 C     This version uses standard FORTRAN 77.  It would be easier to
 C     use a SHIFT and OR function, but they are not standard FORTRAN 77.
-C
+C 
       DATA I_2/2/
-C
+c
       IVE=IVER
       INV=0
       DO 10 I=1,N

@@ -59,6 +59,7 @@ C                                                                         B00440
 C                                                                         B00450
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B00460
 C                                                                         B00470
+      parameter (n_absrb=5050)
 C                                                                         B00480
 C     Common blocks from analytic derivatives
 C     -------------------------
@@ -76,7 +77,7 @@ C     DIMENSION RR3 =  NBOUND/4 + 1 + DIM(R3)
 C
       COMMON RR1(6099),RR2(2075),RR3(429)                                 B00520
       COMMON /IOU/ IOUT(250)                                              B00530
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                B00540
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)                B00540
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         B00550
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         B00560
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                      B00570
@@ -85,6 +86,7 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       B00600
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      B00610
      *              EXTID(10)                                             B00620
+      CHARACTER*8  EXTID
 C                                                                         B00630
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
@@ -118,7 +120,7 @@ c
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
 C                                                                         B00870
-      PARAMETER (MXMOL=38)   
+      PARAMETER (MXMOL=39)   
 C                                                                         B00890
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,  
@@ -684,7 +686,7 @@ c
       equivalence (vmin,rdpnl(1)),(mol_id(1),xmol(1))
 
       real *4 str,hw_f,e_low,xmol,hw_s,hw_T,shft,rdpnl(2),dum(2)
-      integer *4 mol_id,jflg,n_one
+      integer *4 mol_id,jflg,i_1
 
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   B04080
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B04100
@@ -699,7 +701,7 @@ C                                                                         B04150
 
 *****************************************************************************
 c
-      data n_one/ 1/ npnlhd/ 6/
+      data i_1/ 1/, npnlhd/ 6/
 
 
       lnfl = linfil
@@ -731,7 +733,7 @@ C                                                                         B04370
       IF (NREC.GT.LIMIN) STOP 'RDLIN; NREC GT LIMIN'                      B04380
 c
       IF (VMAX.LT.VBOT) THEN                                              B04390
-         CALL BUFIN_sgl(Lnfl,LEOF,DUM(1),n_one)
+         CALL BUFIN_sgl(Lnfl,LEOF,DUM(1),i_1)
          GO TO 10                                                         B04410
       ENDIF                                                               B04420
 c
@@ -818,6 +820,7 @@ C                                                                         B04870
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       B04950
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      B04960
      *              EXTID(10)                                             B04970
+      CHARACTER*8  EXTID
 C                                                                         B04980
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
@@ -838,7 +841,7 @@ C                                                                         B05000
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),           B05060
      *                CF3(102),CER(102)                                   B05070
 C                                                                         B05080
-      PARAMETER (MXMOL=38) 
+      PARAMETER (MXMOL=39) 
 C                                                                         B05100
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX, 
@@ -2272,7 +2275,7 @@ C                                                                         B19960
 C                                                                         C00020
       IMPLICIT REAL*8           (V)                                     ! C00030
 C                                                                         C00040
-      PARAMETER (MXMOL=38)
+      PARAMETER (MXMOL=39)
 c
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
@@ -2283,7 +2286,8 @@ c
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       C00120
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      C00130
      *              EXTID(10)                                             C00140
-C                                                                         C00150
+      CHARACTER*8  EXTID
+
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
 C                                                                         C00170
@@ -2453,8 +2457,8 @@ C         COF2      SF6      H2S    HCOOH      HO2        O   ClONO2      C02150
 C                                                                         C02280
       DATA NV6,IV16,IV26,IV36,IV46,IV56,IV66,IV76,IV86,IV96,XR6,ROTFC6/ 
 C                                                                       
-c           36       37       38
-C          NO+     HOBr     C2H4      ???      ???      ???      ??? 
+c           36       37       38       39
+C          NO+     HOBr     C2H4    CH3OH      ???      ???      ??? 
      C       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,    C02160
      1  0000,1 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 ,    C02170
      2     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    C02180
@@ -2488,20 +2492,20 @@ c  ****************************************
       BLOCK DATA Isotop
 c  ****************************************
 c
-      PARAMETER (NMOL=38)
+      PARAMETER (NMOL=39)
       COMMON /ISVECT/ ISO_MAX(NMOL),SMASS(nmol,9)
-      common /iso_id/ iso_82(97)
+      common /iso_id/ iso_82(98)
 c
 c    The number of isotopes for a particular molecule:
       DATA (ISO_MAX(I),I=1,NMOL)/
-c     H2O, CO2, O3, N2O, CO, CH4, O2,
-     +  6,   9,  9,   5,  6,   3,  3,
-c      NO, SO2, NO2, NH3, HNO3, OH, HF, HCl, HBr, HI,
-     +  3,   2,   1,   2,    1,  3,  1,   2,   2,  1,
-c     ClO, OCS, H2CO, HOCl, N2, HCN, CH3Cl, H2O2, C2H2, C2H6, PH3
-     +  2,   5,    3,    2,  1,   3,     2,    1,    2,    1,   1,
-c     COF2, SF6, H2S, HCOOH, HO2, O, ClONO2, NO+, HOBr, C2H4
-     +  1,   1,   3,     1,   1,  1,     2,    1,    2,    2/
+c      H2O, CO2,   O3,  N2O,   CO, CH4,    O2,
+     +   6,   9,    9,    5,    6,   3,     3,                        
+c       NO, SO2,  NO2,  NH3, HNO3,  OH,    HF,  HCl,  HBr,   HI,  
+     +   3,   2,    1,    2,    1,   3,     1,    2,    2,    1,      
+c      ClO, OCS, H2CO, HOCl,   N2, HCN, CH3Cl, H2O2, C2H2, C2H6,  PH3      
+     +   2,   5,    3,    2,    1,   3,     2,    1,    2,    1,    1,
+c     COF2, SF6,  H2S,HCOOH,  HO2,   O,ClONO2, NO+, HOBr,  C2H4,CH3OH
+     +   1,   1,    3,    1,    1,   1,     2,    1,    2,    2,    1/
 c
       DATA ISO_82/
 c       H2O
@@ -2528,8 +2532,8 @@ c      CH3Cl,    H2O2,  C2H2,       C2H6,  PH3
      +, 215,217,  1661,  1221,1231,  1221,  1111,
 c       COF2, SF6, H2S,           HCOOH,  HO2, O,   ClONO2      NO+
      +  269,  29,  121,141,131,   126,    166, 6,   5646,7646,  46,
-c       HOBr,      C2H4
-     +  169,161,   221,231/  
+c       HOBr,      C2H4      CH3OH
+     +  169,161,   221,231,  2161/  
 c
 C                                                                         C03620
 C     MOLECULAR MASSES FOR EACH ISOTOPE                                   C03630
@@ -2648,6 +2652,9 @@ c  HOBr:  169,    161
       data (smass(38,i),i=1,2)
 c   C2H4: 221,   231;
      * /  44.03, 45.03/
+      data (smass(39,i),i=1,1)
+c   C2H4: 2161
+     * /  32.04/
 C
       END
 c**************************************
@@ -2694,7 +2701,7 @@ C                                                                         D00020
 C                                                                         D00040
 C     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4    D00050
 C                                                                         D00060
-      PARAMETER (MXMOL=38) 
+      PARAMETER (MXMOL=39) 
 C                                                                         D00080
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D00110
@@ -2714,6 +2721,7 @@ C                                                                         D00210
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       D00250
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D00260
      *              EXTID(10)                                             D00270
+      CHARACTER*8  EXTID
 C                                                                         D00280
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SEC   ,       XALTZ
@@ -2728,7 +2736,7 @@ C                                                                         D00300
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D00370
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        D00380
      *              NLTEFL,LNFIL4,LNGTH4                                  D00390
-      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4                             D00400
+      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4,lstdum                             D00400
       COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),       D00410
      *              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)          D00420
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D                          D00430
@@ -3120,9 +3128,11 @@ c
      *     mol_id(250),hw_s(250),hw_T(250),shft(250),jflg(250)
 
       real *4 str,hw_f,e_low,hw_s,hw_T,shft,rdpnl(2),dum(2),xmol(2)
-      integer *4 mol_id,jflg
+      integer *4 mol_id,jflg,i_1
 
       equivalence (vmin,rdpnl(1)), (mol_id(1),xmol(1))
+c
+      data i_1/ 1/
 c
       IPASS = 1                                                           D02890
       IF (ILO.GT.0) IPASS = 2                                             D02900
@@ -3140,7 +3150,7 @@ c
 c
       IF (LEOF.EQ.0) GO TO 30                                             D02980
       IF (VMAX.LT.VLO) THEN                                               D02990
-         CALL BUFIN_sgl(lnfl,LEOF,dum(1),1) 
+         CALL BUFIN_sgl(lnfl,LEOF,dum(1),i_1) 
          GO TO 10                                                         D03010
       ELSE                                                                D03020
          CALL BUFIN_sgl(Lnfl,LEOF,vlin(1),NWDS) 
@@ -3319,6 +3329,7 @@ C                                                                         D04500
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       D04560
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D04570
      *              EXTID(10)                                             D04580
+      CHARACTER*8  EXTID
 C                                                                         D04590
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SEC   ,       XALTZ
@@ -3521,7 +3532,7 @@ C                                                                         D06410
       DATA ZBND / 64. /                                                   D06420
       DATA HREJ /'0'/,HNOREJ /'1'/
 C                                                                         D06440
-      DATA I_1/1/, I_250/250/
+      DATA i_1/ 1/, I_250/250/
 C
       VNULST = V2R4+BOUND4                                                D06450
 C                                                                         D06460
@@ -3743,7 +3754,8 @@ C                                                                         E00100
 C     IFIL CARRIES FILE INFORMATION                                       E00110
 C                                                                         E00120
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
-     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,
+     *           MXTRAC=22)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         E00130
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        E00140
@@ -3755,7 +3767,7 @@ C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     E00190
 C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         E00200
 C     MOLECULES.                                                          E00210
 C                                                                         E00220
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(38),XAMNT(38,MXLAY)              E00230
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(mx_xs),XAMNT(mx_xs,MXLAY)              E00230
 C                                                                         E00240
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         E00250
 C     FOR THE CROSS-SECTION MOLECULES.                                    E00260
@@ -3763,12 +3775,13 @@ C     XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES          E00270
 C                                                                         E00280
 c%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat
       CHARACTER*10 XSFILE,XSNAME,ALIAS,XNAME,XFILS(6),BLANK               E00290
-      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               E00300
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           E00310
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               E00320
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                E00325
+      COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs)
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),     
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),      
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS), 
+     *                NUMXS,IXSBIN                                   
 C                                                                         E00330
-      DIMENSION IXFLG(38)                                                 E00340
+      DIMENSION IXFLG(mx_xs)                                                 E00340
 C                                                                         E00350
       CHARACTER*120 XSREC                                                 E00360
       CHARACTER*1 CFLG,CASTSK,CPRCNT,CFRM,CN,CF                           E00370
@@ -3781,7 +3794,7 @@ C     T296 IS TEMPERATURE FOR INITAL CALCULATIN OF DOPPLER WIDTHS         E00412
 C                                                                         E00413
       DATA T296 / 296.0 /                                                 E00414
 C                                                                         E00420
-      IXMAX = 38                                                          E00430
+      IXMAX = mx_xs                                                          E00430
       DO 10 I = 1, IXMAX                                                  E00440
          XSNAME(I) = BLANK                                                E00450
    10 CONTINUE                                                            E00460
@@ -3914,38 +3927,42 @@ C                                                                         E01610
       BLOCK DATA BXSECT                                                   E01630
 C                                                                         E01640
       IMPLICIT REAL*8           (V)                                     ! E01650
+
+      parameter (mx_xs=38)
 C                                                                         E01660
 C**   XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES          E01670
 C**            (NOTE: ALL NAMES ARE LEFT-JUSTIFIED)                       E01680
 C                                                                         E01690
       CHARACTER*10 XSFILE,XSNAME,ALIAS                                    E01700
-      COMMON /XSECTI/ XSMAX(6,5,38),XSTEMP(6,5,38),NPTSFX(5,38),          E02850
-     *                NFILEX(5,38),NLIMX                                  E02860
-      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               E01710
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           E01720
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               E01730
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                E01740
+      COMMON /XSECTI/ XSMAX(6,5,mx_xs),XSTEMP(6,5,mx_xs),   
+     *                NPTSFX(5,mx_xs),NFILEX(5,mx_xs),NLIMX 
+      COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs) 
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),     
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),      
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS), 
+     *                NUMXS,IXSBIN                                   
       COMMON /XSECTS/ JINPUT,NMODES,NPANEL,NDUM,V1XS,V2XS,DVXS,NPTSXS     E02870
 C                                                                         E01750
       DATA NMODES / 1 /,NPANEL / 0 /,V1XS / 0.0 /,V2XS / 0.0 /,           E02990
      *     DVXS / 0.0 /,NPTSXS / 0 /                                      E03000
       DATA XSMAX / 1140*0.0 /                                             E03010
-      DATA (ALIAS(1,I),I=1,38)/                                           E01760
+      DATA (ALIAS(1,I),I=1,mx_xs)/                                           E01760
      *    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',         E01770
      *    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',         E01780
      *    'N2O5      ', 'HNO3      ', 'CF4       ', 'CHCLF2    ',         E01790
-     *    'CCLF3     ', 'C2CLF5    ', 24*' ZZZZZZZZ ' /                   E01800
-      DATA (ALIAS(2,I),I=1,38)/                                           E01810
+     *    'CCLF3     ', 'C2CLF5    ', 'NO2       ',
+     *	  23*' ZZZZZZZZ ' / 
+      DATA (ALIAS(2,I),I=1,mx_xs)/                                           E01810
      *    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',         E01820
      *    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',         E01830
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CHF2CL    ',         E01840
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 24*' ZZZZZZZZ ' /                   E01850
-      DATA (ALIAS(3,I),I=1,38)/                                           E01860
+      DATA (ALIAS(3,I),I=1,mx_xs)/                                           E01860
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',         E01870
      *    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',         E01880
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',         E01890
      *    'CFC13     ', 'CFC115    ', 24*' ZZZZZZZZ ' /                   E01900
-      DATA (ALIAS(4,I),I=1,38)/                                           E01910
+      DATA (ALIAS(4,I),I=1,mx_xs)/                                           E01910
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',         E01920
      *    'F11       ', 'F12       ', 'F114      ', 'F113      ',         E01930
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F14       ', 'F22       ',         E01940
@@ -3953,15 +3970,17 @@ C                                                                         E01750
 C                                                                         E01960
 C     XSMASS IS MASS OF EACH CROSS-SECTION                                E01961
 C                                                                         E01962
+c     note 23 =  mx_xs - 15 = 38 - 15
+
       DATA XSMASS/                                                        E01963
      1      97.46     ,   79.01     ,  102.92     ,  153.82     ,         E01964
      2     137.37     ,  120.91     ,  170.92     ,  187.38     ,         E01965
      3     108.01     ,   63.01     ,   88.00     ,   86.47     ,         E01966
-     4     104.46     ,  154.47     ,  24*0.00 /                          E01967
+     4     104.46     ,  154.47     ,   45.99     , 23*0.00 /             E01967
 C                                                                         E01969
       DATA V1FX / 190*0.0 /,V2FX / 190*0.0 /,DVFX / 190*0.0 /,            E01970
-     *     WXM / 38*0.0 /                                                 E01980
-      DATA NTEMPF / 190*0 /,NSPECR / 38*0 /,IXFORM / 190*0 /,             E01990
+     *     WXM / mx_xs*0.0 /                                                 E01980
+      DATA NTEMPF / 190*0 /,NSPECR / mx_xs*0 /,IXFORM / 190*0 /,             E01990
      *     NUMXS / 0 /                                                    E02000
 C                                                                         E02010
       END                                                                 E02020
@@ -4018,7 +4037,8 @@ C                                                                         E00100
 C     IFIL CARRIES FILE INFORMATION                                       E00110
 C                                                                         E00120
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
-     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,
+     *           MXTRAC=22)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         E00130
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        E00140
@@ -4030,7 +4050,7 @@ C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     E00190
 C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         E00200
 C     MOLECULES.                                                          E00210
 C                                                                         E00220
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(38),XAMNT(38,MXLAY)              E00230
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(mx_xs),XAMNT(mx_xs,MXLAY)              E00230
 C                                                                         E00240
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         E00250
 C     FOR THE CROSS-SECTION MOLECULES.                                    E00260
@@ -4038,12 +4058,13 @@ C     XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES          E00270
 C                                                                         E00280
 c%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat
       CHARACTER*10 XSFILE,XSNAME,ALIAS,XNAME,XFILS(6),BLANK               E00290
-      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               E00300
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           E00310
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               E00320
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                E00325
+      COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs)
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),     
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),      
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS), 
+     *                NUMXS,IXSBIN                                   
 C                                                                         E00330
-      DIMENSION IXFLG(38)                                                 E00340
+      DIMENSION IXFLG(mx_xs)                       
 C                                                                         E00350
       CHARACTER*120 XSREC                                                 E00360
       CHARACTER*1 CFLG,CASTSK,CPRCNT,CFRM,CN,CF                           E00370
@@ -4056,7 +4077,7 @@ C     T296 IS TEMPERATURE FOR INITAL CALCULATIN OF DOPPLER WIDTHS         E00412
 C                                                                         E00413
       DATA T296 / 296.0 /                                                 E00414
 C                                                                         E00420
-      IXMAX = 38                                                          E00430
+      IXMAX = mx_xs                                                          E00430
 
       xv1 = v1
       xv2 = v2
@@ -4149,6 +4170,8 @@ c
       SUBROUTINE XSECTM (IFST,IR4)                                        E02390
 C                                                                         E02400
       IMPLICIT REAL*8           (V)                                     ! E02410
+
+      parameter (n_absrb=5050, mx_xs=38)
 C                                                                         E02420
 C     THIS SUBROUTINE MOVES THE CROSS SECTIONS INTO                       E02430
 C     THE APPROPRIATE ARRAY R1, R2, R3, R4, OR ABSRB                      E02440
@@ -4160,12 +4183,13 @@ C                                                                         E02470
      *       ZETAI(250),IZETA(250)                                        E02500
       COMMON RR1(6099),RR2(2075),RR3(429)
       COMMON /IOU/ IOUT(250)                                              E02520
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                E02530
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)                E02530
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   E02540
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       E02550
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       E02560
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E02570
      *              EXTID(10)                                             E02580
+      CHARACTER*8  EXTID
 C                                                                         E02590
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
@@ -4186,17 +4210,18 @@ C                                                                         E02610
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         E02740
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        E02750
      *              NLTEFL,LNFIL4,LNGTH4                                  E02760
-      COMMON /XSHEAD/ HEADT1(38)                                          E02770
-      COMMON /XSTMPR/ PF,TF,PDX(6,5,38),DVXPR(5,38),IXBIN(5,38),          E02780
-     *                IXSBN(5,38)                                         E02790
-      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000)                         E02800
+      COMMON /XSHEAD/ HEADT1(mx_xs)                                          E02770
+      COMMON /XSTMPR/ PF,TF,PDX(6,5,mx_xs),DVXPR(5,mx_xs),  
+     *                IXBIN(5,mx_xs),IXSBN(5,mx_xs)         
+      COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000)           
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E02810
-      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               E02820
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           E02830
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               E02840
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                E02845
-      COMMON /XSECTI/ XSMAX(6,5,38),XSTEMP(6,5,38),NPTSFX(5,38),          E02850
-     *                NFILEX(5,38),NLIMX                                  E02860
+      COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs)
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),     
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),      
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS), 
+     *                NUMXS,IXSBIN                                   
+      COMMON /XSECTI/ XSMAX(6,5,mx_xs),XSTEMP(6,5,mx_xs),
+     *                NPTSFX(5,mx_xs),NFILEX(5,mx_xs),NLIMX  
       COMMON /XSECTS/ JINPUT,NMODES,NPANEL,NDUM,V1XS,V2XS,DVXS,NPTSXS     E02870
       CHARACTER*10 XSFILE,XSNAME,ALIAS                                    E02880
       CHARACTER HEADT1*100                                                E02890
@@ -4607,6 +4632,8 @@ C                                                                         E06700
       SUBROUTINE XSECIN (NPANEL,NI,NS,NT1,NT2,NMODE,NSKIP,NMAX,IEOF)      E06720
 C                                                                         E06730
       IMPLICIT REAL*8           (V)                                     ! E06740
+
+      parameter (mx_xs=38)
 C                                                                         E06750
 C     THIS SUBROUTINE READS IN THE DESIRED CROSS SECTIONS                 E06760
 C                                                                         E06770
@@ -4623,15 +4650,16 @@ C                                                                         E06830
       COMMON /PXSHDR/ V1PX,V2PX,DVPX,NLIMPX,RBX(2050)                     E06870
       COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000)                         E06880
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E06890
-      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               E06900
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           E06910
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               E06920
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                E06925
-      COMMON /XSECTI/ XSMAX(6,5,38),XSTEMP(6,5,38),NPTSFX(5,38),          E06930
-     *                NFILEX(5,38),NLIMX                                  E06940
-      COMMON /XSHEAD/ HEADT1(38)                                          E06950
-      COMMON /XSTMPR/ PF,TF,PDX(6,5,38),DVXPR(5,38),IXBIN(5,38),          E06960
-     *                IXSBN(5,38)                                         E06970
+      COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs)     
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),     
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),      
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS), 
+     *                NUMXS,IXSBIN                                   
+      COMMON /XSECTI/ XSMAX(6,5,mx_xs),XSTEMP(6,5,mx_xs), 
+     *                NPTSFX(5,mx_xs),NFILEX(5,mx_xs),NLIMX        
+      COMMON /XSHEAD/ HEADT1(mx_xs)                                          E06950
+      COMMON /XSTMPR/ PF,TF,PDX(6,5,mx_xs),DVXPR(5,mx_xs),
+     *                IXBIN(5,mx_xs),IXSBN(5,mx_xs)       
       COMMON /FLFORM/ CFORM                                               E06980
 C                                                                         E06990
       CHARACTER*10 XSFILE,XSNAME,ALIAS,SOURCE(3),CTORR                    E07000
@@ -4690,11 +4718,11 @@ C                                                                         E07440
             IF (ISFORM.GT.0) THEN                                         E07490
                OPEN (IFILE,FILE=XSFIL1,STATUS='OLD',FORM=BFORM,
      *          IOSTAT=iostat)
-               if (IOSTAT.gt.0) stop 'in oprop - No file XSFIL1' 
+               if (IOSTAT.gt.0) stop 'in oprop (a) - No file XSFIL1' 
             ELSE                                                          E07510
                OPEN (IFILE,FILE=XSFIL1,STATUS='OLD',FORM=CFORM,
      *          IOSTAT=iostat)
-               if (IOSTAT.gt.0) stop 'in oprop - No file XSFIL1 ' 
+               if (IOSTAT.gt.0) stop 'in oprop (b) - No file XSFIL1 ' 
             ENDIF                                                         E07530
          ENDIF                                                            E07540
          REWIND IFILE                                                     E07550
@@ -4924,6 +4952,8 @@ C                                                                         E09570
       SUBROUTINE XSNTMP (NI,NS,NT1,NT2,NMODE)                             E09590
 C                                                                         E09600
       IMPLICIT REAL*8           (V)                                     ! E09610
+
+      parameter (mx_xs=38)
 C                                                                         E09620
 C     THIS SUBROUTINE DETERMINES THE CORRECT MODE                         E09630
 C     AND BRACKETS THE LAYER TEMPERATURE                                  E09640
@@ -4939,16 +4969,19 @@ C                                                                         E09670
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       E09730
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E09740
      *              EXTID(10)                                             E09750
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
       COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000)                         E09770
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E09780
-      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               E09790
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           E09800
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               E09810
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                E09815
-      COMMON /XSECTI/ XSMAX(6,5,38),XSTEMP(6,5,38),NPTSFX(5,38),          E09820
-     *                NFILEX(5,38),NLIMX                                  E09830
+      COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs)   
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),     
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),      
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS), 
+     *                NUMXS,IXSBIN                                   
+      COMMON /XSECTI/ XSMAX(6,5,mx_xs),XSTEMP(6,5,mx_xs),
+     *                NPTSFX(5,mx_xs),NFILEX(5,mx_xs),NLIMX                    
       CHARACTER*10 XSFILE,XSNAME,ALIAS                                    E09840
 C                                                                         E09850
       EQUIVALENCE (JRAD,FSCDID(9))                                        E09860
@@ -5010,6 +5043,8 @@ C                                                                         E10370
       SUBROUTINE XSBINF (NI,NS,NT1,NT2,NMODE)                             E10390
 C                                                                         E10400
       IMPLICIT REAL*8           (V)                                     ! E10410
+
+      parameter (mx_xs=38)
 C                                                                         E10420
 C     THIS SUBROUTINE PERFORMS A TEMPERATURE DEPENDENT CONVOLUTION        E10430
 C     ON THE CROSS-SECTIONS PRODUCING A BINARY INTERMEDIATE FILE          E10440
@@ -5046,15 +5081,16 @@ C                                                                         E10700
      *                RADCN1,RADCN2 
       COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000)                         E10720
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E10730
-      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               E10740
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           E10750
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               E10760
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                E10765
-      COMMON /XSECTI/ XSMAX(6,5,38),XSTEMP(6,5,38),NPTSFX(5,38),          E10770
-     *                NFILEX(5,38),NLIMX                                  E10780
-      COMMON /XSTMPR/ PF,TF,PDX(6,5,38),DVXPR(5,38),IXBIN(5,38),          E10790
-     *                IXSBN(5,38)                                         E10800
-      COMMON /XSHEAD/ HEADT1(38)                                          E10810
+      COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs)   
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),     
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),      
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS), 
+     *                NUMXS,IXSBIN                                   
+      COMMON /XSECTI/ XSMAX(6,5,mx_xs),XSTEMP(6,5,mx_xs),        
+     *                NPTSFX(5,mx_xs),NFILEX(5,mx_xs),NLIMX      
+      COMMON /XSTMPR/ PF,TF,PDX(6,5,mx_xs),DVXPR(5,mx_xs),       
+     *                IXBIN(5,mx_xs),IXSBN(5,mx_xs)              
+      COMMON /XSHEAD/ HEADT1(mx_xs)                              
       COMMON /FLFORM/ CFORM                                               E10820
 C                                                                         E10830
       CHARACTER*10 XSFILE,XSNAME,ALIAS                                    E10840
@@ -5393,6 +5429,8 @@ C                                                                         E14160
       SUBROUTINE PNLCNV (R1,JFILE,SUMR,NPTS,NS,NI)                        E14180
 C                                                                         E14190
       IMPLICIT REAL*8           (V)                                     ! E14200
+
+      parameter (mx_xs=38)
 C                                                                         E14210
 C     SUBROUTINE PNLCNV OUTPUTS THE RESULTS OF THE CONVOLUTION            E14220
 C     TO FILE JFILE                                                       E14230
@@ -5406,9 +5444,9 @@ C                                                                         E14240
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 E14310
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,tdum(8)
       COMMON /SPANEL/ V1P,V2P,DV,NLIM                                     E14330
-      COMMON /XSTMPR/ PF,TF,PDX(6,5,38),DVXPR(5,38),IXBIN(5,38),          E14340
-     *                IXSBN(5,38)                                         E14350
-      COMMON /XSHEAD/ HEADT1(38)                                          E14360
+      COMMON /XSTMPR/ PF,TF,PDX(6,5,mx_xs),DVXPR(5,mx_xs),   
+     *                IXBIN(5,mx_xs),IXSBN(5,mx_xs)          
+      COMMON /XSHEAD/ HEADT1(mx_xs)                          
       CHARACTER HEADT1*100                                                E14370
       DIMENSION PNLHDR(2)                                                 E14380
       DIMENSION R1(*),SUMR(*)                                             E14390
@@ -5554,7 +5592,7 @@ c
 c++
 c     Max_ISO here is the number that TIPS treats: LBLRTM is limited to 9
 c
-      PARAMETER (NMOL=38,Max_ISO=20)
+      PARAMETER (NMOL=39,Max_ISO=20)
 c++
       PARAMETER (NT=119)
 c++
@@ -5789,6 +5827,15 @@ C
       go to 100
       ENDIF     
 C 
+      IF(MOL.EQ.39) THEN 
+c**   classical approximation for temperature dependence of ch3oh
+c**   rotational partition sum only
+
+      if (itemp .eq.1) qt_296 = 296.
+      if (itemp .eq.2) qt_temp = (Temp/296.)**1.5
+      go to 100
+      ENDIF     
+C 
  100  continue
 c
       if (QT .le. 0.) then 
@@ -5839,7 +5886,7 @@ c      March 20, 1990
 c...date last changed 19 February, 2002
 c
 c++
-      PARAMETER (NMOL=38)
+      PARAMETER (NMOL=39)
 c++:  bd-MOL
       CHARACTER*6 MOLID
 c++:  bd-MOL
@@ -5851,7 +5898,7 @@ c
      3'   HCl','   HBr','    HI','   ClO','   OCS','  H2CO','  HOCl',
      4'    N2','   HCN',' CH3Cl','  H2O2','  C2H2','  C2H6','   PH3',
      5'  COF2','   SF6','   H2S',' HCOOH','   HO2','     O','ClONO2',
-     6'   NO+','  HOBr','  C2H4'/
+     6'   NO+','  HOBr','  C2H4',' CH3OH'/
 c
       END
 
@@ -5861,7 +5908,7 @@ c  ****************************************
 c  ****************************************
 c
 c++
-      PARAMETER (NMOL=38,Max_ISO=20)
+      PARAMETER (NMOL=39,Max_ISO=20)
 c++
       COMMON /ISO_data/ ISO82(NMOL,Max_ISO),ISONM(NMOL)
 c
@@ -5873,8 +5920,8 @@ c      NO, SO2, NO2, NH3, HNO3, OH, HF, HCl, HBr, HI,
      +  3,   2,   1,   2,    1,  3,  1,   2,   2,  1,
 c     ClO, OCS, H2CO, HOCl, N2, HCN, CH3Cl, H2O2, C2H2, C2H6, PH3
      +  2,   5,    3,    2,  1,   3,     2,    1,    2,    1,   1,       4/24/97
-c     COF2, SF6, H2S, HCOOH, HO2, O, ClONO2,  NO+, HOBr, C2H4
-     +   1,   1,   3,     1,   1, 1,      2,    1,    2,    2/
+c     COF2, SF6, H2S, HCOOH, HO2, O, ClONO2,  NO+, HOBr, C2H4 CH3OH
+     +   1,   1,   3,     1,   1, 1,      2,    1,    2,    2,   1/
 c
 
 c       H2O
@@ -6029,7 +6076,11 @@ c      HOBr
 c       C2H4
      +  221,231/
 
-      end
+      DATA (ISO82(39,J),J=1,1)/
+c       C2H4
+     +  2161/
+
+       end
 
 c
 c...date last changed 25 Nov 2001
@@ -6041,7 +6092,7 @@ c  ****************************************
 c
 c
 c++
-      PARAMETER (NMOL=38,Max_ISO=20)
+      PARAMETER (NMOL=39,Max_ISO=20)
 c++
       COMMON /ISO_data/ ISO82(NMOL,Max_ISO),ISONM(NMOL)
 c
@@ -10255,6 +10306,7 @@ C     AVC transforms lorentz and doppler halfwidths to voigt
 C     halfwidths: AV = AVC*(AL + AD)
 
       DATA AVC/                                                         
+
      $  .10000E+01,  .99535E+00,  .99073E+00,  .98613E+00,  .98155E+00, 
      $  .97700E+00,  .97247E+00,  .96797E+00,  .96350E+00,  .95905E+00, 
      $  .95464E+00,  .95025E+00,  .94589E+00,  .94156E+00,  .93727E+00,
@@ -10505,7 +10557,7 @@ c
 c     
          IF(Y .LT. 1.0 .AND. X .LT. 4.0 .OR. Y .LT. 1.8/(X+1.0)) then 
 c     
-c     F3(T)=EXP(T**2-X**2)
+c        F3(T)=EXP(T**2-X**2)
             Y2=Y**2
             IF((X**2-Y2) .GT. 70.0) GO TO 1002
             U1=EXP(-X**2+Y2)*COS(2.0*X*Y)

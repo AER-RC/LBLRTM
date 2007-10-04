@@ -35,7 +35,8 @@ C                                                                         I00110
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I00160
      *               DVSC,XDUM,V1SHFT                                     I00170
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I00180
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I00190
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL             
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I00200
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
@@ -574,7 +575,8 @@ C                                                                         I04620
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I04670
      *               DVSC,XDUM,V1SHFT                                     I04680
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I04690
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I04700
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I04710
       COMMON /SCSHAP/ HWFS,DXFS,NFS,NFMAXS
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
@@ -845,7 +847,8 @@ C                                                                         I06560
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I06610
      *               DVSC,XDUM,V1SHFT                                     I06620
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I06630
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I06640
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      I06650
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     I06660
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I06670
@@ -1043,7 +1046,8 @@ C                                                                         I08450
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I08500
      *               DVSC,XDUM,V1SHFT                                     I08510
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I08520
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I08530
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I08540
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
@@ -1270,7 +1274,8 @@ C                                                                         I10580
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   I10600
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I10610
      *               DVSC,XDUM,V1SHFT                                     I10620
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I10630
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NLIM                                     I10640
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         I10650
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I10660
@@ -1507,7 +1512,8 @@ C                                                                         I12770
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I12790
      *               DVSC,XDUM,V1SHFT                                     I12800
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I12810
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I12820
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I12830
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
@@ -1592,7 +1598,8 @@ C                                                                         I13540
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I13590
      *               DVSC,XDUM,V1SHFT                                     I13600
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I13610
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I13620
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /SPANEL/ V1P,V2P,DV,NLIM                                     I13630
       DIMENSION PNLHDR(2)                                                 I13640
       DIMENSION R1(*),SUMR(*)                                             I13650
@@ -1679,7 +1686,8 @@ C                                                                         I14400
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       I14450
      *               DVSC,XDUM,V1SHFT                                     I14460
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I14470
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I14480
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /SPANEL/ V1P,V2P,DV,NLIM                                     I14490
       DIMENSION PNLHDR(2)                                                 I14500
       DIMENSION R1(*),SUMR(*)                                             I14510
@@ -1773,7 +1781,8 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I15230
      *              NLTEFL,LBL4FL,LNGTH4                                  I15240
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I15250
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I15270
       COMMON /RCTSV/ JN,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
       DIMENSION S(*),R1(*),XF(*)                                          I15290
@@ -1993,7 +2002,8 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I15230
      *              NLTEFL,LBL4FL,LNGTH4                                  I15240
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I15250
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I15270
       COMMON /RCTSV/ JN,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
       DIMENSION S(*),R1(*),XF(*)                                          I15290
@@ -2222,7 +2232,8 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        I15230
      *              NLTEFL,LBL4FL,LNGTH4                                  I15240
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 I15250
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            I15260
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      I15270
       COMMON /RCTSV/ JN,SUMJ,JFLG,RNJ,NB,IPC,VLFT,VCNT,VRGT,WGTL,WGTR     I15280
       DIMENSION S(*),R1(*),XF(*)                                          I15290
@@ -2532,7 +2543,8 @@ C                                                                         J00250
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       J00300
      *               DVSC,XDUM,V1SHFT                                     J00310
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 J00320
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J00330
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J00340
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J00350
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         J00360
@@ -2749,7 +2761,8 @@ C                                                                         J02320
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   J02340
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       J02350
      *               DVSC,XDUM,V1SHFT                                     J02360
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J02370
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 J02380
       COMMON /INPNL/ VMIN,VMAX,DVI,NNI                                    J02390
       COMMON /RPANL/ V1P,V2P,DVP,NLIMP                                    J02400
@@ -2864,7 +2877,8 @@ C                                                                         J03430
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         J03440
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        J03450
      *              NLTEFL,LNFIL4,LNGTH4                                  J03460
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J03470
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /OUTPNL/ V1P,V2P,DVP,NLIM                                    J03480
       DIMENSION PNLHDR(2),R1(*)                                           J03490
 C                                                                         J03500
@@ -2939,7 +2953,8 @@ C                                                                         J04100
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        J04150
      *              NLTEFL,LNFIL4,LNGTH4                                  J04160
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 J04170
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            J04180
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /INPNL/ V1I,V2I,DVI,NNI                                      J04190
       COMMON /OUTPNL/ V1J,V2J,DVJ,NNJ                                     J04200
       DIMENSION C1(0:202),C2(0:202),C3(0:202),C4(0:202),RSTAT(3)          J04210
@@ -3216,7 +3231,8 @@ C                                                                         L00080
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       L00130
      *               DVSC,XDUM,V1SHFT                                     L00140
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L00150
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L00160
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L00170
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L00180
      *                HEDDR(9),XF(NFLTPT),SUMFLT                          L00190
@@ -3486,7 +3502,8 @@ C                                                                         L01790
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       L01840
      *               DVSC,XDUM,V1SHFT                                     L01850
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L01860
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L01870
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L01880
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L01890
      *                HEDDR(9),XF(NFLTPT),SUMFLT                          L01900
@@ -3591,8 +3608,11 @@ C                                                                         L02830
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       L02920
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      L02930
      *              EXTID(10)                                             L02940
+      CHARACTER*8  EXTID
+
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L02950
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L02960
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L02970
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L02980
      *                HEDDR(9),XF(NFLTPT),SUMFLT                          L02990
@@ -3752,7 +3772,8 @@ C                                                                         L04380
       COMMON /SSUBS/ VFT,VBOT,VTOP,V1,V2,DVO,NLIMF,NSHIFT,MAXF,ILO,IHI,   L04430
      *               NLO,NHI,RATIO,SUMIN,IRATSH,SRATIO,IRATM1,NREN,       L04440
      *               DVSC,XDUM,V1SHFT                                     L04450
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L04460
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
 C                                                                         L04470
       DIMENSION XF(*),S(*)                                                L04480
 C                                                                         L04490
@@ -3817,8 +3838,11 @@ C                                                                         L04780
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       L04870
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      L04880
      *              EXTID(10)                                             L04890
+      CHARACTER*8  EXTID
+
       COMMON /CONTRL/ IEOFSC,IPANEL,ISTOP,IDATA,JVAR,JABS                 L04900
-      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL                            L04910
+      COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV, 
+     *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL              
       COMMON /RSCAN/ V1I,V2I,DVI,NNI                                      L04920
       COMMON /COMFLT/ V1F,V2F,DVF,NPTS,NPTF,JEMIT,IUNIT,IFILST,NIFILS,    L04930
      *                HEDDR(9),XF(NFLTPT),SUMFLT                          L04940

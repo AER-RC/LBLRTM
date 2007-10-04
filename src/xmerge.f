@@ -31,6 +31,7 @@ C                                                                         H00100
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H00130
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H00140
      *              EXTID(10)                                             H00150
+      CHARACTER*8  EXTID
 C                                                                         H00160
       COMMON /CVRXMR/ HNAMXMR,HVRXMR
 c
@@ -168,7 +169,7 @@ C                                                                         H00820
       IMPLICIT REAL*8           (V)                                     ! H00830
 C                                                                         H00840
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
-     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H00850
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        H00860
@@ -181,6 +182,8 @@ C                                                                         H00900
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H00930
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H00940
      *              EXTID(10)                                             H00950
+      CHARACTER*8  EXTID
+
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),
      *                MSPNL1(MXLAY),                                      H00960
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   H00970
@@ -268,6 +271,8 @@ C                                                                         H01630
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H01670
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H01680
      *              EXTID(10)                                             H01690
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H01710
@@ -286,7 +291,6 @@ C                                                                         H01810
       DIMENSION ODLAYR(2)                                                 H01830
 C                                                                         H01840
       CHARACTER*40 CEXT,CYID                                              H01850
-      CHARACTER*8  EXTID
 C                                                                         H01860
       EQUIVALENCE (XFILHD(1),XID(1)) , (PNLHDR(1),V1P)                    H01870
       EQUIVALENCE (ODLAY(1),ODLAYR(1)) , (FSCDID(4),IAERSL),              H01880
@@ -379,6 +383,8 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,
      *              EXTID(10)
+      CHARACTER*8  EXTID
+
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
      *              NLTEFL,LNFIL4,LNGTH4
@@ -437,6 +443,8 @@ C                                                                         H02640
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H02680
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H02690
      *              EXTID(10)                                             H02700
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H02720
@@ -685,6 +693,8 @@ C                                                                         H05050
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H05090
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H05100
      *              EXTID(10)                                             H05110
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H05130
@@ -2463,6 +2473,8 @@ C                                                                         H16580
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H16620
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H16630
      *              EXTID(10)                                             H16640
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H16660
@@ -2489,7 +2501,6 @@ c
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H16770
 C                                                                         H16780
       CHARACTER*40 CEXT,CYID                                              H16790
-      CHARACTER*8  EXTID
 C                                                                         H16800
       DIMENSION EMLAYB(2410)                                              H16810
       DIMENSION XFILHD(2),OPNLHD(2)                                       H16820
@@ -2812,6 +2823,8 @@ C                                                                         H19400
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H19440
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H19450
      *              EXTID(10)                                             H19460
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H19480
@@ -3554,6 +3567,8 @@ C                                                                         H24470
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H24510
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H24520
      *              EXTID(10)                                             H24530
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H24550
@@ -4111,7 +4126,7 @@ c
       if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 c ************************************************************************
 C                                                                         H11610
-      IF (IAERSL.EQ.0 .or. iaersl.eq.1) THEN
+      IF (IAERSL.EQ.0 .or. iaersl.eq.5) THEN
          IAFBB = -1                                                       H11630
       ELSE                                                                H11640
          BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)                       H11650
@@ -5762,6 +5777,8 @@ C                                                                         H16580
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H16620
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H16630
      *              EXTID(10)                                             H16640
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H16660
@@ -5797,7 +5814,6 @@ c
       
 C                                                                         H16780
       CHARACTER*40 CEXT,CYID                                              H16790
-      CHARACTER*8  EXTID
 C                                                                         H16800
       DIMENSION EMLAYB(2410)                                              H16810
       DIMENSION XFILHD(2),OPNLHD(2),XFHDUM(2)                             H16820
@@ -5853,7 +5869,7 @@ C
 C                                                                         H17230
 C     FOR AEROSOL RUNS, MOVE EXTID INTO YID                               H17240
 C                                                                         H17250
-      IF (iaersl.ge.1 .or.iaersl.ne.5) THEN 
+      IF (iaersl.ge.1 .and. iaersl.ne.5) THEN 
          WRITE (CEXT,'(10A4)') EXTID                                      H17270
          WRITE (CYID,'(5A8)') (YID(I),I=3,7)                              H17280
          CYID(19:40) = CEXT(19:40)                                        H17290
@@ -6147,6 +6163,8 @@ C                                                                         H19400
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H19440
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H19450
      *              EXTID(10)                                             H19460
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H19480
@@ -6558,7 +6576,7 @@ c********************
       character*20 h_radtot,h_kfile,h_k_od_molec
 
 c for layer2level (if imoldq <> -99)
-      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=38)
+      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=39)
       common /dlaydlev/ilevdx,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
@@ -6728,7 +6746,7 @@ c********************
       character*20 h_radtot,h_kfile
 
 c for layer2level (if imoldq <> -99)
-      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=38)
+      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=39)
       common /dlaydlev/ilevdx,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
@@ -6919,7 +6937,7 @@ c********************
       character*20 h_radtot,h_kfile,h_k_od_molec
 
 c for layer2level (if imoldq <> -99)
-      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=38)
+      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=39)
       common /dlaydlev/ilevdx,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
@@ -7084,7 +7102,7 @@ c********************
       character*20 h_radtot,h_kfile
 
 c for layer2level (if imoldq <> -99)
-      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=38)
+      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=39)
       common /dlaydlev/ilevdx,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
@@ -7492,6 +7510,8 @@ C                                                                         H31030
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H31070
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H31080
      *              EXTID(10)                                             H31090
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H31110
@@ -7514,7 +7534,6 @@ c
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   H31220
 C                                                                         H31230
       CHARACTER*40 CEXT,CYID                                              H31240
-      CHARACTER*8  EXTID
 C                                                                         H31250
       REAL NEWEM,NEWTR                                                    H31260
 C                                                                         H31270
@@ -7710,6 +7729,8 @@ C                                                                         H33070
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H33110
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H33120
      *              EXTID(10)                                             H33130
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H33150
@@ -8080,6 +8101,8 @@ C                                                                         H36580
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H36620
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H36630
      *              EXTID(10)                                             H36640
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
 C                                                                         H36660
@@ -8388,6 +8411,7 @@ C                                                                         H39580
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H39620
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H39630
      *              EXTID(10)                                             H39640
+      CHARACTER*8  EXTID
 C                                                                         H39650
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -8401,7 +8425,6 @@ C                                                                         H39670
       DIMENSION APNLHD(2),AFILHD(2)                                       H39740
 C                                                                         H39750
       CHARACTER*40 CEXT                                                   H39760
-      CHARACTER*8  EXTID
 C                                                                         H39770
       EQUIVALENCE (APNLHD(1),V1P) , (AFILHD(1),XID(1))                    H39780
 C                                                                         H39790
@@ -8469,7 +8492,7 @@ C     VALUES AT EACH POINT. THE AEROSOL VALUES ARE STORED IN              H40470
 C     COMMON ABSORB AND COMMON SCATTR.                                    H40480
 C                                                                         H40490
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
-     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)
 C
       COMMON R1(2410)                                                     H40500
       COMMON /ABSPNL/ V1P,V2P,DVP,NLIM,NSHFT,NPTS                         H40510
@@ -8478,6 +8501,8 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       H40540
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      H40550
      *              EXTID(10)                                             H40560
+      CHARACTER*8  EXTID
+
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),
      *                MSPNL1(MXLAY),                                      H40570
      *                MSLAY1,ISFILE,JSFILE,KSFILE,LSFILE,MSFILE,IEFILE,   H40580
@@ -8497,7 +8522,6 @@ C                                                                         H40690
       EQUIVALENCE (FSCDID(4),IAERSL)                                      H40710
 C                                                                         H40720
       CHARACTER*40 CEXT,CYID                                              H40730
-      CHARACTER*8  EXTID
 C                                                                         H40740
       DIMENSION PNLHD(4),XFILHD(2)                                        H40750
 C                                                                         H40760
@@ -8656,4 +8680,3 @@ C
 C
       END
 C     ----------------------------------------------------------------
-

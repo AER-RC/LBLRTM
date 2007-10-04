@@ -48,6 +48,8 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       B00600
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      B00610
      *              EXTID(10)                                             B00620
+      CHARACTER*8  EXTID
+
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
@@ -343,6 +345,8 @@ C                                                                         E09670
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       E09730
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      E09740
      *              EXTID(10)                                             E09750
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
       DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),TNESAV(26),
@@ -517,6 +521,7 @@ C                                                                         B00440
 C                                                                         B00450
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B00460
 C                                                                         B00470
+      parameter (n_absrb=5050)
 C                                                                         B00480
 C     Common blocks from analytic derivatives
 C     -------------------------
@@ -535,7 +540,7 @@ C
       COMMON RR1(6099),RR2(2075),RR3(429)                                 B00520
       COMMON /XRNLTE/ RR1s(4050),RR2s(1050),RR3s(300)               
       COMMON /IOU/ IOUT(250)                                              B00530
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                B00540
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)                B00540
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         B00550
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         B00560
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                      B00570
@@ -544,6 +549,7 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       B00600
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      B00610
      *              EXTID(10)                                             B00620
+      CHARACTER*8  EXTID
 C                                                                         B00630
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
@@ -575,7 +581,7 @@ C
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
 C                                                                         B00870
-      PARAMETER (MXMOL=38)   
+      PARAMETER (MXMOL=39)   
 C                                                                         B00890
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,  
@@ -1125,6 +1131,7 @@ C                                                                         B04870
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       B04950
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      B04960
      *              EXTID(10)                                             B04970
+      CHARACTER*8  EXTID
 C                                                                         B04980
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
@@ -1147,9 +1154,8 @@ C                                                                         B05000
 
       COMMON /VBNLTE/ RATH2O(8),RATCO2(26),RATO3(18),RATCO(3),RATNO(3),   603420
      &               NUMH2O,NUMCO2,NUMO3,NUMCO,NUMNO                      603430
-
 C                                                                         B05080
-      PARAMETER (MXMOL=38) 
+      PARAMETER (MXMOL=39) 
 C                                                                         B05100
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX, 
@@ -1880,7 +1886,7 @@ C                                                                         D00020
 C                                                                         D00040
 C     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4    D00050
 C                                                                         D00060
-      PARAMETER (MXMOL=38) 
+      PARAMETER (MXMOL=39) 
 C                                                                         D00080
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D00110
@@ -1900,6 +1906,7 @@ C                                                                         D00210
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       D00250
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D00260
      *              EXTID(10)                                             D00270
+      CHARACTER*8  EXTID
 C                                                                         D00280
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SEC   ,       XALTZ
@@ -1914,7 +1921,7 @@ C                                                                         D00300
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D00370
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        D00380
      *              NLTEFL,LNFIL4,LNGTH4                                  D00390
-      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4                             D00400
+      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4,lstdum                             D00400
       COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),       D00410
      *              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)          D00420
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D                          D00430
@@ -2413,6 +2420,7 @@ C                                                                         D04500
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       D04560
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      D04570
      *              EXTID(10)                                             D04580
+      CHARACTER*8  EXTID
 C                                                                         D04590
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SEC   ,       XALTZ
@@ -2596,7 +2604,7 @@ C                                                                         D06250
 C                                                                         D06280
       IMPLICIT REAL*8           (V)                                     ! D06290
 C                                                                         D06300
-C     SUBROUTINE CONVF4 CONVOLVES THE LINE DATA WITH FUNCTION F4          D06310
+C     SUBROUTINE CNVF4Q CONVOLVES THE LINE DATA WITH FUNCTION F4          D06310
 C                                                                         D06320
       CHARACTER*1 FREJ(1250),HREJ,HNOREJ
       COMMON /RCNTRL/ ILNFLG
@@ -2640,6 +2648,7 @@ C                                                                            D06
       endif
 C                                                                         D06850
       BNDSQ = BOUND4*BOUND4                                               D06860
+      r_bndsq = 1./bndsq
 C                                                                         D06870
 C     START OF LOOP OVER LINES                                            D06880
 C                                                                         D06890
@@ -2709,52 +2718,101 @@ C                                                                         D07360
 
          dptrat = spp(i)/(sabs(i)*alfavi)
          dptrat_r =  spp(i)/(srad(i)*alfavi)
-
          rec_alfvi2 = 1./ALFVI2
          siv_a3 = SIV*A3
          siv_b3 = SIV*B3
          srv_a3 = srv*a3
          srv_b3 = srv*b3
+
+c        special treatment for co2
 c
-         DO 40 JJ = JMIN, JMAX                                            D07370
-            XM = (XJJ-XNUI)                                               D07380
-            XMSQ = XM*XM                                                  D07390
-            ZVSQ = XMSQ * rec_alfvi2  
-C                                                                         D07410
-            IF (ZVSQ.LE.ZSQBND) THEN                                      D07420
-               F4FN = (siv_A3 + ZVSQ * siv_B3) - F4BND
-               F4FR = (srv_A3 + ZVSQ * srv_B3) - FRBND
-               IF (SPP(I).NE.0.) THEN                                     D07440
-                   F4FN = f4fn + xm*dptrat*f4fn
-                   F4FR = F4FR + xm*dptrat_r*f4fr
-               ENDIF
-            ELSE                                                          D07460
-               F4FN = SIL/(ALFLI2+XMSQ)-F4BND                             D07470
-               F4FR = SRL/(ALFLI2+XMSQ)-FRBND
-               IF (SPP(I).NE.0.) THEN                                     D07480
-                   F4FN = F4FN+XM*dptrat*f4fn
-                   F4FR = F4FR+XM*dptrat_r*f4fr
-               ENDIF
-            ENDIF                                                         D07500
-C                                                                         D07510
-            IF (MOL(I).EQ.2.AND.SPP(I).EQ.0.) THEN                        D07520
-C                                                                         D07530
-C     ASSIGN ARGUMENT ISUBL OF THE FORM FACTOR FOR CO2 LINES              D07540
-C                                                                         D07550
-               ISUBL = RDVCHI*ABS(XM)+0.5                                 D07560
-               ISUBL = MIN(ISUBL,i_250)                                     D07570
-C                                                                         D07580
-               R4(JJ) = R4(JJ)+F4FN*CHI(ISUBL)                            D07590
-               RR4(JJ) = RR4(JJ)+F4FR*CHI(ISUBL)                          D07590
-            ELSE                                                          D07600
-               R4(JJ) = R4(JJ)+F4FN                                       D07610
-            ENDIF                                                         D07620
-C                                                                         D07630
-C                                                                         D07640
-            XJJ = XJJ+DVR4                                                D07650
-   40    CONTINUE                                                         D07660
+         IF (MOL(I).EQ.2.) THEN 
+            
+            DO 40 JJ = JMIN, JMAX                                           D07370
+               XM = (XJJ-XNUI)                                              D07380
+               XMSQ = XM*XM                                                 D07390
+               ZVSQ = XMSQ * rec_alfvi2  
+               fcnt_fn = (2.-(xmsq*r_bndsq))*f4bnd
+               fcntr_fn= (2.-(xmsq*r_bndsq))*frbnd
+C                                                                           D07410
+               IF (ZVSQ.LE.ZSQBND) THEN                                     D07420
+                  F4FN = (siv_A3 + ZVSQ * siv_B3) - fcnt_fn
+                  F4FR = (srv_A3 + ZVSQ * srv_B3) - fcntr_fn
+                  IF (SPP(I).NE.0.) THEN                                    D07440
+                     F4FN = f4fn + xm*dptrat*f4fn
+                     F4FR = F4FR + xm*dptrat_r*f4fr
+                  ENDIF
+               ELSE                                                         D07460
+                  F4FN = SIL/(ALFLI2+XMSQ) - fcnt_fn
+                  F4FR = SRL/(ALFLI2+XMSQ) - fcntr_fn
+                  IF (SPP(I).NE.0.) THEN                                    D07480
+                     F4FN = F4FN+XM*dptrat*f4fn
+                     F4FR = F4FR+XM*dptrat_r*f4fr
+                  ENDIF
+               ENDIF                                                        D07500
+C                                                                           D07510
+               IF (SPP(I).EQ.0.) THEN   
+C                                                                           D07530
+C         ASSIGN ARGUMENT ISUBL OF THE FORM FACTOR FOR CO2 LINES            D07540
+C                                                                           D07550
+                  ISUBL = RDVCHI*ABS(XM)+0.5                                D07560
+                  ISUBL = MIN(ISUBL,i_250)                                  D07570
+C                                                                           D07580
+                  R4(JJ) = R4(JJ)+F4FN*CHI(ISUBL)                           D07590
+                  RR4(JJ) = RR4(JJ)+F4FR*CHI(ISUBL)                         D07590
+               ELSE                                                         D07600
+                  R4(JJ) = R4(JJ)+F4FN                                      D07610
+               ENDIF                                                        D07620
+C                                                                           D07630
+C                                                                           D07640
+               XJJ = XJJ+DVR4                                               D07650
+ 40         CONTINUE                                                        D07660
+C
+         ELSE
+C
+c        all molecules other than co2:
+  
+            DO 45 JJ = JMIN, JMAX                                           D07370
+               XM = (XJJ-XNUI)                                              D07380
+               XMSQ = XM*XM                                                 D07390
+               ZVSQ = XMSQ * rec_alfvi2  
+C                                                                           D07410
+               IF (ZVSQ.LE.ZSQBND) THEN                                     D07420
+                  F4FN = (siv_A3 + ZVSQ * siv_B3) - F4BND
+                  F4FR = (srv_A3 + ZVSQ * srv_B3) - FRBND
+                  IF (SPP(I).NE.0.) THEN                                    D07440
+                     F4FN = f4fn + xm*dptrat*f4fn
+                     F4FR = F4FR + xm*dptrat_r*f4fr
+                  ENDIF
+               ELSE                                                         D07460
+                  F4FN = SIL/(ALFLI2+XMSQ)-F4BND                            D07470
+                  F4FR = SRL/(ALFLI2+XMSQ)-FRBND
+                  IF (SPP(I).NE.0.) THEN                                    D07480
+                     F4FN = F4FN+XM*dptrat*f4fn
+                     F4FR = F4FR+XM*dptrat_r*f4fr
+                  ENDIF
+               ENDIF                                                        D07500
+C                                                                           D07510
+               IF (SPP(I).EQ.0.) THEN
+C                                                                           D07530
+C         ASSIGN ARGUMENT ISUBL OF THE FORM FACTOR FOR CO2 LINES            D07540
+C                                                                           D07550
+                  ISUBL = RDVCHI*ABS(XM)+0.5                                D07560
+                  ISUBL = MIN(ISUBL,i_250)                                  D07570
+C                                                                           D07580
+                  R4(JJ) = R4(JJ)+F4FN*CHI(ISUBL)                           D07590
+                  RR4(JJ) = RR4(JJ)+F4FR*CHI(ISUBL)                         D07590
+               ELSE                                                         D07600
+                  R4(JJ) = R4(JJ)+F4FN                                      D07610
+               ENDIF                                                        D07620
+C                                                                           D07630
+C                                                                           D07640
+               XJJ = XJJ+DVR4                                               D07650
+ 45         CONTINUE                                                        D07660
+
+         ENDIF
 C                                                                         D07670
-   50    IF (VNUI.GT.0..AND.VNUI.LE.25.) THEN                             D07680
+ 50      IF (VNUI.GT.0..AND.VNUI.LE.25.) THEN                             D07680
 C                                                                         D07690
 C     THE CALCULATION FOR NEGATIVE VNU(I) IS FOR VAN VLECK WEISSKOPF      D07700
 C                                                                         D07710
@@ -2766,7 +2824,7 @@ c
 C                                                                         D07760
          ENDIF                                                            D07770
 C                                                                         D07780
-   60 CONTINUE                                                            D07790
+ 60   CONTINUE                                                            D07790
 C                                                                         D07800
       IF (ILNFLG.EQ.1) WRITE(16)(FREJ(I),I=ILO,IHI)
       RETURN                                                              D07810

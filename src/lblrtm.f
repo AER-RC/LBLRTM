@@ -350,7 +350,7 @@ C
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
-     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,
+     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,
      *                MXTRAC=22,MXSPC=5)
 C
 C     ----------------------------------------------------------------
@@ -403,6 +403,7 @@ C
      *                DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     A02990
      *                ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    A03000
      *                EXTID(10)                                           A03010
+      CHARACTER*8  EXTID
 
       COMMON /CVRLBL/ HNAMLBL,HVRLBL
       COMMON /CVRCNT/ HNAMCNT,HVRCNT
@@ -830,13 +831,13 @@ c_______________________________________________________________________
 c     read information to scale the entire profile for indicated species
 c
          if (nmol_scal .gt. 0 ) then
-            if (nmol_scal .gt. 38) stop ' nmol_scal .gt. 38 '
+            if (nmol_scal .gt. mxmol) stop ' nmol_scal .gt. mxmol '
             read (ird,972) (hmol_scal(m),m=1,nmol_scal)
             read (ird,973) (xmol_scal(m),m=1,nmol_scal)
          endif
 c
          if (n_xs_scal .gt. 0 ) then
-            if (n_xs_scal .gt. 38) stop ' nmol_scal .gt. 38 '
+            if (n_xs_scal .gt. mx_xs) stop ' nmol_scal .gt. mx_xs '
             read (ird,972) (h_xs_scal(m),m=1,n_xs_scal)
             read (ird,973) (x_xs_scal(m),m=1,n_xs_scal)
          endif
@@ -1096,7 +1097,7 @@ C                                                                         A07280
  970  FORMAT (8E10.3,4X,I1,5x,e10.3,3X,i2,3x,i2)
  971  FORMAT (7E10.3,4X,A1)
  972  FORMAT (64a1)
- 973  FORMAT (7e15.7,/,(8e15.7,/))
+ 973  FORMAT (8e15.7)
  975  FORMAT ('0 FOR VNU = ',F10.3,' THE EMISSIVITY = ',E10.3,            A07470
      *        ' AND IS NOT BOUNDED BY (0.,1.) ')                          A07480
  980  FORMAT ('0 FOR VNU = ',F10.3,' THE REFLECTIVITY = ',E10.3,          A07490
@@ -1176,7 +1177,7 @@ c
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
 
 C     -------------------------
-      PARAMETER (MXMOL=38,MXSPC=5)
+      PARAMETER (MXMOL=39,MXSPC=5)
       common /cmol_nam/ cmol(mxmol),cspc(mxspc)
       CHARACTER*6  CMOL,CSPC
 C     -------------------------
@@ -1260,12 +1261,12 @@ C     Variables for analytic derivative
 C
       DATA CMOL   /
      *     '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ','  CH4 ',
-     *     '   O2 ','   NO ','  SO2 ','  NO2 ','  NH3 ','  HNO3',
+     *     '   O2 ','   NO ','  SO2 ','  NO2 ','  NH3 ',' HNO3 ',
      *     '   OH ','   HF ','  HCL ','  HBR ','   HI ','  CLO ',
      *     '  OCS ',' H2CO ',' HOCL ','   N2 ','  HCN ','CH3CL ',
      *     ' H2O2 ',' C2H2 ',' C2H6 ','  PH3 ',' COF2 ','  SF6 ',
-     *     '  H2S ','HCOOH ','  HO2 ','    O ','ClONO2','   NO+',
-     *     ' HOBr ',' C2H4 '/
+     *     '  H2S ','HCOOH ','  HO2 ','    O ','ClONO2','  NO+ ',
+     *     ' HOBr ',' C2H4 ','CH3OH '/
 
       DATA CSPC   / 'T LAYR','T SURF','SFC EM','SFC RF','LOW PR' /
 c
@@ -1712,7 +1713,7 @@ C                                                                         A09440
 C                                                                         A09460
 C     PRLNHD PRINTS OUT LINE FILE HEADER                                  A09470
 C                                                                         A09480
-      PARAMETER (MXMOL=38)
+      PARAMETER (MXMOL=39)
 C     -------------------------
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A09490
@@ -1883,8 +1884,8 @@ C     XLAYER CONTROLS LAYER BY LAYER CALCULATION                          A11250
 C**********************************************************************
 C                                                                         A11260
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
-     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
-     *                MXMOL=38,MXTRAC=22,mxspc=5)
+     *     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22,
+     *     mxspc=5)
 C
       CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD
       CHARACTER*55 PTHRAD,PATH1,PATH2
@@ -1945,6 +1946,8 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A11320
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A11330
      *              EXTID(10)                                             A11340
+      CHARACTER*8  EXTID
+
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A11360
@@ -1960,7 +1963,7 @@ C
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
 C                                                                         A11440
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(38),XAMNT(38,MXLAY)              A17040
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(mx_xs),XAMNT(mx_xs,MXLAY)              A17040
 C
 C     COMMON /MLTSCT/ TAUGAS(2410),FUPC(2410),RUPC(2410)                  A11450
 C                                                                         A11460
@@ -1979,9 +1982,10 @@ C                                                                         A11560
       COMMON /FILHD1/ XI1(10),SECAN1,PAV1,TAV1,HMOLI1(60),XALT1(4),       A11570
      *                W1(60),PDL,PDU,TDL,TDU,Wbrd1 ,D1 ,VD1,VD2,TBOUN1,   A11580
      *                EMISI1,FSCDI1(17),NMO1,LAYHD1,YD1,Y1D(10),LSTWDD    A11590
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           A17090
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               A17100
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                A17105
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS),
+     *                NUMXS,IXSBIN
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
 c
@@ -2160,7 +2164,9 @@ C        -----------------------------
 C
  1       LAYER = LAYER+1
          LAYHDR = LAYER
+
          CALL OPPATH
+
          NLAYHD = NLAYER
          CALL OPDPTH (MPTS)
          CALL ENDFIL (KFILE)
@@ -3949,8 +3955,7 @@ C                                                                         A16900
 C     OPPATH CALLS LBLATM AND CALLS PATH FIRST                            A16910
 C                                                                         A11260
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
-     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
-     *                MXMOL=38,MXTRAC=22)
+     *     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22)
 C                                                                         A16920
       COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(MXMOL,MXLAY),
      *               WBRODL(MXLAY),DVL(MXLAY),                            A16930
@@ -3966,20 +3971,22 @@ C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     A17000
 C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         A17010
 C     MOLECULES.                                                          A17020
 C                                                                         A17030
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(38),XAMNT(38,MXLAY)              A17040
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(mx_xs),XAMNT(mx_xs,MXLAY)              A17040
 C                                                                         A17050
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         A17060
 C     FOR THE CROSS-SECTION MOLECULES.                                    A17070
 C                                                                         A17080
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           A17090
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               A17100
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                A17105
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS),
+     *                NUMXS,IXSBIN
 C                                                                         A17110
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A17120
      *              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,       A17130
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A17140
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A17150
      *              EXTID(10)                                             A17160
+      CHARACTER*8  EXTID
 C
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2
@@ -4134,7 +4141,7 @@ C                                                                         A18250
                IF (NMOL.GT.LINMOL) WRITE (IPR,925) NMOL,LINMOL            A18290
             ENDIF                                                         A18300
 C                                                                         A18310
-            CALL PATH                                                     A18320
+             CALL PATH                                                     A18320
 C
 C     *************************************************************
 C     Compute the diffuse_fac for lambertian surface reflection
@@ -4185,12 +4192,14 @@ C                                                                         A18350
          LTNSAV = LTGNT                                                   A18400
          LH2SAV = LH2                                                     A18410
 C                                                                         A18420
-         NMOLIN = NMOL+1                                                  A18430
-         DO 20 MOL = NMOLIN, MXMOL                                        A18440
-            DO 19 ILAYR = 1, NLAYRS                                       A18450
-               WKL(MOL,ILAYR) = 0.                                        A18460
- 19         continue
- 20      CONTINUE                                                         A18470
+         if (nmol.lt.mxmol) then
+            NMOL_1 = NMOL+1                                                  A18430
+            DO 20 MOL = NMOL_1, MXMOL                                        A18440
+               DO 19 ILAYR = 1, NLAYRS                                       A18450
+                  WKL(MOL,ILAYR) = 0.                                        A18460
+ 19            continue
+ 20         CONTINUE                                                         A18470
+         endif
 C                                                                         A18480
          RETURN                                                           A18490
       ENDIF                                                               A18500
@@ -4223,8 +4232,10 @@ C                                                                         A18730
 C                                                                         A18770
       DO 30 M = 1, NMOL                                                   A18780
          WK(M) = WKL(M,LAYER)                                             A18790
-         WXM(M) = XAMNT(M,LAYER)                                          A18800
  30   CONTINUE                                                            A18810
+      do m=1,mx_xs
+         WXM(M) = XAMNT(M,LAYER)                                          A18800
+      enddo
 C                                                                         A18820
       H2OSLF = H2OSL(LAYER)                                               A18830
       WTOT = WTOTL(LAYER)                                                 A18840
@@ -4313,8 +4324,7 @@ C     SUBROUTINE PATH INPUTS AND OUTPUTS HEADER FROM LINFIL AND           A19230
 C     INPUTS AND OUTPUTS PATH PARAMETERS FOR EACH LAYER                   A19240
 C                                                                         A19250
       PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
-     *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,
-     *                MXMOL=38,MXTRAC=22)
+     *     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22)
 C
       COMMON COMSTR(250,9)                                                A19260
       COMMON R1(3600),R2(900),R3(225)                                     A19270
@@ -4324,6 +4334,8 @@ C
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A19300
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A19310
      *              EXTID(10)                                             A19320
+      CHARACTER*8  EXTID
+
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,pad_3,
      *                angle_path,secant_diffuse,secant_path,diffuse_fac
       common /profil_scal/ nmol_scal,hmol_scal(64),xmol_scal(64),
@@ -4365,16 +4377,17 @@ C     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR     A19500
 C     L'TH LAYER, ANALOGOUS TO AMOUNT IN /PATHD/ FOR THE STANDARD         A19510
 C     MOLECULES.                                                          A19520
 C                                                                         A19530
-      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(38),XAMNT(38,MXLAY)              A19540
+      COMMON /PATHX/ IXMAX,IXMOLS,IXINDX(mx_xs),XAMNT(mx_xs,MXLAY)              A19540
 C                                                                         A19550
 C     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES         A19560
 C     FOR THE CROSS-SECTION MOLECULES.                                    A19570
 C                                                                         A19580
       CHARACTER*10 XSFILE,XSNAME,ALIAS                                    A19590
-      COMMON /XSECTF/ XSFILE(6,5,38),XSNAME(38),ALIAS(4,38)               A19600
-      COMMON /XSECTR/ V1FX(5,38),V2FX(5,38),DVFX(5,38),WXM(38),           A19610
-     *                NTEMPF(5,38),NSPECR(38),IXFORM(5,38),               A19620
-     *                XSMASS(38),XDOPLR(5,38),NUMXS,IXSBIN                A19625
+      COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs)
+      COMMON /XSECTR/ V1FX(5,MX_XS),V2FX(5,MX_XS),DVFX(5,MX_XS),
+     *                WXM(MX_XS),NTEMPF(5,MX_XS),NSPECR(MX_XS),
+     *                IXFORM(5,MX_XS),XSMASS(MX_XS),XDOPLR(5,MX_XS),
+     *                NUMXS,IXSBIN
       COMMON /IODFLG/ DVOUT
 C                                                                         A19630
       CHARACTER*20 HEAD20
@@ -4383,11 +4396,11 @@ C                                                                         A19630
       CHARACTER*7 HEAD7
       CHARACTER*6 HOLN2                                                   A19660
       CHARACTER*5 HEAD5
-      CHARACTER*4 HEAD4
+      CHARACTER*4 HEAD4,hedxs
       CHARACTER*4 HT1HRZ,HT2HRZ,HT1SLT,HT2SLT,  ht1,ht2
       CHARACTER*3 CINP,CINPX,CBLNK                                        A19680
       DIMENSION FILHDR(2),AMOUNT(2),AMTSTR(2)                             A19690
-      DIMENSION HEDXS(15),WMT(mxmol),SECL(MXFSC),WXT(38),WTOTX(MXLAY)
+      DIMENSION HEDXS(15),WMT(mxmol),SECL(MXFSC),WXT(mx_xs),WTOTX(MXLAY)
       DIMENSION WDRAIR(MXLAY)
 C                                                                         A19710
       EQUIVALENCE (XID(1),FILHDR(1))                                      A19720
@@ -4408,6 +4421,9 @@ C                                                                         A11800
 C                                                                         A19850
       IF (IHIRAC.EQ.0) RETURN                                             A19860
 C                                                                         A19870
+      iform = 1
+      ifrmx = 1
+c
       ICNTNM = MOD(IXSCNT,I_10)                                             A19880
       IXSECT = IXSCNT/10                                                  A19890
 C                                                                         A19900
@@ -4418,12 +4434,15 @@ C                                                                         A19900
          ISET = 1                                                         A19950
       ENDIF                                                               A19960
 C                                                                         A19970
-      DO 10 M = 1, MXMOL                                                     A19980
+      DO M = 1, MXMOL                                                     A19980
          WMT(M) = 0.                                                      A19990
          WK(M) = 0.                                                       A20000
+      ENDDO
+
+      DO M = 1, mx_xs                                                     A19980
          WXM(M) = 0.                                                      A20010
          WXT(M) = 0.                                                      A20020
-   10 CONTINUE                                                            A20030
+      ENDDO
 C                                                                         A20040
       SUMN2 = 0.                                                          A20050
       ISTOP = 0                                                           A20060
@@ -4433,7 +4452,7 @@ C                                                                         A20070
       LH1 = 1                                                             A20100
       LH2 = 1                                                             A20110
 C                                                                         A20120
-C     Read in atmospheric definition information
+C     Obtain atmospheric definition information
 C
       IF (IATM.EQ.0) THEN                                                 A20130
          READ (IRD,901) IFORM,NLAYRS,NMOL,SECNT0,HEAD20,ZH1,HEAD4,ZH2,
@@ -4616,7 +4635,7 @@ C
 C
 C     --------------------------------------------------------------
 C
-   30 CONTINUE                                                            A20740
+ 30   CONTINUE                                                            A20740
 C                                                                         A20750
       IF (IATM.EQ.0.AND.IXSECT.GE.1) THEN                                 A20760
          READ (IRD,930) IXMOLS,IXSBIN                                     A20770
@@ -4680,22 +4699,24 @@ C
 C     NOTE that if XAMNT is greater than one, then column density
 C               if XAMNT is less than one, then mixing ratio
 C
-         DO 35 M = 1,IXMOL
-            IF (WDRAIR(L).EQ.0.0 .AND. XAMNT(M,L).LT.1 .AND.
-     *           XAMNT(M,L).NE.0.0) THEN
-               WRITE(IPR,921) L,XAMNT(M,L),WDRAIR(L)
-               WRITE(*,921) L,XAMNT(M,L),WDRAIR(L)
-               STOP 'XAMNT NOT PROPERLY SPECIFIED IN PATH'
-            ENDIF
-            IF (XAMNT(M,L).LT.1) XAMNT(M,L) = XAMNT(M,L)*WDRAIR(L)
- 35      CONTINUE
+            DO 35 M = 1,IXMOL
+               IF (WDRAIR(L).EQ.0.0 .AND. XAMNT(M,L).LT.1 .AND.
+     *              XAMNT(M,L).NE.0.0) THEN
+                  WRITE(IPR,921) L,XAMNT(M,L),WDRAIR(L)
+                  WRITE(*,921) L,XAMNT(M,L),WDRAIR(L)
+                  STOP 'XAMNT NOT PROPERLY SPECIFIED IN PATH'
+               ENDIF
+               IF (XAMNT(M,L).LT.1) XAMNT(M,L) = XAMNT(M,L)*WDRAIR(L)
+ 35         CONTINUE
 C
 C     --------------------------------------------------------------
 C
- 40   CONTINUE                                                            A21090
+ 40      CONTINUE                                                            A21090
       ENDIF                                                               A21100
 C                                                                         A21110
-   50 WRITE (IPR,945) XID,(YID(M),M=1,2)                                  A21120
+ 50   continue
+
+      WRITE (IPR,945) XID,(YID(M),M=1,2)                                  A21120
 
 c_______________________________________________________________________
 
@@ -4708,8 +4729,11 @@ c      mass in a given layer constant, i.e. level pressure nor retained ***
 
 c      obtain accumulated amounts by molecule
 
-         do m = 1, nmol
+         do m = 1, mxmol
             wmt(m) = 0.
+         enddo
+
+         do m = 1, nmol
             do l = 1, nlayrs
                wmt(m) = wmt(m) + wkl(m,l)
             enddo
@@ -4723,7 +4747,7 @@ c      obtain accumulated amounts by molecule
 c        obtain dry air sum
 c             check to see if nitrogen is included in the selected molecules
 
-         if (nmol.ge.22) then
+         if (wmt(22).ge.1.) then
             wsum_drair = 0.0
          else
             wsum_drair = wsum_brod
@@ -4784,6 +4808,8 @@ c                value from vpayne 2006/07/24
                wkl(m,l) = wkl(m,l) * xmol_scal(m)
             enddo
 
+            wmt(m) = wmt(m)*xmol_scal(m)
+
          enddo
 
          write (ipr,*)
@@ -4793,7 +4819,6 @@ c                value from vpayne 2006/07/24
 
       endif
 C
-
 c     at this point scale cross section profiles if option selected
 
       if (n_xs_scal.gt.0 .and. ixsect.ge.1) then
@@ -4853,6 +4878,8 @@ c      obtain accumulated amounts by cross section species
 
          enddo
 
+         wmt(m) = wmt(m) * x_xs_scal(m)
+
          write (ipr,*)
          write (ipr,*) '   ',
      *         '******************************************************'
@@ -4867,7 +4894,6 @@ c        reset the accumulated array to zero
       endif
 c_______________________________________________________________________
 c     end of profile scaling
-
 
       IF (IFORM.EQ.1) THEN
          WRITE (IPR,950)
@@ -4992,7 +5018,7 @@ C     and IMRG = 1, or if IOD=1 and DVOUT nonzero (OPTICAL DEPTH FLAG
 C     FOR INTERPOLATED DV).  This bypasses ITYPE assignment from one
 C     layer to the next.
 C
-         IF ( (IOD.EQ.2.AND.IMRG.EQ.1) .OR. (IOD.EQ.1.) ) THEN
+          IF ( (IOD.EQ.2.AND.IMRG.EQ.1) .OR. (IOD.EQ.1.) ) THEN
             DVL(L) = DV
             TYPE = 0.
             ITYPE = -99
@@ -5090,7 +5116,7 @@ C                                                                         A22930
 C                                                                         A22970
          DV = DVL(L)                                                      A22980
 C                                                                         A22990
-         IF (IFRMX.EQ.1) THEN
+         IF (iform.EQ.1) THEN
             WRITE (IPR,960) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),
      *           TAVEL(L),                                                A23000
      *           ALBL(L),ADBL(L),AVBL(L),ZETA,DVC,H2OSL(L),               A23010
@@ -5458,17 +5484,17 @@ C                                                                         A24050
   955 FORMAT (/,'0 **** CALC DV WAS RESET TO PREVIOUS DV',F12.6,/,        A24290
      *        '  AT ALT=  ',2(F7.3,A3),' AND ABOVE')                      A24300
   960 FORMAT ('0',I5,2(F7.3,A3),1P,E15.7,0P,F8.2,3F9.6,F6.3,
-     *        F9.6,F8.4,F9.6,
-     *        F7.3,2I5,F12.6)                                             A24320
-  961 FORMAT ('0',I5,2(F7.3,A3),F10.4,F8.2,3F9.6,F6.3,F9.6,F8.4,F9.6,     A24310
-     *        F7.3,2I5,F12.6)                                             A24320
+     *        F9.6,F8.4,F9.6,F7.3,2I5,F12.6)
+  961 FORMAT ('0',I5,2(F7.3,A3),   F10.4,   F8.2,3F9.6,F6.3,
+     *        F9.6,F8.4,F9.6,F7.3,2I5,F12.6)
   962 FORMAT (20X,'  DV RATIO  .GT. ',F10.2)                              A24330
   965 FORMAT (/,20X,'  TYPE GT 2.5')                                      A24340
   967 FORMAT ('  RATIO ERROR ',F10.3,'  DVSET = ',F10.4,'  DV=',F10.4)    A24350
   968 FORMAT ('  DVOUT MUST BE < DV ','  DVOUT = ',E10.4,'  DV=',E10.4)
   970 FORMAT (////)                                                       A24360
   974 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,32X,
-     *        'P(MB)',6X,'T(K)',3X,'IPATH',5X,5(A10,4X),/,60X,3(A10,4X))
+     *        'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(A10,4X))
+c     format (  60X,3(A10,4X))
   975 FORMAT ('0',53X,'MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,29X,    A24370
      *        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,A6,3X))
   976 FORMAT (/,'1',54X,'----------------------------------',
@@ -5478,12 +5504,12 @@ C                                                                         A24050
      *         /,'0',60X,'MIXING RATIOS BY LAYER ',/,29X,
      *        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,A6,3X))
   979 FORMAT (/,'0','  MIXING RATIO IS UNDEFINED. DRYAIR DENSITY=0.0')
-  980 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,I5,2X,1P,5E15.7,0P,/,
-     *         54X,1P,3E15.7,0P)
+  980 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,I5,2X,1P,8E15.7)
+c     format (    (55X,1P,8E15.7,0P))
   982 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,I5,2X,1P,8E10.3,0P)            A24390
   985 FORMAT ('0',54X,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH')     A24400
-  990 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,7X,1P,8E15.7,0P,/,
-     *         55X,1P,8E15.7,0P)
+  990 FORMAT ('0',I3,2(F7.3,A3),F15.7,F9.2,   7X,1P,8E15.7)
+c     format (    (55X,1P,8E15.7,0P))
   991 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,7X,1P,8E10.3,0P)               A24410
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                    A24420
      *        '     *****  CROSS SECTIONS  *****      ')                  A24430
@@ -5516,6 +5542,8 @@ C
 C                                                                         A24470
       IMPLICIT REAL*8           (V)                                     ! A24480
 C                                                                         A24490
+      parameter (n_absrb=5050)
+
 C     OPDPTH CALLS CONTNM,LINF4,HIRAC1,NONLTE                             A24500
 C                                                                         A24510
       COMMON /MANE/ P0,TEMP0,NLAYER,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   A24520
@@ -5523,6 +5551,7 @@ C                                                                         A24510
      *              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,       A24540
      *              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      A24550
      *              EXTID(10)                                             A24560
+      CHARACTER*8  EXTID
 C                                                                         A24570
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ
@@ -5531,8 +5560,8 @@ C                                                                         A24590
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   A24610
      *                EMISIV,FSCDID(17),NMOL,LAYRS ,YI1,YID(10),LSTWDF    A24620
       COMMON /LASIV/ VLAS,ILAS                                            A24630
-      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(2030)                A24640
-      COMMON /SCATTR/ V1SC,V2SC,DVSC,NPTSC,SCTTR(2025)                    A24650
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)                A24640
+      COMMON /SCATTR/ V1SC,V2SC,DVSC,NPTSC,SCTTR(n_absrb)                    A24650
 C                                                                         A24660
       COMMON /IODFLG/ DVOUT
       COMMON /RCNTRL/ ILNFLG
@@ -5595,7 +5624,7 @@ C                                                                         A25110
          V2ABS = INT(V2+3.*DVABS+0.5)                                     A25180
          NPTABS = (V2ABS-V1ABS)/DVABS+1.5                                 A25190
          IF (PAVE.LE.0.5) IPFLAG = 1                                      A25200
-         DO 10 I = 1, 2030                                                A25210
+         DO 10 I = 1, n_absrb                                                A25210
             ABSRB(I) = 0.                                                 A25220
    10    CONTINUE                                                         A25230
          CALL CONTNM (JRAD)                                               A25240
@@ -5796,7 +5825,7 @@ c -1 = downwelling
 c
       IMPLICIT REAL*8 (V)
 
-      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXMOL=38)
+      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXMOL=39)
 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
@@ -5879,7 +5908,7 @@ c
       IMPLICIT REAL*8 (V)
 
       PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=6000,
-     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=38,MXTRAC=22)
+     *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)
 
 c iup_dn is used to determine what to map
 c  1 = upwelling
@@ -6334,7 +6363,7 @@ C
       IF (NLIM2.LT.NLIM) GO TO 40
 
 c     write panel, derivative and transmission
-c     (same format at RDderiv* files)
+c     (same format as RDderiv* files)
       CALL BUFOUT (iut,PNLHD(1),NPHDRF)
       CALL BUFOUT (iut,DERVOUTt(1),NLIM)
       CALL BUFOUT (iut,TRADWN(1),NLIM)

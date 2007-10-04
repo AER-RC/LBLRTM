@@ -1715,7 +1715,7 @@ C                                                                         M15490
 C                                                                         M15520
       DO 10 I = NST, NND                                                  M15530
          YY(J) = 0.                                                       M15540
-         IF (Y(I).GT.20.) YY(J) = EXP(-Y(I)) 
+         IF (Y(I).lt.20.) YY(J) = EXP(-Y(I)) 
          J = J+1                                                          M15560
    10 CONTINUE                                                            M15570
 C                                                                         M15580
