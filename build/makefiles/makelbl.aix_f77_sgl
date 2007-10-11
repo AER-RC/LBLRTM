@@ -15,7 +15,7 @@ CPATH = ../src/
 exec_path = ../
 
 CDOTO = aix_f77_sgl.o/
-exec  = lblrtm_v11.2_aix_f77_sgl
+exec  = lblrtm_v11.3_aix_f77_sgl
 
 OUTPUT = $(exec_path)$(exec)
 
