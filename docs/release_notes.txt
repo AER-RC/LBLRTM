@@ -1,4 +1,21 @@
 
+LBLRTM_v11.3
+
+1) Included NO2 as a cross-section in list of cross-section molecule aliases. 
+   Modified LBLRTM to include a default profile for NO2 when it is specified as a
+   cross-section.  The default profile is identical to that when an NO2 profile is
+   requested for use when NO2 lines are present. (J. Delamere, S.A. Clough)
+        
+2) Molecules number extended to include molecule # 39;  ch3oh
+   (S.A. Clough)
+        
+3) Fixed an error in the scaling option.
+   (J. Delamere, S.A. Clough) 
+
+4) Corrected and indexing issue in the N2 continuum that effected calculations below 
+   350 cm-1 (S.A. Clough, Bill Snow, Bob d'Entremont, M.W. Shephard)  
+
+
 LBLRTM_v11.1
 
 1) The continuum for co2 has been calculated using Niro et al. (2005) line coupling with a
