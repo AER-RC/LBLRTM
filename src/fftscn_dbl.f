@@ -243,55 +243,17 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
+C*****JFNMAX is number of scanning functions currently defined
 
+      COMMON /apod_dat/ ANAMES(0:JFNMAX),
+     *	     C(0:JFNMAX),CRATIO(0:JFNMAX),CLIMIT(0:JFNMAX),param
+   
       Character*18 HNAMFFT,HVRFFT
-      Character*16 SFNAME,ANAMES(0:JFNMAX)
-      Dimension C(0:JFNMAX),CRATIO(0:JFNMAX),CLIMIT(0:JFNMAX)
+      Character*16 SFNAME,ANAMES
 
 C*****FUNCT1 and FUNCT2 are used to store the spectrum, the Fourier
 C*****transforms, the scanning function and the results
       Dimension FUNCT1(LPTSMX),FUNCT2(LPTSMX)
-
-C*****JFNMAX is number of scanning functions currently defined
-C*****ANAMES are their names
-C*****SFNAME is the name of the scanning function
-      Data ANAMES/'BOXCAR','TRIANGLE','GAUSSIAN','SINC**2','SINC',
-     1           'BEER','HAMMING','HANNING','NB - WEAK','NB - MEDIUM',
-     2           'NB - STRONG','BRAULT','KAISER-BESSEL','Kurina'/
-
-C*****Ci's are constants = A/ HWHM, where A is the "natural" width
-C*****parameter for each function, A = 1/L, where L is the maximum
-C*****optical path difference for an equivalent interferometer.
-C*****If C < 0, Abs(C) is approximate.
-C*****Function -1 is special.  It is a very broad sinc which
-C*****is the apodization function corresponding a narrow rectangular
-C*****scanning function used to pre-scan the spectrum.
-      Data C/     0.0,     2.0,0.849322,2.257609,3.314800,2.100669,
-     1       2.195676,     2.0,2.570274,2.367714,2.071759, -3.3, -2.5,
-     2       3.314800 /
-
-C*****CRATIO is the critical value of the ratio of the frequency range
-C*****to the half width at half maximum of the scanning function.
-C*****If this ratio is greater than CRATIO, then the apodization 
-C*****function is calculated analytically, otherwise it is calculated 
-C*****as the FFT of the scanning function.  The values given here are
-C*****educated guesses and may need to be revised. If CRATIO < 0, 
-c*****apodization is always calculated as the FFT of the scanning 
-C*****function
-      Data CRATIO/0., 40., 10., 40., 160., 20., 20. ,20.,
-     1   40., 40., 20., 100., 10., -1./
-
-C*****CLIMIT: the limits of the scanned spectrum are expanded by
-C*****HWHM*CLIMIT(JFN) to allow for the wrap around effect at V1 and
-C*****V2 (effectively, V2 wraps around to V1).  Like CRATIO, these
-C*****values are educated guesses (except for the triangle, where the
-C*****bound of the scanning function is exactly 2*HWHM.)
-      Data CLIMIT/0., 2., 3., 40., 160., 20., 20., 20.,
-     1   40., 40., 20., 100., 10., 160./
-
-C*****Note: the values of C, CRATIO, and CLIMIT for JFN=11 (Brault) 
-C*****corespond to a value of PARM of about .9, in which case the 
-C*****scanning function is very near a sinc.
 
 C*****MRATIO is the minimum ratio of the HWHM of the scanning function
 C*****to the width of the boxcar used to prescan the spectrum.  MRATDF
@@ -315,21 +277,23 @@ C*****Assign CVS name and version number to module fftscn_dbl.f
      1            ''FOURIER DOMAIN*****'')')
 
 C*****Read in scan commands until HWHM .le. 0.
-  100 Continue
+ 100  Continue
+
       PARM1 = 0.0
       PARM2 = 0.0
       PARM3 = 0.0
 
       Read(IRD,10,End=120) HWHM, V1, V2, JEMIT, JFNIN, MRATIN,
-     1     DVOUT,IUNIT,IFILST,NIFILS, JUNIT, IVX, NOFIX
-   10 Format(3F10.3,3I5,F10.5,4I5,I3,I2)
+     1     DVOUT,IUNIT,IFILST,NIFILS, JUNIT, IVX, NOFIX,param
+   10 Format(3F10.3,3I5,F10.5,4I5,I3,I2,f10.6)
 
       Write(IPR,15)  HWHM, V1, V2, JEMIT, JFNIN, MRATIN, DVOUT, IUNIT,
-     1     IFILST, NIFILS, JUNIT, IVX, NOFIX
+     1     IFILST, NIFILS, JUNIT, IVX, NOFIX, param
    15 Format(/,'       HWHM        V1        V2   JEMIT   JFNIN',
      1   '  MRATIN', /,1X,3F10.4,3I8,12X,//,
      2   '      DVOUT   IUNIT  IFILST  NIFILS   JUNIT     IVX   NOFIX',
-     3    /,(1X,F10.4,6I8))
+     *   '     param  ',
+     3    /,(1X,F10.4,6I8,f10.5))
 
       If(HWHM .LE. 0) Goto 115
 
@@ -374,7 +338,11 @@ C*****half width at half height of the scanning function (JFNIIN < 0)
           Endif
           PATHL = HWHM
           A = 1./PATHL
-          HWHM = A/ABS(C(JFN))
+          if (param.eq.0.) then
+             HWHM = A/ABS(C(JFN))
+          else
+             HWHM = param
+          endif
       Elseif (JFNIN .EQ. 0) Then
           A = 0.
           PATHL = 0.
@@ -785,6 +753,60 @@ C*****Read next scan request
       Write(IPR,*) ' Stopped in FFTSCN due to error'
       Stop ' Stopped in FFTSCN: See TAPE6'
       End
+
+      Block Data Apod_Init	
+      
+      Parameter (JFNMAX = 13)	
+
+      COMMON /apod_dat/ ANAMES(0:JFNMAX),
+     *     C(0:JFNMAX),CRATIO(0:JFNMAX),CLIMIT(0:JFNMAX),param
+
+      Character*16 ANAMES
+   
+C*****JFNMAX is number of scanning functions currently defined
+C*****ANAMES are their names
+C*****SFNAME is the name of the scanning function
+      Data ANAMES/'BOXCAR','TRIANGLE','GAUSSIAN','SINC**2','SINC',
+     1           'BEER','HAMMING','HANNING','NB - WEAK','NB - MEDIUM',
+     2           'NB - STRONG','BRAULT','KAISER-BESSEL','Kurina'/
+
+C*****Ci's are constants = A/ HWHM, where A is the "natural" width
+C*****parameter for each function, A = 1/L, where L is the maximum
+C*****optical path difference for an equivalent interferometer.
+C*****If C < 0, Abs(C) is approximate.
+C*****Function -1 is special.  It is a very broad sinc which
+C*****is the apodization function corresponding a narrow rectangular
+C*****scanning function used to pre-scan the spectrum.
+      Data C/     0.0,     2.0,0.849322,2.257609,3.314800,2.100669,
+     1       2.195676,     2.0,2.570274,2.367714,2.071759, -3.3, -2.5,
+     2       3.314800 /
+
+C*****CRATIO is the critical value of the ratio of the frequency range
+C*****to the half width at half maximum of the scanning function.
+C*****If this ratio is greater than CRATIO, then the apodization 
+C*****function is calculated analytically, otherwise it is calculated 
+C*****as the FFT of the scanning function.  The values given here are
+C*****educated guesses and may need to be revised. If CRATIO < 0, 
+c*****apodization is always calculated as the FFT of the scanning 
+C*****function
+      Data CRATIO/0.0, 40., 10., 40., 160., 20., 20. ,20.,
+     1            40., 40., 20.,100.,  10., -1./
+
+C*****CLIMIT: the limits of the scanned spectrum are expanded by
+C*****HWHM*CLIMIT(JFN) to allow for the wrap around effect at V1 and
+C*****V2 (effectively, V2 wraps around to V1).  Like CRATIO, these
+C*****values are educated guesses (except for the triangle, where the
+C*****bound of the scanning function is exactly 2*HWHM.)
+      Data CLIMIT/0., 2., 3., 40., 160., 20., 20., 20.,
+     1           40., 40., 20., 100., 10., 160./
+
+C*****Note: the values of C, CRATIO, and CLIMIT for JFN=11 (Brault) 
+C*****correspond to a value of PARM of about .9, in which case the 
+C*****scanning function is very near a sinc.
+
+      end	
+
+
       Subroutine Boxcar(M,LFILE,FUNCT,LREC,LTOTAL,JEMIT)
 C************************************************************************
 C     This subroutine performs the "BOXCAR" smoothing of the spectrum.
@@ -1912,6 +1934,14 @@ C*****IFIL carries file information
 C*****LAMCHN carries hardware specific parameters
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 
+C*****JFNMAX is number of scanning functions currently defined
+      Parameter (JFNMAX = 13)
+
+      COMMON /apod_dat/ ANAMES(0:JFNMAX),
+     *     C(0:JFNMAX),CRATIO(0:JFNMAX),CLIMIT(0:JFNMAX),param
+
+      Character*16 ANAMES
+   
       Dimension FUNCT(LPTS)
 C*****The functions are: triangle, gauss, sinc**2, sinc, Beer, Hamming,
 C*****and Hanning.  
@@ -1959,18 +1989,25 @@ C*****    Apodization function
 C*****Gaussian,
 C*****ARGMIN is largest argument x to exp(-x)
       If(IAPSC .EQ. -1) Then
-C*****    Scanning function
-          Do 25 L=1,LPTS
-              FUNCT(L) = exp( -MIN( 0.5*(X/A)**2, ARGMIN))
-              X = X0+L*DX
-   25     Continue
+C*****   Scanning function
+         Do 25 L=1,LPTS
+            FUNCT(L) = exp( -MIN( 0.5*(X/A)**2, ARGMIN))
+            X = X0+L*DX
+ 25      Continue
       Else
 C*****    Apodization function
-          Do 26 L=1,LPTS-1,2
-              FUNCT(L) = exp( -MIN( 2.0*(Pi*X*A)**2, ARGMIN))
-              FUNCT(L+1) = 0.0
-              X = X0+(L+1)*DX/2
-   26     Continue
+
+         if (param .eq. 0) then
+            A_mod =  A
+         else
+            A_mod = param*C(2)
+         endif
+         
+         Do 26 L=1,LPTS-1,2
+            FUNCT(L) = exp( -MIN( 2.0*(Pi*X*A_mod)**2, ARGMIN))
+            FUNCT(L+1) = 0.0
+            X = X0+(L+1)*DX/2.
+ 26      Continue
       Endif
       Return
 
@@ -2369,7 +2406,7 @@ C***********************************************************************
 C     This subroutine generates the Fourier transform of the spectral
 C     scanning function (a.k.a. instrument response function,
 C     apparatus function).  By analogy with Fourier transform spectro-
-C     spopy, this function will be refered to as the apodization
+C     scopy, this function will be refered to as the apodization
 C     function.  The apodization function can be generated in two ways:
 C         a.  by first generating the spectral scanning function, and
 C             taking the Fourier transform, or

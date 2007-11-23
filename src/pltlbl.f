@@ -1986,7 +1986,7 @@ C                                                                         M18120
 C                                                                         M18150
       RETURN                                                              M18160
 C                                                                         M18170
-  900 FORMAT (3X,F15.8,4X,1p,G19.8)                                          M18180
+  900 FORMAT (3X,F15.8,4X,1p,G19.8E3)                                       M18180
 C                                                                         M18190
       END                                                                 M18200
       SUBROUTINE AXISL (X,Y,BCD,N,NUMDIV,DIVLEN,NUMSUB,BEGNUM,DELNUM,     M18210

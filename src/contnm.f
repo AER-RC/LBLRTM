@@ -661,7 +661,7 @@ c           a_h2o represents the relative broadening efficiency of h2o
 
 c     correct formulation for consistency with LBLRTM (per molec/cm^2)
 c
-            tau_fac =  xn2cn * (Wn2/xlosmt)
+            tau_fac =  xn2cn * (Wn2/xlosmt) * amagat
 C                                                                         F00480
             CALL xn2_r (V1C,V2C,DVC,NPTC,c0,c1,Tave)
 c
@@ -671,11 +671,12 @@ C
             DO 40 J = 1, NPTC                                             F01080
                VJ = V1C+DVC* REAL(J-1)                                    F01090
 C
-               C(J) = tau_fac * C0(J) *
-     &            amagat * (x_vmr_n2 + c1(j)*x_vmr_o2 + a_h2o*x_vmr_h2o)
+               C(J) = tau_fac * c0(J) *
+     &             (x_vmr_n2 + c1(j)*x_vmr_o2 + a_h2o*x_vmr_h2o)
 C                                                                         F01110
 C              Radiation field                                            F01120
 C                                                                         F01130
+
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                   F01140
 
  40         CONTINUE                                                      F01150
@@ -731,7 +732,7 @@ c                   of the radiation field
 c              - for this case, an amagat is interpreted as one
 c                   loschmidt of air (273K)
 c
-            DO 45 J = 1, NPTC
+           DO 45 J = 1, NPTC
                VJ = V1C+DVC* REAL(J-1)
                C(J) = tau_fac * c0(J)
 C              Radiation field
@@ -826,13 +827,13 @@ C                                                                         A10300
 C
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
-      CHARACTER*18 cnam3(9),cnam4(19)
+      CHARACTER*18 cnam3(9),cnam4(21)
       CHARACTER*51 CINFO1(2,12),CINFO2(2,11),CINFO3(2,9),CINFO4(2,19)
 C                                                                         A10340
       WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,12)
       WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11)
       WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
-      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,19)
+      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,21)
 C                                                                         A10360
       RETURN                                                              A10370
 C                                                                         A10380
@@ -847,8 +848,8 @@ C     --------------------------------------------------------------
 C
 C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 C
-      CHARACTER*18 cnam3(9),cnam4(19)
-      CHARACTER*51 CINFO1(2,12),CINFO2(2,11),CINFO3(2,9),CINFO4(2,19)
+      CHARACTER*18 cnam3(9),cnam4(21)
+      CHARACTER*51 CINFO1(2,12),CINFO2(2,11),CINFO3(2,9),CINFO4(2,21)
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
       DATA cnam3/
@@ -883,7 +884,9 @@ c           123456789-123456789-123456789-123456789-123456789-1
      6     ' mt_ckd_1.3 10.0 ',
      7     ' mt_ckd_2.0 11.1 ',
      8     ' mt_ckd_2.0 11.2 ',
-     9     '                 '/
+     9     ' mt_ckd_2.1 11.3 ',
+     *     '     "           ',
+     1     '                 '/
 c
       DATA CINFO1/
 c           123456789-123456789-123456789-123456789-123456789-1
@@ -988,8 +991,12 @@ C
      7     'cation to v3 band based on AIRS data.   (July 2007)',
      8     '  H2O foreign modified in 250-550 cm-1 region based',
      8     ' on analyses of nsa aeri_xr data.  (September 2007)',
-     9     '  -------------------------------------------------',
-     9     '---------------------------------------------------'/
+     9     '  CO2: Fundamental change in the lblrtm fourth func',
+     9     'tion with consequent changes in continuum (Nov 2007',
+     *     '  Bug fix impacting the nitrogen continuum in the 0',
+     *     '-350 cm-1 region.                   (November 2007)',
+     1     '  -------------------------------------------------',
+     1     '---------------------------------------------------'/
 C
       END
 C
@@ -3757,15 +3764,15 @@ c
          I = I1+(J-1)
          C(J) = 0.
          IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10
-         C(J)   =  C_296(J)*(( C_220(J)/ C_296(J))**tfac)
-         sf_T   = sf_296(J)*((sf_220(J)/sf_296(J))**tfac)
+         C(J)   =  C_296(i)*(( C_220(i)/ C_296(i))**tfac)
+         sf_T   = sf_296(i)*((sf_220(i)/sf_296(i))**tfac)
 
 c        correct for incorporation of air mixing ratios in sf
 c        fo2 is now ~ the ration of alpha(n2-o2)/alpha(n2-n2)
 c        Eq's 7 and 8 in the Boissoles paper.
 
-c        fo2(J) = (sf_T - 1.)*(xn2**2)/(xn2*xo2)
-         fo2(J) = (sf_T - 1.)*(xn2)/(xo2)
+c        fo2(i) = (sf_T - 1.)*(xn2**2)/(xn2*xo2)
+         fo2(i) = (sf_T - 1.)*(xn2)/(xo2)
 
    10 CONTINUE
 C
@@ -3787,21 +3794,21 @@ C
      &      -10.,  350.,  5.0,   73 /
 C
       DATA CT296/
-     *     0.4303E-06, 0.4850E-06, 0.4979E-06, 0.4850E-06, 0.4303E-06,
-     *     0.3715E-06, 0.3292E-06, 0.3086E-06, 0.2920E-06, 0.2813E-06,
-     *     0.2804E-06, 0.2738E-06, 0.2726E-06, 0.2724E-06, 0.2635E-06,
-     *     0.2621E-06, 0.2547E-06, 0.2428E-06, 0.2371E-06, 0.2228E-06,
-     *     0.2100E-06, 0.1991E-06, 0.1822E-06, 0.1697E-06, 0.1555E-06,
-     *     0.1398E-06, 0.1281E-06, 0.1138E-06, 0.1012E-06, 0.9078E-07,
-     *     0.7879E-07, 0.6944E-07, 0.6084E-07, 0.5207E-07, 0.4540E-07,
-     *     0.3897E-07, 0.3313E-07, 0.2852E-07, 0.2413E-07, 0.2045E-07,
-     *     0.1737E-07, 0.1458E-07, 0.1231E-07, 0.1031E-07, 0.8586E-08,
-     *     0.7162E-08, 0.5963E-08, 0.4999E-08, 0.4226E-08, 0.3607E-08,
-     *     0.3090E-08, 0.2669E-08, 0.2325E-08, 0.2024E-08, 0.1783E-08,
-     *     0.1574E-08, 0.1387E-08, 0.1236E-08, 0.1098E-08, 0.9777E-09,
-     *     0.8765E-09, 0.7833E-09, 0.7022E-09, 0.6317E-09, 0.5650E-09,
-     *     0.5100E-09, 0.4572E-09, 0.4115E-09, 0.3721E-09, 0.3339E-09,
-     *     0.3005E-09, 0.2715E-09, 0.2428E-09/
+     *     0.4303E-06, 0.4850E-06, 0.4979E-06, 0.4850E-06, 0.4303E-06,     ! 10
+     *     0.3715E-06, 0.3292E-06, 0.3086E-06, 0.2920E-06, 0.2813E-06,     ! 35
+     *     0.2804E-06, 0.2738E-06, 0.2726E-06, 0.2724E-06, 0.2635E-06,     ! 60
+     *     0.2621E-06, 0.2547E-06, 0.2428E-06, 0.2371E-06, 0.2228E-06,     ! 85
+     *     0.2100E-06, 0.1991E-06, 0.1822E-06, 0.1697E-06, 0.1555E-06,     !110
+     *     0.1398E-06, 0.1281E-06, 0.1138E-06, 0.1012E-06, 0.9078E-07,     !135
+     *     0.7879E-07, 0.6944E-07, 0.6084E-07, 0.5207E-07, 0.4540E-07,     !160
+     *     0.3897E-07, 0.3313E-07, 0.2852E-07, 0.2413E-07, 0.2045E-07,     !185
+     *     0.1737E-07, 0.1458E-07, 0.1231E-07, 0.1031E-07, 0.8586E-08,     !210
+     *     0.7162E-08, 0.5963E-08, 0.4999E-08, 0.4226E-08, 0.3607E-08,     !235
+     *     0.3090E-08, 0.2669E-08, 0.2325E-08, 0.2024E-08, 0.1783E-08,     !260
+     *     0.1574E-08, 0.1387E-08, 0.1236E-08, 0.1098E-08, 0.9777E-09,     !285
+     *     0.8765E-09, 0.7833E-09, 0.7022E-09, 0.6317E-09, 0.5650E-09,     !310
+     *     0.5100E-09, 0.4572E-09, 0.4115E-09, 0.3721E-09, 0.3339E-09,     !335
+     *     0.3005E-09, 0.2715E-09, 0.2428E-09/                             !350
 C
       DATA sf_296/
      *         1.3534,     1.3517,     1.3508,     1.3517,     1.3534,
