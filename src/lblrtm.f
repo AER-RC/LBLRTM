@@ -605,6 +605,9 @@ C                                                                         A04280
      *                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,      A04300
      *                      IOD,IXSECT,IRAD,MPTS,NPTS                     A04310
 C                                                                         A04320
+
+      ICNTNM_sav = ICNTNM
+
 C     Set continuum flags as needed
 
 C     Continuum calculation flags:
@@ -676,6 +679,7 @@ C
          READ(IRD,*) XSELF, XFRGN, XCO2C, XO3CN, XO2CN, XN2CN, XRAYL
          ICNTNM = 1
       ENDIF
+
 
       IXSCNT = IXSECT*10+ICNTNM                                           A04330
 C
@@ -749,8 +753,8 @@ C                                                                         A04660
       JRAD = 1                                                            A04670
       IF (IRAD.NE.0) JRAD = -1                                            A04680
       WRITE (IPR,935) (IDCNTL(I),I=1,14)                                  A04690
-      WRITE (IPR,940) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,ISCAN,IFILTR,     A04700
-     *    IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT                           A04710
+      WRITE (IPR,940) IHIRAC,ILBLF4,ICNTNM_sav,IAERSL,IEMIT,ISCAN,        A04700
+     *    IFILTR,IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT                    A04710
 C                                                                         A04720
       IF (IHIRAC.EQ.4) THEN                                               A04800
          IF (IEMIT.NE.1) THEN                                             A04810
@@ -4163,14 +4167,16 @@ c
                 IF (IATM.EQ.0) THEN
                    angle_path = zangle
 
-                   if ((angle_path.gt.180.).or.(angle_path.le.90.)) then
-                       write(*,*) '     For lambertian, surf_refl = l'
+                   if ( ((angle_path-180.)  .gt.  0.001)   .or.
+     *                  ((angle_path- 90.)  .lt. -0.001) )       then
+                        write(*,*) '     For lambertian, surf_refl = l'
                        stop 'zangle must be between (90<zangle<=180deg)'
                    endif
                 ELSE
                    angle_path = angle
 
-                   if ((angle_path.gt.180.).or.(angle_path.le.90.)) then
+                   if ( ((angle_path-180.)  .gt.  0.001)   .or.
+     *                  ((angle_path- 90.)  .lt. -0.001) )       then
                        write(*,*) '     For lambertian, surf_refl = l'
                        stop 'angle must be between (90<angle<=180 deg)'
                    endif
@@ -5706,11 +5712,20 @@ C
 C     Read header information
 C
       READ (ICOEF,900) V1EMIS,V2EMIS,DVEMIS,NLIMEM
+
+      if (nlimem.gt.nmaxco) then
+         print *, '*********************************************'
+         print *, ' Number of points on EMISSIVITY file > nmaxco'
+         print *, ' Also, check the REFLECTIVITY file'
+         stop
+      endif
+
+
 C
 C     Read in emissivity values
 C
       DO 100 NGNU = 1,NLIMEM
-         READ (ICOEF,910) ZEMIS(NGNU)
+         READ (ICOEF,*) ZEMIS(NGNU)
  100  CONTINUE
 C
       RETURN
@@ -5740,11 +5755,17 @@ C
 C     Read header information
 C
       READ (ICOEF,900) V1RFLT,V2RFLT,DVRFLT,NLIMRF
+
+      if (nlimrf.gt.nmaxco) then
+         print *, '*********************************************'
+         print *, ' Number of points on REFLECTIVITY file > nmaxco'
+         stop
+      endif
 C
 C     Read in reflectivity values
 C
       DO 100 NGNU = 1,NLIMRF
-         READ (ICOEF,910) ZRFLT(NGNU)
+         READ (ICOEF,*) ZRFLT(NGNU)
  100  CONTINUE
 C
       RETURN

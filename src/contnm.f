@@ -125,8 +125,18 @@ c
 
       wn2 = x_vmr_n2 * wtot
 
-c zero derivative arrays and initialize panel information
+c     H2O continuum derivatives are computed w.r.t. ln(q)
+c        dqh2o must be returned with the radiation field included
+
       if (icflg.ne.-999) then
+
+c     amounts except for species of interest and n2 have been set to zero in lblrtm.
+c     wn2 must be set to zero here:
+
+         wn2 = 0.
+         
+c     zero derivative arrays and initialize panel information
+
           do j=1,ipts              
               cself(j) = 0.0
               cfrgn_aj(j) = 0.0
@@ -136,8 +146,8 @@ c zero derivative arrays and initialize panel information
           v2absc=v2abs
           dvabsc=dvabs
           nptabsc=nptabs
-      endif
 
+      endif
 C                                                                       
 C=======================================================================
 C
@@ -301,22 +311,6 @@ c
 C           ------------------------------------------------------------
 C                                                                         F00780
          endif
-
-c compute H2O continuum derivatives
-         if (icflg.eq.1) then
-
-            if ((V2.gt.-20.0).and.(V1.lt.20000.)) then
-
-               do j=1,nptc
-c w.r.t. ln(q)
-c                dqh2o must be returned with the radiation field included
-               enddo
-            else
-               write(ipr,*) 'WARNING:  ANALYTIC DERIVATIVE / CONTNM'
-               write(ipr,*) ' v1 - v2 out of range for H2O continuum'
-               write(ipr,*) '  (error trap - 1)'
-            endif               ! v1,v2 range
-         endif                  ! icflg
 
 C=======================================================================
 
@@ -828,9 +822,9 @@ C
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
       CHARACTER*18 cnam3(9),cnam4(21)
-      CHARACTER*51 CINFO1(2,12),CINFO2(2,11),CINFO3(2,9),CINFO4(2,19)
+      CHARACTER*51 CINFO1(2,13),CINFO2(2,11),CINFO3(2,9),CINFO4(2,21)
 C                                                                         A10340
-      WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,12)
+      WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,13)
       WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11)
       WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
       WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,21)
@@ -849,44 +843,44 @@ C
 C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 C
       CHARACTER*18 cnam3(9),cnam4(21)
-      CHARACTER*51 CINFO1(2,12),CINFO2(2,11),CINFO3(2,9),CINFO4(2,21)
+      CHARACTER*51 CINFO1(2,13),CINFO2(2,11),CINFO3(2,9),CINFO4(2,21)
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
       DATA cnam3/
 c           123456789-123456789-123456789-123456789-123456789-1
-     1     '                 ',
-     2     '                 ',
-     3     '                 ',
-     4     ' ckd_1.0     2.2 ',
-     5     '     "           ',
-     6     ' ckd_2.1     3.3 ',
-     7     '     "           ',
-     8     ' ckd_2.2     3.7 ',
-     9     '     "           '/
+     1     '                  ',
+     2     '                  ',
+     3     '                  ',
+     4     ' ckd_1.0      2.2 ',
+     5     '     "            ',
+     6     ' ckd_2.1      3.3 ',
+     7     '     "            ',
+     8     ' ckd_2.2      3.7 ',
+     9     '     "            '/
 c
       DATA cnam4/
 c           123456789-123456789-123456789-123456789-123456789-1
-     1     '     "           ',
-     2     ' ckd_2.2.2   3.12',
-     3     ' ckd_2.4.1   5.12',
-     4     '     "           ',
-     5     '     "           ',
-     6     '     "           ',
-     7     '     "           ',
-     8     '     "           ',
-     9     '     "           ',
-     *     ' ckd_2.4.2   5.17',
-     1     '     "           ',
-     2     ' mt_ckd_1.00 7.01',
-     3     '     "           ',
-     4     ' mt_ckd_1.1  9.1 ',
-     5     ' mt_ckd_1.2  9.2 ',
-     6     ' mt_ckd_1.3 10.0 ',
-     7     ' mt_ckd_2.0 11.1 ',
-     8     ' mt_ckd_2.0 11.2 ',
-     9     ' mt_ckd_2.1 11.3 ',
-     *     '     "           ',
-     1     '                 '/
+     1     '     "            ',
+     2     ' ckd_2.2.2    3.12',
+     3     ' ckd_2.4.1    5.12',
+     4     '     "            ',
+     5     '     "            ',
+     6     '     "            ',
+     7     '     "            ',
+     8     '     "            ',
+     9     '     "            ',
+     *     ' ckd_2.4.2    5.17',
+     1     '     "            ',
+     2     ' mt_ckd_1.00  7.01',
+     3     '     "            ',
+     4     ' mt_ckd_1.1   9.1 ',
+     5     ' mt_ckd_1.2   9.2 ',
+     6     ' mt_ckd_1.3  10.0 ',
+     7     ' mt_ckd_2.0  11.1 ',
+     8     ' mt_ckd_2.01 11.2 ',
+     9     ' mt_ckd_2.1  11.3 ',
+     *     '     "            ',
+     1     '                  '/
 c
       DATA CINFO1/
 c           123456789-123456789-123456789-123456789-123456789-1
@@ -894,7 +888,7 @@ c           123456789-123456789-123456789-123456789-123456789-1
      1     '                                                   ',
      2     '                                                   ',
      2     '                                                   ',
-     3     '   *****  CONTINUA mt_ckd_2.0                      ',
+     3     '   *****  CONTINUA mt_ckd_2.2                      ',
      3     '                                                   ',
      4     '                                                   ',
      4     '                                                   ',
@@ -903,17 +897,19 @@ c           123456789-123456789-123456789-123456789-123456789-1
      6     '                           AIR   (T)      0 - 20000',
      6     ' CM-1    mt_ckd_1.1                   (August 2004)',
      7     '                           AIR   (T)      0 - 20000',
-     7     ' CM-1    mt_ckd_2.0                   (August 2007)',
+     7     ' CM-1    mt_ckd_2.01               (September 2007)',
      8     '                     CO2   AIR            0 - 20000',
      8     ' CM-1    co2 nu2 increased * 7          (July 2002)',
      9     '                           AIR            0 - 20000',
      9     ' CM-1    co2 nu2 decreased: now * 4.5    (May 2006)',
-     *     '                           AIR            0 - 20000',
-     *     ' CM-1    line mixing                  (August 2007)',
-     1     '                     N2    SELF           0 -   350',
-     1     ' CM-1    BORYSOW FROMMHOLD                         ',
-     2     '                           AIR         2085 -  2670',
-     2    ' CM-1                                  (March 1998)' /
+     *     '                           AIR            0 -  2600',
+     *     ' CM-1    line mixing                    (July 2007)',
+     1     '                           AIR            0 - 20000',
+     1     ' CM-1    full line mixing           (November 2007)',
+     2     '                     N2    SELF           0 -   350',
+     2     ' CM-1    BORYSOW FROMMHOLD                         ',
+     3     '                           AIR         2085 -  2670',
+     3     ' CM-1                                  (March 1998)' /
 C
       DATA CINFO2/
      1     '                     O2    AIR   (T)   1340 -  1850',
@@ -992,7 +988,7 @@ C
      8     '  H2O foreign modified in 250-550 cm-1 region based',
      8     ' on analyses of nsa aeri_xr data.  (September 2007)',
      9     '  CO2: Fundamental change in the lblrtm fourth func',
-     9     'tion with consequent changes in continuum (Nov 2007',
+     9     'tion with consequent changes in continuum(Nov 2007)',
      *     '  Bug fix impacting the nitrogen continuum in the 0',
      *     '-350 cm-1 region.                   (November 2007)',
      1     '  -------------------------------------------------',

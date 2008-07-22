@@ -399,6 +399,7 @@ C        If INFLAG = 1, then read optical depth
 C        If INFLAG = 2, then read radiance and transmittance
 C                       and call SOLIN to read in r1 and T2
 C        If INFLAG = 3, then read transmittance
+
 C
          IF (INFLAG.EQ.0) THEN
             CALL SOLIN2 (V1PO,V2PO,DVPO,NLIMO,IFILE,RADO(1),
@@ -969,8 +970,8 @@ C
 C
       EQUIVALENCE (PNLHDR(1),V1PBF)
 C
-      real*4 dvpbf,pnlhdr
-      integer*4 nlimbf
+      !real*4 dvpbf,pnlhdr
+      !integer*4 nlimbf
 c
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
       IF (KEOF.LE.0) RETURN
@@ -1104,8 +1105,8 @@ C
 C
       EQUIVALENCE (PNLHDR(1),V1PBF)
 C
-      real*4 dvpbf,pnlhdr
-      integer*4 nlimbf
+      !real*4 dvpbf,pnlhdr
+      !integer*4 nlimbf
 c
       CALL BUFIN (KFILE,KEOF,PNLHDR(1),NPHDRF)
       IF (KEOF.LE.0) RETURN
@@ -1163,8 +1164,8 @@ C
 C
       REAL SOLRAD
 C
-      real*4 dvpbf,pnlhdr
-      integer*4 nlimbf
+      !real*4 dvpbf,pnlhdr
+      !integer*4 nlimbf
 c
       NPANLS = NPANLS+1
       V1PBF = V1P
