@@ -842,8 +842,8 @@ C     --------------------------------------------------------------
 C
 C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 C
-      CHARACTER*18 cnam3(9),cnam4(21)
-      CHARACTER*51 CINFO1(2,13),CINFO2(2,11),CINFO3(2,9),CINFO4(2,21)
+      CHARACTER*18 cnam3(9),cnam4(22)
+      CHARACTER*51 CINFO1(2,13),CINFO2(2,11),CINFO3(2,9),CINFO4(2,22)
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
       DATA cnam3/
@@ -880,7 +880,8 @@ c           123456789-123456789-123456789-123456789-123456789-1
      8     ' mt_ckd_2.01 11.2 ',
      9     ' mt_ckd_2.1  11.3 ',
      *     '     "            ',
-     1     '                  '/
+     1     '                  ',
+     2     ' mt_ckd_2.2  11.4 '/
 c
       DATA CINFO1/
 c           123456789-123456789-123456789-123456789-123456789-1
@@ -991,8 +992,10 @@ C
      9     'tion with consequent changes in continuum(Nov 2007)',
      *     '  Bug fix impacting the nitrogen continuum in the 0',
      *     '-350 cm-1 region.                   (November 2007)',
-     1     '  -------------------------------------------------',
-     1     '---------------------------------------------------'/
+     1     '  Analytic Derivative (species retrievals):n2 cont.',
+     1     ' removed from Jacobian calculations    (March 2008)',
+     2     '  -------------------------------------------------',
+     2     '---------------------------------------------------'/
 C
       END
 C
