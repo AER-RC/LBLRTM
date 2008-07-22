@@ -7,16 +7,16 @@ SHELL = /bin/sh
 # Set variables
 ###############################
 
-PLATFORM = OS_X (g95)
+PLATFORM = LINUX
 
 FC = g95
-FCFLAG = -O3 
+FCFLAG =  -O3 -r8 -i8
 
 CPATH = ../src/
 exec_path = ../
 
-CDOTO = os_x_dbl_sgl.o/
-exec  = lblrtm_v11.4_OS_X_g95_sgl
+CDOTO = linux_dbl.o/
+exec  = lblrtm_v11.4_pgi_linux_g95_dbl
 
 OUTPUT = $(exec_path)$(exec)
 
@@ -28,9 +28,9 @@ CTST = testmm
 CATM = lblatm
 CLOW = lbllow
 CPST = postsub
-CFFT = fftscn
+CFFT = fftscn_dbl
 CPLT = pltlbl
-CUTL = util_OS_X_g95
+CUTL = util_linux_pgi
 CDUM = lbldum
 CSOL = solar
 CNLT = nonlte
@@ -57,7 +57,7 @@ OBPATH = $(CDOTO)$(CLBL).o \
          $(CDOTO)$(CXMG).o \
          $(CDOTO)$(CTST).o \
          $(CDOTO)$(CATM).o \
-          $(CDOTO)$(CLOW).o \
+         $(CDOTO)$(CLOW).o \
          $(CDOTO)$(CPST).o \
          $(CDOTO)$(CFFT).o \
          $(CDOTO)$(CPLT).o \
@@ -88,7 +88,7 @@ MODULE = $(CPATH)$(CLBL).f \
 
 $(OUTPUT) : \
 	intro makedir $(OBPATH) conclude
-	$(FC) $(FCFLAG) -o $(OUTPUT) $(OBPATH) 
+	$(FC) $(FCFLAG) -o $(OUTPUT) $(OBPATH)
 
 
 ###############################
