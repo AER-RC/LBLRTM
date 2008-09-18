@@ -273,9 +273,7 @@ C
                FSCAL = (1.+FACTRF1*(HWSQF1/(VF2+(BETAF1*VF6)+HWSQF1)))
                FH2O(J)=FH2O(J)*FSCAL
 C     
-               C(J)        = WK(1) * (FH2O(J)*RFRGN)
-
-               cfrgn_aj(j) = wk(1) * fh2o(j) * rfrgn_aj
+               c_f = wk(1) * fh2o(j) 
 C                                          
 c********************************************
                cfh2o(j)=1.e-20 * fh2o(j) * xfrgn
@@ -283,8 +281,12 @@ c********************************************
 C              ---------------------------------------------------------
 C              Radiation field                                                  
 C                                                                    
-               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)               
+               IF (JRAD.EQ.1) c_f = c_f*RADFN(VJ,XKT)               
+
 C              ---------------------------------------------------------
+               C(J) = c_f * RFRGN
+
+               cfrgn_aj(j) = c_f * rfrgn_aj
 C
  24         CONTINUE                                                  
 C
@@ -295,13 +297,7 @@ c
             if  (icflg.eq.1) then
 
                do j=1,nptc
-
-                  if (jrad.eq.1) then
-                     vj = v1c + dvc*real(j-1)
-                     c(j) = (cself(j)-cfrgn_aj(j)) * radfn(vj,xkt)
-                  else
                      c(j) =  cself(j)-cfrgn_aj(j)
-                  endif
                enddo
 
                Call XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)

@@ -3261,6 +3261,13 @@ C                                                                         D03510
       SUMC2 = 0.                                                          D03560
 C                                                                         D03570
       DO 20 I = ILO, IHI                                                  D03580
+
+c     To prevent underflow issues in CONVF4 we set S < 1.0e-35 to zero
+         IF (S(I).lt.1.0e-35) THEN 
+             S(I)= 0.0
+             SPP(I) =0.0
+         ENDIF
+
 C                                                                         D03590
 C     IF LINE COUPLING, DON'T SHRINK LINE                                 D03600
 C                                                                         D03610
