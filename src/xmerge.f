@@ -6672,13 +6672,13 @@ c
            rprime(i) = ksubl(i) * ( 
 
 c            change in layer transmittance:
-     1         ( (BBEFF(I)+betai*fsav(i)-RADO(I))*TRALYR(I) 
+     1         ( (BBEFF(I)+betai*fsav(i)-RADO(I))*TRALYR(I)
                  
 c            change in linear in tau term (F)
-     2         + (1.0-TRALYR(I))*(betai)*dF_dtau(I)  )             
+     2         + (1.0-TRALYR(I))*(betai)*dF_dtau(I)  )           
 
 c            contribution from the downwelling radiance derivative reflected at the sfc
-     4         + (BBEFF(I)-rdtotdn(i))*TRALYR(I)*trao(i) * rftrm(i)  )
+     4         + (BBEFF(I)           )*TRALYR(I)*trao(i) * rftrm(i)  )
 c
  30      CONTINUE
 
@@ -6869,8 +6869,9 @@ c           higher order terms
      3        + (1-tralyr(i)) * ((bbdlsav(i)-bbdsav(i))*fsav(i) 
      3              +  betai*dF_dtau(i)*dtaudT(i))  )
 
+c            ****  rdtotdn(i) is currently undefined for the top layer ****
 c            contribution from the downwelling radiance derivative reflected at the sfc
-     4        + (((bbeff(i)-rdtotdn(i)) * dtaudT(i) * tralyr(i)) 
+     4        + (((bbeff(i)           ) * dtaudT(i) * tralyr(i)) 
      4              + (bbdsav(i) * (1-tralyr(i)))) * trao(i) * rftrm(i) 
 
  30      CONTINUE

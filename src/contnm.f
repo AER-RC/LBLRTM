@@ -146,7 +146,6 @@ c     zero derivative arrays and initialize panel information
           v2absc=v2abs
           dvabsc=dvabs
           nptabsc=nptabs
-
       endif
 C                                                                       
 C=======================================================================
@@ -281,11 +280,9 @@ c********************************************
 C              ---------------------------------------------------------
 C              Radiation field                                                  
 C                                                                    
-               IF (JRAD.EQ.1) c_f = c_f*RADFN(VJ,XKT)               
-
+               IF (JRAD.EQ.1) c_f = c_f * RADFN(VJ,XKT)               
 C              ---------------------------------------------------------
                C(J) = c_f * RFRGN
-
                cfrgn_aj(j) = c_f * rfrgn_aj
 C
  24         CONTINUE                                                  
@@ -297,7 +294,7 @@ c
             if  (icflg.eq.1) then
 
                do j=1,nptc
-                     c(j) =  cself(j)-cfrgn_aj(j)
+                  c(j) =  cself(j)-cfrgn_aj(j)
                enddo
 
                Call XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
@@ -817,13 +814,13 @@ C                                                                         A10300
 C
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
 C
-      CHARACTER*18 cnam3(9),cnam4(21)
-      CHARACTER*51 CINFO1(2,13),CINFO2(2,11),CINFO3(2,9),CINFO4(2,21)
+      CHARACTER*18 cnam3(9),cnam4(23)
+      CHARACTER*51 CINFO1(2,13),CINFO2(2,11),CINFO3(2,9),CINFO4(2,23)
 C                                                                         A10340
       WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,13)
       WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11)
       WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
-      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,21)
+      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,22)
 C                                                                         A10360
       RETURN                                                              A10370
 C                                                                         A10380
@@ -838,9 +835,9 @@ C     --------------------------------------------------------------
 C
 C     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 C
-      CHARACTER*18 cnam3(9),cnam4(22)
-      CHARACTER*51 CINFO1(2,13),CINFO2(2,11),CINFO3(2,9),CINFO4(2,22)
-      COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4
+      CHARACTER*18 cnam3(9),cnam4(23)
+      CHARACTER*51 CINFO1(2,13),CINFO2(2,11),CINFO3(2,9),CINFO4(2,23)
+      COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4
 C
       DATA cnam3/
 c           123456789-123456789-123456789-123456789-123456789-1
@@ -876,8 +873,9 @@ c           123456789-123456789-123456789-123456789-123456789-1
      8     ' mt_ckd_2.01 11.2 ',
      9     ' mt_ckd_2.1  11.3 ',
      *     '     "            ',
-     1     '                  ',
-     2     ' mt_ckd_2.2  11.4 '/
+     1     ' mt_ckd_2.2  11.4 ',
+     2     ' mt_ckd_2.3  11.5 ',
+     3     '                  '/
 c
       DATA CINFO1/
 c           123456789-123456789-123456789-123456789-123456789-1
@@ -885,7 +883,7 @@ c           123456789-123456789-123456789-123456789-123456789-1
      1     '                                                   ',
      2     '                                                   ',
      2     '                                                   ',
-     3     '   *****  CONTINUA mt_ckd_2.2                      ',
+     3     '   *****  CONTINUA mt_ckd_2.3                      ',
      3     '                                                   ',
      4     '                                                   ',
      4     '                                                   ',
@@ -986,12 +984,14 @@ C
      8     ' on analyses of nsa aeri_xr data.  (September 2007)',
      9     '  CO2: Fundamental change in the lblrtm fourth func',
      9     'tion with consequent changes in continuum(Nov 2007)',
-     *     '  Bug fix impacting the nitrogen continuum in the 0',
-     *     '-350 cm-1 region.                   (November 2007)',
-     1     '  Analytic Derivative (species retrievals):n2 cont.',
-     1     ' removed from Jacobian calculations    (March 2008)',
-     2     '  -------------------------------------------------',
-     2     '---------------------------------------------------'/
+     *     '  Bug fix: correction for the nitrogen continuum in',
+     *     'the 0-350 cm-1 region.              (November 2007)',
+     1     '  Analytic Derivative (species retrievals): n2 cont',
+     1     'inuum removed from Jacobian calculation(March 2008)',
+     2     '  Bug fix: corrects error in which Analytic Derivat',
+     2     'ive result depends on starting wavenumber(Aug 2008)',
+     3     '  -------------------------------------------------',
+     3     '---------------------------------------------------'/
 C
       END
 C
@@ -3763,7 +3763,7 @@ c
          sf_T   = sf_296(i)*((sf_220(i)/sf_296(i))**tfac)
 
 c        correct for incorporation of air mixing ratios in sf
-c        fo2 is now ~ the ration of alpha(n2-o2)/alpha(n2-n2)
+c        fo2 is now ~ the ratio of alpha(n2-o2)/alpha(n2-n2)
 c        Eq's 7 and 8 in the Boissoles paper.
 
 c        fo2(i) = (sf_T - 1.)*(xn2**2)/(xn2*xo2)

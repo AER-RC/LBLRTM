@@ -680,7 +680,6 @@ C
          ICNTNM = 1
       ENDIF
 
-
       IXSCNT = IXSECT*10+ICNTNM                                           A04330
 C
 C     *********************** SOLAR RADIANCE ***********************
@@ -3456,8 +3455,15 @@ C     NORMAL CALCULATIONS:
 
 C     INITIALIZE LH1, LH2 AND JPATHL
 
-      LH1 = 1
-      LH2 = NLAYER
+      if (ipathl .eq.3) then
+c        upwelling
+         LH1 = NLAYER
+         LH2 = 1
+      else
+c        downwelling
+         LH1 = 1
+         LH2 = NLAYER
+      endif
 
       JPATHL = IPATHL
 

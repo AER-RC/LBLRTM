@@ -77,7 +77,7 @@ C
       COMMON RR1(6099),RR2(2075),RR3(429)                                 B00520
       COMMON /IOU/ IOUT(250)                                              B00530
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)                B00540
-      COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NP,H1F,H2F,         B00550
+      COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NP,H1F,H2F,         B00550
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,         B00560
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                      B00570
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR,   B00580

@@ -1422,7 +1422,7 @@ C                                                                         M12540
 C                                                                         M12610
       RETURN                                                              M12620
 C                                                                         M12630
-  900 FORMAT (10X,'PLOT REQUEST INCOMPATIBLE WITH LBLRMT, IGO =',I2)      M12640
+  900 FORMAT (10X,'PLOT REQUEST INCOMPATIBLE WITH LBLRTM, IGO =',I2)      M12640
 C                                                                         M12650
       END                                                                 M12660
       SUBROUTINE BBSCLE                                                   M12670

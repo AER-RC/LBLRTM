@@ -118,7 +118,7 @@ C                                                                        FA00870
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,
      *                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,             FA00920
      *                IPHMID,IPDIM,KDIM,KMXNOM,NMOL        
-      COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NOP,H1F,H2F,       FA00940
+      COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NOP,H1F,H2F,       FA00940
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,        FA00950
      *                XVBAR, HMINF,PHIF,IERRF,HSPACE                     FA00960
 
@@ -396,7 +396,7 @@ C                                                                        FA03360
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                 FA03420
       COMMON /MSCONS/ AIRMSS(MXLAY),TGRND,SEMIS(3),HMINMS,HMAXMS,        FA03430
      *                MSFLAG,MSWIT,IODFIL,MSTGLE                         FA03440
-      COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NOP,H1F,H2F,       FA03450
+      COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NOP,H1F,H2F,       FA03450
      *                ANGLEF,RANGEF,BETAF,LENF,V1,V2,RO,IPUNCH,XVBAR,    FA03460
      *                HMINF,PHIF,IERRF,HSPACE                            FA03470
 
@@ -554,7 +554,7 @@ C                                                                        FA04780
 C                                                                        FA04800
 C     READ CONTROL CARD 3.1                                              FA04810
 C                                                                        FA04820
-         READ (IRD,900) MODEL,ITYPE,IBMAX_B,NOZERO,NOPRNT,NMOL,IPUNCH,   FA04830
+         READ (IRD,900) MODEL,ITYPE,IBMAX_B,n_zero,NOPRNT,NMOL,IPUNCH,   FA04830
      *                  IFXTYP,MUNITS,RE,HSPACE,XVBAR,dumrd,REF_LAT 
 
 c     check to see that a value for dumrd, formerly co2mx, 
@@ -577,7 +577,7 @@ C                                                                        FA04860
 
       IF (NOPRNT.GE.0) THEN
          WRITE (IPR,902)                                                    FA04890
-         WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA04900
+         WRITE (IPR,904) MODEL,ITYPE,IBMAX,n_zero,NOPRNT,NMOL,IPUNCH,       FA04900
      *                   IFXTYP,MUNITS,RE,HSPACE,XVBAR,REF_LAT 
       ENDIF
 c
@@ -627,7 +627,7 @@ C                                                                        FA05070
 C                                                                        FA05130
       IF (NOPRNT.GE.0) THEN
          WRITE (IPR,906)    
-         WRITE (IPR,904) MODEL,ITYPE,IBMAX,NOZERO,NOPRNT,NMOL,IPUNCH,       FA05150
+         WRITE (IPR,904) MODEL,ITYPE,IBMAX,n_zero,NOPRNT,NMOL,IPUNCH,       FA05150
      *                   IFXTYP,MUNITS,RE,HSPACE,XVBAR,REF_LAT              FA05160
       ENDIF
 C                                                                        FA05170
@@ -1243,7 +1243,7 @@ C        > HMAX ALSO, ZERO OUT THE AMOUNT FOR A MOLECULE IF THE     <    FA09420
 C        > CUMULATIVE AMOUNT FOR THAT LAYER AND ABOVE IN LESS THAN  <    FA09430
 C        > 0.1 PERCENT OF THE TOTAL                                 <    FA09440
 C                                                                        FA09450
-         CALL FPACK (H1,H2,HMID,LEN,IEMIT,NOZERO)                        FA09460
+         CALL FPACK (H1,H2,HMID,LEN,IEMIT,n_zero)                        FA09460
 C                                                                        FA09470
 C        > OUTPUT THE PROFILE <                                          FA09480
 C                                                                        FA09490
@@ -1269,6 +1269,8 @@ C                                                                        FA09490
          PWTD = 0.                                                       FA09620
          TWTD = 0.                                                       FA09630
          WTOT = 0.                                                       FA09640
+         P_h2o = 0.
+         T_h2o = 0.
 C
 c
 c        Read from/Write to "IFIXTYPE" file: if IFXTYP = -2, use
@@ -1297,6 +1299,8 @@ C        ITYL values.
             WTOT = WTOT+WTOTL(L)*FACTOR                                  FA09760
             PWTD = PWTD+PBAR(L)*WTOTL(L)*FACTOR                          FA09770
             TWTD = TWTD+TBAR(L)*WTOTL(L)*FACTOR                          FA09780
+            P_h2o = P_h2o+PBAR(L)*amount(1,l)*FACTOR
+            T_h2o = T_h2o+TBAR(L)*amount(1,l)*FACTOR
 C
 C           > Determine ITYL(L), if desired (when setting the ratio <
 C           > from layer to layer).  Default is ITYL(L) left blank, <
@@ -1457,8 +1461,12 @@ C
 C
          PWTD = PWTD/WTOT                                                FA10130
          TWTD = TWTD/WTOT                                                FA10140
+         P_h2o = P_h2o/wmt(1)
+         T_h2o = T_h2o/wmt(1)
+
          L = LMAX                                                        FA10150
          if (noprnt .ge. 0) then
+               WRITE (IPR,979) L,ZOUT(1),ZOUT(L+1),P_h2o,T_h2o
             IF (NMOL.LE.7) THEN    
                WRITE (IPR,980) (HMOLS(K),K=1,NMOL),COTHER                   FA10170
                WRITE (IPR,982) L,ZOUT(1),ZOUT(L+1),PWTD,TWTD,SUMRS,         FA10180
@@ -1520,7 +1528,7 @@ C                                                                        FA10530
   900 FORMAT (7I5,I2,1X,I2,4F10.3,F10.3)                                 FA10540
   902 FORMAT (' CONTROL CARD 3.1: MODEL AND OPTIONS ')                   FA10550
   904 FORMAT (/,10X,'MODEL   = ',I5,/,10X,'ITYPE   = ',I5,/,10X,         FA10560
-     *        'IBMAX   = ',I5,/,10X,'NOZERO  = ',I5,/,10X,'NOPRNT  = ',  FA10570
+     *        'IBMAX   = ',I5,/,10X,'n_zero  = ',I5,/,10X,'NOPRNT  = ',  FA10570
      *        I5,/,10X,'NMOL    = ',I5,/,10X,'IPUNCH  = ',I5,/,10X,      FA10580
      *        'IFXTYP  = ',I5,/,10X,'MUNITS  = ',I5,/,10X,'RE      = ',  FA10590
      *        F10.3,' KM',/,10X,'HSPACE  = ',F10.3,' KM',/,10X,          FA10600
@@ -1638,12 +1646,14 @@ C                                                                        FA10530
   976 FORMAT ('0',I3,2F8.3,A3,I2,F11.5,F8.2,1X,1P9E15.7,/,
      *            (60X,1P8E15.7))                                        FA11490
   978 FORMAT (1P8E15.7)                                                  FA11500
+ 979  FORMAT ('0',/,'0',T4,'L  PATH BOUNDARIES',T28,'P_h2o',T37,'T_h2o'
+     *           ,/,'0',I3,2F8.3,2X,F11.5,F8.2)
   980 FORMAT ('0',/,'0',T4,'L  PATH BOUNDARIES',T28,'PBAR',T37,'TBAR',   FA11510
      *        T65,'ACCUMULATED MOLECULAR AMOUNTS FOR TOTAL PATH',/,T9,   FA11520
      *        'FROM',T18,'TO',/,T9,'(KM)',T17,'(KM)',T28,'(MB)',T38,     FA11530
      *        '(K)',T47,'AIR',(T54,8(1X,A9)))                            FA11540
-  982 FORMAT ('0',I3,2F8.3,2X,F11.5,F8.2,1X,1P9E10.3)                    FA11550
-  984 FORMAT ('0',I3,2F8.3,2X,F11.5,F8.2,1X,1P9E10.3,/,(52X,1P8E10.3))   FA11560
+  982 FORMAT ('0',I3,2F8.3,2X,F11.5,F8.2,1X,1P,9E10.3)                    FA11550
+  984 FORMAT ('0',I3,2F8.3,2X,F11.5,F8.2,1X,1P,9E10.3,/,(52X,8E10.3))   FA11560
   986 FORMAT (///,' ERROR IN INPUT, CONTROL CARD 3.1: ONE OF THE ',      FA11570
      *        'PARAMETERS MODEL, ITYPE, NMOL IS OUT OF RANGE',//,10X,    FA11580
      *        'MODEL   = ',I5,/,10X,'ITYPE   = ',I5,/,10X,'NMOL    = ',  FA11590
@@ -5751,14 +5761,14 @@ C                                                                        FA46880
 C
 C     ----------------------------------------------------------------
 C
-      SUBROUTINE FPACK (H1,H2,HMID,LEN,IEMIT,NOZERO)                     FA46900
+      SUBROUTINE FPACK (H1,H2,HMID,LEN,IEMIT,n_zero)                     FA46900
 C                                                                        FA46910
 C     *****************************************************************  FA46920
 C     FPACK TAKES THE AMOUNTS STORED IN THE LAYERS DEFINED BY ZPTH AND   FA46930
 C     PACKS THEM INTO THE LAYERS DEFINED BY ZOUT.  IT ALSO ZEROS OUT     FA46940
 C     LAYER AMOUNTS IF THE AMOUNT FOR THAT LAYER AND ABOVE IS LESS       FA46950
-C     THAN 0.1 PERCENT OF THE TOTAL FOR THAT MOLECULE, UNLESS THE        FA46960
-C     NOZERO OPTION IS SELECTED.                                         FA46970
+C     THAN 0.1 PERCENT OF THE TOTAL FOR THAT MOLECULE if THE     
+C     n_zero OPTION IS SELECTED.                                         FA46970
 C     *****************************************************************  FA46980
 C                                                                        FA46990
       IMPLICIT REAL*8           (V)
@@ -5883,7 +5893,7 @@ C                                                                        FA47940
 C                                                                        FA47990
          DO 80 K = 1, NMOL                                               FA48000
 
-            IF (NOZERO.EQ.1) go to 70
+            IF (n_zero.ne.2) go to 70
 
             IF (ISKIP(K).NE.1) THEN                                      FA48010
                IF (K.EQ.7 .OR. (IEMIT.EQ.1.AND.IPATH(L).NE.3)) GO TO 70 
@@ -6060,7 +6070,7 @@ C                                                                        FX00360
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AIRMWT,AMWT(MXMOL)
-      COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,NOZERO,NOP,H1F,H2F,       FX00400
+      COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NOP,H1F,H2F,       FX00400
      *                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,XVBAR,  FX00410
      *                HMINF,PHIF,IERRF,HSPACE                            FX00420
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,   
@@ -6125,8 +6135,8 @@ C                                                                        FX00920
 C                                                                        FX00980
       WRITE (IPR,900)                                                    FX00990
 C                                                                        FX01000
-      NOZSAV = NOZERO                                                    FX01010
-      NOZERO = 1                                                         FX01020
+      NOZSAV = n_zero                                                    FX01010
+      n_zero = 1                                                         FX01020
       IOMXSV = IOUTMX                                                    FX01030
 C                                                                        FX01040
 C     READ IN THE NUMBER OF MOLECULES IXMOLS, AND THE FLAG IPRFL         FX01050
@@ -6482,7 +6492,7 @@ C
 C                                                                        FX03070
 C     DONE                                                               FX03080
 C                                                                        FX03090
-      NOZERO = NOZSAV                                                    FX03100
+      n_zero = NOZSAV                                                    FX03100
       NMOL = NMOLSV                                                      FX03110
       NOPRNT = NOPRSV                                                    FX03120
 C                                                                        FX03130
