@@ -11,13 +11,13 @@ PLATFORM = LINUX
 
 FC = ifc
 FCFLAG = -w -Vaxlib
-OUTPUT = lblrtm_v11.4_intel_linux_ifc_sgl
+OUTPUT = lblrtm_v11.5_intel_linux_ifc_sgl
 
 CPATH = ../src/
 exec_path = ../
 
 CDOTO = intel_linux_sgl.o/
-exec  = lblrtm_v11.4_intel_linux_ifc_sgl
+exec  = lblrtm_v11.5_intel_linux_ifc_sgl
 
 OUTPUT = $(exec_path)$(exec)
 

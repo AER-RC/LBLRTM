@@ -16,7 +16,7 @@ CPATH = ../src/
 exec_path = ../
 
 CDOTO = os_x_ibm_sgl.o/
-exec  = lblrtm_v11.4_OS_X_ibm_xlf90_sgl
+exec  = lblrtm_v11.5_OS_X_ibm_xlf90_sgl
 
 OUTPUT = $(exec_path)$(exec)
 
