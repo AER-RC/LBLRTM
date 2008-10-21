@@ -1,4 +1,23 @@
 
+LBLRTM_v11.5
+
+1) There were several analytic Jacobian related issues resolved in this release.
+
+-  Fixed an issue with the water vapor Jacobians in which the analytic Jacobians were dependent on the starting wavernuimber. (K.E. Cady-Pereira and S. Tjemkes) 
+
+-  Fixed an issue with TOA Jacobians producing NaN in the top layer. (S.A. Clough and Paolo Antonelli)
+
+-  Solved the issue of N2 Jacobians being included in the Jacobians generated for other molecules.  (S.A. Clough and M.W. Shephard) 
+
+-  Fixed a documentation error in the LBLRTM instructions. (K.E. Cady-Pereira)
+
+2) Fixed a coding error is the solar source function. (K.E. Cady-Pereria and S. Ferron)  
+
+3) Modified LBLRTM to handle underflow problem in convolution routine. (M.W. Shephard, S.A. Clough, G. Uymin)
+
+4) Modified the LBLRTM default option for zeroing very small atmospheric profile amounts. (S.A. Clough and Hal Woolf)
+
+
 LBLRTM_v11.3
 
 1) Included NO2 as a cross-section in list of cross-section molecule aliases. 
