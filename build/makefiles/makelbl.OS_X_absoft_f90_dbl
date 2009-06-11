@@ -16,7 +16,7 @@ CPATH = ../src/
 exec_path = ../
 
 CDOTO = os_x_dbl.o/
-exec  = lblrtm_v11.5_OS_X_f90_dbl
+exec  = lblrtm_v11.6_OS_X_f90_dbl
 
 OUTPUT = $(exec_path)$(exec)
 
