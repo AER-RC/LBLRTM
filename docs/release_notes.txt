@@ -1,13 +1,10 @@
 
-LBLRTM_v11.5
+LBLRTM_v11.6
+
 
 1) There were several analytic Jacobian related issues resolved in this release.
 
--  Fixed an issue with the water vapor Jacobians in which the analytic Jacobians were dependent on the starting wavernuimber. (K.E. Cady-Pereira and S. Tjemkes) 
-
 -  Fixed an issue with TOA Jacobians producing NaN in the top layer. (S.A. Clough and Paolo Antonelli)
-
--  Solved the issue of N2 Jacobians being included in the Jacobians generated for other molecules.  (S.A. Clough and M.W. Shephard) 
 
 -  Fixed a documentation error in the LBLRTM instructions. (K.E. Cady-Pereira)
 
@@ -17,6 +14,17 @@ LBLRTM_v11.5
 
 4) Modified the LBLRTM default option for zeroing very small atmospheric profile amounts. (S.A. Clough and Hal Woolf)
 
+5)  MT_CKD_2.2: Solved the issue of N2 Jacobians being included in the Jacobians generated for other molecules (S.A. Clough and M.W. Shephard) 
+
+6)  MT_CKD_2.3: Fixed an issue with the water vapor Jacobians in which the analytic Jacobians were dependent on the starting wavenumber. (K.E. Cady-Pereira and S. Tjemkes) 
+
+7)  MT_CKD_2.4:  Modifications to the water vapor continuum arise from new analyses of ARM measurements in the microwave and far-IR regions (S.A. Clough, J. Delamere, V.H. Payne, E.J. Mlawer)
+
+- Analyses of measurements in the microwave are based primarily on the two-channel
+MWR (23.8 and 31.4 GHz) at SGP, with supporting evidence from 150 GHz MWRHF measurements during the COPS campaign and from 170 GHz GVRP measurements at SGP (Payne et al.,
+2009). 
+
+- Measurements in the far-IR were from the AERI_ext at the NSA site, in the time surrounding and including the RHUBC-I campaign (Delamere et al., 2009).
 
 LBLRTM_v11.3
 
