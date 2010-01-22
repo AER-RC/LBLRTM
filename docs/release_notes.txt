@@ -1,3 +1,19 @@
+LBLRTM_v11.7
+January 2010
+
+1) MT_CKD_2.5 continuum modifications included in this release are based on analyses of 
+IASI, AIRS, and AERI measurements in the region past the bandhead of the CO2 v3 band (~2385 cm-1):
+
+	- Introduction of temperature dependence of carbon dioxide continuum absorption 
+	from 2386-2434 cm-1 from IASI measurements (E.J. Mlawer and V.H. Payne)
+
+	- Modification of carbon dioxide continuum coefficients from 2000-3000 cm-1 from 
+	IASI and AERI (from ARM) measurements (E.J. Mlawer, V.H. Payne, and M.W. Shephard)
+
+	- Modification of water vapor self continuum coefficients from 2000-3200 cm-1 from 
+	IASI and AIRS measurements; fit based on near-IR studies of Bicknell et al. (2006) and 
+	Fulghum and Tilleman (1991) (E.J. Mlawer and V.H. Payne)
+
 
 LBLRTM_v11.6
 
