@@ -1,3 +1,14 @@
+LBLRTM_v11.8
+May 2010
+
+1) The non-LTE routines have been updated to read an updated TAPE4 input format. 
+   - The updated TAPE4 format puts the vibrational state information for each molecule 
+   into the TAPE4 with the vibrational temperature profiles. Previously, vibrational 
+   state information was hard-coded into the source code.  The updated TAPE4 format 
+   also specifies the isotopologue number associated with each vibrational state.
+
+   - Instruction manual was updated.
+
 LBLRTM_v11.7
 January 2010
 
