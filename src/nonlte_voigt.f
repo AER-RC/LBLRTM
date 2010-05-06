@@ -15,6 +15,7 @@ C |                       (http://www.rtweb.aer.com/)                        |
 C |                                                                          |
 C  --------------------------------------------------------------------------
 C
+      include 'lblparams.inc'
       IMPLICIT REAL*8           (V)                                     ! B00030
 C
 C**********************************************************************
@@ -55,13 +56,14 @@ C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
-      COMMON /VBNLTE/ RATH2O(8),RATCO2(26),RATO3(18),RATCO(3),RATNO(3),   600110
-     &               NUMH2O,NUMCO2,NUMO3,NUMCO,NUMNO                      600120
+      COMMON /VBNLTE/ RATSTATE(MAXSTATE,MXMOL),NUMSTATE(MXMOL)
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
       COMMON /R4SUB/ VLOF4,VHIF4,ILOF4,IST,IHIF4,LIMIN4,LIMOUT,ILAST,     B00820
      *               DPTMN4,DPTFC4,ILIN4,ILIN4T                           B00830
+      common /cmol_nam/ cmol(mxmol),cspc(mxspc)
+      CHARACTER*6  CMOL,CSPC
 c
       CHARACTER*18 hnmnlte,hvnlte
       COMMON /CVNLTE/ HNMNLTE,HVNLTE
@@ -71,95 +73,27 @@ c
      &  (FSCDID(7),IPLOT), (FSCDID(8),IPATHL),(FSCDID(9),JRAD),
      &  (FSCDID(11),IMRG)
 C
-      CHARACTER HH2O*3,HCO2*5,HO3*3,HCO*1,HNO*1                           600144
-      DIMENSION HH2O( 8),EH2O( 8),NDGH2O( 8),                             600150
-     &          HCO2(26),ECO2(26),NDGCO2(26),                             600160
-     &          HO3 (18),EO3 (18),NDGO3 (18),                             600170
-     &          HCO ( 3),ECO ( 3),NDGCO ( 3),                             600180
-     &          HNO ( 3),ENO ( 3),NDGNO ( 3)                              600190
-      CHARACTER*80 TIT(3)                                                 600200
-      CHARACTER*10 TIT1,TIT2,TIT3,TIT4,TIT5                               600210
-      DATA TIT1/' H20      '/, TIT2/' CO2      '/,TIT3/' O3       '/,     600220
-     &     TIT4/' CO       '/, TIT5/' NO       '/                         600230
+      CHARACTER*5 HSTATE
+      INTEGER INDEX(MXMOL)
+      DIMENSION ISOSTATE(MAXSTATE,MXMOL),HSTATE(MAXSTATE,MXMOL),
+     $     EESTATE(MAXSTATE,MXMOL),NDGSTATE(MAXSTATE,MXMOL)
+      CHARACTER*80 TIT(3),TEXTLINE                                        600200
+      LOGICAL ISODATA
+      CHARACTER*6  TXTISO,BLANKS
+      DATA BLANKS/'      '/
 C 
-      DATA NDGH2O/8*1/,NDGO3/18*1/,NDGCO/3*1/,NDGNO/3*1/                  600250
-C                                                                         600270
-      DATA  (HH2O(I),EH2O(I),I=1,8)/                                      600280
-     1      '000' ,     0.   ,                                            600290
-     2      '010' ,  1594.750,                                            600300
-     3      '020' ,  3151.630,                                            600310
-     4      '100' ,  3657.053,                                            600320
-     5      '001' ,  3755.930,                                            600330
-     6      '030' ,  4666.793,                                            600340
-     7      '110' ,  5234.977,                                            600350
-     8      '011' ,  5333.269/                                            600360
-C                                                                         600370
-      DATA  (HCO2(I),ECO2(I),NDGCO2(I),I=1, 9)/                           600380
-     1      '00001' ,    0.  , 1 ,                                        600390
-     2      '01101' ,  667.380,2 ,                                        600400
-     3      '10002' , 1285.409,1 ,                                        600410
-     4      '02201' , 1335.132,2 ,                                        600420
-     5      '10001' , 1388.185,1 ,                                        600430
-     6      '11102' , 1932.470,2 ,                                        600440
-     7      '03301' , 2003.246,2 ,                                        600450
-     8      '11101' , 2076.856,2 ,                                        600460
-     9      '00011' , 2349.143,1 /                                        600470
-      DATA  (HCO2(I),ECO2(I),NDGCO2(I),I=10,26)/                          600380
-     Z      '20003' , 2548.366,1 ,                                        600470
-     Z      '12202' , 2585.022,2 ,                                        600470
-     Z      '20002' , 2671.143,1 ,                                        600470
-     Z      '04401' , 2671.717,2 ,                                        600470
-     Z      '12201' , 2760.725,2 ,                                        600470
-     Z      '20001' , 2797.135,1 ,                                        600470
-     A      '01111' , 3004.012,2 ,                                        600480
-     1      '10012' , 3612.842,1 ,                                        600490
-     2      '02211' , 3659.273,2 ,                                        600500
-     3      '10011' , 3714.783,1 ,                                        600510
-     Z      '11112' , 4247.706,2 ,                                        600470
-     Z      '03311' , 4314.914,2 ,                                        600470
-     Z      '11111' , 4390.629,2 ,                                        600470
-     4      '20013' , 4853.623,1 ,                                        600520
-     Z      '04411' , 4970.931,1 ,                                        600470
-     5      '20012' , 4977.834,1 ,                                        600530
-     6      '20011' , 5099.660,1 /                                        600540
-C                                                                         600550
-      DATA (HO3(I),EO3(I),I=1,18)/                                        600560
-     1     '000' ,    0.   ,                                              600570
-     2     '010' ,  700.931,                                              600580
-     3     '001' , 1042.084,                                              600590
-     4     '100' , 1103.140,                                              600600
-     5     '020' , 1399.275,                                              600610
-     6     '011' , 1726.528,                                              600620
-     7     '110' , 1796.261,                                              600630
-     8     '002' , 2057.892,                                              600640
-     9     '101' , 2110.785,                                              600650
-     A     '200' , 2201.157,                                              600660
-     1     '111' , 2785.245,                                              600670
-     2     '003' , 3041.200,                                              600680
-     3     '004' , 3988.  ,                                               600690
-     4     '005' , 4910.  ,                                               600700
-     5     '006' , 5803.  ,                                               600710
-     6     '007' , 6665.  ,                                               600720
-     7     '008' , 7497.  ,                                               600730
-     8     '009' , 8299.  /                                               600740
-C                                                                         600750
-      DATA (HCO(I),ECO(I),I=1,3)/                                         600760
-     1     '0' ,    0.  ,                                                 600770
-     2     '1' , 2143.272,                                                600780
-     3     '2' , 4260.063/                                                600790
-C                                                                         600800
-      DATA (HNO(I),ENO(I),I=1,3)/                                         600810
-     1      '0' ,    0.  ,                                                600820
-     2      '1' , 1878.077,                                               600830
-     3      '2' , 3724.067/                                               600840
 C
-C     ASSIGN SCCS VERSION NUMBER TO MODULE 
-C
-      NUMH2O =  8
-      NUMCO2 = 26
-      NUMO3  = 18
-      NUMCO  =  3
-      NUMNO  =  3
+      DO J=1,MXMOL
+         NUMSTATE(J)=0
+         DO I=1,MAXSTATE
+            ISOSTATE(I,J)=0
+            HSTATE(I,J)='     '
+            EESTATE(I,J)=0.
+            NDGSTATE(I,J)=0
+         END DO
+      END DO
+C 
+      ISODATA=.FALSE.
 C                                                                    
       REWIND NLTEFL                                                       600860
 
@@ -173,30 +107,52 @@ C NOTE THAT TIT IS A 3-ELEMENT ARRAY OF CHARACTER*80
       WRITE(IPR,921) IVIB,ALTAV,TAVE
   921 FORMAT(/' IVIB =',I5,/'  ALT = ',F10.3,'  TEMP =',F10.3)            600920
 
-      IF(IVIB.EQ.1) THEN
-          CALL VIBTMP(XKT,ALTAV,NLTEFL,NUMH2O,HH2O,
-     &        NDGH2O(1),EH2O(1),RATH2O(1),TIT1)
-          CALL VIBTMP(XKT,ALTAV,NLTEFL,NUMCO2,HCO2,
-     &        NDGCO2(1),ECO2(1),RATCO2(1),TIT2)
-          CALL VIBTMP(XKT,ALTAV,NLTEFL,NUMO3 ,HO3,
-     &        NDGO3(1),EO3(1),RATO3(1),TIT3)
-          CALL VIBTMP(XKT,ALTAV,NLTEFL,NUMCO ,HCO,
-     &        NDGCO(1),ECO(1),RATCO(1),TIT4)
-          CALL VIBTMP(XKT,ALTAV,NLTEFL,NUMNO ,HNO,
-     &        NDGNO(1),ENO(1),RATNO(1),TIT5)
-      ELSE                                                                600990
-          CALL VIBPOP(XKT,ALTAV,NLTEFL,NUMH2O,HH2O,
-     &        NDGH2O(1),EH2O(1),RATH2O(1),TIT1)
-          CALL VIBPOP(XKT,ALTAV,NLTEFL,NUMCO2,HCO2,
-     &        NDGCO2(1),ECO2(1),RATCO2(1),TIT2)
-          CALL VIBPOP(XKT,ALTAV,NLTEFL,NUMO3 ,HO3,
-     &        NDGO3(1),EO3(1),RATO3(1),TIT3)
-          CALL VIBPOP(XKT,ALTAV,NLTEFL,NUMCO ,HCO,
-     &        NDGCO(1),ECO(1),RATCO(1),TIT4)
-          CALL VIBPOP(XKT,ALTAV,NLTEFL,NUMNO ,HNO,
-     &        NDGNO(1),ENO(1),RATNO(1),TIT5)
-      ENDIF                                                               601050
-      IPFLAG = 0
+      READ(NLTEFL,940) TEXTLINE
+      write(ipr,940) textline
+  940 FORMAT(A80)
+      DO I=1,74
+         IF(TEXTLINE(I:I+6).EQ.'VIBRATI') ISODATA=.TRUE.
+      END DO
+      IF(ISODATA) THEN
+   10    CALL GETINDEX(TEXTLINE,CMOL,MXMOL,ID,TXTISO)
+C           END OF DATA ENCOUNTERED
+         IF(ID.EQ.0) GO TO 30
+         CALL RDNLTE(NLTEFL,TEXTLINE,TXTISO,NUMSTATE(ID),
+     $        ISOSTATE(1,ID),HSTATE(1,ID),EESTATE(1,ID),NDGSTATE(1,ID))
+         IF(IVIB.EQ.1) THEN
+            CALL VIBTMP(XKT,ALTAV,NLTEFL,NUMSTATE(ID),
+     $           HSTATE(1,ID),NDGSTATE(1,ID),EESTATE(1,ID),
+     $           RATSTATE(1,ID),TXTISO,TEXTLINE)
+         ELSE
+            CALL VIBPOP(XKT,ALTAV,NLTEFL,NUMSTATE(ID),
+     $           HSTATE(1,ID),NDGSTATE(1,ID),EESTATE(1,ID),
+     $           RATSTATE(1,ID),TXTISO,TEXTLINE)
+         END IF
+C                 IF END OF DATA ENCOUNTERED
+         DO I=1,70
+            IF(TEXTLINE(I:I+10).EQ.'END OF DATA') GO TO 30
+         END DO
+C              READ DATA FOR NEXT SPECIE
+         GO TO 10
+      ELSE 
+         CALL DEFNLTEDAT(NUMSTATE,ISOSTATE,HSTATE,EESTATE,NDGSTATE)
+         DO ID=1,MXMOL
+            IF(NUMSTATE(ID).GT.0) THEN
+               CALL DROPSPACE(CMOL(ID),TXTISO)
+               IF(IVIB.EQ.1) THEN
+                  CALL VIBTMP(XKT,ALTAV,NLTEFL,NUMSTATE(ID),
+     $                 HSTATE(1,ID),NDGSTATE(1,ID),EESTATE(1,ID),
+     $                 RATSTATE(1,ID),TXTISO,TEXTLINE)
+               ELSE
+                  CALL VIBPOP(XKT,ALTAV,NLTEFL,NUMSTATE(ID),
+     $                 HSTATE(1,ID),NDGSTATE(1,ID),EESTATE(1,ID),
+     $                 RATSTATE(1,ID),TXTISO,TEXTLINE)
+               END IF
+            END IF
+         END DO
+      END IF
+C
+   30 IPFLAG = 0
       IF(PAVE .LE. 0.5) IPFLAG = 1
       ALFAV=SAMPLE*DV
       ALFAV4= 64.*ALFAV
@@ -219,22 +175,112 @@ C      CALL CHKLNC(VLOF4,VHIF4,(SAMPLE*DV),0)
       RETURN                                                              601090
       END                                                                 601100
 c
+c
+C --------------------------
+      SUBROUTINE GETINDEX(TEXTLINE,CMOL,MXMOL,ID,TXTISO)
+C ------- GET MOLECULE INDEX FROM CMOL ARRAY FOR VIBRATIONAL DATA
+      CHARACTER*80 TEXTLINE
+      CHARACTER*6 CMOL(MXMOL),TXTISO,TXTMOL,BLANKS
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
+     *              NLTEFLE,LNFIL4,LNGTH4                                  B00860
+      DATA BLANKS/'      '/
+
+      I1=0
+      I2=0
+      DO I=1,80
+         IF(TEXTLINE(I:I).NE.'-' .AND. TEXTLINE(I:I).NE.' ') THEN
+            IF(I1.EQ.0) I1=I
+         END IF
+         IF(I1.GT.0 .AND. TEXTLINE(I:I).EQ.' ') THEN
+            IF(I2.EQ.0) I2=I-1
+         END IF
+      END DO
+      TXTISO=TEXTLINE(I1:I2)//BLANKS
+      ID=0
+      DO ISP=1,MXMOL
+         CALL DROPSPACE(CMOL(ISP),TXTMOL)
+         IF(TXTISO.EQ.TXTMOL) THEN
+            ID=ISP
+            WRITE(IPR,*) 'GETINDEX: ',TXTISO,'  INDEX=',ID
+            RETURN
+         END IF
+      END DO
+      WRITE(IPR,*) 'READING NONLTE DATA HEADER FROM TAPE4'
+      WRITE(IPR,*) 'BUT THIS SPECIE ',TXTISO,
+     $     ' NOT FOUND IN MOLECULE LIST'
+C##     STOP 'ERROR READING NLTE DATA FROM TAPE4'
+      RETURN
+      END
+c ----------------------------------------------------------------
+      SUBROUTINE RDNLTE(NLTEFL,TEXTLINE,TXTISO,INUM,
+     $     ISOX,HX,EEX,NDG)
+C
+      include 'lblparams.inc'
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
+     *              NLTEFLE,LNFIL4,LNGTH4                                 B00860
+      DIMENSION ISOX(MAXSTATE),HX(MAXSTATE),EEX(MAXSTATE),NDG(MAXSTATE)
+      CHARACTER*80 TEXTLINE
+      CHARACTER*6 TXTISO
+      CHARACTER*5 HX,BLANKS
+      CHARACTER*1 QUOTE
+      DATA BLANKS/' '/
+      QUOTE=CHAR(39)
+
+      INUM=0
+   50 READ(NLTEFL,940) TEXTLINE
+  940 FORMAT(A80)
+      IF(TEXTLINE(1:2).EQ.'--') RETURN
+      INUM=INUM+1
+      IF(INUM.GT.MAXSTATE) THEN
+         WRITE(IPR,*) 'READING NONLTE DATA FROM TAPE4'
+         WRITE(IPR,*) 'ISOTOPE DATA FOR ',TXTISO,
+     $        ' CONTAINS TOO MANY LINES OF DATA'
+         WRITE(IPR,*) 'NEED TO INCREASE MAX',TXTISO,' IN NONLTE.F'
+         STOP 'TOO MANY NONLTE DATA LINES IN TAPE4'
+      END IF
+      I1=0
+      I2=0
+      DO I=1,80
+         IF(TEXTLINE(I:I).EQ.QUOTE) THEN
+            IF(I1.EQ.0) THEN
+               I1=I
+            ELSE IF(I2.EQ.0) THEN
+               I2=I
+            END IF
+         END IF
+      END DO
+      READ(TEXTLINE(1:I1-1),*) NN,ISOX(INUM)
+      IF(NN.NE.INUM) THEN
+         WRITE(IPR,*) 'ERROR IN TAPE 4 ISOTOPE DATA FOR ',TXTISO
+         WRITE(IPR,*) 'ON LINE INUM'
+         STOP 'NN.NE.INUM IN NONLTE DATA FROM TAPE4'
+      END IF
+      HX(INUM)=TEXTLINE(I1+1:I2-1)//BLANKS
+      READ(TEXTLINE(I2+1:80),*) EEX(INUM),NDG(INUM)
+      GO TO 50
+      END
+c
 c ----------------------------------------------------------------
 c
-      SUBROUTINE VIBPOP(XKT,HT,NLTEFLAG,NUM,HOL,NDEG,EH,RAT,TITMOL)       604860
+      SUBROUTINE VIBPOP(XKT,HT,NLTEFLAG,NUM,HOL,NDEG,EH,RAT,TITMOL,       604860
+     *   TEXTLINE)
 C                                                                         604870
 C                                                                         604880
 C     SUBROUTINE VIBPOP USES THE NON-LTE POPULATION DATA FROM             604890
 C     TAPE4 TO CALCULATE THE VIBRATIONAL POPULATION ENHANCEMENT           604900
 C     RATIOS FOR SELECTED VIBRATIONAL STATES OF H2O,CO2,NO AND O3.        604910
 C                                                                         604920
+      include 'lblparams.inc'
       IMPLICIT REAL*8           (V)                                     ! B00030
 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
 
-      CHARACTER*(*) HOL                                                   604960
+      CHARACTER*5 HOL                                                     604960
+      CHARACTER*80 TEXTLINE
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
 C
@@ -243,19 +289,40 @@ C
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
-      DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),
-     *          VPNE1(26),VPNE2(26),VQNEST(26)
-      DIMENSION NDEG(*),EH(*),RAT(*)
-      CHARACTER*10 TITMOL,HMNLTE                                          605020
+      DIMENSION HOL(MAXSTATE),VQNE(MAXSTATE),VQEQ(MAXSTATE),
+     *    TNE(MAXSTATE),VPNE1(MAXSTATE),VPNE2(MAXSTATE),VQNEST(MAXSTATE)
+      DIMENSION NDEG(MAXSTATE),EH(MAXSTATE),RAT(MAXSTATE)
+      CHARACTER*6 TITMOL,HMNLTE,BLANKS
+      DATA BLANKS/' '/
 C                                                                         605040
-C     SKIP TO BEGINNING OF VIBRATIONAL DATA                               605050
-C                                                                         605060
-       CALL RDSKIP(NLTEFLAG)                                              605070
-C                                                                         605080
 C   READ NLTE VIB POPULATIONS                                             605090
 C                                                                         605100
       XKT= TAVE/RADCN2                                                    605030
-      READ (NLTEFLAG,902)  HMNLTE                                         605110
+      I1=0
+      I2=0
+      DO I=1,80
+         IF(TEXTLINE(I:I).NE.'-' .AND. TEXTLINE(I:I).NE.' ') THEN
+            IF(I1.EQ.0) I1=I
+         END IF
+         IF(I1.GT.0 .AND. TEXTLINE(I:I).EQ.' ') THEN
+            IF(I2.EQ.0) I2=I-1
+         END IF
+      END DO
+      HMNLTE=TEXTLINE(I1:I2)//BLANKS
+      IF(HMNLTE.NE.TITMOL) THEN
+         READ (NLTEFLAG,902) HMNLTE
+         i1=0
+         DO I=1,6
+            IF(HMNLTE(I:I).EQ.' ') I1=I
+         END DO
+         HMNLTE=HMNLTE(I1+1:6)//BLANKS
+      END IF
+      IF(HMNLTE.NE.TITMOL) THEN
+         WRITE(IPR,*) 'READING VIBPOP DATA FROM TAPE4'
+         WRITE(IPR,*) 'EXPECTED PROFILE DATA FOR ',TOTMOL
+         WRITE(IPR,*) 'BUT READ SPECIE ',HMNLTE
+         STOP 'ERROR READING NLTE DATA FROM TAPE4'
+      END IF
       READ (NLTEFLAG,904)  ALT1,(VPNE1(I),I=1,NUM)                        605120
   10  READ (NLTEFLAG,904)  ALT2,(VPNE2(I),I=1,NUM)                        605140
 C*****WOG, 11/06/2000: ALT1 -> AL2:
@@ -304,10 +371,14 @@ C                                                                         605390
      &            VQNEST(I)                                               605560
           END IF                                                          605570
   100 CONTINUE                                                            605580
+C
+C     READ TO THE END OF THE VIBRATIONAL DATA                             605050
+C                                                                         605060
+      CALL RDSKIP(NLTEFLAG,TEXTLINE)                                      605860
 C                                                                         605590
       RETURN                                                              605600
 C                                                                         605610
-  902 FORMAT(A10)                                                         605620
+  902 FORMAT(4x,A6)                                                       605620
   904 FORMAT (F7.0,1P,7E11.4,     /(18X, 6E11.4))                         605630
   906 FORMAT(//,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))                  605640
   920 FORMAT(2X,A10,4G15.5,F10.2,G15.5)                                   605660
@@ -318,7 +389,8 @@ C                                                                         605700
 c
 c ----------------------------------------------------------------
 c
-      SUBROUTINE VIBTMP(XKT,HT,NLTEFLAG,NUM,HOL,NDEG,EH,RAT,TITMOL)       605720
+      SUBROUTINE VIBTMP(XKT,HT,NLTEFLAG,NUM,HOL,NDEG,EH,RAT,TITMOL,       605720
+     *  TEXTLINE)
 C                                                                         604870
 C                                                                         604880
 C     SUBROUTINE VIBTMP USES THE NON-LTE TEMPERATURE DATA FROM            604890
@@ -327,13 +399,15 @@ C     RATIOS FOR SELECTED VIBRATIONAL STATES OF H2O, CO2, NO AND          604910
 C     O3.  THE NLTE VIBRATIONAL TEMPERATURES ARE WITH RESPECT TO          604910
 C     THE GROUND VIBRATIONAL STATE.                                       604910
 C                                                                         604920
+      include 'lblparams.inc'
       IMPLICIT REAL*8           (V)                                     ! B00030
 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
 
-      CHARACTER*(*) HOL                                                   604960
+      CHARACTER*5 HOL                                                     604960
+      CHARACTER*80 TEXTLINE
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
 C                                                                         E09670
@@ -349,19 +423,40 @@ C                                                                         E09670
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
      *                RADCN1,RADCN2 
-      DIMENSION HOL(26),VQNE(26),VQEQ(26),TNE(26),TNESAV(26),
-     *          TEM1(26),TEM2(26) 
-      DIMENSION NDEG(*),EH(*),RAT(*)
-      CHARACTER*10 TITMOL,HMNLTE                                          605820
+      DIMENSION HOL(MAXSTATE),VQNE(MAXSTATE),VQEQ(MAXSTATE),
+     $    TNE(MAXSTATE),TNESAV(MAXSTATE),TEM1(MAXSTATE),TEM2(MAXSTATE) 
+      DIMENSION NDEG(MAXSTATE),EH(MAXSTATE),RAT(MAXSTATE)
+      CHARACTER*6 TITMOL,HMNLTE,BLANKS
+      DATA BLANKS/' '/
 C                                                                         605830
-C     SKIP TO BEGINNING OF VIBRATIONAL DATA                               605840
-C                                                                         605850
-       CALL RDSKIP(NLTEFLAG)                                              605860
-C                                                                         605870
 C   READ NLTE VIB TEMPERATURE                                             605880
 C                                                                         605890
       XKT= TAVE/RADCN2                                                    605900
-      READ (NLTEFLAG,902)  HMNLTE                                         605910
+      I1=0
+      I2=0
+      DO I=1,80
+         IF(TEXTLINE(I:I).NE.'-' .AND. TEXTLINE(I:I).NE.' ') THEN
+            IF(I1.EQ.0) I1=I
+         END IF
+         IF(I1.GT.0 .AND. TEXTLINE(I:I).EQ.' ') THEN
+            IF(I2.EQ.0) I2=I-1
+         END IF
+      END DO
+      HMNLTE=TEXTLINE(I1:I2)//BLANKS
+      IF(HMNLTE.NE.TITMOL) THEN
+         READ (NLTEFLAG,902) HMNLTE
+         i1=0
+         DO I=1,6
+            IF(HMNLTE(I:I).EQ.' ') I1=I
+         END DO
+         HMNLTE=HMNLTE(I1+1:6)//BLANKS
+      END IF
+      IF(HMNLTE.NE.TITMOL) THEN
+         WRITE(IPR,*) 'READING VIBTMP DATA FROM TAPE4'
+         WRITE(IPR,*) 'EXPECTED PROFILE DATA FOR ',TITMOL
+         WRITE(IPR,*) 'BUT READ SPECIE ',HMNLTE
+         STOP 'ERROR READING NLTE DATA FROM TAPE4'
+      END IF
       READ (NLTEFLAG,904)  ALT1,(TEM1(I),I=1,NUM)                         605920
   10  READ (NLTEFLAG,904)  ALT2,(TEM2(I),I=1,NUM)                         605930
 C*****WOG, 11/06/2000: ALT1 -> AL2:
@@ -412,9 +507,12 @@ C
      &        TNESAV(I), TNE(I)                                           606230
   100 CONTINUE                                                            606240
 C                                                                         606250
+C     READ TO THE END OF THE VIBRATIONAL DATA                             605050
+C                                                                         605850
+      CALL RDSKIP(NLTEFLAG,TEXTLINE)                                      605860
       RETURN                                                              606260
 C                                                                         606270
-  902 FORMAT(A10)                                                         606280
+  902 FORMAT(4x,A6)                                                       606280
   904 FORMAT(F7.0,7F11.3/(18X,6F11.3))                                    606290
   906 FORMAT(//,5X,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))               606300
   920 FORMAT(2X,A10,4G12.5,2F9.2)                                         606320
@@ -425,19 +523,22 @@ C                                                                         606360
 
 c ----------------------------------------------------------------
 
-      SUBROUTINE RDSKIP(NTAPE)                                            606380
+      SUBROUTINE RDSKIP(NTAPE,TEXTLINE)                                   606380
       CHARACTER *1 HRD,HMINUS                                             606390
+      CHARACTER*80 TEXTLINE
       DATA HMINUS /'-'/                                                   606400
-  10  READ(NTAPE,900) HRD                                                 606410
-  900 FORMAT(2X,A1)                                                       606420
-      IF(HRD.EQ.HMINUS) RETURN                                            606430
+  10  READ(NTAPE,900,END=50) TEXTLINE
+  900 FORMAT(A80)                                                         606420
+      IF(TEXTLINE(1:2).EQ.'--') RETURN                                    606430
       GO TO 10                                                            606440
+   50 RETURN
       END                                                                 606450
 
 c ----------------------------------------------------------------
 
       SUBROUTINE LININT(HT,ALT1,ALT2,NUM,T1,T2,TNE)                       606460
-      DIMENSION T1(26),T2(26),TNE(26)                                     606470
+      include 'lblparams.inc'
+      DIMENSION T1(MAXSTATE),T2(MAXSTATE),TNE(MAXSTATE)                   606470
 C*****WOG 11/03/2000
 C*****Correct for divide by zero if two altitudes are the same
 C*****0.001 = 1 meter, small enough to use average, large enough to
@@ -521,7 +622,7 @@ C                                                                         B00440
 C                                                                         B00450
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   B00460
 C                                                                         B00470
-      parameter (n_absrb=5050)
+      include 'lblparams.inc'
 C                                                                         B00480
 C     Common blocks from analytic derivatives
 C     -------------------------
@@ -572,7 +673,7 @@ C                                                                         B00650
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),           B00790
      *                CF3(102),CER(102)                                   B00800
 C
-      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS, NUMZ = 101)  
+      PARAMETER (NUMZ = 101)  
 c
       COMMON /FNSHQ/ IFN,F1(NFMX, NUMZ),F2(NFMX, NUMZ),
      $     F3(NFMX, NUMZ), FG(NFMX)
@@ -583,7 +684,6 @@ c
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
 C                                                                         B00870
-      PARAMETER (MXMOL=39)   
 C                                                                         B00890
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,  
@@ -1118,6 +1218,7 @@ C                                                                         B03900
       END                                                                 B03910
       SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)                             B04840
 C                                                                         B04850
+      include 'lblparams.inc'
       IMPLICIT REAL*8           (V)                                     ! B04860
 C                                                                         B04870
       CHARACTER*1 FREJ(250),HREJ,HNOREJ
@@ -1152,11 +1253,8 @@ C                                                                         B05000
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),           B05060
      *                CF3(102),CER(102)                                   B05070
 
-      COMMON /VBNLTE/ RATH2O(8),RATCO2(26),RATO3(18),RATCO(3),RATNO(3),   603420
-     &               NUMH2O,NUMCO2,NUMO3,NUMCO,NUMNO                      603430
+      COMMON /VBNLTE/ RATSTATE(MAXSTATE,MXMOL),NUMSTATE(MXMOL)
 C                                                                         B05080
-      PARAMETER (MXMOL=39) 
-C                                                                         B05100
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX, 
      *              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,      B05140
@@ -1354,53 +1452,20 @@ c ---from nlte:
 C                                 
 C     PICK OUT MOLECULAR TYPE 
 C                                                                               
-C     H2O LINE                
 C                                                                               
-             IF (M.EQ.1) THEN
-                 IF (NLOW.GT.NUMH2O) STOP 'NLOW GT NUMH2O IN LNCORQ'
-                 IF (NLOW.GT.0) RLOW=RATH2O(NLOW)
-                 IF (NUPP.GT.NUMH2O) STOP 'NUPP GT NUMH2O IN LNCORQ'
-                 IF (NUPP.GT.0) RUPP=RATH2O(NUPP)
-C                                                                       
-C     CO2 LINE  
-C                                                      
-             ELSE IF (M.EQ.2) THEN
-                 IF (NLOW.GT.NUMCO2) STOP 'NLOW GT NUMCO2 IN LNCORQ'
-                 IF (NLOW.GT.0) RLOW=RATCO2(NLOW)    
-                 IF (NUPP.GT.NUMCO2) STOP 'NUPP GT NUMCO2 IN LNCORQ'
-                 IF (NUPP.GT.0) RUPP=RATCO2(NUPP)
-C                               
-C     O3 LINE 
-C                          
-             ELSE IF (M.EQ.3) THEN
-                 IF (NLOW.GT.NUMO3) STOP 'NLOW GT NUMO3 IN LNCORQ'
-                 IF (NLOW.GT.0) RLOW=RATO3(NLOW)
-                 IF (NUPP.GT.NUMO3) STOP 'NUPP GT NUMO3 IN LNCORQ' 
-                 IF (NUPP.GT.0) RUPP=RATO3(NUPP)
-C                                       
-C     CO LINE  
-C                                               
-             ELSE IF (M.EQ.5) THEN
-                 IF (NLOW.GT.NUMCO ) STOP 'NLOW GT NUMCO  IN LNCORQ' 
-                 IF (NLOW.GT.0) RLOW=RATCO (NLOW)
-                 IF (NUPP.GT.NUMCO ) STOP 'NUPP GT NUMCO  IN LNCORQ'
-                 IF (NUPP.GT.0) RUPP=RATCO (NUPP) 
-C                        
-C     NO LINE 
-C                
-             ELSE IF (M.EQ.8) THEN
-                 IF (NLOW.GT.NUMNO) STOP 'NLOW GT NUMNO IN LNCORQ'
-                 IF (NLOW.GT.0) RLOW=RATNO(NLOW)
-                 IF (NUPP.GT.NUMNO) STOP 'NUPP GT NUMNO IN LNCORQ'
-                 IF (NUPP.GT.0) RUPP=RATNO(NUPP)
-             ELSE
-                 PRINT 900,M  
-  900            FORMAT('  MOL  IN TROUBLE',I10) 
-                 SABS(I)=0.                                  
-                 SRAD(I)=0.  
-                 SPPSP(I)=0. 
-                 GO TO 30
-             END IF 
+            IF(NUMSTATE(M).GT.0) THEN
+              IF (NLOW.GT.NUMSTATE(M)) STOP 'NLOW GT NUMSTATE IN LNCORQ'
+              IF (NLOW.GT.0) RLOW=RATSTATE(NLOW,M)
+              IF (NUPP.GT.NUMSTATE(M)) STOP 'NUPP GT NUMSTATE IN LNCORQ'
+              IF (NUPP.GT.0) RUPP=RATSTATE(NUPP,M)
+            ELSE
+              PRINT 900,M  
+  900         FORMAT('  MOL  IN TROUBLE',I10) 
+              SABS(I)=0.                                  
+              SRAD(I)=0.  
+              SPPSP(I)=0. 
+              GO TO 30
+            END IF 
 C                                                                        
 C     RLOW AND RUPP NOW SET 
 C                                                                         
@@ -1510,6 +1575,7 @@ C     CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC  B07340
 C                                                                         B07350
       CHARACTER*8      XID,       HMOLID,      YID   
       Real*8               SECANT,       XALTZ
+      inlcude 'lblparams.inc'
 C                                                                         B07370
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B07380
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B07390
@@ -1526,7 +1592,7 @@ C                                                                         B07370
      *                CF3(102),CER(102)                                   B07500
       COMMON /IOU/ IOUT(250)                                              B07510
 C                                                                         B07520
-      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS, NUMZ = 101)  
+      PARAMETER (NUMZ = 101)  
       COMMON /FNSHQ/ IFN,F1(NFMX, NUMZ),F2(NFMX, NUMZ),F3(NFMX, NUMZ),
      $     FG(NFMX)
 c
@@ -1901,7 +1967,7 @@ C                                                                         D00020
 C                                                                         D00040
 C     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4    D00050
 C                                                                         D00060
-      PARAMETER (MXMOL=39) 
+      include 'lblparams.inc'
 C                                                                         D00080
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           D00110
@@ -1941,8 +2007,7 @@ C                                                                         D00300
      *              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)          D00420
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D                          D00430
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER
-      COMMON /VBNLTE/ RATH2O(8),RATCO2(26),RATO3(18),RATCO(3),RATNO(3),   600110
-     &               NUMH2O,NUMCO2,NUMO3,NUMCO,NUMNO                      600120
+      COMMON /VBNLTE/ RATSTATE(MAXSTATE,MXMOL),NUMSTATE(MXMOL)
 C                                                                         D00440
       REAL L4TIM,L4TMR,L4TMS,LOTHER
       DIMENSION MEFDP(64)                                                 D00450
@@ -2170,50 +2235,18 @@ C  For NLTE lines:
              NLOW=MOD(MFULL/1000,100)
              NUPP=MFULL/100000
 c             DELTA=EXP(-FREQ/XKT)
-c     xkt=tave/radcn2=1/beta 
+c             xkt=tave/radcn2=1/beta 
              DELTA=EXP(-FREQ*BETA)
 C 
 C     PICK OUT MOLECULAR TYPE
 C
 C     H2O LINE 
 C
-             IF (M.EQ.1) THEN
-                 IF (NLOW.GT.NUMH2O) STOP 'NLOW GT NUMH2O IN LNCO2Q'
-                 IF (NLOW.GT.0) RLOW=RATH2O(NLOW)
-                 IF (NUPP.GT.NUMH2O) STOP 'NUPP GT NUMH2O IN LNCO2Q'
-                 IF (NUPP.GT.0) RUPP=RATH2O(NUPP)
-C
-C     CO2 LINE
-C
-             ELSE IF (M.EQ.2) THEN
-                 IF (NLOW.GT.NUMCO2) STOP 'NLOW GT NUMCO2 IN LNCO2Q'
-                 IF (NLOW.GT.0) RLOW=RATCO2(NLOW)
-                 IF (NUPP.GT.NUMCO2) STOP 'NUPP GT NUMCO2 IN LNCO2Q'
-                 IF (NUPP.GT.0) RUPP=RATCO2(NUPP)
-C
-C     O3 LINE
-C
-             ELSE IF (M.EQ.3) THEN
-                 IF (NLOW.GT.NUMO3) STOP 'NLOW GT NUMO3 IN LNCO2Q' 
-                 IF (NLOW.GT.0) RLOW=RATO3(NLOW) 
-                 IF (NUPP.GT.NUMO3) STOP 'NUPP GT NUMO3 IN LNCO2Q' 
-                 IF (NUPP.GT.0) RUPP=RATO3(NUPP)
-C
-C     CO LINE
-C
-             ELSE IF (M.EQ.5) THEN 
-                 IF (NLOW.GT.NUMCO ) STOP 'NLOW GT NUMCO  IN LNCO2Q'
-                 IF (NLOW.GT.0) RLOW=RATCO (NLOW) 
-                 IF (NUPP.GT.NUMCO ) STOP 'NUPP GT NUMCO  IN LNCO2Q' 
-                 IF (NUPP.GT.0) RUPP=RATCO (NUPP) 
-C
-C     NO LINE
-C
-             ELSE IF (M.EQ.8) THEN
-                 IF (NLOW.GT.NUMNO) STOP 'NLOW GT NUMNO IN LNCO2Q' 
-                 IF (NLOW.GT.0) RLOW=RATNO(NLOW)
-                 IF (NUPP.GT.NUMNO) STOP 'NUPP GT NUMNO IN LNCO2Q' 
-                 IF (NUPP.GT.0) RUPP=RATNO(NUPP) 
+             IF(NUMSTATE(M).GT.0) THEN
+               IF (NLOW.GT.NUMSTATE(M)) STOP 'NLOW GT NUMH2O IN LNCO2Q'
+               IF (NLOW.GT.0) RLOW=RATSTATE(NLOW,M)
+               IF (NUPP.GT.NUMSTATE(M)) STOP 'NUPP GT NUMH2O IN LNCO2Q'
+               IF (NUPP.GT.0) RUPP=RATSTATE(NUPP,M)
              ELSE
                  RLOW=0.
                  RUPP=0.
@@ -2879,3 +2912,153 @@ C                                                                         D07860
       RETURN                                                              D07870
 C                                                                         D07880
       END                                                                 D07890
+C---------------------
+      SUBROUTINE DEFNLTEDAT(NUMSTATE,ISOSTATE,HSTATE,EESTATE,NDGSTATE)
+
+      include 'lblparams.inc'
+C                                                                         D00080
+      CHARACTER*5 HSTATE
+      DIMENSION ISOSTATE(MAXSTATE,MXMOL),HSTATE(MAXSTATE,MXMOL),
+     $     EESTATE(MAXSTATE,MXMOL),NDGSTATE(MAXSTATE,MXMOL),
+     $     NUMSTATE(MXMOL)
+      PARAMETER (MAXH2O=8,MAXCO2=26,MAXO3=18,MAXCO=3,MAXNO=3)
+      CHARACTER*5 AH2O,ACO2,AO3,ACO,ANO                                   600144
+      common /cmol_nam/ cmol(mxmol),cspc(mxspc)
+      CHARACTER*6  CMOL,CSPC
+      CHARACTER*80 ISOMOL(5)
+      DATA ISOMOL/'H2O','CO2','O3','CO','NO'/
+      DIMENSION JSOH2O(MAXH2O),AH2O(MAXH2O),FH2O(MAXH2O),MDGH2O(MAXH2O),  600150
+     &          JSOCO2(MAXCO2),ACO2(MAXCO2),FCO2(MAXCO2),MDGCO2(MAXCO2),  600160
+     &          JSOO3(MAXO3)  ,AO3 (MAXO3) ,FO3 (MAXO3) ,MDGO3 (MAXO3),   600170
+     &          JSOCO(MAXCO)  ,ACO (MAXCO) ,FCO (MAXCO) ,MDGCO (MAXCO),   600180
+     &          JSONO(MAXNO)  ,ANO (MAXNO) ,FNO (MAXNO) ,MDGNO (MAXNO)    600190
+C 
+      DATA MDGH2O/8*1/,MDGO3/18*1/,MDGCO/3*1/,MDGNO/3*1/                  600250
+      DATA JSOH2O/8*1/,JSOCO2/26*1/,JSOO3/18*1/,JSOCO/3*1/,JSONO/3*1/     600250
+C                                                                         600270
+      DATA  (AH2O(I),FH2O(I),I=1,8)/                                      600280
+     1      '000' ,     0.   ,                                            600290
+     2      '010' ,  1594.750,                                            600300
+     3      '020' ,  3151.630,                                            600310
+     4      '100' ,  3657.053,                                            600320
+     5      '001' ,  3755.930,                                            600330
+     6      '030' ,  4666.793,                                            600340
+     7      '110' ,  5234.977,                                            600350
+     8      '011' ,  5333.269/                                            600360
+C                                                                         600370
+      DATA  (ACO2(I),FCO2(I),MDGCO2(I),I=1, 9)/                           600380
+     1      '00001' ,    0.  , 1 ,                                        600390
+     2      '01101' ,  667.380,2 ,                                        600400
+     3      '10002' , 1285.409,1 ,                                        600410
+     4      '02201' , 1335.132,2 ,                                        600420
+     5      '10001' , 1388.185,1 ,                                        600430
+     6      '11102' , 1932.470,2 ,                                        600440
+     7      '03301' , 2003.246,2 ,                                        600450
+     8      '11101' , 2076.856,2 ,                                        600460
+     9      '00011' , 2349.143,1 /                                        600470
+      DATA  (ACO2(I),FCO2(I),MDGCO2(I),I=10,26)/                          600380
+     Z      '20003' , 2548.366,1 ,                                        600470
+     Z      '12202' , 2585.022,2 ,                                        600470
+     Z      '20002' , 2671.143,1 ,                                        600470
+     Z      '04401' , 2671.717,2 ,                                        600470
+     Z      '12201' , 2760.725,2 ,                                        600470
+     Z      '20001' , 2797.135,1 ,                                        600470
+     A      '01111' , 3004.012,2 ,                                        600480
+     1      '10012' , 3612.842,1 ,                                        600490
+     2      '02211' , 3659.273,2 ,                                        600500
+     3      '10011' , 3714.783,1 ,                                        600510
+     Z      '11112' , 4247.706,2 ,                                        600470
+     Z      '03311' , 4314.914,2 ,                                        600470
+     Z      '11111' , 4390.629,2 ,                                        600470
+     4      '20013' , 4853.623,1 ,                                        600520
+     Z      '04411' , 4970.931,1 ,                                        600470
+     5      '20012' , 4977.834,1 ,                                        600530
+     6      '20011' , 5099.660,1 /                                        600540
+C                                                                         600550
+      DATA (AO3(I),FO3(I),I=1,18)/                                        600560
+     1     '000' ,    0.   ,                                              600570
+     2     '010' ,  700.931,                                              600580
+     3     '001' , 1042.084,                                              600590
+     4     '100' , 1103.140,                                              600600
+     5     '020' , 1399.275,                                              600610
+     6     '011' , 1726.528,                                              600620
+     7     '110' , 1796.261,                                              600630
+     8     '002' , 2057.892,                                              600640
+     9     '101' , 2110.785,                                              600650
+     A     '200' , 2201.157,                                              600660
+     1     '111' , 2785.245,                                              600670
+     2     '003' , 3041.200,                                              600680
+     3     '004' , 3988.  ,                                               600690
+     4     '005' , 4910.  ,                                               600700
+     5     '006' , 5803.  ,                                               600710
+     6     '007' , 6665.  ,                                               600720
+     7     '008' , 7497.  ,                                               600730
+     8     '009' , 8299.  /                                               600740
+C                                                                         600750
+      DATA (ACO(I),FCO(I),I=1,3)/                                         600760
+     1     '0' ,    0.  ,                                                 600770
+     2     '1' , 2143.272,                                                600780
+     3     '2' , 4260.063/                                                600790
+C                                                                         600800
+      DATA (ANO(I),FNO(I),I=1,3)/                                         600810
+     1      '0' ,    0.  ,                                                600820
+     2      '1' , 1878.077,                                               600830
+     3      '2' , 3724.067/                                               600840
+C
+C
+      CALL GETINDEX(ISOMOL(1),CMOL,MXMOL,ID,TXTISO)
+      NUMSTATE(ID) = MAXH2O
+      DO I=1,MAXH2O
+         ISOSTATE(I,ID)=JSOH2O(I)
+         NDGSTATE(I,ID)=MDGH2O(I)
+         EESTATE(I,ID)=FH2O(I)
+         HSTATE(I,ID)=AH2O(I)
+      END DO
+      CALL GETINDEX(ISOMOL(2),CMOL,MXMOL,ID,TXTISO)
+      NUMSTATE(ID) = MAXCO2
+      DO I=1,MAXCO2
+         ISOSTATE(I,ID)=JSOCO2(I)
+         NDGSTATE(I,ID)=MDGCO2(I)
+         EESTATE(I,ID)=FCO2(I)
+         HSTATE(I,ID)=ACO2(I)
+      END DO
+      CALL GETINDEX(ISOMOL(3),CMOL,MXMOL,ID,TXTISO)
+      NUMSTATE(ID) = MAXO3
+      DO I=1,MAXO3
+         ISOSTATE(I,ID)=JSOO3(I)
+         NDGSTATE(I,ID)=MDGO3(I)
+         EESTATE(I,ID)=FO3(I)
+         HSTATE(I,ID)=AO3(I)
+      END DO
+      CALL GETINDEX(ISOMOL(4),CMOL,MXMOL,ID,TXTISO)
+      NUMSTATE(ID) = MAXCO
+      DO I=1,MAXCO
+         ISOSTATE(I,ID)=JSOCO(I)
+         NDGSTATE(I,ID)=MDGCO(I)
+         EESTATE(I,ID)=FCO(I)
+         HSTATE(I,ID)=ACO(I)
+      END DO
+      CALL GETINDEX(ISOMOL(5),CMOL,MXMOL,ID,TXTISO)
+      NUMSTATE(ID) = MAXNO
+      DO I=1,MAXNO
+         ISOSTATE(I,ID)=JSONO(I)
+         NDGSTATE(I,ID)=MDGNO(I)
+         EESTATE(I,ID)=FNO(I)
+         HSTATE(I,ID)=ANO(I)
+      END DO
+C
+      RETURN
+      END
+c
+c--------------------------------------
+      SUBROUTINE DROPSPACE(TXTIN,TXTOUT)
+      CHARACTER*6 TXTIN,TXTOUT,BLANKS
+      DATA BLANKS/'      '/
+C      
+      DO I=1,6
+         IF(TXTIN(I:I).NE.' ') THEN
+            TXTOUT=TXTIN(I:6)//BLANKS
+            RETURN
+         END IF
+      END DO
+      END
