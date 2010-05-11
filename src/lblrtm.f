@@ -1134,13 +1134,16 @@ c
 c
       DATA PI /3.1415926535898 /
 c
-c    Constants from NIST 01/11/2002
+c    Constants from NIST May 2010 (and other constants that will need modification
+c    when moving to other atmospheres)
 c
       DATA PLANCK / 6.62606876E-27 /, BOLTZ  / 1.3806503E-16 /,
      *     CLIGHT / 2.99792458E+10 /,
      *     AVOGAD / 6.02214199E+23 /, ALOSMT / 2.6867775E+19 /,
-     *     GASCON / 8.314472  E+07 /
-     *     RADCN1 / 1.191042722E-12 /, RADCN2 / 1.4387752    /
+     *     GASCON / 8.314472E+07 /
+     *     RADCN1 / 1.191042722E-12 /, RADCN2 / 1.4387752    /,
+     *     GRAV   / 9.80665E+02/, CPDAIR /1.00464/,
+     *     AIRMWT / 28.964/, SECDY /8.64E+04/
 c
 c     Pi was obtained from   PI = 2.*ASIN(1.)                             A03980
 c
