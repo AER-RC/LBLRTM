@@ -96,7 +96,7 @@ C                                                                         B00650
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   B00700
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        B00710
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,            B00720
@@ -834,7 +834,7 @@ C                                                                         B05000
       COMMON /XSUB/   VBOT,VTOP,VFT,DUM(7)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        B05050
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
@@ -1302,7 +1302,7 @@ C                                                                         B10350
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B10370
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B10380
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   B10400
       COMMON /SUB1/ MAX1,MAX2,MAX3,NLIM1,NLIM2,NLIM3,NLO,NHI,DVR2,DVR3,   B10410
      *              N1R1,N2R1,N1R2,N2R2,N1R3,N2R3                         B10420
@@ -2295,7 +2295,7 @@ C                                                                         C00170
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   C00190
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    C00200
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       DIMENSION SCOR(42,9),RHOSLF(*),ALFD1(42,9)    
       COMMON /SMOLEC/ W(42,9),ND(42,9),FAD                                C00230
       COMMON /XMOLEC/ NV(42),IVIB(42,2,9),XR(42),ROTFAC(42),QV0(42)
@@ -2730,7 +2730,7 @@ C                                                                         D00300
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1 ,V2 ,TBOUND,    D00320
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    D00330
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D00350
      *               DPTFC,ILIN4,ILIN4T                                   D00360
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D00370
@@ -3345,7 +3345,7 @@ C                                                                         D04610
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1H,V2H,TBOUND,    D04630
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    D04640
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,         D04660
      *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL                      D04670
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D04680
@@ -3760,7 +3760,7 @@ C**********************************************************************   E00090
 C                                                                         E00100
 C     IFIL CARRIES FILE INFORMATION                                       E00110
 C                                                                         E00120
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
+      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,
      *           MXTRAC=22)
 C
@@ -4043,7 +4043,7 @@ C**********************************************************************   E00090
 C                                                                         E00100
 C     IFIL CARRIES FILE INFORMATION                                       E00110
 C                                                                         E00120
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
+      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,
      *           MXTRAC=22)
 C
@@ -4205,7 +4205,7 @@ C                                                                         E02610
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   E02630
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    E02640
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   E02660
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        E02670
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,            E02680
@@ -4979,7 +4979,7 @@ C                                                                         E09670
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000)                         E09770
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E09780
       COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs)   
@@ -5085,7 +5085,7 @@ C                                                                         E10530
       COMMON /XSCINF/ HWHM,JEMIT,JFN,SAMPLE,SCANID,NPTS,XF(851)           E10690
 C                                                                         E10700
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000)                         E10720
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520)           E10730
       COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs)   

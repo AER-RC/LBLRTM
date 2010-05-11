@@ -349,7 +349,7 @@ C
       CHARACTER*1 CONE,CTWO,CTHREE,CFOUR,CA,CB,CC,CDOL,CPRCNT,CBLNK       A03440
       CHARACTER*1 CMRG(2),CXIDA(80)                                       A03450
 C                                                                         A02940
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
+      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,
      *                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,
      *                MXTRAC=22,MXSPC=5)
 C
@@ -1157,7 +1157,7 @@ c                            RADCN2 = PLANCK*CLIGHT/BOLTZ                 A04000
 c
       BLOCK DATA                                                          A07600
       IMPLICIT REAL*8           (V)
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3)
+      PARAMETER (MXFSC=600, MXLAY=MXFSC+3)
       COMMON /FLFORM/ CFORM                                               A03270
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),            A07610
      *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,          A07620
@@ -1889,7 +1889,7 @@ C**********************************************************************
 C     XLAYER CONTROLS LAYER BY LAYER CALCULATION                          A11250
 C**********************************************************************
 C                                                                         A11260
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
+      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,
      *     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22,
      *     mxspc=5)
 C
@@ -3967,7 +3967,7 @@ C                                                                         A16880
 C                                                                         A16900
 C     OPPATH CALLS LBLATM AND CALLS PATH FIRST                            A16910
 C                                                                         A11260
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
+      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,
      *     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22)
 C                                                                         A16920
       COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(MXMOL,MXLAY),
@@ -4338,7 +4338,7 @@ C     SUBROUTINE PATH INITIALIZES LINFIL AND INPUTS LAYER PARAMETERS      A19220
 C     SUBROUTINE PATH INPUTS AND OUTPUTS HEADER FROM LINFIL AND           A19230
 C     INPUTS AND OUTPUTS PATH PARAMETERS FOR EACH LAYER                   A19240
 C                                                                         A19250
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
+      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,
      *     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22)
 C
       COMMON COMSTR(250,9)                                                A19260
@@ -5855,7 +5855,7 @@ c -1 = downwelling
 c
       IMPLICIT REAL*8 (V)
 
-      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXMOL=39)
+      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXMOL=39)
 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,
      *              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,
@@ -5937,7 +5937,7 @@ c subroutine to convert layer derivatives to level derivatives
 c
       IMPLICIT REAL*8 (V)
 
-      PARAMETER (MXFSC=200,MXLAY=MXFSC+3,MXZMD=6000,
+      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)
 
 c iup_dn is used to determine what to map

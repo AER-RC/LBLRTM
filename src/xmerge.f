@@ -50,7 +50,7 @@ c
 c
       COMMON /XME/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(5000)
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H00260
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),                H00270
      *            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),                H00280
@@ -168,7 +168,7 @@ C
 C                                                                         H00820
       IMPLICIT REAL*8           (V)                                     ! H00830
 C                                                                         H00840
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
+      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)
 C
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         H00850
@@ -198,7 +198,7 @@ C                                                                         H01010
 C                                                                         H01050
       COMMON /XMI/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(4819)                   H01060
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,
      &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac 
 c
@@ -274,7 +274,7 @@ C                                                                         H01630
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H01710
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -446,7 +446,7 @@ C                                                                         H02640
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H02720
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -696,7 +696,7 @@ C                                                                         H05050
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H05130
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -1005,7 +1005,7 @@ C                                                                         H08080
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H08090
 C                                                                         H08100
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C
       DATA I_1/1/
 C                                                                         H08120
@@ -1142,7 +1142,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H08120
       DATA I_1/1/
 C                                                                   
@@ -2476,7 +2476,7 @@ C                                                                         H16580
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H16660
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -2826,7 +2826,7 @@ C                                                                         H19400
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H19480
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -3570,7 +3570,7 @@ C                                                                         H24470
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H24550
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -3887,7 +3887,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   H27600
 C                                                                         H27610
       DIMENSION NEWEM(*),NEWTR(*)                                         H27620
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H27640
       REAL NEWEM,NEWTR                                                    H27650
 C                                                                         H27660
@@ -5780,7 +5780,7 @@ C                                                                         H16580
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H16660
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -6166,7 +6166,7 @@ C                                                                         H19400
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H19480
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -6576,7 +6576,7 @@ c********************
       character*20 h_radtot,h_kfile,h_k_od_molec
 
 c for layer2level (if imoldq <> -99)
-      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=39)
+      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39)
       common /dlaydlev/ilevdx,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
@@ -6746,7 +6746,7 @@ c********************
       character*20 h_radtot,h_kfile
 
 c for layer2level (if imoldq <> -99)
-      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=39)
+      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39)
       common /dlaydlev/ilevdx,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
@@ -6938,7 +6938,7 @@ c********************
       character*20 h_radtot,h_kfile,h_k_od_molec
 
 c for layer2level (if imoldq <> -99)
-      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=39)
+      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39)
       common /dlaydlev/ilevdx,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
@@ -7103,7 +7103,7 @@ c********************
       character*20 h_radtot,h_kfile
 
 c for layer2level (if imoldq <> -99)
-      parameter (MXFSC=200, MXLAY=MXFSC+3, MXMOL=39)
+      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39)
       common /dlaydlev/ilevdx,imoldq,iupdwn,
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)
 
@@ -7514,7 +7514,7 @@ C                                                                         H31030
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H31110
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -7733,7 +7733,7 @@ C                                                                         H33070
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H33150
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -8105,7 +8105,7 @@ C                                                                         H36580
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         H36660
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -8492,7 +8492,7 @@ C     ROUTINE TO ADD ABSORPTION AND SCATTERING TO THE TRANSMITTANCE       H40460
 C     VALUES AT EACH POINT. THE AEROSOL VALUES ARE STORED IN              H40470
 C     COMMON ABSORB AND COMMON SCATTR.                                    H40480
 C                                                                         H40490
-      PARAMETER (MXFSC=200, MXLAY=MXFSC+3,MXZMD=6000,
+      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,
      *           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)
 C
       COMMON R1(2410)                                                     H40500
