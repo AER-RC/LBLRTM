@@ -15,7 +15,7 @@ CPATH = ..\\src\\
 exec_path = ..\\
 
 CDOTO = gnu_gfortran_dbl.o
-exec  = lblrtm_v11.8_gnu_windows_gfortran_dbl
+exec  = lblrtm_v11.8.1_gnu_windows_gfortran_dbl
 
 OUTPUT = $(exec_path)$(exec)
 

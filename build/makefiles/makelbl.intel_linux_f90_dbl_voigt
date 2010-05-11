@@ -16,7 +16,7 @@ CPATH = ../src/
 exec_path = ../
 
 CDOTO = intel_linux_dbl.o/
-exec  = lblrtm_v11.8_voigt_intel_linux_ifc_dbl
+exec  = lblrtm_v11.8.1_voigt_intel_linux_ifc_dbl
 
 OUTPUT = $(exec_path)$(exec)
 
