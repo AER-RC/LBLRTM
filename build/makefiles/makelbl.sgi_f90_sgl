@@ -16,7 +16,7 @@ CPATH = ../src/
 exec_path = ../
 
 CDOTO = sgi_sgl.o/
-exec  = lblrtm_v11.7_sgi_f90_sgl
+exec  = lblrtm_v11.8_sgi_f90_sgl
 
 OUTPUT = $(exec_path)$(exec)
 
