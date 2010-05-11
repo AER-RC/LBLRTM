@@ -1,5 +1,27 @@
+LBLRTM v11.8.1
+May 11, 2010
+
+1) lblatm.f
+
+   - Removed BTZ and RGAS variables, replaced with BOLTZ and GASCON from constant
+  data block in lblrtm.f
+
+  - Fixed bug in which if REF_LAT is 0.0 on the input file, it was reset to 45.  
+  Now using string read for ref_lat variable and converting afterwards.
+
+  - Revised gravity formulation to use "grav" constant rather
+  than hard-wired value of 9.80612 in the formula for g0.
+
+2) Added gravity, specific heat of air, molecular weight of air, sec/day to NIST data 
+block in rrtm.f; Updated NIST constants in lblrtm.f; Modified common blocks accordingly; 
+removed AIRMWT data statement from lblatm.f
+
+3) lbllow.f: removed AIRMWT data statement 
+
 LBLRTM_v11.8
 May 2010
+
+NOTE: In tagging v11.8, I did not check in the makefiles so the compile will still produce v11.7
 
 1) The non-LTE routines have been updated to read an updated TAPE4 input format. 
    - The updated TAPE4 format puts the vibrational state information for each molecule 
