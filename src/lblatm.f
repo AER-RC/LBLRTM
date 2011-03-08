@@ -3,17 +3,25 @@ C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
 C
-      SUBROUTINE LBLATM                                                  FA00010
-C
 C  --------------------------------------------------------------------------
+C |  Copyright ©, Atmospheric and Environmental Research, Inc., 2011         |
 C |                                                                          |
-C |  Copyright 2002 - 2009, Atmospheric & Environmental Research, Inc. (AER).|
-C |  This software may be used, copied, or redistributed as long as it is    |
-C |  not sold and this copyright notice is reproduced on each copy made.     |
-C |  This model is provided as is without any express or implied warranties. |
+C |  All rights reserved. This source code is part of the LBLRTM software    |
+C |  and is designed for scientific and research purposes. Atmospheric and   |
+C |  Environmental Research, Inc. (AER) grants USER the right to download,   |
+C |  install, use and copy this software for scientific and research         |
+C |  purposes only. This software may be redistributed as long as this       |
+C |  copyright notice is reproduced on any copy made and appropriate         |
+C |  acknowledgment is given to AER. This software or any modified version   |
+C |  of this software may not be incorporated into proprietary software or   |
+C |  commercial software offered for sale.                                   |
+C |                                                                          |
+C |  This software is provided as is without any express or implied          |
+C |  warranties.                                                             |
 C |                       (http://www.rtweb.aer.com/)                        |
-C |                                                                          |
 C  --------------------------------------------------------------------------
+C
+      SUBROUTINE LBLATM                                                  FA00010
 C
 C                                                                        FA00020
       IMPLICIT REAL*8           (V)                                     !FA00030
@@ -7817,7 +7825,7 @@ c      REAL BTZ
 
 C CALCULATE GRAVITY AT REFERENCE LATITUDE AT SURFACE
 
-      G0 = GRAV - 0.02586*COS(2.0*PI*REF_LAT/180.0)
+      G0 = (GRAV*1.E-2) - 0.02586*COS(2.0*PI*REF_LAT/180.0)
 
 C CALCULATE THE NUMBER DENSITY OF TOTAL AIR MOLECULES [MOLEC/CM^3]
 C CALCULATE THE COMPRESSIBILITY FACTOR (COMP_FAC) FOR THE 
@@ -7825,7 +7833,7 @@ C IDEAL GAS LAW
       XMASS_RATIO = XMASS_H2O/XMASS_DRY
       DO 10 J=1,ILVL
          DT = TM(J) - 273.15
-         TOTAL_AIR = PM(J)*1.0E-4/(BOLTZ*TM(J))
+         TOTAL_AIR = PM(J)*1.0E+3/(BOLTZ*TM(J))
          DRY_AIR = TOTAL_AIR - DENW(J)
          H2O_MIXRAT(J) = DENW(J)/DRY_AIR
          CHIM = XMASS_RATIO*H2O_MIXRAT(J)
@@ -7866,7 +7874,8 @@ C CONVERT REFERENCE ALTITUDE TO METERS
 
             XINT_TOT = C1*Y + 0.5*(C2-C1*ALPHA)*Y**2 + 
      &           0.3333*(C3-C2*ALPHA+C1*ALPHA**2)*Y**3
-            XINT_TOT =  -XINT_TOT*GASCON/(XMASS_DRY*GAVE*B)
+
+            XINT_TOT =  -XINT_TOT*(GASCON*1.0E-7)/(XMASS_DRY*GAVE*B)
 
             ZTEMP(I+1) = ZTEMP(I) + XINT_TOT*COMP_FACTOR(I)
             ZMDL(I+1) = ZTEMP(I+1)/1000.

@@ -2,21 +2,29 @@ C     path:      $Source$
 C     author:    $Author$
 C     revision:  $Revision$
 C     created:   $Date$
-
+C
+C  --------------------------------------------------------------------------
+C |  Copyright ©, Atmospheric and Environmental Research, Inc., 2011         |
+C |                                                                          |
+C |  All rights reserved. This source code is part of the LBLRTM software    |
+C |  and is designed for scientific and research purposes. Atmospheric and   |
+C |  Environmental Research, Inc. (AER) grants USER the right to download,   |
+C |  install, use and copy this software for scientific and research         |
+C |  purposes only. This software may be redistributed as long as this       |
+C |  copyright notice is reproduced on any copy made and appropriate         |
+C |  acknowledgment is given to AER. This software or any modified version   |
+C |  of this software may not be incorporated into proprietary software or   |
+C |  commercial software offered for sale.                                   |
+C |                                                                          |
+C |  This software is provided as is without any express or implied          |
+C |  warranties.                                                             |
+C |                       (http://www.rtweb.aer.com/)                        |
+C  --------------------------------------------------------------------------
+C
       SUBROUTINE NONLTE(MPTS)                                             600000
 C
-C  --------------------------------------------------------------------------
-C |                                                                          |
-C |  Copyright 2002 - 2009, Atmospheric & Environmental Research, Inc. (AER).|
-C |  This software may be used, copied, or redistributed as long as it is    |
-C |  not sold and this copyright notice is reproduced on each copy made.     |
-C |  This model is provided as is without any express or implied warranties. |
-C |                       (http://www.rtweb.aer.com/)                        |
-C |                                                                          |
-C  --------------------------------------------------------------------------
-C
       include 'lblparams.inc'
-      IMPLICIT REAL*8           (V)                                     ! B00030
+      IMPLICIT REAL*8           (V)                                       B00030
 C
 C**********************************************************************
 C*                                                                     
@@ -56,12 +64,13 @@ C
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),       B00660
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
-      COMMON /VBNLTE/ RATSTATE(MAXSTATE,MXMOL),NUMSTATE(MXMOL)
+      COMMON /VBNLTE/ RATSTATE(MAXSTATE*Max_ISO,MXMOL),NUMSTATE(MXMOL)
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFL,LNFIL4,LNGTH4                                  B00860
       COMMON /R4SUB/ VLOF4,VHIF4,ILOF4,IST,IHIF4,LIMIN4,LIMOUT,ILAST,     B00820
      *               DPTMN4,DPTFC4,ILIN4,ILIN4T                           B00830
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       common /cmol_nam/ cmol(mxmol),cspc(mxspc)
       CHARACTER*6  CMOL,CSPC
 c
@@ -75,38 +84,37 @@ c
 C
       CHARACTER*5 IDSTATE
       INTEGER INDEX(MXMOL)
-      DIMENSION ISOSTATE(MAXSTATE,MXMOL),IDSTATE(MAXSTATE,MXMOL),
-     $     EESTATE(MAXSTATE,MXMOL),NDGSTATE(MAXSTATE,MXMOL)
+      INTEGER ISORDER(MAXSTATE*Max_ISO)
+      DIMENSION IDSTATE(MAXSTATE,MXMOL),
+     $     EESTATE(MAXSTATE*Max_ISO,MXMOL),
+     $     NDGSTATE(MAXSTATE*Max_ISO,MXMOL)
       CHARACTER*80 TIT(3),TEXTLINE                                        600200
       LOGICAL ISODATA
       CHARACTER*6  TXTISO,BLANKS
       DATA BLANKS/'      '/
-c
-      DO J=1,MXMOL
-         NUMSTATE(J)=0
-         DO I=1,MAXSTATE
-            ISOSTATE(I,J)=0
-            IDSTATE(I,J)='     '
-            EESTATE(I,J)=0.
-            NDGSTATE(I,J)=0
-         END DO
-      END DO
+C
+      CALL DEFNLTEDAT(NUMSTATE,IDSTATE,EESTATE,NDGSTATE,RATSTATE)      
 C 
       ISODATA=.FALSE.
 
       REWIND NLTEFL                                                       600860
 
-C NOTE THAT TIT IS A 3-ELEMENT ARRAY OF CHARACTER*80
-      READ(NLTEFL,900) TIT                                                600870
-  900 FORMAT(A80)                                                         600880
-      READ(NLTEFL,910) IVIB,MOLNEQ                                        600890
-  910 FORMAT(2I5)                                                         600900
-      WRITE(IPR,920) TIT(1),TIT(2),TIT(3)
-  920 FORMAT(/2X,'TAPE4 HEADER:',/2X,A80,/2X,A80,/2X,A80)
+C READ UP TO 20 LINES OF TEXT AT BEGINNING OF TAPE4
+      WRITE(IPR,890)
+  890 FORMAT(/2X,'TAPE4 HEADER:')
+      DO I=1,20    ! 20 MAX TEXT LINES AT BEGINNING OF TAPE4
+         READ(NLTEFL,900) TEXTLINE                                        600870
+  900    FORMAT(A80)                                                      600880
+         IF(TEXTLINE(1:1).NE.'!') GO TO 915
+         WRITE(IPR,910) TEXTLINE
+  910    FORMAT(2X,A80)
+      END DO
+  915 READ(TEXTLINE,920) IVIB,MOLNEQ                                      600890
+  920 FORMAT(2I5)                                                         600900
       WRITE(IPR,921) IVIB,ALTAV,TAVE
   921 FORMAT(/' IVIB =',I5,/'  ALT = ',F10.3,'  TEMP =',F10.3)            600920
 
-      READ(NLTEFL,940) TEXTLINE
+      READ(NLTEFL,900) TEXTLINE
       write(ipr,940) textline
   940 FORMAT(A80)
       DO I=1,74
@@ -117,15 +125,16 @@ C NOTE THAT TIT IS A 3-ELEMENT ARRAY OF CHARACTER*80
 C           END OF DATA ENCOUNTERED
          IF(ID.EQ.0) GO TO 30
          CALL RDNLTE(NLTEFL,TEXTLINE,TXTISO,NUMSTATE(ID),
-     $      ISOSTATE(1,ID),IDSTATE(1,ID),EESTATE(1,ID),NDGSTATE(1,ID))
+     $      IDSTATE(1,ID),EESTATE(1,ID),NDGSTATE(1,ID),
+     $      ISORDER)
          IF(IVIB.EQ.1) THEN
             CALL VIBTMP(XKT,ALTAV,NLTEFL,NUMSTATE(ID),
      $           IDSTATE(1,ID),NDGSTATE(1,ID),EESTATE(1,ID),
-     $           RATSTATE(1,ID),TXTISO,TEXTLINE)
+     $           RATSTATE(1,ID),TXTISO,TEXTLINE,ISORDER)
          ELSE
             CALL VIBPOP(XKT,ALTAV,NLTEFL,NUMSTATE(ID),
      $           IDSTATE(1,ID),NDGSTATE(1,ID),EESTATE(1,ID),
-     $           RATSTATE(1,ID),TXTISO,TEXTLINE)
+     $           RATSTATE(1,ID),TXTISO,TEXTLINE,ISORDER)
          END IF
 C                 IF END OF DATA ENCOUNTERED
          DO I=1,70
@@ -134,22 +143,22 @@ C                 IF END OF DATA ENCOUNTERED
 C              READ DATA FOR NEXT SPECIE
          GO TO 10
       ELSE 
-         CALL DEFNLTEDAT(NUMSTATE,ISOSTATE,IDSTATE,EESTATE,NDGSTATE)
          DO ID=1,MXMOL
             IF(NUMSTATE(ID).GT.0) THEN
                CALL DROPSPACE(CMOL(ID),TXTISO)
                IF(IVIB.EQ.1) THEN
                   CALL VIBTMP(XKT,ALTAV,NLTEFL,NUMSTATE(ID),
      $                 IDSTATE(1,ID),NDGSTATE(1,ID),EESTATE(1,ID),
-     $                 RATSTATE(1,ID),TXTISO,TEXTLINE)
+     $                 RATSTATE(1,ID),TXTISO,TEXTLINE,ISORDER)
                ELSE
                   CALL VIBPOP(XKT,ALTAV,NLTEFL,NUMSTATE(ID),
      $                 IDSTATE(1,ID),NDGSTATE(1,ID),EESTATE(1,ID),
-     $                 RATSTATE(1,ID),TXTISO,TEXTLINE)
+     $                 RATSTATE(1,ID),TXTISO,TEXTLINE,ISORDER)
                END IF
             END IF
          END DO
       END IF
+C
    30 IPFLAG = 0
       IF(PAVE .LE. 0.5) IPFLAG = 1
       ALFAV=SAMPLE*DV
@@ -209,34 +218,32 @@ C ------- GET MOLECULE INDEX FROM CMOL ARRAY FOR VIBRATIONAL DATA
 C##     STOP 'ERROR READING NLTE DATA FROM TAPE4'
       RETURN
       END
-c ----------------------------------------------------------------
-      SUBROUTINE RDNLTE(NLTEFL,TEXTLINE,TXTISO,INUM,
-     $     ISOX,IDX,EEX,NDG)
+C ----------------------------------------------------------------
+      SUBROUTINE RDNLTE(NLTEFL,TEXTLINE,TXTISO,IMAX,
+     $     IDX,EEX,NDG,ISORDER)
 C
       include 'lblparams.inc'
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
      *              NLTEFLE,LNFIL4,LNGTH4                                 B00860
-      DIMENSION ISOX(MAXSTATE),IDX(MAXSTATE),EEX(MAXSTATE),NDG(MAXSTATE)
+      DIMENSION IDX(MAXSTATE),ISORDER(MAXSTATE*Max_ISO)
+      DIMENSION EEX(MAXSTATE*Max_ISO),NDG(MAXSTATE*Max_ISO)
       CHARACTER*80 TEXTLINE
       CHARACTER*6 TXTISO
-      CHARACTER*5 IDX,BLANKS
+      CHARACTER*5 IDX,IDENT,BLANKS
       CHARACTER*1 QUOTE
       DATA BLANKS/' '/
-      QUOTE=CHAR(39)
+      QUOTE=CHAR(39)   ! QUOTE = '
+C       INITIALIZE ARRAY TO HOLD ISOTOPE ORDER INFO
+      DO I=1,MAXSTATE*Max_ISO
+         ISORDER(I)=0
+      END DO
 
       INUM=0
    50 READ(NLTEFL,940) TEXTLINE
   940 FORMAT(A80)
       IF(TEXTLINE(1:2).EQ.'--') RETURN
       INUM=INUM+1
-      IF(INUM.GT.MAXSTATE) THEN
-         WRITE(IPR,*) 'READING NONLTE DATA FROM TAPE4'
-         WRITE(IPR,*) 'ISOTOPE DATA FOR ',TXTISO,
-     $        ' CONTAINS TOO MANY LINES OF DATA'
-         WRITE(IPR,*) 'NEED TO INCREASE MAX',TXTISO,' IN NONLTE.F'
-         STOP 'TOO MANY NONLTE DATA LINES IN TAPE4'
-      END IF
       I1=0
       I2=0
       DO I=1,80
@@ -248,21 +255,52 @@ C
             END IF
          END IF
       END DO
-      READ(TEXTLINE(1:I1-1),*) NN,ISOX(INUM)
-      IF(NN.NE.INUM) THEN
-         WRITE(IPR,*) 'ERROR IN TAPE 4 ISOTOPE DATA FOR ',TXTISO
-         WRITE(IPR,*) 'ON LINE INUM'
-         STOP 'NN.NE.INUM IN NONLTE DATA FROM TAPE4'
+      READ(TEXTLINE(1:I1-1),*) NN,ISOTOPE
+      IF(NN.NE.INUM .AND. ISOTOPE.EQ.1) THEN
+         WRITE(IPR,*) 'WARNING IN TAPE 4: ISOTOPE DATA FOR ',TXTISO
+         WRITE(IPR,*) 'LINE ',INUM,' NOT IN ORDER'
+C         STOP 'NN.NE.INUM IN NONLTE DATA FROM TAPE4'
       END IF
-      IDX(INUM)=TEXTLINE(I1+1:I2-1)//BLANKS
-      READ(TEXTLINE(I2+1:80),*) EEX(INUM),NDG(INUM)
+      IF(ISOTOPE.EQ.1 .AND. INUM.GT.IMAX) THEN
+         WRITE(IPR,*) 'READING NONLTE DATA FROM TAPE4'
+         WRITE(IPR,*) 'ISOTOPE DATA FOR ',TXTISO,
+     $        ' CONTAINS MORE STATES THAN DEFAULT ALLOWANCE'
+         STOP 'NUMBER OF NONLTE STATES IN TAPE4 EXCEEDS DEFAULT'
+      END IF
+      IF(ISOTOPE.GT.Max_ISO) THEN
+         WRITE(IPR,*) 'ERROR IN TAPE4:  ISOTOPE NUMBER ',ISOTOPE,
+     $        ' GREATER THAN Max_ISO=',Max_ISO
+         STOP 'TAPE4 ERROR: ISOTOPE NUMBER TOO LARGE'
+      END IF
+      IDENT=TEXTLINE(I1+1:I2-1)//BLANKS
+      INDEX=0
+      DO I=1,MAXSTATE
+         IF(IDENT.EQ.IDX(I)) INDEX=I
+      END DO
+      IF(INDEX.EQ.0) THEN
+         WRITE(IPR,*) 'ERROR IN TAPE 4 ISOTOPE DATA FOR ',TXTISO,
+     $        ' ON LINE ',INUM
+         WRITE(IPR,*) '   ISOTOPE NUMBER ',ISOTOPE,' IDENTIFIER ',IDENT,
+     &       ' NOT CONSISTENT WITH EXPECTED INPUT'
+         STOP 'ERROR IN ISOTOPE INPUT IN NONLTE DATA FROM TAPE4'
+      END IF
+      INDEX2=(ISOTOPE-1)*MAXSTATE + INDEX
+      ISORDER(INUM)=INDEX2
+      READ(TEXTLINE(I2+1:80),*) EEX(INDEX2),NDG(INDEX2)
+      IF(INUM.EQ.1 .AND. ABS(EEX(INDEX2)).GE.1.E-25) THEN
+         WRITE(IPR,*) 'RDNLTE: GROUND STATE NOT SPECIFIED ',
+     $        'FOR MOLECULE ',TXTISO
+         STOP 'TAPE4 GROUND STATE MISSING'
+      END IF
+c      WRITE(IPR,*) 'RDNLTE, LINE ',inum,' state=',index,'  index=',
+c     $     index2,'  isorder=',isorder(inum)
       GO TO 50
       END
 c
 c ----------------------------------------------------------------
 c
-      SUBROUTINE VIBPOP(XKT,HT,NLTEFLAG,NUM,IDX,NDEG,EH,RAT,TITMOL,       604860
-     *   TEXTLINE)
+      SUBROUTINE VIBPOP(XKT,HT,NLTEFLAG,NUM,IDX,NDEG,EH,RAT,              604860
+     *   TITMOL,TEXTLINE,ISORDER)
 C                                                                         604870
 C                                                                         604880
 C     SUBROUTINE VIBPOP USES THE NON-LTE POPULATION DATA FROM             604890
@@ -270,7 +308,7 @@ C     TAPE4 TO CALCULATE THE VIBRATIONAL POPULATION ENHANCEMENT           604900
 C     RATIOS FOR SELECTED VIBRATIONAL STATES OF H2O,CO2,NO AND O3.        604910
 C                                                                         604920
       include 'lblparams.inc'
-      IMPLICIT REAL*8           (V)                                     ! B00030
+      IMPLICIT REAL*8           (V)                                       B00030
 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
@@ -285,10 +323,13 @@ C
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
-      DIMENSION IDX(MAXSTATE),VQNE(MAXSTATE),VQEQ(MAXSTATE),
-     *    TNE(MAXSTATE),VPNE1(MAXSTATE),VPNE2(MAXSTATE),VQNEST(MAXSTATE)
-      DIMENSION NDEG(MAXSTATE),EH(MAXSTATE),RAT(MAXSTATE)
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
+      DIMENSION IDX(MAXSTATE),TNE(MAXSTATE*Max_ISO)
+      DIMENSION VQNE(MAXSTATE*Max_ISO),VQEQ(MAXSTATE*Max_ISO)
+      DIMENSION VPNE1(MAXSTATE*Max_ISO),VPNE2(MAXSTATE*Max_ISO),
+     $     VQNEST(MAXSTATE*Max_ISO),VQNEIN(MAXSTATE*Max_ISO)
+      DIMENSION NDEG(MAXSTATE*Max_ISO),EH(MAXSTATE*Max_ISO),
+     $     RAT(MAXSTATE*Max_ISO),ISORDER(MAXSTATE*Max_ISO)
       CHARACTER*6 TITMOL,HMNLTE,BLANKS
       DATA BLANKS/' '/
 C                                                                         605040
@@ -296,6 +337,13 @@ C                                                                         605080
 C   READ NLTE VIB POPULATIONS                                             605090
 C                                                                         605100
       XKT= TAVE/RADCN2                                                    605030
+      DO I=1,MAXSTATE*Max_ISO
+         IF(ISORDER(I).GT.0) NUMIN=I
+      end do
+C      write(ipr,*) 'called vibpop with txtmol=',titmol,'  alt=',ht
+C      write(ipr,*) 'num=',num,'  numin=',numin
+C      write(ipr,*) (isorder(i),i=1,numin)
+
       I1=0
       I2=0
       DO I=1,80
@@ -321,27 +369,31 @@ C                                                                         605100
          WRITE(IPR,*) 'BUT READ SPECIE ',HMNLTE
          STOP 'ERROR READING NLTE DATA FROM TAPE4'
       END IF
-      READ (NLTEFLAG,*)  ALT1,(VPNE1(I),I=1,NUM)                          605120
-  10  READ (NLTEFLAG,*)  ALT2,(VPNE2(I),I=1,NUM)                          605140
+      READ (NLTEFLAG,*)  ALT1,(VPNE1(I),I=1,NUMIN)                        605120
+  10  READ (NLTEFLAG,*)  ALT2,(VPNE2(I),I=1,NUMIN)                        605140
 C*****WOG, 11/06/2000: ALT1 -> AL2:
 C     IF( ALT1.LT.HT) THEN
       IF( ALT2.LE.HT) THEN
           ALT1 = ALT2                                                     605170
-          DO 20 I=1,NUM                                                   605180
+          DO 20 I=1,NUMIN                                                 605180
               VPNE1(I) = VPNE2(I)                                         605190
   20      CONTINUE
           GO TO 10                                                        605200
       ENDIF
-C     CALL LININT(HT,ALT1,ALT2,NUM,VPNE1,VPNE2,VQNE)                      605220
+C     CALL LININT(HT,ALT1,ALT2,NUMIN,VPNE1,VPNE2,VQNEIN)                  605220
       A = (HT-ALT1)/(ALT2-ALT1)                                           605230
-      DO 30 I=1,NUM                                                       605240
-          CALL EXPINT(VQNE(I),VPNE1(I),VPNE2(I),A )                       605250
+      DO 30 I=1,NUMIN                                                     605240
+          CALL EXPINT(VQNEIN(I),VPNE1(I),VPNE2(I),A )                     605250
   30  CONTINUE
+      DO I=1,NUMIN
+         INDEX=ISORDER(I)
+         VQNE(INDEX)=VQNEIN(I)
+      END DO
 C                                                                         605270
       POPEQ=0.0                                                           605280
       POPNE=0.0                                                           605290
 C                                                                         605300
-      DO 50 LVL=1,NUM                                                     605310
+      DO 50 LVL=1,MAXSTATE*Max_ISO                                        605310
           VQEQ(LVL)=NDEG (LVL)*EXP(-EH(LVL)/XKT)                          605320
           VQNEST(LVL)=VQNE(LVL)                                           605330
           POPEQ=POPEQ + VQEQ(LVL)                                         605340
@@ -350,9 +402,7 @@ C                                                                         605300
 C                                                                         605370
 C    NORMALIZE POPULATIONS AND CALCULATE RATIOS                           605380
 C                                                                         605390
-      WRITE(IPR,906) TITMOL                                               605400
-      WRITE(IPR,935)                                                      605410
-      DO 100 LVL=1,NUM                                                    605420
+      DO 100 LVL=1,MAXSTATE*Max_ISO                                       605420
           I=LVL                                                           605430
           VQEQ(LVL)=VQEQ(LVL)/POPEQ                                       605440
           VQNE (LVL)=VQNE(LVL)/POPNE                                      605450
@@ -360,15 +410,21 @@ C                                                                         605390
           IF(LVL.EQ.1) THEN                                         
               VST1=VQNE(1)                                                605480
               TNE(I)=TAVE                                                 605490
-              WRITE(IPR,920)IDX(I),EH(I),VQEQ(I),VQNE(I),RAT(I),TNE(I),   605500
-     &            VQNEST(I)                                               605510
           ELSE                                                            605520
               DEN=(NDEG(1)*VQNE(LVL)/(NDEG(LVL)*VST1))                    605530
               TNE(I)=-RADCN2*EH(LVL)/ LOG(DEN)                            605540
-              WRITE(IPR,920)IDX(I),EH(I),VQEQ(I),VQNE(I),RAT(I),TNE(I),   605550
-     &            VQNEST(I)                                               605560
           END IF                                                          605570
-  100 CONTINUE                                                            605580
+  100 CONTINUE  
+C
+      WRITE(IPR,906) TITMOL
+      WRITE(IPR,935)                                                      606180
+      DO J=1,NUMIN
+         I=ISORDER(J)
+         ISOTOPE=(I-1)/MAXSTATE + 1
+         K=I-(ISOTOPE-1)*MAXSTATE
+         WRITE(IPR,920) ISOTOPE,IDX(K),EH(I),VQEQ(I),VQNE(I),RAT(I),      605550
+     &        TNE(I),VQNEST(I)                                            605560
+      END DO
 C                                                                         605590
 C     READ TO THE END OF THE VIBRATIONAL DATA                             605050
 C                                                                         605060
@@ -378,16 +434,16 @@ C                                                                         605610
   902 FORMAT(4x,A6)                                                       605620
   904 FORMAT (F7.0,1P,7E11.4,     /(18X, 6E11.4))                         605630
   906 FORMAT(//,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))                  605640
-  920 FORMAT(2X,A10,4G15.5,F10.2,G15.5)                                   605660
-  935 FORMAT (2X,'VIB',10X,'E(CM-1)',11X,'POP LTE',7X,                    605680
+  920 FORMAT(I7,2X,A10,4G15.5,F10.2,G15.5)                                605660
+  935 FORMAT ('ISOTOPE',2X,'VIB',10X,'E(CM-1)',11X,'POP LTE',7X,          605680
      & 'POP NLTE',6X,'NLTE/LTE',7X,'NLTE TMP',7X,'NLTE POP ORIG')         605690
 C                                                                         605700
       END                                                                 605710
 c
 c ----------------------------------------------------------------
 c
-      SUBROUTINE VIBTMP(XKT,HT,NLTEFLAG,NUM,IDX,NDEG,EH,RAT,TITMOL,       605720
-     *  TEXTLINE)
+      SUBROUTINE VIBTMP(XKT,HT,NLTEFLAG,NUM,IDX,NDEG,EH,RAT,              605720
+     *  TITMOL,TEXTLINE,ISORDER)
 C                                                                         604870
 C                                                                         604880
 C     SUBROUTINE VIBTMP USES THE NON-LTE TEMPERATURE DATA FROM            604890
@@ -397,7 +453,7 @@ C     O3.  THE NLTE VIBRATIONAL TEMPERATURES ARE WITH RESPECT TO          604910
 C     THE GROUND VIBRATIONAL STATE.                                       604910
 C                                                                         604920
       include 'lblparams.inc'
-      IMPLICIT REAL*8           (V)                                     ! B00030
+      IMPLICIT REAL*8           (V)                                       B00030
 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
@@ -419,10 +475,13 @@ C                                                                         E09670
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
-      DIMENSION IDX(MAXSTATE),VQNE(MAXSTATE),VQEQ(MAXSTATE),
-     $    TNE(MAXSTATE),TNESAV(MAXSTATE),TEM1(MAXSTATE),TEM2(MAXSTATE) 
-      DIMENSION NDEG(MAXSTATE),EH(MAXSTATE),RAT(MAXSTATE)
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
+      DIMENSION IDX(MAXSTATE),VQNE(MAXSTATE*Max_ISO),
+     $     VQEQ(MAXSTATE*Max_ISO),RAT(MAXSTATE*Max_ISO)
+      DIMENSION TNE(MAXSTATE*Max_ISO),TNESAV(MAXSTATE*Max_ISO),
+     $     TEM1(MAXSTATE*Max_ISO),TEM2(MAXSTATE*Max_ISO) 
+      DIMENSION NDEG(MAXSTATE*Max_ISO),EH(MAXSTATE*Max_ISO),
+     $     ISORDER(MAXSTATE*Max_ISO),TNEIN(MAXSTATE*Max_ISO)
       CHARACTER*6 TITMOL,HMNLTE,BLANKS
       DATA BLANKS/' '/
 C                                                                         605830
@@ -432,6 +491,13 @@ C       this code is very inefficient, reading the input files every time
 C       to search for the proper altitude
 C                                                                         605890
       XKT= TAVE/RADCN2                                                    605900
+      DO I=1,MAXSTATE*Max_ISO
+         IF(ISORDER(I).GT.0) NUMIN=I
+      end do
+      write(ipr,*) 'called vibtmp with txtmol=',titmol,'  alt=',ht
+      write(ipr,*) 'num=',num,'  numin=',numin
+      write(ipr,*) 'isorder=',(isorder(i),i=1,numin)
+
       I1=0
       I2=0
       DO I=1,80
@@ -457,24 +523,59 @@ C                                                                         605890
          WRITE(IPR,*) 'BUT READ SPECIE ',HMNLTE
          STOP 'ERROR READING NLTE DATA FROM TAPE4'
       END IF
-      READ (NLTEFLAG,*)  ALT1,(TEM1(I),I=1,NUM)                           605920
-  10  READ (NLTEFLAG,*)  ALT2,(TEM2(I),I=1,NUM)                           605930
+      READ (NLTEFLAG,*)  ALT1,(TEM1(I),I=1,NUMIN)                         605920
+  10  READ (NLTEFLAG,*)  ALT2,(TEM2(I),I=1,NUMIN)                         605930
+      IF(TEM1(1).LE.1.E-12 .OR. TEM2(1).LE.1.E-12) THEN
+         WRITE(IPR,*) 'VIBRATIONAL TEMPRATURE BASELINE FOR ',TITMOL,
+     $        ' MISSSING'
+         STOP 'KINETIC BASELINE TEMPERATURE MISSING'
+      END IF
 C*****WOG, 11/06/2000: ALT1 -> AL2:
 C     IF( ALT1.LT.HT) THEN
       IF( ALT2.LE.HT) THEN
           ALT1 = ALT2                                                     605960
-          DO 20 I=1,NUM                                                   605970
+          DO 20 I=1,NUMIN                                                 605970
               TEM1(I) = TEM2(I)                                           605980
   20      CONTINUE
           GO TO 10                                                        605990
       ENDIF   
 C                                                                         606010
-C     SET ZERO TEMP TO AMBIENT TEMP                                       606020
+C     SET ZERO TEMP TO AMBIENT TEMP (NOW DONE AFTER INTERPOLATION)
 C                                                                         606030
-      CALL  STAMB(NUM,TAVE,TEM1)                                          606040
-      CALL  STAMB(NUM,TAVE,TEM2)                                          606050
-      CALL LININT(HT,ALT1,ALT2,NUM,TEM1,TEM2,TNESAV)                      606060
-      WRITE(IPR,906) TITMOL                                               606070
+C      write(ipr,941) 'tem1',alt1,(tem1(i),i=1,numin)
+C      write(ipr,941) 'tem2',alt2,(tem2(i),i=1,numin)
+      CALL LININT(HT,ALT1,ALT2,NUMIN,TEM1,TEM2,TNEIN)                     606060
+C     write(ipr,941) 'TNEIN',ht,(tnein(i),i=1,numin)
+      DO I=1,MAXSTATE
+         TNESAV(I)=TNEIN(1)   ! this rescales to ambient
+      END DO
+      DO I=1,NUMIN
+         INDEX=ISORDER(I)
+         IF(INDEX.LE.MAXSTATE) THEN  ! FOR ISOTOPE #1
+            IF(TNEIN(I).GT.1.E-25) TNESAV(INDEX)=TNEIN(I)
+         END IF
+      END DO
+C       FOR ISOTOPES>1, DEFAULT TO ISOTOPE #1 TEMPERATURE DATA
+      DO ISOTOPE=2,Max_ISO
+         DO K=1,MAXSTATE
+            I= K + (ISOTOPE-1)*MAXSTATE
+            TNESAV(I)=TNESAV(K)   
+         END DO
+      END DO
+      NUMISO=0
+      DO I=1,NUMIN
+         INDEX=ISORDER(I)
+         ISOTOPE=(INDEX-1)/MAXSTATE +1
+         IF(ISOTOPE.GT.NUMISO) NUMISO=ISOTOPE
+         IF(ISOTOPE.GT.1) THEN
+            IF(TNEIN(I).GT.1.E-25) THEN
+               TNESAV(INDEX)=TNEIN(I)
+            END IF
+         END IF
+      END DO
+      WRITE(IPR,*) 'NUMBER OF ISOTOPES=',NUMISO
+C      write(ipr,941) 'TNESAV',ht,(tnesav(i),i=1,MAXSTATE*NUMISO)
+  941 format(a6,2x,27f8.3/26F8.3/26F8.3)
 C                                                                               
 CC     CORRECT TEMP TO ATMOSPHERIC                                              
 C                                                                               
@@ -484,13 +585,14 @@ c  level temperature does not match the computed layer
 c  temperature
 c      write(*,*) ' temperature not corrected'
       
-      DO 40 I = 1,NUM 
+      DO 40 I = 1,MAXSTATE*Max_ISO
           TNE(I) = TNESAV(I) * RATTV 
   40  CONTINUE
+C     write(ipr,941) 'TNE',ht,(tne(i),i=1,MAXSTATE*NUMISO)
 C                                                                               
       SUMQ=0                                                              606080
       SUMNQ=0                                                             606090
-      DO 50 I=1,NUM                                                       606100
+      DO 50 I=1,MAXSTATE*Max_ISO
           VQNE(I)=1.                                                      606110
           IF (TNE(I).GT.0.0) 
      &        VQNE(I)=NDEG(I)*EXP(-RADCN2*EH(I)/TNE(I))                   606130
@@ -498,14 +600,25 @@ C
           SUMQ=SUMQ+VQEQ(I)                                               606150
           SUMNQ=SUMNQ+VQNE(I)                                             606160
   50  CONTINUE                                                            606170
-      WRITE(IPR,935)                                                      606180
-      DO 100 I=1,NUM                                                      606190
+      DO 100 I=1,MAXSTATE*Max_ISO
           VQNE(I)=VQNE(I)/SUMNQ                                           606200
           VQEQ(I)=VQEQ(I)/SUMQ                                            606210
-          RAT(I)=VQNE(I)/VQEQ(I)                                          606220
-          WRITE(IPR,920)IDX(I),EH(I),VQEQ(I),VQNE(I),RAT(I),
-     &        TNESAV(I), TNE(I)                                           606230
+          IF(VQNE(I).GT.0.) THEN
+             RAT(I)=VQNE(I)/VQEQ(I)                                       606220
+          ELSE
+             RAT(I)=1.0
+          END IF
   100 CONTINUE                                                            606240
+
+      WRITE(IPR,906) TITMOL
+      WRITE(IPR,935)                                                      606180
+      DO J=1,NUMIN
+         I=ISORDER(J)
+         ISOTOPE=(I-1)/MAXSTATE + 1
+         K=I-(ISOTOPE-1)*MAXSTATE
+         WRITE(IPR,920)ISOTOPE,IDX(K),EH(I),VQEQ(I),VQNE(I),RAT(I),
+     &        TNESAV(I), TNE(I) 
+      END DO
 C                                                                         606250
 C     READ TO THE END OF THE VIBRATIONAL DATA                             605050
 C                                                                         605850
@@ -515,9 +628,9 @@ C                                                                         606270
   902 FORMAT(4x,A6)                                                       606280
   904 FORMAT(F7.0,7F11.3/(18X,6F11.3))                                    606290
   906 FORMAT(//,5X,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))               606300
-  920 FORMAT(2X,A10,4G12.5,2F9.2)                                         606320
-  935 FORMAT (9X,'VIB E(CM-1)',9X,'POP LTE    POP NLTE NLTE/LTE',         606340
-     &   '    NLTE TMP 2-STATE NLTE TMP')                                 606350
+  920 FORMAT(I7,2X,A10,4G12.5,2F9.3)                                      606320
+  935 FORMAT ('ISOTOPE',9X,'VIB E(CM-1)',9X,'POP LTE    POP NLTE ',
+     $     'NLTE/LTE    NLTE TMP 2-STATE NLTE TMP')                       
 C                                                                         606360
       END                                                                 606370
 
@@ -538,7 +651,10 @@ c ----------------------------------------------------------------
 
       SUBROUTINE LININT(HT,ALT1,ALT2,NUM,T1,T2,TNE)                       606460
       include 'lblparams.inc'
-      DIMENSION T1(MAXSTATE),T2(MAXSTATE),TNE(MAXSTATE)                   606470
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
+     *              NLTEFL,LNFIL4,LNGTH4                                  B00860
+      DIMENSION T1(*),T2(*),TNE(*)
 C*****WOG 11/03/2000
 C*****Correct for divide by zero if two altitudes are the same
 C*****0.001 = 1 meter, small enough to use average, large enough to
@@ -550,6 +666,8 @@ c     prevent numerical error.
       ENDIF
       
       DO 10 I=1,NUM
+          IF(ABS(T1(I)).LE.1.E-25 .AND. ABS(T2(I)).GT.1.E-25) GOTO 50
+          IF(ABS(T1(I)).GT.1.E-25 .AND. ABS(T2(I)).LE.1.E-25) GOTO 50
           TNE(I)=T1(I)+AM*(T2(I)-T1(I))
   10  CONTINUE
 
@@ -559,6 +677,12 @@ C         C=T1(I)-AM*ALT1                                                 606500
 C         TNE(I)=AM*HT+C                                                  606510
 C  10  CONTINUE
       RETURN                                                              606520
+   50 WRITE(IPR,*) 'ERROR IN LININT FOR Tvib INPUT'
+      WRITE(IPR,*) 'Tvib=0 AT SOME ALTITUDES AND NOT OTHERS'
+      write(ipr,*) 'ht=',ht,'  alt1,alt2=',alt1,alt2
+      write(ipr,*) 'T1=',(t1(i),i=1,num)
+      write(ipr,*) 'T2=',(t2(i),i=1,num)
+      STOP 'ERROR IN LININT FOR Tvib INPUT'
       END                                                                 606530
 
 c ----------------------------------------------------------------
@@ -579,7 +703,7 @@ c ----------------------------------------------------------------
 c
       SUBROUTINE HIRACQ (MPTS)                                            B00010
 C                                                                         B00020
-      IMPLICIT REAL*8           (V)                                     ! B00030
+      IMPLICIT REAL*8           (V)                                       B00030
 C                                                                         B00040
 C                                                                         B00050
 C**********************************************************************   B00060
@@ -660,7 +784,7 @@ C                                                                         B00650
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B00670
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B00680
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY  
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   B00700
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        B00710
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,            B00720
@@ -751,7 +875,7 @@ C
 C
       LSTWDX = -654321
       NPNLXP = NWDL(IWD,LSTWDX)                                           B01190
-      ICNTNM = MOD(IXSCNT,I_10)                                             B01200
+      ICNTNM = MOD(IXSCNT,I_10)                                           B01200
       IXSECT = IXSCNT/10                                                  B01210
 C                                                                         B01220
 C     SET INPUT FLAG FOR USE BY X-SECTIONS                                B01230
@@ -1217,7 +1341,7 @@ C                                                                         B03900
       SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)                             B04840
 C                                                                         B04850
       include 'lblparams.inc'
-      IMPLICIT REAL*8           (V)                                     ! B04860
+      IMPLICIT REAL*8           (V)                                       B04860
 C                                                                         B04870
       CHARACTER*1 FREJ(250),HREJ,HNOREJ
       COMMON /RCNTRL/ ILNFLG
@@ -1244,14 +1368,14 @@ C                                                                         B05000
       COMMON /XSUB/   VBOT,VTOP,VFT,DUM(7)
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY  
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502)        B05050
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,
      *                HWF3,DXF3,NX3,N3MAX
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),           B05060
      *                CF3(102),CER(102)                                   B05070
 
-      COMMON /VBNLTE/ RATSTATE(MAXSTATE,MXMOL),NUMSTATE(MXMOL)
+      COMMON /VBNLTE/ RATSTATE(MAXSTATE*Max_ISO,MXMOL),NUMSTATE(MXMOL)
 C                                                                         B05100
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9)
       COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX, 
@@ -1317,10 +1441,12 @@ C                                                                         B05560
          I = IOUT(J)                                                      B05620
          IFLAG = IFLG(I)                                                  B05630
          MFULL=MOL(I)
+C           Molecule number for this line, last 2 digits of MFULL
          M = MOD(MOL(I),I_100)                                              B05640
 C                                                                         B05650
 C     ISO=(MOD(MOL(I),1000)-M)/100   IS PROGRAMMED AS:                    B05660
 C                                                                         B05670
+c           Isotope number for this line, 3rd digit from right of MFULL
          ISO = MOD(MOL(I),I_1000)/100                                       B05680
 C
 c     check if lines are within allowed molecular and isotopic limits
@@ -1442,7 +1568,9 @@ C
 c ---from nlte:
          IF (MFULL.GE.1000) THEN
              FREQ=VNU(I)    
+C              NLOW is 4th and 5th digit from right of MFULL             
              NLOW=MOD(MFULL/1000,100)
+C              NUPP is 6th and 7th digit from right of MFULL
              NUPP=MFULL/100000
              RLOW=1.0
              RUPP=1.0
@@ -1452,9 +1580,11 @@ C     PICK OUT MOLECULAR TYPES WITH VIBRATIONAL STATES
 C                                                                               
           IF(NUMSTATE(M).GT.0) THEN
              IF (NLOW.GT.NUMSTATE(M)) STOP 'NLOW GT NUMSTATE IN LNCORQ'
-             IF (NLOW.GT.0) RLOW=RATSTATE(NLOW,M)
+             INDLOW=NLOW + (ISO-1)*MAXSTATE
+             IF (NLOW.GT.0) RLOW=RATSTATE(INDLOW,M)
              IF (NUPP.GT.NUMSTATE(M)) STOP 'NUPP GT NUMSTATE IN LNCORQ'
-             IF (NUPP.GT.0) RUPP=RATSTATE(NUPP,M)
+             INDUPP=NUPP + (ISO-1)*MAXSTATE
+             IF (NUPP.GT.0) RUPP=RATSTATE(INDUPP,M)
           ELSE
              PRINT 900,M  
   900        FORMAT('LNCORQ: MOL IN TROUBLE',I10) 
@@ -1736,7 +1866,7 @@ C                                                                         B08780
       END                                                                 B08790
       SUBROUTINE PANELQ (R1,R2,R3,RR1,RR2,RR3,KFILE,JRAD,IENTER)          B09990
 C                                                                         B10000
-      IMPLICIT REAL*8           (V)                                     ! B10010
+      IMPLICIT REAL*8           (V)                                       B10010
 C                                                                         B10020
 C     SUBROUTINE PANEL COMBINES RESULTS OF R3, R2, AND R1 INTO R1 ARRAY   B10030
 C     AND OUTPUTS THE ARRAY R1                                            B10040
@@ -1776,7 +1906,7 @@ C                                                                         B10350
      *                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND,   B10370
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    B10380
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY  
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA   B10400
       COMMON /SUB1/ MAX1,MAX2,MAX3,NLIM1,NLIM2,NLIM3,NLO,NHI,DVR2,DVR3,   B10410
      *              N1R1,N2R1,N1R2,N2R2,N1R3,N2R3                         B10420
@@ -1976,7 +2106,7 @@ C                                                                         D00300
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1 ,V2 ,TBOUND,    D00320
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    D00330
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY  
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D00350
      *               DPTFC,ILIN4,ILIN4T                                   D00360
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         D00370
@@ -1987,7 +2117,7 @@ C                                                                         D00300
      *              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)          D00420
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D                          D00430
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER
-      COMMON /VBNLTE/ RATSTATE(MAXSTATE,MXMOL),NUMSTATE(MXMOL)
+      COMMON /VBNLTE/ RATSTATE(MAXSTATE*Max_ISO,MXMOL),NUMSTATE(MXMOL)
 C                                                                         D00440
       REAL L4TIM,L4TMR,L4TMS,LOTHER
       DIMENSION MEFDP(64)                                                 D00450
@@ -2221,9 +2351,11 @@ c             DELTA=EXP(-FREQ/XKT)
 c     xkt=tave/radcn2=1/beta 
              DELTA=EXP(-FREQ*BETA)
              IF (NLOW.GT.NUMSTATE(M)) STOP 'NLOW GT NUMSTATE IN LINF4Q'
-             IF (NLOW.GT.0) RLOW=RATSTATE(NLOW,M)
+             INDLOW=NLOW + (ISO-1)*MAXSTATE
+             IF (NLOW.GT.0) RLOW=RATSTATE(INDLOW,M)
              IF (NUPP.GT.NUMSTATE(M)) STOP 'NUPP GT NUMSTATE IN LINF4Q'
-             IF (NUPP.GT.0) RUPP=RATSTATE(NUPP,M)
+             INDUPP=NUPP + (ISO-1)*MAXSTATE
+             IF (NUPP.GT.0) RUPP=RATSTATE(INDUPP,M)
              FNLTE=SP(IJ)/(1.0-DELTA)
              SABS(IJ)=FNLTE*(RLOW-RUPP*DELTA)
              SRAD(IJ)=FNLTE*(RLOW-RUPP) 
@@ -2459,7 +2591,7 @@ C                                                                         D04610
      *                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1H,V2H,TBOUND,    D04630
      *                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF    D04640
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY  
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,         D04660
      *               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL                      D04670
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,        D04680
@@ -2869,18 +3001,22 @@ C                                                                         D07860
 C                                                                         D07880
       END                                                                 D07890
 C---------------------
-      SUBROUTINE DEFNLTEDAT(NUMSTATE,ISOSTATE,IDSTATE,EESTATE,NDGSTATE)
+      SUBROUTINE DEFNLTEDAT(NUMSTATE,IDSTATE,EESTATE,NDGSTATE,RATSTATE)
 
       include 'lblparams.inc'
 C                                                                         D00080
+      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         B00840
+     *              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,        B00850
+     *              NLTEFL,LNFIL4,LNGTH4                                  B00860
       CHARACTER*5 IDSTATE
-      DIMENSION ISOSTATE(MAXSTATE,MXMOL),IDSTATE(MAXSTATE,MXMOL),
-     $     EESTATE(MAXSTATE,MXMOL),NDGSTATE(MAXSTATE,MXMOL),
-     $     NUMSTATE(MXMOL)
+      DIMENSION IDSTATE(MAXSTATE,MXMOL),NUMISO(MXMOL),
+     $     EESTATE(MAXSTATE*Max_ISO,MXMOL),
+     $     NDGSTATE(MAXSTATE*Max_ISO,MXMOL),NUMSTATE(MXMOL),
+     $     RATSTATE(MAXSTATE*Max_ISO,MXMOL)
       PARAMETER (MAXH2O=8,MAXCO2=26,MAXO3=18,MAXCO=3,MAXNO=3)
       CHARACTER*5 AH2O,ACO2,AO3,ACO,ANO                                   600144
       common /cmol_nam/ cmol(mxmol),cspc(mxspc)
-      CHARACTER*6  CMOL,CSPC
+      CHARACTER*6  CMOL,CSPC,TXTISO
       CHARACTER*80 ISOMOL(5)
       DATA ISOMOL/'H2O','CO2','O3','CO','NO'/
       DIMENSION JSOH2O(MAXH2O),AH2O(MAXH2O),FH2O(MAXH2O),MDGH2O(MAXH2O),  600150
@@ -2889,123 +3025,265 @@ C                                                                         D00080
      &          JSOCO(MAXCO)  ,ACO (MAXCO) ,FCO (MAXCO) ,MDGCO (MAXCO),   600180
      &          JSONO(MAXNO)  ,ANO (MAXNO) ,FNO (MAXNO) ,MDGNO (MAXNO)    600190
 C 
-      DATA MDGH2O/8*1/,MDGO3/18*1/,MDGCO/3*1/,MDGNO/3*1/                  600250
-      DATA JSOH2O/8*1/,JSOCO2/26*1/,JSOO3/18*1/,JSOCO/3*1/,JSONO/3*1/     600250
-C                                                                         600270
-      DATA  (AH2O(I),FH2O(I),I=1,8)/                                      600280
-     1      '000' ,     0.   ,                                            600290
-     2      '010' ,  1594.750,                                            600300
-     3      '020' ,  3151.630,                                            600310
-     4      '100' ,  3657.053,                                            600320
-     5      '001' ,  3755.930,                                            600330
-     6      '030' ,  4666.793,                                            600340
-     7      '110' ,  5234.977,                                            600350
-     8      '011' ,  5333.269/                                            600360
+      DATA  (JSOH2O(I),AH2O(I),FH2O(I),MDGH2O(I),I=1,8)/                  600280
+     1     1, '000' ,     0.   , 1,                                       600290
+     2     1, '010' ,  1594.750, 1,                                       600300
+     3     1, '020' ,  3151.630, 1,                                       600310
+     4     1, '100' ,  3657.053, 1,                                       600320
+     5     1, '001' ,  3755.930, 1,                                       600330
+     6     1, '030' ,  4666.793, 1,                                       600340
+     7     1, '110' ,  5234.977, 1,                                       600350
+     8     1, '011' ,  5333.269, 1/                                       600360
 C                                                                         600370
-      DATA  (ACO2(I),FCO2(I),MDGCO2(I),I=1, 9)/                           600380
-     1      '00001' ,    0.  , 1 ,                                        600390
-     2      '01101' ,  667.380,2 ,                                        600400
-     3      '10002' , 1285.409,1 ,                                        600410
-     4      '02201' , 1335.132,2 ,                                        600420
-     5      '10001' , 1388.185,1 ,                                        600430
-     6      '11102' , 1932.470,2 ,                                        600440
-     7      '03301' , 2003.246,2 ,                                        600450
-     8      '11101' , 2076.856,2 ,                                        600460
-     9      '00011' , 2349.143,1 /                                        600470
-      DATA  (ACO2(I),FCO2(I),MDGCO2(I),I=10,26)/                          600380
-     Z      '20003' , 2548.366,1 ,                                        600470
-     Z      '12202' , 2585.022,2 ,                                        600470
-     Z      '20002' , 2671.143,1 ,                                        600470
-     Z      '04401' , 2671.717,2 ,                                        600470
-     Z      '12201' , 2760.725,2 ,                                        600470
-     Z      '20001' , 2797.135,1 ,                                        600470
-     A      '01111' , 3004.012,2 ,                                        600480
-     1      '10012' , 3612.842,1 ,                                        600490
-     2      '02211' , 3659.273,2 ,                                        600500
-     3      '10011' , 3714.783,1 ,                                        600510
-     Z      '11112' , 4247.706,2 ,                                        600470
-     Z      '03311' , 4314.914,2 ,                                        600470
-     Z      '11111' , 4390.629,2 ,                                        600470
-     4      '20013' , 4853.623,1 ,                                        600520
-     Z      '04411' , 4970.931,1 ,                                        600470
-     5      '20012' , 4977.834,1 ,                                        600530
-     6      '20011' , 5099.660,1 /                                        600540
+      DATA  (JSOCO2(I),ACO2(I),FCO2(I),MDGCO2(I),I=1, 9)/                 600380
+     1     1, '00001' ,    0.   , 1 ,                                     600390
+     2     1, '01101' ,  667.380, 2 ,                                     600400
+     3     1, '10002' , 1285.409, 1 ,                                     600410
+     4     1, '02201' , 1335.132, 2 ,                                     600420
+     5     1, '10001' , 1388.185, 1 ,                                     600430
+     6     1, '11102' , 1932.470, 2 ,                                     600440
+     7     1, '03301' , 2003.246, 2 ,                                     600450
+     8     1, '11101' , 2076.856, 2 ,                                     600460
+     9     1, '00011' , 2349.143, 1 /                                     600470
+      DATA  (JSOCO2(I),ACO2(I),FCO2(I),MDGCO2(I),I=10,26)/                600380
+     Z     1, '20003' , 2548.366, 1 ,                                     600470
+     Z     1, '12202' , 2585.022, 2 ,                                     600470
+     Z     1, '20002' , 2671.143, 1 ,                                     600470
+     Z     1, '04401' , 2671.717, 2 ,                                     600470
+     Z     1, '12201' , 2760.725, 2 ,                                     600470
+     Z     1, '20001' , 2797.135, 1 ,                                     600470
+     A     1, '01111' , 3004.012, 2 ,                                     600480
+     1     1, '10012' , 3612.842, 1 ,                                     600490
+     2     1, '02211' , 3659.273, 2 ,                                     600500
+     3     1, '10011' , 3714.783, 1 ,                                     600510
+     Z     1, '11112' , 4247.706, 2 ,                                     600470
+     Z     1, '03311' , 4314.914, 2 ,                                     600470
+     Z     1, '11111' , 4390.629, 2 ,                                     600470
+     4     1, '20013' , 4853.623, 1 ,                                     600520
+     Z     1, '04411' , 4970.931, 1 ,                                     600470
+     5     1, '20012' , 4977.834, 1 ,                                     600530
+     6     1, '20011' , 5099.660, 1 /                                     600540
 C                                                                         600550
-      DATA (AO3(I),FO3(I),I=1,18)/                                        600560
-     1     '000' ,    0.   ,                                              600570
-     2     '010' ,  700.931,                                              600580
-     3     '001' , 1042.084,                                              600590
-     4     '100' , 1103.140,                                              600600
-     5     '020' , 1399.275,                                              600610
-     6     '011' , 1726.528,                                              600620
-     7     '110' , 1796.261,                                              600630
-     8     '002' , 2057.892,                                              600640
-     9     '101' , 2110.785,                                              600650
-     A     '200' , 2201.157,                                              600660
-     1     '111' , 2785.245,                                              600670
-     2     '003' , 3041.200,                                              600680
-     3     '004' , 3988.  ,                                               600690
-     4     '005' , 4910.  ,                                               600700
-     5     '006' , 5803.  ,                                               600710
-     6     '007' , 6665.  ,                                               600720
-     7     '008' , 7497.  ,                                               600730
-     8     '009' , 8299.  /                                               600740
+      DATA (JSOO3(I),AO3(I),FO3(I),MDGO3(I),I=1,18)/                      600560
+     1     1, '000' ,    0.   , 1,                                        600570
+     2     1, '010' ,  700.931, 1,                                        600580
+     3     1, '001' , 1042.084, 1,                                        600590
+     4     1, '100' , 1103.140, 1,                                        600600
+     5     1, '020' , 1399.275, 1,                                        600610
+     6     1, '011' , 1726.528, 1,                                        600620
+     7     1, '110' , 1796.261, 1,                                        600630
+     8     1, '002' , 2057.892, 1,                                        600640
+     9     1, '101' , 2110.785, 1,                                        600650
+     A     1, '200' , 2201.157, 1,                                        600660
+     1     1, '111' , 2785.245, 1,                                        600670
+     2     1, '003' , 3041.200, 1,                                        600680
+     3     1, '004' , 3988.   , 1,                                        600690
+     4     1, '005' , 4910.   , 1,                                        600700
+     5     1, '006' , 5803.   , 1,                                        600710
+     6     1, '007' , 6665.   , 1,                                        600720
+     7     1, '008' , 7497.   , 1,                                        600730
+     8     1, '009' , 8299.   , 1/                                        600740
 C                                                                         600750
-      DATA (ACO(I),FCO(I),I=1,3)/                                         600760
-     1     '0' ,    0.  ,                                                 600770
-     2     '1' , 2143.272,                                                600780
-     3     '2' , 4260.063/                                                600790
+      DATA (JSOCO(I),ACO(I),FCO(I),MDGCO(I),I=1,3)/                       600760
+     1     1, '0' ,    0.   , 1,                                          600770
+     2     1, '1' , 2143.272, 1,                                          600780
+     3     1, '2' , 4260.063, 1/                                          600790
 C                                                                         600800
-      DATA (ANO(I),FNO(I),I=1,3)/                                         600810
-     1      '0' ,    0.  ,                                                600820
-     2      '1' , 1878.077,                                               600830
-     3      '2' , 3724.067/                                               600840
+      DATA (JSONO(I),ANO(I),FNO(I),MDGNO(I),I=1,3)/                       600810
+     1     1, '0' ,    0.   , 1,                                          600820
+     2     1, '1' , 1878.077, 1,                                          600830
+     3     1, '2' , 3724.067, 1/                                          600840
 C
+      DO J=1,MXMOL
+         NUMSTATE(J)=0
+         NUMISO(J)=0
+         DO I=1,MAXSTATE
+            IDSTATE(I,J)='     '
+            DO ISO=1,Max_ISO
+               INDEX=(ISO-1)*MAXSTATE + I
+               EESTATE(INDEX,J)=0.
+               NDGSTATE(INDEX,J)=0
+               RATSTATE(INDEX,J)=1.
+            END DO
+         END DO
+      END DO
 C
+C---H2O
       CALL GETINDEX(ISOMOL(1),CMOL,MXMOL,ID,TXTISO)
-      NUMSTATE(ID) = MAXH2O
       DO I=1,MAXH2O
-         ISOSTATE(I,ID)=JSOH2O(I)
-         NDGSTATE(I,ID)=MDGH2O(I)
-         EESTATE(I,ID)=FH2O(I)
-         IDSTATE(I,ID)=AH2O(I)
+         ISOTOPE=JSOH2O(I)
+         IF(ISOTOPE.LT.1 .OR. ISOTOPE.GT.Max_ISO)
+     $        STOP 'ERROR IN DEFNLTEDAT FOR ISOTOPE NUMBER'
+         IF(ISOTOPE.GT.NUMISO(ID)) NUMISO(ID)=ISOTOPE
+         IF(ISOTOPE.EQ.1) THEN
+            NUMSTATE(ID) = NUMSTATE(ID)+1
+            INDEX=NUMSTATE(ID)
+            IDSTATE(INDEX,ID)=AH2O(I)
+            ISO1=1
+            ISO2=Max_ISO
+         ELSE
+            INDEX=0
+            DO J=1,NUMSTATE(ID)
+               IF(AH2O(I).EQ.IDSTATE(J,ID)) INDEX=J
+            END DO
+            IF(INDEX.EQ.0) STOP 'ERROR IN DEFNLTEDAT FOR H2O ISOTOPE>1'
+            ISO1=ISOTOPE
+            ISO2=ISOTOPE
+         END IF
+         DO J=ISO1,ISO2
+            K=(J-1)*MAXSTATE + INDEX
+            NDGSTATE(K,ID)=MDGH2O(I)
+            EESTATE(K,ID)=FH2O(I)
+         END DO
       END DO
+C
+C---CO2
       CALL GETINDEX(ISOMOL(2),CMOL,MXMOL,ID,TXTISO)
-      NUMSTATE(ID) = MAXCO2
       DO I=1,MAXCO2
-         ISOSTATE(I,ID)=JSOCO2(I)
-         NDGSTATE(I,ID)=MDGCO2(I)
-         EESTATE(I,ID)=FCO2(I)
-         IDSTATE(I,ID)=ACO2(I)
+         ISOTOPE=JSOCO2(I)
+         IF(ISOTOPE.LT.1 .OR. ISOTOPE.GT.Max_ISO)
+     $        STOP 'ERROR IN DEFNLTEDAT FOR ISOTOPE NUMBER'
+         IF(ISOTOPE.GT.NUMISO(ID)) NUMISO(ID)=ISOTOPE
+         IF(ISOTOPE.EQ.1) THEN
+            NUMSTATE(ID) = NUMSTATE(ID)+1
+            INDEX=NUMSTATE(ID)
+            IDSTATE(INDEX,ID)=ACO2(I)
+            ISO1=1
+            ISO2=Max_ISO
+         ELSE
+            INDEX=0
+            DO J=1,NUMSTATE(ID)
+               IF(ACO2(I).EQ.IDSTATE(J,ID)) INDEX=J
+            END DO
+            IF(INDEX.EQ.0) STOP 'ERROR IN DEFNLTEDAT FOR CO2 ISOTOPE>1'
+            ISO1=ISOTOPE
+            ISO2=ISOTOPE
+         END IF
+         DO J=ISO1,ISO2
+            K=(J-1)*MAXSTATE + INDEX
+            NDGSTATE(K,ID)=MDGCO2(I)
+            EESTATE(K,ID)=FCO2(I)
+         END DO
       END DO
+C
+C---O3
       CALL GETINDEX(ISOMOL(3),CMOL,MXMOL,ID,TXTISO)
-      NUMSTATE(ID) = MAXO3
       DO I=1,MAXO3
-         ISOSTATE(I,ID)=JSOO3(I)
-         NDGSTATE(I,ID)=MDGO3(I)
-         EESTATE(I,ID)=FO3(I)
-         IDSTATE(I,ID)=AO3(I)
+         ISOTOPE=JSOO3(I)
+         IF(ISOTOPE.LT.1 .OR. ISOTOPE.GT.Max_ISO)
+     $        STOP 'ERROR IN DEFNLTEDAT FOR ISOTOPE NUMBER'
+         IF(ISOTOPE.GT.NUMISO(ID)) NUMISO(ID)=ISOTOPE
+         IF(ISOTOPE.EQ.1) THEN
+            NUMSTATE(ID) = NUMSTATE(ID)+1
+            INDEX=NUMSTATE(ID)
+            IDSTATE(INDEX,ID)=AO3(I)
+            ISO1=1
+            ISO2=Max_ISO
+         ELSE
+            INDEX=0
+            DO J=1,NUMSTATE(ID)
+               IF(AO3(I).EQ.IDSTATE(J,ID)) INDEX=J
+            END DO
+            IF(INDEX.EQ.0) STOP 'ERROR IN DEFNLTEDAT FOR O3 ISOTOPE>1'
+            ISO1=ISOTOPE
+            ISO2=ISOTOPE
+         END IF
+         DO J=ISO1,ISO2
+            K=(J-1)*MAXSTATE + INDEX
+            NDGSTATE(K,ID)=MDGO3(I)
+            EESTATE(K,ID)=FO3(I)
+         END DO
       END DO
+C
+C---CO
       CALL GETINDEX(ISOMOL(4),CMOL,MXMOL,ID,TXTISO)
-      NUMSTATE(ID) = MAXCO
       DO I=1,MAXCO
-         ISOSTATE(I,ID)=JSOCO(I)
-         NDGSTATE(I,ID)=MDGCO(I)
-         EESTATE(I,ID)=FCO(I)
-         IDSTATE(I,ID)=ACO(I)
+         ISOTOPE=JSOCO(I)
+         IF(ISOTOPE.LT.1 .OR. ISOTOPE.GT.Max_ISO)
+     $        STOP 'ERROR IN DEFNLTEDAT FOR ISOTOPE NUMBER'
+         IF(ISOTOPE.GT.NUMISO(ID)) NUMISO(ID)=ISOTOPE
+         IF(ISOTOPE.EQ.1) THEN
+            NUMSTATE(ID) = NUMSTATE(ID)+1
+            INDEX=NUMSTATE(ID)
+            IDSTATE(INDEX,ID)=ACO(I)
+            ISO1=1
+            ISO2=Max_ISO
+         ELSE
+            INDEX=0
+            DO J=1,NUMSTATE(ID)
+               IF(ACO(I).EQ.IDSTATE(J,ID)) INDEX=J
+            END DO
+            IF(INDEX.EQ.0) STOP 'ERROR IN DEFNLTEDAT FOR CO ISOTOPE>1'
+            ISO1=ISOTOPE
+            ISO2=ISOTOPE
+         END IF
+         DO J=ISO1,ISO2
+            K=(J-1)*MAXSTATE + INDEX
+            NDGSTATE(K,ID)=MDGCO(I)
+            EESTATE(K,ID)=FCO(I)
+         END DO
       END DO
+C
+C---NO
       CALL GETINDEX(ISOMOL(5),CMOL,MXMOL,ID,TXTISO)
-      NUMSTATE(ID) = MAXNO
       DO I=1,MAXNO
-         ISOSTATE(I,ID)=JSONO(I)
-         NDGSTATE(I,ID)=MDGNO(I)
-         EESTATE(I,ID)=FNO(I)
-         IDSTATE(I,ID)=ANO(I)
+         ISOTOPE=JSONO(I)
+         IF(ISOTOPE.LT.1 .OR. ISOTOPE.GT.Max_ISO)
+     $        STOP 'ERROR IN DEFNLTEDAT FOR ISOTOPE NUMBER'
+         IF(ISOTOPE.GT.NUMISO(ID)) NUMISO(ID)=ISOTOPE
+         IF(ISOTOPE.EQ.1) THEN
+            NUMSTATE(ID) = NUMSTATE(ID)+1
+            INDEX=NUMSTATE(ID)
+            IDSTATE(INDEX,ID)=ANO(I)
+            ISO1=1
+            ISO2=Max_ISO
+         ELSE
+            INDEX=0
+            DO J=1,NUMSTATE(ID)
+               IF(ANO(I).EQ.IDSTATE(J,ID)) INDEX=J
+            END DO
+            IF(INDEX.EQ.0) STOP 'ERROR IN DEFNLTEDAT FOR NO ISOTOPE>1'
+            ISO1=ISOTOPE
+            ISO2=ISOTOPE
+         END IF
+         DO J=ISO1,ISO2
+            K=(J-1)*MAXSTATE + INDEX
+            NDGSTATE(K,ID)=MDGNO(I)
+            EESTATE(K,ID)=FNO(I)
+         END DO
       END DO
+C
+      DO I=1,MXMOL
+         IF(NUMSTATE(I).GT.MAXSTATE) THEN
+            WRITE(IPR,*) 'ERROR IN DEFNLTEDAT: MAXSTATE NEEDS TO BE '
+            WRITE(IPR,*) 'INCREASED TO ',I,' TO ACCOMODATE DEFAULT ',
+     $           'ISOTOPE STATE DATA'
+            STOP 'ERROR IN DEFNLTEDAT'
+         END IF
+      END DO
+C
+      DO ID=1,MXMOL
+         IF(NUMSTATE(ID).GT.0) THEN
+            write(ipr,*) 'Defaults for Molecule',cmol(Id),'  id=',id,
+     $           '  NUMSTATE= ',NUMSTATE(ID),'  NUMISO=',NUMISO(ID)
+            write(ipr,901) (idstate(j,id),j=1,numstate(id))
+  901       format('IDSTATE= ',26a6)
+            do iso=1,NUMISO(ID)
+               j0=(iso-1)*maxstate
+               write(ipr,902) (ndgstate(j+j0,id),j=1,numstate(id))
+  902          format('NDGSTATE= ',26I3)
+            end do
+            do iso=1,NUMISO(ID)
+               j0=(iso-1)*maxstate
+               write(ipr,903) (eestate(j+j0,id),j=1,numstate(id))
+  903          FORMAT('EESTATE=',26f9.3)
+            end do
+         END IF
+      end do
 C
       RETURN
       END
-
+C--------------------------------------
       SUBROUTINE DROPSPACE(TXTIN,TXTOUT)
       CHARACTER*6 TXTIN,TXTOUT,BLANKS
       DATA BLANKS/'      '/

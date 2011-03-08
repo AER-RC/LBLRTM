@@ -2,18 +2,26 @@ C     path: %Source%
 C     revision:  $Revision$
 C     created:   $Date$  
 C     presently: %H%  %T%
-      SUBROUTINE HIRAC1 (MPTS)                                            B00010
 C
 C  --------------------------------------------------------------------------
+C |  Copyright ©, Atmospheric and Environmental Research, Inc., 2011         |
 C |                                                                          |
-C |  Copyright 2002 - 2009, Atmospheric & Environmental Research, Inc. (AER).|
-C |  This software may be used, copied, or redistributed as long as it is    |
-C |  not sold and this copyright notice is reproduced on each copy made.     |
-C |  This model is provided as is without any express or implied warranties. |
+C |  All rights reserved. This source code is part of the LBLRTM software    |
+C |  and is designed for scientific and research purposes. Atmospheric and   |
+C |  Environmental Research, Inc. (AER) grants USER the right to download,   |
+C |  install, use and copy this software for scientific and research         |
+C |  purposes only. This software may be redistributed as long as this       |
+C |  copyright notice is reproduced on any copy made and appropriate         |
+C |  acknowledgment is given to AER. This software or any modified version   |
+C |  of this software may not be incorporated into proprietary software or   |
+C |  commercial software offered for sale.                                   |
+C |                                                                          |
+C |  This software is provided as is without any express or implied          |
+C |  warranties.                                                             |
 C |                       (http://www.rtweb.aer.com/)                        |
-C |                                                                          |
 C  --------------------------------------------------------------------------
 C
+      SUBROUTINE HIRAC1 (MPTS)                                            B00010
 C                                                                         B00020
       IMPLICIT REAL*8           (V)                                     ! B00030
 C                                                                         B00040
@@ -3978,6 +3986,7 @@ C                                                                         E01500
 C                                                                         E01610
       END                                                                 E01620
       BLOCK DATA BXSECT                                                   E01630
+C     PAN added 08/25/2010, malvarad@aer.com
 C                                                                         E01640
       IMPLICIT REAL*8           (V)                                     ! E01650
 
@@ -4003,23 +4012,26 @@ C                                                                         E01750
      *    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',         E01770
      *    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',         E01780
      *    'N2O5      ', 'HNO3      ', 'CF4       ', 'CHCLF2    ',         E01790
-     *    'CCLF3     ', 'C2CLF5    ', 'NO2       ',
-     *	  23*' ZZZZZZZZ ' / 
+     *    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ', 
+     *	  'ACET      ', 'CH3CN     ', 20*' ZZZZZZZZ ' / 
       DATA (ALIAS(2,I),I=1,mx_xs)/                                           E01810
      *    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',         E01820
      *    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',         E01830
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CHF2CL    ',         E01840
-     *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 24*' ZZZZZZZZ ' /                   E01850
+     *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 
+     *    'CH3COCH3  ', 21*' ZZZZZZZZ ' /                                 E01850
       DATA (ALIAS(3,I),I=1,mx_xs)/                                           E01860
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',         E01870
      *    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',         E01880
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',         E01890
-     *    'CFC13     ', 'CFC115    ', 24*' ZZZZZZZZ ' /                   E01900
+     *    'CFC13     ', 'CFC115    ',  ' ZZZZZZZZ ', ' ZZZZZZZZ ', 
+     *    'ACETONE  ', 21*' ZZZZZZZZ ' /                                 E01900
       DATA (ALIAS(4,I),I=1,mx_xs)/                                           E01910
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',         E01920
      *    'F11       ', 'F12       ', 'F114      ', 'F113      ',         E01930
      *    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F14       ', 'F22       ',         E01940
-     *    'F13       ', 'F115      ', 24*' ZZZZZZZZ ' /                   E01950
+     *    'F13       ', 'F115      ',  ' ZZZZZZZZ ', ' ZZZZZZZZ ', 
+     *    'CH3C(O)CH3', 21*' ZZZZZZZZ ' /                                  E01950
 C                                                                         E01960
 C     XSMASS IS MASS OF EACH CROSS-SECTION                                E01961
 C                                                                         E01962
@@ -4029,7 +4041,8 @@ c     note 23 =  mx_xs - 15 = 38 - 15
      1      97.46     ,   79.01     ,  102.92     ,  153.82     ,         E01964
      2     137.37     ,  120.91     ,  170.92     ,  187.38     ,         E01965
      3     108.01     ,   63.01     ,   88.00     ,   86.47     ,         E01966
-     4     104.46     ,  154.47     ,   45.99     , 23*0.00 /             E01967
+     4     104.46     ,  154.47     ,   45.99     ,  121.05     ,
+     5      58.08     ,   41.05     ,  20*0.00 /                          E01967
 C                                                                         E01969
       DATA V1FX / 190*0.0 /,V2FX / 190*0.0 /,DVFX / 190*0.0 /,            E01970
      *     WXM / mx_xs*0.0 /                                                 E01980
@@ -5661,19 +5674,6 @@ c++:  bd-QT
  
       character*30 stopNgo
 c
-      data Tdat/  60.,  85., 110., 135., 160., 185., 210., 235.,
-     + 260., 285., 310., 335., 360., 385., 410., 435., 460., 485.,
-     + 510., 535., 560., 585., 610., 635., 660., 685., 710., 735.,
-     + 760., 785., 810., 835., 860., 885., 910., 935., 960., 985.,
-     +1010.,1035.,1060.,1085.,1110.,1135.,1160.,1185.,1210.,1235.,
-     +1260.,1285.,1310.,1335.,1360.,1385.,1410.,1435.,1460.,1485.,
-     +1510.,1535.,1560.,1585.,1610.,1635.,1660.,1685.,1710.,1735.,
-     +1760.,1785.,1810.,1835.,1860.,1885.,1910.,1935.,1960.,1985.,
-     +2010.,2035.,2060.,2085.,2110.,2135.,2160.,2185.,2210.,2235.,
-     +2260.,2285.,2310.,2335.,2360.,2385.,2410.,2435.,2460.,2485.,
-     +2510.,2535.,2560.,2585.,2610.,2635.,2660.,2685.,2710.,2735.,
-     +2760.,2785.,2810.,2835.,2860.,2885.,2910.,2935.,2960.,2985.,
-     +3010./
 C
 C
 c       CALL ISO_82_TO_85 (MOL,NSO82,ISO,iso_max)
@@ -5920,7 +5920,27 @@ c
 c
       END 
   
-  
+       Block Data BD_TDAT
+C        initialize Tdat in common block /Temperatures/
+      PARAMETER (NT=119)
+      COMMON/Temperatures/tdat(NT)
+
+      data Tdat/  60.,  85., 110., 135., 160., 185., 210., 235.,
+     + 260., 285., 310., 335., 360., 385., 410., 435., 460., 485.,
+     + 510., 535., 560., 585., 610., 635., 660., 685., 710., 735.,
+     + 760., 785., 810., 835., 860., 885., 910., 935., 960., 985.,
+     +1010.,1035.,1060.,1085.,1110.,1135.,1160.,1185.,1210.,1235.,
+     +1260.,1285.,1310.,1335.,1360.,1385.,1410.,1435.,1460.,1485.,
+     +1510.,1535.,1560.,1585.,1610.,1635.,1660.,1685.,1710.,1735.,
+     +1760.,1785.,1810.,1835.,1860.,1885.,1910.,1935.,1960.,1985.,
+     +2010.,2035.,2060.,2085.,2110.,2135.,2160.,2185.,2210.,2235.,
+     +2260.,2285.,2310.,2335.,2360.,2385.,2410.,2435.,2460.,2485.,
+     +2510.,2535.,2560.,2585.,2610.,2635.,2660.,2685.,2710.,2735.,
+     +2760.,2785.,2810.,2835.,2860.,2885.,2910.,2935.,2960.,2985.,
+     +3010./
+
+      END
+ 
 C**************************************
       SUBROUTINE CLEAR
 C**************************************

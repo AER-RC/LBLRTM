@@ -2,18 +2,26 @@ C     path:      $Source$
 C     author:    $Author$
 C     revision:  $Revision$
 C     created:   $Date$
-      PROGRAM LBLRTM                                                      A00010
 C
 C  --------------------------------------------------------------------------
+C |  Copyright ©, Atmospheric and Environmental Research, Inc., 2011         |
 C |                                                                          |
-C |  Copyright 2002 - 2009, Atmospheric & Environmental Research, Inc. (AER).|
-C |  This software may be used, copied, or redistributed as long as it is    |
-C |  not sold and this copyright notice is reproduced on each copy made.     |
-C |  This model is provided as is without any express or implied warranties. |
+C |  All rights reserved. This source code is part of the LBLRTM software    |
+C |  and is designed for scientific and research purposes. Atmospheric and   |
+C |  Environmental Research, Inc. (AER) grants USER the right to download,   |
+C |  install, use and copy this software for scientific and research         |
+C |  purposes only. This software may be redistributed as long as this       |
+C |  copyright notice is reproduced on any copy made and appropriate         |
+C |  acknowledgment is given to AER. This software or any modified version   |
+C |  of this software may not be incorporated into proprietary software or   |
+C |  commercial software offered for sale.                                   |
+C |                                                                          |
+C |  This software is provided as is without any express or implied          |
+C |  warranties.                                                             |
 C |                       (http://www.rtweb.aer.com/)                        |
-C |                                                                          |
 C  --------------------------------------------------------------------------
 C
+      PROGRAM LBLRTM                                                      A00010
 C                                                                         A00020
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   A00030
 C                                                                         A00040
@@ -442,7 +450,7 @@ c
      *                MSWIT,IODFIL,MSTGLE                                 A03150
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           A03020
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY
       COMMON /HDRF/ V1D,V2D,DVD,NLND,IWLD                                 A03240
       COMMON /NGTH/ VD,SD,AD,EPD,MOLD,HWHD,TMPD,PSHD,FLGD,ILS2D           A03250
       COMMON /HDRL/ V1LD,VL2D,NLD,NWDS,ILST3D                             A03260
@@ -1130,7 +1138,7 @@ c**********************************************************************
       Block Data phys_consts
 c
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY
 c
       DATA PI /3.1415926535898 /
 c
@@ -1955,7 +1963,7 @@ C
       CHARACTER*8  EXTID
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         A11360
      *              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,        A11370
      *              NLTEFL,LNFIL4,LNGTH4                                  A11380
@@ -4002,7 +4010,7 @@ C                                                                         A17110
       CHARACTER*8  EXTID
 C
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY
 C                                                                         A17170
       common /lbl_geo/ zh1,zh2,zangle
 c
@@ -4367,7 +4375,7 @@ c
      *                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,
      *                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY
 C                                                                         A19340
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ
@@ -5588,7 +5596,7 @@ C                                                                         A24660
 C                                                                         A24730
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY
 C
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),                A24740
      *            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),                A24750
@@ -6269,7 +6277,7 @@ C
      *     DERVOUTt(2410),DERVOUTe(2410),DERVOUTr(2410),DERVOUTe_r(2410)
 
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY
 
       data iut,iue,iur,iue_r/85,86,87,88/
 

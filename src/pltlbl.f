@@ -3,19 +3,25 @@ C     author:    $Author$
 C     revision:  $Revision$
 C     created:   $Date$
 C
-C                                                                         M00020
-      SUBROUTINE PLTLBL (IENDPL)                                          M00010
-C
 C  --------------------------------------------------------------------------
+C |  Copyright ©, Atmospheric and Environmental Research, Inc., 2011         |
 C |                                                                          |
-C |  Copyright 2002 - 2009, Atmospheric & Environmental Research, Inc. (AER).|
-C |  This software may be used, copied, or redistributed as long as it is    |
-C |  not sold and this copyright notice is reproduced on each copy made.     |
-C |  This model is provided as is without any express or implied warranties. |
+C |  All rights reserved. This source code is part of the LBLRTM software    |
+C |  and is designed for scientific and research purposes. Atmospheric and   |
+C |  Environmental Research, Inc. (AER) grants USER the right to download,   |
+C |  install, use and copy this software for scientific and research         |
+C |  purposes only. This software may be redistributed as long as this       |
+C |  copyright notice is reproduced on any copy made and appropriate         |
+C |  acknowledgment is given to AER. This software or any modified version   |
+C |  of this software may not be incorporated into proprietary software or   |
+C |  commercial software offered for sale.                                   |
+C |                                                                          |
+C |  This software is provided as is without any express or implied          |
+C |  warranties.                                                             |
 C |                       (http://www.rtweb.aer.com/)                        |
-C |                                                                          |
 C  --------------------------------------------------------------------------
 C
+      SUBROUTINE PLTLBL (IENDPL)                                          M00010
 C                                                                         M00020
       IMPLICIT REAL*8           (V)                                     ! M00030
 C                                                                         M00040
@@ -33,7 +39,7 @@ C                                                                         M00080
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      M00140
      *                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                      M00150
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY  
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502)                               M00170
       COMMON /POINTS/ XXI,YI                                              M00180
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,         M00190
@@ -1435,7 +1441,7 @@ C                                                                         M12700
      *                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                      M12740
 C                                                                         M12750
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         M12770
 C     BBFN  BLACK BODY                                                    M12780
 C                                                                         M12790
@@ -1560,7 +1566,7 @@ C                                                                         M13940
      *                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,      M13980
      *                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                      M13990
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 C                                                                         M14010
       DATA HTEN / '10'/,                                                  M14020
      *     TITL3 / ' RADIANCE WATTS /  (CM**2*STER*CM-1)  * '/,           M14030
@@ -1745,7 +1751,7 @@ C                                                                         M15800
 C                                                                         M15820
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN                           M15830
       COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,
-     *                RADCN1,RADCN2 
+     *                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
       COMMON XX(2450),YY(2450)                                            M15850
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502)                               M15860
 C                                                                         M15870
