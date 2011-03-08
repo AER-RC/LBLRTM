@@ -1,0 +1,404 @@
+#     author:    $Author$
+#     revision:  $Revision$
+#     created:   $Date$
+
+# COMPILE OPTIONS
+# THESE OPTIONS CAN BE EXPANDED FOR OTHER SYSTEMS, JUST FOLLOW THE
+# GIVEN FORMAT.
+
+# Generic Compiler Options
+
+###############################################
+# Start of common material
+###############################################
+
+# Search for .o and .f files in given directories
+VPATH = $(CPATH): $(CDOTO)
+
+###############################
+# Default
+###############################
+
+default:
+	echo
+	echo '-----------------'
+	echo '  $(PRODUCT) $(VERSION) Makefile'
+	echo '-----------------'
+	echo
+	echo 'Please specify desired compiler and precision using'
+	echo
+	echo 'gmake -f make_$(PRODUCT) <target>'
+	echo
+	echo 'current supported targets are:'
+	echo
+	echo 'sunSUNsgl    : Solaris sun studio fortran single precision'
+	echo 'sunSUNdbl    : Solaris sun studio fortran double precision'
+	echo 'linuxGNUsgl  : Linux gfortran single precision'
+	echo 'linuxGNUdbl  : Linux gfortran double precision'
+	echo 'linuxPGIdbl  : linux using pgi fortran and double precision'
+	echo 'linuxPGIsgl  : linux using pgi fortran and single precision'
+	echo 'linuxG95dbl  : Linux using g95 and double precision'
+	echo 'linuxG95sgl  : Linux using g95 and single precision'
+	echo 'linuxINTELdbl: Linux using Intel Fortran and double precision'
+	echo 'linuxINTELsgl: Linux using Intel Fortran and single precision'
+	echo 'sgiMIPSdbl   : SGI using MIPS fortran and double precision'
+	echo 'sgiMIPSsgl   : SGI using MIPS fortran and single precision'
+	echo 'osxINTELdbl  : OSX using Intel Fortran and double precision'
+	echo 'osxINTELsgl  : OSX using Intel Fortran and single precision'
+	echo 'osxABSOFTdbl : OSX using Absoft PRO Fortran and double precision'
+	echo 'osxABSOFTsgl : OSX using Absoft PRO Fortran and single precision'
+	echo 'osxGNUdbl    : OSX using GNU Fortran and double precision'
+	echo 'osxGNUsgl    : OSX using GNU Fortran and single precision'
+	echo 'osxIBMdbl    : OSX using IBM XL Fortran and double precision'
+	echo 'osxIBMsgl    : OSX using IBM XL Fortran and single precision'
+	echo 'mingwGNUdbl' : Window unix shell environment using gfortran and double precision'
+	echo 'mingwGNUsgl' : Window unix shell environment using gfortran and single precision'
+	echo 'aixIBMsgl    : AIX using IBM XL Fortran and double precision'
+	echo 'aixIBMsgl    : AIX using IBM XL Fortran and single precision'
+	echo
+
+
+###############################
+# Load line
+###############################
+
+all : intro makedir build conclude
+
+###############################
+# Intro information
+###############################
+.SILENT:
+intro :
+	echo
+	echo '-----------------'
+	echo '  $(OUTPUT) Makefile'
+	echo '-----------------'
+	echo
+	echo 'This Makefile was designed for the $(PLTFRM) platform.'
+	echo
+	echo 'It uses the $(FC) compiler, with the following options:'
+	echo '      $(FCFLAG)'
+	echo
+	echo 'The source files used are as follows:'
+	echo
+	echo '      $(SRCS)'
+	echo
+	echo
+	echo '$(OUTPUT) make in progress ...'
+	echo
+
+
+###############################
+# Concluding information
+###############################
+
+conclude :
+	echo
+	echo '================='
+	echo '  Makefile done'
+	echo '================='
+
+###############################
+# Create object file directory
+###############################
+
+
+makedir :
+	if [ ! -d $(CDOTO) ] ; \
+	then \
+	   mkdir $(CDOTO) ; \
+	fi
+
+###############################
+# common build rules
+###############################
+
+clean:
+	-rm -rf *.o
+	-rm -rf $(PRODUCT)_*_$(VERSION)_*.obj
+	
+cleanall:
+	-rm -rf *.o
+	-rm -r *_*_$(VERSION)_*.obj
+	
+#*************************************************************
+# SUN/SOLARIS OPERATING SYSTEM
+#*************************************************************
+
+##############################################################
+# Sun OS using sun fortran and double precision
+##############################################################
+
+sunSUNdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=sunf90 \
+	PLTFRM=sun  \
+	FC=f90 \
+	FCFLAG="-xtypemap=real:64,double:64,integer:64" \
+	UTIL_FILE=util_sun.f
+
+##############################################################
+# Sun OS using sun fortran and single precision
+##############################################################
+
+sunSUNsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=sunf90 \
+	PLTFRM=sun \
+	FC=f90 \
+	FCFLAG=-fast \
+	UTIL_FILE=util_sun.f
+
+#*************************************************************
+# SGI/IRIX64 OPERATING SYSTEM
+#*************************************************************
+
+##############################################################
+# SGI using MIPS fortran and double precision
+##############################################################
+sgiMIPSdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=mips \
+	PLTFRM=sgi  \
+	FC=f90 \
+	FCFLAG="-mips4 -r10000 -lfastm -O3 -r8 -i8 -TENV:X=0" \
+	UTIL_FILE=util_sgi.f
+
+##############################################################
+# SGI using MIPS fortran and single precision
+##############################################################
+sgiMIPSsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=mips \
+	PLTFRM=sgi  \
+	FC=f90 \
+	FCFLAG="-mips4 -r10000 -lfastm -O3 -TENV:X=0" \
+	UTIL_FILE=util_sgi.f
+
+#*************************************************************
+# LINUX OPERATING SYSTEM
+#*************************************************************
+
+##############################################################
+# linux using pgi fortran and double precision
+##############################################################
+
+linuxPGIdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=pgi PLTFRM=linux \
+	FC=pgf90  \
+	FCFLAG="-fast -r8 -i8" \
+	UTIL_FILE=util_linux_pgi.f
+
+##############################################################
+# linux using pgi fortran and single precision
+##############################################################
+
+linuxPGIsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=pgi PLTFRM=linux \
+	FC=pgf90 \
+	FCFLAG="-fast" \
+	UTIL_FILE=util_linux_pgi.f
+	
+##############################################################
+# linux using gfortran and double precision
+##############################################################
+
+linuxGNUdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=gnu PLTFRM=linux \
+	FC=gfortran  \
+	FCFLAG="-fdefault-integer-8 -fdefault-real-8 -Wall -frecord-marker=4" \
+	UTIL_FILE=util_gfortran.f
+
+##############################################################
+# linux using gfortran and single precisions
+##############################################################
+
+linuxGNUsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=gnu PLTFRM=linux \
+	FC=gfortran \
+	FCFLAG="-Wall -frecord-marker=4" \
+	UTIL_FILE=util_gfortran.f
+
+##############################################################
+# linux using g95 and double precision
+##############################################################
+
+linuxG95dbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=g95 PLTFRM=linux \
+	FC=g95  \
+	FCFLAG="-O3 -r8 -i8" \
+	UTIL_FILE=util_linux_intel.f
+
+##############################################################
+# linux using g95 and single precision
+##############################################################
+
+linuxG95sgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=g95 PLTFRM=linux \
+	FC=g95 \
+	FCFLAG="-O3" \
+	UTIL_FILE=util_linux_intel.f
+
+##############################################################
+# linux using Intel Fortran and double precision
+##############################################################
+
+linuxINTELdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=intel PLTFRM=linux \
+	FC=ifort  \
+	FCFLAG="-r8 -i8 -w -Vaxlib" \
+	UTIL_FILE=util_linux_intel.f
+
+##############################################################
+# linux using Intel Fortran and single precision
+##############################################################
+
+linuxINTELsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=intel PLTFRM=linux \
+	FC=ifort \
+	FCFLAG="-w -Vaxlib" \
+	UTIL_FILE=util_linux_intel.f
+
+
+#*************************************************************
+# APPLE MAC/OS_X OPERATING SYSTEM
+#*************************************************************
+
+##############################################################
+# OSX using Intel Fortran and double precision
+##############################################################
+
+osxINTELdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=intel \
+	PLTFRM=OS_X  \
+	FC=ifort \
+	FCFLAG="  -O3 -r8 -i8 "
+	UTIL_FILE = util_OS_X_ifort.f
+
+
+##############################################################
+# OSX using Intel Fortran and single precision
+##############################################################
+
+osxINTELsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=intel \
+	PLTFRM=OS_X \
+	FC=ifort \
+	FCFLAG=" -O3 "
+	UTIL_FILE = util_OS_X_ifort.f
+
+
+##############################################################
+# OSX using Absoft PRO Fortran and double precision
+##############################################################
+
+osxABSOFTdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=intel \
+	PLTFRM=OS_X  \
+	FC=absoft \
+	FCFLAG="-s -O -N11 -i8 -N113" \
+	UTIL_FILE=util_OS_X_absoft.f
+
+##############################################################
+# OSX using Absoft PRO Fortran and single precision
+##############################################################
+
+osxABSOFTsgl:	
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=intel \
+	PLTFRM=OS_X \
+	FC=absoft \
+	FCFLAG="-s -O -N11 -i8 -lU77" \
+	UTIL_FILE=util_OS_X_absoft.f
+
+##############################################################
+# OSX using GNU Fortran and double precision
+##############################################################
+
+osxGNUdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=gnu \
+	PLTFRM=OS_X  \
+	FC=gfortran \
+	FCFLAG=" -fdefault-integer-8 -fdefault-real-8 -Wall -frecord-marker=4" \
+	UTIL_FILE=util_gfortran.f
+
+##############################################################
+# OSX using GNU Fortran and single precision
+##############################################################
+
+osxGNUsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=gnu \
+	PLTFRM=OS_X \
+	FC=gfortran \
+	FCFLAG="-Wall -frecord-marker=4" \
+	UTIL_FILE=util_gfortran.f
+
+##############################################################
+# OSX using IBM XL Fortran and double precision
+##############################################################
+
+osxIBMdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=ibm_xl \
+	PLTFRM=OS_X  \
+	FC=xlf90 \
+	FCFLAG="-O2 -qfixed=72 -qmaxmem=-1 -qrealsize=8 -qintsize=8" \
+	UTIL_FILE=util_OS_X_ibm_xl.f
+
+##############################################################
+# OSX using IBM XL Fortran and single precision
+##############################################################
+osxIBMsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=ibm_xl \
+	PLTFRM=OS_X \
+	FC=xlf90 \
+	FCFLAG="-O2 -qfixed=72 -qmaxmem=-1" \
+	UTIL_FILE=util_OS_X_ibm_xl.f
+
+#*************************************************************
+# WINDOWS OPERATING SYSTEM
+#*************************************************************
+
+##############################################################
+# window unix shell environment using gfortran and double precision
+##############################################################
+
+mingwGNUdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=gnu PLTFRM=mingw \
+	FC=gfortran  \
+	FCFLAG="-fdefault-integer-8 -fdefault-real-8 -Wall -frecord-marker=4" \
+	UTIL_FILE=util_gfortran.f
+
+##############################################################
+# window unix shell environment using gfortran and single precision
+##############################################################
+
+mingwGNUsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=gnu PLTFRM=mingw \
+	FC=gfortran \
+	FCFLAG="-Wall -frecord-marker=4" \
+	UTIL_FILE=util_gfortran.f
+
+#*************************************************************
+# IBM/AIX OPERATING SYSTEM
+#*************************************************************
+
+##############################################################
+# AIX using IBM XL Fortran and double precision
+##############################################################
+aixIBMdbl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=ibm_xl \
+	PLTFRM=AIX  \
+	FC=xlf90 \
+	FCFLAG="-O2 -qfixed=72 -qmaxmem=-1 -qrealsize=8 -qintsize=8" \
+	UTIL_FILE=util_aix.f
+
+
+##############################################################
+# AIX using IBM XL Fortran and single precision
+##############################################################
+aixIBMsgl:
+	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=ibm_xl \
+	PLTFRM=AIX \
+	FC=xlf90 \
+	FCFLAG="-O2 -qfixed=72 -qmaxmem=-1" \
+	UTIL_FILE=util_aix.f
+
+# Rule for compiling .o files
+
+%.o:%.f
+	$(FC) -c $(FCFLAG)  $< -o ${CDOTO}/$@

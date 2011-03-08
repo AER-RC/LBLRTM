@@ -1,0 +1,56 @@
+# $Revision$
+# Makefile for lblrtm
+# From lblrtm/build directory, type: gmake -f make_lblrtm <TARGET>
+
+# Include file containing user input. Directory is referenced to 
+# parent directory and common build rules
+include makefile.common
+
+###############################
+# Set variables/
+###############################
+#Set version name.  Used in the default OUTPUT and CDOTO variables.  If you
+# change those two variables from what is provided here, no need to set this variable.
+
+PRODUCT = lblrtm
+VERSION = v12.0
+
+# Set name of LBLRTM executable.  
+OUTPUT = ${PRODUCT}_$(VERSION)_$(PLTFRM)_$(FC_TYPE)_$(P_TYPE)
+
+# Set directory for object files.  
+CDOTO = ${PRODUCT}_$(VERSION)_$(PLTFRM)_$(FC_TYPE)_$(P_TYPE).obj
+
+# Set directory containing source files, relative to main directory from which
+# you are executing the makefile
+CPATH = ../src
+
+# Files contained in src directory.  If additional .f files are added,
+# add to this list. 
+SRCS = lblrtm.f oprop.f contnm.f xmerge.f testmm.f \
+lblatm.f lbllow.f postsub.f pltlbl.f \
+lbldum.f solar.f nonlte.f fftscn$(FFTEXT).f $(UTIL_FILE)
+
+###########################################
+# Set variables specific to LBLRTM compile#
+###########################################
+ifeq ($(P_TYPE),dbl)
+     FFTEXT=_dbl
+endif
+
+
+# Define makefile name
+MAKEFILE=make_$(PRODUCT)
+
+# Object file names
+OBPATH = ${SRCS:.f=.o}
+
+build : $(OBPATH)      	
+	$(FC) $(FCFLAG) -o ../$(OUTPUT) ${CDOTO}/*.o
+
+
+
+
+
+
+
