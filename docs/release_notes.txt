@@ -1,4 +1,39 @@
-LBLRTM v11.8.1
+LBLRTM v12.0
+Jan 2011
+
+* contnm.f (MT_CKD_2.5.2)
+  - Added ‘if’ tests needed for speed improvements in monortm (K. E. Cady-Pereira, E.J. Mlawer)
+
+  - Other software updates include:
+	* In N2 pure rotation band, fixed incorrect indexing related to contribution from N2-O2 
+	(E.J. Mlawer, A.E. Lipton, V.H. Payne)
+        * Increased number of output points in all continuum modules to prevent possible truncation at
+	high wavenumber end (E.J. Mlawer, S.A. Clough, C.H. Kohler)
+	* Near-IR O2 continuum modified to allow for calculations over domains greater than 2000 cm-1; 
+	needed by standalone continuum code (E.J. Mlawer, P. Hedelt)
+	* O2 fundamental modified to correct 5 cm-1 shift (E.J. Mlawer, S.A. Clough, C.H. Kohler)
+	* Rayleigh is now computed for IAERSL=5 (E.J. Mlawer, K.E. Cady-Pereira)
+
+    - Updated historical information (E.J. Mlawer, V.H. Payne)
+
+* Added new cross-sections to the archive [acetone (CH3COCH3), PAN, CH3CN].  
+  - The acetone data was derived by A. Waterfall (Thesis, 2003); PAN and CH3CN were obtained from HITRAN 2008.
+  - Documentation of cross-section data now provided.
+
+* lblatm.f
+  - Bugs introduced in v11.8.1 lblatm.f common block changes repaired.
+
+* Updates have been made to non-LTE subroutines and to TAPE4 (non-LTE input) format 
+  - A distinction between vibrational temperature profiles for minor isotopologues of a given 
+  molecule now enabled. (V. Payne and D. Weisenstein).
+  - An error has been fixed that led to small discrepancies between the TAPE5 temperature 
+  profile and the temperature profile for states in LTE when using IHIRAC=4 (D. Weisenstein).
+
+* Simplified makefile system in the build directory; includes new platforms such as Windows and capability to easily add new platforms.
+
+* Updated lblrtm_instructions.
+
+LBLRTM v11.8.1 (AER internal release only)
 May 11, 2010
 
 1) lblatm.f
