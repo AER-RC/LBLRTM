@@ -28,6 +28,9 @@ Jan 2011
   molecule now enabled. (V. Payne and D. Weisenstein).
   - An error has been fixed that led to small discrepancies between the TAPE5 temperature 
   profile and the temperature profile for states in LTE when using IHIRAC=4 (D. Weisenstein).
+  - Bug fix related to compiler-dependent memory allocation and to starting-wavenumber dependent 
+  differences in the application of the radiation field within non-LTE calculations (D. Weisenstein,
+  M. Alvarado, E. Mlawer).
 
 * Simplified makefile system in the build directory; includes new platforms such as Windows and capability to easily add new platforms.
 
