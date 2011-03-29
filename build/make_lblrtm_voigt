@@ -47,7 +47,9 @@ OBPATH = ${SRCS:.f=.o}
 build : $(OBPATH)      	
 	$(FC) $(FCFLAG) -o ../$(OUTPUT) ${CDOTO}/*.o
 
+## Define dependancies
 
+$(OBPATH):${CPATH}/lblparams.inc
 
 
 

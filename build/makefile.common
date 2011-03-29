@@ -51,12 +51,12 @@ default:
 	echo 'osxGNUsgl    : OSX using GNU Fortran and single precision'
 	echo 'osxIBMdbl    : OSX using IBM XL Fortran and double precision'
 	echo 'osxIBMsgl    : OSX using IBM XL Fortran and single precision'
-	echo 'mingwGNUdbl' : Window unix shell environment using gfortran and double precision'
-	echo 'mingwGNUsgl' : Window unix shell environment using gfortran and single precision'
+	echo 'mingwGNUdbl  : Window unix shell environment using gfortran and double precision'
+	echo 'mingwGNUsgl  : Window unix shell environment using gfortran and single precision'
 	echo 'aixIBMsgl    : AIX using IBM XL Fortran and double precision'
 	echo 'aixIBMsgl    : AIX using IBM XL Fortran and single precision'
-	echo
-
+	echo 
+	
 
 ###############################
 # Load line
@@ -401,4 +401,4 @@ aixIBMsgl:
 # Rule for compiling .o files
 
 %.o:%.f
-	$(FC) -c $(FCFLAG)  $< -o ${CDOTO}/$@
+	$(FC) -c $(FCFLAG) -I${CPATH} $< -o ${CDOTO}/$@
