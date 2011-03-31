@@ -761,7 +761,8 @@ C     DIMENSION RR2 =  NBOUND/2 + 1 + DIM(R2)
 C     DIMENSION RR3 =  NBOUND/4 + 1 + DIM(R3)
 C
       COMMON RR1(6099),RR2(2075),RR3(429)                                 B00520
-      COMMON /XRNLTE/ RR1s(4050),RR2s(1050),RR3s(300)               
+      COMMON /XRNLTE/ RR1s(-2043:4050),RR2s(-1023:1050),RR3s(-128:300)
+C      COMMON /XRNLTE/ RR1s(4050),RR2s(1050),RR3s(300)               
       COMMON /IOU/ IOUT(250)                                              B00530
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)                B00540
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NP,H1F,H2F,         B00550
@@ -1726,7 +1727,8 @@ C                                                                         B07520
 c
       DIMENSION VNU(*),SABS(*),SRAD(*),SPPSP(*),RECALF(*)                 B07530
       DIMENSION R1(*),R2(*),R3(*)                                         B07540
-      DIMENSION RR1(*),RR2(*),RR3(*)
+      DIMENSION RR1(-2043:4050),RR2(-1023:1050),RR3(-128:300)
+C      DIMENSION RR1(*),RR2(*),RR3(*)
       DIMENSION IZETA(*),ZETAI(*)                                         B07570
 C                                                                         B07580
       equivalence (zetdif,A)
@@ -1935,7 +1937,8 @@ C                                                                         B10350
      *              NLTEFL,LNFIL4,LNGTH4                                  B10480
       COMMON /IODFLG/ DVOUT
       DIMENSION R1(*),R2(*),R3(*)                                         B10490
-      DIMENSION RR1(*),RR2(*),RR3(*)                                      B10490
+      DIMENSION RR1(-2043:4050),RR2(-1023:1050),RR3(-128:300)
+C     DIMENSION RR1(*),RR2(*),RR3(*)                                      B10490
       DIMENSION PNLHDR(2)                                                 B10500
 C                                                                         B10510
       EQUIVALENCE (V1P,PNLHDR(1))                                         B10520
@@ -2029,6 +2032,7 @@ C                                                                         B11160
          DO 40 I = NPTSI1, NPTSI2                                         B11170
 C           VI = VI+DV                                                    B11180
             R1(I) = R1(I)*RADVI                                           B11190
+            rr1(i) = rr1(i)*radvi
             RADVI = RADVI+RDEL                                            B11200
    40    CONTINUE                                                         B11210
 C                                                                         B11220
