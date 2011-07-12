@@ -3567,7 +3567,11 @@ C                                                                        FA29170
       IUPPER = 2                                                         FA29230
       WRITE (IPR,900) Z                                                  FA29240
 C                                                                        FA29250
-      STOP 'DEFAULT Z'                                                   FA29260
+      if (JUNITP.le.6.OR.JUNITT.LE.6) STOP 'DEFAULT Z'                                                   FA29260THEN
+      do k=1,nmol
+         IF (JUNIT(K).le.6)  STOP 'DEFAULT Z'                                                   FA29260
+      end do  
+
 C                                                                        FA29270
 C     LAGRANGE CONTINUATION                                              FA29280
 C                                                                        FA29290
