@@ -1,9 +1,0 @@
-#!/bin/tcsh
-
-#Created by Mark Shephard, August 2002
-#This script links the utility files from there repository
-#to the src directory
-
-ln -s /storm/rc1/rt_utils_local_version/util*.f .
-
-
