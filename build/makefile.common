@@ -81,10 +81,16 @@ intro :
 	echo
 	echo 'The source files used are as follows:'
 	echo
-	echo '      $(SRCS)'
+	echo '      $(SRCS) $(UTIL_FILE)'
 	echo
+	echo 'The object files used are as follows:'
 	echo
-	echo '$(OUTPUT) make in progress ...'
+	echo '      $(OBPATH)'
+	echo
+	echo 'The executable will be::'
+	echo '../$(OUTPUT)'
+	echo
+	echo 'make in progress ...'
 	echo
 
 
@@ -96,6 +102,8 @@ conclude :
 	echo
 	echo '================='
 	echo '  Makefile done'
+	echo
+	echo '../$(OUTPUT) created'
 	echo '================='
 
 ###############################
@@ -202,7 +210,7 @@ linuxPGIsgl:
 linuxGNUdbl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=gnu PLTFRM=linux \
 	FC=gfortran  \
-	FCFLAG="-fdefault-integer-8 -fdefault-real-8 -Wall -frecord-marker=4" \
+	FCFLAG="-fdefault-integer-8 -fdefault-real-8 -frecord-marker=4" \
 	UTIL_FILE=util_gfortran.f
 
 ##############################################################
@@ -212,7 +220,7 @@ linuxGNUdbl:
 linuxGNUsgl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=gnu PLTFRM=linux \
 	FC=gfortran \
-	FCFLAG="-Wall -frecord-marker=4" \
+	FCFLAG="-frecord-marker=4" \
 	UTIL_FILE=util_gfortran.f
 
 ##############################################################
@@ -314,7 +322,7 @@ osxGNUdbl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=gnu \
 	PLTFRM=OS_X  \
 	FC=gfortran \
-	FCFLAG=" -fdefault-integer-8 -fdefault-real-8 -Wall -frecord-marker=4" \
+	FCFLAG=" -fdefault-integer-8 -fdefault-real-8 -frecord-marker=4" \
 	UTIL_FILE=util_gfortran.f
 
 ##############################################################
@@ -325,7 +333,7 @@ osxGNUsgl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=gnu \
 	PLTFRM=OS_X \
 	FC=gfortran \
-	FCFLAG="-Wall -frecord-marker=4" \
+	FCFLAG="-frecord-marker=4" \
 	UTIL_FILE=util_gfortran.f
 
 ##############################################################
@@ -360,7 +368,7 @@ osxIBMsgl:
 mingwGNUdbl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=gnu PLTFRM=mingw \
 	FC=gfortran  \
-	FCFLAG="-fdefault-integer-8 -fdefault-real-8 -Wall -frecord-marker=4" \
+	FCFLAG="-fdefault-integer-8 -fdefault-real-8 -frecord-marker=4" \
 	UTIL_FILE=util_gfortran.f
 
 ##############################################################
@@ -370,7 +378,7 @@ mingwGNUdbl:
 mingwGNUsgl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=gnu PLTFRM=mingw \
 	FC=gfortran \
-	FCFLAG="-Wall -frecord-marker=4" \
+	FCFLAG="-frecord-marker=4" \
 	UTIL_FILE=util_gfortran.f
 
 #*************************************************************
@@ -401,4 +409,6 @@ aixIBMsgl:
 # Rule for compiling .o files
 
 %.o:%.f
+	$(FC) -c $(FCFLAG) -I${CPATH} $< -o ${CDOTO}/$@
+%.o:%.f90
 	$(FC) -c $(FCFLAG) -I${CPATH} $< -o ${CDOTO}/$@
