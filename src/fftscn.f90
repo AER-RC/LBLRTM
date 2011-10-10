@@ -188,7 +188,11 @@
 !*                                                                      
 !*    Therefore, LPTSMX should be set to a value somewhat larger than   
 !*    the size of the smallest typical spectrum, but no larger than the 
-!*    largest value possible without thrashing.                         
+!*    largest value possible without thrashing.  
+!
+!     Modified 10/04/2011, mja, to increase LPTFFT by a factor of 4
+!     This gives better accuracy for regions with large changes in radiance 
+!     (e.g., CO2 bandhead region)                  
 !                                                                       
 !     IBLKSZ is the record length in the OPEN statement, and may be     
 !     in bytes or words,  depending on the operating system.  For VAX   
@@ -459,13 +463,29 @@
                                                                         
       If (V1Z .LT. V1C) Then 
           V1Z = V1C 
+          write(*,*) '****************************************' 
+          write(*,*) ' Warning: Setting V1Z = V1C: ', V1Z, V1C 
+          write(*,*) ' First data point used: beginning of spectrum',   &
+     &         ' may suffer from wraparound effects'                    
+          write(*,*) ' May want to decrease the input V1 value' 
+          write(*,*) ' ' 
+          write(IPR,*) '****************************************' 
+          Write(IPR,*) ' Setting V1Z = V1C' 
           Write(IPR,*) ' First data point used: beginning of spectrum', &
      &         ' may suffer from wraparound effects'                    
+          write(IPR,*) ' May want to decrease the input V1 value' 
+          write(IPR,*) ' ' 
       Endif 
       If (V2Z .GT. V2C) Then 
           V2Z = V2C 
+          write(*,*) ' Warning: Setting V2Z = V2C: ', V2Z, V2C 
+          write(*,*) ' Last data point used: end of spectrum',          &
+     &         ' may suffer from wraparound effects'                    
+          write(*,*) ' May want to increase the input V2 value' 
+          write(IPR,*) ' Warning Setting V2Z = V2C: ', V2Z, V2C 
           Write(IPR,*) ' Last data point used: end of spectrum may',    &
      &         ' suffer from wraparound effects'                        
+          write(IPR,*) ' May want to increase the input V2 value' 
       Endif 
                                                                         
       Write(IPR,'(/,A,F12.5,A,F12.5)')                                  &
@@ -603,13 +623,20 @@
                                                                         
 !*****If the FFT can be performed in memory (LREC = 1), then find the   
 !*****smallest sized FFT possible = LPTFFT = smallest power of 2 > LTOTA
-!*****and < LPTSMX                                                      
+!*****and < LPTSMX
+!     Modified 10/04/2011, mja, to increase LPTFFT by a factor of 4
+!     This gives better accuracy for regions with large changes in radiance 
+!     (e.g., CO2 bandhead region)                                          
       If(LREC .eq. 1) Then 
           POWER =  LOG( REAL(LTOTAL))/ LOG(2.0) 
           If(POWER-INT(POWER) .EQ. 0) Then 
-              LPTFFT = 2**INT(POWER) 
+!              LPTFFT = 2**INT(POWER) 
+               LPTFFT = 2**INT(POWER+2) 
+!              mja, 09/29/2011, increase number of points to increase accuracy
           Else 
-              LPTFFT = 2**(INT(POWER)+1) 
+!              LPTFFT = 2**(INT(POWER)+1) 
+               LPTFFT = 2**(INT(POWER)+3)
+!              mja, 09/29/2011, increase number of points to increase accuracy
           Endif 
                                                                         
           Write(IPR,*) ' In-memory FFT: points, FFT points = ',         &
@@ -811,7 +838,11 @@
 !     LREC becomes the new number of records. (The old records for L >  
 !     LREC will still exist but will be ignored.)                       
 !     LREC must still be a power of 2, and zeroed records will be added 
-!     as necessary. JEMIT flags transmittance (0) or radiance (1)       
+!     as necessary. JEMIT flags transmittance (0) or radiance (1)  
+!
+!     Modified 10/04/2011, mja, to increase KREC by a factor of 4
+!     This gives better accuracy for regions with large changes in radiance 
+!     (e.g., CO2 bandhead region)       
 !***********************************************************************
                                                                         
 !***********************************************************************
@@ -877,11 +908,18 @@
           KRDATA = INT(ARDATA)+1 
       Endif 
 !*****Find KREC = smallest power of 2 .GE. KRDATA                       
+!     Modified 10/04/2011, mja, to increase KREC by a factor of 4
+!     This gives better accuracy for regions with large changes in radiance 
+!     (e.g., CO2 bandhead region)        
       POWER =  LOG( REAL(KRDATA))/ LOG(2.0) 
       If((POWER-INT(POWER)) .EQ. 0) Then 
-          KREC = 2**INT(POWER) 
+!          KREC = 2**INT(POWER)
+           KREC = 2**INT(POWER+2) 
+!          mja, 09/29/2011, increase number of points to increase accuracy
       Else 
-          KREC = 2**INT(POWER+1) 
+!          KREC = 2**INT(POWER+1) 
+           KREC = 2**INT(POWER+3)
+!          mja, 09/29/2011, increase number of points to increase accuracy
       Endif 
                                                                         
 !*****Get the first record from LFILE, if necessary                     
@@ -1589,6 +1627,9 @@
 !*****LREC   = smallest power of 2 .GE. LRDATA = total number of        
 !*****         records on LFILE. Records in excess of LRDATA are all    
 !*****         0's or 1's                                               
+!     Modified 10/04/2011, mja, to increase LREC by a factor of 4
+!     This gives better accuracy for regions with large changes in radiance 
+!     (e.g., CO2 bandhead region) 
 !*****LSLAST  = number of valid points in record LRDATA.                
 !*****Note: there is a potential roundoff problem using n = (v2-v1)/dv  
 !*****when n reaches 7 digits, the limit of single precision.           
@@ -1604,10 +1645,17 @@
       Endif 
                                                                         
       POWER =  LOG( REAL(LRDATA))/ LOG(2.0) 
+!     Modified 10/04/2011, mja, to increase LREC by a factor of 4
+!     This gives better accuracy for regions with large changes in radiance 
+!     (e.g., CO2 bandhead region)        
       If(POWER-INT(POWER) .EQ. 0) Then 
-          LREC = 2**INT(POWER) 
+!          LREC = 2**INT(POWER) 
+           LREC = 2**INT(POWER+2) 
+!          mja, 09/29/2011, increase number of points to increase accuracy
       Else 
-          LREC = 2**(INT(POWER)+1) 
+!          LREC = 2**(INT(POWER)+1)
+           LREC = 2**(INT(POWER)+3) 
+!          mja, 09/29/2011, increase number of points to increase accuracy
       Endif 
                                                                         
       LSLAST = MOD(LTOTAL,LPTSMX) 
@@ -1893,7 +1941,8 @@
 !                                                                       
 !     JFN  Apodization Function                                         
 !      1   Sinc**2 = (sin(z)/z)**2, z = Pi*x*a (a = C1*hwhm)            
-!      2   Gaussian = exp(-2*Pi*(a*x)**2)                               
+!      2   Gaussian = exp(-2*Pi*(a*x)**2) 
+!      (Default infinite, IASI special case is truncated, mja, 10/04/2011)
 !      3   Triangle, 1 @x=0, 0 @x= 1/a                                  
 !      4   Rectangle = 1, x:0 to 1/a; 0, x > 1/a                        
 !      5   Beer = (1-(x*a)**2)**2                                       
@@ -1989,8 +2038,19 @@
          endif 
                                                                         
          Do 26 L=1,LPTS-1,2 
-            FUNCT(L) = exp( -MIN( 2.0*(Pi*X*A_mod)**2, ARGMIN)) 
-            FUNCT(L+1) = 0.0 
+             if (param .eq. 0) then !Infinite Gaussian
+                    FUNCT(L) = exp( -MIN( 2.0*(Pi*X*A_mod)**2, ARGMIN))
+                    FUNCT(L+1) = 0.0 
+             else !IASI special case: Truncated Gaussian outside OPD
+                  !mja, 10/04/2011
+                if (ABS(X) .LE. 0.5/A) then
+                   FUNCT(L) = exp( -MIN( 2.0*(Pi*X*A_mod)**2, ARGMIN))
+                   FUNCT(L+1) = 0.0
+                else            
+                    FUNCT(L) = 0.0
+                    FUNCT(L+1) = 0.0 
+                endif
+             endif
             X = X0+(L+1)*DX/2. 
    26    Continue 
       Endif 
@@ -2227,7 +2287,7 @@
                                                                         
       If(IAPSC .EQ. -1) Then                                            
 !****     Scanning function                                             
-          Write(IPR,*) ' SCNFNT - Error: Brault Apodization',           
+          Write(IPR,*) ' SCNFNT - Error: Brault Apodization',           &
      &        '  not yet implemented in spectral domain'                
           Stop ' Stopped in SCNFNT'                                     
                                                                         
@@ -2262,14 +2322,14 @@
 !*****The valid range of P is [2,4].                                    
                                                                         
       If(PARM1 .LT. 2.0 .OR. PARM1 .GT. 4.0) Then                       
-          Write(IPR,*) ' SCNFNT - Error: Kaiser-Bessel Apodization, ',  
+          Write(IPR,*) ' SCNFNT - Error: Kaiser-Bessel Apodization, ',  &
      &        'P = ',PARM1,'  Valid range of P is [2,4]'                
           Stop 'Stopped in SCNFNT'                                      
       ENDIF                                                             
                                                                         
       If(IAPSC .EQ. -1) Then                                            
 !****     Scanning function                                             
-          Write(IPR,*) ' Scnfnt - error: Kaiser-Bessel Apodization',    
+          Write(IPR,*) ' Scnfnt - error: Kaiser-Bessel Apodization',    &
      &        '  not yet implemented in spectral domain'                
           Stop ' Stopped in Scnfnt'                                     
                                                                         
@@ -2326,7 +2386,7 @@
 !*****    Apodization Function                                          
 !*****    The apodization function for this scanning function is complex
 !*****    and is not implemented here.                                  
-          Write(IPR,*) ' SCNFNT - ERROR: Kiruna Function: ',            
+          Write(IPR,*) ' SCNFNT - ERROR: Kiruna Function: ',            &
      &        ' Apodization Function not defined'                       
               Stop 'Stopped in SCNFNT'                                  
                                                                         
@@ -2356,8 +2416,8 @@
           X = X0+(L+1)*DX/2.                                            
   206 Continue                                                          
       If(Z .GT. Pi) Then                                                
-          Write(IPR,*) ' Scnfnt - error: Function -1, Z is too large',  
-     &    ' for this approximation.  Prescanning rectangle is too ',    
+          Write(IPR,*) ' Scnfnt - error: Function -1, Z is too large',  &
+     &    ' for this approximation.  Prescanning rectangle is too ',    &
      &    ' wide?'                                                      
           Write(IPR,*) ' Z = ',Z                                        
 !          Stop 'Stopped in Scnfnt'                                     
