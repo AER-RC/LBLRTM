@@ -40,7 +40,7 @@ lblatm.f90 lbllow.f90 postsub.f90 pltlbl.f90 \
 lbldum.f90 solar.f90 nonlte.f90 fftscn$(FFTEXT).f90 $(UTIL_FILE)
 
 # Object file names
-OBPATH = ${SRCS:.f90=.o} ${SRCS:.f=.o}
+OBPATH = ${SRCS:.f90=.o}
 
 build : $(OBPATH)      	
 	$(FC) $(FCFLAG) -o ../$(OUTPUT) ${CDOTO}/*.o
