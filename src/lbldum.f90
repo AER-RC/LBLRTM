@@ -1,4 +1,4 @@
-!     path:      %P%
+!     path:      $HeadURL$
 !     revision:  $Revision$
 !     created:   $Date$  
 !     presently: %H%  %T%

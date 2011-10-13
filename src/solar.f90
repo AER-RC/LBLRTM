@@ -1,4 +1,4 @@
-!     path:      %P%
+!     path:      $HeadURL$
 !     revision:  $Revision$
 !     created:   $Date$  
 !     presently: %H%  %T%
@@ -46,6 +46,7 @@
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 !                                                                       
+      USE phys_consts, ONLY: pi, radcn2
       PARAMETER (NSOL=2000001) 
 !                                                                       
       IMPLICIT REAL*8           (V) 
@@ -97,9 +98,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 

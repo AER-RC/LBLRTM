@@ -1,4 +1,4 @@
-!     path:      $Source$
+!     path:      $HeadURL$
 !     author:    $Author$
 !     revision:  $Revision$
 !     created:   $Date$
@@ -450,8 +450,6 @@
      &                MSFLAG,                                           &
      &                MSWIT,IODFIL,MSTGLE                               
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /HDRF/ V1D,V2D,DVD,NLND,IWLD 
       COMMON /NGTH/ VD,SD,AD,EPD,MOLD,HWHD,TMPD,PSHD,FLGD,ILS2D 
       COMMON /HDRL/ V1LD,VL2D,NLD,NWDS,ILST3D 
@@ -499,7 +497,7 @@
 !                                                                       
       DATA I_10/10/ 
 !                                                                       
-!     set the cvs version number                                        
+!     set the svn version number                                        
 !                                                                       
       HVRLBL  = '$Revision$'
 !                                                                       
@@ -1135,33 +1133,6 @@
 !                                                                       
       END                                           
 !********************************************************************** 
-      Block Data phys_consts 
-!                                                                       
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
-!                                                                       
-      DATA PI /3.1415926535898 / 
-!                                                                       
-!    Constants from NIST May 2010 (and other constants that will need mo
-!    when moving to other atmospheres)                                  
-!                                                                       
-      DATA PLANCK / 6.62606876E-27 /, BOLTZ  / 1.3806503E-16 /,         &
-     &     CLIGHT / 2.99792458E+10 /,                                   &
-     &     AVOGAD / 6.02214199E+23 /, ALOSMT / 2.6867775E+19 /,         &
-     &     GASCON / 8.314472E+07 /                                      &
-     &     RADCN1 / 1.191042722E-12 /, RADCN2 / 1.4387752    /,         &
-     &     GRAV   / 9.80665E+02/, CPDAIR /1.00464/,                     &
-     &     AIRMWT / 28.964/, SECDY /8.64E+04/                           
-!                                                                       
-!     Pi was obtained from   PI = 2.*ASIN(1.)                           
-!                                                                       
-!     units are generally cgs                                           
-!                                                                       
-!     The first and second radiation constants are taken from NIST.     
-!     They were previously obtained from the relations:                 
-!                            RADCN1 = 2.*PLANCK*CLIGHT*CLIGHT*1.E-07    
-!                            RADCN2 = PLANCK*CLIGHT/BOLTZ               
-      END                                           
 !                                                                       
       BLOCK DATA 
       IMPLICIT REAL*8           (V) 
@@ -1961,9 +1932,7 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
+
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILA,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
@@ -4018,6 +3987,7 @@
 !                                                                       
       SUBROUTINE OPPATH 
 !                                                                       
+      USE phys_consts, ONLY: pi
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     OPPATH CALLS LBLATM AND CALLS PATH FIRST                          
@@ -4055,9 +4025,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-!                                                                       
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       common /lbl_geo/ zh1,zh2,zangle 
 !                                                                       
@@ -4421,8 +4388,6 @@
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),          &
      &                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,        &
      &                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -5601,6 +5566,7 @@
 !                                                                       
       SUBROUTINE OPDPTH (MPTS) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
       parameter (n_absrb=5050) 
@@ -5633,8 +5599,6 @@
       COMMON /CONVF/ CHI(251),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4 
 !                                                                       
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),              &
      &            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),              &
@@ -6315,7 +6279,7 @@
 !                                                                       
 ! subroutine to compute surface derivatives                             
 !                                                                       
-                                                                        
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8 (V) 
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -6333,9 +6297,6 @@
                                                                         
       dimension RADDWN(2410),TRADWN(2410),                              &
      &     DERVOUTt(2410),DERVOUTe(2410),DERVOUTr(2410),DERVOUTe_r(2410)
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
                                                                         
       data iut,iue,iur,iue_r/85,86,87,88/ 
                                                                         

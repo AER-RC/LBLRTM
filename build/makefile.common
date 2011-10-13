@@ -13,7 +13,7 @@
 ###############################################
 
 # Search for .o and .f files in given directories
-VPATH = $(CPATH): $(CDOTO)
+VPATH = $(SRCPATH): $(OBJPATH)
 
 ###############################
 # Default
@@ -81,13 +81,16 @@ intro :
 	echo
 	echo 'The source files used are as follows:'
 	echo
-	echo '      $(SRCS) $(UTIL_FILE)'
+	echo '      $(SRCS)'
 	echo
 	echo 'The object files used are as follows:'
 	echo
-	echo '      $(OBPATH)'
+	echo '      $(OBJECTS)'
 	echo
-	echo 'The executable will be::'
+	echo 'The object file path is as follows:'
+	echo '      $(OBJPATH)'
+	echo
+	echo 'The executable will be:'
 	echo '../$(OUTPUT)'
 	echo
 	echo 'make in progress ...'
@@ -112,9 +115,9 @@ conclude :
 
 
 makedir :
-	if [ ! -d $(CDOTO) ] ; \
+	if [ ! -d $(OBJPATH) ] ; \
 	then \
-	   mkdir $(CDOTO) ; \
+	   mkdir $(OBJPATH) ; \
 	fi
 
 ###############################
@@ -122,11 +125,11 @@ makedir :
 ###############################
 
 clean:
-	-rm -rf *.o
+	-rm -rf *.o *.mod
 	-rm -rf $(PRODUCT)_*_$(VERSION)_*.obj
 	
 cleanall:
-	-rm -rf *.o
+	-rm -rf *.o *.mod
 	-rm -r *_*_$(VERSION)_*.obj
 	
 #*************************************************************
@@ -409,6 +412,6 @@ aixIBMsgl:
 # Rule for compiling .o files
 
 %.o:%.f
-	$(FC) -c $(FCFLAG) -I${CPATH} $< -o ${CDOTO}/$@
+	$(FC) -c $(FCFLAG) -I${SRCPATH} $< -o ${OBJPATH}/$@
 %.o:%.f90
-	$(FC) -c $(FCFLAG) -I${CPATH} $< -o ${CDOTO}/$@
+	$(FC) -c $(FCFLAG) -I${SRCPATH} $< -o ${OBJPATH}/$@

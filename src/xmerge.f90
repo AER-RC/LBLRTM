@@ -1,4 +1,4 @@
-!     path:      %P%
+!     path:      $HeadURL$
 !     revision:  $Revision$
 !     created:   $Date$  
 !     presently: %H%  %T%
@@ -54,8 +54,6 @@
       character*3 pad_3 
 !                                                                       
       COMMON /XME/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(5000) 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),              &
      &            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),              &
@@ -202,8 +200,6 @@
      &                EMISIV,FSCDID(17),NMOL,LAYHDR,YI1,YID(10),LSTWDF  
 !                                                                       
       COMMON /XMI/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(4819) 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /BNDPRP/ TMPBND,BNDEMI(3),BNDRFL(3),IBPROP,surf_refl,      &
      &    pad_3,angle_path, secant_diffuse, secant_path, diffuse_fac    
 !                                                                       
@@ -277,9 +273,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -449,9 +442,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -699,9 +689,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -976,6 +963,7 @@
 !                                                                       
       FUNCTION BBFN (VI,DVI,V2I,XKT,VINEW,BBDEL,BBLAST) 
 !                                                                       
+      USE phys_consts, ONLY: radcn1
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     FUNCTION BBFN CALCULATES BLACK BODY FN FOR WAVENUMBER VALUE VI    
@@ -1008,9 +996,6 @@
 !                                                                       
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
-!                                                                       
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       DATA I_1/1/ 
 !                                                                       
@@ -1125,6 +1110,7 @@
                                                                         
       FUNCTION  BBDTFN(BBVAL,VI,DVI,V2I,XKT,VDnew,BBdTdel,BBDTLAST) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     FUNCTION bbdTfn calculates the derivative of the black body fn    
@@ -1146,8 +1132,6 @@
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 !                                                                       
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       DATA I_1/1/ 
 !                                                                       
@@ -2450,6 +2434,7 @@
 !                                                                       
       SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !                                                                       
@@ -2488,9 +2473,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -2801,6 +2783,7 @@
 !                                                                       
       SUBROUTINE RADMRG (NPTS,LFILE,MFILE,JPATHL,TBND) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
@@ -2838,9 +2821,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -3546,6 +3526,7 @@
 !                                                                       
       SUBROUTINE RADINT (NPTS,LFILE,MFILE,JPATHL,TBND) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
@@ -3583,9 +3564,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -3869,6 +3847,7 @@
 !                                                                       
       SUBROUTINE EMBND (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,TBND) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !                                                                       
@@ -3901,8 +3880,6 @@
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 !                                                                       
       DIMENSION NEWEM(*),NEWTR(*) 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       REAL NEWEM,NEWTR 
 !                                                                       
@@ -5796,6 +5773,7 @@
 !                                                                       
       SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     Calculates radiance and radiance derivative for first layer       
@@ -5817,9 +5795,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -5880,7 +5855,6 @@
 !                                                                       
 !-----------------------------------------------------------------------
 !-----------------------------------------------------------------------
-            write(0,*) '1 k_reftra=',k_reftra
       CALL CPUTIM (TIME) 
 !                                                                       
 !      ** NOTE ON IPATHL =2                                             
@@ -5917,7 +5891,6 @@
          READ (CYID,'(5A8)') (YID(I),I=3,7) 
       ENDIF 
 !                                                                       
-            write(0,*) '2 k_reftra=',k_reftra
       IEMIT = 1 
       FACT = 1. 
       TIMEM = 0.0 
@@ -5965,7 +5938,6 @@
 !     Call EMDM for molecular species derivative                        
 !                                                                       
 !                                                                       
-            write(0,*) '3 k_reftra=',k_reftra
       CALL CPUTIM (TIMEM1) 
 !                                                                       
       IF (NSPCRT.LE.0) THEN 
@@ -5988,14 +5960,12 @@
                                                                         
 ! check to see if this is upwelling case (k_reftra file will be open)   
 ! write panel size to sfc file, initialize emisout,reflout              
-            write(0,*) '4  k_reftra=',k_reftra
       inquire(unit=k_reftra,opened=op) 
       if (op) then 
           call bufin(k_rddn_sfc,keof,xdwnin(1),nphdrf) 
           call bufin(k_rddn_sfc,keof,raddwn(1),nlimdwn) 
           call bufin(k_rddn_sfc,keof,tradwn(1),nlimdwn) 
       endif 
-            write(0,*) '5  k_reftra=',k_reftra
                                                                         
       IF (IPATHL.EQ.2.AND.IANT.EQ.0) THEN 
          DO 30 J = 1, NLIMO 
@@ -6066,7 +6036,6 @@
          IF (VIDVRF.LE.VIDVEM.AND.VIDVRF.LE.VIDVBD) IEMBB = 2 
 !                                                                       
    60    NLIM1 = NLIM2+1 
-            write(0,*) '6  k_reftra=',k_reftra
 !                                                                       
          VI = V1PO+ REAL(NLIM1-1)*DVPO 
          IF (IEMBB.EQ.0) THEN 
@@ -6111,7 +6080,6 @@
 !                                                                       
 !     write out reflectance * total atmospheric transmittance for AJs   
          if (op) then 
-            write(0,*) '7  k_reftra=',k_reftra
             write(k_reftra) nlimo,(rftrm(j),j=1,nlimo) 
          endif 
                                                                         
@@ -6190,6 +6158,7 @@
 !                                                                       
       SUBROUTINE EMADMG (NPTS,LFILE,MFILE,JPATHL,TBND) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     Merges layer radiances when calculating layer                     
@@ -6211,9 +6180,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
-                                                                        
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
@@ -7520,6 +7486,7 @@
 !
       SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND)                          
 !                                                                         
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V)                                      
 !                                                                         
 !                                                                         
@@ -7559,9 +7526,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      &
      &              EXTID(10)                                             
       CHARACTER*8  EXTID
-
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,        &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 !                                                                         
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -7740,6 +7704,7 @@
 !
       SUBROUTINE FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND)                    
 !                                                                         
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V)                                      
 !                                                                         
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   
@@ -7778,9 +7743,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      &
      &              EXTID(10)                                             
       CHARACTER*8  EXTID
-
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,        &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 !                                                                         
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 
@@ -8112,6 +8074,7 @@
 !
       SUBROUTINE FLUXDN (NPTS,LFILE,MFILE,JPATHL,TBND)                    
 !                                                                         
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V)                                      
 !                                                                         
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC   
@@ -8150,9 +8113,6 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,      &
      &              EXTID(10)                                             
       CHARACTER*8  EXTID
-
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,        &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY 
 !                                                                         
       character*8      XID,       HMOLID,      YID
       real*8               SECANT,       XALTZ 

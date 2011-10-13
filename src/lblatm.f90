@@ -1,4 +1,4 @@
-!     path:      %P%
+!     path:      $HeadURL$
 !     revision:  $Revision$
 !     created:   $Date$  
 !     presently: %H%  %T%
@@ -392,6 +392,7 @@
 !                                                                       
 !********************************************************************** 
 !                                                                       
+      USE phys_consts, ONLY: pi, clight, avogad, alosmt, gascon
       PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
      &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
       PARAMETER (NXPBAR=MXLAY*(14+MXMOL)+2,NXZOUT=MXLAY*3+MXMOL*3) 
@@ -416,8 +417,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -1698,8 +1697,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
 !                                                                       
       CHARACTER*8      HMOLS 
@@ -1752,7 +1749,6 @@
 !                                                                       
 !     MOLECULAR WEIGHTS                                                 
 !                                                                       
-!      DATA AIRMWT / 28.964 / ,                                         
        DATA AMWT /  18.015 ,  44.010 , 47.998 , 44.01 ,                 &
      &              28.011 ,  16.043 , 31.999 , 30.01 ,                 &
      &              64.06  ,  46.01  , 17.03  , 63.01 ,                 &
@@ -3037,8 +3033,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16) 
       COMMON WPATH(IM2,16),TBBY(IM2) 
@@ -3266,8 +3260,6 @@
 !                                                                       
       character*1 jchar_st 
 !                                                                       
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
 !                                                                       
 !     ***********************************************************       
@@ -3854,14 +3846,14 @@
 !                                                                       
 !***************************************************************        
 !                                                                       
+      USE phys_consts, ONLY: avogad, alosmt
+      USE planet_consts, ONLY: airmwt
       PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
      &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       COMMON /DEAMT/ DENM(MXMOL,MXZMD),DENP(MXMOL,MXPDIM),DRYAIR(MXZMD) 
 !                                                                       
@@ -3974,14 +3966,14 @@
 !                                                                       
 !********************************************************************** 
 !                                                                       
+      USE phys_consts, ONLY: avogad, alosmt
+      USE planet_consts, ONLY: airmwt
       PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
      &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
 !                                                                       
       DATA C1 / 18.9766 /,C2 / -14.9595 /,C3 / -2.4388 / 
@@ -4109,8 +4101,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       ITER = 0 
 !                                                                       
@@ -5058,8 +5048,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16) 
       COMMON WPATH(IM2,16),TBBY(IM2) 
@@ -5484,8 +5472,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16) 
       COMMON WPATH(IM2,16),TBBY(IM2) 
@@ -5672,8 +5658,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16) 
       COMMON WPATH(IM2,16),TBBY(IM2) 
@@ -5727,8 +5711,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16) 
       COMMON WPATH(IM2,16),TBBY(IM2) 
@@ -5791,8 +5773,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16) 
       COMMON WPATH(IM2,16),TBBY(IM2) 
@@ -5957,8 +5937,6 @@
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
                                                                         
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
 !                                                                       
       DATA I_2/2/ 
@@ -6049,6 +6027,7 @@
 !                             A.E.R. INC.     (AUGUST 1990)             
 !    *****************************************************************  
 !                                                                       
+      USE phys_consts, ONLY: alosmt
       PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
      &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
 !                                                                       
@@ -6073,8 +6052,6 @@
 !     LAMCHN CARRIES HARDWARE SPECIFIC PARAMETERS                       
 !                                                                       
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NOP,H1F,H2F,      &
      &                ANGLEF,RANGEF,BETAF,LENF,AV1,AV2,RO,IPUNCH,XVBAR, &
@@ -6868,6 +6845,7 @@
 !     IS USED.                                                          
 !     ***************************************************************** 
 !                                                                       
+      USE phys_consts, ONLY: alosmt
       PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
      &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
 !                                                                       
@@ -6876,8 +6854,6 @@
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CNSTATM/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
 !                                                                       
 !     LAMCHN CARRIES HARDWARE SPECIFIC PARAMETERS                       
@@ -7770,6 +7746,8 @@
 !      IDEAL GAS LAW: CRIDOR (1996)                                     
 !**************************************************************         
                                                                         
+      USE phys_consts, ONLY: boltz, gascon
+      USE planet_consts, ONLY: xmass_dry, grav_const
       PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
      &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
                                                                         
@@ -7780,8 +7758,6 @@
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
      &                IPHMID,IPDIM,KDIM,KMXNOM,NMOL                     
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       REAL PM(MXZMD),TM(MXZMD),DENW(MXZMD),ZMDL(MXZMD) 
       REAL H2O_MIXRAT(MXZMD),COMP_FACTOR(MXZMD),ZTEMP(MXZMD) 
@@ -7799,11 +7775,11 @@
       DATA CC0/1.9898E-4/,CC1/-2.376E-6/ 
       DATA CD/1.83E-11/,CE/-0.0765E-8/ 
                                                                         
-      DATA XMASS_H2O/0.018015/,XMASS_DRY/0.0289654/ 
+      DATA XMASS_H2O/0.018015/
                                                                         
 ! CALCULATE GRAVITY AT REFERENCE LATITUDE AT SURFACE                    
                                                                         
-      G0 = (GRAV*1.E-2) - 0.02586*COS(2.0*PI*REF_LAT/180.0) 
+      G0 = GRAV_CONST(REF_LAT)
                                                                         
 ! CALCULATE THE NUMBER DENSITY OF TOTAL AIR MOLECULES [MOLEC/CM^3]      
 ! CALCULATE THE COMPRESSIBILITY FACTOR (COMP_FAC) FOR THE               

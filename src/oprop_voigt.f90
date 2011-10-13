@@ -1,4 +1,4 @@
-!     path: %Source%
+!     path:      $HeadURL$
 !     revision:  $Revision$
 !     created:   $Date$  
 !     presently: %H%  %T%
@@ -23,6 +23,7 @@
 !
       SUBROUTINE HIRAC1 (MPTS) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !                                                                       
@@ -103,8 +104,6 @@
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA 
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502) 
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,          &
@@ -811,6 +810,7 @@
       END                                           
       SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
       CHARACTER*1 FREJ(250),HREJ,HNOREJ 
@@ -837,8 +837,6 @@
      &                NLTEFL,LNFIL4,LNGTH4                              
       COMMON /XSUB/   VBOT,VTOP,VFT,DUM(7) 
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502) 
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,          &
      &                HWF3,DXF3,NX3,N3MAX                               
@@ -1266,6 +1264,7 @@
       END                                           
       SUBROUTINE PANEL (R1,R2,R3,KFILE,JRAD,IENTER) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE PANEL COMBINES RESULTS OF R3, R2, AND R1 INTO R1 ARRAY 
@@ -1305,8 +1304,6 @@
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA 
       COMMON /SUB1/ MAX1,MAX2,MAX3,NLIM1,NLIM2,NLIM3,NLO,NHI,DVR2,DVR3, &
      &              N1R1,N2R1,N1R2,N2R2,N1R3,N2R3                       
@@ -2277,6 +2274,7 @@
       END                                           
       SUBROUTINE MOLEC (IND,SCOR,RHOSLF,ALFD1) 
 !                                                                       
+      USE phys_consts, ONLY: boltz, avogad, clight, radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
       PARAMETER (MXMOL=39) 
@@ -2298,8 +2296,6 @@
       COMMON /FILHDR/ XID(10),SECANT,P   ,TEMP,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       DIMENSION SCOR(42,9),RHOSLF(*),ALFD1(42,9) 
       COMMON /SMOLEC/ W(42,9),ND(42,9),FAD 
       COMMON /XMOLEC/ NV(42),IVIB(42,2,9),XR(42),ROTFAC(42),QV0(42) 
@@ -2701,6 +2697,7 @@
       END                                           
       SUBROUTINE LINF4 (V1L4,V2L4) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4  
@@ -2733,8 +2730,6 @@
       COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1 ,V2 ,TBOUND,  &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,      &
      &               DPTFC,ILIN4,ILIN4T                                 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -3326,6 +3321,7 @@
       END                                           
       SUBROUTINE LBLF4 (JRAD,V1,V2) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LBLF4 DOES A LINE BY LINE CALCULATION                  
@@ -3347,8 +3343,6 @@
       COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1H,V2H,TBOUND,  &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,       &
      &               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL                    
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,      &
@@ -4182,6 +4176,7 @@
 !                                                                       
       SUBROUTINE XSECTM (IFST,IR4) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
                                                                         
       parameter (n_absrb=5050, mx_xs=38) 
@@ -4210,8 +4205,6 @@
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA 
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502) 
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,          &
@@ -4964,6 +4957,7 @@
       END                                           
       SUBROUTINE XSNTMP (NI,NS,NT1,NT2,NMODE) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
                                                                         
       parameter (mx_xs=38) 
@@ -4984,8 +4978,6 @@
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
                                                                         
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000) 
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520) 
       COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs) 
@@ -5090,8 +5082,6 @@
      &                HWF3,DXF3,NX3,N3MAX                               
       COMMON /XSCINF/ HWHM,JEMIT,JFN,SAMPLE,SCANID,NPTS,XF(851) 
 !                                                                       
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /XSECTP/ V1X,V2X,DVX,NPTSX,RX(13000) 
       COMMON /XSECTD/ V1DX,V2DX,DVDX,NPTSDX,RDX1(520),RDX2(520) 
       COMMON /XSECTF/ XSFILE(6,5,mx_xs),XSNAME(mx_xs),ALIAS(4,mx_xs) 
@@ -5523,6 +5513,7 @@
 !                                                                       
 !     SUBROUTINE SLRENZ SETS UP THE LORENZ SCANNING FUNCTION            
 !                                                                       
+      USE phys_consts, ONLY: pi
       COMMON /CMSHAP/ HWF,DXF,NF,NFMAX,HWF2,DXF2,NX2,N2MAX,             &
      &                HWF3,DXF3,NX3,N3MAX                               
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -5530,7 +5521,6 @@
      &              NLTEFL,LNFIL4,LNGTH4                                
       DIMENSION XF(*) 
 !                                                                       
-      PI = 2.*ASIN(1.) 
       XNORM = 1.0/PI 
       DO 10 I = 1, NFMAX 
          XF(I) = 0. 

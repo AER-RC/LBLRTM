@@ -1,4 +1,4 @@
-!     path:      $Source$
+!     path:      $HeadURL$
 !     author:    $Author$
 !     revision:  $Revision$
 !     created:   $Date$
@@ -21,9 +21,9 @@
 ! |                       (http://www.rtweb.aer.com/)                        |
 !  --------------------------------------------------------------------------
 !
-!
       SUBROUTINE CONTNM(JRAD) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
                                                                         
       parameter (n_absrb=5050) 
@@ -45,8 +45,6 @@
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                

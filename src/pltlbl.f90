@@ -1,4 +1,4 @@
-!     path:      $Source$
+!     path:      $HeadURL$
 !     author:    $Author$
 !     revision:  $Revision$
 !     created:   $Date$
@@ -38,8 +38,6 @@
      &                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,   &
      &                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,    &
      &                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                    
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502) 
       COMMON /POINTS/ XXI,YI 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -1432,6 +1430,7 @@
       END                                           
       SUBROUTINE BBSCLE 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
       COMMON /AXISXY/ V1,V2,XSIZE,YMIN,YMAX,YSIZE,IDEC,JEMIT,JPLOT,     &
@@ -1439,8 +1438,6 @@
      &                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,    &
      &                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                    
 !                                                                       
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
 !     BBFN  BLACK BODY                                                  
 !                                                                       
@@ -1557,6 +1554,7 @@
       END                                           
       SUBROUTINE AX2 
 !                                                                       
+      USE phys_consts, ONLY: radcn1, radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
       CHARACTER TITL3*50,HTEN*2 
@@ -1564,8 +1562,6 @@
      &                LOGPLT,NUMDVX,NUMSBX,DIVLNX,DELV,NUMDVY,NUMSBY,   &
      &                DIVLNY,DELY,HGT,YPL,DX,DY,NOENDX,NOENDY,IXDEC,    &
      &                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES                    
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
 !                                                                       
       DATA HTEN / '10'/,                                                &
      &     TITL3 / ' RADIANCE WATTS /  (CM**2*STER*CM-1)  * '/,         &
@@ -1746,11 +1742,10 @@
       END                                           
       SUBROUTINE TEMPFN (NST,NND,J) 
 !                                                                       
+      USE phys_consts, ONLY: radcn1, radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON XX(2450),YY(2450) 
       COMMON /YCOM/ V1P,V2P,DV,NLIM,Y(2502) 
 !                                                                       
@@ -2053,11 +2048,11 @@
 !   LSUPR EQUAL TO 1 SUPPRESSES THE LABEL                               
 !    LTURN NOT USED                                                     
 !                                                                       
+      USE phys_consts, ONLY: pi
       COMMON /TITLOC/ XPOS,YPOS 
       character BCD(*) 
 !                                                                       
       THETA1 = THETA-90.*NTURN 
-      PI = 2.*ASIN(1.) 
       ANGLE = (PI/180.)*THETA 
       SINANG = SIN(ANGLE) 
       COSANG = COS(ANGLE) 
@@ -2205,6 +2200,7 @@
 !         -1 TURNS LABEL BY 90 DEGREES COUNTERCLOCKWISE, 0 FOR NO TURN  
 !                                                                       
 !                                                                       
+      USE phys_consts, ONLY: pi
       COMMON /TITLOC/ XPOS,YPOS 
       DIMENSION        SUBDIV(10),DIVLOG(8) 
       character BCD(*) 
@@ -2216,7 +2212,6 @@
       DATA HTEN / '10'/ 
 !                                                                       
       THETA1 = THETA-90.*NTURN 
-      PI = 2.*ASIN(1.) 
       ANGLE = (PI/180.)*THETA 
       SINANG = SIN(ANGLE) 
       COSANG = COS(ANGLE) 

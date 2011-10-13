@@ -1,4 +1,4 @@
-!     path:      %P%
+!     path:      $HeadURL$
 !     revision:  $Revision$
 !     created:   $Date$  
 !     presently: %H%  %T%
@@ -1634,6 +1634,7 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
+      USE phys_consts, ONLY: avogad
       PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
      &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
@@ -1659,8 +1660,6 @@
      &               PM(0:MXLAY),TM(0:MXLAY)                            
 !                                                                       
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       DIMENSION INEW( *) 
       DIMENSION ZMDL( *),P(MXZMD),T(MXZMD) 
 !                                                                       
@@ -7622,6 +7621,8 @@
 !                                                                       
 !     ***************************************************************   
 !                                                                       
+      USE planet_consts, ONLY: airmwt
+      USE phys_consts, ONLY: avogad, alosmt
       PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
      &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
       PARAMETER (NCASE=15, NCASE2=NCASE-2) 
@@ -7629,8 +7630,6 @@
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,               &
      &     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                           &
      &     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                      
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CONSTL/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(NCASE2),WMOL1(NCASE),        &
      &                WAIR1,JLOW                                        
@@ -7743,6 +7742,8 @@
 !                                                                       
 !     ******************************************************************
 !                                                                       
+      USE planet_consts, ONLY: airmwt
+      USE phys_consts, ONLY: avogad, alosmt
       PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
      &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
       PARAMETER (NCASE=15, NCASE2=NCASE-2) 
@@ -7752,8 +7753,6 @@
      &     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                      
       COMMON /CARD1B/ JUNITP,JUNITT,JUNIT1(NCASE2),WMOL1(NCASE),        &
      &                WAIR,JLOW                                         
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /CONSTL/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
 !                                                                       
       DATA C1/18.9766/,C2/-14.9595/,C3/-2.43882/ 
@@ -9150,7 +9149,6 @@
 !     **   GENERATE THE LBLRTM BOUNDARIES IN AUTLAY                     
 !                                                                       
       DATA ALZERO/0.1/,AVMWT/36.0/ 
-!      DATA AIRMWT / 28.964 / ,                                         
       DATA    AMWT /   18.015 ,  44.010 , 47.998 , 44.01 ,              &
      &              28.011 ,  16.043 , 31.999 , 30.01 ,                 &
      &              64.06  ,  46.01  , 17.03  , 63.01 ,                 &

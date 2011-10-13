@@ -1,4 +1,4 @@
-!     path:      $Source$
+!     path:      $HeadURL$
 !     author:    $Author$
 !     revision:  $Revision$
 !     created:   $Date$
@@ -309,6 +309,7 @@
 !     TAPE4 TO CALCULATE THE VIBRATIONAL POPULATION ENHANCEMENT         
 !     RATIOS FOR SELECTED VIBRATIONAL STATES OF H2O,CO2,NO AND O3.      
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       include 'lblparams.inc' 
       IMPLICIT REAL*8           (V) 
                                                                         
@@ -324,8 +325,6 @@
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       DIMENSION IDX(MAXSTATE),TNE(MAXSTATE*Max_ISO) 
       DIMENSION VQNE(MAXSTATE*Max_ISO),VQEQ(MAXSTATE*Max_ISO) 
       DIMENSION VPNE1(MAXSTATE*Max_ISO),VPNE2(MAXSTATE*Max_ISO),        &
@@ -454,6 +453,7 @@
 !     O3.  THE NLTE VIBRATIONAL TEMPERATURES ARE WITH RESPECT TO        
 !     THE GROUND VIBRATIONAL STATE.                                     
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       include 'lblparams.inc' 
       IMPLICIT REAL*8           (V) 
                                                                         
@@ -476,8 +476,6 @@
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
                                                                         
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       DIMENSION IDX(MAXSTATE),VQNE(MAXSTATE*Max_ISO),                   &
      &     VQEQ(MAXSTATE*Max_ISO),RAT(MAXSTATE*Max_ISO)                 
       DIMENSION TNE(MAXSTATE*Max_ISO),TNESAV(MAXSTATE*Max_ISO),         &
@@ -703,6 +701,7 @@
 !                                                                       
       SUBROUTINE HIRACQ (MPTS) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !                                                                       
@@ -784,8 +783,6 @@
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA 
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502) 
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,          &
@@ -1339,6 +1336,7 @@
       END                                           
       SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       include 'lblparams.inc' 
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -1366,8 +1364,6 @@
      &                NLTEFL,LNFIL4,LNGTH4                              
       COMMON /XSUB/   VBOT,VTOP,VFT,DUM(7) 
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502) 
       COMMON /CMSHAP/ HWF1,DXF1,NX1,N1MAX,HWF2,DXF2,NX2,N2MAX,          &
      &                HWF3,DXF3,NX3,N3MAX                               
@@ -1889,6 +1885,7 @@
       END                                           
       SUBROUTINE PANELQ (R1,R2,R3,RR1,RR2,RR3,KFILE,JRAD,IENTER) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE PANEL COMBINES RESULTS OF R3, R2, AND R1 INTO R1 ARRAY 
@@ -1928,8 +1925,6 @@
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA 
       COMMON /SUB1/ MAX1,MAX2,MAX3,NLIM1,NLIM2,NLIM3,NLO,NHI,DVR2,DVR3, &
      &              N1R1,N2R1,N1R2,N2R2,N1R3,N2R3                       
@@ -2099,6 +2094,7 @@
 ! ----------------------------------------------------------------      
       SUBROUTINE LINF4Q (V1L4,V2L4) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4  
@@ -2131,8 +2127,6 @@
       COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1 ,V2 ,TBOUND,  &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,      &
      &               DPTFC,ILIN4,ILIN4T                                 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -2143,7 +2137,7 @@
      &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D 
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER 
-      COMMON /VBNLTE/ RATSTATE(MAXSTATE,MXMOL),NUMSTATE(MXMOL) 
+      COMMON /VBNLTE/ RATSTATE(MAXSTATE*Max_ISO,MXMOL),NUMSTATE(MXMOL) 
 !                                                                       
       REAL L4TIM,L4TMR,L4TMS,LOTHER 
       DIMENSION MEFDP(64) 
@@ -2598,6 +2592,7 @@
 !                                                                       
       SUBROUTINE LBLF4Q (JRAD,V1,V2) 
 !                                                                       
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LBLF4 DOES A LINE BY LINE CALCULATION                  
@@ -2619,8 +2614,6 @@
       COMMON /FILHDR/ XID(10),SEC   ,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                W(60),PZL,PZU,TZL,TZU,WBROAD,DVO,V1H,V2H,TBOUND,  &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      COMMON /CONSTS/ PI,PLANCK,BOLTZ,CLIGHT,AVOGAD,ALOSMT,GASCON,      &
-     &                RADCN1,RADCN2,GRAV,CPDAIR,AIRMWT,SECDY            
       COMMON /XTIME/ TIME,TIMRDF,TIMCNV,TIMPNL,TF4,TF4RDF,TF4CNV,       &
      &               TF4PNL,TXS,TXSRDF,TXSCNV,TXSPNL                    
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,      &

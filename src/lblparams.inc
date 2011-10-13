@@ -1,4 +1,4 @@
-!     path:      $Source$
+!     path:      $HeadURL$
 !     author:    $Author$
 !     revision:  $Revision$
 !     created:   $Date$
