@@ -1,4 +1,8 @@
-# $Revision$
+#     path:      $HeadURL$
+#     author:    $Author$
+#     revision:  $Revision$
+#     created:   $Date$
+#
 # Makefile for lblrtm_voigt
 # From lblrtm/build directory, type: gmake -f make_lblrtm_voigt <TARGET>
 
@@ -10,7 +14,7 @@ include makefile.common
 # Set variables/
 ###############################
 
-#Set version name.  Used in the default OUTPUT and CDOTO variables.  If you
+#Set version name.  Used in the default OUTPUT and OBJPATH variables.  If you
 # change those two variables from what is provided here, no need to set this variable.
 
 PRODUCT = lblrtm_voigt
@@ -28,24 +32,63 @@ ifeq ($(P_TYPE),dbl)
 endif
 
 # Set directory for object files.  
-CDOTO = ${PRODUCT}_$(VERSION)_$(PLTFRM)_$(FC_TYPE)_$(P_TYPE).obj
+OBJPATH = ${PRODUCT}_$(VERSION)_$(PLTFRM)_$(FC_TYPE)_$(P_TYPE).obj
 
 # Set directory containing source files, relative to directory from which
 # you are executing the makefile
-CPATH = ../src
+SRCPATH = ../src
 
 # Files contained in src directory.  If additional .f90 files are added,
 # add to this list. 
 SRCS = lblrtm.f90 oprop_voigt.f90 contnm.f90 xmerge.f90 testmm.f90 \
 lblatm.f90 lbllow.f90 postsub.f90 pltlbl.f90 \
-lbldum.f90 solar.f90 nonlte_voigt.f90 fftscn$(FFTEXT).f90 ${UTIL_FILE}
+lbldum.f90 solar.f90 nonlte_voigt.f90 fftscn$(FFTEXT).f90 ${UTIL_FILE} \
+phys_consts.f90 planet_earth.f90
 
 # Object file names
-OBPATH = ${SRCS:.f90=.o} ${SRCS:.f=.o}
+OBJECTS = ${SRCS:.f90=.o}
+UTIL_OBJ = $(UTIL_FILE:.f90=.o)
 
-build : $(OBPATH)      	
-	$(FC) $(FCFLAG) -o ../$(OUTPUT) ${CDOTO}/*.o
 
 ## Define dependancies
+$(OBJPATH)/lblrtm.o:	$(SRCPATH)/lblrtm.f90 $(SRCPATH)/lblparams.inc phys_consts.mod
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/oprop_voigt.o:	$(SRCPATH)/oprop_voigt.f90 $(SRCPATH)/lblparams.inc phys_consts.mod
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/contnm.o:	$(SRCPATH)/contnm.f90 $(SRCPATH)/lblparams.inc phys_consts.mod
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/xmerge.o:	$(SRCPATH)/xmerge.f90 $(SRCPATH)/lblparams.inc phys_consts.mod
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/testmm.o:	$(SRCPATH)/testmm.f90 $(SRCPATH)/lblparams.inc
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/lblatm.o:	$(SRCPATH)/lblatm.f90 $(SRCPATH)/lblparams.inc phys_consts.mod planet_consts.mod
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/lbllow.o:	$(SRCPATH)/lbllow.f90 $(SRCPATH)/lblparams.inc phys_consts.mod planet_consts.mod
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/postsub.o:	$(SRCPATH)/postsub.f90 $(SRCPATH)/lblparams.inc
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/pltlbl.o:	$(SRCPATH)/pltlbl.f90 $(SRCPATH)/lblparams.inc phys_consts.mod
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/lbldum.o:	$(SRCPATH)/lbldum.f90 $(SRCPATH)/lblparams.inc
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/solar.o:	$(SRCPATH)/solar.f90 $(SRCPATH)/lblparams.inc phys_consts.mod
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/nonlte_voigt.o:	$(SRCPATH)/nonlte_voigt.f90 $(SRCPATH)/lblparams.inc phys_consts.mod
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/fftscn.o:	$(SRCPATH)/fftscn.f90 $(SRCPATH)/lblparams.inc
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/fftscn_dbl.o:	$(SRCPATH)/fftscn_dbl.f90 $(SRCPATH)/lblparams.inc
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+$(OBJPATH)/$(UTIL_OBJ):	$(SRCPATH)/$(UTIL_FILE)
+	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
+phys_consts.mod:	$(SRCPATH)/phys_consts.f90
+	$(FC) -c $(FCFLAG) $< -o $(OBJPATH)/phys_consts.o
+planet_consts.mod:	$(SRCPATH)/planet_earth.f90
+	$(FC) -c $(FCFLAG) -I. $< -o $(OBJPATH)/planet_earth.o
+$(OBJPATH)/phys_consts.o:	$(SRCPATH)/phys_consts.f90
+	$(FC) -c $(FCFLAG) $< -o $@
+$(OBJPATH)/planet_earth.o:	$(SRCPATH)/planet_earth.f90  phys_consts.mod
+	$(FC) -c $(FCFLAG) -I. $< -o $@
 
-$(OBPATH):${CPATH}/lblparams.inc
+build : $(OBJPATH)/lblrtm.o $(OBJPATH)/oprop_voigt.o $(OBJPATH)/contnm.o $(OBJPATH)/xmerge.o $(OBJPATH)/testmm.o $(OBJPATH)/lblatm.o $(OBJPATH)/lbllow.o $(OBJPATH)/postsub.o  $(OBJPATH)/pltlbl.o $(OBJPATH)/lbldum.o $(OBJPATH)/solar.o $(OBJPATH)/nonlte_voigt.o $(OBJPATH)/fftscn$(FFTEXT).o  $(OBJPATH)/$(UTIL_OBJ) $(OBJPATH)/phys_consts.o $(OBJPATH)/planet_earth.o
+	$(FC) $(FCFLAG) -o ../$(OUTPUT) $^

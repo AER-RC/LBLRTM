@@ -1,4 +1,8 @@
-# $Revision$
+#     path:      $HeadURL$
+#     author:    $Author$
+#     revision:  $Revision$
+#     created:   $Date$
+#
 # Makefile for lblrtm
 # From lblrtm/build directory, type: gmake -f make_lblrtm <TARGET>
 
