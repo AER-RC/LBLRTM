@@ -31,7 +31,8 @@
 !             ALGORITHM REVISIONS:    S.A. CLOUGH                       
 !                                     R.D. WORSHAM                      
 !                                     J.L. MONCET                       
-!                                     M.W. SHEPHARD                     
+!                                     M.W. SHEPHARD  
+!                                     D. WEISENSTEIN                   
 !                                                                       
 !                                                                       
 !                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.       
@@ -41,7 +42,12 @@
 !                                                                       
 !               WORK SUPPORTED BY:    THE ARM PROGRAM                   
 !                                     OFFICE OF ENERGY RESEARCH         
-!                                     DEPARTMENT OF ENERGY              
+!                                     DEPARTMENT OF ENERGY  
+!                                     
+!                                     AND
+!    
+!                                     THE JOINT CENTER FOR
+!                                      SATELLITE DATA ASSIMILATION            
 !                                                                       
 !                                                                       
 !      SOURCE OF ORIGINAL ROUTINE:    AFGL LINE-BY-LINE MODEL           
@@ -63,31 +69,43 @@
 !*                    HANSCOM AFB, MA 01731                             
 !*                                                                      
 !*                                                                      
-!*                    * SHEPARD A. CLOUGH                               
+!*                      SHEPARD A. CLOUGH                               
 !*                      FRANCIS X. KNEIZYS                              
 !*                      GAIL P. ANDERSON                                
 !*                      JAMES H. CHETWYND JR.                           
-!*                    + ROBERT D. WORSHAM                               
+!*                      ROBERT D. WORSHAM                               
 !*                      ERIC P. SHETTLE                                 
 !*                      LEONARD W. ABREU                                
-!*                                                                      
-!*                                                                      
-!*                    * CURRENT ADDRESS:                                
-!*                    + ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.     
-!*                      131 Hartwell Avenue                             
-!*                      Lexington,  MA   02421                          
 !*                                                                      
 !********************************************************************** 
 !*                                                                      
 !*    DOCUMENTATION AND INFORMATION ABOUT THE PROGRAM  MAY BE OBTAINED  
 !*    FROM                                                              
 !*                                                                      
-!*    S.A. CLOUGH, AER Inc., 131 Hartwell Ave., Lexington, MA 02421 USA 
+!*    AER Inc., 131 Hartwell Ave., Lexington, MA 02421 USA 
+!*    <aer_lblrtm@aer.com>
 !*                                                                      
 !********************************************************************** 
 !*                                                                      
 !*                  LINE PARAMETER COMPILATIONS                         
-!*                                                                      
+!*                        
+!*    THE HITRAN 2008 MOLECULAR SPECTROSCOPIC DATABASE
+!*       L. S. ROTHMAN ET AL.
+!*       J. QUANT. SPECTROSC. RADIAT. TRANSFER, VOL 110, P533-572 (2009) 
+!*
+!*    THE HITRAN 2004 MOLECULAR SPECTROSCOPIC DATABASE
+!*       L. S. ROTHMAN ET AL.
+!*       J. QUANT. SPECTROSC. RADIAT. TRANSFER, VOL 96, P139-204 (2005) 
+!*
+!*    THE HITRAN MOLECULAR DATABASE: EDITION OF 2000 INCLUDING UPDATES 
+!*    THROUGH 2001
+!*       L. S. ROTHMAN ET AL.
+!*       J. QUANT. SPECTROSC. RADIAT. TRANSFER (2003) 
+!*       
+!*    THE HITRAN MOLECULAR DATABASE: 1996 EDITION
+!*       L. S. ROTHMAN ET AL.
+!*       J. QUANT. SPECTROSC. RADIAT. TRANSFER, VOL 60 (1998)        
+!*
 !*   THE HITRAN DATABASE: 1986 EDITION                                  
 !*      L.S. ROTHMAN, R.R. GAMACHE, A. GOLDMAN, L. R. BROWN,            
 !*      R. A. TOTH, H. M. PICKETT, R. L. POYNTER, J.-M. FLAUD,          
@@ -192,7 +210,24 @@
 !*                                                                      
 !*                                                                      
 !*               GENERAL LBLRTM  REFERENCES -                           
-!*                                                                      
+!*
+!*    Shephard, M.W., S.A. Clough, V.H. Payne, W. L. Smith, S. Kireev, 
+!*     and K. E. Cady-Pereira, Performance of the line-by-line radiative
+!*     transfer model (LBLRTM) for temperature and species retrievals: 
+!*     IASI case studies from JAIVEx, Atmos. Chem. Phys. Discuss., 9, 
+!*     9313-9366, 2009.
+!*
+!*    Delamere, J. S., S.A. Clough, V. H. Payne, E. J. Mlawer, D. D.Turner 
+!*     and R. R. Gamache, A far-infrared radiative closure study in the 
+!*     Arctic: Application to water vapor,  J. Geophys. Res., 
+!*     doi:10.1029/2009JD012968, 2010.
+!*    
+!*    Clough, S. A., M. W. Shephard, E. J. Mlawer, J. S. Delamere, 
+!*     M. J. Iacono, K. Cady-Pereira, S. Boukabara, and P. D. Brown, 
+!*     Atmospheric radiative transfer modeling: a summary of the AER codes, 
+!*     Short Communication, J. Quant. Spectrosc. Radiat. Transfer, 91, 
+!*     233-244, 2005.
+!*                                                                  
 !*    Clough, S.A., and M.J. Iacono, Line-by-line calculations of       
 !*      atmospheric fluxes and cooling rates II: Application to carbon  
 !*      dioxide, ozone, methane, nitrous oxide, and the halocarbons. J. 

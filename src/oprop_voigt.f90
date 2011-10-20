@@ -48,8 +48,9 @@
 !             ALGORITHM REVISIONS:    S.A. CLOUGH                       
 !                                     R.D. WORSHAM                      
 !                                     J.L. MONCET                       
-!                                     M.W.SHEPHARD, W.O.GALLERY,        
-!                                     &  S.A. CLOUGH                    
+!                                     M.W.SHEPHARD
+!                                     W.O.GALLERY
+!                                     D. WEISENSTEIN
 !                                                                       
 !                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.       
 !                     131 Hartwell Ave,  Lexington,  MA   02421         
@@ -58,7 +59,10 @@
 !                                                                       
 !               WORK SUPPORTED BY:    THE ARM PROGRAM                   
 !                                     OFFICE OF ENERGY RESEARCH         
-!                                     DEPARTMENT OF ENERGY              
+!                                     DEPARTMENT OF ENERGY  
+!
+!                                     THE JOINT CENTER FOR 
+!                                      SATELLITE DATA ASSIMILATION            
 !                                                                       
 !                                                                       
 !      SOURCE OF ORIGINAL ROUTINE:    AFGL LINE-BY-LINE MODEL           

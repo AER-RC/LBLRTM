@@ -48,7 +48,7 @@
 !                               William Gallery                         
 !                               OptiMetrics, Inc.                       
 !     Current address:          AER, Inc.                               
-!                               Cambridge, MA                           
+!                               Lexington, MA                           
 !                                                                       
 !     Version 1.0: Dec, 1992                                            
 !                                                                       

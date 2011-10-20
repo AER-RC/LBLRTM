@@ -40,14 +40,16 @@
 !                                                                       
 !                  IMPLEMENTATION:    W.O. GALLERY                      
 !                                                                       
-!             ALGORITHM REVISIONS:    M.W.SHEPHARD                      
+!             ALGORITHM REVISIONS:    M.W.SHEPHARD 
+!                                     D. WEISENSTEIN                     
 !                                                                       
 !                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.       
 !                     131 Hartwell Ave,  Lexington,  MA   02421         
 !                                                                       
 !---------------------------------------------------------------------- 
 !                                                                       
-!               WORK SUPPORTED BY:    JPL, TES                          
+!               WORK SUPPORTED BY:    JPL, TES
+!                                     JCSDA                          
 !                                                                       
 !      SOURCE OF ORIGINAL ROUTINE:    AFGL LINE-BY-LINE MODEL FASCOD    
 !                                                                       

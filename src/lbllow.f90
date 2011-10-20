@@ -46,10 +46,7 @@
 !     radiance, upwelling radiance, both at arbitrary zenith angles.    
 !                                                                       
 !     A known error is that the TANGENT case is NOT working properly.   
-!                                                                       
-!     Continued improvements of the interface will be implemented over  
-!     time.                                                             
-!                                                                       
+!                                                                                                                              
 !     ******************************************************************
 !     THIS SUBROUTINE IS ONLY USED FOR AEROSOLS AND CLOUDS              
 !                                                                       
