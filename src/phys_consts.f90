@@ -29,7 +29,7 @@ MODULE phys_consts   ! Physical constants
 !                                                                       
 !     units are generally cgs                                           
 !                                                                       
-      real, parameter  :: PI = 2.*ASIN(1.)  ! previously 3.1415926535898
+      real, parameter  :: PI = 3.1415926535898
       real, parameter  :: PLANCK = 6.62606876E-27 
       real, parameter  :: BOLTZ = 1.3806503E-16 
       real, parameter  :: CLIGHT = 2.99792458E+10

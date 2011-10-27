@@ -79,7 +79,24 @@
 !            request.  On some machines (Convex), not doing this and req
 !            another operation on IFILE generated an error.             
 !         5. Fixed bug: the output spectral grid was sometimes off by   
-!            one dv.                                                    
+!            one dv.   
+!
+!     Version 2.0: 2008
+!         Changes in Version 2.0
+!         1. param keyword added to TAPE5 input for Gaussian line shape 
+!            (JFN = -2). When this is set to a non-zero value,  
+!            the HWHM of the FTS is set equal to param instead of  
+!            calculating the HWHM from the maximum optical path difference.
+!            This is mainly used to simulate the IASI instrument line shape.
+!
+!     Version 2.1: October, 2011
+!         Changes in Version 2.1 
+!         1. LPTFFT was increased by a factor of 4. This gives better 
+!            accuracy for regions with large changes in radiance 
+!            (e.g., CO2 nu3 bandhead region).
+!         2. When param keyword is non-zero for a Gaussian line shape 
+!            (JFN = -2), truncate the Gaussian in the time domain based on 
+!            the maximum optical path difference.           
 !                                                                       
 !     Program instructions:                                             
 !     The program commands are contained on a single input record plus  
@@ -189,10 +206,7 @@
 !*    Therefore, LPTSMX should be set to a value somewhat larger than   
 !*    the size of the smallest typical spectrum, but no larger than the 
 !*    largest value possible without thrashing.  
-!
-!     Modified 10/04/2011, mja, to increase LPTFFT by a factor of 4
-!     This gives better accuracy for regions with large changes in radiance 
-!     (e.g., CO2 bandhead region)                  
+!         
 !                                                                       
 !     IBLKSZ is the record length in the OPEN statement, and may be     
 !     in bytes or words,  depending on the operating system.  For VAX   
@@ -1511,7 +1525,8 @@
 !     (radiance) or 1's (transmittance) and records of all zero's or    
 !     1's  will be added as needed.  JCONVT indicates how the data      
 !     is to be extracted from the LBLRTM file. JEMIT flags transmittance
-!     (0) or radiance(1).                                               
+!     (0) or radiance(1).      
+!                                              
 !***********************************************************************
                                                                         
 !*****Computers with 32 bit words need the Double Precision Statements  
@@ -1580,7 +1595,11 @@
 !                                                                       
 !     IBLKSZ is the record length in the OPEN statement, and may be     
 !     in bytes or words,  depending on the operating system.  For VAX   
-!     and CDC, it is in words.  For MicroSoft FORTRAN, it is in bytes.  
+!     and CDC, it is in words.  For MicroSoft FORTRAN, it is in bytes.
+!
+!     Modified 10/04/2011, mja, to increase LREC by a factor of 4
+!     This gives better accuracy for regions with large changes in radiance 
+!     (e.g., CO2 bandhead region)   
 !***********************************************************************
       PARAMETER (LSIZE = 65536) 
 !*****Following line for computers where the blocksize is measured      
@@ -1924,7 +1943,22 @@
 !     width at half height to the "natural" measure of the width = a.   
 !     L = 1/a is typically the extent of the apodization function       
 !     and corresponds to the maximum path length difference of an       
-!     interferometer.                                                   
+!     interferometer.  
+!
+!     Version 2.0: 2008
+!         Changes in Version 2.0
+!         1. param keyword added to TAPE5 input for Gaussian line shape 
+!            (JFN = -2). When this is set to a non-zero value,  
+!            the HWHM of the FTS is set equal to param instead of  
+!            calculating the HWHM from the maximum optical path difference.
+!            This is mainly used to simulate the IASI instrument line shape.
+!
+!     Version 2.1: October, 2011
+!         Changes in Version 2.1 
+!         1. When param keyword is non-zero for a Gaussian line shape 
+!            (JFN = -2), truncate the Gaussian in the time domain based on 
+!            the maximum optical path difference.           
+!                                              
 !                                                                       
 !     JFN  Scanning function                                            
 !      1   triangle= 1 - v/a, v < a,  a = C1*hwhm                       
@@ -1949,7 +1983,6 @@
 !     JFN  Apodization Function                                         
 !      1   Sinc**2 = (sin(z)/z)**2, z = Pi*x*a (a = C1*hwhm)            
 !      2   Gaussian = exp(-2*Pi*(a*x)**2) 
-!      (Default infinite, IASI special case is truncated, mja, 10/04/2011)
 !      3   Triangle, 1 @x=0, 0 @x= 1/a                                  
 !      4   Rectangle = 1, x:0 to 1/a; 0, x > 1/a                        
 !      5   Beer = (1-(x*a)**2)**2                                       
