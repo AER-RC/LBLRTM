@@ -1,3 +1,35 @@
+LBLRTM v12.1
+Oct 2011
+
+* .f files updated to .f90 (D. Weisenstein)
+
+* New modules to define physical constants in a single place in the code:
+  - phys_consts.f90 to define fundamental physical constants
+  - planet_earth.f90 to define Earth-related constants
+
+* lblatm.f90
+  - Corrected molecular weight for C2H4 (M. J. Alvarado, K. E. Cady-Pereira)
+
+* fftscn.f90 and fftscn_dbl.f90 (M. J. Alvarado)
+  - LPTFFT was increased by a factor of 4. This gives better 
+    accuracy for regions with large changes in radiance 
+    (e.g., CO2 nu3 bandhead region).
+  - When param keyword is non-zero for a Gaussian line shape 
+    (JFN = -2), truncate the Gaussian in the time domain based on 
+    the maximum optical path difference.
+
+* Fixed cross-section related bugs (V. H. Payne)
+  - Capitalization of CCLF3 in FSCDXS
+  - Corrected "C" spectral range for CLONO2 in FSCDXS and added the C range spectral
+    files to the xs_files directory
+  - Reverted to HITRAN 2000 data for CLONO2 to avoid issues with large number of xs
+    data points
+
+* Corrected various issues with variables that had not been properly initialized
+  (M. J. Alvarado)
+
+* Updated lblrtm instructions.
+
 LBLRTM v12.0
 Jan 2011
 
