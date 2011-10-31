@@ -394,7 +394,7 @@
       CHARACTER*1 CMRG(2),CXIDA(80) 
 !                                                                       
       PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,         &
+     &                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,&
      &                MXTRAC=22,MXSPC=5)                                
 !                                                                       
 !     ----------------------------------------------------------------  
@@ -2903,6 +2903,7 @@
 !                dUh2o=-1.0/(1.0+(1.609/wq))                            
 !                                                                       
 !**%%$$ ?????                                                           
+                           frh2o =  wk(1)/wtot !mja, 10-27-2011
                            if (nspcrt.eq.1) then 
                            dUh2o = -frh2o/(frh2o+1.609) 
                            endif 
@@ -3233,6 +3234,7 @@
 !                dUh2o=-1.0/(1.0+(1.609/wq))                            
 !                                                                       
 !**%%$$ ?????                                                           
+                           frh2o =  wk(1)/wtot !mja, 10-27-2011
                            if (nspcrt.eq.1) then 
                            dUh2o = -frh2o/(frh2o+1.609) 
                            endif 
@@ -3440,8 +3442,9 @@
                            JPATHL = 3 
                            ENDIF 
 !                                                                       
-                           IF (LH1RD.GT.0) LH1=LH1RD 
-                           IF (LH2RD.GT.0) LH2=LH2RD 
+!                           IF (LH1RD.GT.0) LH1=LH1RD !mja, these 
+!                           variables aren't defined anywhere
+!                           IF (LH2RD.GT.0) LH2=LH2RD 
                                                                         
                            IF (LH1.LT.LH2) IPATHL = 3 
                            JPATHL = IPATHL 
@@ -6432,7 +6435,7 @@
       ENDIF 
 !                                                                       
       IF (VIDV.GE.9.E+4) THEN 
-         NLIM2 = NLIMO+1 
+         NLIM2 = NLIM+1 
       ELSE 
          NLIM2 = (VIDV-V1P)/DVP+1.001 
       ENDIF 

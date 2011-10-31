@@ -1007,10 +1007,10 @@
 !                                                                       
 !     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM    
 !                                                                       
+      COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4,CHEADING 
       CHARACTER*18 cnam3(9),cnam4(29) 
       CHARACTER*51 CINFO1(2,11),CINFO2(2,11),CINFO3(2,9),CINFO4(2,29) 
       CHARACTER*40 CHEADING(3,2) 
-      COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4,CHEADING 
 !                                                                       
       DATA cnam3/                                                       &
      &     '                  ',                                        &
@@ -9273,7 +9273,9 @@
          V1C = V1S + DVS*REAL(I1-1) 
          I2 = (V2C-V1S)/DVS + 0.01 
          NPTC = I2-I1+3 
-         IF (NPTC.GT.NPTS) NPTC=NPTS+4 
+!         IF (NPTC.GT.NPTS) NPTC=NPTS+4 
+!        mja, 10-27-2011 - this seems to be redundant as the 
+!        Herzberg O2 continuum is a function, not block data
          V2C = V1C + DVS*REAL(NPTC-1) 
 !                                                                       
          DO 10 J = 1, NPTC 

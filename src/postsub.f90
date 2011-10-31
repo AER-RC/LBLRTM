@@ -715,7 +715,7 @@
 !                                                                       
       HWFS = HWF 
       DXFS = DXF 
-      NFS = NFS 
+      NFS = NF 
       NFMAXS = NFMAX 
 !                                                                       
 !     CHECK FOR NEGATIVE JFN OR NEGATIVE SAMPL                          

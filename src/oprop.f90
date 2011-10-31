@@ -5654,7 +5654,7 @@
 !++:  bd-MOL                                                            
       COMMON/MOLNAM/MOLID(0:NMOL) 
 !++:  bd-QT                                                             
-      COMMON/Temperatures/tdat(NT) 
+      COMMON/Temperatures/tdat !mja, 10-27-2011 
                                                                         
       dimension iso_max(nmol),scor(42,9) 
                                                                         

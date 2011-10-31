@@ -184,14 +184,15 @@
          HMOLID(M) = HMOLS(M) 
    10 END DO 
 !                                                                       
-      CALL ATMPTH (xid,IEMIT) 
+      IXSECT = IXSCNT/10 
+      CALL ATMPTH (xid,IEMIT, IXSECT) 
 !                                                                       
       SECANT = 1.0 
       nmol_flhdr = nmol 
 !                                                                       
 !     FOR IXSECT = 1, CALL XAMNTS                                       
 !                                                                       
-      IXSECT = IXSCNT/10 
+
       XV1 = V1-25. 
       XV2 = V2+25. 
       IF (IXSECT.EQ.1) CALL XAMNTS (XV1,XV2) 
@@ -205,7 +206,7 @@
 !                                                                       
 !     ----------------------------------------------------------------  
 !                                                                       
-      SUBROUTINE ATMPTH (xid,IEMIT) 
+      SUBROUTINE ATMPTH (xid,IEMIT, IXSECT) 
 !                                                                       
 !********************************************************************** 
 !                                                                       
@@ -621,7 +622,7 @@
          open (97,FILE='AJ_atmosphere', STATUS='UNKNOWN',FORM=          &
          'UNFORMATTED')                                                 
          write (97) xid 
-                                                                        
+
          if (IXSECT.GE.1) then 
          open (20,file='AJ_xs_amnts', status='unknown',form =           &
          'unformatted')                                                 

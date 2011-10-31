@@ -2507,7 +2507,7 @@
       EQUIVALENCE (NEWEM(1),EMLAYR(1)) , (NEWTR(1),TRALYR(1)),          &
      &            (FSCDID(4),IAERSL) , (FSCDID(5),IEMIT),               &
      &            (FSCDID(7),IPLOT) , (FSCDID(8),IPATHL),               &
-     &            (FSCDID(16),LAYR1)                                    
+     &            (FSCDID(11),IMRG) , (FSCDID(16),LAYR1)      
 !                                                                       
       REAL NEWEM,NEWTR 
 !                                                                       
@@ -4585,7 +4585,7 @@
                                                                         
                bbeff(i) = (bb + bb_dif_a * f_i) 
                em(i) = (1.-tr_i) * bbeff(i) 
-               emb(i) = (1.-tr_d) * (bb + bb_dif_b * f_d_i) 
+               emb(i) = (1.-tr_d_i) * (bb + bb_dif_b * f_d_i) !mja, 10-27-2011
 !---                                                                    
 ! Store BB, BBA, and XX for derivative source term                      
                BBSAV(I) = BB 
@@ -4729,7 +4729,7 @@
                tr_i = 1. - odvi * (1. - 0.5 * odvi) 
                abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi) 
                                                                         
-               dF_dtau(i) = rc_6 
+               dF_dtau(i) = rec_6 !mja, 10-27-2011
                                                                         
                else 
                                                                         
