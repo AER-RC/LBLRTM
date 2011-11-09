@@ -3229,7 +3229,7 @@
 !                                                                       
 !     NFLTPT sets the maximum number of points in the incoming filter   
 !                                                                       
-      PARAMETER (NFLTPT = 3001) 
+      USE lblparams, ONLY: NFLTPT
 !                                                                       
       IMPLICIT REAL*8 (V) 
 !                                                                       
@@ -3500,7 +3500,7 @@
 !                                                                       
 !     NFLTPT sets the maximum number of points in the incoming filter   
 !                                                                       
-      PARAMETER (NFLTPT = 3001) 
+      USE lblparams, ONLY: NFLTPT
 !                                                                       
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -3601,7 +3601,7 @@
 !                                                                       
 !     NFLTPT sets the maximum number of points in the incoming filter   
 !                                                                       
-      PARAMETER (NFLTPT = 3001) 
+      USE lblparams, ONLY: NFLTPT
 !                                                                       
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -3777,7 +3777,7 @@
 !                                                                       
 !     NFLTPT sets the maximum number of points in the incoming filter   
 !                                                                       
-      PARAMETER (NFLTPT = 3001) 
+      USE lblparams, ONLY: NFLTPT
 !                                                                       
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -3831,7 +3831,7 @@
 !                                                                       
 !     NFLTPT sets the maximum number of points in the incoming filter   
 !                                                                       
-      PARAMETER (NFLTPT = 3001) 
+      USE lblparams, ONLY: NFLTPT
 !                                                                       
       IMPLICIT REAL*8           (V) 
 !                                                                       

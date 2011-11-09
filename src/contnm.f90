@@ -23,10 +23,9 @@
 !
       SUBROUTINE CONTNM(JRAD) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb, ipts, ipts2
       USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
 !     SUBROUTINE CONTNM CONTAINS THE CONTINUUM DATA                     
 !     WHICH IS INTERPOLATED INTO THE ARRAY ABSRB                        
@@ -55,7 +54,6 @@
 ! for analytic derivative calculation                                   
 ! note: ipts  = same dimension as ABSRB                                 
 !       ipts2 = same dimension as C                                     
-      parameter (ipts=5050,ipts2=6000) 
       common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,delT_pert, &
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
                                                                         
@@ -1192,9 +1190,8 @@
 !                                                                       
       SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                             
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V)                                     
-                                                                        
-      parameter (n_absrb=5050)                                          
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)           
       COMMON /SH2O/ V1S,V2S,DVS,NPTS,S(2003)                            
@@ -1701,7 +1698,7 @@
 !                                                                       
       SUBROUTINE SL260 (V1C,V2C,DVC,NPTC,C) 
                                                                         
-      parameter (n_absrb=5050) 
+      Use lblparams, ONLY: n_absrb 
 !                                                                       
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -2209,9 +2206,8 @@
 !                                                                       
       SUBROUTINE FRN296 (V1C,V2C,DVC,NPTC,C) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /FH2O/ V1S,V2S,DVS,NPTS,S(2003) 
@@ -2718,9 +2714,8 @@
 !                                                                       
       SUBROUTINE FRNCO2 (V1C,V2C,DVC,NPTC,C,tave) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       dimension tdep_bandhead(1196:1220) 
                                                                         
@@ -3937,9 +3932,8 @@
 !     The values for scale factor values (sf296) for 296K are based on  
 !     linear interpolation of Boissoles at al. values at 250K and 300K  
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/  V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /N2RT296/ V1S,V2S,DVS,NPTS,C_296(73),sf_296(73) 
@@ -4089,9 +4083,8 @@
 !                                                                       
       subroutine n2_ver_1 (v1c,v2c,dvc,nptc,c,T) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8 (v) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
 !                                                                       
@@ -4250,7 +4243,7 @@
 !                                                                       
       SUBROUTINE XO3CHP (V1C,V2C,DVC,NPTC,C0,C1,C2) 
                                                                         
-      parameter (n_absrb=5050) 
+      Use lblparams, ONLY: n_absrb 
 !                                                                       
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -6413,9 +6406,8 @@
 !                                                                       
       SUBROUTINE O3HHT0 (V1C,V2C,DVC,NPTC,C) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /O3HH0/ V1S,V2S,DVS,NPTS,S(2687) 
@@ -7100,9 +7092,8 @@
 !                                                                       
       SUBROUTINE O3HHT1 (V1C,V2C,DVC,NPTC,C) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /O3HH1/ V1S,V2S,DVS,NPTS,S(2687) 
@@ -7745,9 +7736,8 @@
 !                                                                       
       SUBROUTINE O3HHT2 (V1C,V2C,DVC,NPTC,C) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /O3HH2/ V1S,V2S,DVS,NPTS,S(2687) 
@@ -8390,9 +8380,8 @@
 !                                                                       
       SUBROUTINE O3HHUV (V1C,V2C,DVC,NPTC,C) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /O3HUV/ V1S,V2S,DVS,NPTS,S(133) 
@@ -8480,9 +8469,8 @@
                                                                         
       subroutine o2_ver_1 (v1c,v2c,dvc,nptc,c,T) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8 (v) 
-                                                                        
-      parameter (n_absrb=5050) 
                                                                         
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
                                                                         
@@ -8608,9 +8596,8 @@
 !                                                                       
       SUBROUTINE O2INF1 (V1C,V2C,DVC,NPTC,C) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       DIMENSION C(*) 
@@ -8787,9 +8774,8 @@
 !                                                                       
       SUBROUTINE O2INF2 (V1C,V2C,DVC,NPTC,C) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       DIMENSION C(*) 
@@ -8842,9 +8828,8 @@
 !                                                                       
       SUBROUTINE O2_vis (V1C,V2C,DVC,NPTC,C) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       DIMENSION C(*) 
@@ -9250,9 +9235,8 @@
 !                                                                       
       SUBROUTINE O2HERZ (V1C,V2C,DVC,NPTC,C,T,P) 
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       DIMENSION C(*) 
@@ -9390,9 +9374,8 @@
       subroutine cld_od(V1C,V2C,DVC,NPTC,C,layer,xkt) 
 !     --------------------------------------------------------------    
 !                                                                       
+      Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
-                                                                        
-      parameter (n_absrb=5050) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
                                                                         
