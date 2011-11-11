@@ -2729,6 +2729,7 @@
 !                                                                       
       USE lblparams, ONLY: MXMOL
       USE phys_consts, ONLY: radcn2
+      USE struct_types, ONLY: LINE_DATA
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4  
@@ -2765,8 +2766,9 @@
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
       COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4,lstdum 
-      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
-     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
+      TYPE(LINE_DATA)  :: BUFR
+!      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
+!     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D 
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER 
 !                                                                       
@@ -2774,12 +2776,12 @@
       DIMENSION MEFDP(64) 
       DIMENSION SCOR(42,9),RHOSLF(mxmol),ALFD1(42,9) 
       DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4) 
-      DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2),AMOLB(250) 
+      DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2) ! ,AMOLB(250) 
 !                                                                       
       EQUIVALENCE (ALFA0(1),ALFAL(1)) , (EPP(1),ALFAD(1)) 
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)) 
       EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                     &
-     &            (HLINHD(1),HID(1),IWD(1)) , (MOLB(1),AMOLB(1))        
+     &            (HLINHD(1),HID(1),IWD(1)) !  , (MOLB(1),AMOLB(1))        
 !                                                                       
       character*8 h_linf4 
 !                                                                       
@@ -2867,7 +2869,7 @@
       IJ = 0 
    30 CALL CPUTIM (TIM0) 
                                                                         
-      CALL RDLNFL (IEOF,ILINLO,ILINHI) 
+      CALL RDLNFL (IEOF,ILINLO,ILINHI, BUFR) 
       CALL CPUTIM (TIM1) 
       TIMR = TIMR+TIM1-TIM0 
 !                                                                       
@@ -2879,14 +2881,14 @@
          GAMMA1 = 0. 
          GAMMA2 = 0. 
          I = IOUT(J) 
-         IFLAG = IFLG(I) 
+         IFLAG = BUFR%IFLG(I) 
          IF (I.LE.0) GO TO 50 
 !                                                                       
-         M = MOD(MOLB(I),I_100) 
+         M = MOD(BUFR%MOL(I),I_100) 
 !                                                                       
-!     ISO=(MOD(MOLB(I),I_1000)-M)/100   IS PROGRAMMED AS:               
+!     ISO=(MOD(BUFR%MOL(I),I_1000)-M)/100   IS PROGRAMMED AS:               
 !                                                                       
-         ISO = MOD(MOLB(I),I_1000)/100 
+         ISO = MOD(BUFR%MOL(I),I_1000)/100 
 !                                                                       
 !     check if lines are within allowed molecular and isotopic limits   
 !                                                                       
@@ -2898,23 +2900,23 @@
          go to 50 
          endif 
 !                                                                       
-         SUI = SB(I)*W(M) 
+         SUI = BUFR%SP(I)*W(M) 
          IF (SUI.EQ.0.) GO TO 50 
-         IF (VNUB(I).LT.VLO) GO TO 50 
+         IF (BUFR%VNU(I).LT.VLO) GO TO 50 
          IJ = IJ+1 
 !                                                                       
 !     Y'S AND G'S ARE STORED IN I+1 POSTION OF VNU,S,ALFA0,EPP...       
 !      A(1-4),  B(1-4) CORRESPOND TO TEMPERATURES TEMPLC(1-4) ABOVE     
 !                                                                       
          IF (IFLAG.EQ.1.OR.IFLAG.EQ.3) THEN 
-            A(1) = VNUB(I+1) 
-            B(1) = SB(I+1) 
-            A(2) = ALB(I+1) 
-            B(2) = EPPB(I+1) 
-            A(3) = AMOLB(I+1) 
-            B(3) = HWHMB(I+1) 
-            A(4) = TMPALB(I+1) 
-            B(4) = PSHIFB(I+1) 
+            A(1) = BUFR%VNU(I+1) 
+            B(1) = BUFR%SP(I+1) 
+            A(2) = BUFR%ALFA(I+1) 
+            B(2) = BUFR%EPP(I+1) 
+            A(3) = transfer (BUFR%MOL(I+1) , A(3))  ! real representation of mol
+            B(3) = BUFR%HWHM(I+1) 
+            A(4) = BUFR%TMPALF(I+1) 
+            B(4) = BUFR%PSHIFT(I+1) 
 !                                                                       
 !     CALCULATE SLOPE AND EVALUATE                                      
 !                                                                       
@@ -2934,9 +2936,9 @@
 !                                                                       
 !     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS         
 !                                                                       
-         VNU(IJ) = VNUB(I)+RHORAT*PSHIFB(I) 
-         ALFA0(IJ) = ALB(I) 
-         EPP(IJ) = EPPB(I) 
+         VNU(IJ) = BUFR%VNU(I) + RHORAT * BUFR%PSHIFT(I) 
+         ALFA0(IJ) = BUFR%ALFA(I) 
+         EPP(IJ) = BUFR%EPP(I) 
          MOL(IJ) = M 
 !                                                                       
          IF (jrad4.EQ.1) SUI = SUI*VNU(ij) 
@@ -2970,9 +2972,9 @@
 !     TEMPERATURE CORRECTION OF THE HALFWIDTH                           
 !     SELF TEMP DEPENDENCE TAKEN THE SAME AS FOREIGN                    
 !                                                                       
-         TMPCOR = TRATIO**TMPALB(I) 
+         TMPCOR = TRATIO**BUFR%TMPALF(I) 
          ALFA0I = ALFA0(IJ)*TMPCOR 
-         HWHMSI = HWHMB(I)*TMPCOR 
+         HWHMSI = BUFR%HWHM(I)*TMPCOR 
          ALFAL(IJ) = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m) 
 !                                                                       
          IF (IFLAG.EQ.3) ALFAL(IJ) = ALFAL(IJ)*(1.0-GAMMA1*PAVP0-GAMMA2*&
@@ -3123,12 +3125,17 @@
 !                                                                       
       END                                           
 !*******************************************************************    
-      SUBROUTINE RDLNFL (IEOF,ILO,IHI) 
-!                                                                       
-      IMPLICIT REAL*8           (V) 
+      SUBROUTINE RDLNFL (IEOF,ILO,IHI, BUFR) 
 !                                                                       
 !     SUBROUTINE RDLNFL INPUTS THE LINE DATA FROM LINFIL                
 !                                                                       
+      USE struct_types, ONLY: LINE_DATA, INPUT_HEADER, INPUT_BLOCK
+      IMPLICIT REAL*8           (V) 
+!                                                                       
+      TYPE(LINE_DATA), INTENT(OUT) :: BUFR
+!      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
+!     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
+!
       CHARACTER*8      XID,       HMOLID,      YID 
       Real*8               SEC   ,       XALTZ 
 !                                                                       
@@ -3137,27 +3144,31 @@
      &                EMIS ,FSCDID(17),NMOL,LAYRS ,YID1,YID(10),LSTWDF  
       COMMON /R4SUB/ VLO,VHI,ILD,IST,IHD,LIMIN,LIMOUT,ILAST,DPTMN,      &
      &               DPTFC,ILIN4,ILIN4T                                 
-      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
-     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
 !                                                                       
       dimension amolb(250) 
-      equivalence (molb(1),amolb(1)) 
+!      equivalence (molb(1),amolb(1)) 
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
       COMMON /IOU/ IOUT(250) 
 !                                                                       
-      common /rdlnpnl/ vmin,vmax,nrec,nwds 
-      integer *4 nrec,nwds,lnfl,leof,npnlhd 
+      TYPE(INPUT_HEADER) :: RDLNPNL
+!      common /rdlnpnl/ vmin,vmax,nrec,nwds 
+!      integer *4 nrec,nwds
+
+      integer*4 lnfl,leof,npnlhd 
 !                                                                       
-      common /rdlnbuf/ vlin(250),str(250),hw_f(250),e_low(250),         &
-     &     mol_id(250),hw_s(250),hw_T(250),shft(250),jflg(250)          
-                                                                        
-      real *4 str,hw_f,e_low,hw_s,hw_T,shft,rdpnl(2),dum(2),xmol(2) 
-      integer *4 mol_id,jflg,i_1 
-                                                                        
-      equivalence (vmin,rdpnl(1)), (mol_id(1),xmol(1)) 
+      TYPE(INPUT_BLOCK) :: RDLNBUF
+!      common /rdlnbuf/ vlin(250),str(250),hw_f(250),e_low(250),         &
+!     &     mol_id(250),hw_s(250),hw_T(250),shft(250),jflg(250)          
+!      real *4 str,hw_f,e_low,hw_s,hw_T,shft
+!      integer *4 mol_id,jflg
+!                                                                        
+      real*4 rdpnl(2),dum(2),xmol(250) 
+      integer*4 i_1 
+!
+!      equivalence (vmin,rdpnl(1)), (mol_id(1),xmol(1)) 
 !                                                                       
       DATA I_1/1/ 
 !                                                                       
@@ -3173,41 +3184,47 @@
       lnfl = linfil	 
       npnlhd = 6 
 !                                                                       
-   10 CALL BUFIN_sgl(Lnfl,LEOF,rdpnl(1),npnlhd) 
+!   10 CALL BUFIN_sgl(Lnfl,LEOF,rdpnl(1),npnlhd) 
+   10 CALL BUFIN_sgl(Lnfl,LEOF,RDLNPNL,npnlhd) 
+
 !                                                                       
       IF (LEOF.EQ.0) GO TO 30 
-      IF (VMAX.LT.VLO) THEN 
+      IF (RDLNPNL%VMAX.LT.VLO) THEN 
          CALL BUFIN_sgl(lnfl,LEOF,dum(1),i_1) 
          GO TO 10 
       ELSE 
-         CALL BUFIN_sgl(Lnfl,LEOF,vlin(1),NWDS) 
+!         CALL BUFIN_sgl(Lnfl,LEOF,vlin(1),NWDS)
+         CALL BUFIN_sgl(Lnfl,LEOF,rdlnbuf,RDLNPNL%NWDS)
       ENDIF 
 !                                                                       
-      IF ((IPASS.EQ.1).AND.(Vlin(1).GT.VLO)) WRITE (IPR,900) 
+      IF ((IPASS.EQ.1).AND.(RDLNBUF%VNU(1).GT.VLO)) WRITE (IPR,900) 
 !                                                                       
       IJ = 0 
 !                                                                       
 !     precision conversion occurs here:                                 
 !     incoming on right: vlin is real*8;  others are real*4 and integer*
 !                                                                       
-      do 15 i=1,nrec 
-         IFLG(i)  = jflg(i) 
-         VNUB(i)   = vlin(i) 
-         SB(i)    = str(i) 
-         ALB(i)   = hw_f(i) 
-         EPPB(i)   = e_low(i) 
-         if (iflg(i) .ge.  0) then 
-            MOLB(i)  = mol_id(i) 
-         else 
-            amolb(i)  = xmol(i) 
+      do 15 i=1,RDLNPNL%NREC 
+         BUFR%IFLG(i)  = RDLNBUF%IFLG(i) 
+         BUFR%VNU(i)   = RDLNBUF%VNU(i) 
+         BUFR%SP(i)    = RDLNBUF%SP(i) 
+         BUFR%ALFA(i)   = RDLNBUF%ALFA(i) 
+         BUFR%EPP(i)   = RDLNBUF%EPP(i) 
+         if (BUFR%IFLG(i) .ge.  0) then 
+            BUFR%MOL(i)  = RDLNBUF%MOL(i)   ! int*4 to int*8
+         else   ! mol read as integer, treated as real
+!            amolb(i)  = xmol(i) 
+            xmol(i)  = transfer (RDLNBUF%mol(i), xmol(i))  !int*4 to real*4
+            amolb(i) = xmol(i)     ! real*4 to real*8 (if compiled as r8)
+            bufr%mol(i) = transfer (amolb(i), bufr%mol(i))  ! real*8 to int*8
          endif 
-         HWHMB(i) = hw_s(i) 
-         TMPALB(i)= hw_T(i) 
-         PSHIFB(i)= shft(i) 
+         BUFR%HWHM(i) = RDLNBUF%HWHM(i) 
+         BUFR%TMPALF(i)= RDLNBUF%TMPALF(i) 
+         BUFR%PSHIFT(i)= RDLNBUF%PSHIFT(i) 
    15 continue 
 !                                                                       
-      DO 20 J = 1, NREC 
-         IF (IFLG(J).GE.0) THEN 
+      DO 20 J = 1, RDLNPNL%NREC 
+         IF (BUFR%IFLG(J).GE.0) THEN 
             IJ = IJ+1 
             IOUT(IJ) = J 
          ENDIF 
@@ -3301,7 +3318,7 @@
 !     IF LAST LINE OR VNU GREATER THAN LIMIT THEN STORE SUMS            
 !                                                                       
    10    IF (I.LT.IHI) THEN 
-            IF (VNU(I+1).LE.VLMT) GO TO 20 
+            IF (VNU(I+1).LE.VLMT) GO TO 20
          ENDIF 
 !                                                                       
          VLMT = VNU(I)+DV 

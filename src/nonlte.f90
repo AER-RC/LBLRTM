@@ -2079,6 +2079,7 @@
       SUBROUTINE LINF4Q (V1L4,V2L4) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
+      USE struct_types, ONLY: LINE_DATA
       include 'lblparams.inc' 
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -2116,8 +2117,10 @@
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
       COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4,lstdum 
-      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
-     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
+!
+      TYPE(LINE_DATA)  :: BUFR
+!      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
+!     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D 
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER 
       COMMON /VBNLTE/ RATSTATE(MAXSTATE*Max_ISO,MXMOL),NUMSTATE(MXMOL) 
@@ -2126,14 +2129,14 @@
       DIMENSION MEFDP(64) 
       DIMENSION SCOR(42,9),RHOSLF(mxmol),ALFD1(42,9) 
       DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4) 
-      DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2),AMOLB(250) 
+      DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2) !,AMOLB(250) 
 !                                                                       
       DIMENSION SABS(2) 
       EQUIVALENCE (ALFA0(1),ALFAL(1)) , (EPP(1),ALFAD(1)) 
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)) 
       EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                     &
-     &            (HLINHD(1),HID(1),IWD(1)) , (MOLB(1),AMOLB(1)),       &
-     &    (SP(1),SABS(1))                                               
+     &            (HLINHD(1),HID(1),IWD(1)),                            &
+     &    (SP(1),SABS(1))                   !, (MOLB(1),AMOLB(1))
 !                                                                       
       character*8 h_linf4 
 !                                                                       
@@ -2221,7 +2224,7 @@
       IJ = 0 
    30 CALL CPUTIM (TIM0) 
                                                                         
-      CALL RDLNFL (IEOF,ILINLO,ILINHI) 
+      CALL RDLNFL (IEOF,ILINLO,ILINHI, BUFR) 
       CALL CPUTIM (TIM1) 
       TIMR = TIMR+TIM1-TIM0 
 !                                                                       
@@ -2233,15 +2236,15 @@
          GAMMA1 = 0. 
          GAMMA2 = 0. 
          I = IOUT(J) 
-         IFLAG = IFLG(I) 
+         IFLAG = BUFR%IFLG(I) 
          IF (I.LE.0) GO TO 50 
 !                                                                       
-         MFULL = MOLB(I) 
-         M = MOD(MOLB(I),I_100) 
+         MFULL = BUFR%MOL(I) 
+         M = MOD(BUFR%MOL(I),I_100) 
 !                                                                       
-!     ISO=(MOD(MOLB(I),I_1000)-M)/100   IS PROGRAMMED AS:               
+!     ISO=(MOD(BUFR%MOL(I),I_1000)-M)/100   IS PROGRAMMED AS:               
 !                                                                       
-         ISO = MOD(MOLB(I),I_1000)/100 
+         ISO = MOD(BUFR%MOL(I),I_1000)/100 
 !                                                                       
 !     check if lines are within allowed molecular and isotopic limits   
 !                                                                       
@@ -2253,23 +2256,23 @@
          go to 50 
          endif 
 !                                                                       
-         SUI = SB(I)*W(M) 
+         SUI = BUFR%SP(I)*W(M) 
          IF (SUI.EQ.0.) GO TO 50 
-         IF (VNUB(I).LT.VLO) GO TO 50 
+         IF (BUFR%VNU(I).LT.VLO) GO TO 50 
          IJ = IJ+1 
 !                                                                       
 !     Y'S AND G'S ARE STORED IN I+1 POSTION OF VNU,S,ALFA0,EPP...       
 !      A(1-4),  B(1-4) CORRESPOND TO TEMPERATURES TEMPLC(1-4) ABOVE     
 !                                                                       
          IF (IFLAG.EQ.1.OR.IFLAG.EQ.3) THEN 
-            A(1) = VNUB(I+1) 
-            B(1) = SB(I+1) 
-            A(2) = ALB(I+1) 
-            B(2) = EPPB(I+1) 
-            A(3) = AMOLB(I+1) 
-            B(3) = HWHMB(I+1) 
-            A(4) = TMPALB(I+1) 
-            B(4) = PSHIFB(I+1) 
+            A(1) = BUFR%VNU(I+1) 
+            B(1) = BUFR%SP(I+1) 
+            A(2) = BUFR%ALFA(I+1) 
+            B(2) = BUFR%EPP(I+1) 
+            A(3) = TRANSFER(BUFR%MOL(I+1),A(3) )
+            B(3) = BUFR%HWHM(I+1) 
+            A(4) = BUFR%TMPALF(I+1) 
+            B(4) = BUFR%PSHIFT(I+1) 
 !                                                                       
 !     CALCULATE SLOPE AND EVALUATE                                      
 !                                                                       
@@ -2289,9 +2292,9 @@
 !                                                                       
 !     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS         
 !                                                                       
-         VNU(IJ) = VNUB(I)+RHORAT*PSHIFB(I) 
-         ALFA0(IJ) = ALB(I) 
-         EPP(IJ) = EPPB(I) 
+         VNU(IJ) = BUFR%VNU(I)+RHORAT*BUFR%PSHIFT(I) 
+         ALFA0(IJ) = BUFR%ALFA(I) 
+         EPP(IJ) = BUFR%EPP(I) 
          MOL(IJ) = M 
 !                                                                       
          IF (jrad4.EQ.1) SUI = SUI*VNU(ij) 
@@ -2325,9 +2328,9 @@
 !     TEMPERATURE CORRECTION OF THE HALFWIDTH                           
 !     SELF TEMP DEPENDENCE TAKEN THE SAME AS FOREIGN                    
 !                                                                       
-         TMPCOR = TRATIO**TMPALB(I) 
+         TMPCOR = TRATIO**BUFR%TMPALF(I) 
          ALFA0I = ALFA0(IJ)*TMPCOR 
-         HWHMSI = HWHMB(I)*TMPCOR 
+         HWHMSI = BUFR%HWHM(I)*TMPCOR 
          ALFAL(IJ) = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m) 
 !                                                                       
          IF (IFLAG.EQ.3) ALFAL(IJ) = ALFAL(IJ)*(1.0-GAMMA1*PAVP0-GAMMA2*&

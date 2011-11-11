@@ -1,6 +1,6 @@
 !     path:      $HeadURL$
 !     author:    $Author$
-!     revision:  $Revision: 10658 $
+!     revision:  $Revision$
 !     created:   $Date$
 !
 !  --------------------------------------------------------------------------
@@ -21,21 +21,38 @@
 ! |                       (http://www.rtweb.aer.com/)                        |
 !  --------------------------------------------------------------------------
 !
-MODULE lblparams   ! Parameters for array dimensions in lblrtm
+MODULE STRUCT_TYPES
 
-  implicit none
+  TYPE :: INPUT_HEADER
+     SEQUENCE
+     REAL(8)    :: VMIN, VMAX
+     INTEGER(4) :: NREC, NWDS
+  END TYPE INPUT_HEADER
 
-      integer, parameter :: MXMOL=39, MXSPC=5, Max_ISO=20
-      integer, parameter :: MXFSC=600, MXLAY=MXFSC+3, MX_XS=38
-      integer, parameter :: MXZMD=6000, MXPDIM=MXLAY+MXZMD
-      integer, parameter :: IM2=MXPDIM-2, MXTRAC=22
-      integer, parameter :: NFPTS=2001, NFMX=1.3*NFPTS
-      integer, parameter :: NMAXCO=4040, NUMZ = 101
-      integer, parameter :: IPTS=5050, IPTS2=6000
-      integer, parameter :: N_ABSRB=5050, nzeta=101
-      integer, parameter :: NT=119, Nmax=600
-      integer, parameter :: NN_TBL=10000, NDIM=2410, ND2=5000
-      integer, parameter :: MAXSTATE=26
-      integer, parameter :: NFLTPT=3001
+  TYPE :: INPUT_BLOCK
+     SEQUENCE
+     REAL(8), DIMENSION(250)     :: VNU
+     REAL(4), DIMENSION(250)     :: SP, ALFA, EPP
+     INTEGER(4), DIMENSION(250)  :: MOL
+     REAL(4), DIMENSION(250)     :: HWHM, TMPALF, PSHIFT
+     INTEGER(4), DIMENSION(250)  :: IFLG
+  END TYPE INPUT_BLOCK
 
-END MODULE lblparams
+  TYPE :: LINE_DATA
+     REAL(8), DIMENSION(250)   :: VNU
+     REAL, DIMENSION(250)     :: SP, ALFA, EPP
+     INTEGER, DIMENSION(250)  :: MOL
+     REAL, DIMENSION(250)     :: HWHM, TMPALF, PSHIFT
+     INTEGER, DIMENSION(250)  :: IFLG
+     REAL, DIMENSION(250)     :: SPPSP, RECALF, ZETAI
+     INTEGER, DIMENSION(250)  :: IZETA
+  END TYPE LINE_DATA
+
+  TYPE :: LINE_SHRINK
+     REAL(8), DIMENSION(1250)  :: VNU
+     REAL, DIMENSION(1250)    :: SP, ALFA, EPP
+     INTEGER, DIMENSION(1250)  :: MOL
+     REAL, DIMENSION(1250)    :: SPP, SRAD
+  END TYPE LINE_SHRINK
+
+END MODULE STRUCT_TYPES
