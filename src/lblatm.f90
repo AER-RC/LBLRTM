@@ -7744,7 +7744,9 @@
 !                                                                       
 !     OUTPUT:                                                           
 !      A) ALTITUDE (KM)                                                 
-!      IDEAL GAS LAW: CRIDOR (1996)                                     
+!      IDEAL GAS LAW: P.E.CIDDOR (1996), Refractive index of 
+!      air: New equations for the visible and near infrared,
+!      Applied Optics, 35(9), 1566-1573.
 !**************************************************************         
                                                                         
       USE phys_consts, ONLY: boltz, gascon

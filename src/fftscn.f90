@@ -2076,7 +2076,9 @@
                     FUNCT(L+1) = 0.0 
              else !IASI special case: Truncated Gaussian outside OPD
                   !mja, 10/04/2011
-                if (ABS(X) .LE. 0.5/A) then
+!                if (ABS(X) .LE. 0.5/A) then
+                if (ABS(X) .LE. 1.0/A) then 
+                !mja, 01-13-2012, fix factor of 2 error
                    FUNCT(L) = exp( -MIN( 2.0*(Pi*X*A_mod)**2, ARGMIN))
                    FUNCT(L+1) = 0.0
                 else            
