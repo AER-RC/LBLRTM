@@ -1,3 +1,15 @@
+LBLRTM v12.2
+Oct 2012
+
+* Please note that we no longer recommend the use of the LOWTRAN aerosol 
+  options in LBLRTM (IAERSL = 1 or 7), as they are severely out of date. 
+  We recommend using the spectral absorption by layer (IAERSL=5) option 
+  instead to model an absorber with slowly varying spectral dependence via 
+  the file 'in_lblrtm_cld'. This allows you to input spectrally dependent 
+  optical depths at each level. AER will not be providing debugging support 
+  for runs using LOWTRAN going forward.
+
+
 LBLRTM v12.1
 Oct 2011
 

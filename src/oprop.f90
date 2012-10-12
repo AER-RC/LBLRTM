@@ -2729,7 +2729,7 @@
 !                                                                       
       USE lblparams, ONLY: MXMOL
       USE phys_consts, ONLY: radcn2
-      USE struct_types, ONLY: LINE_DATA
+      USE struct_types
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4  
@@ -2743,8 +2743,9 @@
      &               MCNTNL(64),SUMSTR(64),NMOI,FLINLO,FLINHI,          &
      &               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL      
 !                                                                       
-      COMMON VNU(1250),SP(1250),ALFA0(1250),EPP(1250),MOL(1250),        &
-     &       SPP(1250)                                                  
+      TYPE(LINE_SHRINK)  :: SHRUNK
+!      COMMON VNU(1250),SP(1250),ALFA0(1250),EPP(1250),MOL(1250),        &
+!     &       SPP(1250)                                                  
 !                                                                       
       COMMON /IOU/ IOUT(250) 
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
@@ -2775,13 +2776,16 @@
       REAL L4TIM,L4TMR,L4TMS,LOTHER 
       DIMENSION MEFDP(64) 
       DIMENSION SCOR(42,9),RHOSLF(mxmol),ALFD1(42,9) 
-      DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4) 
-      DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2) ! ,AMOLB(250) 
+!      DIMENSION ALFAL(1250),ALFAD(1250)
+      DIMENSION A(4),B(4),TEMPLC(4) 
+      DIMENSION IWD(2),IWD3(2),HLINHD(2) 
+      DIMENSION RCDHDR(2),AMOLB(250) 
 !                                                                       
-      EQUIVALENCE (ALFA0(1),ALFAL(1)) , (EPP(1),ALFAD(1)) 
+!      EQUIVALENCE (ALFA0(1),ALFAL(1)) , (EPP(1),ALFAD(1)) 
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)) 
-      EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                     &
-     &            (HLINHD(1),HID(1),IWD(1)) !  , (MOLB(1),AMOLB(1))        
+      EQUIVALENCE (IWD3(1),VD),                     &
+     &            (HLINHD(1),HID(1),IWD(1))
+      EQUIVALENCE (VNULO,RCDHDR(1))  ! , (MOLB(1),AMOLB(1))        
 !                                                                       
       character*8 h_linf4 
 !                                                                       
@@ -2936,14 +2940,14 @@
 !                                                                       
 !     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS         
 !                                                                       
-         VNU(IJ) = BUFR%VNU(I) + RHORAT * BUFR%PSHIFT(I) 
-         ALFA0(IJ) = BUFR%ALFA(I) 
-         EPP(IJ) = BUFR%EPP(I) 
-         MOL(IJ) = M 
+         SHRUNK%VNU(IJ) = BUFR%VNU(I) + RHORAT * BUFR%PSHIFT(I) 
+         SHRUNK%ALFA(IJ) = BUFR%ALFA(I) 
+         SHRUNK%EPP(IJ) = BUFR%EPP(I) 
+         SHRUNK%MOL(IJ) = M 
 !                                                                       
-         IF (jrad4.EQ.1) SUI = SUI*VNU(ij) 
+         IF (jrad4.EQ.1) SUI = SUI*SHRUNK%VNU(IJ) 
 !                                                                       
-         IF (VNU(IJ).EQ.0.) SUI = 2.*SUI 
+         IF (SHRUNK%VNU(IJ).EQ.0.) SUI = 2.*SUI 
 !                                                                       
 !     TREAT TRANSITIONS WITH UNKNOWN EPP AS SPECIAL CASE                
 !                                                                       
@@ -2956,15 +2960,15 @@
 !     been provided as a reasonable value to be used for purposes of    
 !     temperature correction.  epp is set positive                      
 !                                                                       
-         if (epp(ij).le.-1.001) epp(ij) = abs(epp(ij)) 
+         if (shrunk%epp(ij).le.-1.001) shrunk%epp(ij) = abs(shrunk%epp(ij)) 
                                                                         
-         if (epp(ij).le.-0.999) MEFDP(M) = MEFDP(M)+1 
+         if (shrunk%epp(ij).le.-0.999) MEFDP(M) = MEFDP(M)+1 
                                                                         
 !     temperature correction:                                           
                                                                         
-         if (epp(ij) .gt. -0.999) then 
-         SUI = SUI*SCOR(m,iso)* EXP(-EPP(ij)*BETACR)*(1.+EXP(-VNU(ij)*  &
-         BETA))                                                         
+         if (shrunk%epp(ij) .gt. -0.999) then 
+         SUI = SUI*SCOR(m,iso)* EXP(-SHRUNK%EPP(ij)*BETACR)*  &
+            (1.+EXP(-SHRUNK%VNU(ij)* BETA))                                                         
          endif 
 !                                                                       
          SUMS = SUMS+SUI 
@@ -2973,18 +2977,18 @@
 !     SELF TEMP DEPENDENCE TAKEN THE SAME AS FOREIGN                    
 !                                                                       
          TMPCOR = TRATIO**BUFR%TMPALF(I) 
-         ALFA0I = ALFA0(IJ)*TMPCOR 
+         ALFA0I = SHRUNK%ALFA(IJ)*TMPCOR 
          HWHMSI = BUFR%HWHM(I)*TMPCOR 
-         ALFAL(IJ) = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m) 
+         SHRUNK%ALFA(IJ) = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m) 
 !                                                                       
-         IF (IFLAG.EQ.3) ALFAL(IJ) = ALFAL(IJ)*(1.0-GAMMA1*PAVP0-GAMMA2*&
-         PAVP2)                                                         
+         IF (IFLAG.EQ.3) SHRUNK%ALFA(IJ) = SHRUNK%ALFA(IJ)* &
+            (1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)                                                         
 !                                                                       
-         ALFAD(IJ) = VNU(IJ)*ALFD1(m,iso) 
+         SHRUNK%EPP(IJ) = SHRUNK%VNU(IJ)*ALFD1(m,iso) 
          NLIN = NLIN+1 
-         SP(IJ) = SUI*(1.+GI*PAVP2) 
-         SPP(IJ) = SUI*YI*PAVP0 
-         IF (VNU(IJ).GT.VHI) THEN 
+         SHRUNK%SP(IJ) = SUI*(1.+GI*PAVP2) 
+         SHRUNK%SPP(IJ) = SUI*YI*PAVP0 
+         IF (SHRUNK%VNU(IJ).GT.VHI) THEN 
             IEOF = 1 
             GO TO 60 
          ENDIF 
@@ -3000,20 +3004,20 @@
       TIMS = TIMS+TIM2-TIM1 
 !                                                                       
       CALL CPUTIM(TPAT0) 
-      CALL SHRINK 
+      CALL SHRINK(SHRUNK)
       CALL CPUTIM(TPAT1) 
       TSHRNK = TSHRNK + TPAT1-TPAT0 
       IJ = ILO-1 
       IF (IHI.LT.LIMIN.AND.IEOF.EQ.0) GO TO 30 
 !                                                                       
-      VNULO = VNU(1) 
-      VNUHI = VNU(IHI) 
-      JLIN = IHI 
+      VNULO = SHRUNK%VNU(1) 
+      VNUHI = SHRUNK%VNU(IHI) 
+      JLIN = IHI
 !                                                                       
       IF (JLIN.GT.0) THEN 
          CALL CPUTIM(TPAT0) 
-         CALL BUFOUT (LNFIL4,RCDHDR(1),NPHDRL) 
-         CALL BUFOUT (LNFIL4,VNU(1),NLNGT4) 
+         write(lnfil4) VNULO,VNUHI,JLIN,NLNGT4
+         CALL BUFOUT (LNFIL4,SHRUNK,NLNGT4)
          CALL CPUTIM(TPAT1) 
          TBUFFR = TBUFFR + TPAT1-TPAT0 
       ENDIF 
@@ -3127,15 +3131,14 @@
 !*******************************************************************    
       SUBROUTINE RDLNFL (IEOF,ILO,IHI, BUFR) 
 !                                                                       
-!     SUBROUTINE RDLNFL INPUTS THE LINE DATA FROM LINFIL                
-!                                                                       
-      USE struct_types, ONLY: LINE_DATA, INPUT_HEADER, INPUT_BLOCK
+      USE struct_types
       IMPLICIT REAL*8           (V) 
-!                                                                       
       TYPE(LINE_DATA), INTENT(OUT) :: BUFR
 !      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
 !     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
-!
+!                                                                       
+!     SUBROUTINE RDLNFL INPUTS THE LINE DATA FROM LINFIL                
+!                                                                       
       CHARACTER*8      XID,       HMOLID,      YID 
       Real*8               SEC   ,       XALTZ 
 !                                                                       
@@ -3202,7 +3205,7 @@
       IJ = 0 
 !                                                                       
 !     precision conversion occurs here:                                 
-!     incoming on right: vlin is real*8;  others are real*4 and integer*
+!     incoming on right: vlin is real*8;  others are real*4 and integer*4
 !                                                                       
       do 15 i=1,RDLNPNL%NREC 
          BUFR%IFLG(i)  = RDLNBUF%IFLG(i) 
@@ -3239,22 +3242,24 @@
   905 FORMAT ('0 EOF ON LINFIL IN RDLNFL -- CHECK THE LINFIL ') 
 !                                                                       
       END                                           
-      SUBROUTINE SHRINK 
+      SUBROUTINE SHRINK(SHRUNK) 
 !                                                                       
+      USE struct_types
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE SHRINK COMBINES LINES FALLING IN A WAVENUMBER INTERVAL 
 !     DVR4/2 INTO A SINGLE EFFECTIVE LINE TO REDUCE COMPUTATION         
 !                                                                       
-      COMMON VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250),       &
-     &       SPP(1250)                                                  
+      TYPE(LINE_SHRINK)  :: SHRUNK
+!      COMMON VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250),       &
+!     &       SPP(1250)                                                  
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,      &
      &               DPTFC,ILIN4,ILIN4T                                 
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502) 
 !                                                                       
       J = ILO-1 
       DV = DVR4/2. 
-      VLMT = VNU(ILO)+DV 
+      VLMT = SHRUNK%VNU(ILO)+DV 
 !                                                                       
 !     INITIALIZE NON-CO2 SUMS                                           
 !                                                                       
@@ -3275,64 +3280,64 @@
       DO 20 I = ILO, IHI 
                                                                         
 !     To prevent underflow issues in CONVF4 we set S < 1.0e-35 to zero  
-         IF (S(I).lt.1.0e-35) THEN 
-            S(I)= 0.0 
-            SPP(I) =0.0 
+         IF (SHRUNK%SP(I).lt.1.0e-35) THEN 
+            SHRUNK%SP(I) = 0.0 
+            SHRUNK%SPP(I) = 0.0 
          ENDIF 
                                                                         
 !                                                                       
 !     IF LINE COUPLING, DON'T SHRINK LINE                               
 !                                                                       
-         IF (SPP(I).NE.0.0) THEN 
+         IF (SHRUNK%SPP(I).NE.0.0) THEN 
             J = J+1 
-            VNU(J) = VNU(I) 
-            S(J) = S(I) 
-            ALFAL(J) = ALFAL(I) 
-            ALFAD(J) = ALFAD(I) 
-            SPP(J) = SPP(I) 
-            MOL(J) = MOL(I) 
+            SHRUNK%VNU(J) = SHRUNK%VNU(I) 
+            SHRUNK%SP(J) = SHRUNK%SP(I) 
+            SHRUNK%ALFA(J) = SHRUNK%ALFA(I) 
+            SHRUNK%EPP(J) = SHRUNK%EPP(I) 
+            SHRUNK%SPP(J) = SHRUNK%SPP(I) 
+            SHRUNK%MOL(J) = SHRUNK%MOL(I) 
 !                                                                       
             GO TO 10 
          ENDIF 
 !                                                                       
-!     NON-CO2 LINES OF MOLECULAR INDEX IT.NE.2   ARE LOADED             
+!     NON-CO2 LINES OF MOLECULAR INDEX MOL.NE.2   ARE LOADED             
 !     INTO SUMS IF THE FREQUENCY WITHIN DV GROUP                        
 !                                                                       
-         IF (MOL(I).NE.2) THEN 
-            SUMV = SUMV+VNU(I)*S(I) 
-            SUMS = SUMS+S(I) 
-            SUMAL = SUMAL+S(I)*ALFAL(I) 
-            SUMAD = SUMAD+S(I)*ALFAD(I) 
-            SUMC = SUMC+SPP(I) 
+         IF (SHRUNK%MOL(I).NE.2) THEN 
+            SUMV = SUMV+SHRUNK%VNU(I)*SHRUNK%SP(I) 
+            SUMS = SUMS+SHRUNK%SP(I) 
+            SUMAL = SUMAL+SHRUNK%SP(I)*SHRUNK%ALFA(I) 
+            SUMAD = SUMAD+SHRUNK%SP(I)*SHRUNK%EPP(I) 
+            SUMC = SUMC+SHRUNK%SPP(I) 
          ELSE 
 !                                                                       
 !     CO2 LINES LOADED     (MOL .EQ. 2)                                 
 !                                                                       
-            SUMV2 = SUMV2+VNU(I)*S(I) 
-            SUMS2 = SUMS2+S(I) 
-            SUMAL2 = SUMAL2+S(I)*ALFAL(I) 
-            SUMAD2 = SUMAD2+S(I)*ALFAD(I) 
-            SUMC2 = SUMC2+SPP(I) 
+            SUMV2 = SUMV2+SHRUNK%VNU(I)*SHRUNK%SP(I) 
+            SUMS2 = SUMS2+SHRUNK%SP(I) 
+            SUMAL2 = SUMAL2+SHRUNK%SP(I)*SHRUNK%ALFA(I) 
+            SUMAD2 = SUMAD2+SHRUNK%SP(I)*SHRUNK%EPP(I) 
+            SUMC2 = SUMC2+SHRUNK%SPP(I) 
          ENDIF 
 !                                                                       
 !     IF LAST LINE OR VNU GREATER THAN LIMIT THEN STORE SUMS            
 !                                                                       
    10    IF (I.LT.IHI) THEN 
-            IF (VNU(I+1).LE.VLMT) GO TO 20
+            IF (SHRUNK%VNU(I+1).LE.VLMT) GO TO 20 
          ENDIF 
 !                                                                       
-         VLMT = VNU(I)+DV 
+         VLMT = SHRUNK%VNU(I)+DV 
 !                                                                       
 !     ASSIGN NON-CO2 LINE AVERAGES TO 'GROUP' LINE J                    
 !                                                                       
          IF (SUMS.GT.0.) THEN 
             J = J+1 
-            S(J) = SUMS 
-            ALFAL(J) = SUMAL/SUMS 
-            ALFAD(J) = SUMAD/SUMS 
-            VNU(J) = SUMV/SUMS 
-            SPP(J) = SUMC 
-            MOL(J) = 0 
+            SHRUNK%SP(J) = SUMS 
+            SHRUNK%ALFA(J) = SUMAL/SUMS 
+            SHRUNK%EPP(J) = SUMAD/SUMS 
+            SHRUNK%VNU(J) = SUMV/SUMS 
+            SHRUNK%SPP(J) = SUMC 
+            SHRUNK%MOL(J) = 0 
             SUMAL = 0. 
             SUMAD = 0. 
             SUMS = 0. 
@@ -3344,12 +3349,12 @@
 !                                                                       
          IF (SUMS2.GT.0.) THEN 
             J = J+1 
-            S(J) = SUMS2 
-            ALFAL(J) = SUMAL2/SUMS2 
-            ALFAD(J) = SUMAD2/SUMS2 
-            VNU(J) = SUMV2/SUMS2 
-            MOL(J) = 2 
-            SPP(J) = SUMC2 
+            SHRUNK%SP(J) = SUMS2 
+            SHRUNK%ALFA(J) = SUMAL2/SUMS2 
+            SHRUNK%EPP(J) = SUMAD2/SUMS2 
+            SHRUNK%VNU(J) = SUMV2/SUMS2 
+            SHRUNK%MOL(J) = 2 
+            SHRUNK%SPP(J) = SUMC2 
             SUMAL2 = 0. 
             SUMAD2 = 0. 
             SUMS2 = 0. 
@@ -3368,14 +3373,17 @@
       SUBROUTINE LBLF4 (JRAD,V1,V2) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
+      USE struct_types
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LBLF4 DOES A LINE BY LINE CALCULATION                  
 !     USING FUNCTION F4.                                                
 !                                                                       
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
-      COMMON /BUF/  VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),          &
-     &              MOL(1250),SPP(1250),SRAD(1250)                      
+!
+      type(LINE_SHRINK)  ::  LINE
+!      COMMON /BUF/  VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),          &
+!     &              MOL(1250),SPP(1250),SRAD(1250)                      
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     &
      &              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     &
@@ -3430,7 +3438,7 @@
       VLO = V1R4-BOUND4 
       VHI = V2R4+BOUND4 
    20 CALL CPUTIM (TIM0) 
-      CALL RDLIN4 (IEOF) 
+      CALL RDLIN4 (LINE,IEOF) 
       CALL CPUTIM (TIM1) 
 !                                                                       
       IF (IEOF.EQ.2) THEN 
@@ -3442,7 +3450,7 @@
       TIM2 = TIM1 
       IF (IEOF.EQ.1.AND.IHI.EQ.0) GO TO 30 
 !                                                                       
-      CALL CONVF4 (VNU,S,ALFAL,ALFAD,MOL,SPP) 
+      CALL CONVF4 (LINE)
 !                                                                       
       CALL CPUTIM (TIM3) 
       TF4CNV = TF4CNV+TIM3-TIM2 
@@ -3488,8 +3496,9 @@
       RETURN 
 !                                                                       
       END                                           
-      SUBROUTINE RDLIN4 (IEOF) 
+      SUBROUTINE RDLIN4 (LINE,IEOF) 
 !                                                                       
+      USE struct_types
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE RDLIN4 INPUTS THE LINE DATA FROM LNFIL4                
@@ -3502,9 +3511,10 @@
      &                EMIS ,FSCDID(17),NMOL,LAYRS ,YID1,YID(10),LSTWDF  
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,      &
      &               DPTFC,ILIN4,ILIN4T                                 
-      COMMON /BUF/  VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),          &
-     &              MOL(1250),SPP(1250),SRAD(1250)                      
-      COMMON /BUF2/ VMIN,VMAX,NREC,NWDS 
+      type(LINE_SHRINK)  ::  LINE
+!      COMMON /BUF/  VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),          &
+!     &              MOL(1250),SPP(1250),SRAD(1250)                      
+!      COMMON /BUF2/ VMIN,VMAX,NREC,NWDS 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
@@ -3513,7 +3523,7 @@
                                                                         
       DIMENSION DUM(2),LINPNL(2) 
 !                                                                       
-      EQUIVALENCE (VMIN,LINPNL(1)) 
+!      EQUIVALENCE (VMIN,LINPNL(1)) 
 !                                                                       
       IF (IEOF.EQ.-1) THEN 
 !                                                                       
@@ -3535,17 +3545,18 @@
       ILO = 1 
       IHI = 0 
 !                                                                       
-   10 CALL BUFIN (LNFIL4,LEOF,LINPNL(1),NPHDRL) 
-      IF (LEOF.EQ.0) GO TO 20 
+!   10 CALL BUFIN (LNFIL4,LEOF,LINPNL(1),NPHDRL) 
+!      IF (LEOF.EQ.0) GO TO 20 
+   10 READ(LNFIL4,END=20) VMIN,VMAX,NREC,NWDS 
       ILIN4T = ILIN4T+NREC 
       IF (VMAX.LT.VLO) THEN 
          CALL BUFIN (LNFIL4,LEOF,DUM(1),1) 
          GO TO 10 
       ELSE 
-         CALL BUFIN (LNFIL4,LEOF,VNU(1),NWDS) 
+         CALL BUFIN (LNFIL4,LEOF,LINE,NWDS) 
       ENDIF 
       IHI = NREC 
-      IF (VNU(NREC).GT.VHI) GO TO 20 
+      IF (LINE%VNU(NREC).GT.VHI) GO TO 20 
 !                                                                       
       RETURN 
 !                                                                       
@@ -3556,9 +3567,12 @@
       RETURN 
 !                                                                       
       END                                           
-      SUBROUTINE CONVF4 (VNU,S,ALFAL,ALFAD,MOL,SPP) 
+      SUBROUTINE CONVF4 (SHRUNK)  ! VNU,S,ALFAL,ALFAD,MOL,SPP) 
 !                                                                       
+      USE struct_types
       IMPLICIT REAL*8           (V) 
+      type(LINE_SHRINK)  :: SHRUNK
+!      DIMENSION VNU(*),S(*),ALFAL(*),ALFAD(*),MOL(*),SPP(*) 
 !                                                                       
 !     SUBROUTINE CONVF4 CONVOLVES THE LINE DATA WITH FUNCTION F4        
 !                                                                       
@@ -3571,7 +3585,6 @@
       COMMON /VOICOM/ AVRAT(102),DUMMY(5,102) 
       COMMON /CONVF/ CHI(0:250),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4 
 !                                                                       
-      DIMENSION VNU(*),S(*),ALFAL(*),ALFAD(*),MOL(*),SPP(*) 
 !                                                                       
       DATA ZBND / 64. / 
       DATA HREJ /'0'/,HNOREJ /'1'/ 
@@ -3609,29 +3622,29 @@
 !                                                                       
          DO 60 I = ILO, IHI 
 !                                                                       
-            IF (S(I).EQ.0..AND.SPP(I).EQ.0.) GO TO 60 
-            ALFADI = ALFAD(I) 
-            ALFALI = ALFAL(I) 
+            IF (SHRUNK%SP(I).EQ.0..AND.SHRUNK%SPP(I).EQ.0.) GO TO 60 
+            ALFADI = SHRUNK%EPP(I) 
+            ALFALI = SHRUNK%ALFA(I) 
             ZETAI = ALFALI/(ALFALI+ALFADI) 
             IZ = 100.*ZETAI + ONEPL 
             ZETDIF = 100.*ZETAI - REAL(IZ-1) 
             ALFAVI = ( AVRAT(IZ) + ZETDIF*(AVRAT(IZ+1)-AVRAT(IZ)) ) *   &
             (ALFALI+ALFADI)                                             
             RALFVI = 1./ALFAVI 
-            SIL = S(I)*RECPI*ALFALI 
-            SIV = (ALFALI*RALFVI)*S(I)*RECPI*RALFVI 
+            SIL = SHRUNK%SP(I)*RECPI*ALFALI 
+            SIV = (ALFALI*RALFVI)*SHRUNK%SP(I)*RECPI*RALFVI 
 !                                                                       
             SPEAK = A3*(ABS(SIV)) 
 !                                                                       
-            JJ = (VNU(I)-V1R4)/DVR4+1. 
+            JJ = (SHRUNK%VNU(I)-V1R4)/DVR4+1. 
             JJ = MAX(JJ,I_1) 
             JJ = MIN(JJ,NPTR4) 
 !                                                                       
 !     SPEAK is used for line rejection                                  
             IF (ILNFLG.LE.1) THEN 
                FREJ(I) = HNOREJ 
-!     No rejection for line-coupled lines (SPP ne. 0)                   
-               IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ)) .and. spp(i).eq.0.)    &
+!     No rejection for line-coupled lines (SHRUNK%SPP ne. 0)                   
+               IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ)) .and. shrunk%spp(i).eq.0.)    &
                THEN                                                     
                   FREJ(I) = HREJ 
                   GO TO 60 
@@ -3642,7 +3655,7 @@
 !                                                                       
             ILIN4 = ILIN4+1 
 !                                                                       
-            VNUI = VNU(I) 
+            VNUI = SHRUNK%VNU(I) 
 !                                                                       
    30       CONTINUE 
 !                                                                       
@@ -3664,14 +3677,14 @@
 !                FOURTH FUNCTION CONVOLUTION                            
 !                                                                       
                                                                         
-            dptrat = spp(i)/(s(i)*alfavi) 
+            dptrat = shrunk%spp(i)/(shrunk%sp(i)*alfavi) 
             rec_alfvi2 = 1./ALFVI2 
             siv_a3 = SIV*A3 
             siv_b3 = SIV*B3 
                                                                         
 !        special treatment for co2                                      
 !                                                                       
-            IF (MOL(I).EQ.2.) THEN 
+            IF (SHRUNK%MOL(I).EQ.2.) THEN 
                                                                         
                DO 40 JJ = JMIN, JMAX 
                   XM = (XJJ-XNUI) 
@@ -3682,17 +3695,17 @@
 !                                                                       
                   IF (ZVSQ.LE.ZSQBND) THEN 
                      F4FN = (siv_A3 + ZVSQ * siv_B3) - fcnt_fn 
-                     IF (SPP(I).NE.0.) then 
+                     IF (SHRUNK%SPP(I).NE.0.) then 
                         f4fn = f4fn + xm*dptrat*f4fn 
                         endif 
                      ELSE 
                         f4fn = sil/(alfli2+xmsq) - fcnt_fn 
-                        if (SPP(I).NE.0.) then 
+                        if (SHRUNK%SPP(I).NE.0.) then 
                         F4FN = F4FN + XM*dptrat*f4fn 
                         endif 
                      ENDIF 
 !                                                                       
-                     IF (SPP(I).EQ.0.) THEN 
+                     IF (SHRUNK%SPP(I).EQ.0.) THEN 
 !                                                                       
 !         ASSIGN ARGUMENT ISUBL OF THE FORM FACTOR FOR CO2 LINES        
 !                                                                       
@@ -3718,12 +3731,12 @@
 !                                                                       
                      IF (ZVSQ.LE.ZSQBND) THEN 
                         F4FN = (siv_A3 + ZVSQ * siv_B3) - F4BND 
-                        IF (SPP(I).NE.0.) then 
+                        IF (SHRUNK%SPP(I).NE.0.) then 
                            f4fn = f4fn + xm*dptrat*f4fn 
                            endif 
                         ELSE 
                            f4fn = sil/(alfli2+xmsq) - f4bnd 
-                           if (SPP(I).NE.0.) then 
+                           if (SHRUNK%SPP(I).NE.0.) then 
                            F4FN = F4FN + XM*dptrat*f4fn 
                            endif 
                         ENDIF 
@@ -3739,9 +3752,9 @@
 !                                                                       
 !     THE CALCULATION FOR NEGATIVE VNU(I) IS FOR VAN VLECK WEISSKOPF    
 !                                                                       
-                     VNUI = -VNU(I) 
+                     VNUI = -SHRUNK%VNU(I) 
 !                                                                       
-                     SPP(I) = -SPP(I) 
+                     SHRUNK%SPP(I) = -SHRUNK%SPP(I) 
 !                                                                       
                      GO TO 30 
 !                                                                       
