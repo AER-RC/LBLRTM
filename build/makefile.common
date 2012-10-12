@@ -63,7 +63,7 @@ default:
 # Load line
 ###############################
 
-all : intro makedir build conclude
+all : intro makedir cleanmods build conclude
 
 ###############################
 # Intro information
@@ -132,6 +132,9 @@ clean:
 cleanall:
 	-rm -rf *.o *.mod
 	-rm -r *_*_$(VERSION)_*.obj
+
+cleanmods:
+	-rm -rf *.mod
 	
 #*************************************************************
 # SUN/SOLARIS OPERATING SYSTEM
