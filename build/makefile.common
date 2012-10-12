@@ -351,7 +351,7 @@ osxIBMdbl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=ibm_xl \
 	PLTFRM=OS_X  \
 	FC=xlf90 \
-	FCFLAG="-O2 -qfixed=72 -qmaxmem=-1 -qrealsize=8 -qintsize=8" \
+	FCFLAG="-O2 -qfixed=f90 -qmaxmem=-1 -qrealsize=8 -qintsize=8" \
 	UTIL_FILE=util_OS_X_ibm_xl.f90
 
 ##############################################################
@@ -361,7 +361,7 @@ osxIBMsgl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=ibm_xl \
 	PLTFRM=OS_X \
 	FC=xlf90 \
-	FCFLAG="-O2 -qfixed=72 -qmaxmem=-1" \
+	FCFLAG="-O2 -qfixed=f90 -qmaxmem=-1" \
 	UTIL_FILE=util_OS_X_ibm_xl.f90
 
 #*************************************************************
@@ -399,7 +399,7 @@ aixIBMdbl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=ibm_xl \
 	PLTFRM=AIX  \
 	FC=xlf90 \
-	FCFLAG="-O2 -qfixed=72 -qmaxmem=-1 -qrealsize=8 -qintsize=8" \
+	FCFLAG="-O2 -qfixed=f90 -qmaxmem=-1 -qrealsize=8 -qintsize=8" \
 	UTIL_FILE=util_aix.f90
 
 
@@ -410,7 +410,7 @@ aixIBMsgl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=ibm_xl \
 	PLTFRM=AIX \
 	FC=xlf90 \
-	FCFLAG="-O2 -qfixed=72 -qmaxmem=-1" \
+	FCFLAG="-O2 -qfixed=f90 -qmaxmem=-1" \
 	UTIL_FILE=util_aix.f90
 
 # Rule for compiling .o files
