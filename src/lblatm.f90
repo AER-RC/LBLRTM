@@ -483,6 +483,8 @@
       CHARACTER*3 CTYPE 
       CHARACTER*10 SREF_LAT 
       REAL REF_LAT 
+      REAL DEN_AJ(MXMOL, MXLAY), A_AJ
+      INTEGER i_aj
 !                                                                       
                                                                         
       DATA COTHER / 'OTHER   '/ 
@@ -556,7 +558,7 @@
    40 END DO 
 !                                                                       
 !     /ZOUT/                                                            
-!                                                                       
+                                                                       
       DO 50 N = 1, NXZOUT 
          XZOUT(N) = 0.0 
    50 END DO 
@@ -1492,8 +1494,35 @@
                                                                         
                   if (ipunch.eq.2) then 
                   write (97) ibmax,(pbar(l),tbar(l),l=1,ibmax-1) 
-                  write (97) (pbnd(l),tbnd(l),(denm(k,l),k=1,nmol),l=1, &
-                  ibmax)                                                
+                                               
+!*******************************************************************
+! MJA 10-17-2012 Try out fix for AJ bug when default atmospheres are used.
+! We shouldn't be printing denm, but rather a density interpolated to 
+! the same grid as PBND and TBND (i.e., on ZOUT)
+!*******************************************************************
+                  IF (MODEL .EQ. 0) THEN ! User-supplied Atm.
+                      write (97) (pbnd(l),tbnd(l),(denm(k,l),k=1,nmol),l=1, &
+                      ibmax) 
+                  ELSE !Default Atm.
+                    !Need to interpolate density (molec/cm3) for each molecule
+                    !from the model levels in DENM (corresponding to ZMDL)
+                    !to the boundaries of the output layering (i.e., that 
+                    !correspond to ZOUT)
+                    do l = 1, ibmax 
+                       ! Find first ZMDL point that is greater than ZOUT(l)
+                       do i_aj = 1, immax
+                          if (ZMDL(i_aj) .GT. ZOUT(l)) exit
+                       enddo
+                       ! Calculate weighting
+                       A_AJ = (ZOUT(l)-ZMDL(i_aj-1))/(ZMDL(i_aj)-ZMDL(i_aj-1))
+                       do k = 1, nmol 
+                            DEN_AJ(k,l) = DENM(k,i_aj-1)* &
+                                          ((DENM(k,i_aj)/DENM(k,i_aj-1))**A_AJ)
+                       enddo
+                    enddo
+                    write (97) (pbnd(l),tbnd(l),(den_aj(k,l),k=1,nmol),l=1, &
+                    ibmax)
+                  ENDIF 
                   close (97) 
                   endif 
 !-----------------------------------------------------------            

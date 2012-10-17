@@ -6091,7 +6091,20 @@
       read   (97)  LMAX,NMOL,SECNT0,(HMOD(I),I=1,2),H1,H2,ANGLE,LEN 
       read   (97)  ibmax,(pbar(l),tbar(l),l=1,ibmax-1) 
       read   (97)  (pbnd(l),tbnd(l),(denm(k,l),k=1,nmol),l=1,ibmax) 
-                                                                        
+
+!***********************************
+!MJA 10-17-2012 Uncomment these lines to get text version of AJ_atmosphere
+!      open(10,file='AJ_atmosphere.txt',status='replace',action='write')
+!      write   (10,*)  xid 
+!      write   (10,*)  LMAX,NMOL,SECNT0,(HMOD(I),I=1,2),H1,H2,ANGLE,LEN 
+!      write  (10,*)  ibmax
+!      write  (10,1111) (pbar(l),tbar(l),l=1,ibmax-1) 
+!1111  format (2F10.4) 
+!      write   (10,1112)  (pbnd(l),tbnd(l),(denm(k,l),k=1,nmol),l=1,ibmax) 
+!1112  format (2F10.4,6E15.5) 
+!***********************************  
+
+                                  
 !-----------------------------------------------------------            
 ! compute layer-to-level conversion for analytical jacobians            
 ! pbar,tbar                                                             
