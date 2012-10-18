@@ -226,7 +226,8 @@
       SUBROUTINE RDNLTE(NLTEFL,TEXTLINE,TXTISO,IMAX,                    &
      &     IDX,EEX,NDG,ISORDER)                                         
 !                                                                       
-      include 'lblparams.inc' 
+      USE lblparams
+!      include 'lblparams.inc' 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFLE,LNFIL4,LNGTH4                               
@@ -313,7 +314,8 @@
 !     RATIOS FOR SELECTED VIBRATIONAL STATES OF H2O,CO2,NO AND O3.      
 !                                                                       
       USE phys_consts, ONLY: radcn2
-      include 'lblparams.inc' 
+      USE lblparams
+!      include 'lblparams.inc' 
       IMPLICIT REAL*8           (V) 
                                                                         
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -457,7 +459,8 @@
 !     THE GROUND VIBRATIONAL STATE.                                     
 !                                                                       
       USE phys_consts, ONLY: radcn2
-      include 'lblparams.inc' 
+      USE lblparams
+!      include 'lblparams.inc' 
       IMPLICIT REAL*8           (V) 
                                                                         
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -654,7 +657,8 @@
 ! ----------------------------------------------------------------      
                                                                         
       SUBROUTINE LININT(HT,ALT1,ALT2,NUM,T1,T2,TNE) 
-      include 'lblparams.inc' 
+      USE lblparams
+!      include 'lblparams.inc' 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
@@ -708,6 +712,7 @@
       SUBROUTINE HIRACQ (MPTS) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
+      USE lblparams
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !                                                                       
@@ -751,7 +756,8 @@
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 !                                                                       
-      include 'lblparams.inc' 
+
+!      include 'lblparams.inc' 
 !                                                                       
 !     Common blocks from analytic derivatives                           
 !     -------------------------                                         
@@ -1340,7 +1346,8 @@
       SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
-      include 'lblparams.inc' 
+      USE lblparams
+!      include 'lblparams.inc' 
       IMPLICIT REAL*8           (V) 
 !                                                                       
       CHARACTER*1 FREJ(250),HREJ,HNOREJ 
@@ -2081,7 +2088,8 @@
 !                                                                       
       USE phys_consts, ONLY: radcn2
       USE struct_types, ONLY: LINE_DATA
-      include 'lblparams.inc' 
+      USE lblparams
+!      include 'lblparams.inc' 
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4  
@@ -3009,8 +3017,9 @@
       END                                           
 !---------------------                                                  
       SUBROUTINE DEFNLTEDAT(NUMSTATE,IDSTATE,EESTATE,NDGSTATE,RATSTATE) 
-                                                                        
-      include 'lblparams.inc' 
+
+      USE lblparams                                                    
+!      include 'lblparams.inc' 
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
