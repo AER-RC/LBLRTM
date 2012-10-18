@@ -24,6 +24,8 @@
       SUBROUTINE LBLATM 
 !                                                                       
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !********************************************************************** 
@@ -77,8 +79,9 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /PATHD/ PBAR(MXLAY),TBAR(MXLAY),AMOUNT(MXMOL,MXLAY),       &
      &               WN2L(MXLAY),DVL(MXLAY),WTOTL(MXLAY),ALBL(MXLAY),   &
@@ -394,8 +397,10 @@
 !********************************************************************** 
 !                                                                       
       USE phys_consts, ONLY: pi, clight, avogad, alosmt, gascon
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
       PARAMETER (NXPBAR=MXLAY*(14+MXMOL)+2,NXZOUT=MXLAY*3+MXMOL*3) 
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -1721,8 +1726,10 @@
 !     IN BLOCK DATA MLATMB.                                             
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /PARMTR/ DEG,GCAIR,RE,DELTAS,ZMIN,ZMAX,NOPRNT,IMMAX,       &
      &                IMDIM,IBMAX,IBDIM,IOUTMX,IOUTDM,IPMAX,            &
@@ -1805,8 +1812,10 @@
 !     AND SETS OTHER CONSTANTS RELATED TO THE ATMOSPHERIC PROFILES      
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
       PARAMETER (MXZ50=MXZMD-50) 
 !                                                                       
       COMMON /MLATM/ ALT(MXZMD),                                        &
@@ -2909,8 +2918,10 @@
 !     OR CALLS NSMDL TO READ IN A USER SUPPLIED PROFILE.                
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -3048,8 +3059,10 @@
 !                                                                       
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -3148,10 +3161,14 @@
 !                                                                       
 !     SUBROUTINE TO WRITE HEADER INFORMATION FOR MODEL  0               
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!
       CHARACTER*8      HMOLS 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+!
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /HMOLS/ HMOLS(MXMOL),JUNIT(MXMOL),WMOL(MXMOL),JUNITP,      &
      &               JUNITT                                             
@@ -3263,8 +3280,10 @@
 !     *************************************************************     
 !                                                                       
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -3503,8 +3522,10 @@
 !                                                                       
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -3700,8 +3721,10 @@
 !                                                                       
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -3878,8 +3901,10 @@
 !                                                                       
       USE phys_consts, ONLY: avogad, alosmt
       USE planet_consts, ONLY: airmwt
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -3998,8 +4023,10 @@
 !                                                                       
       USE phys_consts, ONLY: avogad, alosmt
       USE planet_consts, ONLY: airmwt
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -4460,8 +4487,10 @@
 !     PROCEDURE                                                         
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       REAL*8           RA,RB,SG,ANGLE1,ANGLE2,BETA,DBETA 
 !                                                                       
@@ -4764,8 +4793,10 @@
 !     REFRACTIVITY (INDEX OF REFRACTION -1)                             
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -4890,8 +4921,10 @@
 !     BENDING ALONG THE PATH                                            
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -5069,8 +5102,10 @@
 !     TRACE IS CALCULATED USING THE PROFILE IN ZPTH.                    
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -5259,8 +5294,10 @@
 !     CALCULATED OR NOT.                                                
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -5493,8 +5530,10 @@
 !     NOT TO THE AVERAGE VALUES FROM ONE LAYER TO THE NEXT.             
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -5679,8 +5718,10 @@
 !     WEIGHT AVMWT ARE ASSUMED                                          
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -5732,8 +5773,10 @@
 !     WEIGHT AVMWT ARE ASSUMED                                          
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -5789,13 +5832,16 @@
 !     n_zero OPTION IS SELECTED.                                        
 !     ***************************************************************** 
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
       IMPLICIT REAL*8           (V) 
 !                                                                       
       CHARACTER*8      XID,       HMOLID,      YID 
       Real*8               SECANT,       XALTZ 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+!
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -5955,8 +6001,10 @@
 !     desired (IFXTYP = 1).                                             
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       CHARACTER*3 CINP 
 !                                                                       
@@ -6058,8 +6106,10 @@
 !    *****************************************************************  
 !                                                                       
       USE phys_consts, ONLY: alosmt
-      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
-     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
+!     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
 !                                                                       
       IMPLICIT REAL*8           (V) 
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16) 
@@ -6552,8 +6602,10 @@
 !     USER-INPUT PROFILE (1) IS TO BE USED.                             
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
-     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
+!     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
 !                                                                       
       COMMON RELHUM(MXZMD),HSTOR(MXZMD),ICH(4),AVH(16),TX(16),W(16) 
       COMMON WPATH(IM2,16),TBBY(IM2) 
@@ -6815,8 +6867,10 @@
 !     FROM THE STANDARD PROFILE IN AMOLX ON THE ALTITUDE GRID ALTX.     
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
-     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
+!     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
 !                                                                       
 !     COMMON BLOCKS AND PARAMETERS FOR THE PROFILES AND DENSITIES       
 !     FOR THE CROSS-SECTION MOLECULES.                                  
@@ -6876,8 +6930,10 @@
 !     ***************************************************************** 
 !                                                                       
       USE phys_consts, ONLY: alosmt
-      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
-     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
+!     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
 !                                                                       
 !     IFIL CARRIES FILE INFORMATION                                     
 !                                                                       
@@ -6968,8 +7024,10 @@
 !     AMOLX(L,I)=MIXING RATIO (PPMV) OF THE I'TH MOLECULE FOR THE L'TH  
 !     LEVEL, ALTX(L)= ALTITUDE OF THE L'TH LEVEL, LAYXMX LEVELS MAX     
 !                                                                       
-      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
-     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
+!     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
       PARAMETER (MXZ50=MXZMD-50) 
 !                                                                       
       COMMON /MLATMX/ LAYXMX,ALTX(MXZMD),                               &
@@ -7351,8 +7409,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -7638,8 +7698,10 @@
 !     REFRACTIVITY (INDEX OF REFRACTION -1)                             
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -7780,8 +7842,10 @@
                                                                         
       USE phys_consts, ONLY: boltz, gascon
       USE planet_consts, ONLY: xmass_dry, grav_const
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
                                                                         
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &

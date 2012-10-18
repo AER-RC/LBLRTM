@@ -23,7 +23,8 @@
 !
       SUBROUTINE NONLTE(MPTS) 
 !                                                                       
-      include 'lblparams.inc' 
+      USE lblparams
+!      include 'lblparams.inc' 
                                                                         
       IMPLICIT REAL*8           (V) 
 !                                                                       
