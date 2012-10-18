@@ -169,10 +169,12 @@
 !                                                                       
       SUBROUTINE XMERGI (NPTS,LFILE,MFILE,JPATHL) 
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS
       IMPLICIT REAL*8           (V) 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -1273,6 +1275,7 @@
 !                                                                       
       FUNCTION EMISFN (VI,DVI,VINEM,EMDEL,EMLAST) 
 !                                                                       
+      USE lblparams, ONLY: NMAXCO
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     FUNCTION EMISFN CALCULATES BOUNDARY EMISSIVITY FOR WAVE NUMBER    
@@ -1311,7 +1314,7 @@
 !     Parameter and common block for direct input of emission function  
 !     values                                                            
 !                                                                       
-      PARAMETER (NMAXCO=4040) 
+      !PARAMETER (NMAXCO=4040) 
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO) 
 !     ----------------------------------------------------------------  
 !                                                                       
@@ -1416,6 +1419,7 @@
 !                                                                       
       FUNCTION REFLFN (VI,DVI,VINRF,RFDEL,RFLAST) 
 !                                                                       
+      USE lblparams, ONLY: NMAXCO
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     FUNCTION REFLFN CALCULATES BOUNDARY REFLECTIVITY FOR WAVE NUMBER  
@@ -1455,7 +1459,7 @@
 !     Parameter and common block for direct input of reflection         
 !     function values                                                   
 !                                                                       
-      PARAMETER (NMAXCO=4040) 
+!      PARAMETER (NMAXCO=4040) 
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO) 
 !     ----------------------------------------------------------------  
 !                                                                       
@@ -1560,6 +1564,7 @@
 !                                                                       
       SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS) 
 !                                                                       
+      USE lblparams, ONLY: NN_TBL
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE EMIN INPUTS OPTICAL DEPTH VALUES FROM KFILE AND        
@@ -1615,7 +1620,7 @@
       character*1 surf_refl 
       character*3 pad_3 
 !                                                                       
-      parameter (nn_tbl=10000) 
+!      parameter (nn_tbl=10000) 
 !                                                                       
       common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                &
      &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)     
@@ -2361,9 +2366,10 @@
 !                                                                       
       Subroutine create_fn_tbls(itbl_calc) 
 !                                                                       
+      USE lblparams, ONLY: NN_TBL 
       data aa/0.278/ 
 !                                                                       
-      parameter (nn_tbl=10000) 
+!      parameter (nn_tbl=10000) 
 !                                                                       
       common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                &
      &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)     
@@ -3096,6 +3102,7 @@
       SUBROUTINE RADNN (RADLYR,TRALYR,RADO,TRAO,RADLYB,NLIM,            &
      &                  V1P,DVP,IPATH_flg,A1,A2,A3,A4,LL,NPL)           
 !                                                                       
+      USE lblparams, ONLY : NDIM, ND2 
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     THIS SUBROUTINE CALCULATES THE NEW RADIANCE AND TRANSMISSION      
@@ -3129,7 +3136,7 @@
       character*1 surf_refl 
       character*3 pad_3 
 ! if this changes, make sure it is changed in subroutines in xmerge.f   
-      parameter (ndim=2410, nd2=5000) 
+!      parameter (ndim=2410, nd2=5000) 
                                                                         
 !                                                                       
       DIMENSION RADLYR(NDIM),TRALYR(NDIM),RADO(0:ND2),TRAO(0:ND2),      &
@@ -3992,6 +3999,7 @@
 !                                                                       
       SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS) 
 !                                                                       
+      USE lblparams, ONLY: NN_TBL 
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE EMDM INPUTS OPTICAL DEPTH VALUES FROM KFILE AND        
@@ -4048,7 +4056,7 @@
       character*1 surf_refl 
       character*3 pad_3 
 !                                                                       
-      parameter (nn_tbl=10000) 
+!      parameter (nn_tbl=10000) 
 !                                                                       
       common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                &
      &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)     
@@ -4877,6 +4885,7 @@
 !     ---------------------------------------------------------------   
       SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS) 
 !                                                                       
+      USE lblparams, ONLY: NN_TBL 
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE EMDT inputs optical depth values from kfile and        
@@ -4916,7 +4925,7 @@
       character*1 surf_refl 
       character*3 pad_3 
 !                                                                       
-      parameter (nn_tbl=10000) 
+!      parameter (nn_tbl=10000) 
 !                                                                       
       common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                &
      &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)     
@@ -6546,12 +6555,13 @@
 !     than one layer between the present layer and the observer),       
 !     and then calculates the radiance derivatives                      
 !                                                                       
+      USE lblparams, ONLY: NDIM, ND2, IPTS, IPTS2, MXFSC, MXLAY, MXMOL
       IMPLICIT REAL*8           (V) 
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
 !                                                                       
 ! if this changes, make sure it is changed in subroutines in xmerge.f   
-      parameter (ndim=2410, nd2=5000) 
+!      parameter (ndim=2410, nd2=5000) 
                                                                         
       REAL KSUBL(0:ND2) 
 !                                                                       
@@ -6581,7 +6591,7 @@
 ! note: from continuum module                                           
 !          ipts  = same dimension as ABSRB                              
 !          ipts2 = same dimension as C                                  
-      parameter (ipts=5050,ipts2=6000) 
+!      parameter (ipts=5050,ipts2=6000) 
       common /CDERIV/ icflg,idum,v1absc,v2absc,dvabsc,nptabsc,delT_pert,&
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
                                                                         
@@ -6591,7 +6601,7 @@
       character*20 h_radtot,h_kfile,h_k_od_molec 
                                                                         
 ! for layer2level (if imoldq <> -99)                                    
-      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39) 
+!      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39) 
       common /dlaydlev/ilevdx,imoldq,iupdwn,                            &
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)                       
                                                                         
@@ -6715,12 +6725,13 @@
 !     and then calculates the radiance derivatives with respect to      
 !     temperature                                                       
 !                                                                       
+      USE lblparams, ONLY: NDIM, ND2, IPTS, IPTS2, MXFSC, MXLAY, MXMOL
       IMPLICIT REAL*8           (V) 
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
 !                                                                       
 ! if this changes, make sure it is changed in subroutines in xmerge.f   
-      parameter (ndim=2410, nd2=5000) 
+!      parameter (ndim=2410, nd2=5000) 
                                                                         
       REAL KSUBL(0:ND2) 
 !                                                                       
@@ -6751,7 +6762,7 @@
 ! note: from continuum module                                           
 !          ipts  = same dimension as ABSRB                              
 !          ipts2 = same dimension as C                                  
-      parameter (ipts=5050,ipts2=6000) 
+!      parameter (ipts=5050,ipts2=6000) 
       common /CDERIV/ icflg,idum,v1absc,v2absc,dvabsc,nptabsc,delT_pert,&
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
                                                                         
@@ -6761,7 +6772,7 @@
       character*20 h_radtot,h_kfile 
                                                                         
 ! for layer2level (if imoldq <> -99)                                    
-      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39) 
+!      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39) 
       common /dlaydlev/ilevdx,imoldq,iupdwn,                            &
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)                       
                                                                         
@@ -6906,12 +6917,13 @@
 !     than one layer between the present layer and the observer),       
 !     and then calculates the radiance derivatives                      
 !                                                                       
+      USE lblparams, ONLY: NDIM, ND2, IPTS, IPTS2, MXFSC, MXLAY, MXMOL
       IMPLICIT REAL*8           (V) 
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
 !                                                                       
 ! if this changes, make sure it is changed in subroutines in xmerge.f   
-      parameter (ndim=2410, nd2=5000) 
+!      parameter (ndim=2410, nd2=5000) 
                                                                         
       REAL KSUBL(0:ND2) 
 !                                                                       
@@ -6941,7 +6953,7 @@
 ! note: from continuum module                                           
 !          ipts  = same dimension as ABSRB                              
 !          ipts2 = same dimension as C                                  
-      parameter (ipts=5050,ipts2=6000) 
+!      parameter (ipts=5050,ipts2=6000) 
       common /CDERIV/ icflg,idum,v1absc,v2absc,dvabsc,nptabsc,delT_pert,&
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
                                                                         
@@ -6951,7 +6963,7 @@
       character*20 h_radtot,h_kfile,h_k_od_molec 
                                                                         
 ! for layer2level (if imoldq <> -99)                                    
-      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39) 
+!      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39) 
       common /dlaydlev/ilevdx,imoldq,iupdwn,                            &
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)                       
                                                                         
@@ -7070,12 +7082,13 @@
 !     and then calculates the radiance derivatives with respect to      
 !     temperature                                                       
 !                                                                       
+      USE lblparams, ONLY: NDIM, ND2, IPTS, IPTS2, MXFSC, MXLAY, MXMOL
       IMPLICIT REAL*8           (V) 
       character*8      XID,       HMOLID,      YID 
       real*8               SECANT,       XALTZ 
 !                                                                       
 ! if this changes, make sure it is changed in subroutines in xmerge.f   
-      parameter (ndim=2410, nd2=5000) 
+!      parameter (ndim=2410, nd2=5000) 
                                                                         
       REAL KSUBL(0:ND2) 
 !                                                                       
@@ -7106,7 +7119,7 @@
 ! note: from continuum module                                           
 !          ipts  = same dimension as ABSRB                              
 !          ipts2 = same dimension as C                                  
-      parameter (ipts=5050,ipts2=6000) 
+!      parameter (ipts=5050,ipts2=6000) 
       common /CDERIV/ icflg,idum,v1absc,v2absc,dvabsc,nptabsc,delT_pert,&
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
                                                                         
@@ -7116,7 +7129,7 @@
       character*20 h_radtot,h_kfile 
                                                                         
 ! for layer2level (if imoldq <> -99)                                    
-      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39) 
+!      parameter (MXFSC=600, MXLAY=MXFSC+3, MXMOL=39) 
       common /dlaydlev/ilevdx,imoldq,iupdwn,                            &
      &    dqdL(mxlay,0:mxmol),dqdU(mxlay,0:mxmol)                       
                                                                         
@@ -7251,6 +7264,7 @@
 !
       SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)         
 !                                                                         
+      USE lblparams, ONLY: NN_TBL
       IMPLICIT REAL*8           (V)                                      
 !                                                                         
 !     SUBROUTINE FLXIN INPUTS OPTICAL DEPTH VALUES FROM KFILE AND         
@@ -7298,7 +7312,7 @@
       COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF                            
       COMMON /RMRG/ XKT,XKTA,XKTB,SECNT                                   
 !                                                                         
-      parameter (nn_tbl=10000)
+!      parameter (nn_tbl=10000)
 !
       common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                  &
      &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)
@@ -7980,6 +7994,7 @@
       SUBROUTINE FLUXNN (RADLYR,TRALYR,RADO,TRAO,NLIM,V1P,DVP,            &
      &                  IPATHL,A1,A2,A3,A4,LL,NPL)                        
 !                                                                         
+      USE lblparams, ONLY: NDIM, ND2
       IMPLICIT REAL*8           (V)                                      
 !                                                                         
 !     THIS SUBROUTINE CALCULATES THE NEW RADIANCE AND TRANSMISSION        
@@ -8010,7 +8025,7 @@
 !                                                                         
                                                                           
 ! if this changes, make sure it is changed in subroutines in xmerge.f
-      parameter (ndim=2410, nd2=5000)
+!      parameter (ndim=2410, nd2=5000)
 
       DIMENSION RADLYR(NDIM),TRALYR(NDIM),RADO(0:ND2),TRAO(0:ND2),        &
      &          A1(*),A2(*),A3(*),A4(*)                                   
@@ -8493,14 +8508,15 @@
 !
       SUBROUTINE ADARSL (NNPTS,IEXFIL,MFILE,IAFIL,IEMIT)                  
 !                                                                         
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2, MXMOL, MXTRAC
       IMPLICIT REAL*8           (V)                                      
 !                                                                         
 !     ROUTINE TO ADD ABSORPTION AND SCATTERING TO THE TRANSMITTANCE       
 !     VALUES AT EACH POINT. THE AEROSOL VALUES ARE STORED IN              
 !     COMMON ABSORB AND COMMON SCATTR.                                    
 !                                                                         
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                  &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                  &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)
 !
       COMMON R1(2410)                                                     
       COMMON /ABSPNL/ V1P,V2P,DVP,NLIM,NSHFT,NPTS                         

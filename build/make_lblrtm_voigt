@@ -55,7 +55,7 @@ $(OBJPATH)/oprop_voigt.o:	$(SRCPATH)/oprop_voigt.f90 lblparams.mod phys_consts.m
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/contnm.o:	$(SRCPATH)/contnm.f90 lblparams.mod phys_consts.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
-$(OBJPATH)/xmerge.o:	$(SRCPATH)/xmerge.f90 phys_consts.mod
+$(OBJPATH)/xmerge.o:	$(SRCPATH)/xmerge.f90 lblparams.mod phys_consts.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/testmm.o:	$(SRCPATH)/testmm.f90 
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
