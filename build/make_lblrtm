@@ -49,7 +49,7 @@ OBJECTS = ${SRCS:.f90=.o}
 UTIL_OBJ = $(UTIL_FILE:.f90=.o)
 
 ## Define dependancies
-$(OBJPATH)/lblrtm.o:	$(SRCPATH)/lblrtm.f90  phys_consts.mod
+$(OBJPATH)/lblrtm.o:	$(SRCPATH)/lblrtm.f90 lblparams.mod phys_consts.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/oprop.o:	$(SRCPATH)/oprop.f90 lblparams.mod phys_consts.mod struct_types.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@

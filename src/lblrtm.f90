@@ -366,6 +366,9 @@
 !-                                                                      
 !---------------------------------------------------------------------- 
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS, MXSPC, NMAXCO,         &
+                           IPTS, IPTS2
       IMPLICIT REAL*8           (V) 
 !                                                                       
       character*8      XID,       HMOLID,      YID,HDATE,HTIME 
@@ -393,9 +396,10 @@
       CHARACTER*1 CONE,CTWO,CTHREE,CFOUR,CA,CB,CC,CDOL,CPRCNT,CBLNK 
       CHARACTER*1 CMRG(2),CXIDA(80) 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,&
-     &                MXTRAC=22,MXSPC=5)                                
+
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &                MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,&
+!     &                MXTRAC=22,MXSPC=5)                                
 !                                                                       
 !     ----------------------------------------------------------------  
                                                                         
@@ -409,7 +413,7 @@
 !     Parameter and common blocks for direct input of emissivity and    
 !     reflectivity function values                                      
 !                                                                       
-      PARAMETER (NMAXCO=4040) 
+!      PARAMETER (NMAXCO=4040) 
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO) 
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO) 
 !     ----------------------------------------------------------------  
@@ -435,7 +439,7 @@
 ! note: from continuum module                                           
 !          ipts  = same dimension as ABSRB                              
 !          ipts2 = same dimension as C                                  
-      parameter (ipts=5050,ipts2=6000) 
+!      parameter (ipts=5050,ipts2=6000) 
       common /CDERIV/ icflg,idum,v1absc,v2absc,dvabsc,nptabsc,delT_pert,&
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
                                                                         
@@ -1170,8 +1174,9 @@
 !********************************************************************** 
 !                                                                       
       BLOCK DATA 
+      USE lblparams, ONLY: MXFSC, MXLAY, MXMOL, MXSPC, IPTS, IPTS2
       IMPLICIT REAL*8           (V) 
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3) 
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3) 
       COMMON /FLFORM/ CFORM 
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),          &
      &                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,        &
@@ -1197,7 +1202,7 @@
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL 
                                                                         
 !     -------------------------                                         
-      PARAMETER (MXMOL=39,MXSPC=5) 
+!      PARAMETER (MXMOL=39,MXSPC=5) 
       common /cmol_nam/ cmol(mxmol),cspc(mxspc) 
       CHARACTER*6  CMOL,CSPC 
 !     -------------------------                                         
@@ -1294,7 +1299,7 @@
 ! note: from continuum module                                           
 !          ipts  = same dimension as ABSRB                              
 !          ipts2 = same dimension as C                                  
-      parameter (ipts=5050,ipts2=6000) 
+!      parameter (ipts=5050,ipts2=6000) 
       common /CDERIV/ icflg,idum,v1absc,v2absc,dvabsc,nptabsc,delT_pert,&
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
       data icflg /-999/ 
@@ -1730,11 +1735,12 @@
 !                                                                       
       SUBROUTINE PRLNHD 
 !                                                                       
+      USE lblparams, ONLY: MXMOL
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     PRLNHD PRINTS OUT LINE FILE HEADER                                
 !                                                                       
-      PARAMETER (MXMOL=39) 
+!      PARAMETER (MXMOL=39) 
 !     -------------------------                                         
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -1897,15 +1903,18 @@
 !                                                                       
       SUBROUTINE XLAYER (MPTS,NPTS,LFILE,MFILE,NFILE) 
 !                                                                       
-      IMPLICIT REAL*8           (V) 
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS, MXSPC, IPTS,           &
+                           IPTS2
+!      IMPLICIT REAL*8           (V) 
 !                                                                       
 !********************************************************************** 
 !     XLAYER CONTROLS LAYER BY LAYER CALCULATION                        
 !********************************************************************** 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22, &
-     &     mxspc=5)                                                     
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22, &
+!     &     mxspc=5)                                                     
 !                                                                       
       CHARACTER*55 CDUM1,PTHODI,PTHODTU,PTHODTD 
       CHARACTER*55 PTHRAD,PATH1,PATH2 
@@ -1929,7 +1938,7 @@
 ! note: from continuum module                                           
 !          ipts  = same dimension as ABSRB                              
 !          ipts2 = same dimension as C                                  
-      parameter (ipts=5050,ipts2=6000) 
+!      parameter (ipts=5050,ipts2=6000) 
       common /CDERIV/ icflg,idum,v1absc,v2absc,dvabsc,nptabsc,delT_pert,&
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
       logical op 
@@ -3710,7 +3719,22 @@
                            IBUF)                                        
                            MMFILE = LFILE 
                            ENDIF 
+
+!****************************************************************** 
+!        MJA, 10-18-2012: Added this to the SCNMRG call for 
+!        IMRG = 14, 16, or 36 to match the call below 
+!        for IMRG = 13, 15, or 35   
+!                                       
+!        If scanning, reset values of HWF1,DXF1,NX1,N1MAX which may     
+!        have been been changed in HIRAC1 after having been read in     
+!        in SCANRD, but before being used in SCNMRG.                    
+!                                                                       
+                           HWF1 = HWFS 
+                           DXF1 = DXFS 
+                           NX1 = NFS 
+                           N1MAX = NFMAXS
                            CALL SCNMRG (MMFILE,NFILE) 
+!******************************************************************
                            ENDIF 
                            IF (IMRG.EQ.24.OR.IMRG.EQ.26) CALL FLTMRG (  &
                            MFILE,NFILE)                                 
@@ -4026,12 +4050,14 @@
       SUBROUTINE OPPATH 
 !                                                                       
       USE phys_consts, ONLY: pi
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS, MXSPC, IPTS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     OPPATH CALLS LBLATM AND CALLS PATH FIRST                          
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
 !                                                                       
       COMMON /PATHD/ PAVEL(MXLAY),TAVEL(MXLAY),WKL(MXMOL,MXLAY),        &
      &               WBRODL(MXLAY),DVL(MXLAY),                          &
@@ -4108,7 +4134,7 @@
 !     -------------------------                                         
       COMMON /IADFLG/ NSPCRT,imrgsav 
 !                                                                       
-      parameter (ipts=5050) 
+!      parameter (ipts=5050) 
       common /CDERIV/ icflg,idum,v1absc,v2absc,dvabsc,nptabsc,delT_pert,&
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
 !     -------------------------                                         
@@ -4391,6 +4417,8 @@
 !                                                                       
       SUBROUTINE PATH 
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS, MXSPC
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !                                                                       
@@ -4398,8 +4426,8 @@
 !     SUBROUTINE PATH INPUTS AND OUTPUTS HEADER FROM LINFIL AND         
 !     INPUTS AND OUTPUTS PATH PARAMETERS FOR EACH LAYER                 
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
 !                                                                       
       COMMON COMSTR(250,9) 
       COMMON R1(3600),R2(900),R3(225) 
@@ -5605,9 +5633,10 @@
       SUBROUTINE OPDPTH (MPTS) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
+      USE lblparams,   ONLY: N_ABSRB
       IMPLICIT REAL*8           (V) 
 !                                                                       
-      parameter (n_absrb=5050) 
+!      parameter (n_absrb=5050) 
                                                                         
 !     OPDPTH CALLS CONTNM,LINF4,HIRAC1,NONLTE                           
 !                                                                       
@@ -5756,13 +5785,14 @@
 !                                                                       
 !     Reads in emission function values directly from file "EMISSIVITY" 
 !                                                                       
+      USE lblparams, ONLY: NMAXCO 
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     ----------------------------------------------------------------  
 !     Parameter and common blocks for direct input of emission          
 !     function values                                                   
 !                                                                       
-      PARAMETER (NMAXCO=4040) 
+!      PARAMETER (NMAXCO=4040) 
       COMMON /EMSFIN/ V1EMIS,V2EMIS,DVEMIS,NLIMEM,ZEMIS(NMAXCO) 
 !     ----------------------------------------------------------------  
 !                                                                       
@@ -5799,13 +5829,14 @@
 !                                                                       
 !     Reads in reflection function values directly from file "REFLECTIVI
 !                                                                       
+      USE lblparams, ONLY: NMAXCO 
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     ----------------------------------------------------------------  
 !     Parameter and common blocks for direct input of reflection        
 !     function values                                                   
 !                                                                       
-      PARAMETER (NMAXCO=4040) 
+!      PARAMETER (NMAXCO=4040) 
       COMMON /RFLTIN/ V1RFLT,V2RFLT,DVRFLT,NLIMRF,ZRFLT(NMAXCO) 
 !     ----------------------------------------------------------------  
 !                                                                       
@@ -5901,9 +5932,10 @@
 !  1 = upwelling                                                        
 ! -1 = downwelling                                                      
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXMOL 
       IMPLICIT REAL*8 (V) 
                                                                         
-      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXMOL=39) 
+!      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXMOL=39) 
                                                                         
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KDUMY,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -5994,10 +6026,12 @@
 !                                                                       
 ! subroutine to convert layer derivatives to level derivatives          
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MX_XS, MXTRAC, IPTS, IPTS2
       IMPLICIT REAL*8 (V) 
                                                                         
-      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+ !     PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
+ !    &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
                                                                         
 ! iup_dn is used to determine what to map                               
 !  1 = upwelling                                                        
@@ -6075,7 +6109,7 @@
 ! note: from continuum module                                           
 !          ipts  = same dimension as ABSRB                              
 !          ipts2 = same dimension as C                                  
-      parameter (ipts=5050,ipts2=6000) 
+!      parameter (ipts=5050,ipts2=6000) 
       common /CDERIV/ icflg,idum,v1absc,v2absc,dvabsc,nptabsc,delT_pert,&
      &    dqh2oC(ipts),dTh2oC(ipts),dUh2o                               
                                                                         
