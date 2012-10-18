@@ -59,9 +59,9 @@ $(OBJPATH)/xmerge.o:	$(SRCPATH)/xmerge.f90 phys_consts.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/testmm.o:	$(SRCPATH)/testmm.f90 
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
-$(OBJPATH)/lblatm.o:	$(SRCPATH)/lblatm.f90 phys_consts.mod planet_consts.mod
+$(OBJPATH)/lblatm.o:	$(SRCPATH)/lblatm.f90 phys_consts.mod planet_consts.mod lblparams.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
-$(OBJPATH)/lbllow.o:	$(SRCPATH)/lbllow.f90 phys_consts.mod planet_consts.mod
+$(OBJPATH)/lbllow.o:	$(SRCPATH)/lbllow.f90 phys_consts.mod planet_consts.mod lblparams.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/postsub.o:	$(SRCPATH)/postsub.f90 lblparams.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
@@ -71,7 +71,7 @@ $(OBJPATH)/lbldum.o:	$(SRCPATH)/lbldum.f90
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/solar.o:	$(SRCPATH)/solar.f90 phys_consts.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
-$(OBJPATH)/nonlte.o:	$(SRCPATH)/nonlte.f90 $(SRCPATH)/lblparams.inc phys_consts.mod struct_types.mod
+$(OBJPATH)/nonlte.o:	$(SRCPATH)/nonlte.f90 phys_consts.mod struct_types.mod lblparams.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/fftscn.o:	$(SRCPATH)/fftscn.f90
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@

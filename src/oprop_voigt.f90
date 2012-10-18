@@ -23,6 +23,7 @@
 !
       SUBROUTINE HIRAC1 (MPTS) 
 !                                                                       
+      USE lblparams, ONLY: N_ABSRB, NFPTS, NFMX, NUMZ, MXMOL
       USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -72,7 +73,7 @@
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 !                                                                       
-      parameter (n_absrb=5050) 
+!      parameter (n_absrb=5050) 
 !                                                                       
 !     Common blocks from analytic derivatives                           
 !     -------------------------                                         
@@ -120,7 +121,7 @@
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),         &
      &                CF3(102),CER(102)                                 
 !                                                                       
-      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS, NUMZ = 101) 
+!      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS, NUMZ = 101) 
 !                                                                       
       COMMON /FNSH/ IFN,F1(NFMX, NUMZ),F2(NFMX, NUMZ),                  &
      &     F3(NFMX, NUMZ), FG(NFMX)                                     
@@ -131,7 +132,7 @@
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
 !                                                                       
-      PARAMETER (MXMOL=39) 
+!      PARAMETER (MXMOL=39) 
 !                                                                       
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
       COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,        &
@@ -187,7 +188,7 @@
       CALL CPUTIM (TIMEH0) 
 !                                                                       
 !     ASSIGN NAME and CVS VERSION NUMBER TO MODULE                      
-!                                                                       
+!                                                                      
       HNAMOPR = '    oprop_voigt.f:' 
       HVROPR  = '$Revision$' 
 !                                                                       
@@ -651,7 +652,8 @@
       END                                           
       BLOCK DATA BHIRAC 
 !                                                                       
-      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS, NUMZ = 101) 
+      USE lblparams, ONLY: NFPTS, NFMX, NUMZ
+!      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS, NUMZ = 101) 
 !                                                                       
       COMMON /FNSH/ IFN,F1(NFMX, NUMZ),F2(NFMX, NUMZ),                  &
      &     F3(NFMX, NUMZ), FG(NFMX)                                     
@@ -815,6 +817,7 @@
       SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
+      USE lblparams, ONLY: MXMOL
       IMPLICIT REAL*8           (V) 
 !                                                                       
       CHARACTER*1 FREJ(250),HREJ,HNOREJ 
@@ -847,7 +850,7 @@
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),         &
      &                CF3(102),CER(102)                                 
 !                                                                       
-      PARAMETER (MXMOL=39) 
+!      PARAMETER (MXMOL=39) 
 !                                                                       
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
       COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,        &
@@ -1082,6 +1085,7 @@
 !                                                                       
       SUBROUTINE CNVFNV (VNU,SP,SPPSP,RECALF,R1,R2,R3,ZETAI,IZETA) 
 !                                                                       
+      USE lblparams, ONLY: NFPTS, NFMX, NUMZ
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE CNVFNV PERFORMS THE CONVOLUTION OF THE LINE DATA WITH  
@@ -1132,7 +1136,7 @@
      &                CF3(102),CER(102)                                 
       COMMON /IOU/ IOUT(250) 
 !                                                                       
-      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS, NUMZ = 101) 
+!      PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS, NUMZ = 101) 
       COMMON /FNSH/ IFN,F1(NFMX, NUMZ),F2(NFMX, NUMZ),F3(NFMX, NUMZ),   &
      &     FG(NFMX)                                                     
 !                                                                       
@@ -2279,9 +2283,10 @@
       SUBROUTINE MOLEC (IND,SCOR,RHOSLF,ALFD1) 
 !                                                                       
       USE phys_consts, ONLY: boltz, avogad, clight, radcn2
+      USE lblparams, ONLY: MXMOL
       IMPLICIT REAL*8           (V) 
 !                                                                       
-      PARAMETER (MXMOL=39) 
+!      PARAMETER (MXMOL=39) 
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -2496,12 +2501,13 @@
       BLOCK DATA Isotop 
 !  ****************************************                             
 !                                                                       
-      PARAMETER (NMOL=39) 
-      COMMON /ISVECT/ ISO_MAX(NMOL),SMASS(nmol,9) 
+      USE lblparams, ONLY: MXMOL
+!      PARAMETER (NMOL=39) 
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASS(MXMOL,9) 
       common /iso_id/ iso_82(98) 
 !                                                                       
 !    The number of isotopes for a particular molecule:                  
-      DATA (ISO_MAX(I),I=1,NMOL)/                                       &
+      DATA (ISO_MAX(I),I=1,MXMOL)/                                       &
      &   6,   9,    9,    5,    6,   3,     3,                          &
      &   3,   2,    1,    2,    1,   3,     1,    2,    2,    1,        &
      &   2,   5,    3,    2,    1,   3,     2,    1,    2,    1,    1,  &
@@ -2702,11 +2708,12 @@
       SUBROUTINE LINF4 (V1L4,V2L4) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
+      USE lblparams, ONLY: MXMOL
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4  
 !                                                                       
-      PARAMETER (MXMOL=39) 
+!      PARAMETER (MXMOL=39) 
 !                                                                       
       COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
@@ -3752,6 +3759,8 @@
 !                                                                       
       SUBROUTINE XSREAD (XV1,XV2) 
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !********************************************************************** 
@@ -3762,9 +3771,10 @@
 !                                                                       
 !     IFIL CARRIES FILE INFORMATION                                     
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,     &
-     &           MXTRAC=22)                                             
+
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,     &
+!     &           MXTRAC=22)                                             
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -3933,9 +3943,10 @@
       END                                           
       BLOCK DATA BXSECT 
 !                                                                       
+      USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
                                                                         
-      parameter (mx_xs=38) 
+!      parameter (mx_xs=38) 
 !                                                                       
 !**   XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES        
 !**            (NOTE: ALL NAMES ARE LEFT-JUSTIFIED)                     
@@ -4038,6 +4049,8 @@
 !                                                                       
       subroutine xs_set (v1,v2) 
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !********************************************************************** 
@@ -4048,9 +4061,9 @@
 !                                                                       
 !     IFIL CARRIES FILE INFORMATION                                     
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,     &
-     &           MXTRAC=22)                                             
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,     &
+!     &           MXTRAC=22)                                             
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -4181,9 +4194,10 @@
       SUBROUTINE XSECTM (IFST,IR4) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
+      USE lblparams, ONLY: n_absrb, mx_xs
       IMPLICIT REAL*8           (V) 
                                                                         
-      parameter (n_absrb=5050, mx_xs=38) 
+!      parameter (n_absrb=5050, mx_xs=38) 
 !                                                                       
 !     THIS SUBROUTINE MOVES THE CROSS SECTIONS INTO                     
 !     THE APPROPRIATE ARRAY R1, R2, R3, R4, OR ABSRB                    
@@ -4641,9 +4655,10 @@
       END                                           
       SUBROUTINE XSECIN (NPANEL,NI,NS,NT1,NT2,NMODE,NSKIP,NMAX,IEOF) 
 !                                                                       
+      USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
                                                                         
-      parameter (mx_xs=38) 
+!      parameter (mx_xs=38) 
 !                                                                       
 !     THIS SUBROUTINE READS IN THE DESIRED CROSS SECTIONS               
 !                                                                       
@@ -4962,9 +4977,10 @@
       SUBROUTINE XSNTMP (NI,NS,NT1,NT2,NMODE) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
+      USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
                                                                         
-      parameter (mx_xs=38) 
+!      parameter (mx_xs=38) 
 !                                                                       
 !     THIS SUBROUTINE DETERMINES THE CORRECT MODE                       
 !     AND BRACKETS THE LAYER TEMPERATURE                                
@@ -5051,9 +5067,10 @@
       END                                           
       SUBROUTINE XSBINF (NI,NS,NT1,NT2,NMODE) 
 !                                                                       
+      USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
                                                                         
-      parameter (mx_xs=38) 
+!      parameter (mx_xs=38) 
 !                                                                       
 !     THIS SUBROUTINE PERFORMS A TEMPERATURE DEPENDENT CONVOLUTION      
 !     ON THE CROSS-SECTIONS PRODUCING A BINARY INTERMEDIATE FILE        
@@ -5435,9 +5452,10 @@
       END                                           
       SUBROUTINE PNLCNV (R1,JFILE,SUMR,NPTS,NS,NI) 
 !                                                                       
+      USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
                                                                         
-      parameter (mx_xs=38) 
+!      parameter (mx_xs=38) 
 !                                                                       
 !     SUBROUTINE PNLCNV OUTPUTS THE RESULTS OF THE CONVOLUTION          
 !     TO FILE JFILE                                                     
@@ -5551,7 +5569,8 @@
 !                                                                       
       END                                           
 !***********************                                                
-      Subroutine TIPS_2003 (mol_max,iso_max,temp_lbl,scor) 
+      Subroutine TIPS_2003 (mol_max,iso_max,temp_lbl,scor)
+      USE lblparams, ONLY: MXMOL, MAX_ISO, NT
 !***********************                                                
 !                                                                       
 !    This program calculates the total internal                         
@@ -5599,19 +5618,19 @@
 !++                                                                     
 !     Max_ISO here is the number that TIPS treats: LBLRTM is limited to 
 !                                                                       
-      PARAMETER (NMOL=39,Max_ISO=20) 
+!      PARAMETER (NMOL=39,Max_ISO=20) 
 !++                                                                     
-      PARAMETER (NT=119) 
+!      PARAMETER (NT=119) 
 !++                                                                     
-      COMMON /ISO_data/ISO82(NMOL,Max_ISO),ISONM(NMOL) 
+      COMMON /ISO_data/ISO82(MXMOL,Max_ISO),ISONM(MXMOL) 
 !++:  bd-MOL                                                            
       CHARACTER*6 MOLID 
 !++:  bd-MOL                                                            
-      COMMON/MOLNAM/MOLID(0:NMOL) 
+      COMMON/MOLNAM/MOLID(0:MXMOL) 
 !++:  bd-QT                                                             
       COMMON/Temperatures/tdat(NT) 
                                                                         
-      dimension iso_max(nmol),scor(42,9) 
+      dimension iso_max(MXMOL),scor(42,9) 
                                                                         
       character*30 stopNgo 
 !                                                                       
@@ -5863,7 +5882,8 @@
                                                                         
       Block Data BD_TDAT 
 !        initialize Tdat in common block /Temperatures/                 
-      PARAMETER (NT=119) 
+      USE lblparams, ONLY: NT
+!      PARAMETER (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       data Tdat/  60.,  85., 110., 135., 160., 185., 210., 235.,        &
@@ -5900,13 +5920,14 @@
 !...date last changed 19 February, 2002                                 
 !                                                                       
 !++                                                                     
-      PARAMETER (NMOL=39) 
+      USE lblparams, ONLY: MXMOL
+!      PARAMETER (NMOL=39) 
 !++:  bd-MOL                                                            
       CHARACTER*6 MOLID 
 !++:  bd-MOL                                                            
-      COMMON/MOLNAM/MOLID(0:NMOL) 
+      COMMON/MOLNAM/MOLID(0:MXMOL) 
 !                                                                       
-      DATA (MOLID(I),I=0,NMOL)/ '   All',                               &
+      DATA (MOLID(I),I=0,MXMOL)/ '   All',                               &
      &'   H2O','   CO2','    O3','   N2O','    CO','   CH4','    O2',   &
      &'    NO','   SO2','   NO2','   NH3','  HNO3','    OH','    HF',   &
      &'   HCl','   HBr','    HI','   ClO','   OCS','  H2CO','  HOCl',   &
@@ -5922,12 +5943,13 @@
 !  ****************************************                             
 !                                                                       
 !++                                                                     
-      PARAMETER (NMOL=39,Max_ISO=20) 
+      USE lblparams, ONLY: MXMOL, Max_ISO
+!      PARAMETER (MXMOL=39,Max_ISO=20) 
 !++                                                                     
-      COMMON /ISO_data/ ISO82(NMOL,Max_ISO),ISONM(NMOL) 
+      COMMON /ISO_data/ ISO82(MXMOL,Max_ISO),ISONM(MXMOL) 
 !                                                                       
 !    The number of isotopes for a particular molecule:                  
-      DATA (ISONM(I),I=1,NMOL)/                                         &
+      DATA (ISONM(I),I=1,MXMOL)/                                         &
      &  6,   9,  18,   5,  6,   3,  3,                                  &
      &  3,   2,   1,   2,    1,  3,  1,   2,   2,  1,                   &
      &  2,   5,    3,    2,  1,   3,     2,    1,    2,    1,   1,      &
@@ -6106,9 +6128,10 @@
 !                                                                       
 !                                                                       
 !++                                                                     
-      PARAMETER (NMOL=39,Max_ISO=20) 
+      USE lblparams, ONLY: MXMOL, Max_ISO
+!      PARAMETER (NMOL=39,Max_ISO=20) 
 !++                                                                     
-      COMMON /ISO_data/ ISO82(NMOL,Max_ISO),ISONM(NMOL) 
+      COMMON /ISO_data/ ISO82(MXMOL,Max_ISO),ISONM(MXMOL) 
 !                                                                       
 !                                                                       
          iso_max = ISONM(MOLEC) 
@@ -6127,7 +6150,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 6), QofT( 6,119),Q(NT) 
@@ -6321,7 +6345,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 9), QofT( 9,119),Q(NT) 
@@ -6593,7 +6618,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
 !                                                                       
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj(18), QofT(18,119),Q(NT) 
@@ -7100,7 +7126,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 5), QofT( 5,119),Q(NT) 
@@ -7268,7 +7295,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 6), QofT( 6,119),Q(NT) 
@@ -7462,7 +7490,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -7578,7 +7607,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -7694,7 +7724,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -7810,7 +7841,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -7900,7 +7932,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -7964,7 +7997,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8054,7 +8088,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -8118,7 +8153,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -8234,7 +8270,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -8298,7 +8335,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8388,7 +8426,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8478,7 +8517,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -8542,7 +8582,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8632,7 +8673,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 5), QofT( 5,119),Q(NT) 
@@ -8800,7 +8842,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -8916,7 +8959,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -9006,7 +9050,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9070,7 +9115,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -9186,7 +9232,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -9276,7 +9323,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9340,7 +9388,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -9430,7 +9479,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9494,7 +9544,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9558,7 +9609,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9622,7 +9674,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9686,7 +9739,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -9802,7 +9856,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9866,7 +9921,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9930,7 +9986,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9994,7 +10051,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -10084,7 +10142,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -10148,7 +10207,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -10238,7 +10298,8 @@
                   ! state independent nuclear degeneracyfactor          
                  ! Total Internal Partition Function                    
                                                                         
-      parameter (NT=119) 
+      USE lblparams, ONLY: NT
+!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 

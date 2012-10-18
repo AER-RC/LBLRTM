@@ -22,6 +22,7 @@
 !  --------------------------------------------------------------------------
 !
       SUBROUTINE LOWTRN 
+
 !                                                                       
 !     CC                                                                
 !     CC   STRIPPED DOWN VERSION OF LOWTRAN 7 TO RUN AS A SUBROUTINE    
@@ -353,8 +354,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -827,6 +830,8 @@
       END                                           
       SUBROUTINE AERNSM(IAERSL,JPRT,GNDALT) 
                                                                         
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
       PARAMETER (NCASE=15) 
                                                                         
       CHARACTER*1 JCHAR 
@@ -846,8 +851,8 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -1490,8 +1495,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !     COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),  
 !    *     HMIX(MXZMD),CLD(MXZMD,7),RR(MXZMD,7)                         
@@ -1570,8 +1577,10 @@
 !                                                                       
 !     CLOUD AND RAIN   DATA                                             
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !     COMMON /MDATA/ ZDA(MXZMD),P(MXZMD),T(MXZMD),WH(MXZMD),WO(MXZMD),  
 !    *     HMIX(MXZMD),CLD1(MXZMD),CLD2(MXZMD),CLD3(MXZMD),CLD4(MXZMD), 
@@ -1632,8 +1641,10 @@
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
       USE phys_consts, ONLY: avogad
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -1732,8 +1743,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -1836,8 +1849,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -2347,6 +2362,8 @@
 !     16    CIRRUS CLOUDS                                               
 !     ******************************************************************
 !                                                                       
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
       PARAMETER (MAXDV=2050) 
       INTEGER PHASE,DIST 
 !                                                                       
@@ -2358,8 +2375,8 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -3298,8 +3315,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /CNTRL/ KMAX,M,IKMAX,NL,ML,IKLO,ISSGEO,N_LVL,JH1 
       COMMON/MODEL/ ZMDL(MXZMD),PM(MXZMD),TM(MXZMD),                    &
@@ -3394,8 +3413,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -3599,8 +3620,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,               &
      &     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                           &
@@ -3710,8 +3733,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!     PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON/PRFD  / ZHT(34),HZ2K(34,5),FAWI50(34),FAWI23(34),          &
      &     SPSU50(34),SPSU23(34),BASTFW(34),VUMOFW(34),HIVUFW(34),      &
@@ -3844,8 +3869,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
       PARAMETER (MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3) 
 !                                                                       
 !                                                                       
@@ -4156,8 +4183,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH 
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP 
@@ -4174,7 +4203,8 @@
       I1 = I2-1 
       CALL SCALHT (ZMDL(I1),ZMDL(I2),RFNDX(I1),RFNDX(I2),SH,GAMMA) 
       RETURN 
-      END                                           
+      END 
+                                          
       SUBROUTINE RFPATL(H1,H2,ANGLE,PHI,LEN,HMIN,IAMT,RANGE,BETA,BENDNG) 
 !                                                                       
 !     ******************************************************************
@@ -4188,7 +4218,8 @@
 !     FOR THE REFRACTED PATH FROM H1 TO H2                              
 !     ******************************************************************
 !                                                                       
-      PARAMETER (MXZMD=6000, MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3) 
+      USE lblparams, ONLY: MXZMD
+      PARAMETER (MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3) 
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,               &
      &     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                           &
      &     NFILE,IAFIL,IEXFIL,NLTEFL,LNFIL4,LNGTH4                      
@@ -4389,8 +4420,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
       PARAMETER (MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3) 
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,               &
@@ -4499,7 +4532,8 @@
 !     WITH THE SIN OF THE INITIAL INCIDENCE ANGLE SINAI                 
 !     ***************************************************************** 
 !                                                                       
-      PARAMETER (MXZMD=6000, MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3) 
+      USE lblparams, ONLY: MXZMD
+      PARAMETER (MXZ20 = MXZMD+20, MX2Z3 = 2*MXZMD+3) 
 !                                                                       
       COMMON /PARMLT/ RE,DELTAS,ZMAX,IMAX,IMOD,IBMAX,IPATH 
       COMMON /CNSTNS/ PI,CA,DEG,GCAIR,BIGNUM,BIGEXP 
@@ -4711,8 +4745,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -5335,8 +5371,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -5792,8 +5830,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -6061,8 +6101,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -7194,8 +7236,10 @@
 !         OBTAINED BY MERGING ZMDL AND ZOUT                             
 !     MXMOL IS THE MAXIMUM NUMBER OF MOLECULES, KMXNOM IS THE DEFAULT   
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
 !                                                                       
 !     BLANK COMMON FOR ZMDL                                             
@@ -7620,8 +7664,10 @@
 !                                                                       
       USE planet_consts, ONLY: airmwt
       USE phys_consts, ONLY: avogad, alosmt
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
       PARAMETER (NCASE=15, NCASE2=NCASE-2) 
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,               &
@@ -7741,8 +7787,10 @@
 !                                                                       
       USE planet_consts, ONLY: airmwt
       USE phys_consts, ONLY: avogad, alosmt
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
       PARAMETER (NCASE=15, NCASE2=NCASE-2) 
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,               &
@@ -8962,9 +9010,11 @@
 !     ***  A POSSIBLE MISAPPLICATION OF TEMPERATURE UNITS, (K) VS (C)   
 !                                                                       
 !     ******************************************************************
-!                                                                       
+!  
+      USE lblparams, ONLY: MXMOL
+                                                                   
       PARAMETER (NCASE=15, NCASE2=NCASE-2) 
-      parameter (mxmol=39) 
+      !parameter (mxmol=39) 
                                                                         
       COMMON /IFIL/ IRD,IPR,IPU,NPR,NFHDRF,NPHDRF,NFHDRL,               &
      &     NPHDRL,NLNGTH,KFILE,KPANEL,LINFIL,                           &
@@ -9135,8 +9185,10 @@
 !     IN BLOCK DATA MLATMB.                                             
 !     ******************************************************************
 !                                                                       
-      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,      &
+                                  MXMOL, MXTRAC, MX_XS
+!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
+!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,MXTRAC=22)    
 !                                                                       
       COMMON /CONSTL/ PZERO,TZERO,ADCON,ALZERO,AVMWT,AMWT(MXMOL) 
       DATA PZERO/1013.25/,TZERO/273.15/ 
