@@ -4683,8 +4683,9 @@ ratios (ppv) for 7 molecular species</p>
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 WBROADL(L)&nbsp;&nbsp; column density for broadening gases
 (molecules/cm**2)</p>
-
-
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Note that WBROAD only includes the gases in air that do not have specified profiles in your run. </p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; For example, if N2 (molecule #22) is not specified, (NMOL < 22), WBROAD includes N2, Ar, etc. </p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; If N2 is specified as molecule #22, WBROAD does not include N2. </p>
 
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
 
