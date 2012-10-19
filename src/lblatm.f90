@@ -4,7 +4,7 @@
 !     presently: %H%  %T%
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2011         |
+! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2012         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
