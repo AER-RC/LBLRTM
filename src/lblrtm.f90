@@ -367,7 +367,7 @@
 !---------------------------------------------------------------------- 
 !                                                                       
       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
-                           MXMOL, MXTRAC, MX_XS, MXSPC, NMAXCO,         &
+                           MXMOL, MX_XS, MXTRAC, MXSPC, NMAXCO,         &
                            IPTS, IPTS2
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -1904,9 +1904,9 @@
       SUBROUTINE XLAYER (MPTS,NPTS,LFILE,MFILE,NFILE) 
 !                                                                       
       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
-                           MXMOL, MXTRAC, MX_XS, MXSPC, IPTS,           &
+                           MXMOL, MX_XS, MXTRAC, MXSPC, IPTS,           &
                            IPTS2
-!      IMPLICIT REAL*8           (V) 
+      IMPLICIT REAL*8           (V) 
 !                                                                       
 !********************************************************************** 
 !     XLAYER CONTROLS LAYER BY LAYER CALCULATION                        
@@ -4051,7 +4051,7 @@
 !                                                                       
       USE phys_consts, ONLY: pi
       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
-                           MXMOL, MXTRAC, MX_XS, MXSPC, IPTS
+                           MXMOL, MX_XS, MXTRAC, IPTS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     OPPATH CALLS LBLATM AND CALLS PATH FIRST                          
@@ -4418,7 +4418,7 @@
       SUBROUTINE PATH 
 !                                                                       
       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
-                           MXMOL, MXTRAC, MX_XS, MXSPC
+                           MXMOL, MX_XS, MXTRAC
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !                                                                       
@@ -6027,7 +6027,7 @@
 ! subroutine to convert layer derivatives to level derivatives          
 !                                                                       
       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
-                           MXMOL, MX_XS, MXTRAC, IPTS, IPTS2
+                           MXMOL, MXTRAC, IPTS, IPTS2
       IMPLICIT REAL*8 (V) 
                                                                         
  !     PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &

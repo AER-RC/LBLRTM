@@ -6931,7 +6931,7 @@
 !                                                                       
       USE phys_consts, ONLY: alosmt
       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
-                           MXMOL, MXTRAC
+                           MXMOL, MXTRAC, MX_XS
 !      PARAMETER (MXFSC=600,MXLAY=MXFSC+3,MXZMD=6000,                    &
 !     &     MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,MXTRAC=22) 
 !                                                                       
