@@ -9,6 +9,33 @@ Oct 2012
   optical depths at each level. AER will not be providing debugging support 
   for runs using LOWTRAN going forward.
 
+* Fixed bug in fftscn.f90 and fftscn_dbl.f90 for truncated Gaussian 
+  line shapes (JFN = -2, variable 'param' non-zero). In v12.1, the 
+  assumed definition of maximum optical path difference (max OPD) for 
+  this function was a factor of 2 off from how this parameter is defined 
+  for other FTS scan functions in LBLRTM. For example, to model the IASI 
+  line shape in LBLRTM v12.2, you should enter 1.968 cm for the maximum 
+  optical path difference (including field of view correction) in the TAPE5 
+  and set param to 0.25. Note that v12.1 would give identical results to v12.2 
+  if 3.936 cm is entered as the max OPD in v12.1. (M. J. Alvarado)
+
+* Fixed bug that prevented calculating analytic Jacobians for 
+  standard model atmospheres. (A. Merrelli, M. J. Alvarado)
+
+* Fixed variable initialization bugs in lblrtm.f90 and postsub.f90.
+  (E. Rusin, M. J. Alvarado)
+
+* New module (lblparams.f90) to define LBLRTM array dimensions 
+  in a single place in the code. (D. Weisenstein, M. J. Alvarado)
+
+* Increased use of structures (defined in struct_types.f90) in oprop.f90
+  and nonlte.f90. (D. Weisenstein)
+
+* Updated makefiles to automatically delete *.mod files before recompiling
+  and fixed flags for xlf90 compiler. (Bi YanMeng, M. J. Alvarado)
+
+* Downwelling Solar and Non-Local Thermodynamic Equilibrium (NLTE) examples
+  added to package. (M. J. Alvarado, K. E. Cady-Pereira)
 
 LBLRTM v12.1
 Oct 2011
