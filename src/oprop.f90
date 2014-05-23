@@ -4024,18 +4024,24 @@
      &    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',       &
      &    'N2O5      ', 'HNO3      ', 'CF4       ', 'CHCLF2    ',       &
      &    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ',       &
-     &	  'ACET      ', 'CH3CN     ', 20*' ZZZZZZZZ ' /                  
+     &    'ACET      ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &
+     &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &
+     &    'CH3CClF2  ', 'CHClF2    ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &
+     &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ',7*' ZZZZZZZZ ' /
       DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
      &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
      &    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CHF2CL    ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
-     &    'CH3COCH3  ', 21*' ZZZZZZZZ ' /                               
+     &    'CH3COCH3  ', ' ZZZZZZZZ ', 'HFC-125   ', 'HFC-134a  ',       &
+     &    'HFC-143a  ', 'HFC-152a  ', 'HFC-32    ', 'HCFC-141b ',       &
+     &    'HCFC-142b ', 'HCFC-22   ', 'HCFC-123  ', 'HCFC-124  ',       &
+     &    'HCFC-225ca', 'HCFC-225cb', 8*' ZZZZZZZZ ' /
       DATA (ALIAS(3,I),I=1,mx_xs)/                                      &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
      &    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',       &
-     &    'CFC13     ', 'CFC115    ',  ' ZZZZZZZZ ', ' ZZZZZZZZ ',      &
+     &    'CFC13     ', 'CFC115    ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    'ACETONE  ', 21*' ZZZZZZZZ ' /                                
       DATA (ALIAS(4,I),I=1,mx_xs)/                                      &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',       &
@@ -4053,7 +4059,10 @@
      &     137.37     ,  120.91     ,  170.92     ,  187.38     ,       &
      &     108.01     ,   63.01     ,   88.00     ,   86.47     ,       &
      &     104.46     ,  154.47     ,   45.99     ,  121.05     ,       &
-     &      58.08     ,   41.05     ,  20*0.00 /                        
+     &      58.08     ,   41.05     ,  120.02     ,  102.03     ,       &
+     &      84.04     ,   66.05     ,   52.02     ,  116.95     ,       &
+     &     100.50     ,   86.47     ,  152.93     ,  136.48     ,       &
+     &     202.94     ,  202.94     ,   64.06     , 7*0.00 /
 !                                                                       
       DATA V1FX / 190*0.0 /,V2FX / 190*0.0 /,DVFX / 190*0.0 /,          &
      &     WXM / mx_xs*0.0 /                                            
