@@ -7043,7 +7043,7 @@
      &                AMOL28(MXZMD), AMOL29(MXZMD), AMOL30(MXZMD),      &
      &                AMOL31(MXZMD), AMOL32(MXZMD), AMOL33(MXZMD),      &
      &                AMOL34(MXZMD), AMOL35(MXZMD), AMOL36(MXZMD),      &
-     &                AMOL37(MXZMD), AMOL38(MXZMD)                      
+     &                AMOL37(MXZMD), AMOL38(MXZMD), AMOL39(MXZMD)                      
 !                                                                       
       DATA LAYXMX / 6000 / 
 !                                                                       
@@ -7440,7 +7440,7 @@
 !
 !     DATA AMOL32 / ISOP /
 !
-      DATA AMOL32 /
+      DATA AMOL32 /                                                     &
      &  1.01E-04,  2.85E-05,  6.77E-06,  1.88E-06,  1.18E-06,           &
      &  1.15E-06,  1.04E-06,  1.09E-06,  1.27E-06,  9.39E-07,           &
      &  6.96E-07,  4.94E-07,  3.41E-07,  2.15E-07,  1.07E-07,           &
