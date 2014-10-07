@@ -765,12 +765,12 @@
 !  This assumption is valid for most species, but not for N2 or O2. We now adjust the HITRAN widths to obtain
 !  true foreign widths.
           M = MOD(MOL(I),100)
-          WRITE(*,*) M
+          !WRITE(*,*) M
           if (M.eq.7 .AND. IFLG(i).ge.0) then
              WRITE(*,*) M, ALFA0(i),HWHMS(i) 
              rvmr = 0.21
              ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
-             WRITE(*,*) M, ALFA0(i),HWHMS(i)
+             !WRITE(*,*) M, ALFA0(i),HWHMS(i)
          endif
          if (M.eq.22 .AND. IFLG(i).ge.0) then 
              rvmr = 0.79
