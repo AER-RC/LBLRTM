@@ -767,7 +767,7 @@
           M = MOD(MOL(I),100)
           !WRITE(*,*) M
           if (M.eq.7 .AND. IFLG(i).ge.0) then
-             WRITE(*,*) M, ALFA0(i),HWHMS(i) 
+             !WRITE(*,*) M, ALFA0(i),HWHMS(i) 
              rvmr = 0.21
              ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
              !WRITE(*,*) M, ALFA0(i),HWHMS(i)
