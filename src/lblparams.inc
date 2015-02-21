@@ -21,9 +21,9 @@
 ! |                       (http://www.rtweb.aer.com/)                        |
 !  --------------------------------------------------------------------------
 !
-      PARAMETER (MXMOL=39,MXSPC=5,Max_ISO=20)
+      PARAMETER (MXMOL=47,MXSPC=5,Max_ISO=20)
       PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MX_XS=38)
-      PARAMETER (MXZMD=6000,MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXTRAC=22)
+      PARAMETER (MXZMD=6000,MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXTRAC=41)
       PARAMETER (NFPTS=2001,NFMX=1.3*NFPTS)
       PARAMETER (NMAXCO=4040)
       PARAMETER (IPTS=5050,IPTS2=6000)

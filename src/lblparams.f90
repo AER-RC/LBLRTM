@@ -25,10 +25,10 @@ MODULE lblparams   ! Parameters for array dimensions in lblrtm
 
   implicit none
 
-      integer, parameter :: MXMOL=39, MXSPC=5, Max_ISO=20
+      integer, parameter :: MXMOL=47, MXSPC=5, Max_ISO=20
       integer, parameter :: MXFSC=600, MXLAY=MXFSC+3, MX_XS=38
       integer, parameter :: MXZMD=6000, MXPDIM=MXLAY+MXZMD
-      integer, parameter :: IM2=MXPDIM-2, MXTRAC=22
+      integer, parameter :: IM2=MXPDIM-2, MXTRAC=41
       integer, parameter :: NFPTS=2001, NFMX=1.3*NFPTS
       integer, parameter :: NMAXCO=4040, NUMZ = 101
       integer, parameter :: IPTS=5050, IPTS2=6000

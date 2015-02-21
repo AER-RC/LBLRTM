@@ -1291,7 +1291,8 @@
      &     '  OCS ',' H2CO ',' HOCL ','   N2 ','  HCN ','CH3CL ',       &
      &     ' H2O2 ',' C2H2 ',' C2H6 ','  PH3 ',' COF2 ','  SF6 ',       &
      &     '  H2S ','HCOOH ','  HO2 ','    O ','ClONO2','  NO+ ',       &
-     &     ' HOBr ',' C2H4 ','CH3OH '/                                  
+     &     ' HOBr ',' C2H4 ','CH3OH ',' CH3Br',' CH3CN','  CF4 ',       &
+     &     ' C4H2 ',' HC3N ','   H2 ','   CS ','  SO3 '/               
                                                                         
       DATA CSPC   / 'T LAYR','T SURF','SFC EM','SFC RF','LOW PR' / 
 !                                                                       
