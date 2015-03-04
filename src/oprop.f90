@@ -4148,9 +4148,9 @@
      &    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ',       &
      &    'ACET      ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &
      &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &
-     &    'CH3CClF2  ', ' ZZZZZZZZ ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &
+     &    'CH3CClF2  ', 'CHClF2    ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &
      &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ', 'ISOP      ',       &
-     &     6*' ZZZZZZZZ ' /
+     &    'CHF3      ',  5*' ZZZZZZZZ ' /
       DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
      &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
      &    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',       &
@@ -4158,9 +4158,9 @@
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    'CH3COCH3  ', ' ZZZZZZZZ ', 'HFC-125   ', 'HFC-134a  ',       &
      &    'HFC-143a  ', 'HFC-152a  ', 'HFC-32    ', 'HCFC-141b ',       &
-     &    'HCFC-142b ', ' ZZZZZZZZ ', 'HCFC-123  ', 'HCFC-124  ',       &
+     &    'HCFC-142b ', 'HCFC-22   ', 'HCFC-123  ', 'HCFC-124  ',       &
      &    'HCFC-225ca', 'HCFC-225cb', ' ZZZZZZZZ ', 'C5H8      ',       &
-     &     6*' ZZZZZZZZ ' /
+     &    'HFC-23    ',   5*' ZZZZZZZZ ' /
       DATA (ALIAS(3,I),I=1,mx_xs)/                                      &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
      &    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',       &
@@ -4187,7 +4187,7 @@
      &      84.04     ,   66.05     ,   52.02     ,  116.95     ,       &
      &     100.50     ,   86.47     ,  152.93     ,  136.48     ,       &
      &     202.94     ,  202.94     ,   64.06     ,   68.12     ,       &
-     &     6*0.00 /
+     &      70.01     ,  5*0.00 /
 !                                                                       
       DATA V1FX / 190*0.0 /,V2FX / 190*0.0 /,DVFX / 190*0.0 /,          &
      &     WXM / mx_xs*0.0 /                                            
