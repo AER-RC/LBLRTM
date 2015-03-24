@@ -10595,7 +10595,7 @@
 ! 
 !
 !...date last changed 17         June, 2011
-      implicit DOUBLE PRECISION (a-h,o-z)
+      !implicit DOUBLE PRECISION (a-h,o-z)
       parameter (NT=119)
       COMMON/Temperatures/tdat(NT)
       
@@ -10685,7 +10685,7 @@
 ! 
 !
 !...date last changed 17         June, 2011 
-      implicit DOUBLE PRECISION (a-h,o-z)
+      !implicit DOUBLE PRECISION (a-h,o-z)
       parameter (NT=119)
       COMMON/Temperatures/tdat(NT)
       
@@ -10827,7 +10827,7 @@
 ! 
 !
 !...date last changed 17         June, 2011  
-      implicit DOUBLE PRECISION (a-h,o-z)
+      !implicit DOUBLE PRECISION (a-h,o-z)
       parameter (NT=119)
       COMMON/Temperatures/tdat(NT)
       
@@ -10891,7 +10891,7 @@
 ! 
 !
 !...date last changed 17         June, 2011 
-      implicit DOUBLE PRECISION (a-h,o-z)
+      !implicit DOUBLE PRECISION (a-h,o-z)
       parameter (NT=119)
       COMMON/Temperatures/tdat(NT)
       
@@ -10955,7 +10955,7 @@
 ! 
 !
 !...date last changed 17         June, 2011  
-      implicit DOUBLE PRECISION (a-h,o-z)
+      !implicit DOUBLE PRECISION (a-h,o-z)
       parameter (NT=119)
       COMMON/Temperatures/tdat(NT)
       
@@ -11148,7 +11148,7 @@
 ! 
 !
 !...date last changed 17         June, 2011  
-      implicit DOUBLE PRECISION (a-h,o-z)
+      !implicit DOUBLE PRECISION (a-h,o-z)
       parameter (NT=119)
       COMMON/Temperatures/tdat(NT)
       
@@ -11238,7 +11238,7 @@
 ! 
 !
 !...date last changed 17         June, 2011  
-      implicit DOUBLE PRECISION (a-h,o-z)
+      !implicit DOUBLE PRECISION (a-h,o-z)
       parameter (NT=119)
       COMMON/Temperatures/tdat(NT)
       
