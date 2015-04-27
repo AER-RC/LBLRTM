@@ -897,6 +897,59 @@
 !                                                                       
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
                                                                         
+         endif 
+        
+                                                 
+!        ********  NITROGEN COLLISION INDUCED FUNDAMENTAL FIRST OVERTONE  ********    
+!                                                                       
+!        version_1 of the Nitrogen Collision Induced First Overtone
+!                                                                       
+!        Shapiro and Gush (1966) modified by Mlawer and Gombos (2015) based on 
+!        comparisons with measurements from SGP solar FTS (TCCON network).
+!                                                                       
+!        Only calculate if V2 > 4340. cm-1 and V1 <  4910. cm-1         
+!                                                                       
+         if ((V2.gt.4340.0).and.(V1.lt.4910.).and. xn2cn.gt.0.) then    
+!                                                                       
+!           All species are assumed to have the same broadening efficiency.                                                            
+!           a_o2  represents the relative broadening efficiency of o2   
+!           a_h2o represents the relative broadening efficiency of h2o  
+                                                                        
+            a_o2  = 1.
+            a_h2o = 1.                                                  
+                                                                        
+!     correct formulation for consistency with LBLRTM (per molec/cm^2)  
+!                                                                       
+            tau_fac =  xn2cn* (Wn2/xlosmt) *                            &
+     &           amagat * (x_vmr_n2+a_o2*x_vmr_o2+a_h2o*x_vmr_h2o)      
+                                                                        
+!                                                                       
+!           Wn2 is in units of molec/cm2                                
+!           amagat is in units of amagats (air)                         
+!                                                                       
+!           The absorption coefficients are assumed to have no temperature dependence. 
+!                                                                       
+            call n2_overtone1 (v1c,v2c,dvc,nptc,c0)                    
+!                                                                       
+!           c0 are the nitrogen absorption coefficients
+!              - these absorption coefficients are in units of          
+!                   [(cm^2/molec) 10^20)]/(cm-1  amagat)                
+!              - cm-1 in the denominator arises through the removal     
+!                   of the radiation field                              
+!              - for this case, an amagat is interpreted as one         
+!                   loschmidt of air (273K)                             
+!                                                                       
+           DO 48 J = 1, NPTC                                            
+               VJ = V1C+DVC* REAL(J-1)                                  
+               C(J) = tau_fac * c0(J)                                   
+!              Radiation field                                          
+!                                                                       
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
+                                                                        
+   48       CONTINUE                                                    
+!                                                                       
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+                                                                        
          endif                                                          
 !                                                                       
 !     ********** Rayleigh Scattering calculation **********             
@@ -982,15 +1035,15 @@
 !                                                                       
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4,CHEADING 
 !                                                                       
-      CHARACTER*18 cnam3(9),cnam4(29) 
-      CHARACTER*51 CINFO1(2,11),CINFO2(2,11),CINFO3(2,9),CINFO4(2,29) 
+      CHARACTER*18 cnam3(9),cnam4(31) 
+      CHARACTER*51 CINFO1(2,12),CINFO2(2,11),CINFO3(2,9),CINFO4(2,31) 
       CHARACTER*40 CHEADING(3,2) 
 !                                                                       
-      WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,11) 
+      WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,12) 
       WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11) 
       WRITE (IPR,918) ((CHEADING(I,J),I=1,3),J=1,2) 
       WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9) 
-      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,29) 
+      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,31) 
 !                                                                       
       RETURN 
 !                                                                       
@@ -1007,8 +1060,8 @@
 !     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM    
 !                                                                       
       COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4,CHEADING 
-      CHARACTER*18 cnam3(9),cnam4(29) 
-      CHARACTER*51 CINFO1(2,11),CINFO2(2,11),CINFO3(2,9),CINFO4(2,29) 
+      CHARACTER*18 cnam3(9),cnam4(31) 
+      CHARACTER*51 CINFO1(2,12),CINFO2(2,11),CINFO3(2,9),CINFO4(2,31) 
       CHARACTER*40 CHEADING(3,2) 
 !                                                                       
       DATA cnam3/                                                       &
@@ -1052,6 +1105,8 @@
      &     '     "            ',                                        &
      &     ' mt_ckd_2.5.1 11.8',                                        &
      &     ' mt_ckd_2.5.2 12.0',                                        &
+     &     ' mt_ckd_2.5.3  -  ',                                        &
+     &     ' mt_ckd_2.6   12.4',                                        &
      &     '                  '/                                        
 !           123456789-123456789-123456789-123456789-123456789-1         
 !                                                                       
@@ -1077,7 +1132,9 @@
      &     '            AIR   (T)     0 -   350 CM-1           ',       &
      &     '   mt_ckd_2.1 - incl. O2 rel. efficiency (Sep 2004)',       &
      &     '            AIR   (T)  2085 -  2670 CM-1           ',       &
-     &     '   ckd_2.4.1  - Lafferty et al.          (Mar 1998)' /      
+     &     '   ckd_2.4.1  - Lafferty et al.          (Mar 1998)',       &      
+     &     '            AIR        4340 -  4910 CM-1           ',       &
+     &     '   mt_ckd_2.6  - Mlawer and Gombos       (May 2015)' /      
 !           123456789-123456789-123456789-123456789-123456789-1         
 !                                                                       
       DATA CINFO2/                                                      &
@@ -1181,8 +1238,12 @@
      &     '1991                                               ',       &
      &     '  Updated common block for constants               ',       &
      &     '                                         (May 2010)',       &
-     &     '  Minor bug fixes, updated continuum summary info,',        &
-     &     '  made consistent with monortm contnm.f (Jan 2011)',        &
+     &     '  Minor bug fixes, updated continuum summary info, ',       &
+     &     ' made consistent with monortm contnm.f   (Jan 2011)',       &
+     &     '  Cosmetic changes                                 ',       &
+     &     '                                         (Mar 2015)',       &
+     &     '  N2 1st overtone - Shapiro & Gush (1966) modified ',       &
+     &     'by Mlawer and Gombos based on solar FTS  (Apr 2015)',       &
      &     '  -------------------------------------------------',       &
      &     '---------------------------------------------------'/       
 !                                                                       
@@ -4238,6 +4299,111 @@
      &      1.550E-09,  4.690E-10,  5.120E-10,  0.000E+00,  0.000E+00,  &
      &      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00/              
                                                                         
+      END                                           
+!                                                                       
+!     --------------------------------------------------------------    
+!                                                                       
+      subroutine n2_overtone1 (v1c,v2c,dvc,nptc,c) 
+!                                                                       
+      Use lblparams, ONLY: n_absrb 
+      IMPLICIT REAL*8 (v) 
+!                                                                       
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
+!                                                                       
+      COMMON /n2_f1/ V1S,V2S,DVS,NPTS,xn2(201)
+!                                                                       
+      dimension c(*) 
+!                                                                       
+!     Nitrogen Collision Induced First Overtone
+                                                                        
+!     Shapiro and Gush (1966) modified by Mlawer and Gombos (2015).    
+
+!     The absorption coefficients are for pure nitrogen (absorber and broadener).   
+!                                                                       
+      DVC = DVS 
+      V1C = V1ABS-DVC 
+      V2C = V2ABS+DVC 
+!                                                                       
+      IF (V1C.LT.V1S) then 
+         I1 = -1 
+      else 
+         I1 = (V1C-V1S)/DVS + 0.01 
+      end if
+!                                                                       
+      V1C = V1S + DVS*REAL(I1-1) 
+      I2 = (V2C-V1S)/DVS + 0.01 
+      NPTC = I2-I1+3 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+4 
+      V2C = V1C + DVS*REAL(NPTC-1) 
+!                                                                       
+      do 10 j=1,nptc 
+         i = i1+(j-1) 
+         C(J) = 0. 
+         IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10 
+         VJ = V1C+DVC* REAL(J-1) 
+!                                                                       
+         c(j) = xn2(i)
+                                                                        
+!     the radiation field is removed with 1/vj                          
+                                                                        
+         c(j) = c(j)/vj 
+!                                                                       
+ 10 end do 
+                                                                        
+         return 
+                                                                        
+      END                                           
+                                                                        
+      BLOCK DATA bn2f1 
+                                                                        
+      IMPLICIT REAL*8 (v) 
+                                                                        
+      COMMON /n2_f1/ V1n2f,V2n2f,DVn2f,NPTn2f,xn2(201)                               
+                                                                        
+      DATA V1n2f,V2n2f,DVn2f,NPTn2f                                     &
+     &     /4325.0, 4925.0, 3.0, 201/                 
+      DATA xn2/                                                     &
+     &      0.000E+00, 0.000E+00, 0.000E+00, 0.000E+00, 0.000E+00, &
+     &      0.000E+00, 3.709E-11, 7.418E-11, 1.113E-10, 1.484E-10, &
+     &      1.843E-10, 2.163E-10, 2.482E-10, 2.802E-10, 3.122E-10, &
+     &      3.442E-10, 3.640E-10, 3.776E-10, 3.912E-10, 4.048E-10, &
+     &      4.183E-10, 4.334E-10, 4.626E-10, 4.918E-10, 5.210E-10, &
+     &      5.357E-10, 5.411E-10, 5.465E-10, 5.520E-10, 5.593E-10, &
+     &      5.853E-10, 6.114E-10, 6.375E-10, 6.635E-10, 6.855E-10, &
+     &      6.926E-10, 6.997E-10, 7.069E-10, 7.140E-10, 7.211E-10, &
+     &      7.283E-10, 7.380E-10, 7.551E-10, 7.722E-10, 7.893E-10, &
+     &      8.064E-10, 8.235E-10, 8.419E-10, 8.627E-10, 8.835E-10, &
+     &      9.043E-10, 9.251E-10, 9.779E-10, 1.066E-09, 1.154E-09, &
+     &      1.242E-09, 1.344E-09, 1.446E-09, 1.549E-09, 1.653E-09, &
+     &      1.759E-09, 1.865E-09, 1.977E-09, 2.103E-09, 2.228E-09, &
+     &      2.348E-09, 2.467E-09, 2.586E-09, 2.705E-09, 2.824E-09, &
+     &      2.944E-09, 3.066E-09, 3.188E-09, 3.309E-09, 3.426E-09, &
+     &      3.543E-09, 3.660E-09, 3.813E-09, 3.976E-09, 4.135E-09, &
+     &      4.309E-09, 4.499E-09, 4.700E-09, 4.905E-09, 5.105E-09, &
+     &      5.332E-09, 5.575E-09, 5.856E-09, 6.175E-09, 6.421E-09, &
+     &      6.640E-09, 7.086E-09, 7.508E-09, 7.906E-09, 8.304E-09, &
+     &      8.930E-09, 9.480E-09, 9.921E-09, 1.051E-08, 1.070E-08, &
+     &      1.090E-08, 1.090E-08, 1.090E-08, 1.090E-08, 1.070E-08, &
+     &      1.050E-08, 1.030E-08, 1.010E-08, 9.940E-09, 9.760E-09, &
+     &      9.580E-09, 9.400E-09, 9.220E-09, 9.040E-09, 8.860E-09, &
+     &      8.680E-09, 8.510E-09, 8.370E-09, 8.250E-09, 8.150E-09, &
+     &      8.070E-09, 8.010E-09, 7.950E-09, 7.890E-09, 7.830E-09, &
+     &      7.759E-09, 7.553E-09, 7.347E-09, 7.141E-09, 6.935E-09, &
+     &      6.729E-09, 6.523E-09, 6.317E-09, 6.111E-09, 5.905E-09, &
+     &      5.699E-09, 5.493E-09, 5.287E-09, 5.081E-09, 4.876E-09, &
+     &      4.670E-09, 4.464E-09, 4.258E-09, 4.052E-09, 3.846E-09, &
+     &      3.640E-09, 3.450E-09, 3.268E-09, 3.092E-09, 2.917E-09, &
+     &      2.741E-09, 2.566E-09, 2.392E-09, 2.219E-09, 2.076E-09, &
+     &      1.959E-09, 1.841E-09, 1.723E-09, 1.617E-09, 1.527E-09, &
+     &      1.437E-09, 1.346E-09, 1.256E-09, 1.172E-09, 1.093E-09, &
+     &      1.013E-09, 9.335E-10, 8.539E-10, 7.979E-10, 7.514E-10, &
+     &      7.050E-10, 6.586E-10, 6.121E-10, 5.687E-10, 5.413E-10, &
+     &      5.138E-10, 4.864E-10, 4.589E-10, 4.315E-10, 4.040E-10, &
+     &      3.770E-10, 3.504E-10, 3.238E-10, 2.972E-10, 2.706E-10, &
+     &      2.409E-10, 2.099E-10, 1.788E-10, 1.478E-10, 1.225E-10, &
+     &      1.021E-10, 8.165E-11, 6.123E-11, 4.082E-11, 2.041E-11, &
+     &      0.000E+00, 0.000E+00, 0.000E+00, 0.000E+00, 0.000E+00, &
+     &      0.000E+00/                                                                        
       END                                           
 !                                                                       
 !     --------------------------------------------------------------    
