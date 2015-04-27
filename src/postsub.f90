@@ -4,7 +4,7 @@
 !     presently: %H%  %T%
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2012         |
+! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -14,7 +14,8 @@
 ! |  copyright notice is reproduced on any copy made and appropriate         |
 ! |  acknowledgment is given to AER. This software or any modified version   |
 ! |  of this software may not be incorporated into proprietary software or   |
-! |  commercial software offered for sale.                                   |
+! |  commercial software offered for sale without the express written        |
+! |  consent of AER.                                                         |
 ! |                                                                          |
 ! |  This software is provided as is without any express or implied          |
 ! |  warranties.                                                             |
