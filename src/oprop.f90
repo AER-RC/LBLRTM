@@ -127,8 +127,9 @@
      &              NLTEFL,LNFIL4,LNGTH4                                
 !                                                                       
 !                                                                       
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
-      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,        &
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)                   
+!                                                                       
+      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,10),SCOR(42,10),ALFMAX,      &
      &              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,    &
      &              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,     &
      &              PAVP2,RECTLC,TMPDIF,ILC                             
@@ -857,7 +858,7 @@
       END                                           
       SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP) 
 !                                                                       
-      USE lblparams, ONLY: MXMOL
+      USE lblparams, ONLY: MXMOL, MXISOTPL
       USE phys_consts, ONLY: radcn2
       USE struct_types, ONLY: mxbrdmol, NLINEREC
       IMPLICIT REAL*8           (V) 
@@ -902,13 +903,21 @@
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),         &
      &                CF3(102),CER(102)                                 
 !                                                                       
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
-      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,        &
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)                   
+!
+      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,10),SCOR(42,10),ALFMAX,      &
      &              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,    &
      &              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,     &
      &              PAVP2,RECTLC,TMPDIF,ILC                             
       DIMENSION MEFDP(64),FILHDR(2),AMOL(250),SP(250) 
       DIMENSION A(4),B(4),TEMPLC(4) 
+!                                                                       
+      COMMON /PATH_ISOTPL/ ISOTPL,NISOTPL,                              &
+     &                     ISOTPL_FLAG(MXMOL,MXISOTPL),                 &
+     &                     ISOTPL_MAIN_FLAG(MXMOL),                     &
+     &                     MOLNUM(MXMOL*MXISOTPL),                      &
+     &                     ISOTPLNUM(MXMOL*MXISOTPL),                   &
+     &                     WKI(MXMOL,MXISOTPL)             
 !                                                                       
       EQUIVALENCE (MOL(1),AMOL(1)) , (S(1),SP(1)) 
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),              &
@@ -982,7 +991,12 @@
 !                                                                       
          MOL(I) = M 
 !                                                                       
-         SUI = S(I)*WK(M) 
+            IF (ISOTPL_FLAG(M,ISO).EQ.0) THEN
+               SUI = S(I)*WK(M) 
+            ELSE
+               SUI = S(I)*WKI(M,ISO) 
+            ENDIF
+!                                                                       
          IF (JRAD.EQ.1) SUI = SUI*VNU(I) 
 !                                                                       
          IF (SUI.EQ.0.) GO TO 25 
@@ -2387,7 +2401,8 @@
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)                   
+!
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     &
      &              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     &
@@ -2401,7 +2416,8 @@
       COMMON /FILHDR/ XID(10),SECANT,P   ,TEMP,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      DIMENSION SCOR(42,9),RHOSLF(*),ALFD1(42,9) 
+      DIMENSION SCOR(42,10),RHOSLF(*),ALFD1(42,10)                      
+!
       COMMON /SMOLEC/ W(42,9),ND(42,9),FAD 
       COMMON /XMOLEC/ NV(42),IVIB(42,2,9),XR(42),ROTFAC(42),QV0(42) 
       COMMON /MOLNAM/ MOLID(0:MXMOL) 
@@ -2602,12 +2618,13 @@
 !  ****************************************                             
 !                                                                       
       USE lblparams, ONLY: NMOL => MXMOL
-      COMMON /ISVECT/ ISO_MAX(NMOL),SMASS(nmol,9) 
-      common /iso_id/ iso_82(123) 
+
+      COMMON /ISVECT/ ISO_MAX(NMOL),SMASS(nmol,10)                      
+      common /iso_id/ iso_82(124) 
 !                                                                       
 !    The number of isotopes for a particular molecule:                  
       DATA (ISO_MAX(I),I=1,NMOL)/                                       &
-     &   6,   9,    9,    5,    6,   4,     3,                          &
+     &   6,  10,    9,    5,    6,   4,     3,                          &
      &   3,   2,    1,    2,    2,   3,     2,    4,    4,    2,        &
      &   2,   5,    3,    2,    2,   3,     2,    1,    3,    2,    1,  &
      &   2,   1,    3,    1,    1,   1,     2,    1,    2,    2,    1,  &
@@ -2620,7 +2637,7 @@
 !                                                                       
       DATA ISO_82/                                                      &
      &  161,181,171,162,182,172,                                        & 
-     &  626,636,628,627,638,637,828,827,727,                        & 
+     &  626,636,628,627,638,637,828,827,727,838,                        & 
      &  666,668,686,667,676,886,868,678,768,                            & 
      &  446,456,546,448,447,                                            & 
      &  26,36,28,27,38,37,  211,311,212,312,                            & 
@@ -2654,8 +2671,9 @@
       data (smass(1,i),i=1,6)                                           &
      & /  18.01, 20.01, 19.01, 19.01, 21.02, 20.02/                     
 !  H2O:   161,   181,   171,   162,   182,   172                        
-      data (smass(2,i),i=1,9)                                           &
-     & /  43.99, 44.99, 45.99, 44.99, 47.00, 46.00, 48.00, 47.00, 46.00/
+      data (smass(2,i),i=1,10)                                          &
+     & /  43.99, 44.99, 45.99, 44.99, 47.00, 46.00, 48.00, 47.00, 46.00,&
+     &    49.00/
 !  CO2:   626,   636,   628,   627,   638,   637,   828,   827,    727,   838
       data (smass(3,i),i=1,9)                                           &
      & /  47.98, 49.99, 49.99, 48.99, 48.99, 51.99, 51.99, 50.99, 50.99/
@@ -2834,14 +2852,15 @@
       END                                           
       SUBROUTINE LINF4 (V1L4,V2L4) 
 !                                                                       
-      USE lblparams, ONLY: MXMOL
+      USE lblparams, ONLY: MXMOL, MXISOTPL
       USE phys_consts, ONLY: radcn2
       USE struct_types
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4  
 !                                                                       
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)                   
+!
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 !                                                                       
       REAL*8             HID,HMOLIL,HID1,HLINHD 
@@ -2885,10 +2904,18 @@
 !                                                                       
       REAL L4TIM,L4TMR,L4TMS,LOTHER 
       DIMENSION MEFDP(64) 
-      DIMENSION SCOR(42,9),RHOSLF(mxmol),ALFD1(42,9) 
+      DIMENSION SCOR(42,10),RHOSLF(mxmol),ALFD1(42,10)                  
+!
       DIMENSION A(4),B(4),TEMPLC(4) 
       DIMENSION IWD(2),IWD3(2),HLINHD(2) 
       DIMENSION RCDHDR(2),AMOLB(250) 
+!                                                                       
+      COMMON /PATH_ISOTPL/ ISOTPL,NISOTPL,                              &
+     &                     ISOTPL_FLAG(MXMOL,MXISOTPL),                 &
+     &                     ISOTPL_MAIN_FLAG(MXMOL),                     &
+     &                     MOLNUM(MXMOL*MXISOTPL),                      &
+     &                     ISOTPLNUM(MXMOL*MXISOTPL),                   &
+     &                     WKI(MXMOL,MXISOTPL)             
 !                                                                       
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)) 
       EQUIVALENCE (IWD3(1),VD),                     &
@@ -3012,7 +3039,12 @@
          go to 50 
          endif 
 !                                                                       
-         SUI = BUFR%SP(I)*W(M) 
+            IF (ISOTPL_FLAG(M,ISO).EQ.0) THEN
+               SUI = BUFR%SP(I)*W(M) 
+            ELSE
+               SUI = BUFR%SP(I)*WKI(M,ISO)
+            ENDIF
+!                                                                       
          IF (SUI.EQ.0.) GO TO 50 
          IF (BUFR%VNU(I).LT.VLO) GO TO 50 
          IJ = IJ+1 
@@ -5799,8 +5831,8 @@
       COMMON/MOLNAM/MOLID(0:NMOL) 
 !++:  bd-QT                                                             
       COMMON/Temperatures/tdat !mja, 10-27-2011 
-                                                                        
-      dimension iso_max(nmol),scor(42,9) 
+
+      dimension iso_max(nmol),scor(42,10)                               
                                                                         
       character*30 stopNgo 
 !                                                                       

@@ -368,8 +368,10 @@
 !---------------------------------------------------------------------- 
 !                                                                       
       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
-                           MXMOL, MX_XS, MXTRAC, MXSPC, NMAXCO,         &
-                           IPTS, IPTS2
+     &                     MXISOTPL,                                    &
+     &                     MXMOL, MX_XS, MXTRAC, MXSPC, NMAXCO,         &
+     &                     IPTS, IPTS2
+!                                                                       
       IMPLICIT REAL*8           (V) 
 !                                                                       
       character*8      XID,       HMOLID,      YID,HDATE,HTIME 
@@ -446,7 +448,8 @@
                                                                         
 !     -------------------------                                         
 !                                                                       
-      DIMENSION IDCNTL(14),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2) 
+      DIMENSION IDCNTL(15),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2) 
+!                                                                       
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &                AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,   &
      &                DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,   &
@@ -499,6 +502,13 @@
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL 
       common /profil_scal/ nmol_scal,hmol_scal(64),xmol_scal(64),       &
      &                     n_xs_scal,h_xs_scal(64),x_xs_scal(64)        
+      COMMON /PATH_ISOTPL/ ISOTPL,NISOTPL,                              &
+     &                     ISOTPL_FLAG(MXMOL,MXISOTPL),                 &
+     &                     ISOTPL_MAIN_FLAG(MXMOL),                     &
+     &                     MOLNUM(MXMOL*MXISOTPL),                      &
+     &                     ISOTPLNUM(MXMOL*MXISOTPL),                   &
+     &                     WKI(MXMOL,MXISOTPL)             
+!                                                                       
                                                                         
       COMMON /FILHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
@@ -526,7 +536,8 @@
 !                                                                       
       DATA IDCNTL / ' HIRAC',' LBLF4',' CNTNM',' AERSL',' EMISS',       &
      &              ' SCNFN',' FILTR','  PLOT','  TEST','  IATM',       &
-     &              '  IMRG','  ILAS',' OPDEP',' XSECT' /               
+     &              '  IMRG','  ILAS',' OPDEP',' XSECT','ISOTPL' /      
+!                                                                       
       DATA CONE / '1'/,CTWO / '2'/,CTHREE / '3'/,CFOUR / '4'/,          &
      &     CA / 'A'/,CB / 'B'/,CC / 'C'/                                
       DATA CDOL / '$'/,CPRCNT / '%'/,CBLNK / ' '/,CXIDA / 80*' '/ 
@@ -566,6 +577,12 @@
                                                                         
       IMRGSAV = 0 
                                                                         
+      DO I = 1,MXISOTPL
+         DO M = 1,MXMOL
+            ISOTPL_FLAG(M,I) = 0
+         END DO
+      END DO
+!                                                                       
 ! analytic jacobians:                                                   
 !   set flag for layer2level conversion                                 
 !   this will be reset if it is appropriate to use layer2level conversio
@@ -650,7 +667,7 @@
 !                                                                       
       READ(IRD,925,END=80) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,           &
      &                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,    &
-     &                      IOD,IXSECT,IRAD,MPTS,NPTS                   
+     &                      IOD,IXSECT,IRAD,MPTS,NPTS,ISOTPL            
 !                                                                       
                                                                         
       ICNTNM_sav = ICNTNM 
@@ -798,9 +815,9 @@
 !                                                                       
       JRAD = 1 
       IF (IRAD.NE.0) JRAD = -1 
-      WRITE (IPR,935) (IDCNTL(I),I=1,14) 
+      WRITE (IPR,935) (IDCNTL(I),I=1,15) 
       WRITE (IPR,940) IHIRAC,ILBLF4,ICNTNM_sav,IAERSL,IEMIT,ISCAN,      &
-     &    IFILTR,IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT                  
+     &    IFILTR,IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT,ISOTPL           
 !                                                                       
       IF (IHIRAC.EQ.4) THEN 
          IF (IEMIT.NE.1) THEN 
@@ -1137,10 +1154,12 @@
   910 FORMAT (10A8) 
   915 FORMAT ('0',10A8,2X,2(1X,A8,1X)) 
   920 FORMAT ('0  TIME ENTERING LBLRTM  ',F15.4) 
-  925 FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4) 
+  925 FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4,4X,I1) 
+!                                                                       
   930 FORMAT (I1) 
-  935 FORMAT (14(A6,3X)) 
-  940 FORMAT (1X,I4,13I9) 
+  935 FORMAT (15(A6,3X)) 
+  940 FORMAT (1X,I4,14I9) 
+!                                                                       
   950 FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,               &
      &        '  CHANGE IEMIT TO 1 OR IHIRAC TO 1 ')                    
   970 FORMAT (8E10.3,4X,I1,5x,e10.3,3X,i2,3x,i2) 
@@ -4052,8 +4071,9 @@
       SUBROUTINE OPPATH 
 !                                                                       
       USE phys_consts, ONLY: pi
-      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
-                           MXMOL, MX_XS, MXTRAC, IPTS
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,             &
+     &                     MXISOTPL,                                     &
+     &                     MXMOL, MX_XS, MXTRAC, IPTS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     OPPATH CALLS LBLATM AND CALLS PATH FIRST                          
@@ -4091,6 +4111,14 @@
      &              ALTD2,ANGLE,IANT,LTGNT,LH1,LH2,IPFLAG,PLAY,TLAY,    &
      &              EXTID(10)                                           
       CHARACTER*8  EXTID 
+!                                                                       
+      COMMON /PATH_ISOTPL/ ISOTPL,NISOTPL,                              &
+     &                     ISOTPL_FLAG(MXMOL,MXISOTPL),                 &
+     &                     ISOTPL_MAIN_FLAG(MXMOL),                     &
+     &                     MOLNUM(MXMOL*MXISOTPL),                      &
+     &                     ISOTPLNUM(MXMOL*MXISOTPL),                   &
+     &                     WKI(MXMOL,MXISOTPL)             
+      COMMON /OPPATH_ISOTPL/ WKL_ISOTPL(MXMOL,MXISOTPL,MXLAY)
 !                                                                       
       common /lbl_geo/ zh1,zh2,zangle 
 !                                                                       
@@ -4339,6 +4367,12 @@
       do m=1,mx_xs 
          WXM(M) = XAMNT(M,LAYER) 
       enddo 
+
+      DO I = 1,NISOTPL
+         M = MOLNUM(I)
+         ISOTPL = ISOTPLNUM(I)
+         WKI(M,ISOTPL) = WKL_ISOTPL(M,ISOTPL,LAYER)
+      ENDDO
 !                                                                       
       H2OSLF = H2OSL(LAYER) 
       WTOT = WTOTL(LAYER) 
@@ -4419,8 +4453,9 @@
 !                                                                       
       SUBROUTINE PATH 
 !                                                                       
-      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
-                           MXMOL, MX_XS, MXTRAC
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,             &
+     &                     MXISOTPL, ISOTPL_ABD,                         &
+     &                     MXMOL, MX_XS, MXTRAC
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !                                                                       
@@ -4474,6 +4509,7 @@
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
 !                                                                       
+!                                                                       
 !     IXMAX=MAX NUMBER OF X-SECTION MOLECULES, IXMOLS=NUMBER OF THESE   
 !     MOLECULES SELECTED, IXINDX=INDEX VALUES OF SELECTED MOLECULES     
 !     (E.G. 1=CLONO2), XAMNT(I,L)=LAYER AMOUNTS FOR I'TH MOLECULE FOR   
@@ -4493,6 +4529,17 @@
      &                NUMXS,IXSBIN                                      
       COMMON /IODFLG/ DVOUT 
 !                                                                       
+      COMMON /PATH_ISOTPL/ ISOTPL,NISOTPL,                              &
+     &                     ISOTPL_FLAG(MXMOL,MXISOTPL),                 &
+     &                     ISOTPL_MAIN_FLAG(MXMOL),                     &
+     &                     MOLNUM(MXMOL*MXISOTPL),                      &
+     &                     ISOTPLNUM(MXMOL*MXISOTPL),                   &
+     &                     WKI(MXMOL,MXISOTPL)             
+      COMMON /OPPATH_ISOTPL/ WKL_ISOTPL(MXMOL,MXISOTPL,MXLAY)
+!                                                                       
+      INTEGER :: ISOTPL_HCODE(MXMOL*MXISOTPL)
+      REAL :: ISOTPL_AMNT(MXMOL,MXISOTPL,MXLAY)
+!                                                                       
       CHARACTER*20 HEAD20 
       CHARACTER*6 MOLID 
       COMMON /MOLNAM/ MOLID(0:MXMOL) 
@@ -4504,6 +4551,8 @@
       CHARACTER*3 CINP,CINPX,CBLNK 
       DIMENSION FILHDR(2),AMOUNT(2),AMTSTR(2) 
       DIMENSION HEDXS(15),WMT(mxmol),SECL(MXFSC),WXT(mx_xs),WTOTX(MXLAY) 
+      DIMENSION WIT(MXISOTPL),WTOTI(MXLAY)
+!
       DIMENSION WDRAIR(MXLAY) 
 !                                                                       
       EQUIVALENCE (XID(1),FILHDR(1)) 
@@ -4546,7 +4595,11 @@
          WXM(M) = 0. 
          WXT(M) = 0. 
       ENDDO 
-!                                                                       
+
+      DO M = 1, MXISOTPL
+         WIT(M) = 0. 
+      ENDDO 
+!                                                                        
       SUMN2 = 0. 
       ISTOP = 0 
 !                                                                       
@@ -4995,7 +5048,156 @@
       endif 
 !_______________________________________________________________________
 !     end of profile scaling                                            
+
+!                                                                       
+!     Obtain isotopologue information                         
+!                                                                       
+      IF (ISOTPL.EQ.1) THEN 
+         READ (IRD,928) NISOTPL
+         READ (IRD,928) (ISOTPL_HCODE(I),I=1,NISOTPL)
+!           print*, 'i, isotpl_hcode, molnum, isotplnum = '
+         DO I = 1,NISOTPL
+            MOLNUM(I) = FLOOR(0.1*ISOTPL_HCODE(I))
+            ISOTPLNUM(I) = INT((0.1*ISOTPL_HCODE(I)-MOLNUM(I))*10.)
+            IF (ISOTPLNUM(I).EQ.0) ISOTPLNUM(I)=10
+            ISOTPL_FLAG(MOLNUM(I),ISOTPLNUM(I)) = 1
+            ISOTPL_MAIN_FLAG(MOLNUM(I)) = 1
+!             print'(4i7)', i, isotpl_hcode(i), molnum(i), isotplnum(i)
+         ENDDO
+         READ (IRD,928) NLAYIS
+         DO L = 1,NLAYIS
+            READ (IRD,929) (ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L),&
+     &                      I=1,NISOTPL)
+         ENDDO
+!                                                                       
+!     --------------------------------------------------------------    
+!                                                                       
+!             MIXING RATIO INPUT FOR ISOTOPOLOGUE MOLECULES          
+!                                                                       
+!             CONVERSION TO COLUMN AMOUNT
+!                                                                       
+!                                                                       
+!     The column amount of dry air ("WDRAIR") has already been          
+!     calculated above, so just convert all cross sectional             
+!     molecules which may be in mixing ratio to molecular density       
+!     using WDRAIR(L)                                                   
+!                                                                       
+!     NOTE that if ISOTPL_AMNT is less than one, then mixing ratio,
+!                  ISOTPL_AMNT greater than one is not permitted
+!                                                                       
+         IF (IATM.EQ.0) THEN
+
+!            do l = 1, nlayis
+!              print*, 'layer, wkl(1,l), wdrair(l):'
+!              print'(i5, 1p7e10.3)', l, wkl(1,l), wdrair(l)
+!            enddo
+
+            DO L = 1,NLAYIS
+               DO I = 1,NISOTPL
+                  M = MOLNUM(I)
+                  ISOTPL = ISOTPLNUM(I)
+                  IF (WDRAIR(L).EQ.0.0 &
+     &               .AND. ISOTPL_AMNT(M,ISOTPL,L).LT.1. &
+     &               .AND. ISOTPL_AMNT(M,ISOTPL,L).NE.0.0) THEN                                          
+                     WRITE(IPR,921) L,ISOTPL_AMNT(M,ISOTPL,L),WDRAIR(L) 
+                     WRITE(*,921) L,ISOTPL_AMNT(M,ISOTPL,L),WDRAIR(L) 
+                     STOP 'ISOTPL_AMNT NOT PROPERLY SPECIFIED IN PATH' 
+                  ENDIF 
+                  IF (ISOTPL_AMNT(M,ISOTPL,L).LT.1.) &
+     &               WKL_ISOTPL(M,ISOTPL,L) = (ISOTPL_AMNT(M,ISOTPL,L) &
+     &                               *WDRAIR(L))/ISOTPL_ABD(M,ISOTPL) 
+               ENDDO
+            ENDDO
+
+         ENDIF
+
+         IF (IATM.EQ.1) THEN
+
+!            print*, 'layer, wkl(1,l), wdrair_isotpl:'
+!            print*, 'layer, molec, isotpl, isotpl_amnt, wdrair_isotpl,' &
+!     &             //'isotpl_abd, wkl_isotpl, wkl:'
+
+            IF (NLAYIS.NE.NLAYRS) THEN
+               WRITE(IPR,922) 'NLAYRS, NLAYIS = ', NLAYRS, NLAYIS
+               WRITE(*,922) 'NLAYRS, NLAYIS = ', NLAYRS, NLAYIS
+               STOP 'NUMBER OF ISOTOPOLOGUE INPUT LAYERS NOT PROPERLY '&
+      &           //'SPECIFIED IN PATH' 
+            ENDIF
+
+            DO L = 1,NLAYIS
+
+               WDNSTY_ISOTPL = WBRODL(L) 
+               WMXRAT_ISOTPL = 0.0 
+               WDRAIR_ISOTPL = 0.0 
                                                                         
+               DO M = 2,NMOL 
+                  IF (WKL(M,L).GT.1) THEN 
+                     WDNSTY_ISOTPL = WDNSTY_ISOTPL + WKL(M,L) 
+                  ELSE 
+                     WMXRAT_ISOTPL = WMXRAT_ISOTPL + WKL(M,L) 
+                  ENDIF 
+               ENDDO
+!                                                                       
+!        EXECUTE TESTS TO ENSURE ALL COMBINATION OF COLUMN DENSITIES    
+!        AND MIXING RATIOS FOR EACH LAYER HAVE BEEN PROPERLY SPECIFIED. 
+                                                                        
+!        IF THE LAYER SUM OF MIXING RATIOS IS LESS THAN ONE (WHICH      
+!        IT SHOULD BE, GIVEN THAT WBROAD CONTRIBUTES TO THE DRY AIR     
+!        MIXING RATIO), THEN COMPUTE DRY AIR BY DIVIDING THE TOTAL      
+!        MOLECULAR AMOUNTS GIVEN IN DENSITY BY THE FRACTION OF DRY      
+!        AIR (MIXING RATIO) THOSE MOLECULES COMPRISE.                   
+!                                                                       
+!        IF THE LAYER SUM OF MIXING RATIOS IS GREATER THAN OR EQUAL     
+!        TO ONE, THAN AN ERROR HAS OCCURRED, SO STOP THE PROGRAM.       
+!        WBROAD IS ALWAYS LISTED IN COLUMN DENSITY, SO THE SUM OF       
+!        THE GIVEN MIXING RATIOS MUST ALWAYS BE LESS THAN ONE.          
+!                                                                       
+               IF (WBRODL(L).LT.1.0 .AND. WBRODL(L).NE.0.0) THEN 
+                  WRITE(IPR,918) L 
+                  WRITE(*,918) L 
+                  STOP 
+               ENDIF 
+                                                                        
+               IF (WDNSTY_ISOTPL.EQ.0.0 .AND. WMXRAT_ISOTPL.NE.0.0) THEN 
+                  WRITE(IPR,921) L,WDNSTY_ISOTPL,WMXRAT_ISOTPL 
+                  WRITE(*,921) L,WDNSTY_ISOTPL,WMXRAT_ISOTPL 
+                  STOP 'WMXRAT_ISOTPL AND/OR WDNSTY_ISOTPL NOT PROPERLY'&
+     &               //'SPECIFIED IN PATH' 
+               ENDIF 
+                                                                        
+               IF (WMXRAT_ISOTPL.LT.1.0) THEN 
+                  WDRAIR_ISOTPL = WDNSTY_ISOTPL/(1.0-WMXRAT_ISOTPL) 
+               ELSE 
+                  WRITE(IPR,921) L,WMXRAT_ISOTPL, WDNSTY_ISOTPL
+                  WRITE(*,921) L,WMXRAT_ISOTPL, WDNSTY_ISOTPL 
+                  STOP 'WMXRAT_ISOTPL EXCEEDS 1.0' 
+               ENDIF 
+                                                                        
+!         print'(i5,1p7e10.3)', l, wkl(1,l), wdrair_isotpl
+
+               DO I = 1,NISOTPL
+                  M = MOLNUM(I)
+                  ISOTPL = ISOTPLNUM(I)
+                  IF (WDRAIR_ISOTPL.EQ.0.0 &
+     &               .AND. ISOTPL_AMNT(M,ISOTPL,L).LT.1. &
+     &               .AND. ISOTPL_AMNT(M,ISOTPL,L).NE.0.0) THEN                                          
+                     WRITE(IPR,921) L,ISOTPL_AMNT(M,ISOTPL,L), &
+     &                              WDRAIR_ISOTPL
+                     WRITE(*,921) L,ISOTPL_AMNT(M,ISOTPL,L),&
+     &                            WDRAIR_ISOTPL
+                     STOP 'ISOTPL_AMNT NOT PROPERLY SPECIFIED IN PATH' 
+                  ENDIF 
+                  IF (ISOTPL_AMNT(M,ISOTPL,L).LT.1.) &
+     &               WKL_ISOTPL(M,ISOTPL,L) = (ISOTPL_AMNT(M,ISOTPL,L) &
+     &                           *WDRAIR_ISOTPL)/ISOTPL_ABD(M,ISOTPL)
+               ENDDO
+            ENDDO
+         ENDIF
+!                                                                       
+!     --------------------------------------------------------------    
+!                                                                       
+      ENDIF                                                                        
+
       IF (IFORM.EQ.1) THEN 
          WRITE (IPR,950) 
       ELSE 
@@ -5050,6 +5252,9 @@
       PWTX = 0. 
       TWTX = 0. 
       WTOX = 0. 
+      PWTI = 0. 
+      TWTI = 0. 
+      WTOI = 0. 
 !                                                                       
 !     Write message if IOD=2 (Optical depth flag) and IMRG = 1          
 !                                                                       
@@ -5092,6 +5297,21 @@
             WTOX = WTOX+WTOTX(L)*FACTOR 
             PWTX = PWTX+PAVEL(L)*WTOTX(L)*FACTOR 
             TWTX = TWTX+TAVEL(L)*WTOTX(L)*FACTOR 
+         ENDIF 
+!                                                                       
+!     ISOTOPOLOGUES
+!                                                                       
+         IF (ISOTPL.GE.1) THEN 
+            SUMIK = 0. 
+            DO I = 1, NISOTPL
+               SUMIK = SUMIK+WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L) 
+               WIT(I) = WIT(I)+WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L)*&
+     &                  FACTOR 
+            ENDDO
+            WTOTI(L) = SUMIK+WBRODL(L) 
+            WTOI = WTOI+WTOTI(L)*FACTOR 
+            PWTI = PWTI+PAVEL(L)*WTOTI(L)*FACTOR 
+            TWTI = TWTI+TAVEL(L)*WTOTI(L)*FACTOR 
          ENDIF 
 !                                                                       
 !     CORRECT FOR WATER SELF BROADENING                                 
@@ -5240,6 +5460,11 @@
          PWTX = PWTX/WTOX 
          TWTX = TWTX/WTOX 
       ENDIF 
+      IF (ISOTPL.GE.1) THEN 
+         PWTI = PWTI/WTOI 
+         TWTI = TWTI/WTOI
+      ENDIF 
+!
       IF (ISTOP.EQ.1) WRITE (IPR,965) 
       IF (ISTOP.EQ.1) STOP 'PATH; ISTOP EQ 1' 
 !                                                                       
@@ -5532,11 +5757,173 @@
   196          CONTINUE 
             ENDIF 
   198    CONTINUE 
+
+      ENDIF 
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
+!                                                                       
+!     Write out column densities for isotolologue molecules to TAPE6                 
+!                                                                       
+!                                                                       
+      IF (ISOTPL.GE.1) THEN
+
+      IF (NISOTPL.LE.7) THEN 
+      IF (NLAYIS.LT.5) THEN 
+          WRITE (IPR,970) 
+      ELSE 
+          WRITE (IPR,945) XID,(YID(M),M=1,2) 
       ENDIF 
-                                                                        
+      IF (IFORM.EQ.1) THEN 
+         WRITE (IPR,996) (ISOTPL_HCODE(I),I=1,NISOTPL)
+         DO L = 1, NLAYIS 
+            WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),       &
+            TAVEL(L),IPTH(L),(WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L),     &
+     &      I=1,NISOTPL)
+         ENDDO
+         IF (NLAYIS.GT.1) THEN 
+            WRITE (IPR,985) 
+            L = NLAYIS 
+            WRITE (IPR,990) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTI,TWTI,        &
+            (WIT(I),I=1,NISOTPL)
+         ENDIF 
+      ELSE 
+         WRITE (IPR,997) (ISOTPL_HCODE(I),I=1,NISOTPL)
+         DO L = 1, NLAYIS 
+            WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),       &
+            TAVEL(L),IPTH(L),(WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L),     &
+     &      I=1,NISOTPL)
+         ENDDO
+         IF (NLAYIS.GT.1) THEN 
+            WRITE (IPR,985) 
+            L = NLAYIS 
+            WRITE (IPR,991) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTI,TWTI,        &
+            (WIT(I),I=1,NISOTPL)
+         ENDIF 
+      ENDIF 
+      ENDIF 
+!                                                                       
+      IF (NISOTPL.GT.7) THEN 
+         DO MLO = 8, NISOTPL, 8 
+            MHI = MLO+7 
+            MHI = MIN(MHI,NMOL) 
+            IF (NLAYIS.LT.5) THEN 
+               WRITE (IPR,970) 
+            ELSE 
+               WRITE (IPR,945) XID,(YID(M),M=1,2) 
+            ENDIF 
+            IF (IFORM.EQ.1) THEN 
+               WRITE (IPR,996) (ISOTPL_HCODE(I),I=MLO,MHI)
+               DO L = 1, NLAYIS 
+                  WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L), &
+                  TAVEL(L),IPTH(L),(WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L)&
+     &            ,I=MLO,MHI)                 
+               ENDDO
+               IF (NLAYIS.GT.1) THEN 
+                  WRITE (IPR,985) 
+                  L = NLAYIS 
+                  WRITE (IPR,990) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTI,TWTI,  &
+                  (WIT(I),I=MLO,MHI)                                    
+               ENDIF 
+            ELSE 
+               WRITE (IPR,997) (ISOTPL_HCODE(I),I=MLO,MHI)
+               DO L = 1, NLAYIS 
+                  WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L), &
+                  TAVEL(L),IPTH(L),(WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L)&
+     &            ,I=MLO,MHI)                 
+               ENDDO
+               IF (NLAYIS.GT.1) THEN 
+                  WRITE (IPR,985) 
+                  L = NLAYIS 
+                  WRITE (IPR,991) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTI,TWTI,  &
+                  (WIT(I),I=MLO,MHI)                                    
+               ENDIF 
+            ENDIF 
+!                                                                       
+         ENDDO
+      ENDIF 
+!                                                                       
+!     --------------------------------------------------------------    
+!                                                                       
+!     Write out mixing ratios for isotopologue molecules to TAPE6 in either          
+!     15.7 format (IFORM = 1) or 10.4 format (IFORM = 0).               
+!                                                                       
+!           Reset WDRAIR(L) for each layer                              
+!           (ISOTPL_AMNT(M,ISO,L) now in mixing ratio
+!                                                                       
+!                                                                       
+      IF (NISOTPL.LE.7) THEN
+      IF (IFORM.EQ.1) THEN 
+         WRITE (IPR,998) (ISOTPL_HCODE(I),I=1,NISOTPL)
+         DO L = 1, NLAYIS 
+            WDRAIR(L) = WBRODL(L) 
+            DO M = 1,NMOL
+               WDRAIR(L) = WDRAIR(L) + WKL(M,L) 
+            ENDDO
+            IF (WDRAIR(L).EQ.0.0) THEN 
+               WRITE(IPR,979) 
+            ELSE 
+               WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),    &
+               TAVEL(L),IPTH(L),(ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L),  &
+     &         I=1,NISOTPL)                                           
+            ENDIF 
+         ENDDO
+      ELSE 
+         WRITE (IPR,999) (ISOTPL_HCODE(I),I=1,NISOTPL)
+         DO L = 1, NLAYIS 
+            WDRAIR(L) = WBRODL(L) 
+            DO M = 2,NMOL 
+               WDRAIR(L) = WDRAIR(L) + WKL(M,L) 
+            ENDDO
+            IF (WDRAIR(L).EQ.0.0) THEN 
+               WRITE(IPR,979) 
+            ELSE 
+               WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),    &
+               TAVEL(L),IPTH(L),(ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L),  &
+     &         I=1,NISOTPL)                                           
+            ENDIF 
+         ENDDO
+      ENDIF 
+      ENDIF 
+!                                                                       
+!                                                                       
+      IF (NISOTPL.GT.7) THEN 
+         DO MLO = 8, NISOTPL, 8 
+            MHI = MLO+7 
+            MHI = MIN(MHI,NMOL) 
+            IF (NLAYIS.LT.5) THEN 
+               WRITE (IPR,970) 
+            ELSE 
+               WRITE (IPR,945) XID,(YID(M),M=1,2) 
+            ENDIF 
+            IF (IFORM.EQ.1) THEN 
+               WRITE (IPR,998) (ISOTPL_HCODE(I),I=MLO,MHI)
+               DO L = 1, NLAYIS 
+                  IF (WDRAIR(L).EQ.0.0) THEN 
+                     WRITE(IPR,979) 
+                  ELSE 
+                     WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,       &
+                     PAVEL(L),TAVEL(L),IPTH(L),(ISOTPL_AMNT(MOLNUM(I),   &
+     &               ISOTPLNUM(I),L),I=MLO,MHI)                                           
+                  ENDIF 
+               ENDDO
+            ELSE 
+               WRITE (IPR,999) (ISOTPL_HCODE(I),I=MLO,MHI)
+               DO L = 1, NLAYIS 
+                  IF (WDRAIR(L).EQ.0.0) THEN 
+                     WRITE(IPR,979) 
+                  ELSE 
+                     WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,       &
+                     PAVEL(L),TAVEL(L),IPTH(L),(ISOTPL_AMNT(MOLNUM(I),   &
+     &               ISOTPLNUM(I),L),I=MLO,MHI)                                           
+                  ENDIF 
+               ENDDO
+            ENDIF 
+         ENDDO
+      ENDIF 
+
+      ENDIF 
+
       RETURN 
 !                                                                       
   900 FORMAT (1X,I1,I3,I5,F10.2,15A4) 
@@ -5556,8 +5943,13 @@
      &       IN COLUMN DENSITY')                                        
   920 FORMAT (I3) 
   921 FORMAT (I3,2E15.7) 
+  922 FORMAT (A16,2I5) 
+!                                                                       
   925 FORMAT (8E15.7) 
   927 FORMAT (8E10.3) 
+  928 FORMAT (10I5) 
+  929 FORMAT (7E10.3)
+!                                                                       
   930 FORMAT (I5,5X,I5) 
   932 FORMAT (/,'  THE CROSS-SECTION MOLECULES SELECTED ARE: ',/,/,(5X, &
      &        I5,3X,A))                                                 
@@ -5607,6 +5999,17 @@
   991 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,7X,1P,8E10.3,0P) 
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                  &
      &        '     *****  CROSS SECTIONS  *****      ')                
+  996 FORMAT ('0',40X,'ISOTOPOLOGUE MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,32X,  &
+     &        'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(I10,4X))                
+  997 FORMAT ('0',40X,'ISOTOPOLOGUE MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,29X,  &
+     &        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,I6,3X))              
+  998 FORMAT (/,'1',54X,'----------------------------------',           &
+     &         /,'0',47X,'ISOTOPOLOGUE MIXING RATIOS BY LAYER ',/,32X,               &
+     &        'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(I10,4X))                
+  999 FORMAT (/,'1',54X,'----------------------------------',           &
+     &         /,'0',47X,'ISOTOPOLOGUE MIXING RATIOS BY LAYER ',/,29X,               &
+     &        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,I6,3X))              
+!
  1000 FORMAT ('Layer',I2,': Changing molecule ',I2,' from ',E10.3,      &
      &          ' to 1.000E+20.')                                       
  1001 FORMAT (' ************************************************',/     &
@@ -5869,7 +6272,7 @@
 !-----------------------------------------------------------------------
 !                                                                       
       subroutine line_exception(ind,ipr,h_sub,mol,nmol,iso,iso_max) 
-                                                                        
+
       character*8 h_sub 
       dimension iso_max(*) 
                                                                         

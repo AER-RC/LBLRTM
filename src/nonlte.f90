@@ -75,7 +75,8 @@
      &              NLTEFL,LNFIL4,LNGTH4                                
       COMMON /R4SUB/ VLOF4,VHIF4,ILOF4,IST,IHIF4,LIMIN4,LIMOUT,ILAST,   &
      &               DPTMN4,DPTFC4,ILIN4,ILIN4T                         
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10) 
+
       common /cmol_nam/ cmol(mxmol),cspc(mxspc) 
       CHARACTER*6  CMOL,CSPC 
 !                                                                       
@@ -815,8 +816,9 @@
      &              NLTEFL,LNFIL4,LNGTH4                                
 !                                                                       
 !                                                                       
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
-      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,        &
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10) 
+!
+      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,10),SCOR(42,10),ALFMAX,      &
      &              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,    &
      &              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,     &
      &              PAVP2,RECTLC,TMPDIF,ILC                             
@@ -1383,8 +1385,9 @@
                                                                         
       COMMON /VBNLTE/ RATSTATE(MAXSTATE*Max_ISO,MXMOL),NUMSTATE(MXMOL) 
 !                                                                       
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
-      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,        &
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10) 
+!
+      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,10),SCOR(42,10),ALFMAX,      &
      &              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,    &
      &              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,     &
      &              PAVP2,RECTLC,TMPDIF,ILC                             
@@ -1724,7 +1727,7 @@
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),         &
      &                CF3(102),CER(102)                                 
       COMMON /IOU/ IOUT(250) 
-      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,        &
+      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,10),SCOR(42,10),ALFMAX,      &
      &              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,    &
      &              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,     &
      &              PAVP2,RECTLC,TMPDIF,ILC                             
@@ -2095,7 +2098,8 @@
 !                                                                       
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4  
 !                                                                       
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10) 
+!
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 !                                                                       
       REAL*8            HID,HMOLIL,HID1,HLINHD,VMNCPL,VMXCPL,EXTSPC 
@@ -2137,7 +2141,7 @@
 !                                                                       
       REAL L4TIM,L4TMR,L4TMS,LOTHER 
       DIMENSION MEFDP(64) 
-      DIMENSION SCOR(42,9),RHOSLF(mxmol),ALFD1(42,9) 
+      DIMENSION SCOR(42,10),RHOSLF(mxmol),ALFD1(42,10) 
       DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4) 
       DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2) !,AMOLB(250) 
 !                                                                       
