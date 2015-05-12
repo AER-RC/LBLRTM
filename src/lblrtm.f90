@@ -448,7 +448,7 @@
                                                                         
 !     -------------------------                                         
 !                                                                       
-      DIMENSION IDCNTL(15),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2) 
+      DIMENSION IDCNTL(16),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2) 
 !                                                                       
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &                AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,   &
@@ -481,7 +481,7 @@
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,    &
-     &                NLTEFL,LNFIL4,LNGTH4                              
+     &                NLTEFL,LNFIL4,LNGTH4,IBRD                              
       COMMON /MSACCT/ IOD,IDIR,ITOP,ISURF,MSPTS,MSPANL(MXLAY),          &
      &                MSPNL1(MXLAY),MSLAY1,ISFILE,JSFILE,KSFILE,        &
      &                LSFILE,MSFILE,IEFILE,JEFILE,KEFILE                
@@ -536,7 +536,8 @@
 !                                                                       
       DATA IDCNTL / ' HIRAC',' LBLF4',' CNTNM',' AERSL',' EMISS',       &
      &              ' SCNFN',' FILTR','  PLOT','  TEST','  IATM',       &
-     &              '  IMRG','  ILAS',' OPDEP',' XSECT','ISOTPL' /      
+     &              '  IMRG','  ILAS',' OPDEP',' XSECT','ISOTPL' ,      &
+     &              '  IBRD'/
 !                                                                       
       DATA CONE / '1'/,CTWO / '2'/,CTHREE / '3'/,CFOUR / '4'/,          &
      &     CA / 'A'/,CB / 'B'/,CC / 'C'/                                
@@ -667,7 +668,7 @@
 !                                                                       
       READ(IRD,925,END=80) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,           &
      &                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,    &
-     &                      IOD,IXSECT,IRAD,MPTS,NPTS,ISOTPL            
+     &                      IOD,IXSECT,IRAD,MPTS,NPTS,ISOTPL,IBRD            
 !                                                                       
                                                                         
       ICNTNM_sav = ICNTNM 
@@ -815,9 +816,9 @@
 !                                                                       
       JRAD = 1 
       IF (IRAD.NE.0) JRAD = -1 
-      WRITE (IPR,935) (IDCNTL(I),I=1,15) 
+      WRITE (IPR,935) (IDCNTL(I),I=1,16) 
       WRITE (IPR,940) IHIRAC,ILBLF4,ICNTNM_sav,IAERSL,IEMIT,ISCAN,      &
-     &    IFILTR,IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT,ISOTPL           
+     &    IFILTR,IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT,ISOTPL,IBRD           
 !                                                                       
       IF (IHIRAC.EQ.4) THEN 
          IF (IEMIT.NE.1) THEN 
@@ -1154,11 +1155,11 @@
   910 FORMAT (10A8) 
   915 FORMAT ('0',10A8,2X,2(1X,A8,1X)) 
   920 FORMAT ('0  TIME ENTERING LBLRTM  ',F15.4) 
-  925 FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4,4X,I1) 
+  925 FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4,4X,I1,4x,I1) 
 !                                                                       
   930 FORMAT (I1) 
   935 FORMAT (15(A6,3X)) 
-  940 FORMAT (1X,I4,14I9) 
+  940 FORMAT (1X,I4,15I9) 
 !                                                                       
   950 FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,               &
      &        '  CHANGE IEMIT TO 1 OR IHIRAC TO 1 ')                    

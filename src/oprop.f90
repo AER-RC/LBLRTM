@@ -894,7 +894,7 @@
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
       COMMON /IFIL/   IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,     &
      &                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,    &
-     &                NLTEFL,LNFIL4,LNGTH4                              
+     &                NLTEFL,LNFIL4,LNGTH4,IBRD                              
       COMMON /XSUB/   VBOT,VTOP,VFT,DUM(7) 
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502) 
@@ -1036,7 +1036,7 @@
 !     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS         
 !                                                                       
          VNU(I) = VNU(I)+RHORAT*PSHIFT(I) 
-         if(sum(brd_mol_flg(:,i)).gt.0) then
+         if(sum(brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then
             vnu(i) = vnu(i)+sum(rhoslf(1:mxbrdmol)*brd_mol_flg(:,i)* &
      &           (brd_mol_shft(:,i)-pshift(i)))
          endif
@@ -1050,7 +1050,7 @@
          HWHMSI = HWHMS(I)*TMPCOR 
          ALFL = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m) 
 
-         if(sum(brd_mol_flg(:,i)).gt.0) then
+         if(sum(brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then
             tmpcor_arr = tratio**brd_mol_tmp(:,i)
             alfa_tmp = brd_mol_hw(:,i)*tmpcor_arr
             alfsum = sum(rhoslf(1:mxbrdmol)*brd_mol_flg(:,i)*alfa_tmp)
@@ -2889,7 +2889,7 @@
      &               DPTFC,ILIN4,ILIN4T                                 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
-     &              NLTEFL,LNFIL4,LNGTH4                                
+     &              NLTEFL,LNFIL4,LNGTH4,IBRD                                
       COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4,lstdum 
       TYPE(LINE_DATA)  :: BUFR
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D 
@@ -3085,7 +3085,7 @@
          SHRUNK%EPP(IJ) = BUFR%EPP(I) 
           SHRUNK%MOL(IJ) = M 
 
-         if(sum(bufr%brd_mol_flg(:,i)).gt.0) then 
+         if(sum(bufr%brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then 
             shrunk%vnu(ij) = shrunk%vnu(ij)+sum(rhoslf(1:mxbrdmol)*bufr%brd_mol_flg(:,i) &
      &           *(bufr%brd_mol_shft(:,i)-bufr%pshift(i)))
          endif
@@ -3127,7 +3127,7 @@
          HWHMSI = BUFR%HWHM(I)*TMPCOR 
          SHRUNK%ALFA(IJ) = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m) 
 
-         if(sum(bufr%brd_mol_flg(:,i)).gt.0) then
+         if(sum(bufr%brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then
             tmpcor_arr = tratio**bufr%brd_mol_tmp(:,i)
             alfa_tmp = bufr%brd_mol_hw(:,i)*tmpcor_arr
             alfsum = sum(rhoslf(1:mxbrdmol)*bufr%brd_mol_flg(:,i)*alfa_tmp)
