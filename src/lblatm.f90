@@ -4394,6 +4394,8 @@
 !     ATMOSPHERIC PROFILE STORED IN /MDATA/                             
 !     ***************************************************************** 
 !                                                                       
+      USE phys_consts, ONLY: pi                                         
+!                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
