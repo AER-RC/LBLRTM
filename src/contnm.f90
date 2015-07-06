@@ -226,8 +226,8 @@
       RHOAVE = (PAVE/P0)*(T0/TAVE)                                      
       XKT = TAVE/RADCN2                                                 
                                                                         
-!     the amagat value is used for the broadenening component for a numb
-!     of the collision induced continua                                 
+!     the amagat value is used for the broadenening component for a
+!     number of the collision induced continua                                 
 !                                                                       
       amagat = (Pave/P0)*(273./Tave)                                    
 !                                                                       
@@ -247,7 +247,8 @@
                                                                         
       if (icflg.ne.-999) then                                           
                                                                         
-!     amounts except for species of interest and n2 have been set to zer
+!     amounts except for species of interest and n2 have been set to
+!     zero in lblrtm.
 !     wn2 must be set to zero here:                                     
                                                                         
          wn2 = 0.                                                       
@@ -308,14 +309,15 @@
 !                                                                       
 !     CORRECTION TO THE WATER VAPOR CONTINUUM    mt_ckd_2.4   Nov 2008  
 !                                                                       
-!     The following modifications to the water vapor continuum arise fro
-!     ARM measurements in the microwave and far-IR regions. Analyses of 
-!     in the microwave are based primarily on the two-channel MWR (23.8 
-!     at SGP, with supporting evidence from 150 GHz MWRHF measurements d
-!     COPS campaign and from 170 GHz GVRP measurements at SGP (V. H. Pay
-!     Mlawer and S. A. Clough). Measurements in the far-IR were from the
-!     NSA site, in the time surrounding and including the RHUBC-I campai
-!     and S. A. Clough).                                                
+!     The following modifications to the water vapor continuum arise
+!     from new analyses of ARM measurements in the microwave and far-IR
+!     regions. Analyses of measurements in the microwave are based 
+!     primarily on the two-channel MWR (23.8 and 31.4 GHz) at SGP, 
+!     with supporting evidence from 150 GHz MWRHF measurements during
+!     the COPS campaign and from 170 GHz GVRP measurements at SGP (V. H. 
+!     Payne, E. J. Mlawer and S. A. Clough). Measurements in the far-IR 
+!     were from the AERO_ext at the NSA site, in the time surrounding 
+!     and including the RHUBC-I campaign (J. Delamere and S. A. Clough).                                                
 !                                                                       
 !=======================================================================
 !                                                                       
@@ -400,7 +402,7 @@
          if ((V2.gt.-20.0).and.(V1.lt.20000.) .and. xfrgn.gt.0.) then   
                                                                         
 !-----------------------------------------------------------------------
-!           CORRECTION TO FOREIGN CONTINUUM   mt_ckd_2.4  Nov 2008    sa
+!           CORRECTION TO FOREIGN CONTINUUM   mt_ckd_2.4  Nov 2008   sac
 !-----------------------------------------------------------------------
                                                                         
             f0     = 0.06                                               
@@ -491,8 +493,8 @@
 !             and spectral line parameters including Hartmann's line    
 !             parameters for co2.                                       
 !             Based on recent validation studies, a scaling of the      
-!             continuum for v3 is required to achieve an acceptable resu
-!             at 2385 cm-1, the 'bandhead' of v3.                       
+!             continuum for v3 is required to achieve an acceptable 
+!             result at 2385 cm-1, the 'bandhead' of v3.                       
 !             Clough et al., presentation at EGU 2007                   
 !   *** mt_ckd_2.5  Adjustment to the original scaling made.            
 !                   (temperature dependence of continuum also added)    
@@ -619,9 +621,9 @@
 !                                                                       
 !     F. Thibault, V. Menoux, R. Le Doucen, L. Rosenman, J.-M. Hartmann,
 !        and Ch. Boulet,                                                
-!        Infrared collision-induced absorption by O2 near 6.4 microns fo
-!        atmospheric applications: measurements and emprirical modeling,
-!        Appl. Optics, 35, 5911-5917, (1996).                           
+!        Infrared collision-induced absorption by O2 near 6.4 microns
+!        for atmospheric applications: measurements and emprirical 
+!        modeling, Appl. Optics, 35, 5911-5917, (1996).                           
                                                                         
 !                                                                       
 !        Only calculate if V2 > 1340. cm-1 and V1 <  1850. cm-1         
@@ -637,7 +639,8 @@
 !                                                                       
             call o2_ver_1 (v1c,v2c,dvc,nptc,c0,tave)                    
 !                                                                       
-!           c0 are the oxygen absorption coefficients at temperature tav
+!           c0 are the oxygen absorption coefficients at temperature
+!           tave
 !              - these absorption coefficients are in units of          
 !                   [(cm^2/molec) 10^20)]/(cm-1  amagat)                
 !              - cm-1 in the denominator arises through the removal     
@@ -665,12 +668,12 @@
 !        continuum absorption", B. Mate, C. Lugez, G.T. Fraser, and     
 !        W.J. Lafferty, J. Geophys. Res., 104, 30,585-30,590, 1999.     
 !                                                                       
-!        The units of these continua coefficients are  1 / (amagat_O2*am
+!        Units of these coefficients are 1 / (amagat_O2*amagat_air)
 !                                                                       
 !        Also, refer to the paper "Observed  Atmospheric                
 !        Collision Induced Absorption in Near Infrared Oxygen Bands",   
 !        Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,    
-!        Journal of Geophysical Research (1997).                        
+!        Journal of Geophysical Research (1998).                        
 !                                                                       
 !        Only calculate if V2 > 7536. cm-1 and V1 <  8500. cm-1         
 !                                                                       
@@ -700,11 +703,11 @@
 !                                                                       
          endif                                                          
 !                                                                       
-!        O2 continuum formulated by Mlawer et al. over the spectral regi
-!        9100-11000 cm-1. Refer to the paper "Observed  Atmospheric     
-!        Collision Induced Absorption in Near Infrared Oxygen Bands",   
-!        Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,    
-!        Journal of Geophysical Research (1997).                        
+!        O2 continuum formulated by Mlawer et al. over the spectral
+!        region 9100-11000 cm-1. Refer to the paper "Observed  
+!        Atmospheric Collision Induced Absorption in Near Infrared 
+!        Oxygen Bands", Mlawer, Clough, Brown, Stephen, Landry, Goldman, 
+!        & Murcray, Journal of Geophysical Research (1998).                        
 !                                                                       
 !        Only calculate if V2 > 9100. cm-1 and V1 <  11000. cm-1        
 !                                                                       
@@ -726,15 +729,45 @@
 !                                                                       
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
 !                                                                       
-         endif                                                          
+         endif  
+                                                        
+! *******
+!        O2 A-band continuum formulated by Mlawer and Gombos based 
+!        on solar FTS measurements.
 !                                                                       
+!        Units of these coefficients are 1 / (amagat_O2*amagat_air)
+!                                                                       
+!        Only calculate if V2 > 12990.5 cm-1 and V1 < 13229.5 cm-1         
+!                                                                       
+         if ((V2.gt.12990.5).and.(V1.lt.13229.5).and. xo2cn.gt.0.) then    
+!                                                                       
+            tau_fac = xo2cn * (Wk(7)/xlosmt) * amagat 
+                                                                        
+!                                                                       
+            CALL O2INF3 (V1C,V2C,DVC,NPTC,C0)                           
+!                                                                       
+            DO 94 J = 1, NPTC                                           
+               C(J) = tau_fac * C0(J)                                   
+               VJ = V1C+DVC* REAL(J-1)                                  
+!                                                                       
+!              Radiation field                                          
+!                                                                       
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
+   94       CONTINUE                                                    
+!                                                                       
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+!                                                                       
+         endif
+                                                          
+! *******                                                                       
 !        O2 continuum formulated by Greenblatt et al. over the spectral 
-!        8797-29870 cm-1:  "Absorption Coefficients of Oxygen Between   
-!        330 and 1140 nm, G.D. Green blatt, J.J. Orlando, J.B. Burkholde
-!        and A.R. Ravishabkara,  J. Geophys. Res., 95, 18577-18582, 1990
+!        region 8797-29870 cm-1:  "Absorption Coefficients of Oxygen 
+!        Between 330 and 1140 nm, G.D. Greenblatt, J.J. Orlando, J.B. 
+!        Burkholder, and A.R. Ravishabkara,  J. Geophys. Res., 95, 
+!        18577-18582, 1990.
 !                                                                       
 !        The units conversion to (cm^2/molec)/atm(o2)  has been done in 
-!        subroutine o2_vis                                              
+!        subroutine o2_vis.                                             
 !                                                                       
 !        Only calculate if V2 > 15000. cm-1 and V1 <  29870. cm-1       
 !                                                                       
@@ -746,7 +779,7 @@
 !                                                                       
             CALL O2_vis (V1C,V2C,DVC,NPTC,C0)                           
 !                                                                       
-            DO 94 J = 1, NPTC                                           
+            DO 96 J = 1, NPTC                                           
                C(J) = C0(J)*ADJWO2                                      
                VJ = V1C+DVC* REAL(J-1)                                  
 !                                                                       
@@ -754,7 +787,7 @@
 !                                                                       
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
 !                                                                       
-   94       CONTINUE                                                    
+   96       CONTINUE                                                    
 !                                                                       
             CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
 !                                                                       
@@ -793,12 +826,13 @@
 !     Uodated 2004/09/22 based on:                                      
 !                                                                       
 !      Boissoles, J., C. Boulet, R.H. Tipping, A. Brown and Q. Ma,      
-!         Theoretical CAlculations of the Translation-Rotation          
+!         Theoretical Calculations of the Translation-Rotation          
 !         Collision-Induced Absorption in N2-N2, O2-O2 and N2-O2 Pairs, 
 !         J.Quant. Spec. Rad. Transfer, 82,505 (2003).                  
 !                                                                       
-!         The temperature dependence between the two reference temperatu
-!         has been assumed the same as that for the original continuum  
+!         The temperature dependence between the two reference 
+!         temperatures has been assumed the same as that for the 
+!         original continuum.
 !                                                                       
 !        THIS NITROGEN CONTINUUM IS IN UNITS OF 1./(CM AMAGAT^2)        
 !                                                                       
@@ -854,8 +888,8 @@
 !                                                                       
          if ((V2.gt.2085.0).and.(V1.lt.2670.).and. xn2cn.gt.0.) then    
 !                                                                       
-!           The absorption coefficients from the Lafferty et al. referen
-!           are for pure nitrogen (absorber and broadener)              
+!           The absorption coefficients from the Lafferty et al.
+!           reference are for pure nitrogen (absorber and broadener).              
 !                                                                       
 !           a_o2  represents the relative broadening efficiency of o2   
 !           a_h2o represents the relative broadening efficiency of h2o  
@@ -900,18 +934,19 @@
          endif 
         
                                                  
-!        ********  NITROGEN COLLISION INDUCED FUNDAMENTAL FIRST OVERTONE  ********    
+!        ********  NITROGEN COLLISION INDUCED FUNDAMENTAL FIRST OVERTONE
 !                                                                       
 !        version_1 of the Nitrogen Collision Induced First Overtone
 !                                                                       
-!        Shapiro and Gush (1966) modified by Mlawer and Gombos (2015) based on 
-!        comparisons with measurements from SGP solar FTS (TCCON network).
+!        Shapiro and Gush (1966) modified by Mlawer and Gombos (2015)
+!        based on comparisons with measurements from SGP solar FTS
+!        (TCCON network). 
 !                                                                       
-!        Only calculate if V2 > 4340. cm-1 and V1 <  4910. cm-1         
+!        Only calculate if V2 > 4340. cm-1 and V1 <  4910. cm-1.         
 !                                                                       
          if ((V2.gt.4340.0).and.(V1.lt.4910.).and. xn2cn.gt.0.) then    
 !                                                                       
-!           All species are assumed to have the same broadening efficiency.                                                            
+!        All species are assumed to have the same broadening efficiency.                                                            
 !           a_o2  represents the relative broadening efficiency of o2   
 !           a_h2o represents the relative broadening efficiency of h2o  
                                                                         
@@ -927,7 +962,8 @@
 !           Wn2 is in units of molec/cm2                                
 !           amagat is in units of amagats (air)                         
 !                                                                       
-!           The absorption coefficients are assumed to have no temperature dependence. 
+!           The absorption coefficients are assumed to have no 
+!           temperature dependence. 
 !                                                                       
             call n2_overtone1 (v1c,v2c,dvc,nptc,c0)                    
 !                                                                       
@@ -953,8 +989,8 @@
          endif                                                          
 !                                                                       
 !     ********** Rayleigh Scattering calculation **********             
-!                                                                       
-!     The effects of Rayleigh scattering are also included in module ! s
+!     (sac)                                                                  
+!     The effects of Rayleigh scattering are also included in module 
 !     lbllow.f with the aerosol/cloud properties.  In the case that     
 !     that lbllow.f is selected (iaersl .ne. 0), the decision has been  
 !     made to include this effect with the scattering processes,        
@@ -1035,15 +1071,15 @@
 !                                                                       
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4,CHEADING 
 !                                                                       
-      CHARACTER*18 cnam3(9),cnam4(31) 
-      CHARACTER*51 CINFO1(2,12),CINFO2(2,11),CINFO3(2,9),CINFO4(2,31) 
+      CHARACTER*18 cnam3(9),cnam4(32) 
+      CHARACTER*51 CINFO1(2,12),CINFO2(2,12),CINFO3(2,9),CINFO4(2,32) 
       CHARACTER*40 CHEADING(3,2) 
 !                                                                       
       WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,12) 
-      WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,11) 
+      WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,12) 
       WRITE (IPR,918) ((CHEADING(I,J),I=1,3),J=1,2) 
       WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9) 
-      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,31) 
+      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,32) 
 !                                                                       
       RETURN 
 !                                                                       
@@ -1060,8 +1096,8 @@
 !     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM    
 !                                                                       
       COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4,CHEADING 
-      CHARACTER*18 cnam3(9),cnam4(31) 
-      CHARACTER*51 CINFO1(2,12),CINFO2(2,11),CINFO3(2,9),CINFO4(2,31) 
+      CHARACTER*18 cnam3(9),cnam4(32) 
+      CHARACTER*51 CINFO1(2,12),CINFO2(2,12),CINFO3(2,9),CINFO4(2,32) 
       CHARACTER*40 CHEADING(3,2) 
 !                                                                       
       DATA cnam3/                                                       &
@@ -1106,7 +1142,8 @@
      &     ' mt_ckd_2.5.1 11.8',                                        &
      &     ' mt_ckd_2.5.2 12.0',                                        &
      &     ' mt_ckd_2.5.3  -  ',                                        &
-     &     ' mt_ckd_2.6   12.4',                                        &
+     &     ' mt_ckd_2.7   12.4',                                        &
+     &     ' mt_ckd_2.8   12.5',                                        &
      &     '                  '/                                        
 !           123456789-123456789-123456789-123456789-123456789-1         
 !                                                                       
@@ -1115,7 +1152,7 @@
      &     '                                                   ',       &
      &     '                                                   ',       &
      &     '                                                   ',       &
-     &     '*** CONTINUA mt_ckd_2.5.2                          ',       &
+     &     '*** CONTINUA mt_ckd_2.8                            ',       &
      &     '                                                   ',       &
      &     '                                                   ',       &
      &     '            Most recent significant change         ',       &
@@ -1134,7 +1171,7 @@
      &     '            AIR   (T)  2085 -  2670 CM-1           ',       &
      &     '   ckd_2.4.1  - Lafferty et al.          (Mar 1998)',       &      
      &     '            AIR        4340 -  4910 CM-1           ',       &
-     &     '   mt_ckd_2.6  - Mlawer and Gombos       (May 2015)' /      
+     &     '   mt_ckd_2.7 - Mlawer and Gombos        (May 2015)' /      
 !           123456789-123456789-123456789-123456789-123456789-1         
 !                                                                       
       DATA CINFO2/                                                      &
@@ -1144,6 +1181,8 @@
      &     '   ckd_2.4.1  - Mate et al.              (Feb 2000)',       &
      &     '            AIR        9100 - 11000 CM-1',                  &
      &     '   ckd_2.4.1  - Mlawer et al.            (Aug 1999)',       &
+     &     '            AIR       12990 - 13230 CM-1 A-band',           &
+     &     '   mt_ckd_2.8 - Mlawer and Gombos        (Jun 2015)',       &
      &     '            O2        15000 - 29870 CM-1',                  &
      &     '   ckd_2.4.2  - Greenblatt et al.        (May 2000)',       &
      &     '            O2/N2     36000 -  >>>> CM-1 HERZBERG  ',       &
@@ -1244,6 +1283,8 @@
      &     '                                         (Mar 2015)',       &
      &     '  N2 1st overtone - Shapiro & Gush (1966) modified ',       &
      &     'by Mlawer and Gombos based on solar FTS  (Apr 2015)',       &
+     &     '  O2 A-band - Collision-induced absorption derived ',       &
+     &     'by Mlawer/Gombos from solar FTS          (Jun 2015)',       &
      &     '  -------------------------------------------------',       &
      &     '---------------------------------------------------'/       
 !                                                                       
@@ -4156,10 +4197,10 @@
 !                                                                       
 !     Nitrogen Collision Induced Fundamental                            
                                                                         
-!     Lafferty, W.J., A.M. Solodov,A. Weber, W.B. Olson and J._M. Hartma
-!        Infrared collision-induced absorption by N2 near 4.3 microns fo
-!        atmospheric applications: measurements and emprirical modeling,
-!         Appl. Optics, 35, 5911-5917, (1996).                          
+!     Lafferty, W.J., A.M. Solodov,A. Weber, W.B. Olson and J._M. 
+!        Hartmann, Infrared collision-induced absorption by N2 near 4.3 
+!        microns for atmospheric applications: measurements and 
+!         emprirical modeling, Appl. Optics, 35, 5911-5917, (1996).                          
 !                                                                       
       DATA  T_272/ 272./, T_228/ 228./ 
 !                                                                       
@@ -4197,7 +4238,7 @@
          c(j) = xn2_272(i) *(xn2_228(i)/xn2_272(i))**xtfac 
                                                                         
          else 
-!           linear interpolation  (note xn2_272 or xn2_228 is zero to ar
+!           linear interpolation  (xn2_272 or xn2_228 = 0 to get here)
                                                                         
          c(j) = xn2_272(i) + (xn2_228(i)-xn2_272(i))*xt_lin 
                                                                         
@@ -4318,7 +4359,8 @@
                                                                         
 !     Shapiro and Gush (1966) modified by Mlawer and Gombos (2015).    
 
-!     The absorption coefficients are for pure nitrogen (absorber and broadener).   
+!     The absorption coefficients are for pure nitrogen (absorber and 
+!     broadener.
 !                                                                       
       DVC = DVS 
       V1C = V1ABS-DVC 
@@ -8649,10 +8691,10 @@
 !     Oxygen Collision Induced Fundamental                              
                                                                         
 !     F. Thibault, V. Menoux, R. Le Doucen, L. Rosenman, J.-M. Hartmann,
-!                                                         and Ch. Boulet
-!        Infrared collision-induced absorption by O2 near 6.4 microns fo
-!        atmospheric applications: measurements and emprirical modeling,
-!         Appl. Optics, 35, 5911-5917, (1996).                          
+!     and Ch. Boulet
+!     Infrared collision-induced absorption by O2 near 6.4 microns for
+!     atmospheric applications: measurements and emprirical modeling,
+!     Appl. Optics, 35, 5911-5917, (1996).                          
                                                                         
       DATA T_0/ 296./, xlosmt/ 2.68675e+19/ 
 !                                                                       
@@ -8662,8 +8704,9 @@
 !                                                                       
       factor = (1.e+20 /xlosmt) 
 !                                                                       
-!     A factor of 0.21, the mixing ration of oxygen, in the Thibault et 
-!     formulation is not included here.  This factor is in the column am
+!     A factor of 0.21, the mixing ratio of oxygen, in the Thibault et
+!     al. formulation is not included here.  This factor is in the 
+!     column amount.
 !                                                                       
       DVC = DVS 
       V1C = V1ABS-DVC 
@@ -8777,8 +8820,8 @@
 !        continuum absorption", B. Mate, C. Lugez, G.T. Fraser, and     
 !        W.J. Lafferty, J. Geophys. Res., 104, 30,585-30,590, 1999.     
 !                                                                       
-!        The units of these continua coefficients are  1 / (amagat_O2*am
-!                                                                       
+!        The units of these continua coefficients are  
+!         1 / (amagat_O2*amagat_air).                                
 !        Also, refer to the paper "Observed  Atmospheric                
 !        Collision Induced Absorption in Near Infrared Oxygen Bands",   
 !        Mlawer, Clough, Brown, Stephen, Landry, Goldman, & Murcray,    
@@ -8990,7 +9033,115 @@
          RETURN 
 !                                                                       
       END                                           
+!     --------------------------------------------------------------    
+!                                                                       
+      SUBROUTINE O2INF3 (V1C,V2C,DVC,NPTC,C) 
+!                                                                       
+      Use lblparams, ONLY: n_absrb 
+      IMPLICIT REAL*8           (V) 
+!                                                                       
+      COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
+      DIMENSION C(*) 
                                                                         
+      COMMON /o2inf3_aband/ V1S,V2S,DVS,NPTS,xo2inf3(240) 
+                                                                        
+!                                                                       
+!        O2 A-band continuum formulated by Mlawer and Gombos based on
+!        solar FTS measurements (TCCON at SGP).  Spectral range is 
+!        12990.5 - 13229.5 cm-1.
+!         
+!   ***********                                                         
+                                                                        
+      DVC = DVS 
+!                                                                       
+      V1C = V1ABS-DVC 
+      V2C = V2ABS+DVC 
+!                                                                       
+      IF (V1C.LT.V1S) then 
+         I1 = -1 
+         else 
+         I1 = (V1C-V1S)/DVS + 0.01 
+         end if 
+!                                                                       
+         V1C = V1S + DVS*REAL(I1-1) 
+         I2 = (V2C-V1S)/DVS + 0.01 
+         NPTC = I2-I1+3 
+         IF (NPTC.GT.NPTS) NPTC=NPTS+4 
+         V2C = V1C + DVS*REAL(NPTC-1) 
+!                                                                       
+         DO 10 J = 1, NPTC 
+            I = I1+(J-1) 
+            C(J) = 0. 
+            IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10 
+            vj = v1c + dvc* REAL(j-1) 
+            C(J) = xo2inf3(I)/vj 
+   10    END DO 
+!                                                                       
+         RETURN 
+!                                                                       
+      END                                           
+!     --------------------------------------------------------------    
+!                                                                       
+      BLOCK DATA bo2inf3 
+                                                                        
+      IMPLICIT REAL*8 (V) 
+                                                                        
+      COMMON /o2inf3_aband/ V1,V2,DV,NPT,x02inf3(240)                                    
+                                                                        
+      DATA V1,V2,DV,NPT /12990.5, 13229.5, 1.0, 240/ 
+
+      DATA x02inf3/                                                     &
+     &      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00,  &
+     &      2.100E-10,  4.900E-10,  7.800E-10,  1.080E-09,  1.390E-09,  &
+     &      1.714E-09,  2.036E-09,  2.357E-09,  2.679E-09,  3.000E-09,  &
+     &      3.321E-09,  3.643E-09,  3.964E-09,  4.286E-09,  4.607E-09,  &
+     &      4.929E-09,  5.250E-09,  5.571E-09,  5.893E-09,  6.214E-09,  &
+     &      6.536E-09,  6.857E-09,  7.179E-09,  7.500E-09,  7.830E-09,  &
+     &      8.200E-09,  8.600E-09,  9.030E-09,  9.490E-09,  9.980E-09,  &
+     &      1.051E-08,  1.104E-08,  1.160E-08,  1.216E-08,  1.272E-08,  &
+     &      1.328E-08,  1.384E-08,  1.441E-08,  1.499E-08,  1.557E-08,  &
+     &      1.617E-08,  1.676E-08,  1.735E-08,  1.804E-08,  1.872E-08,  &
+     &      1.945E-08,  2.023E-08,  2.108E-08,  2.203E-08,  2.312E-08,  &
+     &      2.434E-08,  2.568E-08,  2.708E-08,  2.853E-08,  3.023E-08,  &
+     &      3.178E-08,  3.338E-08,  3.503E-08,  3.673E-08,  3.848E-08,  &
+     &      4.030E-08,  4.250E-08,  4.510E-08,  4.766E-08,  5.053E-08,  &
+     &      5.360E-08,  5.675E-08,  5.990E-08,  6.320E-08,  6.657E-08,  &
+     &      7.000E-08,  7.348E-08,  7.700E-08,  8.060E-08,  8.427E-08,  &
+     &      8.800E-08,  9.174E-08,  9.553E-08,  9.950E-08,  1.035E-07,  &
+     &      1.075E-07,  1.117E-07,  1.157E-07,  1.198E-07,  1.237E-07,  &
+     &      1.277E-07,  1.316E-07,  1.354E-07,  1.391E-07,  1.427E-07,  &
+     &      1.462E-07,  1.496E-07,  1.528E-07,  1.560E-07,  1.590E-07,  &
+     &      1.619E-07,  1.644E-07,  1.668E-07,  1.689E-07,  1.710E-07,  &
+     &      1.728E-07,  1.744E-07,  1.758E-07,  1.771E-07,  1.780E-07,  &
+     &      1.788E-07,  1.795E-07,  1.800E-07,  1.798E-07,  1.793E-07,  &
+     &      1.784E-07,  1.770E-07,  1.748E-07,  1.725E-07,  1.700E-07,  &
+     &      1.670E-07,  1.635E-07,  1.597E-07,  1.550E-07,  1.480E-07,  &
+     &      1.390E-07,  1.300E-07,  1.107E-07,  9.830E-08,  9.200E-08,  & 
+     &      8.700E-08,  8.900E-08,  9.900E-08,  1.080E-07,  1.240E-07,  &
+     &      1.700E-07,  2.400E-07,  2.590E-07,  2.630E-07,  2.650E-07,  &
+     &      2.650E-07,  2.610E-07,  2.520E-07,  2.400E-07,  2.280E-07,  &
+     &      2.150E-07,  2.000E-07,  1.930E-07,  1.860E-07,  1.780E-07,  &
+     &      1.720E-07,  1.690E-07,  1.660E-07,  1.640E-07,  1.620E-07,  &
+     &      1.600E-07,  1.580E-07,  1.550E-07,  1.540E-07,  1.520E-07,  &
+     &      1.480E-07,  1.400E-07,  1.260E-07,  1.130E-07,  9.700E-08,  &
+     &      8.124E-08,  7.287E-08,  6.536E-08,  5.863E-08,  5.300E-08,  &
+     &      4.800E-08,  4.390E-08,  4.067E-08,  3.791E-08,  3.533E-08,  &
+     &      3.293E-08,  3.070E-08,  2.861E-08,  2.773E-08,  2.709E-08,  &
+     &      2.648E-08,  2.587E-08,  2.528E-08,  2.470E-08,  2.413E-08,  &
+     &      2.358E-08,  2.304E-08,  2.252E-08,  2.200E-08,  2.150E-08,  &
+     &      2.101E-08,  2.053E-08,  2.006E-08,  1.960E-08,  1.915E-08,  &
+     &      1.871E-08,  1.826E-08,  1.781E-08,  1.736E-08,  1.691E-08,  &
+     &      1.646E-08,  1.601E-08,  1.556E-08,  1.511E-08,  1.466E-08,  &
+     &      1.421E-08,  1.376E-08,  1.331E-08,  1.286E-08,  1.241E-08,  &
+     &      1.196E-08,  1.151E-08,  1.106E-08,  1.061E-08,  1.016E-08,  &
+     &      9.710E-09,  9.260E-09,  8.810E-09,  8.360E-09,  7.910E-09,  &
+     &      7.460E-09,  7.010E-09,  6.560E-09,  6.110E-09,  5.660E-09,  &
+     &      5.210E-09,  4.760E-09,  4.310E-09,  3.860E-09,  3.410E-09,  &
+     &      2.960E-09,  2.510E-09,  2.060E-09,  1.610E-09,  1.160E-09,  &
+     &      7.100E-10,  2.600E-10,  0.000E+00,  0.000E+00,  0.000E+00/  
+                                                                        
+      END                                           
+                                                                                                                                                
 !     --------------------------------------------------------------    
 !                                                                       
       SUBROUTINE O2_vis (V1C,V2C,DVC,NPTC,C) 
@@ -9005,14 +9156,15 @@
       DATA XLOSMT / 2.68675E+19 / 
 !                                                                       
 !        O2 continuum formulated by Greenblatt et al. over the spectral 
-!        8797-29870 cm-1:  "Absorption Coefficients of Oxygen Between   
-!        330 and 1140 nm, G.D. Greenblatt, J.J. Orlando, J.B. Burkholder
-!        and A.R. Ravishabkara,  J. Geophys. Res., 95, 18577-18582, 1990
+!        region 8797-29870 cm-1:  "Absorption Coefficients of Oxygen 
+!        Between 330 and 1140 nm, G.D. Greenblatt, J.J. Orlando, J.B. 
+!        Burkholder and A.R. Ravishabkara,  J. Geophys. Res., 95, 
+!        18577-18582, 1990.
 !                                                                       
 !        The units conversion  is to (cm^2/molec)/atm(o2)               
 !                                                                       
-!      these are the conditions reported in the paper by Greenblatt et a
-!     the spectrum of Fig. 1.                                           
+!      These are the conditions reported in the paper by Greenblatt et
+!      al. for the spectrum of Fig. 1.                                           
 !                                                                       
 !     conditions:  55 atm.; 296 K; 89.5 cm path                         
 !                                                                       
@@ -9608,7 +9760,7 @@
       enddo 
 !                                                                       
 !        ----------------------------------------------------------     
-!        Linearly interpolate TES cloud effective optical depth onto con
+!        Linearly interpolate TES cloud effective OD onto continuum grid
 !        ----------------------------------------------------------     
                                                                         
       ilo = 1 
