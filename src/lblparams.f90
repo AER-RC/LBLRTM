@@ -4,7 +4,7 @@
 !     created:   $Date$
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
+! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2012         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -14,8 +14,7 @@
 ! |  copyright notice is reproduced on any copy made and appropriate         |
 ! |  acknowledgment is given to AER. This software or any modified version   |
 ! |  of this software may not be incorporated into proprietary software or   |
-! |  commercial software offered for sale without the express written        |
-! |  consent of AER.                                                         |
+! |  commercial software offered for sale.                                   |
 ! |                                                                          |
 ! |  This software is provided as is without any express or implied          |
 ! |  warranties.                                                             |
@@ -27,6 +26,7 @@ MODULE lblparams   ! Parameters for array dimensions in lblrtm
   implicit none
 
       integer, parameter :: MXMOL=47, MXSPC=5, Max_ISO=20, MXISOTPL=10
+!
       integer, parameter :: MXFSC=600, MXLAY=MXFSC+3, MX_XS=38
       integer, parameter :: MXZMD=6000, MXPDIM=MXLAY+MXZMD
       integer, parameter :: IM2=MXPDIM-2, MXTRAC=41
@@ -440,7 +440,7 @@ MODULE lblparams   ! Parameters for array dimensions in lblrtm
      &     0.000e00, 0.000e00, 0.000e00, 0.000e00, 0.000e00/
 ! H2
       data isotpl_abd(45,:) /                                           &
-     &     9.997e-1, 3.114e-3, 0.000e00, 0.000e00, 0.000e00,            &
+     &     9.997e-1, 3.114e-4, 0.000e00, 0.000e00, 0.000e00,            &
      &     0.000e00, 0.000e00, 0.000e00, 0.000e00, 0.000e00/
 ! CS
       data isotpl_abd(46,:) /                                           &

@@ -4,7 +4,7 @@
 !     created:   $Date$
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
+! |  Copyright ©, Atmospheric and Environmental Research, Inc., 20155        |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -4073,7 +4073,7 @@
 !                                                                       
       USE phys_consts, ONLY: pi
       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,             &
-     &                     MXISOTPL,                                     &
+     &                     MXISOTPL, ISOTPL_ABD, ISOTPL_NUM,             &
      &                     MXMOL, MX_XS, MXTRAC, IPTS
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -4369,10 +4369,14 @@
          WXM(M) = XAMNT(M,LAYER) 
       enddo 
 
+! Isotopologue column density scaled by Hitran ratio
       DO I = 1,NISOTPL
          M = MOLNUM(I)
-         ISOTPL = ISOTPLNUM(I)
-         WKI(M,ISOTPL) = WKL_ISOTPL(M,ISOTPL,LAYER)
+!         ISOTPL = ISOTPLNUM(I)
+         DO J = 1, ISOTPL_NUM(M)
+            WKI(M,J) = WKL_ISOTPL(M,J,LAYER) &
+     &                 / ISOTPL_ABD(M,J)
+         ENDDO
       ENDDO
 !                                                                       
       H2OSLF = H2OSL(LAYER) 
@@ -4455,7 +4459,7 @@
       SUBROUTINE PATH 
 !                                                                       
       USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,             &
-     &                     MXISOTPL, ISOTPL_ABD,                         &
+     &                     MXISOTPL, ISOTPL_ABD, ISOTPL_NUM,             &
      &                     MXMOL, MX_XS, MXTRAC
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -4539,11 +4543,16 @@
       COMMON /OPPATH_ISOTPL/ WKL_ISOTPL(MXMOL,MXISOTPL,MXLAY)
 !                                                                       
       INTEGER :: ISOTPL_HCODE(MXMOL*MXISOTPL)
+      INTEGER :: INPTYP(MXMOL*MXISOTPL),MOLLST(MXMOL)
+      INTEGER :: IDXM(MXMOL*MXISOTPL),IDXJ(MXMOL*MXISOTPL)
+      REAL :: ISOTPL_ABD_SUM(MXMOL),ISOTPL_ABD_SUBSUM(MXMOL)
       REAL :: ISOTPL_AMNT(MXMOL,MXISOTPL,MXLAY)
+      REAL :: ISOTPL_AMNT_SUM(MXMOL)
 !                                                                       
       CHARACTER*20 HEAD20 
       CHARACTER*6 MOLID 
       COMMON /MOLNAM/ MOLID(0:MXMOL) 
+      CHARACTER*2 MOLSTR 
       CHARACTER*7 HEAD7 
       CHARACTER*6 HOLN2 
       CHARACTER*5 HEAD5 
@@ -5056,149 +5065,191 @@
       IF (ISOTPL.EQ.1) THEN 
          READ (IRD,928) NISOTPL
          READ (IRD,928) (ISOTPL_HCODE(I),I=1,NISOTPL)
-!           print*, 'i, isotpl_hcode, molnum, isotplnum = '
+         MOLCOUNT = 1
          DO I = 1,NISOTPL
             MOLNUM(I) = FLOOR(0.1*ISOTPL_HCODE(I))
             ISOTPLNUM(I) = INT((0.1*ISOTPL_HCODE(I)-MOLNUM(I))*10.)
             IF (ISOTPLNUM(I).EQ.0) ISOTPLNUM(I)=10
             ISOTPL_FLAG(MOLNUM(I),ISOTPLNUM(I)) = 1
             ISOTPL_MAIN_FLAG(MOLNUM(I)) = 1
-!             print'(4i7)', i, isotpl_hcode(i), molnum(i), isotplnum(i)
+            IF (I.EQ.1) THEN
+               MOLLST(MOLCOUNT) = MOLNUM(I)
+            ELSE 
+               IF (MOLNUM(I).NE.MOLNUM(I-1)) THEN
+                  MOLCOUNT = MOLCOUNT + 1
+                  IF (MOLCOUNT.GT.MXMOL) THEN
+                     STOP 'MOLCOUNT GREATER THAN MXMOL IN PATH'
+                  ENDIF
+                  MOLLST(MOLCOUNT) = MOLNUM(I)
+               ENDIF
+            ENDIF
          ENDDO
          READ (IRD,928) NLAYIS
          DO L = 1,NLAYIS
             READ (IRD,929) (ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L),&
      &                      I=1,NISOTPL)
+!     Check input for consistent type for each specified molecular species;
+            DO I = 1,NISOTPL
+               INPTYP(I) = 0
+               IF (ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L).LE.1.) THEN 
+                  INPTYP(I) = 1
+               ELSE
+               ENDIF
+            ENDDO
+            DO I = 1,NISOTPL-1
+               DO J = I+1,NISOTPL
+                 IF (MOLNUM(I).EQ.MOLNUM(J).AND.INPTYP(I).NE.INPTYP(J)) THEN 
+                   WRITE(IPR,921) L,ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L), &
+     &                              ISOTPL_AMNT(MOLNUM(J),ISOTPLNUM(J),L)
+                   WRITE(*,921) L,ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L), &
+     &                              ISOTPL_AMNT(MOLNUM(J),ISOTPLNUM(J),L)
+                   WRITE(MOLSTR,'(I2)') MOLNUM(I)
+                   STOP 'ISOTPL_AMNT INPUT TYPES DIFFERENT FOR MOLECULE ' &
+     &                   //MOLSTR
+                ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+!     Get sum of isotopologue Hitran ratios for each molecule
+! h
+         DO I=1,MXMOL
+            ISOTPL_ABD_SUM(I) = 0.0
+            DO J=1,ISOTPL_NUM(I)
+               ISOTPL_ABD_SUM(I) = ISOTPL_ABD_SUM(I) + ISOTPL_ABD(I,J)
+            ENDDO
          ENDDO
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-!             MIXING RATIO INPUT FOR ISOTOPOLOGUE MOLECULES          
+!             COLUMN AMOUNT INPUT FOR ISOTOPOLOGUE MOLECULES  
 !                                                                       
-!             CONVERSION TO COLUMN AMOUNT
+!             OR CONVERSION FROM FRACTION TO COLUMN AMOUNT
 !                                                                       
 !                                                                       
-!     The column amount of dry air ("WDRAIR") has already been          
-!     calculated above, so just convert all cross sectional             
-!     molecules which may be in mixing ratio to molecular density       
-!     using WDRAIR(L)                                                   
+!     Isotopologue amounts are specified either as column amounts
+!     or as fractions (in terms of moleulces, not mass) for that
+!     species.  For column amount input, the total column amount
+!     for that species is allowed to increase.  For fractional 
+!     input, fractions of all isotopologues are adjusted to force 
+!     the total column amount for that species to remain fixed, 
+!     and all isotopologues are activated for that species.
+!     Adjusted fractions are used to define the column amount for
+!     each isotopologue from the column amount of the primary 
+!     molecule amount input earlier. 
 !                                                                       
-!     NOTE that if ISOTPL_AMNT is less than one, then mixing ratio,
-!                  ISOTPL_AMNT greater than one is not permitted
+!     NOTE that if ISOTPL_AMNT greater than one, then column density,
+!                  ISOTPL_AMNT is less than or equal to one, then fraction
 !                                                                       
-         IF (IATM.EQ.0) THEN
+         DO L = 1,NLAYIS
 
-!            do l = 1, nlayis
-!              print*, 'layer, wkl(1,l), wdrair(l):'
-!              print'(i5, 1p7e10.3)', l, wkl(1,l), wdrair(l)
-!            enddo
-
-            DO L = 1,NLAYIS
-               DO I = 1,NISOTPL
-                  M = MOLNUM(I)
-                  ISOTPL = ISOTPLNUM(I)
-                  IF (WDRAIR(L).EQ.0.0 &
-     &               .AND. ISOTPL_AMNT(M,ISOTPL,L).LT.1. &
-     &               .AND. ISOTPL_AMNT(M,ISOTPL,L).NE.0.0) THEN                                          
-                     WRITE(IPR,921) L,ISOTPL_AMNT(M,ISOTPL,L),WDRAIR(L) 
-                     WRITE(*,921) L,ISOTPL_AMNT(M,ISOTPL,L),WDRAIR(L) 
-                     STOP 'ISOTPL_AMNT NOT PROPERLY SPECIFIED IN PATH' 
-                  ENDIF 
-                  IF (ISOTPL_AMNT(M,ISOTPL,L).LT.1.) &
-     &               WKL_ISOTPL(M,ISOTPL,L) = (ISOTPL_AMNT(M,ISOTPL,L) &
-     &                               *WDRAIR(L))/ISOTPL_ABD(M,ISOTPL) 
+            DO I = 1,MOLCOUNT
+               M = MOLLST(I)
+!               ISOTPL = ISOTPLNUM(I)
+! Generate sums needed for fractional input
+               ISOTPL_ABD_SUBSUM(M) = ISOTPL_ABD_SUM(M)
+               ISOTPL_AMNT_SUM(M) = 0.0
+               DO J = 1, ISOTPL_NUM(M)
+                  IF (ISOTPL_FLAG(M,J).EQ.1 .AND. &
+     &                ISOTPL_AMNT(M,J,L).LE.1.) THEN
+! p
+                      ISOTPL_ABD_SUBSUM(M) = ISOTPL_ABD_SUBSUM(M) - &
+     &                                       ISOTPL_ABD(M,J)
+! s
+                      ISOTPL_AMNT_SUM(M) = ISOTPL_AMNT_SUM(M) + &
+     &                                     ISOTPL_AMNT(M,J,L)  
+                  ENDIF
                ENDDO
+
+! Test to check sum of specified fractions less than sum of Hitran ratios
+               IF (ISOTPL_AMNT_SUM(M) .GT. ISOTPL_ABD_SUM(M)) THEN 
+                  WRITE(IPR,'(2I3,2E15.7)') L, I, ISOTPL_AMNT_SUM(M), &
+     &                           ISOTPL_ABD_SUM(M) 
+                  WRITE(*,'(2I3,2E15.7)') L, I, ISOTPL_AMNT_SUM(M), &
+     &                         ISOTPL_ABD_SUM(M)
+                  STOP 'ISOTPL_AMNT NOT PROPERLY SPECIFIED IN PATH; ' &
+     &                //'SUM EXCEEDS SUM OF HITRAN RATIOS'
+               ENDIF 
+
+               DO J = 1, ISOTPL_NUM(M)
+! Generate isotopologue column amounts
+! Isotopologue column density input for selected molecules/isotopologues
+! Total column amount for parent species increases
+                  IF (ISOTPL_AMNT(M,J,L).GT.1. .AND. &
+     &                ISOTPL_FLAG(M,J).EQ.1) THEN
+                    WKL_ISOTPL(M,J,L) = ISOTPL_AMNT(M,J,L)
+                  ENDIF
+
+! Isotopologue fraction input
+! Total column amount for parent species remains constant
+! Isotopologue fraction scaled by Hitran ratio and converted to column density
+                  IF (ISOTPL_AMNT(M,J,L).LE.1.) THEN
+! Selected molecules/isotopologues; unmodified fractions
+                    IF (ISOTPL_FLAG(M,J).EQ.1) THEN
+! g
+                      ADJ_FRAC = ISOTPL_AMNT(M,J,L)
+                    ENDIF
+
+! Unselected molecules/isotopologues; modified fractions
+                    IF (ISOTPL_FLAG(M,J).EQ.0) THEN
+! Test to prevent divide by zero, though code is not likely to reach this 
+! point in that condition
+                      IF (ISOTPL_ABD_SUBSUM(M) .EQ. 0.0) THEN 
+                        WRITE(IPR,'(2I3,E15.7)') L, I, &
+     &                           ISOTPL_ABD_SUBSUM(M) 
+                        WRITE(*,'(2I3,E15.7)') L, I, &
+     &                           ISOTPL_ABD_SUBSUM(M) 
+                        STOP 'ISOTPL_ABD_SUBSUM IS ZERO IN PATH'
+                      ENDIF 
+! g
+                      ADJ_FRAC = &
+     &                    (ISOTPL_ABD_SUM(M) - ISOTPL_AMNT_SUM(M)) &
+     &                  * (ISOTPL_ABD(M,J) / ISOTPL_ABD_SUBSUM(M))
+                    ENDIF
+
+! Generate isotopologue column density with fractions, g, from
+! column density for primary molecule input earlier
+                    WKL_ISOTPL(M,J,L) = WKL(M,L) * ADJ_FRAC
+
+                  ENDIF
+
+               ENDDO
+
             ENDDO
 
-         ENDIF
+         ENDDO
 
-         IF (IATM.EQ.1) THEN
-
-!            print*, 'layer, wkl(1,l), wdrair_isotpl:'
-!            print*, 'layer, molec, isotpl, isotpl_amnt, wdrair_isotpl,' &
-!     &             //'isotpl_abd, wkl_isotpl, wkl:'
-
-            IF (NLAYIS.NE.NLAYRS) THEN
-               WRITE(IPR,922) 'NLAYRS, NLAYIS = ', NLAYRS, NLAYIS
-               WRITE(*,922) 'NLAYRS, NLAYIS = ', NLAYRS, NLAYIS
-               STOP 'NUMBER OF ISOTOPOLOGUE INPUT LAYERS NOT PROPERLY '&
-      &           //'SPECIFIED IN PATH' 
+! Activate all isotopologues for molecules with selected isotopologues
+! provided as fractional input
+         DO I = 1,NISOTPL
+            M = MOLNUM(I)
+            IF (MAXVAL(ISOTPL_FLAG(M,1:MXISOTPL)).GT.0.AND.&
+     &          INPTYP(I).EQ.1) THEN
+               DO J = 1, ISOTPL_NUM(M)
+                  ISOTPL_FLAG(M,J) = 1 
+               ENDDO
             ENDIF
-
-            DO L = 1,NLAYIS
-
-               WDNSTY_ISOTPL = WBRODL(L) 
-               WMXRAT_ISOTPL = 0.0 
-               WDRAIR_ISOTPL = 0.0 
-                                                                        
-               DO M = 2,NMOL 
-                  IF (WKL(M,L).GT.1) THEN 
-                     WDNSTY_ISOTPL = WDNSTY_ISOTPL + WKL(M,L) 
-                  ELSE 
-                     WMXRAT_ISOTPL = WMXRAT_ISOTPL + WKL(M,L) 
-                  ENDIF 
-               ENDDO
-!                                                                       
-!        EXECUTE TESTS TO ENSURE ALL COMBINATION OF COLUMN DENSITIES    
-!        AND MIXING RATIOS FOR EACH LAYER HAVE BEEN PROPERLY SPECIFIED. 
-                                                                        
-!        IF THE LAYER SUM OF MIXING RATIOS IS LESS THAN ONE (WHICH      
-!        IT SHOULD BE, GIVEN THAT WBROAD CONTRIBUTES TO THE DRY AIR     
-!        MIXING RATIO), THEN COMPUTE DRY AIR BY DIVIDING THE TOTAL      
-!        MOLECULAR AMOUNTS GIVEN IN DENSITY BY THE FRACTION OF DRY      
-!        AIR (MIXING RATIO) THOSE MOLECULES COMPRISE.                   
-!                                                                       
-!        IF THE LAYER SUM OF MIXING RATIOS IS GREATER THAN OR EQUAL     
-!        TO ONE, THAN AN ERROR HAS OCCURRED, SO STOP THE PROGRAM.       
-!        WBROAD IS ALWAYS LISTED IN COLUMN DENSITY, SO THE SUM OF       
-!        THE GIVEN MIXING RATIOS MUST ALWAYS BE LESS THAN ONE.          
-!                                                                       
-               IF (WBRODL(L).LT.1.0 .AND. WBRODL(L).NE.0.0) THEN 
-                  WRITE(IPR,918) L 
-                  WRITE(*,918) L 
-                  STOP 
-               ENDIF 
-                                                                        
-               IF (WDNSTY_ISOTPL.EQ.0.0 .AND. WMXRAT_ISOTPL.NE.0.0) THEN 
-                  WRITE(IPR,921) L,WDNSTY_ISOTPL,WMXRAT_ISOTPL 
-                  WRITE(*,921) L,WDNSTY_ISOTPL,WMXRAT_ISOTPL 
-                  STOP 'WMXRAT_ISOTPL AND/OR WDNSTY_ISOTPL NOT PROPERLY'&
-     &               //'SPECIFIED IN PATH' 
-               ENDIF 
-                                                                        
-               IF (WMXRAT_ISOTPL.LT.1.0) THEN 
-                  WDRAIR_ISOTPL = WDNSTY_ISOTPL/(1.0-WMXRAT_ISOTPL) 
-               ELSE 
-                  WRITE(IPR,921) L,WMXRAT_ISOTPL, WDNSTY_ISOTPL
-                  WRITE(*,921) L,WMXRAT_ISOTPL, WDNSTY_ISOTPL 
-                  STOP 'WMXRAT_ISOTPL EXCEEDS 1.0' 
-               ENDIF 
-                                                                        
-!         print'(i5,1p7e10.3)', l, wkl(1,l), wdrair_isotpl
-
-               DO I = 1,NISOTPL
-                  M = MOLNUM(I)
-                  ISOTPL = ISOTPLNUM(I)
-                  IF (WDRAIR_ISOTPL.EQ.0.0 &
-     &               .AND. ISOTPL_AMNT(M,ISOTPL,L).LT.1. &
-     &               .AND. ISOTPL_AMNT(M,ISOTPL,L).NE.0.0) THEN                                          
-                     WRITE(IPR,921) L,ISOTPL_AMNT(M,ISOTPL,L), &
-     &                              WDRAIR_ISOTPL
-                     WRITE(*,921) L,ISOTPL_AMNT(M,ISOTPL,L),&
-     &                            WDRAIR_ISOTPL
-                     STOP 'ISOTPL_AMNT NOT PROPERLY SPECIFIED IN PATH' 
-                  ENDIF 
-                  IF (ISOTPL_AMNT(M,ISOTPL,L).LT.1.) &
-     &               WKL_ISOTPL(M,ISOTPL,L) = (ISOTPL_AMNT(M,ISOTPL,L) &
-     &                           *WDRAIR_ISOTPL)/ISOTPL_ABD(M,ISOTPL)
-               ENDDO
+         ENDDO
+! Get total number of activated isotoplogues
+         ISOCOUNT = SUM(ISOTPL_FLAG)
+! Update list of Hitran codes for all activated isotopologues
+         IDXCNT = 0
+         DO I = 1,MOLCOUNT
+            M = MOLLST(I)
+            DO J = 1, ISOTPL_NUM(M)
+               IF (ISOTPL_FLAG(M,J).EQ.1) THEN
+                  IDXCNT = IDXCNT + 1
+                  ISOTPL_HCODE(IDXCNT) = M*10+J
+                  IF (J.EQ.10) ISOTPL_HCODE(IDXCNT) = M*10+J-10
+                  IDXM(IDXCNT) = M
+                  IDXJ(IDXCNT) = J
+               ENDIF
             ENDDO
-         ENDIF
+         ENDDO
+
+      ENDIF                                                                        
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      ENDIF                                                                        
-
       IF (IFORM.EQ.1) THEN 
          WRITE (IPR,950) 
       ELSE 
@@ -5304,9 +5355,14 @@
 !                                                                       
          IF (ISOTPL.GE.1) THEN 
             SUMIK = 0. 
-            DO I = 1, NISOTPL
-               SUMIK = SUMIK+WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L) 
-               WIT(I) = WIT(I)+WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L)*&
+!            DO I = 1, NISOTPL
+!               SUMIK = SUMIK+WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L) 
+!               WIT(I) = WIT(I)+WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L)*&
+!     &                  FACTOR 
+!            ENDDO
+            DO I = 1, ISOCOUNT
+               SUMIK = SUMIK+WKL_ISOTPL(IDXM(I),IDXJ(I),L) 
+               WIT(I) = WIT(I)+WKL_ISOTPL(IDXM(I),IDXJ(I),L)*&
      &                  FACTOR 
             ENDDO
             WTOTI(L) = SUMIK+WBRODL(L) 
@@ -5769,45 +5825,45 @@
 !                                                                       
       IF (ISOTPL.GE.1) THEN
 
-      IF (NISOTPL.LE.7) THEN 
+      IF (ISOCOUNT.LE.8) THEN 
       IF (NLAYIS.LT.5) THEN 
           WRITE (IPR,970) 
       ELSE 
           WRITE (IPR,945) XID,(YID(M),M=1,2) 
       ENDIF 
       IF (IFORM.EQ.1) THEN 
-         WRITE (IPR,996) (ISOTPL_HCODE(I),I=1,NISOTPL)
+         WRITE (IPR,996) (ISOTPL_HCODE(I),I=1,ISOCOUNT)
          DO L = 1, NLAYIS 
             WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),       &
-            TAVEL(L),IPTH(L),(WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L),     &
-     &      I=1,NISOTPL)
+            TAVEL(L),IPTH(L),(WKL_ISOTPL(IDXM(I),IDXJ(I),L),     &
+     &      I=1,ISOCOUNT)
          ENDDO
          IF (NLAYIS.GT.1) THEN 
             WRITE (IPR,985) 
             L = NLAYIS 
             WRITE (IPR,990) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTI,TWTI,        &
-            (WIT(I),I=1,NISOTPL)
+            (WIT(I),I=1,ISOCOUNT)
          ENDIF 
       ELSE 
-         WRITE (IPR,997) (ISOTPL_HCODE(I),I=1,NISOTPL)
+         WRITE (IPR,997) (ISOTPL_HCODE(I),I=1,ISOCOUNT)
          DO L = 1, NLAYIS 
             WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),       &
-            TAVEL(L),IPTH(L),(WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L),     &
-     &      I=1,NISOTPL)
+            TAVEL(L),IPTH(L),(WKL_ISOTPL(IDXM(I),IDXJ(I),L),     &
+     &      I=1,ISOCOUNT)
          ENDDO
          IF (NLAYIS.GT.1) THEN 
             WRITE (IPR,985) 
             L = NLAYIS 
             WRITE (IPR,991) L,ALTZ(0),HT1,ALTZ(L),HT2,PWTI,TWTI,        &
-            (WIT(I),I=1,NISOTPL)
+            (WIT(I),I=1,ISOCOUNT)
          ENDIF 
       ENDIF 
       ENDIF 
 !                                                                       
-      IF (NISOTPL.GT.7) THEN 
-         DO MLO = 8, NISOTPL, 8 
+      IF (ISOCOUNT.GT.8) THEN 
+         DO MLO = 1, ISOCOUNT, 8 
             MHI = MLO+7 
-            MHI = MIN(MHI,NMOL) 
+            MHI = MIN(MHI,ISOCOUNT) 
             IF (NLAYIS.LT.5) THEN 
                WRITE (IPR,970) 
             ELSE 
@@ -5817,7 +5873,7 @@
                WRITE (IPR,996) (ISOTPL_HCODE(I),I=MLO,MHI)
                DO L = 1, NLAYIS 
                   WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L), &
-                  TAVEL(L),IPTH(L),(WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L)&
+                  TAVEL(L),IPTH(L),(WKL_ISOTPL(IDXM(I),IDXJ(I),L)&
      &            ,I=MLO,MHI)                 
                ENDDO
                IF (NLAYIS.GT.1) THEN 
@@ -5830,7 +5886,7 @@
                WRITE (IPR,997) (ISOTPL_HCODE(I),I=MLO,MHI)
                DO L = 1, NLAYIS 
                   WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L), &
-                  TAVEL(L),IPTH(L),(WKL_ISOTPL(MOLNUM(I),ISOTPLNUM(I),L)&
+                  TAVEL(L),IPTH(L),(WKL_ISOTPL(IDXM(I),IDXJ(I),L)&
      &            ,I=MLO,MHI)                 
                ENDDO
                IF (NLAYIS.GT.1) THEN 
@@ -5850,27 +5906,27 @@
 !     15.7 format (IFORM = 1) or 10.4 format (IFORM = 0).               
 !                                                                       
 !           Reset WDRAIR(L) for each layer                              
-!           (ISOTPL_AMNT(M,ISO,L) now in mixing ratio
+!           Convert WKL_ISOTPL(M,ISO,L) to mixing ratio
 !                                                                       
 !                                                                       
-      IF (NISOTPL.LE.7) THEN
+      IF (ISOCOUNT.LE.8) THEN
       IF (IFORM.EQ.1) THEN 
-         WRITE (IPR,998) (ISOTPL_HCODE(I),I=1,NISOTPL)
+         WRITE (IPR,998) (ISOTPL_HCODE(I),I=1,ISOCOUNT)
          DO L = 1, NLAYIS 
             WDRAIR(L) = WBRODL(L) 
-            DO M = 1,NMOL
+            DO M = 2,NMOL
                WDRAIR(L) = WDRAIR(L) + WKL(M,L) 
             ENDDO
             IF (WDRAIR(L).EQ.0.0) THEN 
                WRITE(IPR,979) 
             ELSE 
                WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),    &
-               TAVEL(L),IPTH(L),(ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L),  &
-     &         I=1,NISOTPL)                                           
+               TAVEL(L),IPTH(L),(WKL_ISOTPL(IDXM(I),IDXJ(I),L)          &
+     &         /WDRAIR(L),I=1,ISOCOUNT)                                           
             ENDIF 
          ENDDO
       ELSE 
-         WRITE (IPR,999) (ISOTPL_HCODE(I),I=1,NISOTPL)
+         WRITE (IPR,999) (ISOTPL_HCODE(I),I=1,ISOCOUNT)
          DO L = 1, NLAYIS 
             WDRAIR(L) = WBRODL(L) 
             DO M = 2,NMOL 
@@ -5880,18 +5936,18 @@
                WRITE(IPR,979) 
             ELSE 
                WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,PAVEL(L),    &
-               TAVEL(L),IPTH(L),(ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L),  &
-     &         I=1,NISOTPL)                                           
+               TAVEL(L),IPTH(L),(WKL_ISOTPL(IDXM(I),IDXJ(I),L)          &
+     &         /WDRAIR(L),I=1,ISOCOUNT)                                           
             ENDIF 
          ENDDO
       ENDIF 
       ENDIF 
 !                                                                       
 !                                                                       
-      IF (NISOTPL.GT.7) THEN 
-         DO MLO = 8, NISOTPL, 8 
+      IF (ISOCOUNT.GT.8) THEN 
+         DO MLO = 1, ISOCOUNT, 8 
             MHI = MLO+7 
-            MHI = MIN(MHI,NMOL) 
+            MHI = MIN(MHI,ISOCOUNT) 
             IF (NLAYIS.LT.5) THEN 
                WRITE (IPR,970) 
             ELSE 
@@ -5900,23 +5956,31 @@
             IF (IFORM.EQ.1) THEN 
                WRITE (IPR,998) (ISOTPL_HCODE(I),I=MLO,MHI)
                DO L = 1, NLAYIS 
+                  WDRAIR(L) = WBRODL(L) 
+                  DO M = 2,NMOL
+                     WDRAIR(L) = WDRAIR(L) + WKL(M,L) 
+                  ENDDO
                   IF (WDRAIR(L).EQ.0.0) THEN 
                      WRITE(IPR,979) 
                   ELSE 
                      WRITE (IPR,980) L,ALTZ(L-1),HT1,ALTZ(L),HT2,       &
-                     PAVEL(L),TAVEL(L),IPTH(L),(ISOTPL_AMNT(MOLNUM(I),   &
-     &               ISOTPLNUM(I),L),I=MLO,MHI)                                           
+                     PAVEL(L),TAVEL(L),IPTH(L),(WKL_ISOTPL(IDXM(I),     &
+     &               IDXJ(I),L)/WDRAIR(L),I=MLO,MHI)                    
                   ENDIF 
                ENDDO
             ELSE 
                WRITE (IPR,999) (ISOTPL_HCODE(I),I=MLO,MHI)
                DO L = 1, NLAYIS 
+                  WDRAIR(L) = WBRODL(L) 
+                  DO M = 2,NMOL
+                     WDRAIR(L) = WDRAIR(L) + WKL(M,L) 
+                  ENDDO
                   IF (WDRAIR(L).EQ.0.0) THEN 
                      WRITE(IPR,979) 
                   ELSE 
                      WRITE (IPR,982) L,ALTZ(L-1),HT1,ALTZ(L),HT2,       &
-                     PAVEL(L),TAVEL(L),IPTH(L),(ISOTPL_AMNT(MOLNUM(I),   &
-     &               ISOTPLNUM(I),L),I=MLO,MHI)                                           
+                     PAVEL(L),TAVEL(L),IPTH(L),(WKL_ISOTPL(IDXM(I),     &
+     &               IDXJ(I),L)/WDRAIR(L),I=MLO,MHI)                    
                   ENDIF 
                ENDDO
             ENDIF 
@@ -6000,15 +6064,15 @@
   991 FORMAT ('0',I3,2(F7.3,A3),F12.5,F9.2,7X,1P,8E10.3,0P) 
   995 FORMAT ('1'/'0',10A8,2X,2(1X,A8,1X),/,/,'0',53X,                  &
      &        '     *****  CROSS SECTIONS  *****      ')                
-  996 FORMAT ('0',40X,'ISOTOPOLOGUE MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,32X,  &
-     &        'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(I10,4X))                
-  997 FORMAT ('0',40X,'ISOTOPOLOGUE MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/,29X,  &
-     &        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,I6,3X))              
+  996 FORMAT (/,'0',40X,'ISOTOPOLOGUE MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/  &
+     &        ,32X,'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(I10,4X))                
+  997 FORMAT (/,'0',40X,'ISOTOPOLOGUE MOLECULAR AMOUNTS (MOL/CM**2) BY LAYER ',/  &
+     &        ,29X,'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,I6,3X))              
   998 FORMAT (/,'1',54X,'----------------------------------',           &
-     &         /,'0',47X,'ISOTOPOLOGUE MIXING RATIOS BY LAYER ',/,32X,               &
+     &        /,'0',47X,'ISOTOPOLOGUE MIXING RATIOS BY LAYER ',/,32X,   &
      &        'P(MB)',6X,'T(K)',3X,'IPATH',5X,8(I10,4X))                
   999 FORMAT (/,'1',54X,'----------------------------------',           &
-     &         /,'0',47X,'ISOTOPOLOGUE MIXING RATIOS BY LAYER ',/,29X,               &
+     &        /,'0',47X,'ISOTOPOLOGUE MIXING RATIOS BY LAYER ',/,29X,   &
      &        'P(MB)',6X,'T(K)',3X,'IPATH',1X,8(1X,I6,3X))              
 !
  1000 FORMAT ('Layer',I2,': Changing molecule ',I2,' from ',E10.3,      &
