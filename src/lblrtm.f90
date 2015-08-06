@@ -4,7 +4,7 @@
 !     created:   $Date$
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 20155        |
+! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015        |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -5084,16 +5084,30 @@
                ENDIF
             ENDIF
          ENDDO
-         READ (IRD,928) NLAYIS
+         READ (IRD,900) IFRMI, NLAYIS
          DO L = 1,NLAYIS
-            READ (IRD,929) (ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L),&
+            IF (IFRMI.EQ.1) THEN
+               READ (IRD,925) (ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L),&
      &                      I=1,NISOTPL)
+            ELSE
+               READ (IRD,927) (ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L),&
+     &                      I=1,NISOTPL)
+            ENDIF
+!     Check for negative input, which is permitted to identify when amounts
+!     for isotopologues not directly specified as column amount are to be
+!     set to their original default values (i.e. WKL * HITRAN ratio).
+            DO I = 1,NISOTPL
+               IF (ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L).LT.0.) THEN 
+                  ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L) = &
+     &              WKL(MOLNUM(I),L) * ISOTPL_ABD(MOLNUM(I),ISOTPLNUM(I))
+               ENDIF
+            ENDDO
+
 !     Check input for consistent type for each specified molecular species;
             DO I = 1,NISOTPL
                INPTYP(I) = 0
                IF (ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L).LE.1.) THEN 
                   INPTYP(I) = 1
-               ELSE
                ENDIF
             ENDDO
             DO I = 1,NISOTPL-1
@@ -6013,7 +6027,6 @@
   925 FORMAT (8E15.7) 
   927 FORMAT (8E10.3) 
   928 FORMAT (10I5) 
-  929 FORMAT (7E10.3)
 !                                                                       
   930 FORMAT (I5,5X,I5) 
   932 FORMAT (/,'  THE CROSS-SECTION MOLECULES SELECTED ARE: ',/,/,(5X, &

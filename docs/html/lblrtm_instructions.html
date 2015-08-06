@@ -731,7 +731,7 @@ Note:&nbsp; LBLRTM will internally set CXID(1) = ' ' for all output.</p>
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp;IHIRAC, ILBLF4,
 ICNTNM, IAERSL,&nbsp; IEMIT,&nbsp; ISCAN, IFILTR, IPLOT, ITEST,&nbsp;
 IATM,&nbsp; IMRG,&nbsp; ILAS,&nbsp;&nbsp; IOD, IXSECT,&nbsp;
-MPTS,&nbsp; NPTS</p>
+MPTS,&nbsp; NPTS,&nbsp;ISOTPL</p>
 
 
 
@@ -745,7 +745,7 @@ MPTS,&nbsp; NPTS</p>
 25,&nbsp;&nbsp;&nbsp;&nbsp; 30,&nbsp;&nbsp;&nbsp;&nbsp;
 35,&nbsp;&nbsp;&nbsp; 40,&nbsp;&nbsp;&nbsp; 45,&nbsp;&nbsp;&nbsp; 50,
 54-55,&nbsp;&nbsp;&nbsp; 60,&nbsp;&nbsp;
-&nbsp;65,&nbsp;&nbsp;&nbsp;&nbsp; 70, 72-75, 77-80</p>
+&nbsp;65,&nbsp;&nbsp;&nbsp;&nbsp; 70, 72-75, 77-80,&nbsp;&nbsp;&nbsp;&nbsp; 85</p>
 
 
 
@@ -755,7 +755,8 @@ MPTS,&nbsp; NPTS</p>
 
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp; 4X,I1,&nbsp;
 4X,I1,&nbsp; 4X,I1,&nbsp; 4X,I1,&nbsp; 4X,I1,&nbsp; 4X,I1,&nbsp; 4X,I1,
-4X,I1, 4X,I1, 4X,I1, 3X,A2, 4X,I1, 4X,I1,&nbsp; 4X,I1, 1X,I4, 1X,I4</p>
+4X,I1, 4X,I1, 4X,I1, 3X,A2, 4X,I1, 4X,I1,&nbsp; 4X,I1, 1X,I4, 1X,I4,
+&nbsp;4X,I1</p>
 
 
 
@@ -2556,6 +2557,32 @@ as result of merge of current layer with previous layers</p>
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(for
 laser option ILAS &gt; 1, NPTS should be set to 0)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ISOTPL&nbsp;&nbsp;&nbsp; (0,1) flag for isotopologues</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 0&nbsp; isotopologues are included in the calculation at their HITRAN ratios (default)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1&nbsp; isotopologues are included and must be specified by the user on Record 2.3 (if IATM=0)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  or Record 3.9 (if IATM=1)</p>
 
 
 
@@ -4975,7 +5002,7 @@ cross-section input file FSCDXS.&nbsp; See Table II after RECORD 3.7.1)</p>
 
 
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1X,I1&nbsp;&nbsp;&nbsp; I5,&nbsp;&nbsp;&nbsp;&nbsp; I5,&nbsp;&nbsp;
+1X,I1&nbsp;&nbsp;&nbsp; I3,&nbsp;&nbsp;&nbsp;&nbsp; I5,&nbsp;&nbsp;
 F10.2,&nbsp; 15A4</p>
 
 
@@ -5526,10 +5553,387 @@ IXMOL</p>
 
 
 
-<p style="color: rgb(0, 0, 0);" class="p3"><br>
+<p style="color: rgb(0, 0, 0);" class="p3"><br></p>
 
 
-</p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;<a name="RECORD_2.3">*****************************************************************************</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;******&nbsp; these records applicable only if LBLATM not selected (IATM=0)&nbsp; ******</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;****************&nbsp; and isotopologues ARE selected (ISOTPL=1)&nbsp; ***************</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+LAYER INPUT&nbsp; (ISOTOPOLOGUES ONLY)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD RECORD 2.3</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NISOTPL</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+I5</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NISOTPL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Number of isotopologue molecules to be inputed (maximum of 117)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD <a name="RECORD_2.3.1">RECORD 2.3.1</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp; ISOTPL_HCODE</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+10I5</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ISOTPL_HCODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Three-digit isotopologue HITRAN code for all NISOTPL isotopolgues to be input.</p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; First two digits represent the associated molecular species (see Table I),</p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; and the third digit represents the isotopologue (1-9); note that the tenth </p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; isotopologue of CO2 can be requested with the HITRAN code ' 20'. </p>
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Repeat Record 2.3.1 as needed if more than 10 isotopologues are requested. </p>
+
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD <a name="RECORD_2.3.2">RECORD 2.3.2</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IFRMI, NLAYIS</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3-5</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1X,I1 &nbsp;&nbsp; I3</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+IFRMI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (0,1) column amount format flag</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; = 0&nbsp; read ISOTPL_AMNT(M,L) in E10.3 format (default)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; = 1&nbsp; read ISOTPL_AMNT(M,L) in E15.7 format</p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NLAYIS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; number of layers (maximum of 200), must be the same as NLAYRS on Record 2.1.</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD <a name="RECORD_2.3.3">RECORD 2.3.3</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp; (ISOTPL_AMNT(I,L), I=1, 8)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (8E10.3)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ISOTPL_AMNT(I,L)&nbsp;&nbsp; column density (molecules/cm**2) or fractional amount; the latter is the ratio of the</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;number of the isotopologue molecules to the total number of molecules of that species</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(similar to HITRAN ratio; 0-1);</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The atmospheric state and other information entered in Record 2.1.1 and the column</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;density for the broadening gases, WBROADL, entered in Record 2.1.2 will be assumed.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For a given species, all specified isotopologue abundances must be one of these two</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;types; a mix of column densities and fractions is not allowed.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Note that the first isotopologue is the same as the main molecule for that species. </p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For column density input, the total column amount for that species will increase</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by the specified amount, but only the specified isotopologue will be included in the</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calculations. Other isotopologues for that species can be included at their default</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HITRAN ratio (relative to the column density entered in Records 2.1.2-2.1.3) by</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entering their column density in this record as '-1.0'.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For fractional input, the total column amount for that species will not increase.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The fractional abundance of all unrequested isotopologues for that species will</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be adjusted to keep the total fraction equal to the sum of the HITRAN ratios for</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that species (i.e. close to 1.0). For this input type, a column density or mixing</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ratio for the primary isotopologue molecule must be entered in Records 2.1.2-2.1.3.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;All isotopologues of the selected species will be included in the fractional input,</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;but only those with valid line parameters in the input line file will be radiatively</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;active in the calculations.</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;** NOTE ** If IFRMI=1, then ISOTPL_AMNT(I,L) is in 8E15.7 format</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD
+2.3.4&nbsp;&nbsp; only if (NISOTPL .GT. 8)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # record depends on NISOTPL</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp; (ISOTPL_AMNT(I,L), I=9, NISOTPL)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (8E10.3)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;** NOTE ** If IFRMI=1, then ISOTPL_AMNT(I,L) is in 8E15.7 format</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;REPEAT RECORDS 2.3.3 through 2.3.4 for the remaining layers (up to NLAYIS)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p3"><br></p>
+
+
+
+
 
 
 
@@ -8099,6 +8503,384 @@ ratio (ppmv)</p>
 
 
 
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;<a name="RECORD_3.9">*****************************************************************************</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;******&nbsp; these records applicable only if LBLATM not selected (IATM=1)&nbsp; ******</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;****************&nbsp; and isotopologues ARE selected (ISOTPL=1)&nbsp; ***************</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+LAYER INPUT&nbsp; (ISOTOPOLOGUES ONLY)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD RECORD 3.9</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NISOTPL</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+I5</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NISOTPL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Number of isotopologue molecules to be inputed (maximum of 117)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD <a name="RECORD_3.9.1">RECORD 3.9.1</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp; ISOTPL_HCODE</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+10I5</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ISOTPL_HCODE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Three-digit isotopologue HITRAN code for all NISOTPL isotopolgues to be input.</p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; First two digits represent the associated molecular species (see Table I),</p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; and the third digit represents the isotopologue (1-9); note that the tenth </p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; isotopologue of CO2 can be requested with the HITRAN code ' 20'. </p>
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (Repeat Record 3.9.1 as needed if more than 10 isotopologues are requested. </p>
+
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD <a name="RECORD_3.9.2">RECORD 3.9.2</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IFRMI, NLAYIS</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3-5</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1X,I1 &nbsp;&nbsp; I3</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+IFRMI&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (0,1) column amount format flag</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; = 0&nbsp; read ISOTPL_AMNT(M,L) in E10.3 format (default)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp; = 1&nbsp; read ISOTPL_AMNT(M,L) in E15.7 format</p>
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NLAYIS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; number of layers (maximum of 200), must be one less than IBMAX entered on Record 3.1.</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD <a name="RECORD_3.9.3">RECORD 3.9.3</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp; (ISOTPL_AMNT(I,L), I=1, 8)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (8E10.3)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ISOTPL_AMNT(I,L)&nbsp;&nbsp; column density (molecules/cm**2) or fractional amount; the latter is the ratio of the</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;number of the isotopologue molecules to the total number of molecules of that species</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(similar to HITRAN ratio; 0-1);</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The atmospheric state and other information selected in Records 3.1-3.6 will be assumed.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For a given species, all specified isotopologue abundances must be one of these two</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;types; a mix of column densities and fractions is not allowed.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Note that the first isotopologue is the same as the main molecule for that species. </p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For column density input, the total column amount for that species will increase</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;by the specified amount, but only the specified isotopologue will be included in the</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;calculations. Other isotopologues for that species can be included at their default</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HITRAN ratio (relative to the column density previously calculated by LBLATM) by</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;entering their column density in this record as '-1.0'.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For fractional input, the total column amount for that species will not increase.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;The fractional abundance of all unrequested isotopologues for that species will</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be adjusted to keep the total fraction equal to the sum of the HITRAN ratios for</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;that species (i.e. close to 1.0). For this input type, a column density or mixing</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ratio for the primary isotopologue molecule must be requested with NMOL in Record 3.1.</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;All isotopologues of the selected species will be included in the fractional input,</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;but only those with valid line parameters in the input line file will be radiatively</p>
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;active in the calculations.</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;** NOTE ** If IFRMI=1, then ISOTPL_AMNT(I,L) is in 8E15.7 format</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;RECORD
+3.9.4&nbsp;&nbsp; only if (NISOTPL .GT. 8)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; # record depends on NISOTPL</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp; (ISOTPL_AMNT(I,L), I=9, NISOTPL)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (8E10.3)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;** NOTE ** If IFRMI=1, then ISOTPL_AMNT(I,L) is in 8E15.7 format</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;REPEAT RECORDS 3.9.3 through 3.9.4 for the remaining layers (up to IBMAX-1)</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p3"><br></p>
+
+
+
+
+
+
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp;----------------------------------------------------------------------------</p>
 
 
@@ -8107,10 +8889,7 @@ ratio (ppmv)</p>
 
 
 
-<p style="color: rgb(0, 0, 0);" class="p3"><br>
-
-
-</p>
+<p style="color: rgb(0, 0, 0);" class="p3"><br></p>
 
 
 
