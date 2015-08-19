@@ -2035,7 +2035,9 @@
          VI = VFT+ REAL(NPTSI1-1)*DV 
          RADVI = RADFNI(VI,DV,XKT,VITST,RDEL,RDLAST) 
 !                                                                       
-         NPTSI2 = (VITST-VFT)/DV+1.001 
+!         NPTSI2 = (VITST-VFT)/DV+1.001 
+!MJA 20150819 Implementing Yingtao Fix
+         NPTSI2 = (VITST-VFT)/DV+0.001 
          NPTSI2 = MIN(NPTSI2,NHI) 
 !                                                                       
          DO 40 I = NPTSI1, NPTSI2 
