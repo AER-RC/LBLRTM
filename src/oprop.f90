@@ -508,6 +508,8 @@
       IF (ISTOP.NE.1) THEN 
          IF (ILBLF4.GE.1) THEN 
             VF1 = VFT-2.*DVR4 
+! Matt Alvarado 20150819 Put in Yingtao fix for VF1
+            VF1 = V1+floor((VF1-V1)/DVR4)*DVR4 
             VF2 = VFT+2.*DVR4+ REAL(N2R3+4)*DVR3 
             IF (VF2.GT.V2R4.AND.V2R4.NE.V2R4ST) THEN 
                CALL LBLF4 (JRAD,VF1,V2R4ST) 
