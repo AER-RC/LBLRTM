@@ -936,7 +936,12 @@
          MOL(I) = M 
 !                                                                       
          SUI = S(I)*WK(M) 
-         IF (JRAD.EQ.1) SUI = SUI*VNU(I) 
+
+!MJA, 20150821 - using the VNU(I) approximation for the radiation term 
+!                can cause issues for wavenumbers around 1000 cm-1,
+!                so use the full rad term instead
+!         IF (JRAD.EQ.1) SUI = SUI*VNU(I) 
+         IF (JRAD.EQ.1) SUI = SUI*RADFN(VNU(I),XKT) 
 !                                                                       
          IF (SUI.EQ.0.) GO TO 25 
 !                                                                       
