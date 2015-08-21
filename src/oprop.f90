@@ -2280,6 +2280,25 @@
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 !                                                                       
+! INPUTS: 
+!         VI: Starting Wavenumber in cm-1
+!        DVI: Wavenumber step in cm-1
+!        XKT: Tave/RADCN2 = kb*Tave/(h*c) 
+!
+! INPUT/OUTPUT:
+!     RDLAST: If negative, this is the first call
+!             If positive, used as input, should be the radiation term (in cm-1) at VI 
+!             In either case, returned value is the radiation term at VINEW
+!      VINEW: If negative, this is used as input to determine location of VINEW,
+!                  but is adjusted to ensure that VINEW-VI is an integer number of DVI's 
+!             If positive, VINEW is initally estimates as 1.003*VI, then adjusted 
+!                  to ensure that VINEW-VI is an integer number of DVI's 
+!             Adjusted value is returned
+!
+! OUTPUT:
+!     RADFNI: Radiation term (in cm-1) at VI  
+!       RDEL: Linear change for each DVI for a straight line connecting R(VI) and R(VINEW)
+
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
       DATA FACT1 / 3.0E-03 / 
 !                                                                       
@@ -2292,7 +2311,7 @@
 !                                                                       
       XVI = VI 
 !                                                                       
-!     IF FIRST CALL, INITIALIZE RDLAST                                  
+!     IF FIRST CALL, INITIALIZE RDLAST  (Compare to RADFN)                               
 !                                                                       
       IF (RDLAST.LT.0.) THEN 
          IF (XKT.GT.0.0) THEN 
@@ -2337,7 +2356,9 @@
             ENDIF 
             XVINEW = VINEW 
 !                                                                       
-            RDNEXT = 0.5*XVIOKT*XVINEW 
+!MJA 20150821, fixing bug in RDLAST reported by Yingtao Ma
+            XVINEWOKT = XVINEW/XKT 
+            RDNEXT = 0.5*XVINEWOKT*XVINEW 
 !                                                                       
          ELSEIF (XVIOKT.LE.10.0) THEN 
             EXPVKT = EXP(-XVIOKT) 
@@ -2355,10 +2376,14 @@
                INTVLS = MAX(INTVLS,I_1) 
             ENDIF 
             XVINEW = VINEW 
+!MJA 20150821, fixing bug in RDLAST reported by Yingtao Ma
+            XVINEWOKT = XVINEW/XKT 
+            EXPVNEWKT = EXP(-XVINEWOKT) 
+            XMINUSNEW = 1.-EXPVNEWKT 
+            XPLUSNEW = 1.+EXPVNEWKT                                                             
+            RDNEXT = XVINEW*XMINUSNEW/XPLUSNEW 
 !                                                                       
-            RDNEXT = XVINEW*XMINUS/XPLUS 
-!                                                                       
-         ELSE 
+         ELSE !XVIOKT > 10.0, assume radiation term is just wavenumber
             IF (VINEW.GE.0.0) THEN 
                VINEW = VI+(FACT1*XVI) 
                INTVLS = (VINEW-VI)/DVI 
@@ -2373,7 +2398,7 @@
 !                                                                       
             RDNEXT = XVINEW 
          ENDIF 
-      ELSE 
+      ELSE !XKT < 0.0, assume radiation term is just wavenumber
          IF (VINEW.GE.0.0) THEN 
             VINEW = VI+(FACT1*XVI) 
             INTVLS = (VINEW-VI)/DVI 
@@ -2386,7 +2411,10 @@
          ENDIF 
          XVINEW = VINEW 
 !                                                                       
-         RDNEXT = XVI 
+!         RDNEXT = XVI 
+! MJA, 20150821 - fixed bug that used beginning frequency to calculate 
+! Radiation term at VINEW
+         RDNEXT = XVINEW 
       ENDIF 
 !                                                                       
       RDEL = (RDNEXT-RADFNI)/ REAL(INTVLS) 
@@ -4548,6 +4576,9 @@
                V1X = V2X-2.*DVX 
             ELSE 
                V1X = VFT-2.*DVX 
+!Matt Alvarado 20150819 Added Yingtao Ma's fix for V1X
+               Vref = V1-32*DV
+               V1X = Vref + floor((V1X-Vref)/DVx)*DVX
                IF (IR4.EQ.1) V1X = V1R4-2.*DVX 
             ENDIF 
             V2X = V1X+ REAL(LIMOUT-1)*DVX 
