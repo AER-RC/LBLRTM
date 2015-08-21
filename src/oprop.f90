@@ -4583,7 +4583,8 @@
             ENDIF 
             V2X = V1X+ REAL(LIMOUT-1)*DVX 
             IF (V2X.GT.V2) V2X = V1X+ REAL(INT((V2-V1X)/DVX)+3)*DVX 
-            NPTSX = (V2X-V1X)/DVX+1 
+!Matt Alvarado 20150819 Added Yingtao Ma's fix for NPTSX
+            NPTSX = ceiling((V2X-V1X)/DVX)+1 
          ENDIF 
          IFL = 0 
          V1XT = V1X+2.*DVX 
@@ -4658,7 +4659,7 @@
             V1X = V1X-2.*DVX 
             V2X = V1X+ REAL(LIMOUT-1)*DVX 
             IF (V2X.GT.V2) V2X = V1X+ REAL(INT((V2-V1X)/DVX)+2)*DVX 
-            NPTSX = (V2X-V1X)/DVX+1 
+            NPTSX = ceiling((V2X-V1X)/DVX)+1 
             V1XS = V1X 
             V2XS = V2X 
             DVXS = DVX 
@@ -4835,7 +4836,7 @@
             NPTSI2 = 0 
 !                                                                       
   120       NPTSI1 = NPTSI2+1 
-            NPTSX = (V2X-V1X)/DVX+1 
+            NPTSX = ceiling((V2X-V1X)/DVX)+1 
 !                                                                       
             VI = V1X+ REAL(NPTSI1-1)*DVX 
             RADVI = RADFNI(VI,DVX,XKT,VITST,RDEL,RDLAST) 
