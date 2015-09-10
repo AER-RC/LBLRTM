@@ -862,7 +862,7 @@
 !                                                                       
       USE lblparams, ONLY: MXMOL, MXISOTPL
       USE phys_consts, ONLY: radcn2
-      USE struct_types, ONLY: mxbrdmol, NLINEREC
+      USE struct_types, ONLY: mxbrdmol, nlinerec
       IMPLICIT REAL*8           (V) 
 !                                                                       
       CHARACTER*1 FREJ(nlinerec),HREJ,HNOREJ 
@@ -875,8 +875,7 @@
      &     brd_mol_shft(mxbrdmol,nlinerec),sdep(nlinerec)
          integer*4 brd_mol_flg
 
-       DIMENSION PSHFTDIFF(MXBRDMOL),TMPCOR_ARR(MXBRDMOL),   &
-     &     ALFA_TMP(MXBRDMOL)
+       DIMENSION TMPCOR_ARR(MXBRDMOL),ALFA_TMP(MXBRDMOL)
        Real*8 ALFSUM
 
 
@@ -1469,7 +1468,7 @@
 !         NPTSI2 = (VITST-VFT)/DV+1.001 
 !MJA 20150819 Implementing Yingtao Fix
           NPTSI2 = (VITST-VFT)/DV+0.001 
-          NPTSI2 = MIN(NPTSI2,NHI) 
+         NPTSI2 = MIN(NPTSI2,NHI) 
 !                                                                       
          DO 40 I = NPTSI1, NPTSI2 
 !           VI = VI+DV                                                  
@@ -1942,9 +1941,10 @@
 !                                                                       
       RETURN 
 !                                                                       
-  900 FORMAT (F10.3,6F15.10) 
+!  900 FORMAT (F10.3,6F15.10) 
 !                                                                       
       END                                           
+!                                                                       
       BLOCK DATA VOICON 
 !                                                                       
 !     AVRAT CONTAINS THE PARAMTERS AS A FUNCTION OF ZETA USED TO        
@@ -2511,7 +2511,7 @@
 !                                                                       
       END                                           
 !      BLOCK DATA BMOLEC 
-                                                                       
+!                                                                       
 !      COMMON /XMOLEC/                                                   &
 !     &  NV1(7),NV2(7),NV3(7),NV4(7),NV5(7),NV6(7),                      &
 !     &  IV11(14),IV12(14),IV13(14),IV14(14),IV15(14),IV16(14),          &
@@ -2527,7 +2527,6 @@
 !     &  ROTFC1(7),ROTFC2(7),ROTFC3(7),ROTFC4(7),ROTFC5(7),ROTFC6(7),    &
 !     &  QV0(42)                                                         
 !                                                                       
-!                                                                       
 !      DATA NV1,IV11,IV21,IV31,IV41,IV51,IV61,IV71,IV81,IV91,XR1,ROTFC1/ &
 !     &       3 ,      3 ,      3 ,      3 ,      1 ,      4 ,      1 ,  &
 !     &  3657,1 , 1388,1 , 1103,1 , 1285,1 , 2143,1 , 2917,1 , 1556,1 ,  &
@@ -2542,8 +2541,8 @@
 !     &     0.5 ,    0.25,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,  &
 !     &     1.5 ,    1.0 ,    1.5 ,    1.0 ,    1.0 ,    1.5 ,    1.0 /  
 !                                                                       
-!            1        2        3        4        5        6        7    
-!          H2O      CO2       O3      N2O       CO      CH4       O2    
+!!            1        2        3        4        5        6        7    
+!!          H2O      CO2       O3      N2O       CO      CH4       O2    
 !                                                                       
 !      DATA NV2,IV12,IV22,IV32,IV42,IV52,IV62,IV72,IV82,IV92,XR2,ROTFC2/ &
 !     &       1 ,      3 ,      3 ,      4 ,      9 ,      1 ,      1 ,  &
@@ -2559,8 +2558,8 @@
 !     &     0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,  &
 !     &     1.0 ,    1.5 ,    1.5 ,    1.5 ,    1.5 ,    1.0 ,    1.0 /  
 !                                                                       
-!            8        9       10       11       12       13       14    
-!           NO      SO2      NO2      NH3     HNO3       OH       HF    
+!!            8        9       10       11       12       13       14    
+!!           NO      SO2      NO2      NH3     HNO3       OH       HF    
 !                                                                       
 !      DATA NV3,IV13,IV23,IV33,IV43,IV53,IV63,IV73,IV83,IV93,XR3,ROTFC3/ &
 !     &       1 ,      1 ,      1 ,      1 ,      3 ,      6 ,      3 ,  &
@@ -2576,16 +2575,16 @@
 !     &     0.5 ,    0.5 ,    0.5 ,    0.25,    0.5 ,    0.5 ,    0.5 ,  &
 !     &     1.0 ,    1.0 ,    1.0 ,    1.0 ,    1.0 ,    1.5 ,    1.5 /  
 !                                                                       
-!           15       16       17       18       19       20       21    
-!          HCL      HBR       HI      CLO      OCS     H2CO     HOCL    
+!!           15       16       17       18       19       20       21    
+!!          HCL      HBR       HI      CLO      OCS     H2CO     HOCL    
 !                                                                       
 !      DATA NV4,IV14,IV24,IV34,IV44,IV54,IV64,IV74,IV84,IV94,XR4,ROTFC4/ &
 !     &       1 ,      3 ,      6 ,      6 ,      5 ,      9 ,      4 ,  &
- !    &  2330,1 , 2089,1 , 2968,1 , 3607,1 , 3374,1 , 2899,1 , 2327,1 ,  &
-  !   &     0,0 ,  713,2 , 1355,1 , 1394,1 , 1974,1 , 1375,1 ,  992,1 ,  &
-   !  &     0,0 , 3311,1 ,  732,1 ,  864,1 , 3295,1 ,  993,1 , 1118,2 ,  &
-    ! &     0,0 ,    0,0 , 3039,2 ,  317,1 ,  612,2 ,  275,1 , 2421,2 ,  &
-     !&     0,0 ,    0,0 , 1455,2 , 3608,1 ,  730,2 , 2954,1 ,    0,0 ,  &
+!     &  2330,1 , 2089,1 , 2968,1 , 3607,1 , 3374,1 , 2899,1 , 2327,1 ,  &
+!     &     0,0 ,  713,2 , 1355,1 , 1394,1 , 1974,1 , 1375,1 ,  992,1 ,  &
+!     &     0,0 , 3311,1 ,  732,1 ,  864,1 , 3295,1 ,  993,1 , 1118,2 ,  &
+!     &     0,0 ,    0,0 , 3039,2 ,  317,1 ,  612,2 ,  275,1 , 2421,2 ,  &
+!     &     0,0 ,    0,0 , 1455,2 , 3608,1 ,  730,2 , 2954,1 ,    0,0 ,  &
 !     &     0,0 ,    0,0 , 1015,2 , 1269,1 ,    0,0 , 1379,1 ,    0,0 ,  &
 !     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 2994,2 ,    0,0 ,  &
 !     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 1486,1 ,    0,0 ,  &
@@ -2593,8 +2592,8 @@
 !     &     0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,  &
 !     &     1.0 ,    1.0 ,    1.5 ,    1.5 ,    1.0 ,    1.5 ,    1.5 /  
 !                                                                       
-!           22       23       24       25       26       27       28    
-!           N2      HCN    CH3Cl     H2O2     C2H2     C2H6      PH3    
+!!           22       23       24       25       26       27       28    
+!!           N2      HCN    CH3Cl     H2O2     C2H2     C2H6      PH3    
 !                                                                       
 !      DATA NV5,IV15,IV25,IV35,IV45,IV55,IV65,IV75,IV85,IV95,XR5,ROTFC5/ &
 !     &       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,  &
@@ -2610,8 +2609,8 @@
 !     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,  &
 !     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 /  
 !                                                                       
-!           29       30       31       32       33       34       35    
-!         COF2      SF6      H2S    HCOOH      HO2        O   ClONO2    
+!!           29       30       31       32       33       34       35    
+!!         COF2      SF6      H2S    HCOOH      HO2        O   ClONO2    
 !                                                                       
 !      DATA NV6,IV16,IV26,IV36,IV46,IV56,IV66,IV76,IV86,IV96,XR6,ROTFC6/ &
 !     &       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,  &
@@ -2627,11 +2626,11 @@
 !     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,  &
 !     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 /  
 !                                                                       
-!           36       37       38       39       40       41       42         
-!          NO+     HOBr     C2H4    CH3OH    CH3Br    CH3CN      CF4
-
-
-! C4H2, HC3N,  H2,    CS, SO3???      ???      ???    
+!!           36       37       38       39       40       41       42         
+!!          NO+     HOBr     C2H4    CH3OH    CH3Br    CH3CN      CF4
+!
+!!           43       44       45       46       47
+!!          C4H2    HC3N       H2       CS      SO3
 !                                                                       
 !      END                                           
 !      FUNCTION QV (M,XKT,W,ND,NV,MDIM,NVDIM) 
@@ -2667,7 +2666,7 @@
      &   2,   1,    1,    1,    1,   2,     4,    1/  
 !      H2O, CO2,   O3,  N2O,   CO, CH4,    O2,                          
 !       NO, SO2,  NO2,  NH3, HNO3,  OH,    HF,  HCl,  HBr,   HI,        
-!      ClO, OCS, H2CO, HOCl,   N2, HCN, CH3Cl, H2O2, C2H2, C2H6,  PH3   
+!      ClO, OCS, H2CO, HOCl,   N2, HCN, CH3Cl, H2O2, C2H2, C2H6,  PH3,  
 !     COF2, SF6,  H2S,HCOOH,  HO2,   O,ClONO2, NO+, HOBr,  C2H4,CH3OH, 
 !     CH3Br,CH3CN,CF4, C4H2, HC3N,  H2,    CS, SO3/      
 !                                                                       
@@ -2704,148 +2703,149 @@
 !                                                                       
 !     MOLECULAR MASSES FOR EACH ISOTOPE                                 
 !                                                                       
+!  H2O:   161,   181,   171,   162,   182,   172                        
       data (smass(1,i),i=1,6)                                           &
      & /  18.01, 20.01, 19.01, 19.01, 21.02, 20.02/                     
-!  H2O:   161,   181,   171,   162,   182,   172                        
+!  CO2:   626,   636,   628,   627,   638,   637,   828,   827,    727,
+!         838
       data (smass(2,i),i=1,10)                                          &
      & /  43.99, 44.99, 45.99, 44.99, 47.00, 46.00, 48.00, 47.00, 46.00,&
      &    49.00/
-!  CO2:   626,   636,   628,   627,   638,   637,   828,   827,    727,   838
+!   O3:   666,   668,   686    667    676    886    868    678    768   
       data (smass(3,i),i=1,9)                                           &
      & /  47.98, 49.99, 49.99, 48.99, 48.99, 51.99, 51.99, 50.99, 50.99/
-!   O3:   666,   668,   686    667    676    886    868    678    768   
+!  N2O:   446,   456,   546,   448,   447                               
       data (smass(4,i),i=1,5)                                           &
      & /  44.00, 45.00, 45.00, 46.00, 45.00/                            
-!  N2O:   446,   456,   546,   448,   447                               
+!   CO:   26,    36,    28,    27,    38     37                         
       data (smass(5,i),i=1,6)                                           &
      & /  27.99, 28.99, 29.99, 29.00, 31.00, 30.00/                     
-!   CO:   26,    36,    28,    27,    38     37                         
+!  CH4:   211,   311,   212,    312                                         
       data (smass(6,i),i=1,4)                                           &
      & /  16.03, 17.03, 17.03, 18.03/                                          
-!  CH4:   211,   311,   212,    312                                         
+!   O2:    66,    68,    67                                             
       data (smass(7,i),i=1,3)                                           &
      & /  31.99, 33.99, 32.99/                                          
-!   O2:    66,    68,    67                                             
+!   NO:    46,    56,    48,                                            
       data (smass(8,i),i=1,3)                                           &
      & /  30.00, 31.00, 32.00/                                          
-!   NO:    46,    56,    48,                                            
+!  SO2:   626,   646                                                    
       data (smass(9,i),i=1,2)                                           &
      & /  63.96, 65.96/                                                 
-!  SO2:   626,   646                                                    
+!  NO2:   646                                                           
       data (smass(10,i),i=1,1)                                          &
      & /  45.99/                                                        
-!  NO2:   646                                                           
+!  NH3:  4111,  5111;                                                   
       data (smass(11,i),i=1,2)                                          &
      & /  17.03, 18.02/                                                 
-!  NH3:  4111,  5111;                                                   
+! HNO3:                                                                 
       data (smass(12,i),i=1,2)                                          &
      & /  62.99, 63.99/                                                        
-! HNO3:                                                                 
+!   OH:    61,    81,    62                                             
       data (smass(13,i),i=1,3)                                          &
      & /   17.00, 19.01, 18.01/                                         
-!   OH:    61,    81,    62                                             
+!   HF:    19       29                                                    
       data (smass(14,i),i=1,2)                                          &
      & /   20.01, 21.01/                                                      
-!   HF:    19       29                                                    
+!  HCL:   15,    17;       25,    27,                                      
       data (smass(15,i),i=1,4)                                          &
      & /  35.98, 37.97, 36.98, 38.97/                                        
-!  HCL:   15,    17;       25,    27,                                      
+!  HBr:   19,    11;     29,     21                                       
       data (smass(16,i),i=1,4)                                          &
      & /  79.92, 81.92,80.92, 82.92 /                                     
-!  HBr:   19,    11;     29,     21                                       
+!   HI:   17, 27                                                            
       data (smass(17,i),i=1,2)                                          &
      & /  127.91, 128.91/                                                  
-!   HI:   17, 27                                                            
+!  ClO:   56,    76;                                                    
       data (smass(18,i),i=1,2)                                          &
      & /  50.96, 52.96/                                                 
-!  ClO:   56,    76;                                                    
+!  OCS:   622,   624,   632,   623,   822                               
       data (smass(19,i),i=1,5)                                          &
      & /  59.97, 61.96, 60.97, 60.97, 61.97/                            
-!  OCS:   622,   624,   632,   623,   822                               
+! H2CO:  126,   136,   128;                                             
       data (smass(20,i),i=1,3)                                          &
      & /  30.01, 31.01, 32.01/                                          
-! H2CO:  126,   136,   128;                                             
+! HOCl:  165,   167                                                     
       data (smass(21,i),i=1,2)                                          &
      & /  51.97, 53.97/                                                 
-! HOCl:  165,   167                                                     
+!   N2:   44,      45;                                                      
       data (smass(22,i),i=1,2)                                          &
      & /  28.01, 29.01/                                                        
-!   N2:   44,      45;                                                      
+!  HCN:   124,   134,   125,                                            
       data (smass(23,i),i=1,3)                                          &
      & /  27.01, 28.01, 28.01/                                          
-!  HCN:   124,   134,   125,                                            
+! CH3CL:  215,   217;                                                   
       data (smass(24,i),i=1,2)                                          &
      & /  49.99, 51.99/                                                 
-! CH3CL:  215,   217;                                                   
+!  H2O2:  1661;                                                         
       data (smass(25,i),i=1,1)                                          &
      & /  34.01/                                                        
-!  H2O2:  1661;                                                         
+!  C2H2: 1221,  1231 , 1222                                                   
       data (smass(26,i),i=1,3)                                          &
      & /  26.01, 27.02, 27.01/                                                 
-!  C2H2: 1221,  1231 , 1222                                                   
+!  C2H6: 1221, , 1231;                                                      
       data (smass(27,i),i=1,2)                                          &
      & /  30.05, 31.05/                                                        
-!  C2H6: 1221, , 1231;                                                      
+!   PH3:   1111;                                                        
       data (smass(28,i),i=1,1)                                          &
      & /  34.00/                                                        
-!   PH3:   1111;                                                        
+!  COF2:  269, 369;                                                          
       data (smass(29,i),i=1,2)                                          &
      & /  65.99, 66.99/                                                        
-!  COF2:  269, 369;                                                          
+!   SF6:   29                                                           
       data (smass(30,i),i=1,1)                                          &
      & /  145.96/                                                       
-!   SF6:   29                                                           
+!   H2S:  121    141    131;                                            
       data (smass(31,i),i=1,3)                                          &
      & /  33.99, 35.98, 34.99/                                          
-!   H2S:  121    141    131;                                            
+! HCOOH: 126;                                                           
       data (smass(32,i),i=1,1)                                          &
      & /  46.01/                                                        
-! HCOOH: 126;                                                           
+!   HO2:   166                                                          
       data (smass(33,i),i=1,1)                                          &
      & / 33.00/                                                         
-!   HO2:   166                                                          
+!     O:   6                                                            
       data (smass(34,i),i=1,1)                                          &
      & /  15.99/                                                        
-!     O:   6                                                            
+! ClONO2: 5646   7646;                                                  
       data (smass(35,i),i=1,2)                                          &
      & /  96.96, 98.95/                                                 
-! ClONO2: 5646   7646;                                                  
+!   NO+:   46                                                           
       data (smass(36,i),i=1,1)                                          &
      & /  30.00 /                                                       
-!   NO+:   46                                                           
+!  HOBr:  169,    161                                                   
       data (smass(37,i),i=1,2)                                          &
      & /  95.92,  97.92/                                                
-!  HOBr:  169,    161                                                   
+!   C2H4: 221,   231;                                                   
       data (smass(38,i),i=1,2)                                          &
      & /  28.05, 29.05/                                                 
-!   C2H4: 221,   231;                                                   
+!   CH3OH: 2161                                                          
       data (smass(39,i),i=1,1)                                          &
      & /  32.04/                                                        
-!   CH3OH: 2161                                                          
+!   CH3Br: 219, 211 
       data (smass(40,i),i=1,2)                                          &
      & /  93.94, 95.94/                                                        
-!   CH3Br: 219, 211 
+!   CH3CN: 2124
       data (smass(41,i),i=1,1)                                          &
      & /  41.05/                                                        
-!   CH3CN: 2124
+!   CF4: 29
       data (smass(42,i),i=1,1)                                          &
      & /  88.0043/                                                        
-!   CF4: 29
+!   C4H2: 2211
       data (smass(43,i),i=1,1)                                          &
      & /  50.06/                                                        
-!   C4H2: 2211
+!   HC3N: 1224
       data (smass(44,i),i=1,1)                                          &
      & /  51.05/                                                        
-!   HC3N: 1224
+!   H2: 11, 12
       data (smass(45,i),i=1,2)                                          &
      & /  2.016, 3.022/                                                        
-!   H2: 11, 12
+!   CS: 22, 24, 32, 23
       data (smass(46,i),i=1,4)                                          &
      & /  44.08, 46.08, 45.08, 45.08/                   
-!   CS: 22, 24, 32, 23
+!   SO3: 26
       data (smass(47,i),i=1,1)                                          &
      & /  80.066/                   
-!   SO3: 26
 !                                                                       
       END                                           
 !**************************************                                 
@@ -2930,13 +2930,9 @@
       TYPE(LINE_DATA)  :: BUFR
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D 
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER 
-
- 
-      dimension    amol(NLINEREC) 
-      DIMENSION PSHFTDIFF(MXBRDMOL),TMPCOR_ARR(MXBRDMOL), &
-     &     ALFA_TMP(MXBRDMOL)
+!                                                                       
+      DIMENSION TMPCOR_ARR(MXBRDMOL), ALFA_TMP(MXBRDMOL)
       Real*8 ALFSUM
-
 !                                                                       
       REAL L4TIM,L4TMR,L4TMS,LOTHER 
       DIMENSION MEFDP(64) 
@@ -2954,8 +2950,7 @@
      &                     WKI(MXMOL,MXISOTPL)             
 !                                                                       
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)) 
-      EQUIVALENCE (IWD3(1),VD),                     &
-     &            (HLINHD(1),HID(1),IWD(1))
+      EQUIVALENCE (IWD3(1),VD) , (HLINHD(1),HID(1),IWD(1))
       EQUIVALENCE (VNULO,RCDHDR(1))  ! , (MOLB(1),AMOLB(1))        
 !                                                                       
       character*8 h_linf4 
@@ -3119,7 +3114,7 @@
          SHRUNK%VNU(IJ) = BUFR%VNU(I) + RHORAT * BUFR%PSHIFT(I) 
          SHRUNK%ALFA(IJ) = BUFR%ALFA(I) 
          SHRUNK%EPP(IJ) = BUFR%EPP(I) 
-          SHRUNK%MOL(IJ) = M 
+         SHRUNK%MOL(IJ) = M 
 
          if(sum(bufr%brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then 
             shrunk%vnu(ij) = shrunk%vnu(ij)+sum(rhoslf(1:mxbrdmol)*bufr%brd_mol_flg(:,i) &
@@ -3149,7 +3144,7 @@
 !     temperature correction:                                           
                                                                         
          if (shrunk%epp(ij) .gt. -0.999) then 
-         SUI = SUI*SCOR(m,iso)* EXP(-SHRUNK%EPP(ij)*BETACR)*  &
+            SUI = SUI*SCOR(m,iso)* EXP(-SHRUNK%EPP(ij)*BETACR)*  &
             (1.+EXP(-SHRUNK%VNU(ij)* BETA))                                                         
          endif 
 !                                                                       
@@ -3356,7 +3351,7 @@
 !                                                                        
       real*4 rdpnl(2),dum(2),xmol(250) 
       integer*4 i_1 
-!
+!                                                                       
 !                                                                       
       DATA I_1/1/ 
 !                                                                       
@@ -3369,7 +3364,7 @@
       ILO = 1 
       IHI = 0 
 !                                                                       
-      lnfl = linfil	 
+      lnfl = linfil 
       npnlhd = 6 
 !                                                                       
 !   10 CALL BUFIN_sgl(Lnfl,LEOF,rdpnl(1),npnlhd) 
@@ -3420,7 +3415,6 @@
             j = j+3
          end do
          bufr%speed_dep(i) = rdlnbuf%speed_dep(i)
-
    15 continue 
 !                                                                       
       DO 20 J = 1, RDLNPNL%NREC 
@@ -3476,7 +3470,7 @@
 !                                                                       
       DO 20 I = ILO, IHI 
                                                                         
-!     To prevent underflow issues in CONVF4 we set S < 1.0e-35 to zero  
+!     To prevent underflow issues in CONVF4 we set SP < 1.0e-35 to zero  
          IF (SHRUNK%SP(I).lt.1.0e-35) THEN 
             SHRUNK%SP(I) = 0.0 
             SHRUNK%SPP(I) = 0.0 
@@ -3579,8 +3573,8 @@
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 !
       type(LINE_SHRINK)  ::  LINE
-!      COMMON /BUF/  VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),          &
-!     &              MOL(1250),SPP(1250),SRAD(1250)                      
+!      COMMON /BUF/  VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),         &
+!     &              MOL(1250),SPP(1250),SRAD(1250)                     
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     &
      &              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     &
@@ -4013,7 +4007,8 @@
 !                                                                       
       SUBROUTINE XSREAD (XV1,XV2) 
 !                                                                       
-      USE lblparams, ONLY: MXFSC,MXLAY,MXZMD,MXPDIM,IM2,MXMOL,mx_xs,MXTRAC
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !********************************************************************** 
@@ -4192,7 +4187,7 @@
       BLOCK DATA BXSECT
 !     PAN added 08/25/2010, malvarad@aer.com                            
 !                                                                       
-      USE lblparams, ONLY: mx_xs
+      USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !**   XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES        
@@ -4307,7 +4302,8 @@
 !                                                                       
       subroutine xs_set (v1,v2) 
 !                                                                       
-      USE lblparams, ONLY: MXFSC,MXLAY,MXZMD,MXPDIM,IM2,MXMOL,mx_xs,MXTRAC
+      USE lblparams, ONLY: MXFSC, MXLAY, MXZMD, MXPDIM, IM2,            &
+                           MXMOL, MXTRAC, MX_XS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !********************************************************************** 
@@ -4748,8 +4744,8 @@
                DO 100 NP = 1, NPAN 
                   V1FP = V1FP+ REAL(IMAX)*DVFXX 
                   IMAX = NMAX-(NP-1)*NLIMX 
-                  IF (IAFORM.GT.100.AND.NPANEL.LE.0.AND. NBSKIP.EQ.0 &
-                  .AND.IMAX.GT.500) IMAX = 500                              
+                  IF (IAFORM.GT.100 .AND. NPANEL.LE.0 .AND. NBSKIP.EQ.0 &
+                 & .AND. IMAX.GT.500) IMAX = 500                              
                   IMAX = MIN(IMAX,NLIMX) 
 !                                                                       
 !     FOR V2FP IMAX + 3 GIVES US ARRAY LOCATION 514                     
@@ -4910,7 +4906,7 @@
       END                                           
       SUBROUTINE XSECIN (NPANEL,NI,NS,NT1,NT2,NMODE,NSKIP,NMAX,IEOF) 
 !                                                                       
-      USE lblparams, ONLY: mx_xs
+      USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
 !
 !     THIS SUBROUTINE READS IN THE DESIRED CROSS SECTIONS               
@@ -5229,7 +5225,7 @@
       END                                           
       SUBROUTINE XSNTMP (NI,NS,NT1,NT2,NMODE) 
 !                                                                       
-      USE lblparams, ONLY: mx_xs
+      USE lblparams, ONLY: MX_XS
       USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
 !                                                                       
@@ -5318,7 +5314,7 @@
       END                                           
       SUBROUTINE XSBINF (NI,NS,NT1,NT2,NMODE) 
 !                                                                       
-      USE lblparams, ONLY: mx_xs
+      USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     THIS SUBROUTINE PERFORMS A TEMPERATURE DEPENDENT CONVOLUTION      
@@ -5701,7 +5697,7 @@
       END                                           
       SUBROUTINE PNLCNV (R1,JFILE,SUMR,NPTS,NS,NI) 
 !                                                                       
-      USE lblparams, ONLY: mx_xs
+      USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE PNLCNV OUTPUTS THE RESULTS OF THE CONVOLUTION          
@@ -5815,7 +5811,7 @@
 !                                                                       
       END                                           
 !***********************                                                
-      Subroutine TIPS_2003 (mol_max,iso_max,temp_lbl,scor) 
+      Subroutine TIPS_2003 (mol_max,iso_max,temp_lbl,scor)
 !***********************                                                
 !                                                                       
 !    This program calculates the total internal                         
@@ -5860,7 +5856,7 @@
 !                                                                       
 !...This program calculates the TIPS by 4-point LaGrange interpolation  
 !                                                                       
-       USE lblparams, ONLY: NMOL => MXMOL, Max_ISO, NT
+      USE lblparams, ONLY: NMOL => MXMOL, Max_ISO, NT
 !++                                                                     
 !     Max_ISO here is the number that TIPS treats: LBLRTM is limited to 
 !++                                                                     
@@ -5871,7 +5867,7 @@
       COMMON/MOLNAM/MOLID(0:NMOL) 
 !++:  bd-QT                                                             
       COMMON/Temperatures/tdat !mja, 10-27-2011 
-
+                                                                        
       dimension iso_max(nmol),scor(42,10)                               
                                                                         
       character*30 stopNgo 
@@ -6131,8 +6127,6 @@
          go to 100     
       ENDIF     
 !
-!
-!
 !                                                                       
   100 continue 
 !                                                                       
@@ -6165,7 +6159,7 @@
 !                                                                       
       END                                           
                                                                         
-       Block Data BD_TDAT 
+      Block Data BD_TDAT 
 !        initialize Tdat in common block /Temperatures/                 
       USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
@@ -6243,7 +6237,7 @@
 !      ClO, OCS, H2CO, HOCl,   N2, HCN, CH3Cl, H2O2, C2H2, C2H6,  PH3   
 !     COF2, SF6,  H2S,HCOOH,  HO2,   O,ClONO2, NO+, HOBr,  C2H4,CH3OH, 
 !     CH3Br,CH3CN,CF4, C4H2, HC3N,  H2,    CS, SO3/      
-                                                                   
+                                                                        
                                                                         
 !       H2O                                                             
       DATA (ISO82(1,J),J=1,6)/                                          &
@@ -6432,8 +6426,8 @@
       DATA (ISO82(47,J),J=1,1)/                                         &
      &  26/                                                
 !       SO3 
-
-     END                                           
+                                                                        
+      END                                                               
                                                                         
 !                                                                       
 !...date last changed 25 Nov 2001                                       
@@ -6457,13 +6451,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_H2O   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -6651,13 +6645,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_CO2   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -6923,13 +6917,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_O3    (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
 !                                                                       
       USE lblparams, ONLY: NT
@@ -7430,13 +7424,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_N2O   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -7598,13 +7592,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_CO    (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -7792,13 +7786,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_CH4   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -7908,13 +7902,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_O2    (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -8024,13 +8018,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_NO    (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -8140,13 +8134,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_SO2   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -8230,13 +8224,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_NO2   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -8294,13 +8288,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_NH3   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -8366,7 +8360,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8384,13 +8378,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HNO3  (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
@@ -8430,7 +8424,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8448,16 +8442,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_OH    (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -8546,7 +8540,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8564,16 +8558,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HF    (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -8610,7 +8604,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8628,13 +8622,13 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HCl   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT 
@@ -8694,8 +8688,7 @@
      & 0.18317E+04, 0.18572E+04, 0.18828E+04, 0.19086E+04, 0.19346E+04, &
      & 0.19609E+04, 0.19873E+04, 0.20139E+04, 0.20406E+04, 0.20676E+04, &
      & 0.20948E+04, 0.21222E+04, 0.21498E+04, 0.21775E+04, 0.22055E+04, &
-     & 0.22337E+04/
-
+     & 0.22337E+04/                                                     
                                                                         
       eps=0.01 
 !                                                                       
@@ -8719,16 +8712,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HBr   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8809,16 +8802,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HI    (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -8855,7 +8848,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8873,16 +8866,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_ClO   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8945,7 +8938,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8963,16 +8956,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_OCS   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 5), QofT( 5,119),Q(NT) 
@@ -9113,7 +9106,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9131,16 +9124,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_H2CO  (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -9229,7 +9222,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9247,16 +9240,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HOCl  (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -9319,7 +9312,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9337,16 +9330,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_N2    (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9383,7 +9376,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9401,16 +9394,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HCN   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -9499,7 +9492,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9517,16 +9510,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_CH3Cl (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -9589,7 +9582,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9607,16 +9600,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_H2O2  (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9671,16 +9664,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_C2H2  (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -9761,16 +9754,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_C2H6  (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9825,16 +9818,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_PH3   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9889,16 +9882,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_COF2  (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9953,16 +9946,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_SF6   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -10017,16 +10010,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_H2S   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -10133,16 +10126,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HCOOH (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -10197,16 +10190,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HO2   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -10261,16 +10254,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_O     (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -10325,16 +10318,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_ClONO2(                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -10415,16 +10408,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_NOp   (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -10479,16 +10472,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_HOBr  (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi, 	                                                           &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-             ! state independent nuclear degeneracyfactor               
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -10569,16 +10562,16 @@
 !                                                                       
 !     *****************                                                 
       Subroutine QT_C2H4  (                                             &
-     & T, 	                                                             &
-     & iso, 	                                                           &
-     & gsi,   	                                                         &
-     & QT) 	                                                            
-           ! temperature in K                                           
-             ! isotope code (HITRAN INDEX)                              
-               ! state independent nuclear degeneracyfactor             
+     & T,                                                               &
+     & iso,                                                             &
+     & gsi,                                                             &
+     & QT)                                                              
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
             ! Total Internal Partition Function                         
                                                                         
-      USE lblparams, ONLY: NT 
+      USE lblparams, ONLY: NT
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -10731,9 +10724,9 @@
       eps=0.01
 !
       gsi = xgj(iso)
-	do I=1,NT
-	  Q(I)=QofT(iso,I)
-	enddo
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
  
 !
 !...value depends on temperature range
@@ -10873,9 +10866,9 @@
       eps=0.01
 !
       gsi = xgj(iso)
-	do I=1,NT
-	  Q(I)=QofT(iso,I)
-	enddo
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
  
 !
 !...value depends on temperature range
@@ -10937,9 +10930,9 @@
       eps=0.01
 !
       gsi = xgj(iso)
-	do I=1,NT
-	  Q(I)=QofT(iso,I)
-	enddo
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
  
 !
 !...value depends on temperature range
@@ -11001,9 +10994,9 @@
       eps=0.01
 !
       gsi = xgj(iso)
-	do I=1,NT
-	  Q(I)=QofT(iso,I)
-	enddo
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
  
 !
 !...value depends on temperature range
@@ -11195,9 +11188,9 @@
       eps=0.01
 !
       gsi = xgj(iso)
-	do I=1,NT
-	  Q(I)=QofT(iso,I)
-	enddo
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
  
 !
 !...value depends on temperature range
@@ -11284,9 +11277,9 @@
       eps=0.01
 !
       gsi = xgj(iso)
-	do I=1,NT
-	  Q(I)=QofT(iso,I)
-	enddo
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
  
 !
 !...value depends on temperature range
@@ -11426,9 +11419,9 @@
       eps=0.01
 !
       gsi = xgj(iso)
-	do I=1,NT
-	  Q(I)=QofT(iso,I)
-	enddo
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
  
 !
 !...value depends on temperature range
@@ -11442,7 +11435,7 @@
 !      
    99 return
       end
-!
+!                                                                       
 !                                                                       
 !                                                                       
 !***************************                                            

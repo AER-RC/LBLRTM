@@ -133,10 +133,10 @@
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
 !                                                                       
-!      PARAMETER (MXMOL=39) 
 !                                                                       
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
-      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,        &
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)                   
+!                                                                       
+      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,10),SCOR(42,10),ALFMAX,      &
      &              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,    &
      &              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,     &
      &              PAVP2,RECTLC,TMPDIF,ILC                             
@@ -666,6 +666,8 @@
       END                                           
       SUBROUTINE RDLIN 
 !                                                                       
+      USE struct_types
+
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE RDLIN INPUTS LINE DATA FROM FILE LINFIL                
@@ -682,23 +684,23 @@
      &                MCNTNL(64),SUMSTR(64),LINMOL,FLINLO,FLINHI,       &
      &                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL   
                                                                         
-      COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),  &
-     &       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),  &
-     &       ZETAI(250),IZETA(250)                                      
+      COMMON VNU(NLINEREC),SP(NLINEREC),ALFA0(NLINEREC),EPP(NLINEREC),MOL(NLINEREC),HWHMS(NLINEREC),  &
+     &       TMPALF(NLINEREC),PSHIFT(NLINEREC),IFLG(NLINEREC),SPPSP(NLINEREC),RECALF(NLINEREC),  &
+     &       ZETAI(NLINEREC),IZETA(NLINEREC)                                      
                                                                         
-      dimension    amol(250) 
-      equivalence (mol(1),amol(1)) 
+      common /brdmoldat/ brd_mol_flg(mxbrdmol,NLINEREC),               &
+     &     brd_mol_hw(mxbrdmol,NLINEREC),brd_mol_tmp(mxbrdmol,NLINEREC),               &
+     &     brd_mol_shft(mxbrdmol,NLINEREC),sdep(nlinerec)
+ 
+      dimension    amol(NLINEREC) 
+
+!      equivalence (mol(1),amol(1)) 
                                                                         
-      common /rdlnpnl/ vmin,vmax,nrec,nwds 
       integer *4 nrec,nwds,lnfl,leof,npnlhd 
                                                                         
-      common /rdlnbuf/ vlin(250),str(250),hw_f(250),e_low(250),         &
-     &     mol_id(250),hw_s(250),hw_T(250),shft(250),jflg(250)          
-      dimension xmol(250) 
-      equivalence (vmin,rdpnl(1)),(mol_id(1),xmol(1)) 
-                                                                        
-      real *4 str,hw_f,e_low,xmol,hw_s,hw_T,shft,rdpnl(2),dum(2) 
-      integer *4 mol_id,jflg,i_1 
+
+      real *4 str,hw_f,e_low,xmol,hw_s,hw_T,shft
+      integer *4 mol_id,jflg,i_1,brd_mol_flg 
                                                                         
       COMMON /XSUB/ VBOT,VTOP,VFT,LIMIN,ILO,IHI,IEOF,IPANEL,ISTOP,IDATA 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -709,6 +711,9 @@
       common /bufid2/ n_negepp(64),n_resetepp(64),xspace(4096),lstwdl2 
       integer *4 negepp_flag,n_negepp,n_resetepp 
       real *4 xspace 
+
+      type(input_header) :: rdlnpnl
+      type(input_block)  :: rdlnbuf, dumbuf
 !                                                                       
                                                                         
 !***********************************************************************
@@ -735,40 +740,88 @@
             endif 
          ENDIF 
 !                                                                       
-   10    CALL BUFIN_sgl(Lnfl,LEOF,rdpnl(1),npnlhd) 
+   10    CALL BUFIN_sgl(Lnfl,LEOF,rdlnpnl,npnlhd) 
          IF (LEOF.EQ.0) THEN 
             IF (NOPR.EQ.0) WRITE (IPR,900) 
             IEOF = 1 
             RETURN 
          ENDIF 
 !                                                                       
-         IF (NREC.GT.LIMIN) STOP 'RDLIN; NREC GT LIMIN' 
+         IF (rdlnpnl%nrec.GT.LIMIN) STOP 'RDLIN; NREC GT LIMIN' 
 !                                                                       
-         IF (VMAX.LT.VBOT) THEN 
-            CALL BUFIN_sgl(Lnfl,LEOF,DUM(1),i_1) 
+         IF (rdlnpnl%VMAX.LT.VBOT) THEN 
+            CALL BUFIN_sgl(Lnfl,LEOF,dumbuf,i_1) 
             GO TO 10 
          ENDIF 
 !                                                                       
-         CALL BUFIN_sgl(Lnfl,LEOF,vlin(1),NWDS) 
+         CALL BUFIN_sgl(Lnfl,LEOF,rdlnbuf,rdlnpnl%NWDS) 
 !                                                                       
 !     precision conversion occurs here:                                 
 !     incoming on right: vlin is real*8, others real*4 and integer*4    
 !                                                                       
          do 15 i=1,nrec 
-                                                                        
-         IFLG(i) = jflg(i) 
-         VNU(i) = vlin(i) 
-         SP(i) = str(i) 
-         ALFA0(i) = hw_f(i) 
-         EPP(i) = e_low(i) 
+
+! 
+!         IFLG(i) = jflg(i) 
+!         VNU(i) = vlin(i) 
+!         SP(i) = str(i) 
+!         ALFA0(i) = hw_f(i) 
+!         EPP(i) = e_low(i) 
+         IFLG(i) = rdlnbuf%iflg(i) 
+         VNU(i) = rdlnbuf%vnu(i) 
+         SP(i) = rdlnbuf%sp(i) 
+         ALFA0(i) = rdlnbuf%alfa(i) 
+         EPP(i) = rdlnbuf%epp(i) 
+
+!         if (iflg(i) .ge. 0) then 
+!         MOL(i) = mol_id(i) 
+!         else 
+!         amol(i) = xmol(i) 
+!         endif 
          if (iflg(i) .ge. 0) then 
-         MOL(i) = mol_id(i) 
+            MOL(i) = rdlnbuf%mol(i) ! int*4 to int*8 (if compiled as r8)
          else 
-         amol(i) = xmol(i) 
+           xmol = transfer(rdlnbuf%mol(i),xmol) !int*4 to real*4) 
+           amol(i) = xmol   ! real*4 to real*8 (if compiled as r8)
+           mol(i) = transfer (amol(i), mol(i))  ! real*8 to int*8  (if compiled as r8)
          endif 
-         HWHMS(i) = hw_s(i) 
-         TMPALF(i)= hw_T(i) 
-         PSHIFT(i)= shft(i) 
+
+!         HWHMS(i) = hw_s(i) 
+!         TMPALF(i)= hw_T(i) 
+!         PSHIFT(i)= shft(i) 
+         HWHMS(i) = rdlnbuf%hwhm(i) 
+         TMPALF(i)= rdlnbuf%tmpalf(i) 
+         PSHIFT(i)= rdlnbuf%pshift(i) 
+                                                                        
+         do j=1,mxbrdmol
+            brd_mol_flg(j,i)=rdlnbuf%brd_mol_flg_in(j,i)
+         end do
+         j = 1
+         do j1 = 1,mxbrdmol
+            brd_mol_hw(j1,i) = rdlnbuf%brd_mol_dat(j,i)
+            brd_mol_tmp(j1,i) = rdlnbuf%brd_mol_dat(j+1,i)
+            brd_mol_shft(j1,i) = rdlnbuf%brd_mol_dat(j+2,i)
+            j = j+3
+         end do
+         sdep(i) = rdlnbuf%speed_dep(i)
+
+
+!  MJA 20140909
+!  HITRAN provides widths for broadening by air; LBLRTM and MONORTM have always treated these widths as foreign
+!  This assumption is valid for most species, but not for N2 or O2. We now adjust the HITRAN widths to obtain
+!  true foreign widths.
+          M = MOD(MOL(I),100)
+          !WRITE(*,*) M
+          if (M.eq.7 .AND. IFLG(i).ge.0) then
+             !WRITE(*,*) M, ALFA0(i),HWHMS(i) 
+             rvmr = 0.21
+             ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
+             !WRITE(*,*) M, ALFA0(i),HWHMS(i)
+         endif
+         if (M.eq.22 .AND. IFLG(i).ge.0) then 
+             rvmr = 0.79
+             ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
+         endif
                                                                         
    15    continue 
                                                                         
@@ -776,7 +829,7 @@
          ILO = 1 
 !                                                                       
          IJ = 0 
-         DO 20 I = 1, NREC 
+         DO 20 I = 1, rdlnpnl%NREC 
             IF (IFLG(I).GE.0) THEN 
                IJ = IJ+1 
                IOUT(IJ) = I 
@@ -784,7 +837,7 @@
    20    END DO 
 !                                                                       
          DO 30 I = IJ+1, 250 
-            IOUT(I) = NREC 
+            IOUT(I) = rdlnpnl%NREC 
    30    END DO 
 !                                                                       
          IF (VMIN.LT.VBOT) THEN 
@@ -819,16 +872,26 @@
       END                                           
       SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP) 
 !                                                                       
+      USE lblparams, ONLY: MXMOL, MXISOTPL
       USE phys_consts, ONLY: radcn2
-      USE lblparams, ONLY: MXMOL
+      USE struct_types, ONLY: mxbrdmol, nlinerec
       IMPLICIT REAL*8           (V) 
 !                                                                       
-      CHARACTER*1 FREJ(250),HREJ,HNOREJ 
+      CHARACTER*1 FREJ(nlinerec),HREJ,HNOREJ 
       COMMON /RCNTRL/ ILNFLG 
-      COMMON VNU(250),S(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),   &
-     &       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),  &
-     &       ZETAI(250),IZETA(250)                                      
-      COMMON /IOU/ IOUT(250) 
+      COMMON VNU(nlinerec),S(nlinerec),ALFA0(nlinerec),EPP(nlinerec),MOL(nlinerec),HWHMS(nlinerec),   &
+     &       TMPALF(nlinerec),PSHIFT(nlinerec),IFLG(nlinerec),SPPSP(nlinerec),RECALF(nlinerec),  &
+     &       ZETAI(nlinerec),IZETA(nlinerec)                                      
+       common /brdmoldat/ brd_mol_flg(mxbrdmol,nlinerec),       &
+     &     brd_mol_hw(mxbrdmol,nlinerec),brd_mol_tmp(MXBRDMOL,nlinerec),    &
+     &     brd_mol_shft(mxbrdmol,nlinerec),sdep(nlinerec)
+         integer*4 brd_mol_flg
+
+       DIMENSION TMPCOR_ARR(MXBRDMOL),ALFA_TMP(MXBRDMOL)
+       Real*8 ALFSUM
+
+
+      COMMON /IOU/ IOUT(nlinerec) 
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     &
      &              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     &
@@ -844,7 +907,7 @@
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
       COMMON /IFIL/   IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,     &
      &                NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,    &
-     &                NLTEFL,LNFIL4,LNGTH4                              
+     &                NLTEFL,LNFIL4,LNGTH4,IBRD                              
       COMMON /XSUB/   VBOT,VTOP,VFT,DUM(7) 
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502) 
@@ -853,15 +916,21 @@
       COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),         &
      &                CF3(102),CER(102)                                 
 !                                                                       
-!      PARAMETER (MXMOL=39) 
-!                                                                       
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
-      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,9),SCOR(42,9),ALFMAX,        &
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)                   
+!
+      COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,10),SCOR(42,10),ALFMAX,      &
      &              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,    &
      &              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,     &
      &              PAVP2,RECTLC,TMPDIF,ILC                             
       DIMENSION MEFDP(64),FILHDR(2),AMOL(250),SP(250) 
       DIMENSION A(4),B(4),TEMPLC(4) 
+!                                                                       
+      COMMON /PATH_ISOTPL/ ISOTPL,NISOTPL,                              &
+     &                     ISOTPL_FLAG(MXMOL,MXISOTPL),                 &
+     &                     ISOTPL_MAIN_FLAG(MXMOL),                     &
+     &                     MOLNUM(MXMOL*MXISOTPL),                      &
+     &                     ISOTPLNUM(MXMOL*MXISOTPL),                   &
+     &                     WKI(MXMOL,MXISOTPL)             
 !                                                                       
       EQUIVALENCE (MOL(1),AMOL(1)) , (S(1),SP(1)) 
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),              &
@@ -935,8 +1004,12 @@
 !                                                                       
          MOL(I) = M 
 !                                                                       
-         SUI = S(I)*WK(M) 
-
+            IF (ISOTPL_FLAG(M,ISO).EQ.0) THEN
+               SUI = S(I)*WK(M) 
+            ELSE
+               SUI = S(I)*WKI(M,ISO) 
+            ENDIF
+!                                                                       
 !MJA, 20150821 - using the VNU(I) approximation for the radiation term 
 !                can cause issues for wavenumbers around 1000 cm-1,
 !                so use the full rad term instead
@@ -980,6 +1053,11 @@
 !     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS         
 !                                                                       
          VNU(I) = VNU(I)+RHORAT*PSHIFT(I) 
+         if(sum(brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then
+            vnu(i) = vnu(i)+sum(rhoslf(1:mxbrdmol)*brd_mol_flg(:,i)* &
+     &           (brd_mol_shft(:,i)-pshift(i)))
+         endif
+
 !                                                                       
 !     TEMPERATURE CORRECTION OF THE HALFWIDTH                           
 !     SELF TEMP DEPENDENCE TAKEN THE SAME AS FOREIGN                    
@@ -988,6 +1066,17 @@
          ALFA0I = ALFA0(I)*TMPCOR 
          HWHMSI = HWHMS(I)*TMPCOR 
          ALFL = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m) 
+
+         if(sum(brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then
+            tmpcor_arr = tratio**brd_mol_tmp(:,i)
+            alfa_tmp = brd_mol_hw(:,i)*tmpcor_arr
+            alfsum = sum(rhoslf(1:mxbrdmol)*brd_mol_flg(:,i)*alfa_tmp)
+            alfl = (rhorat-sum(rhoslf(1:mxbrdmol)*brd_mol_flg(:,i))) &
+     &           *alfa0i + alfsum
+            if(brd_mol_flg(m,i).eq.0)   &
+     &           alfl = alfl + rhoslf(m)*(hwhmsi-alfa0i)
+         end if
+
 !                                                                       
          IF (IFLAG.EQ.3) ALFL = ALFL*(1.0-GAMMA1*PAVP0-GAMMA2*PAVP2) 
 !                                                                       
@@ -2111,6 +2200,25 @@
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 !                                                                       
+! INPUTS: 
+!         VI: Starting Wavenumber in cm-1
+!        DVI: Wavenumber step in cm-1
+!        XKT: Tave/RADCN2 = kb*Tave/(h*c) 
+!
+! INPUT/OUTPUT:
+!     RDLAST: If negative, this is the first call
+!             If positive, used as input, should be the radiation term (in cm-1) at VI 
+!             In either case, returned value is the radiation term at VINEW
+!      VINEW: If negative, this is used as input to determine location of VINEW,
+!                  but is adjusted to ensure that VINEW-VI is an integer number of DVI's 
+!             If positive, VINEW is initally estimates as 1.003*VI, then adjusted 
+!                  to ensure that VINEW-VI is an integer number of DVI's 
+!             Adjusted value is returned
+!
+! OUTPUT:
+!     RADFNI: Radiation term (in cm-1) at VI  
+!       RDEL: Linear change for each DVI for a straight line connecting R(VI) and R(VINEW)
+!                                                                       
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 !                                                                       
 !      IN THE SMALL XVIOKT REGION 0.5 IS REQUIRED                       
@@ -2173,25 +2281,6 @@
 !                                                                       
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
-!
-! INPUTS: 
-!         VI: Starting Wavenumber in cm-1
-!        DVI: Wavenumber step in cm-1
-!        XKT: Tave/RADCN2 = kb*Tave/(h*c) 
-!
-! INPUT/OUTPUT:
-!     RDLAST: If negative, this is the first call
-!             If positive, used as input, should be the radiation term (in cm-1) at VI 
-!             In either case, returned value is the radiation term at VINEW
-!      VINEW: If negative, this is used as input to determine location of VINEW,
-!                  but is adjusted to ensure that VINEW-VI is an integer number of DVI's 
-!             If positive, VINEW is initally estimates as 1.003*VI, then adjusted 
-!                  to ensure that VINEW-VI is an integer number of DVI's 
-!             Adjusted value is returned
-!
-! OUTPUT:
-!     RADFNI: Radiation term (in cm-1) at VI  
-!       RDEL: Linear change for each DVI for a straight line connecting R(VI) and R(VINEW)
 !                                                                       
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
       DATA FACT1 / 3.0E-03 / 
@@ -2322,16 +2411,15 @@
       END                                           
       SUBROUTINE MOLEC (IND,SCOR,RHOSLF,ALFD1) 
 !                                                                       
-      USE phys_consts, ONLY: boltz, avogad, clight, radcn2
       USE lblparams, ONLY: MXMOL
+      USE phys_consts, ONLY: boltz, avogad, clight, radcn2
       IMPLICIT REAL*8           (V) 
-!                                                                       
-!      PARAMETER (MXMOL=39) 
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)                   
+!
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     &
      &              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     &
@@ -2345,7 +2433,8 @@
       COMMON /FILHDR/ XID(10),SECANT,P   ,TEMP,HMOLID(60),XALTZ(4),     &
      &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
      &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF  
-      DIMENSION SCOR(42,9),RHOSLF(*),ALFD1(42,9) 
+      DIMENSION SCOR(42,10),RHOSLF(*),ALFD1(42,10)                      
+!
       COMMON /SMOLEC/ W(42,9),ND(42,9),FAD 
       COMMON /XMOLEC/ NV(42),IVIB(42,2,9),XR(42),ROTFAC(42),QV0(42) 
       COMMON /MOLNAM/ MOLID(0:MXMOL) 
@@ -2402,175 +2491,181 @@
   900 FORMAT (A6) 
 !                                                                       
       END                                           
-      BLOCK DATA BMOLEC 
+!      BLOCK DATA BMOLEC 
 !                                                                       
-      COMMON /XMOLEC/                                                   &
-     &  NV1(7),NV2(7),NV3(7),NV4(7),NV5(7),NV6(7),                      &
-     &  IV11(14),IV12(14),IV13(14),IV14(14),IV15(14),IV16(14),          &
-     &  IV21(14),IV22(14),IV23(14),IV24(14),IV25(14),IV26(14),          &
-     &  IV31(14),IV32(14),IV33(14),IV34(14),IV35(14),IV36(14),          &
-     &  IV41(14),IV42(14),IV43(14),IV44(14),IV45(14),IV46(14),          &
-     &  IV51(14),IV52(14),IV53(14),IV54(14),IV55(14),IV56(14),          &
-     &  IV61(14),IV62(14),IV63(14),IV64(14),IV65(14),IV66(14),          &
-     &  IV71(14),IV72(14),IV73(14),IV74(14),IV75(14),IV76(14),          &
-     &  IV81(14),IV82(14),IV83(14),IV84(14),IV85(14),IV86(14),          &
-     &  IV91(14),IV92(14),IV93(14),IV94(14),IV95(14),IV96(14),          &
-     &  XR1(7),XR2(7),XR3(7),XR4(7),XR5(7),XR6(7),                      &
-     &  ROTFC1(7),ROTFC2(7),ROTFC3(7),ROTFC4(7),ROTFC5(7),ROTFC6(7),    &
-     &  QV0(42)                                                         
+!      COMMON /XMOLEC/                                                   &
+!     &  NV1(7),NV2(7),NV3(7),NV4(7),NV5(7),NV6(7),                      &
+!     &  IV11(14),IV12(14),IV13(14),IV14(14),IV15(14),IV16(14),          &
+!     &  IV21(14),IV22(14),IV23(14),IV24(14),IV25(14),IV26(14),          &
+!     &  IV31(14),IV32(14),IV33(14),IV34(14),IV35(14),IV36(14),          &
+!     &  IV41(14),IV42(14),IV43(14),IV44(14),IV45(14),IV46(14),          &
+!     &  IV51(14),IV52(14),IV53(14),IV54(14),IV55(14),IV56(14),          &
+!     &  IV61(14),IV62(14),IV63(14),IV64(14),IV65(14),IV66(14),          &
+!     &  IV71(14),IV72(14),IV73(14),IV74(14),IV75(14),IV76(14),          &
+!     &  IV81(14),IV82(14),IV83(14),IV84(14),IV85(14),IV86(14),          &
+!     &  IV91(14),IV92(14),IV93(14),IV94(14),IV95(14),IV96(14),          &
+!     &  XR1(7),XR2(7),XR3(7),XR4(7),XR5(7),XR6(7),                      &
+!     &  ROTFC1(7),ROTFC2(7),ROTFC3(7),ROTFC4(7),ROTFC5(7),ROTFC6(7),    &
+!     &  QV0(42)                                                         
 !                                                                       
-      DATA NV1,IV11,IV21,IV31,IV41,IV51,IV61,IV71,IV81,IV91,XR1,ROTFC1/ &
-     &       3 ,      3 ,      3 ,      3 ,      1 ,      4 ,      1 ,  &
-     &  3657,1 , 1388,1 , 1103,1 , 1285,1 , 2143,1 , 2917,1 , 1556,1 ,  &
-     &  1595,1 ,  667,2 ,  701,1 ,  589,2 ,    0,0 , 1533,2 ,    0,0 ,  &
-     &  3756,1 , 2349,1 , 1042,1 , 2224,1 ,    0,0 , 3019,3 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 1311,3 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0.5 ,    0.25,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,  &
-     &     1.5 ,    1.0 ,    1.5 ,    1.0 ,    1.0 ,    1.5 ,    1.0 /  
+!      DATA NV1,IV11,IV21,IV31,IV41,IV51,IV61,IV71,IV81,IV91,XR1,ROTFC1/ &
+!     &       3 ,      3 ,      3 ,      3 ,      1 ,      4 ,      1 ,  &
+!     &  3657,1 , 1388,1 , 1103,1 , 1285,1 , 2143,1 , 2917,1 , 1556,1 ,  &
+!     &  1595,1 ,  667,2 ,  701,1 ,  589,2 ,    0,0 , 1533,2 ,    0,0 ,  &
+!     &  3756,1 , 2349,1 , 1042,1 , 2224,1 ,    0,0 , 3019,3 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 1311,3 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0.5 ,    0.25,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,  &
+!     &     1.5 ,    1.0 ,    1.5 ,    1.0 ,    1.0 ,    1.5 ,    1.0 /  
 !                                                                       
-!            1        2        3        4        5        6        7    
-!          H2O      CO2       O3      N2O       CO      CH4       O2    
+!!            1        2        3        4        5        6        7    
+!!          H2O      CO2       O3      N2O       CO      CH4       O2    
 !                                                                       
-      DATA NV2,IV12,IV22,IV32,IV42,IV52,IV62,IV72,IV82,IV92,XR2,ROTFC2/ &
-     &       1 ,      3 ,      3 ,      4 ,      9 ,      1 ,      1 ,  &
-     &  1876,1 , 1152,1 , 1318,1 , 3337,1 , 3550,1 , 3569,1 , 3961,1 ,  &
-     &     0,0 ,  518,1 ,  750,1 ,  950,1 , 1710,1 ,    0,0 ,    0,0 ,  &
-     &     0,0 , 1362,1 , 1617,1 , 3444,2 , 1331,1 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 , 1627,2 , 1325,1 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  879,1 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  647,1 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  579,1 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  762,1 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  456,1 ,    0,0 ,    0,0 ,  &
-     &     0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,  &
-     &     1.0 ,    1.5 ,    1.5 ,    1.5 ,    1.5 ,    1.0 ,    1.0 /  
+!      DATA NV2,IV12,IV22,IV32,IV42,IV52,IV62,IV72,IV82,IV92,XR2,ROTFC2/ &
+!     &       1 ,      3 ,      3 ,      4 ,      9 ,      1 ,      1 ,  &
+!     &  1876,1 , 1152,1 , 1318,1 , 3337,1 , 3550,1 , 3569,1 , 3961,1 ,  &
+!     &     0,0 ,  518,1 ,  750,1 ,  950,1 , 1710,1 ,    0,0 ,    0,0 ,  &
+!     &     0,0 , 1362,1 , 1617,1 , 3444,2 , 1331,1 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 , 1627,2 , 1325,1 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  879,1 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  647,1 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  579,1 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  762,1 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  456,1 ,    0,0 ,    0,0 ,  &
+!     &     0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,  &
+!     &     1.0 ,    1.5 ,    1.5 ,    1.5 ,    1.5 ,    1.0 ,    1.0 /  
 !                                                                       
-!            8        9       10       11       12       13       14    
-!           NO      SO2      NO2      NH3     HNO3       OH       HF    
+!!            8        9       10       11       12       13       14    
+!!           NO      SO2      NO2      NH3     HNO3       OH       HF    
 !                                                                       
-      DATA NV3,IV13,IV23,IV33,IV43,IV53,IV63,IV73,IV83,IV93,XR3,ROTFC3/ &
-     &       1 ,      1 ,      1 ,      1 ,      3 ,      6 ,      3 ,  &
-     &  2885,1 , 2558,1 , 2229,1 ,  842,1 ,  859,1 , 2782,1 , 3609,1 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  520,2 , 1746,1 , 1238,1 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 , 2062,1 , 1500,1 ,  740,1 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 1167,1 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 2843,1 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 1249,1 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0.5 ,    0.5 ,    0.5 ,    0.25,    0.5 ,    0.5 ,    0.5 ,  &
-     &     1.0 ,    1.0 ,    1.0 ,    1.0 ,    1.0 ,    1.5 ,    1.5 /  
+!      DATA NV3,IV13,IV23,IV33,IV43,IV53,IV63,IV73,IV83,IV93,XR3,ROTFC3/ &
+!     &       1 ,      1 ,      1 ,      1 ,      3 ,      6 ,      3 ,  &
+!     &  2885,1 , 2558,1 , 2229,1 ,  842,1 ,  859,1 , 2782,1 , 3609,1 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,  520,2 , 1746,1 , 1238,1 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 , 2062,1 , 1500,1 ,  740,1 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 1167,1 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 2843,1 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 1249,1 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0.5 ,    0.5 ,    0.5 ,    0.25,    0.5 ,    0.5 ,    0.5 ,  &
+!     &     1.0 ,    1.0 ,    1.0 ,    1.0 ,    1.0 ,    1.5 ,    1.5 /  
 !                                                                       
-!           15       16       17       18       19       20       21    
-!          HCL      HBR       HI      CLO      OCS     H2CO     HOCL    
+!!           15       16       17       18       19       20       21    
+!!          HCL      HBR       HI      CLO      OCS     H2CO     HOCL    
 !                                                                       
-      DATA NV4,IV14,IV24,IV34,IV44,IV54,IV64,IV74,IV84,IV94,XR4,ROTFC4/ &
-     &       1 ,      3 ,      6 ,      6 ,      5 ,      9 ,      4 ,  &
-     &  2330,1 , 2089,1 , 2968,1 , 3607,1 , 3374,1 , 2899,1 , 2327,1 ,  &
-     &     0,0 ,  713,2 , 1355,1 , 1394,1 , 1974,1 , 1375,1 ,  992,1 ,  &
-     &     0,0 , 3311,1 ,  732,1 ,  864,1 , 3295,1 ,  993,1 , 1118,2 ,  &
-     &     0,0 ,    0,0 , 3039,2 ,  317,1 ,  612,2 ,  275,1 , 2421,2 ,  &
-     &     0,0 ,    0,0 , 1455,2 , 3608,1 ,  730,2 , 2954,1 ,    0,0 ,  &
-     &     0,0 ,    0,0 , 1015,2 , 1269,1 ,    0,0 , 1379,1 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 2994,2 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 1486,1 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  822,2 ,    0,0 ,  &
-     &     0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,  &
-     &     1.0 ,    1.0 ,    1.5 ,    1.5 ,    1.0 ,    1.5 ,    1.5 /  
+!      DATA NV4,IV14,IV24,IV34,IV44,IV54,IV64,IV74,IV84,IV94,XR4,ROTFC4/ &
+!     &       1 ,      3 ,      6 ,      6 ,      5 ,      9 ,      4 ,  &
+!     &  2330,1 , 2089,1 , 2968,1 , 3607,1 , 3374,1 , 2899,1 , 2327,1 ,  &
+!     &     0,0 ,  713,2 , 1355,1 , 1394,1 , 1974,1 , 1375,1 ,  992,1 ,  &
+!     &     0,0 , 3311,1 ,  732,1 ,  864,1 , 3295,1 ,  993,1 , 1118,2 ,  &
+!     &     0,0 ,    0,0 , 3039,2 ,  317,1 ,  612,2 ,  275,1 , 2421,2 ,  &
+!     &     0,0 ,    0,0 , 1455,2 , 3608,1 ,  730,2 , 2954,1 ,    0,0 ,  &
+!     &     0,0 ,    0,0 , 1015,2 , 1269,1 ,    0,0 , 1379,1 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 2994,2 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 , 1486,1 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  822,2 ,    0,0 ,  &
+!     &     0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,    0.5 ,  &
+!     &     1.0 ,    1.0 ,    1.5 ,    1.5 ,    1.0 ,    1.5 ,    1.5 /  
 !                                                                       
-!           22       23       24       25       26       27       28    
-!           N2      HCN    CH3Cl     H2O2     C2H2     C2H6      PH3    
+!!           22       23       24       25       26       27       28    
+!!           N2      HCN    CH3Cl     H2O2     C2H2     C2H6      PH3    
 !                                                                       
-      DATA NV5,IV15,IV25,IV35,IV45,IV55,IV65,IV75,IV85,IV95,XR5,ROTFC5/ &
-     &       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,  &
-     &  0000,1 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,  &
-     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 /  
+!      DATA NV5,IV15,IV25,IV35,IV45,IV55,IV65,IV75,IV85,IV95,XR5,ROTFC5/ &
+!     &       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,  &
+!     &  0000,1 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,  &
+!     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 /  
 !                                                                       
-!           29       30       31       32       33       34       35    
-!         COF2      SF6      H2S    HCOOH      HO2        O   ClONO2    
+!!           29       30       31       32       33       34       35    
+!!         COF2      SF6      H2S    HCOOH      HO2        O   ClONO2    
 !                                                                       
-      DATA NV6,IV16,IV26,IV36,IV46,IV56,IV66,IV76,IV86,IV96,XR6,ROTFC6/ &
-     &       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,  &
-     &  0000,1 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
-     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,  &
-     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 /  
+!      DATA NV6,IV16,IV26,IV36,IV46,IV56,IV66,IV76,IV86,IV96,XR6,ROTFC6/ &
+!     &       0 ,      0 ,      0 ,      0 ,      0 ,      0 ,      0 ,  &
+!     &  0000,1 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 , 0000,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,    0,0 ,  &
+!     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,  &
+!     &     0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 ,    0.0 /  
 !                                                                       
-!           36       37       38       39                               
-!          NO+     HOBr     C2H4    CH3OH      ???      ???      ???    
+!!           36       37       38       39       40       41       42         
+!!          NO+     HOBr     C2H4    CH3OH    CH3Br    CH3CN      CF4
+!
+!!           43       44       45       46       47
+!!          C4H2    HC3N       H2       CS      SO3
 !                                                                       
-      END                                           
-      FUNCTION QV (M,XKT,W,ND,NV,MDIM,NVDIM) 
+!      END                                           
+!      FUNCTION QV (M,XKT,W,ND,NV,MDIM,NVDIM) 
 !                                                                       
 !     FUNCTION QV CALCULATES THE VIBRATIONAL PARTITION SUM              
 !                                                                       
-      DIMENSION W(MDIM,NVDIM),ND(MDIM,NVDIM) 
-      QV = 1. 
-      DO 10 I = 1, NV 
-         SV = 1.-EXP(-W(M,I)/XKT) 
-         IF (ND(M,I).GT.1) SV = SV**ND(M,I) 
-         QV = QV/SV 
-   10 END DO 
+!      DIMENSION W(MDIM,NVDIM),ND(MDIM,NVDIM) 
+!      QV = 1. 
+!      DO 10 I = 1, NV 
+!         SV = 1.-EXP(-W(M,I)/XKT) 
+!         IF (ND(M,I).GT.1) SV = SV**ND(M,I) 
+!         QV = QV/SV 
+!   10 END DO 
 !                                                                       
-      RETURN 
+!      RETURN 
 !                                                                       
-      END                                           
+!      END                                           
 !  ****************************************                             
       BLOCK DATA Isotop 
 !  ****************************************                             
 !                                                                       
-      USE lblparams, ONLY: MXMOL
-!      PARAMETER (NMOL=39) 
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASS(MXMOL,9) 
-      common /iso_id/ iso_82(98) 
+      USE lblparams, ONLY: NMOL => MXMOL
+
+      COMMON /ISVECT/ ISO_MAX(NMOL),SMASS(NMOL,10)                      
+      common /iso_id/ iso_82(124) 
 !                                                                       
 !    The number of isotopes for a particular molecule:                  
-      DATA (ISO_MAX(I),I=1,MXMOL)/                                       &
-     &   6,   9,    9,    5,    6,   3,     3,                          &
-     &   3,   2,    1,    2,    1,   3,     1,    2,    2,    1,        &
-     &   2,   5,    3,    2,    1,   3,     2,    1,    2,    1,    1,  &
-     &   1,   1,    3,    1,    1,   1,     2,    1,    2,    2,    1/  
+      DATA (ISO_MAX(I),I=1,NMOL)/                                       &
+     &   6,  10,    9,    5,    6,   4,     3,                          &
+     &   3,   2,    1,    2,    2,   3,     2,    4,    4,    2,        &
+     &   2,   5,    3,    2,    2,   3,     2,    1,    3,    2,    1,  &
+     &   2,   1,    3,    1,    1,   1,     2,    1,    2,    2,    1,  &
+     &   2,   1,    1,    1,    1,   2,     4,    1/  
 !      H2O, CO2,   O3,  N2O,   CO, CH4,    O2,                          
 !       NO, SO2,  NO2,  NH3, HNO3,  OH,    HF,  HCl,  HBr,   HI,        
-!      ClO, OCS, H2CO, HOCl,   N2, HCN, CH3Cl, H2O2, C2H2, C2H6,  PH3   
-!     COF2, SF6,  H2S,HCOOH,  HO2,   O,ClONO2, NO+, HOBr,  C2H4,CH3OH   
+!      ClO, OCS, H2CO, HOCl,   N2, HCN, CH3Cl, H2O2, C2H2, C2H6,  PH3,  
+!     COF2, SF6,  H2S,HCOOH,  HO2,   O,ClONO2, NO+, HOBr,  C2H4,CH3OH,  
+!     CH3Br,CH3CN,CF4, C4H2, HC3N,  H2,    CS, SO3/      
 !                                                                       
       DATA ISO_82/                                                      &
-     &   161,181,171,162,182,172,                                       &
-     &  626,636,628,627,638,637,828,728,727,                            &
-     &  666,668,686,667,676,886,868,678,768,                            &
-     &  446,456,546,448,447,                                            &
-     &  26,36,28,27,38,37,  211,311,212,                                &
-     &  66,68,67,  46,56,48  ,626,646,                                  &
-     &  646,   4111,5111,  146,                                         &
-     &  61,81,62,  19,  15,17,  19,11,  17,                             &
-     &  56,76,  622,624,632,623,822,  126,136,128,                      &
-     &  165,167,  44,  124,134,125                                      &
-     &, 215,217,  1661,  1221,1231,  1221,  1111,                       &
-     &  269,  29,  121,141,131,   126,    166, 6,   5646,7646,  46,     &
-     &  169,161,   221,231,  2161/                                      
+     &  161,181,171,162,182,172,                                        & 
+     &  626,636,628,627,638,637,828,827,727,838,                        & 
+     &  666,668,686,667,676,886,868,678,768,                            & 
+     &  446,456,546,448,447,                                            & 
+     &  26,36,28,27,38,37,  211,311,212,312,                            & 
+     &  66,68,67,  46,56,48  ,626,646,                                  & 
+     &  646,   4111,5111,  146,156,                                     & 
+     &  61,81,62,  19,29,  15,17,25,27,  19,11,29,21,     17,27,        & 
+     &  56,76,  622,624,632,623,822,  126,136,128,                      & 
+     &  165,167,  44,45,  124,134,125,                                  & 
+     &  215,217,  1661,  1221,1231,1222,  1221,1231,  1111,             & 
+     &  269,369,  29,  121,141,131,   126,    166, 6,   5646,7646,  46, & 
+     &  169,161,   221,231,  2161,   219, 211,     2124,   29,  2211,   & 
+     &  1224,      11, 12,    22, 24, 32, 23,        26/                     
 !       H2O                                                             
 !       CO2                                                             
 !       O3                                                              
@@ -2578,133 +2673,160 @@
 !       CO,                 CH4                                         
 !       O2,        NO,        SO2                                       
 !       NO2,   NH3,        HNO3                                         
-!       OH,        HF,  HCl,    HBr,    HI                              
+!       OH,        HF,          HCl,    HBr,             HI                   
 !       ClO,    OCS,                 H2CO                               
-!       HOCl,     N2,  HCN                                              
-!      CH3Cl,    H2O2,  C2H2,       C2H6,  PH3                          
-!       COF2, SF6, H2S,           HCOOH,  HO2, O,   ClONO2      NO+     
-!       HOBr,      C2H4      CH3OH                                      
+!       HOCl,     N2,     HCN                                              
+!      CH3Cl,    H2O2,  C2H2,            C2H6,        PH3                   
+!       COF2,    SF6, H2S,           HCOOH,  HO2, O,   ClONO2      NO+     
+!       HOBr,      C2H4      CH3OH       CH3Br,     CH3CN,  CF4,   C4H2, 
+!       HC3N,           H2,               CS,       SO3
 !                                                                       
 !                                                                       
 !     MOLECULAR MASSES FOR EACH ISOTOPE                                 
 !                                                                       
+!  H2O:   161,   181,   171,   162,   182,   172                        
       data (smass(1,i),i=1,6)                                           &
      & /  18.01, 20.01, 19.01, 19.01, 21.02, 20.02/                     
-!  H2O:   161,   181,   171,   162,   182,   172                        
-      data (smass(2,i),i=1,9)                                           &
-     & /  43.99, 44.99, 45.99, 44.99, 47.00, 46.00, 48.00, 47.00, 46.00/
-!  CO2:   626,   636,   628,   627,   638,   637,   828,   728,   727   
+!  CO2:   626,   636,   628,   627,   638,   637,   828,   827,    727,
+!         838
+      data (smass(2,i),i=1,10)                                          &
+     & /  43.99, 44.99, 45.99, 44.99, 47.00, 46.00, 48.00, 47.00, 46.00,&
+     &    49.00/
+!   O3:   666,   668,   686    667    676    886    868    678    768   
       data (smass(3,i),i=1,9)                                           &
      & /  47.98, 49.99, 49.99, 48.99, 48.99, 51.99, 51.99, 50.99, 50.99/
-!   O3:   666,   668,   686    667    676    886    868    678    768   
+!  N2O:   446,   456,   546,   448,   447                               
       data (smass(4,i),i=1,5)                                           &
      & /  44.00, 45.00, 45.00, 46.00, 45.00/                            
-!  N2O:   446,   456,   546,   448,   447                               
+!   CO:   26,    36,    28,    27,    38     37                         
       data (smass(5,i),i=1,6)                                           &
      & /  27.99, 28.99, 29.99, 29.00, 31.00, 30.00/                     
-!   CO:   26,    36,    28,    27,    38     37                         
-      data (smass(6,i),i=1,3)                                           &
-     & /  16.03, 17.03, 17.03/                                          
-!  CH4:   211,   311,   212                                             
+!  CH4:   211,   311,   212,    312                                         
+      data (smass(6,i),i=1,4)                                           &
+     & /  16.03, 17.03, 17.03, 18.03/                                          
+!   O2:    66,    68,    67                                             
       data (smass(7,i),i=1,3)                                           &
      & /  31.99, 33.99, 32.99/                                          
-!   O2:    66,    68,    67                                             
+!   NO:    46,    56,    48,                                            
       data (smass(8,i),i=1,3)                                           &
      & /  30.00, 31.00, 32.00/                                          
-!   NO:    46,    56,    48,                                            
+!  SO2:   626,   646                                                    
       data (smass(9,i),i=1,2)                                           &
      & /  63.96, 65.96/                                                 
-!  SO2:   626,   646                                                    
+!  NO2:   646                                                           
       data (smass(10,i),i=1,1)                                          &
      & /  45.99/                                                        
-!  NO2:   646                                                           
+!  NH3:  4111,  5111;                                                   
       data (smass(11,i),i=1,2)                                          &
      & /  17.03, 18.02/                                                 
-!  NH3:  4111,  5111;                                                   
-      data (smass(12,i),i=1,1)                                          &
-     & /  62.99/                                                        
 ! HNO3:                                                                 
+      data (smass(12,i),i=1,2)                                          &
+     & /  62.99, 63.99/                                                        
+!   OH:    61,    81,    62                                             
       data (smass(13,i),i=1,3)                                          &
      & /   17.00, 19.01, 18.01/                                         
-!   OH:    61,    81,    62                                             
-      data (smass(14,i),i=1,1)                                          &
-     & /   20.01/                                                       
-!   HF:    19                                                           
-      data (smass(15,i),i=1,2)                                          &
-     & /  35.98, 37.97/                                                 
-!  HCL:   15,    17;                                                    
-      data (smass(16,i),i=1,2)                                          &
-     & /  79.92, 81.92/                                                 
-!  HBr:   19,    11;                                                    
-      data (smass(17,i),i=1,1)                                          &
-     & /  127.91/                                                       
-!   HI:   17                                                            
+!   HF:    19       29                                                    
+      data (smass(14,i),i=1,2)                                          &
+     & /   20.01, 21.01/                                                      
+!  HCL:   15,    17;       25,    27,                                      
+      data (smass(15,i),i=1,4)                                          &
+     & /  35.98, 37.97, 36.98, 38.97/                                        
+!  HBr:   19,    11;     29,     21                                       
+      data (smass(16,i),i=1,4)                                          &
+     & /  79.92, 81.92,80.92, 82.92 /                                     
+!   HI:   17, 27                                                            
+      data (smass(17,i),i=1,2)                                          &
+     & /  127.91, 128.91/                                                  
+!  ClO:   56,    76;                                                    
       data (smass(18,i),i=1,2)                                          &
      & /  50.96, 52.96/                                                 
-!  ClO:   56,    76;                                                    
+!  OCS:   622,   624,   632,   623,   822                               
       data (smass(19,i),i=1,5)                                          &
      & /  59.97, 61.96, 60.97, 60.97, 61.97/                            
-!  OCS:   622,   624,   632,   623,   822                               
+! H2CO:  126,   136,   128;                                             
       data (smass(20,i),i=1,3)                                          &
      & /  30.01, 31.01, 32.01/                                          
-! H2CO:  126,   136,   128;                                             
+! HOCl:  165,   167                                                     
       data (smass(21,i),i=1,2)                                          &
      & /  51.97, 53.97/                                                 
-! HOCl:  165,   167                                                     
-      data (smass(22,i),i=1,1)                                          &
-     & /  28.01/                                                        
-!   N2:   44;                                                           
+!   N2:   44,      45;                                                      
+      data (smass(22,i),i=1,2)                                          &
+     & /  28.01, 29.01/                                                        
+!  HCN:   124,   134,   125,                                            
       data (smass(23,i),i=1,3)                                          &
      & /  27.01, 28.01, 28.01/                                          
-!  HCN:   124,   134,   125,                                            
+! CH3CL:  215,   217;                                                   
       data (smass(24,i),i=1,2)                                          &
      & /  49.99, 51.99/                                                 
-! CH3CL:  215,   217;                                                   
+!  H2O2:  1661;                                                         
       data (smass(25,i),i=1,1)                                          &
      & /  34.01/                                                        
-!  H2O2:  1661;                                                         
-      data (smass(26,i),i=1,2)                                          &
-     & /  26.01, 27.02/                                                 
-!  C2H2: 1221,  1231                                                    
-      data (smass(27,i),i=1,1)                                          &
-     & /  30.05/                                                        
-!  C2H6: 1221;                                                          
+!  C2H2: 1221,  1231 , 1222                                                   
+      data (smass(26,i),i=1,3)                                          &
+     & /  26.01, 27.02, 27.01/                                                 
+!  C2H6: 1221, , 1231;                                                      
+      data (smass(27,i),i=1,2)                                          &
+     & /  30.05, 31.05/                                                        
+!   PH3:   1111;                                                        
       data (smass(28,i),i=1,1)                                          &
      & /  34.00/                                                        
-!   PH3:   1111;                                                        
-      data (smass(29,i),i=1,1)                                          &
-     & /  65.99/                                                        
-!  COF2:  269;                                                          
+!  COF2:  269, 369;                                                          
+      data (smass(29,i),i=1,2)                                          &
+     & /  65.99, 66.99/                                                        
+!   SF6:   29                                                           
       data (smass(30,i),i=1,1)                                          &
      & /  145.96/                                                       
-!   SF6:   29                                                           
+!   H2S:  121    141    131;                                            
       data (smass(31,i),i=1,3)                                          &
      & /  33.99, 35.98, 34.99/                                          
-!   H2S:  121    141    131;                                            
+! HCOOH: 126;                                                           
       data (smass(32,i),i=1,1)                                          &
      & /  46.01/                                                        
-! HCOOH: 126;                                                           
+!   HO2:   166                                                          
       data (smass(33,i),i=1,1)                                          &
      & / 33.00/                                                         
-!   HO2:   166                                                          
+!     O:   6                                                            
       data (smass(34,i),i=1,1)                                          &
      & /  15.99/                                                        
-!     O:   6                                                            
+! ClONO2: 5646   7646;                                                  
       data (smass(35,i),i=1,2)                                          &
      & /  96.96, 98.95/                                                 
-! ClONO2: 5646   7646;                                                  
+!   NO+:   46                                                           
       data (smass(36,i),i=1,1)                                          &
      & /  30.00 /                                                       
-!   NO+:   46                                                           
+!  HOBr:  169,    161                                                   
       data (smass(37,i),i=1,2)                                          &
      & /  95.92,  97.92/                                                
-!  HOBr:  169,    161                                                   
-      data (smass(38,i),i=1,2)                                          &
-     & /  44.03, 45.03/                                                 
 !   C2H4: 221,   231;                                                   
+      data (smass(38,i),i=1,2)                                          &
+     & /  28.05, 29.05/                                                 
+!   CH3OH: 2161                                                          
       data (smass(39,i),i=1,1)                                          &
      & /  32.04/                                                        
-!   C2H4: 2161                                                          
+!   CH3Br: 219, 211 
+      data (smass(40,i),i=1,2)                                          &
+     & /  93.94, 95.94/                                                        
+!   CH3CN: 2124
+      data (smass(41,i),i=1,1)                                          &
+     & /  41.05/                                                        
+!   CF4: 29
+      data (smass(42,i),i=1,1)                                          &
+     & /  88.0043/                                                        
+!   C4H2: 2211
+      data (smass(43,i),i=1,1)                                          &
+     & /  50.06/                                                        
+!   HC3N: 1224
+      data (smass(44,i),i=1,1)                                          &
+     & /  51.05/                                                        
+!   H2: 11, 12
+      data (smass(45,i),i=1,2)                                          &
+     & /  2.016, 3.022/                                                        
+!   CS: 22, 24, 32, 23
+      data (smass(46,i),i=1,4)                                          &
+     & /  44.08, 46.08, 45.08, 45.08/                   
+!   SO3: 26
+      data (smass(47,i),i=1,1)                                          &
+     & /  80.066/                   
 !                                                                       
       END                                           
 !**************************************                                 
@@ -2747,15 +2869,15 @@
       END                                           
       SUBROUTINE LINF4 (V1L4,V2L4) 
 !                                                                       
+      USE lblparams, ONLY: MXMOL, MXISOTPL
       USE phys_consts, ONLY: radcn2
-      USE lblparams, ONLY: MXMOL
+      USE struct_types
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4  
 !                                                                       
-!      PARAMETER (MXMOL=39) 
-!                                                                       
-      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,9) 
+      COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)                   
+!
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
 !                                                                       
       REAL*8             HID,HMOLIL,HID1,HLINHD 
@@ -2764,8 +2886,7 @@
      &               MCNTNL(64),SUMSTR(64),NMOI,FLINLO,FLINHI,          &
      &               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2),LSTWDL      
 !                                                                       
-      COMMON VNU(1250),SP(1250),ALFA0(1250),EPP(1250),MOL(1250),        &
-     &       SPP(1250)                                                  
+      TYPE(LINE_SHRINK)  :: SHRUNK
 !                                                                       
       COMMON /IOU/ IOUT(250) 
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
@@ -2785,23 +2906,33 @@
      &               DPTFC,ILIN4,ILIN4T                                 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
-     &              NLTEFL,LNFIL4,LNGTH4                                
+     &              NLTEFL,LNFIL4,LNGTH4,IBRD                                
       COMMON /TPANEL/ VNULO,VNUHI,JLIN,NLNGT4,lstdum 
-      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
-     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
+      TYPE(LINE_DATA)  :: BUFR
       COMMON /NGT4/ VD,SD,AD,EPD,MOLD,SPPD,ILS2D 
       COMMON /L4TIMG/ L4TIM,L4TMR,L4TMS,L4NLN,L4NLS,LOTHER 
 !                                                                       
+      DIMENSION TMPCOR_ARR(MXBRDMOL), ALFA_TMP(MXBRDMOL)
+      Real*8 ALFSUM
+!                                                                       
       REAL L4TIM,L4TMR,L4TMS,LOTHER 
       DIMENSION MEFDP(64) 
-      DIMENSION SCOR(42,9),RHOSLF(mxmol),ALFD1(42,9) 
-      DIMENSION ALFAL(1250),ALFAD(1250),A(4),B(4),TEMPLC(4) 
-      DIMENSION RCDHDR(2),IWD(2),IWD3(2),HLINHD(2),AMOLB(250) 
+      DIMENSION SCOR(42,10),RHOSLF(mxmol),ALFD1(42,10)                  
+!
+      DIMENSION A(4),B(4),TEMPLC(4) 
+      DIMENSION IWD(2),IWD3(2),HLINHD(2) 
+      DIMENSION RCDHDR(2),AMOLB(250) 
 !                                                                       
-      EQUIVALENCE (ALFA0(1),ALFAL(1)) , (EPP(1),ALFAD(1)) 
+      COMMON /PATH_ISOTPL/ ISOTPL,NISOTPL,                              &
+     &                     ISOTPL_FLAG(MXMOL,MXISOTPL),                 &
+     &                     ISOTPL_MAIN_FLAG(MXMOL),                     &
+     &                     MOLNUM(MXMOL*MXISOTPL),                      &
+     &                     ISOTPLNUM(MXMOL*MXISOTPL),                   &
+     &                     WKI(MXMOL,MXISOTPL)             
+!                                                                       
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)) 
-      EQUIVALENCE (VNULO,RCDHDR(1)) , (IWD3(1),VD),                     &
-     &            (HLINHD(1),HID(1),IWD(1)) , (MOLB(1),AMOLB(1))        
+      EQUIVALENCE (IWD3(1),VD) , (HLINHD(1),HID(1),IWD(1))
+      EQUIVALENCE (VNULO,RCDHDR(1))  ! , (MOLB(1),AMOLB(1))        
 !                                                                       
       character*8 h_linf4 
 !                                                                       
@@ -2889,7 +3020,7 @@
       IJ = 0 
    30 CALL CPUTIM (TIM0) 
                                                                         
-      CALL RDLNFL (IEOF,ILINLO,ILINHI) 
+      CALL RDLNFL (IEOF,ILINLO,ILINHI, BUFR) 
       CALL CPUTIM (TIM1) 
       TIMR = TIMR+TIM1-TIM0 
 !                                                                       
@@ -2901,14 +3032,14 @@
          GAMMA1 = 0. 
          GAMMA2 = 0. 
          I = IOUT(J) 
-         IFLAG = IFLG(I) 
+         IFLAG = BUFR%IFLG(I) 
          IF (I.LE.0) GO TO 50 
 !                                                                       
-         M = MOD(MOLB(I),I_100) 
+         M = MOD(BUFR%MOL(I),I_100) 
 !                                                                       
-!     ISO=(MOD(MOLB(I),I_1000)-M)/100   IS PROGRAMMED AS:               
+!     ISO=(MOD(BUFR%MOL(I),I_1000)-M)/100   IS PROGRAMMED AS:               
 !                                                                       
-         ISO = MOD(MOLB(I),I_1000)/100 
+         ISO = MOD(BUFR%MOL(I),I_1000)/100 
 !                                                                       
 !     check if lines are within allowed molecular and isotopic limits   
 !                                                                       
@@ -2920,23 +3051,28 @@
          go to 50 
          endif 
 !                                                                       
-         SUI = SB(I)*W(M) 
+            IF (ISOTPL_FLAG(M,ISO).EQ.0) THEN
+               SUI = BUFR%SP(I)*W(M) 
+            ELSE
+               SUI = BUFR%SP(I)*WKI(M,ISO)
+            ENDIF
+!                                                                       
          IF (SUI.EQ.0.) GO TO 50 
-         IF (VNUB(I).LT.VLO) GO TO 50 
+         IF (BUFR%VNU(I).LT.VLO) GO TO 50 
          IJ = IJ+1 
 !                                                                       
 !     Y'S AND G'S ARE STORED IN I+1 POSTION OF VNU,S,ALFA0,EPP...       
 !      A(1-4),  B(1-4) CORRESPOND TO TEMPERATURES TEMPLC(1-4) ABOVE     
 !                                                                       
          IF (IFLAG.EQ.1.OR.IFLAG.EQ.3) THEN 
-            A(1) = VNUB(I+1) 
-            B(1) = SB(I+1) 
-            A(2) = ALB(I+1) 
-            B(2) = EPPB(I+1) 
-            A(3) = AMOLB(I+1) 
-            B(3) = HWHMB(I+1) 
-            A(4) = TMPALB(I+1) 
-            B(4) = PSHIFB(I+1) 
+            A(1) = BUFR%VNU(I+1) 
+            B(1) = BUFR%SP(I+1) 
+            A(2) = BUFR%ALFA(I+1) 
+            B(2) = BUFR%EPP(I+1) 
+            A(3) = transfer (BUFR%MOL(I+1) , A(3))  ! real representation of mol
+            B(3) = BUFR%HWHM(I+1) 
+            A(4) = BUFR%TMPALF(I+1) 
+            B(4) = BUFR%PSHIFT(I+1) 
 !                                                                       
 !     CALCULATE SLOPE AND EVALUATE                                      
 !                                                                       
@@ -2956,14 +3092,20 @@
 !                                                                       
 !     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS         
 !                                                                       
-         VNU(IJ) = VNUB(I)+RHORAT*PSHIFB(I) 
-         ALFA0(IJ) = ALB(I) 
-         EPP(IJ) = EPPB(I) 
-         MOL(IJ) = M 
+         SHRUNK%VNU(IJ) = BUFR%VNU(I) + RHORAT * BUFR%PSHIFT(I) 
+         SHRUNK%ALFA(IJ) = BUFR%ALFA(I) 
+         SHRUNK%EPP(IJ) = BUFR%EPP(I) 
+         SHRUNK%MOL(IJ) = M 
+
+         if(sum(bufr%brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then 
+            shrunk%vnu(ij) = shrunk%vnu(ij)+sum(rhoslf(1:mxbrdmol)*bufr%brd_mol_flg(:,i) &
+     &           *(bufr%brd_mol_shft(:,i)-bufr%pshift(i)))
+         endif
+
 !                                                                       
-         IF (jrad4.EQ.1) SUI = SUI*VNU(ij) 
+         IF (jrad4.EQ.1) SUI = SUI*SHRUNK%VNU(IJ) 
 !                                                                       
-         IF (VNU(IJ).EQ.0.) SUI = 2.*SUI 
+         IF (SHRUNK%VNU(IJ).EQ.0.) SUI = 2.*SUI 
 !                                                                       
 !     TREAT TRANSITIONS WITH UNKNOWN EPP AS SPECIAL CASE                
 !                                                                       
@@ -2976,15 +3118,15 @@
 !     been provided as a reasonable value to be used for purposes of    
 !     temperature correction.  epp is set positive                      
 !                                                                       
-         if (epp(ij).le.-1.001) epp(ij) = abs(epp(ij)) 
+         if (shrunk%epp(ij).le.-1.001) shrunk%epp(ij) = abs(shrunk%epp(ij)) 
                                                                         
-         if (epp(ij).le.-0.999) MEFDP(M) = MEFDP(M)+1 
+         if (shrunk%epp(ij).le.-0.999) MEFDP(M) = MEFDP(M)+1 
                                                                         
 !     temperature correction:                                           
                                                                         
-         if (epp(ij) .gt. -0.999) then 
-         SUI = SUI*SCOR(m,iso)* EXP(-EPP(ij)*BETACR)*(1.+EXP(-VNU(ij)*  &
-         BETA))                                                         
+         if (shrunk%epp(ij) .gt. -0.999) then 
+            SUI = SUI*SCOR(m,iso)* EXP(-SHRUNK%EPP(ij)*BETACR)*  &
+            (1.+EXP(-SHRUNK%VNU(ij)* BETA))                                                         
          endif 
 !                                                                       
          SUMS = SUMS+SUI 
@@ -2992,19 +3134,30 @@
 !     TEMPERATURE CORRECTION OF THE HALFWIDTH                           
 !     SELF TEMP DEPENDENCE TAKEN THE SAME AS FOREIGN                    
 !                                                                       
-         TMPCOR = TRATIO**TMPALB(I) 
-         ALFA0I = ALFA0(IJ)*TMPCOR 
-         HWHMSI = HWHMB(I)*TMPCOR 
-         ALFAL(IJ) = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m) 
+         TMPCOR = TRATIO**BUFR%TMPALF(I) 
+         ALFA0I = SHRUNK%ALFA(IJ)*TMPCOR 
+         HWHMSI = BUFR%HWHM(I)*TMPCOR 
+         SHRUNK%ALFA(IJ) = ALFA0I*(RHORAT-RHOSLF(m))+HWHMSI*RHOSLF(m) 
+
+         if(sum(bufr%brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then
+            tmpcor_arr = tratio**bufr%brd_mol_tmp(:,i)
+            alfa_tmp = bufr%brd_mol_hw(:,i)*tmpcor_arr
+            alfsum = sum(rhoslf(1:mxbrdmol)*bufr%brd_mol_flg(:,i)*alfa_tmp)
+            shrunk%alfa(ij) = (rhorat-sum(rhoslf(1:mxbrdmol)* &
+     &           bufr%brd_mol_flg(:,i)))*alfa0i + alfsum
+            if(bufr%brd_mol_flg(m,i).eq.0)   &
+     &           shrunk%alfa(ij) = shrunk%alfa(ij) + rhoslf(m)*(hwhmsi-alfa0i)
+         end if
+
 !                                                                       
-         IF (IFLAG.EQ.3) ALFAL(IJ) = ALFAL(IJ)*(1.0-GAMMA1*PAVP0-GAMMA2*&
-         PAVP2)                                                         
+         IF (IFLAG.EQ.3) SHRUNK%ALFA(IJ) = SHRUNK%ALFA(IJ)* &
+            (1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)                                                         
 !                                                                       
-         ALFAD(IJ) = VNU(IJ)*ALFD1(m,iso) 
+         SHRUNK%EPP(IJ) = SHRUNK%VNU(IJ)*ALFD1(m,iso) 
          NLIN = NLIN+1 
-         SP(IJ) = SUI*(1.+GI*PAVP2) 
-         SPP(IJ) = SUI*YI*PAVP0 
-         IF (VNU(IJ).GT.VHI) THEN 
+         SHRUNK%SP(IJ) = SUI*(1.+GI*PAVP2) 
+         SHRUNK%SPP(IJ) = SUI*YI*PAVP0 
+         IF (SHRUNK%VNU(IJ).GT.VHI) THEN 
             IEOF = 1 
             GO TO 60 
          ENDIF 
@@ -3020,20 +3173,20 @@
       TIMS = TIMS+TIM2-TIM1 
 !                                                                       
       CALL CPUTIM(TPAT0) 
-      CALL SHRINK 
+      CALL SHRINK(SHRUNK)
       CALL CPUTIM(TPAT1) 
       TSHRNK = TSHRNK + TPAT1-TPAT0 
       IJ = ILO-1 
       IF (IHI.LT.LIMIN.AND.IEOF.EQ.0) GO TO 30 
 !                                                                       
-      VNULO = VNU(1) 
-      VNUHI = VNU(IHI) 
-      JLIN = IHI 
+      VNULO = SHRUNK%VNU(1) 
+      VNUHI = SHRUNK%VNU(IHI) 
+      JLIN = IHI
 !                                                                       
       IF (JLIN.GT.0) THEN 
          CALL CPUTIM(TPAT0) 
-         CALL BUFOUT (LNFIL4,RCDHDR(1),NPHDRL) 
-         CALL BUFOUT (LNFIL4,VNU(1),NLNGT4) 
+         write(lnfil4) VNULO,VNUHI,JLIN,NLNGT4
+         CALL BUFOUT (LNFIL4,SHRUNK,NLNGT4)
          CALL CPUTIM(TPAT1) 
          TBUFFR = TBUFFR + TPAT1-TPAT0 
       ENDIF 
@@ -3145,9 +3298,13 @@
 !                                                                       
       END                                           
 !*******************************************************************    
-      SUBROUTINE RDLNFL (IEOF,ILO,IHI) 
+      SUBROUTINE RDLNFL (IEOF,ILO,IHI, BUFR) 
 !                                                                       
+      USE struct_types
       IMPLICIT REAL*8           (V) 
+      TYPE(LINE_DATA), INTENT(OUT) :: BUFR
+!      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
+!     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
 !                                                                       
 !     SUBROUTINE RDLNFL INPUTS THE LINE DATA FROM LINFIL                
 !                                                                       
@@ -3159,29 +3316,26 @@
      &                EMIS ,FSCDID(17),NMOL,LAYRS ,YID1,YID(10),LSTWDF  
       COMMON /R4SUB/ VLO,VHI,ILD,IST,IHD,LIMIN,LIMOUT,ILAST,DPTMN,      &
      &               DPTFC,ILIN4,ILIN4T                                 
-      COMMON /BUFR/ VNUB(250),SB(250),ALB(250),EPPB(250),MOLB(250),     &
-     &              HWHMB(250),TMPALB(250),PSHIFB(250),IFLG(250)        
 !                                                                       
       dimension amolb(250) 
-      equivalence (molb(1),amolb(1)) 
+!      equivalence (molb(1),amolb(1)) 
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
       COMMON /IOU/ IOUT(250) 
 !                                                                       
-      common /rdlnpnl/ vmin,vmax,nrec,nwds 
-      integer *4 nrec,nwds,lnfl,leof,npnlhd 
+      TYPE(INPUT_HEADER) :: RDLNPNL
+
+      integer*4 lnfl,leof,npnlhd 
 !                                                                       
-      common /rdlnbuf/ vlin(250),str(250),hw_f(250),e_low(250),         &
-     &     mol_id(250),hw_s(250),hw_T(250),shft(250),jflg(250)          
-                                                                        
-      real *4 str,hw_f,e_low,hw_s,hw_T,shft,rdpnl(2),dum(2),xmol(2) 
-      integer *4 mol_id,jflg,i_1 
-                                                                        
-      equivalence (vmin,rdpnl(1)), (mol_id(1),xmol(1)) 
+      TYPE(INPUT_BLOCK) :: RDLNBUF
+!                                                                        
+      real*4 rdpnl(2),dum(2),xmol(250) 
+      integer*4 i_1 
 !                                                                       
-      data i_1/ 1/ 
+!                                                                       
+      DATA I_1/1/ 
 !                                                                       
       IPASS = 1 
       IF (ILO.GT.0) IPASS = 2 
@@ -3195,41 +3349,58 @@
       lnfl = linfil 
       npnlhd = 6 
 !                                                                       
-   10 CALL BUFIN_sgl(Lnfl,LEOF,rdpnl(1),npnlhd) 
+!   10 CALL BUFIN_sgl(Lnfl,LEOF,rdpnl(1),npnlhd) 
+   10 CALL BUFIN_sgl(Lnfl,LEOF,RDLNPNL,npnlhd) 
+
 !                                                                       
       IF (LEOF.EQ.0) GO TO 30 
-      IF (VMAX.LT.VLO) THEN 
+      IF (RDLNPNL%VMAX.LT.VLO) THEN 
          CALL BUFIN_sgl(lnfl,LEOF,dum(1),i_1) 
          GO TO 10 
       ELSE 
-         CALL BUFIN_sgl(Lnfl,LEOF,vlin(1),NWDS) 
+!         CALL BUFIN_sgl(Lnfl,LEOF,vlin(1),NWDS)
+         CALL BUFIN_sgl(Lnfl,LEOF,rdlnbuf,RDLNPNL%NWDS)
       ENDIF 
 !                                                                       
-      IF ((IPASS.EQ.1).AND.(Vlin(1).GT.VLO)) WRITE (IPR,900) 
+      IF ((IPASS.EQ.1).AND.(RDLNBUF%VNU(1).GT.VLO)) WRITE (IPR,900) 
 !                                                                       
       IJ = 0 
 !                                                                       
 !     precision conversion occurs here:                                 
-!     incoming on right: vlin is real*8;  others are real*4 and integer*
+!     incoming on right: vlin is real*8;  others are real*4 and integer*4
 !                                                                       
-      do 15 i=1,nrec 
-         IFLG(i)  = jflg(i) 
-         VNUB(i)   = vlin(i) 
-         SB(i)    = str(i) 
-         ALB(i)   = hw_f(i) 
-         EPPB(i)   = e_low(i) 
-         if (iflg(i) .ge.  0) then 
-            MOLB(i)  = mol_id(i) 
-         else 
-            amolb(i)  = xmol(i) 
+      do 15 i=1,RDLNPNL%NREC 
+         BUFR%IFLG(i)  = RDLNBUF%IFLG(i) 
+         BUFR%VNU(i)   = RDLNBUF%VNU(i) 
+         BUFR%SP(i)    = RDLNBUF%SP(i) 
+         BUFR%ALFA(i)   = RDLNBUF%ALFA(i) 
+         BUFR%EPP(i)   = RDLNBUF%EPP(i) 
+         if (BUFR%IFLG(i) .ge.  0) then 
+            BUFR%MOL(i)  = RDLNBUF%MOL(i)   ! int*4 to int*8
+         else   ! mol read as integer, treated as real
+!            amolb(i)  = xmol(i) 
+            xmol(i)  = transfer (RDLNBUF%mol(i), xmol(i))  !int*4 to real*4
+            amolb(i) = xmol(i)     ! real*4 to real*8 (if compiled as r8)
+            bufr%mol(i) = transfer (amolb(i), bufr%mol(i))  ! real*8 to int*8
          endif 
-         HWHMB(i) = hw_s(i) 
-         TMPALB(i)= hw_T(i) 
-         PSHIFB(i)= shft(i) 
+         BUFR%HWHM(i) = RDLNBUF%HWHM(i) 
+         BUFR%TMPALF(i)= RDLNBUF%TMPALF(i) 
+         BUFR%PSHIFT(i)= RDLNBUF%PSHIFT(i) 
+         do j=1,mxbrdmol
+            bufr%brd_mol_flg(j,i)=rdlnbuf%brd_mol_flg_in(j,i)
+         end do
+         j = 1
+         do j1 = 1,mxbrdmol
+            bufr%brd_mol_hw(j1,i) = rdlnbuf%brd_mol_dat(j,i)
+            bufr%brd_mol_tmp(j1,i) = rdlnbuf%brd_mol_dat(j+1,i)
+            bufr%brd_mol_shft(j1,i) = rdlnbuf%brd_mol_dat(j+2,i)
+            j = j+3
+         end do
+         bufr%speed_dep(i) = rdlnbuf%speed_dep(i)
    15 continue 
 !                                                                       
-      DO 20 J = 1, NREC 
-         IF (IFLG(J).GE.0) THEN 
+      DO 20 J = 1, RDLNPNL%NREC 
+         IF (BUFR%IFLG(J).GE.0) THEN 
             IJ = IJ+1 
             IOUT(IJ) = J 
          ENDIF 
@@ -3244,22 +3415,24 @@
   905 FORMAT ('0 EOF ON LINFIL IN RDLNFL -- CHECK THE LINFIL ') 
 !                                                                       
       END                                           
-      SUBROUTINE SHRINK 
+      SUBROUTINE SHRINK(SHRUNK) 
 !                                                                       
+      USE struct_types
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE SHRINK COMBINES LINES FALLING IN A WAVENUMBER INTERVAL 
 !     DVR4/2 INTO A SINGLE EFFECTIVE LINE TO REDUCE COMPUTATION         
 !                                                                       
-      COMMON VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250),       &
-     &       SPP(1250)                                                  
+      TYPE(LINE_SHRINK)  :: SHRUNK
+!      COMMON VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250),       &
+!     &       SPP(1250)                                                  
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,      &
      &               DPTFC,ILIN4,ILIN4T                                 
       COMMON /LBLF/ V1R4,V2R4,DVR4,NPTR4,BOUND4,R4(2502),RR4(2502) 
 !                                                                       
       J = ILO-1 
       DV = DVR4/2. 
-      VLMT = VNU(ILO)+DV 
+      VLMT = SHRUNK%VNU(ILO)+DV 
 !                                                                       
 !     INITIALIZE NON-CO2 SUMS                                           
 !                                                                       
@@ -3279,65 +3452,65 @@
 !                                                                       
       DO 20 I = ILO, IHI 
                                                                         
-!     To prevent underflow issues in CONVF4 we set S < 1.0e-35 to zero  
-         IF (S(I).lt.1.0e-35) THEN 
-            S(I)= 0.0 
-            SPP(I) =0.0 
+!     To prevent underflow issues in CONVF4 we set SP < 1.0e-35 to zero  
+         IF (SHRUNK%SP(I).lt.1.0e-35) THEN 
+            SHRUNK%SP(I) = 0.0 
+            SHRUNK%SPP(I) = 0.0 
          ENDIF 
                                                                         
 !                                                                       
 !     IF LINE COUPLING, DON'T SHRINK LINE                               
 !                                                                       
-         IF (SPP(I).NE.0.0) THEN 
+         IF (SHRUNK%SPP(I).NE.0.0) THEN 
             J = J+1 
-            VNU(J) = VNU(I) 
-            S(J) = S(I) 
-            ALFAL(J) = ALFAL(I) 
-            ALFAD(J) = ALFAD(I) 
-            SPP(J) = SPP(I) 
-            MOL(J) = MOL(I) 
+            SHRUNK%VNU(J) = SHRUNK%VNU(I) 
+            SHRUNK%SP(J) = SHRUNK%SP(I) 
+            SHRUNK%ALFA(J) = SHRUNK%ALFA(I) 
+            SHRUNK%EPP(J) = SHRUNK%EPP(I) 
+            SHRUNK%SPP(J) = SHRUNK%SPP(I) 
+            SHRUNK%MOL(J) = SHRUNK%MOL(I) 
 !                                                                       
             GO TO 10 
          ENDIF 
 !                                                                       
-!     NON-CO2 LINES OF MOLECULAR INDEX IT.NE.2   ARE LOADED             
+!     NON-CO2 LINES OF MOLECULAR INDEX MOL.NE.2   ARE LOADED             
 !     INTO SUMS IF THE FREQUENCY WITHIN DV GROUP                        
 !                                                                       
-         IF (MOL(I).NE.2) THEN 
-            SUMV = SUMV+VNU(I)*S(I) 
-            SUMS = SUMS+S(I) 
-            SUMAL = SUMAL+S(I)*ALFAL(I) 
-            SUMAD = SUMAD+S(I)*ALFAD(I) 
-            SUMC = SUMC+SPP(I) 
+         IF (SHRUNK%MOL(I).NE.2) THEN 
+            SUMV = SUMV+SHRUNK%VNU(I)*SHRUNK%SP(I) 
+            SUMS = SUMS+SHRUNK%SP(I) 
+            SUMAL = SUMAL+SHRUNK%SP(I)*SHRUNK%ALFA(I) 
+            SUMAD = SUMAD+SHRUNK%SP(I)*SHRUNK%EPP(I) 
+            SUMC = SUMC+SHRUNK%SPP(I) 
          ELSE 
 !                                                                       
 !     CO2 LINES LOADED     (MOL .EQ. 2)                                 
 !                                                                       
-            SUMV2 = SUMV2+VNU(I)*S(I) 
-            SUMS2 = SUMS2+S(I) 
-            SUMAL2 = SUMAL2+S(I)*ALFAL(I) 
-            SUMAD2 = SUMAD2+S(I)*ALFAD(I) 
-            SUMC2 = SUMC2+SPP(I) 
+            SUMV2 = SUMV2+SHRUNK%VNU(I)*SHRUNK%SP(I) 
+            SUMS2 = SUMS2+SHRUNK%SP(I) 
+            SUMAL2 = SUMAL2+SHRUNK%SP(I)*SHRUNK%ALFA(I) 
+            SUMAD2 = SUMAD2+SHRUNK%SP(I)*SHRUNK%EPP(I) 
+            SUMC2 = SUMC2+SHRUNK%SPP(I) 
          ENDIF 
 !                                                                       
 !     IF LAST LINE OR VNU GREATER THAN LIMIT THEN STORE SUMS            
 !                                                                       
    10    IF (I.LT.IHI) THEN 
-            IF (VNU(I+1).LE.VLMT) GO TO 20 
+            IF (SHRUNK%VNU(I+1).LE.VLMT) GO TO 20 
          ENDIF 
 !                                                                       
-         VLMT = VNU(I)+DV 
+         VLMT = SHRUNK%VNU(I)+DV 
 !                                                                       
 !     ASSIGN NON-CO2 LINE AVERAGES TO 'GROUP' LINE J                    
 !                                                                       
          IF (SUMS.GT.0.) THEN 
             J = J+1 
-            S(J) = SUMS 
-            ALFAL(J) = SUMAL/SUMS 
-            ALFAD(J) = SUMAD/SUMS 
-            VNU(J) = SUMV/SUMS 
-            SPP(J) = SUMC 
-            MOL(J) = 0 
+            SHRUNK%SP(J) = SUMS 
+            SHRUNK%ALFA(J) = SUMAL/SUMS 
+            SHRUNK%EPP(J) = SUMAD/SUMS 
+            SHRUNK%VNU(J) = SUMV/SUMS 
+            SHRUNK%SPP(J) = SUMC 
+            SHRUNK%MOL(J) = 0 
             SUMAL = 0. 
             SUMAD = 0. 
             SUMS = 0. 
@@ -3349,12 +3522,12 @@
 !                                                                       
          IF (SUMS2.GT.0.) THEN 
             J = J+1 
-            S(J) = SUMS2 
-            ALFAL(J) = SUMAL2/SUMS2 
-            ALFAD(J) = SUMAD2/SUMS2 
-            VNU(J) = SUMV2/SUMS2 
-            MOL(J) = 2 
-            SPP(J) = SUMC2 
+            SHRUNK%SP(J) = SUMS2 
+            SHRUNK%ALFA(J) = SUMAL2/SUMS2 
+            SHRUNK%EPP(J) = SUMAD2/SUMS2 
+            SHRUNK%VNU(J) = SUMV2/SUMS2 
+            SHRUNK%MOL(J) = 2 
+            SHRUNK%SPP(J) = SUMC2 
             SUMAL2 = 0. 
             SUMAD2 = 0. 
             SUMS2 = 0. 
@@ -3373,14 +3546,17 @@
       SUBROUTINE LBLF4 (JRAD,V1,V2) 
 !                                                                       
       USE phys_consts, ONLY: radcn2
+      USE struct_types
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE LBLF4 DOES A LINE BY LINE CALCULATION                  
 !     USING FUNCTION F4.                                                
 !                                                                       
       COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN 
-      COMMON /BUF/ VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250), &
-     &             SPP(1250)                                            
+!
+      type(LINE_SHRINK)  ::  LINE
+!      COMMON /BUF/  VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),         &
+!     &              MOL(1250),SPP(1250)                                
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     &
      &              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     &
@@ -3435,7 +3611,7 @@
       VLO = V1R4-BOUND4 
       VHI = V2R4+BOUND4 
    20 CALL CPUTIM (TIM0) 
-      CALL RDLIN4 (IEOF) 
+      CALL RDLIN4 (LINE,IEOF) 
       CALL CPUTIM (TIM1) 
 !                                                                       
       IF (IEOF.EQ.2) THEN 
@@ -3447,7 +3623,7 @@
       TIM2 = TIM1 
       IF (IEOF.EQ.1.AND.IHI.EQ.0) GO TO 30 
 !                                                                       
-      CALL CONVF4 (VNU,S,ALFAL,ALFAD,MOL,SPP) 
+      CALL CONVF4 (LINE)
 !                                                                       
       CALL CPUTIM (TIM3) 
       TF4CNV = TF4CNV+TIM3-TIM2 
@@ -3493,8 +3669,9 @@
       RETURN 
 !                                                                       
       END                                           
-      SUBROUTINE RDLIN4 (IEOF) 
+      SUBROUTINE RDLIN4 (LINE,IEOF) 
 !                                                                       
+      USE struct_types
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     SUBROUTINE RDLIN4 INPUTS THE LINE DATA FROM LNFIL4                
@@ -3507,9 +3684,10 @@
      &                EMIS ,FSCDID(17),NMOL,LAYRS ,YID1,YID(10),LSTWDF  
       COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,      &
      &               DPTFC,ILIN4,ILIN4T                                 
-      COMMON /BUF/ VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250), &
-     &             SPP(1250)                                            
-      COMMON /BUF2/ VMIN,VMAX,NREC,NWDS 
+      type(LINE_SHRINK)  ::  LINE
+!      COMMON /BUF/ VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250), &
+!     &             SPP(1250)                                            
+!      COMMON /BUF2/ VMIN,VMAX,NREC,NWDS 
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,      &
      &              NLTEFL,LNFIL4,LNGTH4                                
@@ -3518,7 +3696,7 @@
                                                                         
       DIMENSION DUM(2),LINPNL(2) 
 !                                                                       
-      EQUIVALENCE (VMIN,LINPNL(1)) 
+!      EQUIVALENCE (VMIN,LINPNL(1)) 
 !                                                                       
       IF (IEOF.EQ.-1) THEN 
 !                                                                       
@@ -3539,18 +3717,17 @@
       IEOF = 0 
       ILO = 1 
       IHI = 0 
-!                                                                       
-   10 CALL BUFIN (LNFIL4,LEOF,LINPNL(1),NPHDRL) 
-      IF (LEOF.EQ.0) GO TO 20 
+
+   10 READ(LNFIL4,END=20) VMIN,VMAX,NREC,NWDS 
       ILIN4T = ILIN4T+NREC 
       IF (VMAX.LT.VLO) THEN 
          CALL BUFIN (LNFIL4,LEOF,DUM(1),1) 
          GO TO 10 
       ELSE 
-         CALL BUFIN (LNFIL4,LEOF,VNU(1),NWDS) 
+         CALL BUFIN (LNFIL4,LEOF,LINE,NWDS) 
       ENDIF 
       IHI = NREC 
-      IF (VNU(NREC).GT.VHI) GO TO 20 
+      IF (LINE%VNU(NREC).GT.VHI) GO TO 20 
 !                                                                       
       RETURN 
 !                                                                       
@@ -3561,9 +3738,12 @@
       RETURN 
 !                                                                       
       END                                           
-      SUBROUTINE CONVF4 (VNU,SP,ALFAL,ALFAD,MOL,SPP) 
+      SUBROUTINE CONVF4 (SHRUNK)  ! VNU,S,ALFAL,ALFAD,MOL,SPP) 
 !                                                                       
+      USE struct_types
       IMPLICIT REAL*8           (V) 
+      type(LINE_SHRINK)  :: SHRUNK
+!      DIMENSION VNU(*),SP(*),ALFAL(*),ALFAD(*),MOL(*),SPP(*) 
 !                                                                       
 !     SUBROUTINE CONVF4 CONVOLVES THE LINE DATA WITH FUNCTION F4        
 !                                                                       
@@ -3582,12 +3762,11 @@
      &     a_1(0:nzeta-1), a_2(0:nzeta-1), a_3(0:nzeta-1),              &
      &     b_1(0:nzeta-1), b_2(0:nzeta-1), b_3(0:nzeta-1)               
 !                                                                       
-      DIMENSION VNU(*),SP(*),ALFAL(*),ALFAD(*),MOL(*),SPP(*) 
 !                                                                       
       DATA ZBND / 64. / 
       DATA HREJ /'0'/,HNOREJ /'1'/ 
 !                                                                       
-      DATA i_1/ 1/, I_250/250/ 
+      DATA I_1/1/, I_250/250/ 
 !                                                                       
       VNULST = V2R4+BOUND4 
 !                                                                       
@@ -3619,9 +3798,9 @@
 !                                                                       
          DO 60 I = ILO, IHI 
 !                                                                       
-            IF (SP(I).EQ.0..AND.SPP(I).EQ.0.) GO TO 60 
-            ALFADI = ALFAD(I) 
-            ALFALI = ALFAL(I) 
+            IF (SHRUNK%SP(I).EQ.0..AND.SHRUNK%SPP(I).EQ.0.) GO TO 60 
+            ALFADI = SHRUNK%EPP(I) 
+            ALFALI = SHRUNK%ALFA(I) 
             ZETAI = ALFALI/(ALFALI+ALFADI) 
             IZ = 100.*ZETAI + ONEPL 
             ZETDIF = 100.*ZETAI - REAL(IZ-1) 
@@ -3640,13 +3819,13 @@
             f4_64x= (a3x + b3x*zsqbnd) 
 !                                                                       
             RALFVI = 1./ALFAVI 
-            SIV = SP(I)*RALFVI 
+            SIV = SHRUNK%SP(I)*RALFVI 
             siv_a = siv*a3x 
             siv_b = siv*b3x 
 !                                                                       
             SPEAK = A3x*(ABS(SIV)) 
 !                                                                       
-            JJ = (VNU(I)-V1R4)/DVR4+1. 
+            JJ = (SHRUNK%VNU(I)-V1R4)/DVR4+1. 
             JJ = MAX(JJ,I_1) 
             JJ = MIN(JJ,NPTR4) 
 !                                                                       
@@ -3654,7 +3833,7 @@
             IF (ILNFLG.LE.1) THEN 
                FREJ(I) = HNOREJ 
 !     No rejection for line-coupled lines (SPP ne. 0)                   
-               IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ)) .and. spp(i).eq.0.)    &
+               IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ)) .and. shrunk%spp(i).eq.0.)    &
                THEN                                                     
                   FREJ(I) = HREJ 
                   GO TO 60 
@@ -3665,7 +3844,7 @@
 !                                                                       
             ILIN4 = ILIN4+1 
 !                                                                       
-            VNUI = VNU(I) 
+            VNUI = SHRUNK%VNU(I) 
 !                                                                       
    30       CONTINUE 
 !                                                                       
@@ -3688,7 +3867,7 @@
 !                FOURTH FUNCTION CONVOLUTION                            
 !                                                                       
                                                                         
-            dptrat = spp(i)/(sp(i)*alfavi) 
+            dptrat = shrunk%spp(i)/(shrunk%sp(i)*alfavi) 
             rec_alfvi2 = 1./ALFVI2 
             siv_a3 = SIV*A3 
             siv_b3 = SIV*B3 
@@ -3700,19 +3879,19 @@
 !                                                                       
                IF (ZVSQ.LE.ZSQBND) THEN 
                   F4FN = (siv_A + ZVSQ * siv_B) - F4BND 
-                  IF (SPP(I).NE.0.) then 
+                  IF (SHRUNK%SPP(I).NE.0.) then 
                      f4fn = f4fn + xm*dptrat*f4fn 
                      endif 
                   ELSE 
                      f4fn = siv_64/(alfli2+xmsq) - f4bnd 
-                     if (SPP(I).NE.0.) then 
+                     if (SHRUNK%SPP(I).NE.0.) then 
                      F4FN = F4FN + XM*dptrat*f4fn 
                      endif 
                   ENDIF 
 !                                                                       
-                  IF (MOL(I).EQ.2.AND.SPP(I).EQ.0.) THEN 
+                  IF (SHRUNK%MOL(I).EQ.2.AND.SHRUNK%SPP(I).EQ.0.) THEN 
 !                                                                       
-!     ASSIGN ARGUMENT ISUBL OF THE FORM FACTOR FOR CO2 LINES            
+!         ASSIGN ARGUMENT ISUBL OF THE FORM FACTOR FOR CO2 LINES            
 !                                                                       
                      ISUBL = RDVCHI*ABS(XM)+0.5 
                      ISUBL = MIN(ISUBL,i_250) 
@@ -3722,7 +3901,6 @@
                      R4(JJ) = R4(JJ)+F4FN 
                   ENDIF 
 !                                                                       
-!                                                                       
                   XJJ = XJJ+DVR4 
    40          CONTINUE 
 !                                                                       
@@ -3730,9 +3908,9 @@
 !                                                                       
 !     THE CALCULATION FOR NEGATIVE VNU(I) IS FOR VAN VLECK WEISSKOPF    
 !                                                                       
-                  VNUI = -VNU(I) 
+                  VNUI = -SHRUNK%VNU(I) 
 !                                                                       
-                  SPP(I) = -SPP(I) 
+                  SHRUNK%SPP(I) = -SHRUNK%SPP(I) 
 !                                                                       
                   GO TO 30 
 !                                                                       
@@ -3810,11 +3988,6 @@
 !********************************************************************** 
 !                                                                       
 !     IFIL CARRIES FILE INFORMATION                                     
-!                                                                       
-
-!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,     &
-!     &           MXTRAC=22)                                             
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -3981,12 +4154,11 @@
      &        ' FILE FSCDXS *******',/)                                 
 !                                                                       
       END                                           
-      BLOCK DATA BXSECT 
+      BLOCK DATA BXSECT
+!     PAN added 08/25/2010, malvarad@aer.com                            
 !                                                                       
       USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
-                                                                        
-!      parameter (mx_xs=38) 
 !                                                                       
 !**   XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES        
 !**            (NOTE: ALL NAMES ARE LEFT-JUSTIFIED)                     
@@ -4009,26 +4181,33 @@
      &    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',       &
      &    'N2O5      ', 'HNO3      ', 'CF4       ', 'CHCLF2    ',       &
      &    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ',       &
-     &	  'ACET      ', 'CH3CN     ', 20*' ZZZZZZZZ ' /                  
+     &    'ACET      ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &
+     &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &
+     &    'CH3CClF2  ', 'CHClF2    ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &
+     &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ', 'ISOP      ',       &
+     &    'CHF3      ',  5*' ZZZZZZZZ ' /
       DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
      &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
      &    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CHF2CL    ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
-     &    'CH3COCH3  ', 21*' ZZZZZZZZ ' /                               
+     &    'CH3COCH3  ', ' ZZZZZZZZ ', 'HFC-125   ', 'HFC-134a  ',       &
+     &    'HFC-143a  ', 'HFC-152a  ', 'HFC-32    ', 'HCFC-141b ',       &
+     &    'HCFC-142b ', 'HCFC-22   ', 'HCFC-123  ', 'HCFC-124  ',       &
+     &    'HCFC-225ca', 'HCFC-225cb', ' ZZZZZZZZ ', 'C5H8      ',       &
+     &    'HFC-23    ',   5*' ZZZZZZZZ ' /
       DATA (ALIAS(3,I),I=1,mx_xs)/                                      &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
      &    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',       &
-     &    'CFC13     ', 'CFC115    ',  ' ZZZZZZZZ ', ' ZZZZZZZZ ',      &
-     &    'ACETONE  ', 21*' ZZZZZZZZ ' /                                
+     &    'CFC13     ', 'CFC115    ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    'ACETONE   ', 21*' ZZZZZZZZ ' /                                
       DATA (ALIAS(4,I),I=1,mx_xs)/                                      &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',       &
      &    'F11       ', 'F12       ', 'F114      ', 'F113      ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F14       ', 'F22       ',       &
      &    'F13       ', 'F115      ',  ' ZZZZZZZZ ', ' ZZZZZZZZ ',      &
      &    'CH3C(O)CH3', 21*' ZZZZZZZZ ' /                               
-                                                                        
 !                                                                       
 !     XSMASS IS MASS OF EACH CROSS-SECTION                              
 !                                                                       
@@ -4039,7 +4218,11 @@
      &     137.37     ,  120.91     ,  170.92     ,  187.38     ,       &
      &     108.01     ,   63.01     ,   88.00     ,   86.47     ,       &
      &     104.46     ,  154.47     ,   45.99     ,  121.05     ,       &
-     &      58.08     ,   41.05     ,  20*0.00 /                        
+     &      58.08     ,   41.05     ,  120.02     ,  102.03     ,       &
+     &      84.04     ,   66.05     ,   52.02     ,  116.95     ,       &
+     &     100.50     ,   86.47     ,  152.93     ,  136.48     ,       &
+     &     202.94     ,  202.94     ,   64.06     ,   68.12     ,       &
+     &      70.01     ,  5*0.00 /
 !                                                                       
       DATA V1FX / 190*0.0 /,V2FX / 190*0.0 /,DVFX / 190*0.0 /,          &
      &     WXM / mx_xs*0.0 /                                            
@@ -4100,10 +4283,6 @@
 !********************************************************************** 
 !                                                                       
 !     IFIL CARRIES FILE INFORMATION                                     
-!                                                                       
-!      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
-!     &           MXPDIM=MXLAY+MXZMD,IM2=MXPDIM-2,MXMOL=39,mx_xs=38,     &
-!     &           MXTRAC=22)                                             
 !                                                                       
       COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
      &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
@@ -4233,11 +4412,9 @@
 !                                                                       
       SUBROUTINE XSECTM (IFST,IR4) 
 !                                                                       
-      USE phys_consts, ONLY: radcn2
       USE lblparams, ONLY: n_absrb, mx_xs
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
-                                                                        
-!      parameter (n_absrb=5050, mx_xs=38) 
 !                                                                       
 !     THIS SUBROUTINE MOVES THE CROSS SECTIONS INTO                     
 !     THE APPROPRIATE ARRAY R1, R2, R3, R4, OR ABSRB                    
@@ -4700,8 +4877,6 @@
 !                                                                       
       USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
-                                                                        
-!      parameter (mx_xs=38) 
 !                                                                       
 !     THIS SUBROUTINE READS IN THE DESIRED CROSS SECTIONS               
 !                                                                       
@@ -5019,11 +5194,9 @@
       END                                           
       SUBROUTINE XSNTMP (NI,NS,NT1,NT2,NMODE) 
 !                                                                       
-      USE phys_consts, ONLY: radcn2
       USE lblparams, ONLY: MX_XS
+      USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V) 
-                                                                        
-!      parameter (mx_xs=38) 
 !                                                                       
 !     THIS SUBROUTINE DETERMINES THE CORRECT MODE                       
 !     AND BRACKETS THE LAYER TEMPERATURE                                
@@ -5112,8 +5285,6 @@
 !                                                                       
       USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
-                                                                        
-!      parameter (mx_xs=38) 
 !                                                                       
 !     THIS SUBROUTINE PERFORMS A TEMPERATURE DEPENDENT CONVOLUTION      
 !     ON THE CROSS-SECTIONS PRODUCING A BINARY INTERMEDIATE FILE        
@@ -5497,8 +5668,6 @@
 !                                                                       
       USE lblparams, ONLY: MX_XS
       IMPLICIT REAL*8           (V) 
-                                                                        
-!      parameter (mx_xs=38) 
 !                                                                       
 !     SUBROUTINE PNLCNV OUTPUTS THE RESULTS OF THE CONVOLUTION          
 !     TO FILE JFILE                                                     
@@ -5574,7 +5743,6 @@
 !                                                                       
       END                                           
       SUBROUTINE SLRENZ (XF) 
-!CP   SUBROUTINE SLRENZ (XF,XSCALE)                                     
 !                                                                       
 !     SUBROUTINE SLRENZ SETS UP THE LORENZ SCANNING FUNCTION            
 !                                                                       
@@ -5613,7 +5781,6 @@
       END                                           
 !***********************                                                
       Subroutine TIPS_2003 (mol_max,iso_max,temp_lbl,scor)
-      USE lblparams, ONLY: MXMOL, MAX_ISO, NT
 !***********************                                                
 !                                                                       
 !    This program calculates the total internal                         
@@ -5658,22 +5825,19 @@
 !                                                                       
 !...This program calculates the TIPS by 4-point LaGrange interpolation  
 !                                                                       
+      USE lblparams, ONLY: NMOL => MXMOL, Max_ISO, NT
 !++                                                                     
 !     Max_ISO here is the number that TIPS treats: LBLRTM is limited to 
-!                                                                       
-!      PARAMETER (NMOL=39,Max_ISO=20) 
 !++                                                                     
-!      PARAMETER (NT=119) 
-!++                                                                     
-      COMMON /ISO_data/ISO82(MXMOL,Max_ISO),ISONM(MXMOL) 
+      COMMON /ISO_data/ISO82(NMOL,Max_ISO),ISONM(NMOL) 
 !++:  bd-MOL                                                            
       CHARACTER*6 MOLID 
 !++:  bd-MOL                                                            
-      COMMON/MOLNAM/MOLID(0:MXMOL) 
+      COMMON/MOLNAM/MOLID(0:NMOL) 
 !++:  bd-QT                                                             
-      COMMON/Temperatures/tdat(NT) 
+      COMMON/Temperatures/tdat !mja, 10-27-2011 
                                                                         
-      dimension iso_max(MXMOL),scor(42,9) 
+      dimension iso_max(nmol),scor(42,10)                               
                                                                         
       character*30 stopNgo 
 !                                                                       
@@ -5884,13 +6048,58 @@
       ENDIF 
 !                                                                       
       IF(MOL.EQ.39) THEN 
-!**   classical approximation for temperature dependence of ch3oh       
-!**   rotational partition sum only                                     
-                                                                        
-         if (itemp .eq.1) qt_296 = 296. 
-         if (itemp .eq.2) qt_temp = (Temp/296.)**1.5 
+!     Assume no change in partition function with temperature as we have no data 
+!     MJA, 02/20/2015: Note that, due to a coding bug, this was what previous versions 
+!     of LBLRTM before v13.0 were doing anyway, but we have made that clear in the code.                                
+         qt = 1 
+!!**   classical approximation for temperature dependence of ch3oh       
+!!**   rotational partition sum only                                     
+!!         if (itemp .eq.1) qt_296 = 296. 
+!!         if (itemp .eq.2) qt_temp = (Temp/296.)**1.5 
          go to 100 
       ENDIF 
+
+      IF(MOL.EQ.40) THEN 
+      CALL QT_CH3Br(Temp,ISO,gi,QT)
+      go to 100
+      ENDIF 
+!
+      IF(MOL.EQ.41) THEN 
+      CALL QT_CH3CN(Temp,ISO,gi,QT)
+      go to 100
+      ENDIF 
+!
+      IF(MOL.EQ.42) THEN 
+      CALL QT_CF4(Temp,ISO,gi,QT)
+      go to 100
+      ENDIF     
+!
+      IF(MOL.EQ.43) THEN 
+      CALL QT_C4H2(Temp,ISO,gi,QT)
+      go to 100
+      ENDIF     
+!
+      IF(MOL.EQ.44) THEN 
+      CALL QT_HC3N(Temp,ISO,gi,QT)
+      go to 100
+      ENDIF     
+!
+      IF(MOL.EQ.45) THEN 
+      CALL QT_H2(Temp,ISO,gi,QT)
+      go to 100
+      ENDIF     
+!
+      IF(MOL.EQ.46) THEN 
+      CALL QT_CS(Temp,ISO,gi,QT)
+      go to 100
+      ENDIF     
+!
+      IF(MOL.EQ.47) THEN 
+!     Assume no change in partition function with temperature as we have no data                                     
+         qt = 1 
+         go to 100     
+      ENDIF     
+!
 !                                                                       
   100 continue 
 !                                                                       
@@ -5926,7 +6135,6 @@
       Block Data BD_TDAT 
 !        initialize Tdat in common block /Temperatures/                 
       USE lblparams, ONLY: NT
-!      PARAMETER (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       data Tdat/  60.,  85., 110., 135., 160., 185., 210., 235.,        &
@@ -5963,20 +6171,20 @@
 !...date last changed 19 February, 2002                                 
 !                                                                       
 !++                                                                     
-      USE lblparams, ONLY: MXMOL
-!      PARAMETER (NMOL=39) 
+      USE lblparams, ONLY: NMOL => MXMOL
 !++:  bd-MOL                                                            
       CHARACTER*6 MOLID 
 !++:  bd-MOL                                                            
-      COMMON/MOLNAM/MOLID(0:MXMOL) 
+      COMMON/MOLNAM/MOLID(0:NMOL) 
 !                                                                       
-      DATA (MOLID(I),I=0,MXMOL)/ '   All',                               &
+      DATA (MOLID(I),I=0,NMOL)/ '   All',                               &
      &'   H2O','   CO2','    O3','   N2O','    CO','   CH4','    O2',   &
      &'    NO','   SO2','   NO2','   NH3','  HNO3','    OH','    HF',   &
      &'   HCl','   HBr','    HI','   ClO','   OCS','  H2CO','  HOCl',   &
      &'    N2','   HCN',' CH3Cl','  H2O2','  C2H2','  C2H6','   PH3',   &
      &'  COF2','   SF6','   H2S',' HCOOH','   HO2','     O','ClONO2',   &
-     &'   NO+','  HOBr','  C2H4',' CH3OH'/                              
+     &'   NO+','  HOBr','  C2H4',' CH3OH',' CH3Br',' CH3CN','  CF4 ',   &
+     &' C4H2 ',' HC3N ','   H2 ','   CS ','  SO3 '/                              
 !                                                                       
       END                                           
                                                                         
@@ -5986,22 +6194,23 @@
 !  ****************************************                             
 !                                                                       
 !++                                                                     
-      USE lblparams, ONLY: MXMOL, Max_ISO
-!      PARAMETER (MXMOL=39,Max_ISO=20) 
+      USE lblparams, ONLY: NMOL => MXMOL, Max_ISO
 !++                                                                     
-      COMMON /ISO_data/ ISO82(MXMOL,Max_ISO),ISONM(MXMOL) 
+      COMMON /ISO_data/ ISO82(NMOL,Max_ISO),ISONM(NMOL) 
 !                                                                       
 !    The number of isotopes for a particular molecule:                  
-      DATA (ISONM(I),I=1,MXMOL)/                                         &
-     &  6,   9,  18,   5,  6,   3,  3,                                  &
-     &  3,   2,   1,   2,    1,  3,  1,   2,   2,  1,                   &
-     &  2,   5,    3,    2,  1,   3,     2,    1,    2,    1,   1,      &
-     &   1,   1,   3,     1,   1, 1,      2,    1,    2,    2,   1/     
-!     H2O, CO2, O3, N2O, CO, CH4, O2,                                   
-!      NO, SO2, NO2, NH3, HNO3, OH, HF, HCl, HBr, HI,                   
-!     ClO, OCS, H2CO, HOCl, N2, HCN, CH3Cl, H2O2, C2H2, C2H6, PH3       
-!     COF2, SF6, H2S, HCOOH, HO2, O, ClONO2,  NO+, HOBr, C2H4 CH3OH     
-!                                                                       
+      DATA (ISONM(I),I=1,NMOL)/                                         &
+     &   6,   9,    9,    5,    6,   3,     3,                          &
+     &   3,   2,    1,    2,    1,   3,     1,    2,    2,    1,        &
+     &   2,   5,    3,    2,    1,   3,     2,    1,    2,    1,    1,  &
+     &   1,   1,    3,    1,    1,   1,     2,    1,    2,    2,    1,  &
+     &   2,   1,    1,    1,    1,   2,     4,    1/  
+!      H2O, CO2,   O3,  N2O,   CO, CH4,    O2,                          
+!       NO, SO2,  NO2,  NH3, HNO3,  OH,    HF,  HCl,  HBr,   HI,        
+!      ClO, OCS, H2CO, HOCl,   N2, HCN, CH3Cl, H2O2, C2H2, C2H6,  PH3   
+!     COF2, SF6,  H2S,HCOOH,  HO2,   O,ClONO2, NO+, HOBr,  C2H4,CH3OH, 
+!     CH3Br,CH3CN,CF4, C4H2, HC3N,  H2,    CS, SO3/      
+                                                                        
                                                                         
 !       H2O                                                             
       DATA (ISO82(1,J),J=1,6)/                                          &
@@ -6157,9 +6366,41 @@
                                                                         
       DATA (ISO82(39,J),J=1,1)/                                         &
      &  2161/                                                           
-!       C2H4                                                            
+!       CH3OH                                                            
                                                                         
-      END                                           
+      DATA (ISO82(40,J),J=1,2)/                                         &
+     &  219,211/                                                           
+!       CH3Br                                                            
+                                                                        
+      DATA (ISO82(41,J),J=1,1)/                                         &
+     &  2124/                                                           
+!       CH3CN    
+                                                                        
+      DATA (ISO82(42,J),J=1,1)/                                         &
+     &  29/                                                           
+!       CF4  
+                                                                        
+      DATA (ISO82(43,J),J=1,1)/                                         &
+     &  2211/                                                           
+!       C4H2  
+                                                                        
+      DATA (ISO82(44,J),J=1,1)/                                         &
+     &  1224/                                                           
+!       HC3N  
+                                                                        
+      DATA (ISO82(45,J),J=1,2)/                                         &
+     &  11, 12/                                                           
+!       H2  
+
+      DATA (ISO82(46,J),J=1,4)/                                         &
+     &  22, 24, 32, 23/                                                
+!       CS  
+
+      DATA (ISO82(47,J),J=1,1)/                                         &
+     &  26/                                                
+!       SO3 
+                                                                        
+      END                                                               
                                                                         
 !                                                                       
 !...date last changed 25 Nov 2001                                       
@@ -6171,10 +6412,9 @@
 !                                                                       
 !                                                                       
 !++                                                                     
-      USE lblparams, ONLY: MXMOL, Max_ISO
-!      PARAMETER (NMOL=39,Max_ISO=20) 
+      USE lblparams, ONLY: NMOL => MXMOL, Max_ISO
 !++                                                                     
-      COMMON /ISO_data/ ISO82(MXMOL,Max_ISO),ISONM(MXMOL) 
+      COMMON /ISO_data/ ISO82(NMOL,Max_ISO),ISONM(NMOL) 
 !                                                                       
 !                                                                       
          iso_max = ISONM(MOLEC) 
@@ -6188,13 +6428,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 6), QofT( 6,119),Q(NT) 
@@ -6361,7 +6600,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -6383,13 +6622,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 9), QofT( 9,119),Q(NT) 
@@ -6634,7 +6872,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -6656,13 +6894,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
 !                                                                       
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj(18), QofT(18,119),Q(NT) 
@@ -7142,7 +7379,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -7164,13 +7401,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 5), QofT( 5,119),Q(NT) 
@@ -7311,7 +7547,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -7333,13 +7569,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 6), QofT( 6,119),Q(NT) 
@@ -7506,7 +7741,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -7528,13 +7763,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -7623,7 +7857,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -7645,13 +7879,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -7740,7 +7973,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -7762,13 +7995,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -7857,7 +8089,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -7879,13 +8111,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -7948,7 +8179,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -7970,13 +8201,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -8013,7 +8243,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8035,13 +8265,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8104,7 +8333,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8126,13 +8355,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -8169,7 +8397,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8191,13 +8419,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -8286,7 +8513,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8308,13 +8535,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -8351,7 +8577,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8373,13 +8599,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8442,7 +8667,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8464,13 +8689,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8533,7 +8757,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8555,13 +8779,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -8598,7 +8821,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8620,13 +8843,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -8689,7 +8911,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8711,13 +8933,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 5), QofT( 5,119),Q(NT) 
@@ -8858,7 +9079,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8880,13 +9101,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -8975,7 +9195,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -8997,13 +9217,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -9066,7 +9285,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9088,13 +9307,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9131,7 +9349,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9153,13 +9371,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -9248,7 +9465,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9270,13 +9487,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -9339,7 +9555,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9361,13 +9577,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9404,7 +9619,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9426,13 +9641,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -9495,7 +9709,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9517,13 +9731,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9560,7 +9773,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9582,13 +9795,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9625,7 +9837,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9647,13 +9859,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9690,7 +9901,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9712,13 +9923,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9755,7 +9965,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9777,13 +9987,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 3), QofT( 3,119),Q(NT) 
@@ -9872,7 +10081,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9894,13 +10103,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -9937,7 +10145,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -9959,13 +10167,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -10002,7 +10209,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -10024,13 +10231,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -10067,7 +10273,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -10089,13 +10295,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -10158,7 +10363,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -10180,13 +10385,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 1), QofT( 1,119),Q(NT) 
@@ -10223,7 +10427,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -10245,13 +10449,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -10314,7 +10517,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -10336,13 +10539,12 @@
      & iso,                                                             &
      & gsi,                                                             &
      & QT)                                                              
-                ! temperature in K                                      
-                  ! isotope code (HITRAN INDEX)                         
-                  ! state independent nuclear degeneracyfactor          
-                 ! Total Internal Partition Function                    
+            ! temperature in K                                          
+            ! isotope code (HITRAN INDEX)                               
+            ! state independent nuclear degeneracyfactor                
+            ! Total Internal Partition Function                         
                                                                         
       USE lblparams, ONLY: NT
-!      parameter (NT=119) 
       COMMON/Temperatures/tdat(NT) 
                                                                         
       dimension xgj( 2), QofT( 2,119),Q(NT) 
@@ -10405,7 +10607,7 @@
 !                                                                       
       gsi = xgj(iso) 
       do I=1,NT 
-        Q(I)=QofT(iso,I) 
+         Q(I)=QofT(iso,I) 
       enddo 
                                                                         
 !                                                                       
@@ -10420,6 +10622,793 @@
 !                                                                       
    99 return 
       END                                           
+!
+!
+!     *****************
+      Subroutine QT_CH3Br (                       &
+     & T, 	& ! temperature in K  
+     & iso, 	& ! isotope code (HITRAN INDEX)
+     & gsi, 	& ! state independent nuclear degeneracyfactor
+     & QT) 	 ! Total Internal Partition Function 
+!    From TIPS_2011_v1p0.for written by R.R. Gamache
+! 
+!
+!...date last changed 17         June, 2011
+      !implicit DOUBLE PRECISION (a-h,o-z)
+      parameter (NT=119)
+      COMMON/Temperatures/tdat(NT)
+      
+      dimension xgj( 2), QofT( 2,119),Q(NT)
+      data xgj/ 4.,4./
+!...    CH3Br
+!...        --       219
+      data (QofT( 1,J),J=1,119)/ 0.70299E+04, 0.11847E+05, 0.17442E+05, &
+     & 0.23741E+05, 0.30723E+05, 0.38408E+05, 0.46851E+05, 0.56138E+05, &
+     & 0.66375E+05, 0.77692E+05, 0.90239E+05, 0.10418E+06, 0.11972E+06, &
+     & 0.13704E+06, 0.15639E+06, 0.17801E+06, 0.20218E+06, 0.22920E+06, &
+     & 0.25940E+06, 0.29316E+06, 0.33087E+06, 0.37296E+06, 0.41992E+06, &
+     & 0.47229E+06, 0.53062E+06, 0.59557E+06, 0.66781E+06, 0.74812E+06, &
+     & 0.83731E+06, 0.93629E+06, 0.10461E+07, 0.11677E+07, 0.13023E+07, &
+     & 0.14513E+07, 0.16159E+07, 0.17978E+07, 0.19985E+07, 0.22199E+07, &
+     & 0.24638E+07, 0.27324E+07, 0.30280E+07, 0.33529E+07, 0.37099E+07, & 
+     & 0.41019E+07, 0.45319E+07, 0.50034E+07, 0.55199E+07, 0.60853E+07, &
+     & 0.67039E+07, 0.73801E+07, 0.81189E+07, 0.89255E+07, 0.98056E+07, &
+     & 0.10765E+08, 0.11811E+08, 0.12949E+08, 0.14188E+08, 0.15535E+08, &
+     & 0.17000E+08, 0.18590E+08, 0.20317E+08, 0.22190E+08, 0.24220E+08, &
+     & 0.26421E+08, 0.28804E+08, 0.31383E+08, 0.34173E+08, 0.37189E+08, &
+     & 0.40448E+08, 0.43967E+08, 0.47765E+08, 0.51862E+08, 0.56280E+08, &
+     & 0.61040E+08, 0.66167E+08, 0.71686E+08, 0.77624E+08, 0.84009E+08, &
+     & 0.90873E+08, 0.98247E+08, 0.10616E+09, 0.11466E+09, 0.12378E+09, &
+     & 0.13356E+09, 0.14403E+09, 0.15526E+09, 0.16728E+09, 0.18014E+09, &
+     & 0.19391E+09, 0.20863E+09, 0.22436E+09, 0.24117E+09, 0.25913E+09, &
+     & 0.27830E+09, 0.29875E+09, 0.32057E+09, 0.34384E+09, 0.36864E+09, &
+     & 0.39506E+09, 0.42320E+09, 0.45316E+09, 0.48504E+09, 0.51896E+09, &
+     & 0.55502E+09, 0.59336E+09, 0.63410E+09, 0.67738E+09, 0.72334E+09, &
+     & 0.77212E+09, 0.82388E+09, 0.87879E+09, 0.93701E+09, 0.99873E+09, &
+     & 0.10641E+10, 0.11334E+10, 0.12068E+10, 0.12845E+10, 0.13667E+10, &
+     & 0.14536E+10/
+!...        --       211
+      data (QofT( 2,J),J=1,119)/ 0.70566E+04, 0.11892E+05, 0.17508E+05, &
+     & 0.23832E+05, 0.30841E+05, 0.38557E+05, 0.47036E+05, 0.56362E+05, &
+     & 0.66644E+05, 0.78011E+05, 0.90615E+05, 0.10462E+06, 0.12023E+06, &
+     & 0.13763E+06, 0.15707E+06, 0.17880E+06, 0.20308E+06, 0.23023E+06, &
+     & 0.26059E+06, 0.29451E+06, 0.33240E+06, 0.37471E+06, 0.42191E+06, &
+     & 0.47453E+06, 0.53316E+06, 0.59843E+06, 0.67104E+06, 0.75176E+06, &
+     & 0.84141E+06, 0.94090E+06, 0.10512E+07, 0.11735E+07, 0.13088E+07, &
+     & 0.14585E+07, 0.16241E+07, 0.18069E+07, 0.20086E+07, 0.22312E+07, &
+     & 0.24764E+07, 0.27464E+07, 0.30435E+07, 0.33702E+07, 0.37291E+07, &
+     & 0.41231E+07, 0.45554E+07, 0.50294E+07, 0.55486E+07, 0.61171E+07, &
+     & 0.67389E+07, 0.74188E+07, 0.81616E+07, 0.89725E+07, 0.98573E+07, &
+     & 0.10822E+08, 0.11873E+08, 0.13018E+08, 0.14263E+08, 0.15618E+08, &
+     & 0.17090E+08, 0.18689E+08, 0.20425E+08, 0.22308E+08, 0.24350E+08, &
+     & 0.26563E+08, 0.28959E+08, 0.31552E+08, 0.34357E+08, 0.37389E+08, &
+     & 0.40666E+08, 0.44204E+08, 0.48023E+08, 0.52143E+08, 0.56585E+08, &
+     & 0.61371E+08, 0.66526E+08, 0.72076E+08, 0.78046E+08, 0.84467E+08, &
+     & 0.91369E+08, 0.98783E+08, 0.10674E+09, 0.11529E+09, 0.12446E+09, &
+     & 0.13429E+09, 0.14482E+09, 0.15611E+09, 0.16820E+09, 0.18113E+09, &
+     & 0.19497E+09, 0.20978E+09, 0.22560E+09, 0.24250E+09, 0.26056E+09, &
+     & 0.27983E+09, 0.30040E+09, 0.32234E+09, 0.34574E+09, 0.37068E+09, &
+     & 0.39725E+09, 0.42555E+09, 0.45567E+09, 0.48773E+09, 0.52184E+09, &
+     & 0.55811E+09, 0.59666E+09, 0.63763E+09, 0.68115E+09, 0.72736E+09, &
+     & 0.77642E+09, 0.82847E+09, 0.88368E+09, 0.94223E+09, 0.10043E+10, &
+     & 0.10701E+10, 0.11397E+10, 0.12135E+10, 0.12916E+10, 0.13743E+10, &
+     & 0.14618E+10/
+  
+      eps=0.01
+!
+      gsi = xgj(iso)
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
+ 
+!
+!...value depends on temperature range
+      if(T.lt.70. .OR. T.gt.3000.) then
+        Qt = -1.
+        write(*,'(a)') '  OUT OF TEMPERATURE RANGE'
+        go to 99
+      endif
+  
+      call AtoB(T,Qt,Tdat,Q,NT)
+!      
+   99 return
+      end
+!
+!     *****************
+      Subroutine QT_CH3CN (  &                      
+     & T, 	 &! temperature in K 
+     & iso, 	 &! isotope code (HITRAN INDEX)
+     & gsi, 	 &! state independent nuclear degeneracyfactor
+     & QT) 	! Total Internal Partition Function
+!    From TIPS_2011_v1p0.for written by R.R. Gamache
+! 
+!
+!...date last changed 17         June, 2011 
+      !implicit DOUBLE PRECISION (a-h,o-z)
+      parameter (NT=119)
+      COMMON/Temperatures/tdat(NT)
+      
+      dimension xgj( 4), QofT( 4,119),Q(NT)
+      data xgj/ 3.,6.,6.,12./
+!...    CH3CN
+!...        --      2124
+      data (QofT( 1,J),J=1,119)/ 0.54361E+04, 0.91953E+04, 0.13708E+05, &
+     & 0.19097E+05, 0.25531E+05, 0.33206E+05, 0.42337E+05, 0.53173E+05, &
+     & 0.66002E+05, 0.81163E+05, 0.99053E+05, 0.12014E+06, 0.14496E+06, &
+     & 0.17414E+06, 0.20843E+06, 0.24866E+06, 0.29580E+06, 0.35099E+06, &
+     & 0.41551E+06, 0.49085E+06, 0.57871E+06, 0.68104E+06, 0.80008E+06, &
+     & 0.93836E+06, 0.10988E+07, 0.12848E+07, 0.14999E+07, 0.17487E+07, &
+     & 0.20359E+07, 0.23670E+07, 0.27484E+07, 0.31871E+07, 0.36912E+07, &
+     & 0.42697E+07, 0.49328E+07, 0.56921E+07, 0.65605E+07, 0.75526E+07, &
+     & 0.86847E+07, 0.99753E+07, 0.11445E+08, 0.13116E+08, 0.15016E+08, &
+     & 0.17172E+08, 0.19617E+08, 0.22386E+08, 0.25520E+08, 0.29063E+08, &
+     & 0.33064E+08, 0.37578E+08, 0.42667E+08, 0.48397E+08, 0.54844E+08, &
+     & 0.62090E+08, 0.70228E+08, 0.79358E+08, 0.89592E+08, 0.10105E+09, &
+     & 0.11388E+09, 0.12822E+09, 0.14424E+09, 0.16212E+09, 0.18205E+09, &
+     & 0.20427E+09, 0.22900E+09, 0.25652E+09, 0.28710E+09, 0.32107E+09, &
+     & 0.35877E+09, 0.40059E+09, 0.44692E+09, 0.49822E+09, 0.55500E+09, &
+     & 0.61777E+09, 0.68712E+09, 0.76370E+09, 0.84819E+09, 0.94135E+09, &
+     & 0.10440E+10, 0.11570E+10, 0.12814E+10, 0.14181E+10, 0.15684E+10, &
+     & 0.17334E+10, 0.19145E+10, 0.21131E+10, 0.23308E+10, 0.25693E+10, &
+     & 0.28304E+10, 0.31161E+10, 0.34285E+10, 0.37698E+10, 0.41426E+10, &
+     & 0.45496E+10, 0.49935E+10, 0.54776E+10, 0.60051E+10, 0.65796E+10, &
+     & 0.72049E+10, 0.78853E+10, 0.86251E+10, 0.94291E+10, 0.10303E+11, &
+     & 0.11251E+11, 0.12280E+11, 0.13396E+11, 0.14606E+11, 0.15916E+11, &
+     & 0.17336E+11, 0.18873E+11, 0.20536E+11, 0.22334E+11, 0.24278E+11, &
+     & 0.26379E+11, 0.28647E+11, 0.31096E+11, 0.33739E+11, 0.36589E+11, &
+     & 0.39661E+11/
+!...        --      2134
+      data (QofT( 2,J),J=1,119)/ 0.10906E+05, 0.18458E+05, 0.27552E+05, &
+     & 0.38455E+05, 0.51523E+05, 0.67161E+05, 0.85818E+05, 0.10801E+06, &
+     & 0.13434E+06, 0.16550E+06, 0.20234E+06, 0.24581E+06, 0.29705E+06, &
+     & 0.35737E+06, 0.42831E+06, 0.51162E+06, 0.60936E+06, 0.72387E+06, &
+     & 0.85786E+06, 0.10145E+07, 0.11972E+07, 0.14102E+07, 0.16582E+07, &
+     & 0.19465E+07, 0.22813E+07, 0.26695E+07, 0.31190E+07, 0.36390E+07, &
+     & 0.42397E+07, 0.49328E+07, 0.57314E+07, 0.66507E+07, 0.77076E+07, &
+     & 0.89211E+07, 0.10313E+08, 0.11907E+08, 0.13732E+08, 0.15817E+08, &
+     & 0.18198E+08, 0.20914E+08, 0.24007E+08, 0.27527E+08, 0.31529E+08, &
+     & 0.36073E+08, 0.41228E+08, 0.47070E+08, 0.53683E+08, 0.61162E+08, &
+     & 0.69612E+08, 0.79149E+08, 0.89903E+08, 0.10202E+09, 0.11565E+09, &
+     & 0.13098E+09, 0.14820E+09, 0.16753E+09, 0.18921E+09, 0.21349E+09, &
+     & 0.24066E+09, 0.27106E+09, 0.30502E+09, 0.34293E+09, 0.38523E+09, &
+     & 0.43237E+09, 0.48486E+09, 0.54328E+09, 0.60823E+09, 0.68039E+09, &
+     & 0.76049E+09, 0.84935E+09, 0.94784E+09, 0.10569E+10, 0.11777E+10, &
+     & 0.13112E+10, 0.14588E+10, 0.16217E+10, 0.18016E+10, 0.19999E+10, &
+     & 0.22185E+10, 0.24592E+10, 0.27241E+10, 0.30155E+10, 0.33357E+10, &
+     & 0.36875E+10, 0.40736E+10, 0.44971E+10, 0.49615E+10, 0.54702E+10, &
+     & 0.60273E+10, 0.66369E+10, 0.73035E+10, 0.80322E+10, 0.88282E+10, &
+     & 0.96972E+10, 0.10645E+11, 0.11679E+11, 0.12806E+11, 0.14034E+11, &
+     & 0.15370E+11, 0.16824E+11, 0.18406E+11, 0.20125E+11, 0.21992E+11, &
+     & 0.24020E+11, 0.26221E+11, 0.28608E+11, 0.31197E+11, 0.34002E+11, &
+     & 0.37040E+11, 0.40330E+11, 0.43889E+11, 0.47739E+11, 0.51902E+11, &
+     & 0.56400E+11, 0.61259E+11, 0.66504E+11, 0.72165E+11, 0.78272E+11, &
+     & 0.84856E+11/
+!...        --      3124
+      data (QofT( 3,J),J=1,119)/ 0.11223E+05, 0.18985E+05, 0.28307E+05, &
+     & 0.39441E+05, 0.52744E+05, 0.68620E+05, 0.87523E+05, 0.10997E+06, &
+     & 0.13658E+06, 0.16806E+06, 0.20524E+06, 0.24910E+06, 0.30080E+06, &
+     & 0.36165E+06, 0.43319E+06, 0.51722E+06, 0.61579E+06, 0.73127E+06, &
+     & 0.86640E+06, 0.10243E+07, 0.12086E+07, 0.14234E+07, 0.16735E+07, &
+     & 0.19642E+07, 0.23017E+07, 0.26931E+07, 0.31464E+07, 0.36706E+07, &
+     & 0.42762E+07, 0.49749E+07, 0.57801E+07, 0.67069E+07, 0.77722E+07, &
+     & 0.89955E+07, 0.10398E+08, 0.12006E+08, 0.13845E+08, 0.15947E+08, &
+     & 0.18346E+08, 0.21083E+08, 0.24201E+08, 0.27748E+08, 0.31781E+08, &
+     & 0.36361E+08, 0.41556E+08, 0.47442E+08, 0.54106E+08, 0.61643E+08, &
+     & 0.70157E+08, 0.79767E+08, 0.90604E+08, 0.10281E+09, 0.11655E+09, &
+     & 0.13199E+09, 0.14935E+09, 0.16882E+09, 0.19065E+09, 0.21512E+09, &
+     & 0.24250E+09, 0.27312E+09, 0.30733E+09, 0.34553E+09, 0.38814E+09, &
+     & 0.43562E+09, 0.48851E+09, 0.54736E+09, 0.61279E+09, 0.68548E+09, &
+     & 0.76617E+09, 0.85568E+09, 0.95489E+09, 0.10648E+10, 0.11864E+10, &
+     & 0.13209E+10, 0.14695E+10, 0.16337E+10, 0.18148E+10, 0.20146E+10, &
+     & 0.22348E+10, 0.24772E+10, 0.27441E+10, 0.30375E+10, 0.33601E+10, &
+     & 0.37143E+10, 0.41032E+10, 0.45298E+10, 0.49975E+10, 0.55099E+10, &
+     & 0.60709E+10, 0.66849E+10, 0.73563E+10, 0.80902E+10, 0.88918E+10, &
+     & 0.97670E+10, 0.10722E+11, 0.11763E+11, 0.12898E+11, 0.14134E+11, &
+     & 0.15480E+11, 0.16945E+11, 0.18537E+11, 0.20269E+11, 0.22149E+11, &
+     & 0.24191E+11, 0.26408E+11, 0.28812E+11, 0.31419E+11, 0.34244E+11, &
+     & 0.37303E+11, 0.40616E+11, 0.44201E+11, 0.48078E+11, 0.52269E+11, &
+     & 0.56799E+11, 0.61692E+11, 0.66974E+11, 0.72675E+11, 0.78824E+11, &
+     & 0.85454E+11/
+!...        --      3134
+      data (QofT( 4,J),J=1,119)/ 0.22522E+05, 0.38117E+05, 0.56899E+05, &
+     & 0.79412E+05, 0.10640E+06, 0.13870E+06, 0.17726E+06, 0.22314E+06, &
+     & 0.27761E+06, 0.34214E+06, 0.41847E+06, 0.50862E+06, 0.61497E+06, &
+     & 0.74028E+06, 0.88774E+06, 0.10611E+07, 0.12646E+07, 0.15031E+07, &
+     & 0.17825E+07, 0.21092E+07, 0.24908E+07, 0.29358E+07, 0.34541E+07, &
+     & 0.40571E+07, 0.47576E+07, 0.55703E+07, 0.65120E+07, 0.76018E+07, &
+     & 0.88614E+07, 0.10315E+08, 0.11992E+08, 0.13922E+08, 0.16142E+08, &
+     & 0.18693E+08, 0.21619E+08, 0.24973E+08, 0.28812E+08, 0.33202E+08, &
+     & 0.38216E+08, 0.43936E+08, 0.50455E+08, 0.57876E+08, 0.66315E+08, &
+     & 0.75901E+08, 0.86779E+08, 0.99110E+08, 0.11307E+09, 0.12887E+09, &
+     & 0.14672E+09, 0.16688E+09, 0.18961E+09, 0.21523E+09, 0.24407E+09, &
+     & 0.27651E+09, 0.31295E+09, 0.35387E+09, 0.39975E+09, 0.45118E+09, &
+     & 0.50875E+09, 0.57315E+09, 0.64512E+09, 0.72549E+09, 0.81517E+09, &
+     & 0.91514E+09, 0.10265E+10, 0.11504E+10, 0.12883E+10, 0.14414E+10, &
+     & 0.16115E+10, 0.18001E+10, 0.20093E+10, 0.22410E+10, 0.24975E+10, &
+     & 0.27812E+10, 0.30948E+10, 0.34412E+10, 0.38235E+10, 0.42452E+10, &
+     & 0.47101E+10, 0.52220E+10, 0.57856E+10, 0.64055E+10, 0.70869E+10, &
+     & 0.78355E+10, 0.86574E+10, 0.95591E+10, 0.10548E+11, 0.11631E+11, &
+     & 0.12817E+11, 0.14116E+11, 0.15536E+11, 0.17088E+11, 0.18785E+11, &
+     & 0.20636E+11, 0.22657E+11, 0.24861E+11, 0.27264E+11, 0.29881E+11, &
+     & 0.32730E+11, 0.35832E+11, 0.39205E+11, 0.42871E+11, 0.46855E+11, &
+     & 0.51182E+11, 0.55878E+11, 0.60973E+11, 0.66497E+11, 0.72484E+11, &
+     & 0.78970E+11, 0.85992E+11, 0.93592E+11, 0.10181E+12, 0.11070E+12, &
+     & 0.12031E+12, 0.13069E+12, 0.14189E+12, 0.15398E+12, 0.16703E+12, &
+     & 0.18110E+12/
+  
+      eps=0.01
+!
+      gsi = xgj(iso)
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
+ 
+!
+!...value depends on temperature range
+      if(T.lt.70. .OR. T.gt.3000.) then
+        Qt = -1.
+        write(*,'(a)') '  OUT OF TEMPERATURE RANGE'
+        go to 99
+      endif
+  
+      call AtoB(T,Qt,Tdat,Q,NT)
+!      
+   99 return
+      end
+!
+!     *****************
+      Subroutine QT_CF4   (    &                    
+     & T, 	 &! temperature in K 
+     & iso, 	 &! isotope code (HITRAN INDEX)
+     & gsi, 	 &! state independent nuclear degeneracyfactor
+     & QT) 	 ! Total Internal Partition Function
+!    From TIPS_2011_v1p0.for written by R.R. Gamache
+! 
+!
+!...date last changed 17         June, 2011  
+      !implicit DOUBLE PRECISION (a-h,o-z)
+      parameter (NT=119)
+      COMMON/Temperatures/tdat(NT)
+      
+      dimension xgj( 1), QofT( 1,119),Q(NT)
+      data xgj/ 1./
+!...      CF4
+!...        --        29
+      data (QofT( 1,J),J=1,119)/ 0.76233E+04, 0.12867E+05, 0.19059E+05, &
+     & 0.26316E+05, 0.34895E+05, 0.45145E+05, 0.57461E+05, 0.72259E+05, &
+     & 0.89950E+05, 0.11092E+06, 0.13550E+06, 0.16399E+06, 0.19658E+06, &
+     & 0.23341E+06, 0.27457E+06, 0.32004E+06, 0.36978E+06, 0.42369E+06, &
+     & 0.48161E+06, 0.54338E+06, 0.60880E+06, 0.67764E+06, 0.55684E+07, &
+     & 0.71250E+07, 0.90615E+07, 0.11458E+08, 0.14407E+08, 0.18021E+08, &
+     & 0.22428E+08, 0.27778E+08, 0.34247E+08, 0.42038E+08, 0.51386E+08, &
+     & 0.62559E+08, 0.75869E+08, 0.91670E+08, 0.11037E+09, 0.13242E+09, &
+     & 0.15836E+09, 0.18878E+09, 0.22436E+09, 0.26584E+09, 0.31410E+09, &
+     & 0.37008E+09, 0.43488E+09, 0.50970E+09, 0.59589E+09, 0.69496E+09, &
+     & 0.80858E+09, 0.93863E+09, 0.10872E+10, 0.12565E+10, 0.14491E+10, &
+     & 0.16679E+10, 0.19159E+10, 0.21966E+10, 0.25136E+10, 0.28711E+10, &
+     & 0.32740E+10, 0.37260E+10, 0.42340E+10, 0.48030E+10, 0.54400E+10, &
+     & 0.61520E+10, 0.69470E+10, 0.78320E+10, 0.88170E+10, 0.99120E+10, &
+     & 0.11130E+11, 0.12470E+11, 0.13970E+11, 0.15620E+11, 0.17440E+11, &
+     & 0.19450E+11, 0.21670E+11, 0.24100E+11, 0.26790E+11, 0.29730E+11, &
+     & 0.33000E+11, 0.36500E+11, 0.40400E+11, 0.44600E+11, 0.49300E+11, &
+     & 0.54300E+11, 0.59800E+11, 0.65800E+11, 0.72400E+11, 0.79500E+11, &
+     & 0.87200E+11, 0.95500E+11, 0.10500E+12, 0.11400E+12, 0.12500E+12, &
+     & 0.13600E+12, 0.14900E+12, 0.16200E+12, 0.17700E+12, 0.19200E+12, &
+     & 0.21000E+12, 0.23000E+12, 0.25000E+12, 0.27000E+12, 0.29000E+12, &
+     & 0.31000E+12, 0.34000E+12, 0.36000E+12, 0.39000E+12, 0.42000E+12, &
+     & 0.46000E+12, 0.49000E+12, 0.53000E+12, 0.57000E+12, 0.61000E+12, &
+     & 0.66000E+12, 0.70000E+12, 0.75000E+12, 0.81000E+12, 0.86000E+12, &
+     & 0.93000E+12/
+  
+      eps=0.01
+!
+      gsi = xgj(iso)
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
+ 
+!
+!...value depends on temperature range
+      if(T.lt.70. .OR. T.gt.3000.) then
+        Qt = -1.
+        write(*,'(a)') '  OUT OF TEMPERATURE RANGE'
+        go to 99
+      endif
+  
+      call AtoB(T,Qt,Tdat,Q,NT)
+!      
+   99 return
+      end
+!
+!     *****************
+      Subroutine QT_C4H2  (     &                   
+     & T, 	 &! temperature in K 
+     & iso, 	 &! isotope code (HITRAN INDEX)
+     & gsi, 	 &! state independent nuclear degeneracyfactor
+     & QT) 	! Total Internal Partition Function
+!    From TIPS_2011_v1p0.for written by R.R. Gamache
+! 
+!
+!...date last changed 17         June, 2011 
+      !implicit DOUBLE PRECISION (a-h,o-z)
+      parameter (NT=119)
+      COMMON/Temperatures/tdat(NT)
+      
+      dimension xgj( 1), QofT( 1,119),Q(NT)
+      data xgj/ 1./
+!...     C4H2
+!...        --      1221
+      data (QofT( 1,J),J=1,119)/ 0.57628E+03, 0.84874E+03, 0.11789E+04, &
+     & 0.15952E+04, 0.21317E+04, 0.28324E+04, 0.37543E+04, 0.49705E+04, &
+     & 0.65754E+04, 0.86894E+04, 0.11466E+05, 0.15099E+05, 0.19834E+05, &
+     & 0.25980E+05, 0.33920E+05, 0.44132E+05, 0.57210E+05, 0.73884E+05, &
+     & 0.95049E+05, 0.12180E+06, 0.15548E+06, 0.19771E+06, 0.25045E+06, &
+     & 0.31606E+06, 0.39739E+06, 0.49786E+06, 0.62152E+06, 0.77324E+06, &
+     & 0.95878E+06, 0.11850E+07, 0.14599E+07, 0.17930E+07, 0.21956E+07, &
+     & 0.26807E+07, 0.32637E+07, 0.39626E+07, 0.47983E+07, 0.57951E+07, &
+     & 0.69813E+07, 0.83896E+07, 0.10058E+08, 0.12030E+08, 0.14356E+08, &
+     & 0.17093E+08, 0.20309E+08, 0.24079E+08, 0.28491E+08, 0.33644E+08, &
+     & 0.39651E+08, 0.46642E+08, 0.54764E+08, 0.64184E+08, 0.75091E+08, &
+     & 0.87699E+08, 0.10225E+09, 0.11902E+09, 0.13832E+09, 0.16049E+09, &
+     & 0.18593E+09, 0.21507E+09, 0.24841E+09, 0.28650E+09, 0.32996E+09, &
+     & 0.37949E+09, 0.43586E+09, 0.49993E+09, 0.57266E+09, 0.65513E+09, &
+     & 0.74852E+09, 0.85418E+09, 0.97356E+09, 0.11083E+10, 0.12602E+10, &
+     & 0.14313E+10, 0.16238E+10, 0.18401E+10, 0.20829E+10, 0.23553E+10, &
+     & 0.26605E+10, 0.30021E+10, 0.33841E+10, 0.38109E+10, 0.42874E+10, &
+     & 0.48187E+10, 0.54107E+10, 0.60698E+10, 0.68029E+10, 0.76176E+10, &
+     & 0.85223E+10, 0.95260E+10, 0.10639E+11, 0.11871E+11, 0.13236E+11, &
+     & 0.14744E+11, 0.16412E+11, 0.18253E+11, 0.20285E+11, 0.22526E+11, &
+     & 0.24995E+11, 0.27714E+11, 0.30705E+11, 0.33995E+11, 0.37609E+11, &
+     & 0.41579E+11, 0.45934E+11, 0.50711E+11, 0.55947E+11, 0.61681E+11, &
+     & 0.67957E+11, 0.74824E+11, 0.82330E+11, 0.90532E+11, 0.99487E+11, &
+     & 0.10926E+12, 0.11992E+12, 0.13154E+12, 0.14420E+12, 0.15799E+12, &
+     & 0.17299E+12/
+  
+      eps=0.01
+!
+      gsi = xgj(iso)
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
+ 
+!
+!...value depends on temperature range
+      if(T.lt.70. .OR. T.gt.3000.) then
+        Qt = -1.
+        write(*,'(a)') '  OUT OF TEMPERATURE RANGE'
+        go to 99
+      endif
+  
+      call AtoB(T,Qt,Tdat,Q,NT)
+!      
+   99 return
+      end
+!
+!     *****************
+      Subroutine QT_HC3N  (    &                    
+     & T, 	 &! temperature in K 
+     & iso, 	 &! isotope code (HITRAN INDEX)
+     & gsi, 	 &! state independent nuclear degeneracyfactor
+     & QT) 	! Total Internal Partition Function
+!    From TIPS_2011_v1p0.for written by R.R. Gamache
+! 
+!
+!...date last changed 17         June, 2011  
+      !implicit DOUBLE PRECISION (a-h,o-z)
+      parameter (NT=119)
+      COMMON/Temperatures/tdat(NT)
+      
+      dimension xgj( 6), QofT( 6,119),Q(NT)
+      data xgj/ 6.,12.,12.,12.,4.,9./
+!...     HC3N
+!...        --     12224
+      data (QofT( 1,J),J=1,119)/ 0.16683E+04, 0.24538E+04, 0.33995E+04, &
+     & 0.45769E+04, 0.60637E+04, 0.79533E+04, 0.10360E+05, 0.13422E+05, &
+     & 0.17311E+05, 0.22232E+05, 0.28434E+05, 0.36215E+05, 0.45932E+05, &
+     & 0.58011E+05, 0.72958E+05, 0.91370E+05, 0.11395E+06, 0.14153E+06, &
+     & 0.17507E+06, 0.21570E+06, 0.26475E+06, 0.32372E+06, 0.39440E+06, &
+     & 0.47881E+06, 0.57930E+06, 0.69856E+06, 0.83968E+06, 0.10062E+07, &
+     & 0.12021E+07, 0.14320E+07, 0.17011E+07, 0.20153E+07, 0.23812E+07, &
+     & 0.28065E+07, 0.32996E+07, 0.38701E+07, 0.45287E+07, 0.52876E+07, &
+     & 0.61602E+07, 0.71616E+07, 0.83088E+07, 0.96206E+07, 0.11118E+08, &
+     & 0.12824E+08, 0.14765E+08, 0.16969E+08, 0.19469E+08, 0.22299E+08, &
+     & 0.25498E+08, 0.29110E+08, 0.33181E+08, 0.37763E+08, 0.42914E+08, &
+     & 0.48697E+08, 0.55180E+08, 0.62440E+08, 0.70558E+08, 0.79627E+08, &
+     & 0.89743E+08, 0.10102E+09, 0.11356E+09, 0.12752E+09, 0.14301E+09, &
+     & 0.16020E+09, 0.17925E+09, 0.20035E+09, 0.22367E+09, 0.24945E+09, &
+     & 0.27790E+09, 0.30928E+09, 0.34385E+09, 0.38191E+09, 0.42376E+09, &
+     & 0.46975E+09, 0.52023E+09, 0.57562E+09, 0.63632E+09, 0.70279E+09, &
+     & 0.77553E+09, 0.85506E+09, 0.94195E+09, 0.10368E+10, 0.11403E+10, &
+     & 0.12531E+10, 0.13759E+10, 0.15097E+10, 0.16552E+10, 0.18133E+10, &
+     & 0.19851E+10, 0.21715E+10, 0.23738E+10, 0.25931E+10, 0.28307E+10, &
+     & 0.30879E+10, 0.33662E+10, 0.36672E+10, 0.39926E+10, 0.43439E+10, &
+     & 0.47233E+10, 0.51325E+10, 0.55738E+10, 0.60493E+10, 0.65615E+10, &
+     & 0.71129E+10, 0.77061E+10, 0.83441E+10, 0.90298E+10, 0.97664E+10, &
+     & 0.10557E+11, 0.11406E+11, 0.12317E+11, 0.13293E+11, 0.14339E+11, &
+     & 0.15459E+11, 0.16659E+11, 0.17942E+11, 0.19316E+11, 0.20784E+11, &
+     & 0.22353E+11/
+!...        --     12234
+      data (QofT( 2,J),J=1,119)/ 0.33507E+04, 0.49290E+04, 0.68293E+04, &
+     & 0.91959E+04, 0.12185E+05, 0.15986E+05, 0.20828E+05, 0.26993E+05, &
+     & 0.34824E+05, 0.44739E+05, 0.57239E+05, 0.72931E+05, 0.92539E+05, &
+     & 0.11693E+06, 0.14713E+06, 0.18435E+06, 0.23004E+06, 0.28588E+06, &
+     & 0.35384E+06, 0.43625E+06, 0.53580E+06, 0.65562E+06, 0.79933E+06, &
+     & 0.97115E+06, 0.11759E+07, 0.14191E+07, 0.17073E+07, 0.20476E+07, &
+     & 0.24486E+07, 0.29196E+07, 0.34716E+07, 0.41169E+07, 0.48696E+07, &
+     & 0.57453E+07, 0.67621E+07, 0.79402E+07, 0.93022E+07, 0.10874E+08, &
+     & 0.12684E+08, 0.14764E+08, 0.17150E+08, 0.19884E+08, 0.23009E+08, &
+     & 0.26576E+08, 0.30641E+08, 0.35265E+08, 0.40518E+08, 0.46477E+08, &
+     & 0.53225E+08, 0.60856E+08, 0.69475E+08, 0.79195E+08, 0.90143E+08, &
+     & 0.10246E+09, 0.11629E+09, 0.13182E+09, 0.14921E+09, 0.16868E+09, &
+     & 0.19045E+09, 0.21477E+09, 0.24189E+09, 0.27211E+09, 0.30575E+09, &
+     & 0.34316E+09, 0.38471E+09, 0.43083E+09, 0.48196E+09, 0.53858E+09, &
+     & 0.60125E+09, 0.67052E+09, 0.74704E+09, 0.83148E+09, 0.92459E+09, &
+     & 0.10272E+10, 0.11401E+10, 0.12643E+10, 0.14007E+10, 0.15506E+10, &
+     & 0.17150E+10, 0.18953E+10, 0.20928E+10, 0.23090E+10, 0.25456E+10, &
+     & 0.28042E+10, 0.30867E+10, 0.33951E+10, 0.37316E+10, 0.40984E+10, &
+     & 0.44981E+10, 0.49332E+10, 0.54067E+10, 0.59216E+10, 0.64812E+10, &
+     & 0.70890E+10, 0.77488E+10, 0.84645E+10, 0.92405E+10, 0.10081E+11, &
+     & 0.10992E+11, 0.11978E+11, 0.13044E+11, 0.14197E+11, 0.15443E+11, &
+     & 0.16789E+11, 0.18243E+11, 0.19810E+11, 0.21501E+11, 0.23324E+11, &
+     & 0.25288E+11, 0.27403E+11, 0.29680E+11, 0.32130E+11, 0.34764E+11, &
+     & 0.37596E+11, 0.40639E+11, 0.43907E+11, 0.47416E+11, 0.51181E+11, &
+     & 0.55220E+11/
+!...        --     12324
+      data (QofT( 3,J),J=1,119)/ 0.33506E+04, 0.49280E+04, 0.68267E+04, &
+     & 0.91901E+04, 0.12174E+05, 0.15966E+05, 0.20793E+05, 0.26936E+05, &
+     & 0.34734E+05, 0.44598E+05, 0.57026E+05, 0.72612E+05, 0.92071E+05, &
+     & 0.11625E+06, 0.14616E+06, 0.18298E+06, 0.22813E+06, 0.28323E+06, &
+     & 0.35022E+06, 0.43133E+06, 0.52918E+06, 0.64677E+06, 0.78761E+06, &
+     & 0.95571E+06, 0.11557E+07, 0.13929E+07, 0.16734E+07, 0.20041E+07, &
+     & 0.23929E+07, 0.28488E+07, 0.33820E+07, 0.40040E+07, 0.47280E+07, &
+     & 0.55686E+07, 0.65423E+07, 0.76678E+07, 0.89661E+07, 0.10460E+08, &
+     & 0.12177E+08, 0.14145E+08, 0.16397E+08, 0.18970E+08, 0.21903E+08, &
+     & 0.25242E+08, 0.29036E+08, 0.33339E+08, 0.38214E+08, 0.43726E+08, &
+     & 0.49949E+08, 0.56965E+08, 0.64864E+08, 0.73743E+08, 0.83711E+08, &
+     & 0.94886E+08, 0.10740E+09, 0.12139E+09, 0.13701E+09, 0.15443E+09, &
+     & 0.17384E+09, 0.19543E+09, 0.21943E+09, 0.24607E+09, 0.27561E+09, &
+     & 0.30832E+09, 0.34452E+09, 0.38453E+09, 0.42870E+09, 0.47742E+09, &
+     & 0.53110E+09, 0.59020E+09, 0.65518E+09, 0.72659E+09, 0.80496E+09, &
+     & 0.89092E+09, 0.98510E+09, 0.10882E+10, 0.12010E+10, 0.13242E+10, &
+     & 0.14588E+10, 0.16056E+10, 0.17657E+10, 0.19401E+10, 0.21299E+10, &
+     & 0.23363E+10, 0.25606E+10, 0.28043E+10, 0.30687E+10, 0.33553E+10, &
+     & 0.36660E+10, 0.40024E+10, 0.43665E+10, 0.47601E+10, 0.51856E+10, &
+     & 0.56450E+10, 0.61408E+10, 0.66756E+10, 0.72520E+10, 0.78729E+10, &
+     & 0.85413E+10, 0.92604E+10, 0.10034E+11, 0.10864E+11, 0.11757E+11, &
+     & 0.12714E+11, 0.13742E+11, 0.14843E+11, 0.16023E+11, 0.17287E+11, &
+     & 0.18640E+11, 0.20087E+11, 0.21634E+11, 0.23288E+11, 0.25054E+11, &
+     & 0.26939E+11, 0.28950E+11, 0.31096E+11, 0.33382E+11, 0.35819E+11, &
+     & 0.38413E+11/
+!...        --     13224
+      data (QofT( 4,J),J=1,119)/ 0.34439E+04, 0.50672E+04, 0.70230E+04, &
+     & 0.94603E+04, 0.12542E+05, 0.16462E+05, 0.21461E+05, 0.27833E+05, &
+     & 0.35935E+05, 0.46204E+05, 0.59168E+05, 0.75463E+05, 0.95854E+05, &
+     & 0.12126E+06, 0.15276E+06, 0.19165E+06, 0.23947E+06, 0.29802E+06, &
+     & 0.36943E+06, 0.45619E+06, 0.56121E+06, 0.68789E+06, 0.84018E+06, &
+     & 0.10227E+07, 0.12407E+07, 0.15003E+07, 0.18086E+07, 0.21738E+07, &
+     & 0.26052E+07, 0.31134E+07, 0.37106E+07, 0.44109E+07, 0.52300E+07, &
+     & 0.61861E+07, 0.72996E+07, 0.85939E+07, 0.10095E+08, 0.11833E+08, &
+     & 0.13841E+08, 0.16158E+08, 0.18825E+08, 0.21890E+08, 0.25407E+08, &
+     & 0.29436E+08, 0.34045E+08, 0.39308E+08, 0.45309E+08, 0.52143E+08, &
+     & 0.59912E+08, 0.68734E+08, 0.78737E+08, 0.90065E+08, 0.10288E+09, &
+     & 0.11735E+09, 0.13367E+09, 0.15206E+09, 0.17277E+09, 0.19604E+09, &
+     & 0.22217E+09, 0.25148E+09, 0.28432E+09, 0.32108E+09, 0.36218E+09, &
+     & 0.40809E+09, 0.45932E+09, 0.51644E+09, 0.58004E+09, 0.65082E+09, &
+     & 0.72950E+09, 0.81690E+09, 0.91388E+09, 0.10214E+10, 0.11405E+10, &
+     & 0.12724E+10, 0.14182E+10, 0.15794E+10, 0.17573E+10, 0.19536E+10, &
+     & 0.21701E+10, 0.24086E+10, 0.26711E+10, 0.29599E+10, 0.32774E+10, &
+     & 0.36262E+10, 0.40090E+10, 0.44290E+10, 0.48895E+10, 0.53939E+10, &
+     & 0.59462E+10, 0.65504E+10, 0.72111E+10, 0.79332E+10, 0.87217E+10, &
+     & 0.95823E+10, 0.10521E+11, 0.11544E+11, 0.12659E+11, 0.13874E+11, &
+     & 0.15195E+11, 0.16632E+11, 0.18194E+11, 0.19892E+11, 0.21735E+11, &
+     & 0.23736E+11, 0.25907E+11, 0.28260E+11, 0.30810E+11, 0.33572E+11, &
+     & 0.36563E+11, 0.39799E+11, 0.43299E+11, 0.47083E+11, 0.51172E+11, &
+     & 0.55588E+11, 0.60355E+11, 0.65500E+11, 0.71049E+11, 0.77031E+11, &
+     & 0.83478E+11/
+!...        --     12225
+      data (QofT( 5,J),J=1,119)/ 0.11455E+04, 0.16850E+04, 0.23345E+04, &
+     & 0.31432E+04, 0.41647E+04, 0.54630E+04, 0.71168E+04, 0.92219E+04, &
+     & 0.11895E+05, 0.15279E+05, 0.19545E+05, 0.24897E+05, 0.31584E+05, &
+     & 0.39899E+05, 0.50190E+05, 0.62871E+05, 0.78428E+05, 0.97434E+05, &
+     & 0.12056E+06, 0.14859E+06, 0.18243E+06, 0.22314E+06, 0.27194E+06, &
+     & 0.33026E+06, 0.39972E+06, 0.48219E+06, 0.57983E+06, 0.69509E+06, &
+     & 0.83077E+06, 0.99009E+06, 0.11767E+07, 0.13946E+07, 0.16487E+07, &
+     & 0.19441E+07, 0.22868E+07, 0.26836E+07, 0.31420E+07, 0.36704E+07, &
+     & 0.42786E+07, 0.49770E+07, 0.57776E+07, 0.66938E+07, 0.77404E+07, &
+     & 0.89339E+07, 0.10293E+08, 0.11837E+08, 0.13590E+08, 0.15576E+08, &
+     & 0.17823E+08, 0.20362E+08, 0.23227E+08, 0.26454E+08, 0.30085E+08, &
+     & 0.34166E+08, 0.38745E+08, 0.43877E+08, 0.49622E+08, 0.56046E+08, &
+     & 0.63219E+08, 0.71222E+08, 0.80138E+08, 0.90062E+08, 0.10110E+09, &
+     & 0.11335E+09, 0.12695E+09, 0.14202E+09, 0.15870E+09, 0.17716E+09, &
+     & 0.19756E+09, 0.22009E+09, 0.24493E+09, 0.27232E+09, 0.30247E+09, &
+     & 0.33565E+09, 0.37211E+09, 0.41217E+09, 0.45613E+09, 0.50433E+09, &
+     & 0.55714E+09, 0.61497E+09, 0.67823E+09, 0.74739E+09, 0.82293E+09, &
+     & 0.90540E+09, 0.99536E+09, 0.10934E+10, 0.12002E+10, 0.13165E+10, &
+     & 0.14430E+10, 0.15805E+10, 0.17299E+10, 0.18922E+10, 0.20682E+10, &
+     & 0.22591E+10, 0.24660E+10, 0.26901E+10, 0.29326E+10, 0.31951E+10, &
+     & 0.34788E+10, 0.37854E+10, 0.41166E+10, 0.44741E+10, 0.48598E+10, &
+     & 0.52758E+10, 0.57240E+10, 0.62069E+10, 0.67269E+10, 0.72864E+10, &
+     & 0.78882E+10, 0.85352E+10, 0.92305E+10, 0.99773E+10, 0.10779E+11, &
+     & 0.11639E+11, 0.12562E+11, 0.13552E+11, 0.14612E+11, 0.15748E+11, &
+     & 0.16964E+11/
+!...        --     22224
+      data (QofT( 6,J),J=1,119)/ 0.27029E+04, 0.39999E+04, 0.55894E+04, &
+     & 0.76092E+04, 0.10219E+05, 0.13616E+05, 0.18042E+05, 0.23798E+05, &
+     & 0.31255E+05, 0.40867E+05, 0.53189E+05, 0.68897E+05, 0.88807E+05, &
+     & 0.11390E+06, 0.14537E+06, 0.18461E+06, 0.23330E+06, 0.29342E+06, &
+     & 0.36733E+06, 0.45779E+06, 0.56802E+06, 0.70182E+06, 0.86361E+06, &
+     & 0.10585E+07, 0.12925E+07, 0.15725E+07, 0.19064E+07, 0.23034E+07, &
+     & 0.27739E+07, 0.33302E+07, 0.39858E+07, 0.47566E+07, 0.56604E+07, &
+     & 0.67176E+07, 0.79511E+07, 0.93872E+07, 0.11055E+08, 0.12989E+08, &
+     & 0.15225E+08, 0.17806E+08, 0.20779E+08, 0.24197E+08, 0.28119E+08, &
+     & 0.32612E+08, 0.37749E+08, 0.43612E+08, 0.50294E+08, 0.57895E+08, &
+     & 0.66528E+08, 0.76318E+08, 0.87403E+08, 0.99937E+08, 0.11409E+09, &
+     & 0.13004E+09, 0.14800E+09, 0.16819E+09, 0.19086E+09, 0.21629E+09, &
+     & 0.24476E+09, 0.27661E+09, 0.31219E+09, 0.35189E+09, 0.39615E+09, &
+     & 0.44542E+09, 0.50021E+09, 0.56108E+09, 0.62862E+09, 0.70350E+09, &
+     & 0.78641E+09, 0.87814E+09, 0.97952E+09, 0.10915E+10, 0.12149E+10, &
+     & 0.13510E+10, 0.15008E+10, 0.16656E+10, 0.18468E+10, 0.20457E+10, &
+     & 0.22640E+10, 0.25032E+10, 0.27653E+10, 0.30522E+10, 0.33659E+10, &
+     & 0.37088E+10, 0.40832E+10, 0.44917E+10, 0.49371E+10, 0.54224E+10, &
+     & 0.59508E+10, 0.65256E+10, 0.71507E+10, 0.78298E+10, 0.85671E+10, &
+     & 0.93672E+10, 0.10235E+11, 0.11175E+11, 0.12193E+11, 0.13295E+11, &
+     & 0.14487E+11, 0.15776E+11, 0.17168E+11, 0.18671E+11, 0.20293E+11, &
+     & 0.22043E+11, 0.23929E+11, 0.25960E+11, 0.28148E+11, 0.30502E+11, &
+     & 0.33034E+11, 0.35756E+11, 0.38681E+11, 0.41823E+11, 0.45195E+11, &
+     & 0.48812E+11, 0.52692E+11, 0.56850E+11, 0.61306E+11, 0.66076E+11, &
+     & 0.71183E+11/
+  
+      eps=0.01
+!
+      gsi = xgj(iso)
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
+ 
+!
+!...value depends on temperature range
+      if(T.lt.70. .OR. T.gt.3000.) then
+        Qt = -1.
+        write(*,'(a)') '  OUT OF TEMPERATURE RANGE'
+        go to 99
+      endif
+  
+      call AtoB(T,Qt,Tdat,Q,NT)
+!      
+   99 return
+      end
+!     *****************
+      Subroutine QT_H2    (    &                    
+     & T, 	 &! temperature in K 
+     & iso, 	 &! isotope code (HITRAN INDEX)
+     & gsi, 	 &! state independent nuclear degeneracyfactor
+     & QT) 	! Total Internal Partition Function
+!    From TIPS_2011_v1p0.for written by R.R. Gamache
+! 
+!
+!...date last changed 17         June, 2011  
+      !implicit DOUBLE PRECISION (a-h,o-z)
+      parameter (NT=119)
+      COMMON/Temperatures/tdat(NT)
+      
+      dimension xgj( 2), QofT( 2,119),Q(NT)
+      data xgj/ 1.,6./
+!...       H2
+!...        --        11
+      data (QofT( 1,J),J=1,119)/ 0.15265E+01, 0.22243E+01, 0.29619E+01, &
+     & 0.36724E+01, 0.43456E+01, 0.49880E+01, 0.56090E+01, 0.62165E+01, &
+     & 0.68161E+01, 0.74113E+01, 0.80044E+01, 0.85966E+01, 0.91887E+01, &
+     & 0.97810E+01, 0.10374E+02, 0.10967E+02, 0.11561E+02, 0.12156E+02, &
+     & 0.12751E+02, 0.13347E+02, 0.13944E+02, 0.14541E+02, 0.15139E+02, &
+     & 0.15738E+02, 0.16337E+02, 0.16937E+02, 0.17538E+02, 0.18140E+02, &
+     & 0.18743E+02, 0.19346E+02, 0.19951E+02, 0.20556E+02, 0.21163E+02, &
+     & 0.21771E+02, 0.22379E+02, 0.22990E+02, 0.23601E+02, 0.24214E+02, &
+     & 0.24829E+02, 0.25445E+02, 0.26063E+02, 0.26683E+02, 0.27304E+02, &
+     & 0.27928E+02, 0.28553E+02, 0.29181E+02, 0.29811E+02, 0.30443E+02, &
+     & 0.31078E+02, 0.31715E+02, 0.32355E+02, 0.32997E+02, 0.33643E+02, &
+     & 0.34291E+02, 0.34942E+02, 0.35596E+02, 0.36253E+02, 0.36914E+02, &
+     & 0.37578E+02, 0.38245E+02, 0.38916E+02, 0.39590E+02, 0.40268E+02, &
+     & 0.40949E+02, 0.41635E+02, 0.42324E+02, 0.43017E+02, 0.43715E+02, &
+     & 0.44416E+02, 0.45122E+02, 0.45831E+02, 0.46546E+02, 0.47264E+02, &
+     & 0.47987E+02, 0.48714E+02, 0.49446E+02, 0.50183E+02, 0.50925E+02, &
+     & 0.51671E+02, 0.52422E+02, 0.53178E+02, 0.53939E+02, 0.54705E+02, &
+     & 0.55476E+02, 0.56252E+02, 0.57033E+02, 0.57820E+02, 0.58612E+02, &
+     & 0.59409E+02, 0.60212E+02, 0.61020E+02, 0.61833E+02, 0.62652E+02, &
+     & 0.63477E+02, 0.64308E+02, 0.65144E+02, 0.65986E+02, 0.66833E+02, &
+     & 0.67687E+02, 0.68546E+02, 0.69411E+02, 0.70283E+02, 0.71160E+02, &
+     & 0.72043E+02, 0.72933E+02, 0.73829E+02, 0.74730E+02, 0.75638E+02, &
+     & 0.76553E+02, 0.77473E+02, 0.78400E+02, 0.79333E+02, 0.80273E+02, &
+     & 0.81219E+02, 0.82172E+02, 0.83131E+02, 0.84097E+02, 0.85069E+02, &
+     & 0.86048E+02/
+!...        --        12
+      data (QofT( 2,J),J=1,119)/ 0.81692E+01, 0.10308E+02, 0.12557E+02, &
+     & 0.14848E+02, 0.17159E+02, 0.19482E+02, 0.21815E+02, 0.24153E+02, &
+     & 0.26497E+02, 0.28845E+02, 0.31197E+02, 0.33552E+02, 0.35910E+02, &
+     & 0.38272E+02, 0.40636E+02, 0.43002E+02, 0.45372E+02, 0.47744E+02, &
+     & 0.50119E+02, 0.52496E+02, 0.54877E+02, 0.57261E+02, 0.59649E+02, &
+     & 0.62040E+02, 0.64435E+02, 0.66835E+02, 0.69240E+02, 0.71650E+02, &
+     & 0.74066E+02, 0.76489E+02, 0.78918E+02, 0.81354E+02, 0.83799E+02, &
+     & 0.86252E+02, 0.88715E+02, 0.91187E+02, 0.93669E+02, 0.96163E+02, &
+     & 0.98668E+02, 0.10118E+03, 0.10371E+03, 0.10626E+03, 0.10881E+03, &
+     & 0.11138E+03, 0.11397E+03, 0.11657E+03, 0.11919E+03, 0.12182E+03, &
+     & 0.12447E+03, 0.12714E+03, 0.12982E+03, 0.13252E+03, 0.13524E+03, &
+     & 0.13798E+03, 0.14074E+03, 0.14352E+03, 0.14632E+03, 0.14914E+03, &
+     & 0.15198E+03, 0.15484E+03, 0.15772E+03, 0.16062E+03, 0.16355E+03, &
+     & 0.16649E+03, 0.16946E+03, 0.17246E+03, 0.17547E+03, 0.17851E+03, &
+     & 0.18157E+03, 0.18466E+03, 0.18777E+03, 0.19090E+03, 0.19406E+03, &
+     & 0.19725E+03, 0.20045E+03, 0.20369E+03, 0.20695E+03, 0.21023E+03, &
+     & 0.21354E+03, 0.21687E+03, 0.22024E+03, 0.22362E+03, 0.22704E+03, &
+     & 0.23048E+03, 0.23394E+03, 0.23744E+03, 0.24096E+03, 0.24451E+03, &
+     & 0.24808E+03, 0.25169E+03, 0.25532E+03, 0.25897E+03, 0.26266E+03, &
+     & 0.26638E+03, 0.27012E+03, 0.27389E+03, 0.27769E+03, 0.28152E+03, &
+     & 0.28537E+03, 0.28926E+03, 0.29317E+03, 0.29712E+03, 0.30109E+03, &
+     & 0.30509E+03, 0.30913E+03, 0.31319E+03, 0.31728E+03, 0.32140E+03, &
+     & 0.32555E+03, 0.32974E+03, 0.33395E+03, 0.33819E+03, 0.34246E+03, &
+     & 0.34677E+03, 0.35110E+03, 0.35547E+03, 0.35987E+03, 0.36429E+03, &
+     & 0.36875E+03/
+  
+      eps=0.01
+!
+      gsi = xgj(iso)
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
+ 
+!
+!...value depends on temperature range
+      if(T.lt.70. .OR. T.gt.3000.) then
+        Qt = -1.
+        write(*,'(a)') '  OUT OF TEMPERATURE RANGE'
+        go to 99
+      endif
+  
+      call AtoB(T,Qt,Tdat,Q,NT)
+!      
+   99 return
+      end
+!
+!     *****************
+      Subroutine QT_CS    (     &                   
+     & T, 	 &! temperature in K 
+     & iso, 	 &! isotope code (HITRAN INDEX)
+     & gsi, 	 &! state independent nuclear degeneracyfactor
+     & QT) 	! Total Internal Partition Function
+!    From TIPS_2011_v1p0.for written by R.R. Gamache
+! 
+!
+!...date last changed 17         June, 2011  
+      !implicit DOUBLE PRECISION (a-h,o-z)
+      parameter (NT=119)
+      COMMON/Temperatures/tdat(NT)
+      
+      dimension xgj( 4), QofT( 4,119),Q(NT)
+      data xgj/ 1.,1.,2.,4./
+!...       CS
+!...        --        22
+      data (QofT( 1,J),J=1,119)/ 0.51416E+02, 0.72723E+02, 0.94044E+02, &
+     & 0.11538E+03, 0.13673E+03, 0.15810E+03, 0.17949E+03, 0.20093E+03, &
+     & 0.22245E+03, 0.24407E+03, 0.26582E+03, 0.28776E+03, 0.30992E+03, &
+     & 0.33233E+03, 0.35504E+03, 0.37807E+03, 0.40147E+03, 0.42525E+03, &
+     & 0.44944E+03, 0.47406E+03, 0.49914E+03, 0.52468E+03, 0.55071E+03, &
+     & 0.57723E+03, 0.60427E+03, 0.63183E+03, 0.65991E+03, 0.68854E+03, &
+     & 0.71771E+03, 0.74743E+03, 0.77771E+03, 0.80855E+03, 0.83996E+03, &
+     & 0.87193E+03, 0.90449E+03, 0.93762E+03, 0.97134E+03, 0.10056E+04, &
+     & 0.10405E+04, 0.10760E+04, 0.11121E+04, 0.11487E+04, 0.11860E+04, &
+     & 0.12239E+04, 0.12623E+04, 0.13014E+04, 0.13410E+04, 0.13813E+04, &
+     & 0.14222E+04, 0.14637E+04, 0.15057E+04, 0.15484E+04, 0.15917E+04, &
+     & 0.16357E+04, 0.16802E+04, 0.17253E+04, 0.17711E+04, 0.18175E+04, &
+     & 0.18645E+04, 0.19121E+04, 0.19603E+04, 0.20091E+04, 0.20586E+04, &
+     & 0.21087E+04, 0.21594E+04, 0.22107E+04, 0.22626E+04, 0.23152E+04, &
+     & 0.23684E+04, 0.24222E+04, 0.24767E+04, 0.25317E+04, 0.25874E+04, &
+     & 0.26438E+04, 0.27007E+04, 0.27583E+04, 0.28165E+04, 0.28754E+04, &
+     & 0.29348E+04, 0.29949E+04, 0.30557E+04, 0.31170E+04, 0.31790E+04, &
+     & 0.32417E+04, 0.33049E+04, 0.33688E+04, 0.34334E+04, 0.34986E+04, &
+     & 0.35644E+04, 0.36308E+04, 0.36979E+04, 0.37656E+04, 0.38340E+04, &
+     & 0.39030E+04, 0.39727E+04, 0.40430E+04, 0.41139E+04, 0.41855E+04, &
+     & 0.42577E+04, 0.43306E+04, 0.44041E+04, 0.44782E+04, 0.45530E+04, &
+     & 0.46284E+04, 0.47045E+04, 0.47813E+04, 0.48587E+04, 0.49367E+04, &
+     & 0.50154E+04, 0.50947E+04, 0.51747E+04, 0.52553E+04, 0.53366E+04, &
+     & 0.54185E+04, 0.55011E+04, 0.55844E+04, 0.56683E+04, 0.57528E+04, &
+     & 0.58380E+04/
+!...        --        24
+      data (QofT( 2,J),J=1,119)/ 0.52247E+02, 0.73900E+02, 0.95568E+02, &
+     & 0.11725E+03, 0.13895E+03, 0.16066E+03, 0.18241E+03, 0.20420E+03, &
+     & 0.22607E+03, 0.24805E+03, 0.27018E+03, 0.29249E+03, 0.31503E+03, &
+     & 0.33784E+03, 0.36096E+03, 0.38442E+03, 0.40824E+03, 0.43247E+03, &
+     & 0.45712E+03, 0.48221E+03, 0.50778E+03, 0.53382E+03, 0.56037E+03, &
+     & 0.58743E+03, 0.61501E+03, 0.64312E+03, 0.67179E+03, 0.70100E+03, &
+     & 0.73077E+03, 0.76111E+03, 0.79202E+03, 0.82351E+03, 0.85559E+03, &
+     & 0.88824E+03, 0.92149E+03, 0.95533E+03, 0.98977E+03, 0.10248E+04, &
+     & 0.10605E+04, 0.10967E+04, 0.11336E+04, 0.11710E+04, 0.12091E+04, &
+     & 0.12478E+04, 0.12871E+04, 0.13270E+04, 0.13675E+04, 0.14087E+04, &
+     & 0.14505E+04, 0.14929E+04, 0.15359E+04, 0.15795E+04, 0.16238E+04, &
+     & 0.16687E+04, 0.17142E+04, 0.17604E+04, 0.18071E+04, 0.18546E+04, &
+     & 0.19026E+04, 0.19513E+04, 0.20006E+04, 0.20505E+04, 0.21011E+04, &
+     & 0.21523E+04, 0.22042E+04, 0.22566E+04, 0.23098E+04, 0.23635E+04, &
+     & 0.24179E+04, 0.24730E+04, 0.25286E+04, 0.25850E+04, 0.26419E+04, &
+     & 0.26995E+04, 0.27578E+04, 0.28167E+04, 0.28762E+04, 0.29364E+04, &
+     & 0.29972E+04, 0.30587E+04, 0.31208E+04, 0.31836E+04, 0.32470E+04, &
+     & 0.33111E+04, 0.33758E+04, 0.34412E+04, 0.35072E+04, 0.35739E+04, &
+     & 0.36412E+04, 0.37092E+04, 0.37778E+04, 0.38471E+04, 0.39171E+04, &
+     & 0.39877E+04, 0.40589E+04, 0.41309E+04, 0.42034E+04, 0.42767E+04, &
+     & 0.43505E+04, 0.44251E+04, 0.45003E+04, 0.45762E+04, 0.46527E+04, &
+     & 0.47299E+04, 0.48077E+04, 0.48863E+04, 0.49654E+04, 0.50453E+04, &
+     & 0.51258E+04, 0.52070E+04, 0.52888E+04, 0.53713E+04, 0.54545E+04, &
+     & 0.55383E+04, 0.56229E+04, 0.57080E+04, 0.57939E+04, 0.58804E+04, &
+     & 0.59676E+04/
+!...        --        32
+      data (QofT( 3,J),J=1,119)/ 0.10889E+03, 0.15403E+03, 0.19920E+03, &
+     & 0.24440E+03, 0.28964E+03, 0.33491E+03, 0.38026E+03, 0.42571E+03, &
+     & 0.47134E+03, 0.51722E+03, 0.56342E+03, 0.61005E+03, 0.65719E+03, &
+     & 0.70493E+03, 0.75334E+03, 0.80249E+03, 0.85245E+03, 0.90329E+03, &
+     & 0.95504E+03, 0.10078E+04, 0.10615E+04, 0.11163E+04, 0.11721E+04, &
+     & 0.12291E+04, 0.12872E+04, 0.13464E+04, 0.14068E+04, 0.14684E+04, &
+     & 0.15311E+04, 0.15951E+04, 0.16604E+04, 0.17268E+04, 0.17945E+04, &
+     & 0.18635E+04, 0.19337E+04, 0.20051E+04, 0.20779E+04, 0.21519E+04, &
+     & 0.22272E+04, 0.23038E+04, 0.23817E+04, 0.24609E+04, 0.25414E+04, &
+     & 0.26232E+04, 0.27064E+04, 0.27908E+04, 0.28765E+04, 0.29636E+04, &
+     & 0.30520E+04, 0.31417E+04, 0.32327E+04, 0.33251E+04, 0.34188E+04, &
+     & 0.35138E+04, 0.36102E+04, 0.37079E+04, 0.38070E+04, 0.39074E+04, &
+     & 0.40091E+04, 0.41122E+04, 0.42166E+04, 0.43224E+04, 0.44295E+04, &
+     & 0.45380E+04, 0.46478E+04, 0.47590E+04, 0.48715E+04, 0.49854E+04, &
+     & 0.51007E+04, 0.52173E+04, 0.53353E+04, 0.54547E+04, 0.55754E+04, &
+     & 0.56975E+04, 0.58210E+04, 0.59458E+04, 0.60720E+04, 0.61996E+04, &
+     & 0.63285E+04, 0.64589E+04, 0.65906E+04, 0.67236E+04, 0.68581E+04, &
+     & 0.69940E+04, 0.71312E+04, 0.72698E+04, 0.74098E+04, 0.75512E+04, &
+     & 0.76940E+04, 0.78381E+04, 0.79837E+04, 0.81307E+04, 0.82790E+04, &
+     & 0.84287E+04, 0.85799E+04, 0.87324E+04, 0.88864E+04, 0.90417E+04, &
+     & 0.91984E+04, 0.93566E+04, 0.95161E+04, 0.96771E+04, 0.98394E+04, &
+     & 0.10003E+05, 0.10168E+05, 0.10335E+05, 0.10503E+05, 0.10672E+05, &
+     & 0.10843E+05, 0.11015E+05, 0.11189E+05, 0.11364E+05, 0.11541E+05, &
+     & 0.11719E+05, 0.11898E+05, 0.12079E+05, 0.12261E+05, 0.12444E+05, &
+     & 0.12630E+05/
+!...        --        23
+      data (QofT( 4,J),J=1,119)/ 0.20737E+03, 0.29330E+03, 0.37930E+03, &
+     & 0.46535E+03, 0.55145E+03, 0.63764E+03, 0.72394E+03, 0.81043E+03, &
+     & 0.89722E+03, 0.98443E+03, 0.10722E+04, 0.11607E+04, 0.12501E+04, &
+     & 0.13406E+04, 0.14323E+04, 0.15253E+04, 0.16197E+04, 0.17158E+04, &
+     & 0.18135E+04, 0.19129E+04, 0.20142E+04, 0.21174E+04, 0.22226E+04, &
+     & 0.23298E+04, 0.24391E+04, 0.25504E+04, 0.26639E+04, 0.27796E+04, &
+     & 0.28976E+04, 0.30177E+04, 0.31401E+04, 0.32648E+04, 0.33918E+04, &
+     & 0.35211E+04, 0.36527E+04, 0.37867E+04, 0.39231E+04, 0.40618E+04, &
+     & 0.42029E+04, 0.43463E+04, 0.44922E+04, 0.46405E+04, 0.47912E+04, &
+     & 0.49443E+04, 0.50999E+04, 0.52579E+04, 0.54183E+04, 0.55812E+04, &
+     & 0.57465E+04, 0.59143E+04, 0.60846E+04, 0.62573E+04, 0.64325E+04, &
+     & 0.66102E+04, 0.67903E+04, 0.69729E+04, 0.71581E+04, 0.73457E+04, &
+     & 0.75358E+04, 0.77284E+04, 0.79235E+04, 0.81211E+04, 0.83212E+04, &
+     & 0.85239E+04, 0.87290E+04, 0.89367E+04, 0.91469E+04, 0.93596E+04, &
+     & 0.95748E+04, 0.97926E+04, 0.10013E+05, 0.10236E+05, 0.10461E+05, &
+     & 0.10689E+05, 0.10920E+05, 0.11153E+05, 0.11388E+05, 0.11626E+05, &
+     & 0.11867E+05, 0.12110E+05, 0.12356E+05, 0.12604E+05, 0.12855E+05, &
+     & 0.13109E+05, 0.13365E+05, 0.13623E+05, 0.13884E+05, 0.14148E+05, &
+     & 0.14415E+05, 0.14683E+05, 0.14955E+05, 0.15229E+05, 0.15506E+05, &
+     & 0.15785E+05, 0.16067E+05, 0.16351E+05, 0.16638E+05, 0.16928E+05, &
+     & 0.17220E+05, 0.17515E+05, 0.17813E+05, 0.18113E+05, 0.18416E+05, &
+     & 0.18721E+05, 0.19029E+05, 0.19340E+05, 0.19653E+05, 0.19969E+05, &
+     & 0.20287E+05, 0.20608E+05, 0.20932E+05, 0.21258E+05, 0.21587E+05, &
+     & 0.21919E+05, 0.22253E+05, 0.22590E+05, 0.22930E+05, 0.23272E+05, &
+     & 0.23617E+05/
+  
+      eps=0.01
+!
+      gsi = xgj(iso)
+      do I=1,NT
+         Q(I)=QofT(iso,I)
+      enddo
+ 
+!
+!...value depends on temperature range
+      if(T.lt.70. .OR. T.gt.3000.) then
+        Qt = -1.
+        write(*,'(a)') '  OUT OF TEMPERATURE RANGE'
+        go to 99
+      endif
+  
+      call AtoB(T,Qt,Tdat,Q,NT)
+!      
+   99 return
+      end
+!                                                                       
 !                                                                       
 !                                                                       
 !***************************                                            
@@ -10431,7 +11420,7 @@
 !                                                                       
 !...input:  aa                                                          
 !...output: bb                                                          
-      Parameter (Nmax=600) 
+      USE lblparams, ONLY: Nmax => MXFSC
       dimension A(Nmax),B(Nmax) 
 !                                                                       
 !                                                                       
