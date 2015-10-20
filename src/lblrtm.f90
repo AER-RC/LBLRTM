@@ -1155,7 +1155,7 @@
   910 FORMAT (10A8) 
   915 FORMAT ('0',10A8,2X,2(1X,A8,1X)) 
   920 FORMAT ('0  TIME ENTERING LBLRTM  ',F15.4) 
-  925 FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4,4X,I1,4x,I1) 
+  925 FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4,4X,I1,4x,I1,4x,I1) 
 !                                                                       
   930 FORMAT (I1) 
   935 FORMAT (15(A6,3X)) 
