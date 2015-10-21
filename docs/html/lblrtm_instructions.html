@@ -731,7 +731,7 @@ Note:&nbsp; LBLRTM will internally set CXID(1) = ' ' for all output.</p>
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp;IHIRAC, ILBLF4,
 ICNTNM, IAERSL,&nbsp; IEMIT,&nbsp; ISCAN, IFILTR, IPLOT, ITEST,&nbsp;
 IATM,&nbsp; IMRG,&nbsp; ILAS,&nbsp;&nbsp; IOD, IXSECT,&nbsp;
-MPTS,&nbsp; NPTS,&nbsp;ISOTPL</p>
+MPTS,&nbsp; NPTS,&nbsp;ISOTPL,&nbsp;IBRD</p>
 
 
 
@@ -745,7 +745,8 @@ MPTS,&nbsp; NPTS,&nbsp;ISOTPL</p>
 25,&nbsp;&nbsp;&nbsp;&nbsp; 30,&nbsp;&nbsp;&nbsp;&nbsp;
 35,&nbsp;&nbsp;&nbsp; 40,&nbsp;&nbsp;&nbsp; 45,&nbsp;&nbsp;&nbsp; 50,
 54-55,&nbsp;&nbsp;&nbsp; 60,&nbsp;&nbsp;
-&nbsp;65,&nbsp;&nbsp;&nbsp;&nbsp; 70, 72-75, 77-80,&nbsp;&nbsp;&nbsp;&nbsp; 85</p>
+&nbsp;65,&nbsp;&nbsp;&nbsp;&nbsp; 70, 72-75, 77-80,&nbsp;&nbsp;&nbsp;&nbsp; 85
+&nbsp;&nbsp;&nbsp;&nbsp; 90</p>
 
 
 
@@ -756,7 +757,7 @@ MPTS,&nbsp; NPTS,&nbsp;ISOTPL</p>
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp; 4X,I1,&nbsp;
 4X,I1,&nbsp; 4X,I1,&nbsp; 4X,I1,&nbsp; 4X,I1,&nbsp; 4X,I1,&nbsp; 4X,I1,
 4X,I1, 4X,I1, 4X,I1, 3X,A2, 4X,I1, 4X,I1,&nbsp; 4X,I1, 1X,I4, 1X,I4,
-&nbsp;4X,I1</p>
+&nbsp;4X,I1,4X,I1</p>
 
 
 
@@ -2580,9 +2581,30 @@ laser option ILAS &gt; 1, NPTS should be set to 0)</p>
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 = 1&nbsp; isotopologues are included and must be specified by the user on Record 2.3 (if IATM=0)</p>
 
-
-
 <p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  or Record 3.9 (if IATM=1)</p>
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; IBRD &nbsp;&nbsp; (0,1) flag for species by species broadening</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;</p>
+
+
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 0&nbsp; no species by species broadening (default)</p>
+
+<p style="color: rgb(0, 0, 0);" class="p2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+= 1&nbsp; species by species broadening included </p>
+
+
+
+
+
 
 
 
