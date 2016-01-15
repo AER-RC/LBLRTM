@@ -1,3 +1,9 @@
+LBLLRTM v12.6 Beta
+January 2016
+
+Unofficial release for Emily Morgan; includes a number of bug fixes and a
+change to LBLATM toensure more consistent layering
+
 LBLRTM v12.2
 Oct 2012
 
