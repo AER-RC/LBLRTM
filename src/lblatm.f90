@@ -951,7 +951,12 @@
                         RATP = LOG(PBND(IP)/PM(LIP-1))/ LOG(PM(LIP)/PM( &
                         LIP-1))                                         
                                                                         
-                        A = RATP**3 
+! Ignore exponential interolation term (zint) if user has input a profile specified on pressure levels
+                        if (immax_b.lt.0) then 
+                           A =0.
+                        else 
+                           A = RATP**3 
+                        endif
                                                                         
                         ZBND(IP) = A*ZINT + (1-A)*ZTMP(2) 
                         TBND(IP) = TTMP(2) 
@@ -1010,8 +1015,12 @@
 ! COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION             
                                                                         
                      RATP = LOG(H1/PM(LIP-1))/ LOG(PM(LIP)/PM(LIP-1)) 
+		     if (immax_b.lt.0) then 
+			A =0.
+		     else 
+			A = RATP**3 
+		     endif
                                                                         
-                     A = RATP**3 
                                                                         
                      H1 = A*ZINT + (1-A)*ZTMP(2) 
                   ENDIF 
@@ -1069,8 +1078,13 @@
 ! COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION             
                                                                         
                      RATP = LOG(H2/PM(LIP-1))/ LOG(PM(LIP)/PM(LIP-1)) 
-                                                                        
-                     A = RATP**3 
+                     RATP = LOG(H1/PM(LIP-1))/ LOG(PM(LIP)/PM(LIP-1)) 
+
+		     if (immax_b.lt.0) then 
+			A =0.
+		     else 
+			A = RATP**3 
+                     endif
                                                                         
                      H2 = A*ZINT + (1-A)*ZTMP(2) 
                   ENDIF 
@@ -5379,6 +5393,7 @@
       DATA TOL / 5.E-4 / 
 !                                                                       
       DATA I_2/2/ 
+
 !                                                                       
 !     HMID .EQ. MINIMUM OF H1, H2                                       
 !                                                                       
@@ -7032,10 +7047,12 @@
                      ZTMP)                                              
 !     COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION         
                                                                         
-                     RATP = LOG(PX(IP)/PM(LIP-1))/ LOG(PM(LIP)/PM(LIP-1)&
-                     )                                                  
-                                                                        
-                     A = RATP**3 
+                     RATP = LOG(PX(IP)/PM(LIP-1))/ LOG(PM(LIP)/PM(LIP-1))
+		     if (immax_b.lt.0) then 
+			A =0.
+		     else 
+			A = RATP**3 
+		     endif
                                                                         
                      ZX(IP) = A*ZINT + (1-A)*ZTMP(2) 
                                                                         
