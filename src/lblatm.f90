@@ -1078,7 +1078,6 @@
 ! COMBINE THE INTERPOLATION AND THE HYDROSTATIC CALCULATION             
                                                                         
                      RATP = LOG(H2/PM(LIP-1))/ LOG(PM(LIP)/PM(LIP-1)) 
-                     RATP = LOG(H1/PM(LIP-1))/ LOG(PM(LIP)/PM(LIP-1)) 
 
 		     if (immax_b.lt.0) then 
 			A =0.
