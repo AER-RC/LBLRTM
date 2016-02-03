@@ -245,7 +245,7 @@
 !     H2O continuum derivatives are computed w.r.t. ln(q)               
 !        dqh2o must be returned with the radiation field included       
                                                                         
-      if (icflg.ne.-999) then                                           
+      if (icflg.gt.0) then                                           
                                                                         
 !     amounts except for species of interest and n2 have been set to
 !     zero in lblrtm.
