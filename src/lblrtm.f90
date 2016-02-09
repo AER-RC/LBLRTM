@@ -1158,7 +1158,7 @@
   925 FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4,4X,I1,4x,I1,4x,I1) 
 !                                                                       
   930 FORMAT (I1) 
-  935 FORMAT (15(A6,3X)) 
+  935 FORMAT (16(A6,3X)) 
   940 FORMAT (1X,I4,15I9) 
 !                                                                       
   950 FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,               &
