@@ -739,25 +739,25 @@
 !                                                                       
 !        Only calculate if V2 > 12990.5 cm-1 and V1 < 13229.5 cm-1         
 !                                                                       
-         if ((V2.gt.12990.5).and.(V1.lt.13229.5).and. xo2cn.gt.0.) then    
+!         if ((V2.gt.12990.5).and.(V1.lt.13229.5).and. xo2cn.gt.0.) then    
 !                                                                       
-            tau_fac = xo2cn * (Wk(7)/xlosmt) * amagat 
-                                                                        
+!            tau_fac = xo2cn * (Wk(7)/xlosmt) * amagat 
+!                                                                        
 !                                                                       
-            CALL O2INF3 (V1C,V2C,DVC,NPTC,C0)                           
+!            CALL O2INF3 (V1C,V2C,DVC,NPTC,C0)                           
 !                                                                       
-            DO 94 J = 1, NPTC                                           
-               C(J) = tau_fac * C0(J)                                   
-               VJ = V1C+DVC* REAL(J-1)                                  
+!            DO 94 J = 1, NPTC                                           
+!               C(J) = tau_fac * C0(J)                                   
+!               VJ = V1C+DVC* REAL(J-1)                                  
 !                                                                       
 !              Radiation field                                          
 !                                                                       
-               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
-   94       CONTINUE                                                    
+!               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
+!   94       CONTINUE                                                    
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+!            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
 !                                                                       
-         endif
+!         endif
                                                           
 ! *******                                                                       
 !        O2 continuum formulated by Greenblatt et al. over the spectral 
@@ -934,7 +934,7 @@
          endif 
         
                                                  
-!        ********  NITROGEN COLLISION INDUCED FUNDAMENTAL FIRST OVERTONE
+!        ********  NITROGEN COLLISION INDUCED FIRST OVERTONE
 !                                                                       
 !        version_1 of the Nitrogen Collision Induced First Overtone
 !                                                                       
@@ -1143,7 +1143,7 @@
      &     ' mt_ckd_2.5.2 12.0',                                        &
      &     ' mt_ckd_2.5.3  -  ',                                        &
      &     ' mt_ckd_2.7   12.4',                                        &
-     &     ' mt_ckd_2.8   12.5',                                        &
+     &     ' mt_ckd_2.9   12.6',                                        &
      &     '                  '/                                        
 !           123456789-123456789-123456789-123456789-123456789-1         
 !                                                                       
@@ -1152,7 +1152,7 @@
      &     '                                                   ',       &
      &     '                                                   ',       &
      &     '                                                   ',       &
-     &     '*** CONTINUA mt_ckd_2.8                            ',       &
+     &     '*** CONTINUA mt_ckd_2.9                            ',       &
      &     '                                                   ',       &
      &     '                                                   ',       &
      &     '            Most recent significant change         ',       &
@@ -1181,9 +1181,7 @@
      &     '   ckd_2.4.1  - Mate et al.              (Feb 2000)',       &
      &     '            AIR        9100 - 11000 CM-1',                  &
      &     '   ckd_2.4.1  - Mlawer et al.            (Aug 1999)',       &
-     &     '            AIR       12990 - 13230 CM-1 A-band',           &
-     &     '   mt_ckd_2.8 - Mlawer and Gombos        (Jun 2015)',       &
-     &     '            O2        15000 - 29870 CM-1',                  &
+     &     '            O2        15000 - 29870 CM-1           ',       &
      &     '   ckd_2.4.2  - Greenblatt et al.        (May 2000)',       &
      &     '            O2/N2     36000 -  >>>> CM-1 HERZBERG  ',       &
      &     '   ckd_0                                           ',       &
@@ -1193,7 +1191,7 @@
      &     '   ckd_0                     ',                             &
      &     '                      40800 - 54000 CM-1 HARTL/HUGG',       &
      &     '   ckd_0                        ',                          &
-     &     6*'                                                 '/       
+     &     8*'                                                 '/       
 !                                                                       
       DATA CHEADING/                                                    &
      &     'Continuum    LBL_n                      ',                  &
@@ -1283,8 +1281,8 @@
      &     '                                         (Mar 2015)',       &
      &     '  N2 1st overtone - Shapiro & Gush (1966) modified ',       &
      &     'by Mlawer and Gombos based on solar FTS  (Apr 2015)',       &
-     &     '  O2 A-band - Collision-induced absorption derived ',       &
-     &     'by Mlawer/Gombos from solar FTS          (Jun 2015)',       &
+     &     '  Bug fix for analytic jacobians                   ',       &
+     &     '                                         (Feb 2016)',       &
      &     '  -------------------------------------------------',       &
      &     '---------------------------------------------------'/       
 !                                                                       
