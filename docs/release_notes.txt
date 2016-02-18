@@ -1,8 +1,43 @@
-LBLLRTM v12.6 Beta
-January 2016
+LBLLRTM v12.4
+February 2016
 
-Unofficial release for Emily Morgan; includes a number of bug fixes and a
-change to LBLATM toensure more consistent layering
+* LBLRTM has been updated to accommodate all molecules and isotopologues 
+  in HITRAN 2012. This requires the use of LNFL v3.0 to prepare the input 
+  binary line file or TAPE3. (M. J. Alvarado, M. J. Iacono) 
+
+* LBLRTM now allows the use of gas-specific broadening paramemeters, such as 
+  CO2 broadened by H2O, when the IBRD flag is activated. This requires the use 
+  of LNFL v3.0 to prepare the input binary line file or TAPE3. 
+  (K. E. Cady-Pereira)
+
+* LBLRTM now allows individual profiles for different isotopologues of the 
+  same molecule. (K. E. Cady-Pereira, M. J. Iacono)
+
+* The continuum has been updated to MT_CKD v2.9, including the addition of 
+  the first overtone of the N2 fundamental band. (E. J. Mlawer, D. Gombos)
+
+* Several new cross-section molecules have been added to LBLRTM, 
+  including isoprene. (K. E. Cady-Pereira, G. Uymin)
+
+* Fixed a bug in calculation of altitude when the user specifies an input 
+  profile on pressure levels. Now the hydrostatic equation is applied 
+  with no interpolation of the informational altitudes in the input profile. 
+  (E. Morgan, K. E. Cady-Pereira, E. J. Mlawer)
+
+* Fixed a bug in the calculation of the analytic Jacobians for temperature 
+  in the MT_CKD 2.9 continuum. (C. Lampen, K. E. Cady-Pereira, E. J. Mlawer)
+
+* Fixed a bug in the calculation of the O2 and N2 foreign widths from the 
+  HITRAN air widths (K. E. Cady-Pereira, M. J. Alvarado, E. J. Mlawer).
+
+* Fixed a bug in the calcuation of the radiation term near 1000 cm-1. 
+  (S. DeSouza-Machado, E.J. Mlawer, M. J. Alvarado)
+
+* Fixed several minor bugs in the PANEL and RADFNI subroutines that have 
+  negligible impacts on the model results (Y. Ma, M. J. Alvarado, 
+  E. J. Mlawer). 
+
+ 
 
 LBLRTM v12.2
 Oct 2012
