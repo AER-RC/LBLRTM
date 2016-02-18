@@ -1152,7 +1152,7 @@
      &     '                                                   ',       &
      &     '                                                   ',       &
      &     '                                                   ',       &
-     &     '*** CONTINUA mt_ckd_2.9                            ',       &
+     &     '*** CONTINUA mt_ckd_2.7                            ',       &
      &     '                                                   ',       &
      &     '                                                   ',       &
      &     '            Most recent significant change         ',       &
