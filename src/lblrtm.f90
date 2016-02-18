@@ -5118,8 +5118,7 @@
                    WRITE(*,921) L,ISOTPL_AMNT(MOLNUM(I),ISOTPLNUM(I),L), &
      &                              ISOTPL_AMNT(MOLNUM(J),ISOTPLNUM(J),L)
                    WRITE(MOLSTR,'(I2)') MOLNUM(I)
-                  STOP 'ISOTPL_AMNT INPUT TYPES DIFFERENT FOR MOLECULE ' &
-     &                   //MOLSTR
+                  STOP 'ISOTPL_AMNT INPUT TYPES DIFFERENT'
                 ENDIF
                ENDDO
             ENDDO
