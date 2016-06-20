@@ -511,6 +511,7 @@
 ! Matt Alvarado 20150819 Put in Yingtao fix for VF1
             VF1 = V1+floor((VF1-V1)/DVR4)*DVR4 
             VF2 = VFT+2.*DVR4+ REAL(N2R3+4)*DVR3 
+            !print *,'vf1 = ',vf1,' vf2 = ',vf2
             IF (VF2.GT.V2R4.AND.V2R4.NE.V2R4ST) THEN 
                CALL LBLF4 (JRAD,VF1,V2R4ST) 
                IF (IXSECT.GE.1.AND.IR4.EQ.1) THEN 
@@ -1565,10 +1566,12 @@
       COMMON /R1SAV/ R1OUT(2410) 
       COMMON /IODFLG/ DVOUT 
 !                                                                       
-!     SAVE statement to preserve value of NLIM1 when returning to       
+!     SAVE statement to preserve value of NLIM1 and V1PO when returning to       
 !     subroutine                                                        
 !                                                                       
       SAVE NLIM1 
+      SAVE V1PO_SAVE
+   
 !                                                                       
       DIMENSION A1(0:100),A2(0:100),A3(0:100),A4(0:100) 
       DIMENSION R1(*) 
@@ -1589,6 +1592,11 @@
 !                                                                       
 !     The value of DVOUT is carried from COMMON BLOCK /IODFLG/          
 !                                                                       
+      IF (V1PO_SAVE.NE.0.0) THEN 
+          V1PO = V1PO_SAVE
+      ENDIF
+      !print *,' '
+      !print *, ' v1p ',v1p,' v1pO ',v1pO, ' v1po_save ',v1po_save
       NPNXPO = NPNLXP 
       DVPO = DVOUT 
       NPPANL = 1 
@@ -1600,6 +1608,7 @@
 !                                                                       
 !                                                                       
 !     1/1 ratio only                                                    
+      !print *, 'atype ',atype,'nlim ',nlim,' v1p ',v1p,' v1pO ',v1pO
 !                                                                       
       IF (ATYPE.EQ.0.) THEN 
          CALL PMNMX (R1,NLIM,RMIN,RMAX) 
@@ -1654,6 +1663,7 @@
       V2PO = V1PO+ REAL(LIMOUT)*DVOUT 
 !                                                                       
       IF (V2P.LE.V2PO+DVP.AND.ILAST.EQ.0.AND.NPPANL.LE.0) GO TO 40 
+      !print *,'v2po after 20 ',v2po
 !                                                                       
 !     Four possibilities:                                               
 !       1a.  Last panel to be done, set the appropriate                 
@@ -1698,6 +1708,7 @@
          ILAST = 0 
       ENDIF 
 !                                                                       
+      !print *,'v2po after if ',v2po
       RATDV = DVOUT/DVP 
 !                                                                       
 !     FJJ is offset by 2. for rounding purposes                         
@@ -1706,6 +1717,7 @@
 !                                                                       
 !     Interpolate R1 to DVOUT                                           
 !                                                                       
+      !print *,'nlim1 ',nlim1,' nlim2 ',nlim2
       DO 30 II = NLIM1, NLIM2 
          FJJ = FJ1DIF+RATDV* REAL(II-1) 
          JJ = INT(FJJ)-2 
@@ -1726,6 +1738,8 @@
 !                                                                       
          CALL BUFOUT (KFILE,PNLHDO(1),NPHDRF) 
          CALL BUFOUT (KFILE,R1OUT(1),NLIM2) 
+         !print *,kfile
+         !print *, r1out(1:100)
                                                                         
          IF (NPTS.GT.0) CALL R1PRNT (V1PO,DVOUT,NLIM2,R1OUT,1,NPTS,     &
          KFILE,IENTER)                                                  
@@ -1737,6 +1751,7 @@
          NLIM1 = NLIM2+1 
          NPPANL = -1 
       ENDIF 
+      !print *,'v1po just before ilast.ne.1 test ',v1po
 !                                                                       
 !     If not at last point, continue interpolation                      
 !                                                                       
@@ -1751,7 +1766,7 @@
 !      CALL CPUTIM (TIME1)                                              
 !      TIM = TIME1-TIME                                                 
 !      WRITE (IPR,905) TIME1,TIM                                        
-!                                                                       
+      V1PO_SAVE = V1PO                                                                  
       RETURN 
 !                                                                       
 !  900 FORMAT ('0 THE TIME AT THE START OF PNLINT IS ',F12.3)           
@@ -4885,6 +4900,7 @@
          CALL XINT (V1X,V2X,DVX,RX,1.0,V1R4,DVR4,R4,1,NPTR4) 
          IF (IR4.EQ.0) VFX2 = V2R4+2.*DVX 
          IR4 = 1 
+         !print *,r4(1:100)
       ENDIF 
       CALL CPUTIM (TIME) 
       TXSPNL = TXSPNL+TIME-TIME0 
