@@ -71,7 +71,8 @@
       DIMENSION C0(n_absrb),C1(n_absrb),C2(n_absrb) 
       DIMENSION SH2OT0(n_absrb),SH2OT1(n_absrb),FH2O(n_absrb),          &
      &          CN2T0(n_absrb),FCO2(n_absrb),CT1(n_absrb),CT2(n_absrb)  
-      DIMENSION CCH0(5150),CCH1(5150),CCH2(5150) 
+      DIMENSION CCH0(5150),CCH1(5150),CCH2(5150)
+      DIMENSION CN0(5150),CN1(5150),CN2(5150) 
 !                                                                       
       REAL ABSBSV(n_absrb) 
 !                                                                       
@@ -331,6 +332,8 @@
 !     Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1            
 !                                                                       
       if ((V2.gt.-20.0).and.(V1.lt.20000.) .and. xself.gt.0.) then      
+         sh2ot0 = 0.
+         sh2ot1 = 0.
 !                                                                       
             CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0)                        
             CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1)                        
@@ -407,7 +410,7 @@
 !        Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1         
 !                                                                       
          if ((V2.gt.-20.0).and.(V1.lt.20000.) .and. xfrgn.gt.0.) then   
-                                                                        
+            fh2o = 0.
 !-----------------------------------------------------------------------
 !           CORRECTION TO FOREIGN CONTINUUM   mt_ckd_2.4  Nov 2008   sac
 !-----------------------------------------------------------------------
@@ -502,6 +505,7 @@
 !        Only calculate if V2 > -20. cm-1 and V1 <  10000. cm-1         
 !                                                                       
          if ((V2.gt.-20.0).and.(V1.lt.10000.) .and. xco2c.gt.0) then    
+            fco2 = 0.
 !                                                                       
             WCO2 = WK(2) * RHOAVE * 1.0E-20 * xco2c                     
 !                                                                       
@@ -549,6 +553,10 @@
 !     region.                                                           
 !                                                                       
          IF (V2.GT.8920.0.AND.V1.LE.24665.0.and.xo3cn.gt.0.) THEN       
+            cch0 = 0.
+            cch1 = 0.
+            cch2 = 0.
+
             WO3 = WK(3) * 1.0E-20 * xo3cn                               
             CALL XO3CHP (V1C,V2C,DVC,NPTO3,CCH0,CCH1,CCH2)              
 !                                                                       
@@ -563,6 +571,10 @@
          ENDIF                                                          
 !                                                                       
          IF (V2.GT.27370..AND.V1.LT.40800. .and.xo3cn.gt.0.) THEN       
+            c0 = 0.
+            ct1 = 0.
+            ct2 = 0.
+
             WO3 = WK(3) * 1.E-20 * xo3cn                                
             TC = TAVE-273.15                                            
             CALL O3HHT0 (V1C,V2C,DVC,NPTO3,C0)                          
@@ -605,6 +617,8 @@
 !        If V2 > 40800 cm-1, add UV Hartley Huggins contribution        
 !                                                                       
          IF (V2.GT.40800..AND.V1.LT.54000. .and.xo3cn.gt.0.) THEN       
+            c0 = 0.
+
             WO3 = WK(3) * xo3cn                                         
             CALL O3HHUV (V1C,V2C,DVC,NPTO3,C0)                          
 !                                                                       
@@ -654,6 +668,7 @@
 !        Only calculate if V2 > 1340. cm-1 and V1 <  1850. cm-1         
                                                                         
          if ((V2.gt.1340.0).and.(V1.lt.1850.).and. xo2cn.gt.0.) then    
+            c0 = 0.
 !                                                                       
             tau_fac = xo2cn *  Wk(7) * 1.e-20 * amagat                  
 !                                                                       
@@ -703,6 +718,7 @@
 !        Only calculate if V2 > 7536. cm-1 and V1 <  8500. cm-1         
 !                                                                       
          if ((V2.gt.7536.0).and.(V1.lt.8500.).and. xo2cn.gt.0.) then    
+            c0 = 0.
 !                                                                       
             a_o2  = 1./0.446                                            
             a_n2  = 0.3/0.446                                           
@@ -737,6 +753,7 @@
 !        Only calculate if V2 > 9100. cm-1 and V1 <  11000. cm-1        
 !                                                                       
          if ((V2.gt.9100.0).and.(V1.lt.11000.).and. xo2cn.gt.0.) then   
+            c0 = 0.
 !                                                                       
             CALL O2INF2 (V1C,V2C,DVC,NPTC,C0)                           
             WO2 = xo2cn * (WK(7)*1.e-20) * RHOAVE                       
@@ -765,6 +782,7 @@
 !        Only calculate if V2 > 12990.5 cm-1 and V1 < 13229.5 cm-1         
 !                                                                       
 !         if ((V2.gt.12990.5).and.(V1.lt.13229.5).and. xo2cn.gt.0.) then    
+!            c0 = 0.
 !                                                                       
 !            tau_fac = xo2cn * (Wk(7)/xlosmt) * amagat 
 !                                                                        
@@ -797,6 +815,7 @@
 !        Only calculate if V2 > 15000. cm-1 and V1 <  29870. cm-1       
 !                                                                       
          if ((V2.gt.15000.0).and.(V1.lt.29870.).and. xo2cn.gt.0.) then  
+            c0 = 0.
 !                                                                       
             WO2 = WK(7) * 1.e-20 * ((pave/1013.)*(273./tave)) * xo2cn   
             CHIO2 =  WK(7)/WTOT                                         
@@ -821,7 +840,7 @@
 !        Only calculate if V2 > 36000. cm-1                             
                                                                         
          if (V2.gt.36000.0 .and. xo2cn.gt.0.) then                      
-                                                                        
+            c0 = 0.
             WO2 = WK(7) * 1.e-20 * xo2cn                                
 !                                                                       
             CALL O2HERZ (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                 
@@ -864,6 +883,8 @@
 !        Only calculate if V2 > -10. cm-1 and V1 <  350. cm-1           
 !                                                                       
          if ((V2.gt.-10.0).and.(V1.lt.350.).and. xn2cn.gt.0.) then      
+            c0 = 0.
+            c1 = 0.
 !                                                                       
 !           The following puts WXN2 units in 1./(CM AMAGAT)             
 !                                                                       
@@ -917,6 +938,9 @@
 !        agreement with  Baranov and Lafferty (2012).       
 !                                                                       
          if ((V2.gt.2001.77).and.(V1.lt.2897.59).and.xn2cn.gt.0.) then    
+            cn0 = 0.
+            cn1 = 0.
+            cn2 = 0.
 !                                                                       
 !           The absorption coefficients from the Lafferty et al.
 !           reference are for pure nitrogen (absorber and broadener).              
@@ -932,9 +956,9 @@
 !           adjustments for relative broadening efficiency are done in 
 !           subroutine n2_ver_1:                                
 !                                                                       
-            call n2_ver_1 (v1c,v2c,dvc,nptc,c0,c1,c2,tave)                    
+            call n2_ver_1 (v1c,v2c,dvc,nptc,cn0,cn1,cn2,tave)                    
 !                                                                       
-!           c0 are the nitrogen absorption coefficients at              
+!           cn0 are the nitrogen absorption coefficients at              
 !           temperature tave                                            
 !              - these absorption coefficients are in units of          
 !                   [(cm^2/molec) 10^20)]/(cm-1  amagat)                
@@ -942,13 +966,13 @@
 !                   of the radiation field                              
 !              - for this case, an amagat is interpreted as one         
 !                   loschmidt of air (273K)                             
-!           c1 are N2 absorption coefficents with collision partner O2
-!           c2 are N2 absorption coefficents with collision partner H2O
+!           cn1 are N2 absorption coefficents with collision partner O2
+!           cn2 are N2 absorption coefficents with collision partner H2O
 !                                                                       
            DO 45 J = 1, NPTC                                            
                VJ = V1C+DVC* REAL(J-1)                                  
-               C(J) = tau_fac * (x_vmr_n2*c0(J) + x_vmr_o2*c1(j) +      & 
-     &             x_vmr_h2o*c2(j))                      
+               C(J) = tau_fac * (x_vmr_n2*cn0(J) + x_vmr_o2*cn1(j) +    & 
+     &             x_vmr_h2o*cn2(j))                      
 !              Radiation field                                          
 !                                                                       
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
@@ -971,6 +995,7 @@
 !        Only calculate if V2 > 4340. cm-1 and V1 <  4910. cm-1.         
 !                                                                       
          if ((V2.gt.4340.0).and.(V1.lt.4910.).and. xn2cn.gt.0.) then    
+            c0 = 0.
 !                                                                       
 !        All species are assumed to have the same broadening efficiency.                                                            
 !           a_o2  represents the relative broadening efficiency of o2   
