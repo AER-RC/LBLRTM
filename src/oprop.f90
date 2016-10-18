@@ -805,11 +805,13 @@
              !WRITE(*,*) M, ALFA0(i),HWHMS(i) 
              rvmr = 0.21
              ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
+             pshift(i) = (pshift(i)-rvmr*brd_mol_shft(m,i))/(1.0-rvmr)
              !WRITE(*,*) M, ALFA0(i),HWHMS(i)
          endif
          if (M.eq.22 .AND. IFLG(i).ge.0) then 
              rvmr = 0.79
              ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
+             pshift(i) = (pshift(i)-rvmr*brd_mol_shft(m,i))/(1.0-rvmr)
          endif
                                                                         
    15    continue 
@@ -1030,6 +1032,7 @@
             IF (IFLAG.EQ.1) THEN 
                YI = A(ILC)+SLOPEA*TMPDIF 
                GI = B(ILC)+SLOPEB*TMPDIF 
+               !print *,'slope ',vnu(i),yi,gi
             ELSE 
                GAMMA1 = A(ILC)+SLOPEA*TMPDIF 
                GAMMA2 = B(ILC)+SLOPEB*TMPDIF 
@@ -1115,6 +1118,7 @@
          SUI = SUI*SCOR(m,iso)* EXP(-EPP(I)*BETACR)*(1.+EXP(-VNU(I)/XKT)&
          )                                                              
          endif 
+         print *, vnu(i),xkt
 !                                                                       
          SP(I) = SUI*(1.+GI*PAVP2) 
          SPPI = SUI*YI*PAVP0 
