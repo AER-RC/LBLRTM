@@ -8327,8 +8327,8 @@
             ALPHA = A/B 
          
             IF ( ABS(ALPHA*Y) .GE. 0.01) THEN 
-               PRINT*,'LAYER TOO THICK' 
-               STOP
+               write(ipr,*) 'LAYER ',I, &
+                 ' THICKER THAN IDEAL FOR ALTITUDE CALCULATION'
             ENDIF
          
             XINT_TOT = C1*Y + 0.5*(C2-C1*ALPHA)*Y**2 + 0.3333*(C3-C2*   &

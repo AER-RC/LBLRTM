@@ -1118,7 +1118,6 @@
          SUI = SUI*SCOR(m,iso)* EXP(-EPP(I)*BETACR)*(1.+EXP(-VNU(I)/XKT)&
          )                                                              
          endif 
-         print *, vnu(i),xkt
 !                                                                       
          SP(I) = SUI*(1.+GI*PAVP2) 
          SPPI = SUI*YI*PAVP0 
