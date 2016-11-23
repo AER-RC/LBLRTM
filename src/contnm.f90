@@ -171,7 +171,7 @@
      &    1.0006,1.0005,1.0004,1.0003,1.0002,1.0001,1.0000,1.0000,      &
      &    1.0000/                                                       
                                                                         
-      DIMENSION XFACREV(0:14),XFACREV1(1:120)                           
+      DIMENSION XFACREV(0:14),XFACREV1(1:132), XFAC_RHU(1:70)                           
                                                                         
 !     Self correction factors for 820-960 cm-1.                         
       DATA (XFACREV(I),I=0,14)/                                         &
@@ -205,6 +205,24 @@
      &     1.348,1.321,1.284,1.255,1.237,                               &
      &     1.212,1.188,1.161,1.136,1.115,                               &
      &     1.090,1.065,1.040,1.020,1.000/
+
+!     Foreign correction factors from joint RHUBC-II/RHUBC-I 
+!     analysis (mt_ckd_3.0).
+      DATA (XFAC_RHU(I),I=1,70)/                                        &
+     &     0.8500,0.8330,0.7810,0.7540,0.8180,                          &
+     &     0.9140,0.9980,0.9830,0.9330,0.8850,                          &
+     &     0.8420,0.8070,0.8000,0.8010,0.8100,                          &
+     &     0.8090,0.8320,0.8180,0.7970,0.8240,                          &
+     &     0.8640,0.8830,0.8830,0.8470,0.8380,                          &
+     &     0.8660,0.9410,1.0400,1.0680,1.1410,                          &
+     &     1.0800,1.0340,1.1550,1.0990,1.0270,                          &
+     &     0.9500,0.8950,0.8150,0.7830,0.7700,                          &
+     &     0.7000,0.7650,0.7750,0.8500,0.9000,                          &
+     &     0.9050,0.9540,1.0200,1.0200,1.0250,                          &
+     &     1.0200,1.1000,1.1250,1.1200,1.1110,                          &
+     &     1.1370,1.1600,1.1490,1.1070,1.0510,                          &
+     &     1.0450,1.0400,1.0350,1.0300,1.0250,                          &
+     &     1.0200,1.0150,1.0100,1.0050,1.0000/
 !                                                                       
 !     ASSIGN SCCS VERSION NUMBER TO MODULE                              
 !                                                                       
@@ -344,6 +362,12 @@
             f1    = 0.25                                                
             beta  = 350.                                                
             n_s   = 6                                                   
+! ***
+!   Correction from RHUBC-II    mt_ckd_3.0   Nov 2016
+! ***
+            f1_rhu    = 0.08                                                
+            beta_rhu  = 40.                                                
+            n_s   = 6                                                   
                                                                         
             DO 20 J = 1, NPTC                                           
                VJ = V1C+DVC* REAL(J-1)                                  
@@ -367,6 +391,7 @@
                   ENDIF                                                 
                                                                         
                   sfac = sfac * ( 1 + ( f1/(1+(VJ/beta)**n_s) ) )       
+                  sfac = sfac * ( 1 + ( f1_rhu/(1+(VJ/beta_rhu)**n_s)))       
                                                                         
                   SH2O = SFAC * SH2O                                    
 !                                                                       
@@ -443,17 +468,22 @@
 !                                                                       
             DO 24 J = 1, NPTC                                           
                VJ = V1C+DVC* REAL(J-1)                                  
+               IF (VJ .LE. 700.) THEN           
+                  JFAC = (VJ +10.)/10. + 0.00001                  
+                  FSCAL = XFAC_RHU(JFAC)                              
+               ELSE
 !                                                                       
-               vdelsq1  = (VJ-V0F1)**2                                  
-               vdelmsq1 = (VJ+V0F1)**2                                  
-               VF1  = ((VJ-V0F1)/beta1)**N_1                            
-               VmF1 = ((VJ+V0F1)/beta1)**N_1                            
-               VF2  = ((VJ     )/beta2)**N_2                            
+                  vdelsq1  = (VJ-V0F1)**2                                  
+                  vdelmsq1 = (VJ+V0F1)**2                                  
+                  VF1  = ((VJ-V0F1)/beta1)**N_1                            
+                  VmF1 = ((VJ+V0F1)/beta1)**N_1                            
+                  VF2  = ((VJ     )/beta2)**N_2                            
                                                                         
-               FSCAL = 1. +                                             &
+                  FSCAL = 1. +                                          &
      &                (f0 + C_1*( (HWSQ1/(VDELSQ1 +HWSQ1+VF1))  +       &
      &                            (HWSQ1/(VDELmSQ1+HWSQ1+VmF1)) ) ) /   &
      &                                                 (1.+C_2*VF2)     
+               ENDIF
                                                                         
                FH2O(J)=FH2O(J)*FSCAL                                    
 !                                                                       
@@ -1117,15 +1147,15 @@
 !                                                                       
       COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4,CHEADING 
 !                                                                       
-      CHARACTER*18 cnam3(9),cnam4(34) 
-      CHARACTER*51 CINFO1(2,12),CINFO2(2,12),CINFO3(2,9),CINFO4(2,34) 
+      CHARACTER*18 cnam3(9),cnam4(35) 
+      CHARACTER*51 CINFO1(2,12),CINFO2(2,12),CINFO3(2,9),CINFO4(2,35) 
       CHARACTER*40 CHEADING(3,2) 
 !                                                                       
       WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,12) 
       WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,12) 
       WRITE (IPR,918) ((CHEADING(I,J),I=1,3),J=1,2) 
       WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9) 
-      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,34) 
+      WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,35) 
 !                                                                       
       RETURN 
 !                                                                       
@@ -1142,8 +1172,8 @@
 !     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM    
 !                                                                       
       COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4,CHEADING 
-      CHARACTER*18 cnam3(9),cnam4(34) 
-      CHARACTER*51 CINFO1(2,12),CINFO2(2,12),CINFO3(2,9),CINFO4(2,34) 
+      CHARACTER*18 cnam3(9),cnam4(35) 
+      CHARACTER*51 CINFO1(2,12),CINFO2(2,12),CINFO3(2,9),CINFO4(2,35) 
       CHARACTER*40 CHEADING(3,2) 
 !                                                                       
       DATA cnam3/                                                       &
@@ -1191,6 +1221,7 @@
      &     ' mt_ckd_2.7   12.4',                                        &
      &     '                  ',                                        &
      &     ' mt_ckd_2.8   12.5',                                        &
+     &     ' mt_ckd_3.0   12.6',                                        &
      &     '                  ',                                        &
      &     '                  '/                                        
 !           123456789-123456789-123456789-123456789-123456789-1         
@@ -1200,14 +1231,14 @@
      &     '                                                   ',       &
      &     '                                                   ',       &
      &     '                                                   ',       &
-     &     '*** CONTINUA mt_ckd_2.8                            ',       &
+     &     '*** CONTINUA mt_ckd_3.0                            ',       &
      &     '                                                   ',       &
      &     '                                                   ',       &
      &     '            Most recent significant change         ',       &
      &     '       H2O  SELF  (T)     0 - 20000 CM-1           ',       &
-     &     '   mt_ckd_2.8 - modify 2000-3190 cm-1    (Jul 2016)',       &
+     &     '   mt_ckd_3.0 - modify 0-100 cm-1        (Nov 2016)',       &
      &     '            AIR           0 - 20000 CM-1           ',       &
-     &     '   mt_ckd_2.8 - modify windows >1880 cm-1(Mar 2016)',       &
+     &     '   mt_ckd_3.0 - modify 0-700 cm-1        (Nov 2016)',       &
      &     '       CO2  AIR           0 - 10000 CM-1           ',       &
      &     '   mt_ckd_2.5 - modify 2000-3000 cm-1    (Jan 2010)',       &
      &     '            AIR   (T)  2386 -  2434 CM-1           ',       &
@@ -1333,6 +1364,8 @@
      &     '                                         (Feb 2016)',       &
      &     '  N2-H2O from 2000-3000 cm-1,H2O self for 2000-3190',       &
      &     ' cm-1,H2O foreign in windows >1880 cm-1  (Jul 2016)',       &
+     &     '  H2O: foreign/self 0-700/0-100 cm-1; RHUBC-II/-I; ',       &
+     &     'REFIR,AERI,SAO-FTS; Mlawer,Turner,Paine  (Nov 2016)',       &
      &     '  -------------------------------------------------',       &
      &     '---------------------------------------------------',       & 
      &     '  -------------------------------------------------',       &
