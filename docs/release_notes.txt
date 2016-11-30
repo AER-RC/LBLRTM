@@ -1,4 +1,9 @@
-LBLLRTM v12.5
+LBLRTM v12.6
+November 2016
+
+* The continuum has been updated to MT_CKD v3.0
+
+LBLRTM v12.5
 July 2016
 
 * The continuum has been updated to MT_CKD v2.8
@@ -7,7 +12,7 @@ July 2016
   was compiled with ifort.
 
 
-LBLLRTM v12.4
+LBLRTM v12.4
 February 2016
 
 * LBLRTM has been updated to accommodate all molecules and isotopologues 
