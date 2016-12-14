@@ -171,7 +171,7 @@
      &    1.0006,1.0005,1.0004,1.0003,1.0002,1.0001,1.0000,1.0000,      &
      &    1.0000/                                                       
                                                                         
-      DIMENSION XFACREV(0:14),XFACREV1(1:132), XFAC_RHU(1:61)                           
+      DIMENSION XFACREV(0:14),XFACREV1(1:132), XFAC_RHU(-1:61)                           
                                                                         
 !     Self correction factors for 820-960 cm-1.                         
       DATA (XFACREV(I),I=0,14)/                                         &
@@ -208,7 +208,8 @@
 
 !     Foreign correction factors from joint RHUBC-II/RHUBC-I 
 !     analysis (mt_ckd_3.0).
-      DATA (XFAC_RHU(I),I=1,61)/                                        &
+      DATA (XFAC_RHU(I),I=-1,61)/                                       &
+     &     0.7810,0.8330,                                               &
      &     0.8500,0.8330,0.7810,0.7540,0.8180,                          &
      &     0.9140,0.9980,0.9830,0.9330,0.8850,                          &
      &     0.8420,0.8070,0.8000,0.8010,0.8100,                          &
