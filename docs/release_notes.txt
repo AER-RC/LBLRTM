@@ -1,15 +1,24 @@
 LBLRTM v12.6
 November 2016
 
-* The continuum has been updated to MT_CKD v3.0
+* The continuum has been updated to MT_CKD v3.0, which included modifications
+  to the H2O foreign continuum from 0-600 cm-1 and the self continuum in the 
+  microwave that resulted from an analysis of measurements taken at the ARM
+  RHUBC-II campaign and a re-analysis of RHUBC-I measurements. (E.J. Mlawer, 
+  D.D. Turner, S.N. Paine, V.H. Payne)     
 
+                                          
 LBLRTM v12.5
 July 2016
 
-* The continuum has been updated to MT_CKD v2.8
+* The continuum has been updated to MT_CKD v2.8, which has modifications
+  to the H2O foreign continuum in all window regions > 1800 cm-1, the H2O
+  self continuum from 1880-2390 cm-1, and the efficiency of N2 collision-
+  induced absorption with respect to H2O from 2000-2900 cm-1. (E.J. Mlawer 
+  and M.J. Alvarado)
 
-* Saved a variable used by the output  code to solve problems when code 
-  was compiled with ifort.
+* Saved a variable used by the output code to solve problems when code 
+  was compiled with ifort. (K.E. Cady-Pereira and S. DeSouza-Machado)
 
 
 LBLRTM v12.4
