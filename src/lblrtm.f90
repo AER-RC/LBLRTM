@@ -376,6 +376,7 @@
 !                                                                       
       character*8      XID,       HMOLID,      YID,HDATE,HTIME 
       real*8               SECANT,       XALTZ 
+      real             solvar(2)
 !                                                                       
       LOGICAL OP 
 !%%%%%LINUX_PGI90 (-i8)%%%%%      integer*4 iostat                      
@@ -762,6 +763,7 @@
          INFLAG = 0 
          IOTFLG = 0 
          READ(IRD,1010) INFLAG,IOTFLG,JULDAT 
+         READ(IRD,1011) ISOLVAR,SCON,SOLCYCFRAC,SOLVAR
          IF (INFLAG.EQ.1) THEN 
 !            IFILE = KFILE                                              
             IFILE = MFILE 
@@ -771,7 +773,8 @@
          INQUIRE (UNIT=13,OPENED=OP) 
          IF (OP) CLOSE(13) 
          OPEN(UNIT=13,FILE='TAPE13',FORM='UNFORMATTED') 
-         CALL SOLINT(IFILE,13,NPTS,INFLAG,IOTFLG,JULDAT) 
+         CALL SOLINT(IFILE,13,NPTS,INFLAG,IOTFLG,JULDAT,ISOLVAR,   &
+                     SCON,SOLCYCFRAC,SOLVAR) 
          REWIND 13 
          GOTO 60 
       ENDIF 
@@ -1181,6 +1184,7 @@
  1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,   &
      &         7(5X,a18,2X,A18,10X, a18,2X,A18,/))                      
  1010 FORMAT (2I5,2X,I3) 
+ 1011 FORMAT (I5,f10.4,5x,f10.4,5x,2f10.5) 
  1020 FORMAT (/,'  The continuum scale factors are as follows: ',       &
      &         /,5x,'H2O Self:    ',f10.3,                              &
      &         /,5x,'H2O Foreign: ',f10.3,                              &

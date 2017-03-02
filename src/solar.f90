@@ -1,4 +1,3 @@
-!     path:      $HeadURL$
 !     revision:  $Revision$
 !     created:   $Date$  
 !     presently: %H%  %T%
@@ -22,7 +21,8 @@
 ! |                       (http://www.rtweb.aer.com/)                        |
 !  --------------------------------------------------------------------------
 !
-      SUBROUTINE SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG,JULDAT) 
+      SUBROUTINE SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG,JULDAT,ISOLVAR,  &
+                         SCON,SOLCYCFRAC,SOLVAR) 
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 !                                                                       
@@ -89,7 +89,53 @@
 !              = 2   => Calculate solar contribution Rs = S2*T2*r1*T1   
 !                       and add to thermal contribution R1.             
 !                                                                       
+!
+!        ISOLVAR = -1 => uses solar source file with a single component:
+!                       no temporal variability; assumes Kurucz extraterrestrial 
+!                       solar irradiance, which yields a solar constant of 1368.22 Wm-2,
+!                       unless scaled by SCON.
+!       
+!        ISOLVAR =  0 => uses solar source file with a single component:
+!                       no temporal variability; assumes NRLSSI2 extraterrestrial 
+!                       solar irradiance, which yields a solar constant of 1360.85 Wm-2,
+!                       (for the spectral range 100-50000 cm-1 with quiet sun, facular 
+!                       and sunspot contributions fixed to the mean of  
+!                       Solar Cycles 13-24 and averaged over the mean solar cycle),
+!                       unless scaled by SCON.
+
+!        SCON   = 0.0 => no scaling of internal solar irradiance
+!               > 0.0 => ISOLVAR = -1 or 0
+!                        Total solar irradiance is scaled to SCON                     
+!               > 0.0 => ISOLVAR = 1 
+!                        integral of total solar irradiance averaged over solar cycle
+!                        is scaled to SCON                     
+!       
+!        ISOLVAR =  1 => uses solar source file with multiple components;
+!                       facular brightening and sunspot blocking amplitudes
+!                       are by default determined by the fraction of the 
+!                       way into the solar cycle (see SOLCYCFRAC) or can
+!                       be scaled (see SOLVAR)
+!        ISOLVAR =  2 => uses solar source file with multiple components;
+!                       facular brightening and sunspot blocking amplitudes
+!                       are determined by the Mg and SB indeces (see SOLVAR)
+!       
+!        SOLCYCFRAC   Solar cycle fraction (0-1); fraction of the way through the mean 11-year
+!                     cycle with 0 and 1 defined as the minimum phase of the solar cycle
+!                     (ISOLVAR=1 only)
+
+!       SOLVAR        Solar variability scaling factors or indices (ISOLVAR=1,2 only)
+!                     ISOLVAR = 1 =>
+!                      SOLVAR(1)    Facular (Mg) index amplitude scale factor
+!                      SOLVAR(2)    Sunspot (SB) index amplitude scale factor
+
+!                      ISOLVAR = 2 =>
+!                      SOLVAR(1)    Facular (Mg) index as defined in the NRLSSI2 model;
+!                                   used for modeling specific solar activity
+!                      SOLVAR(2)    Sunspot (SB) index as defined in the NRLSSI2 model; 
+!                                   used for modeling specific solar activity
+!
 !     Output radiance goes to TAPE13.                                   
+!
 !                                                                       
 !     ------------------------------------------------------------      
 !                                                                       
@@ -105,6 +151,7 @@
 !                                                                       
       character*8      XIDS,       HMLIDS,       YIDS 
       real*8                SECNTS,       XALTZS 
+
 !                                                                       
 !                                                                       
       COMMON /EMHDR/ XID(10),SECANT,PAVE,TAVE,HMOLID(60),XALTZ(4),      &
@@ -144,7 +191,10 @@
       DIMENSION RADO(2),RADN(2410) 
       DIMENSION OPTO(2),OPTN(2410) 
 !                                                                       
+      real          solvar(2),svar(3)
+
       DIMENSION SOLAR(-1:NSOL) 
+      DIMENSION SOLAR3(2400,3) 
       DIMENSION TRAN2(-1:NSOL) 
       DIMENSION RAD2(-1:NSOL) 
       DIMENSION XRFLT(-1:NSOL) 
@@ -195,6 +245,10 @@
       TIMRD = 0.0 
       TIMOT = 0.0 
                                                                         
+!    Calculate solar scaling factors
+
+      call scale_solar (isolvar,scon,solcycfrac,solvar,svar)
+!                                                                       
 !     Calculate Earth distance to sun given Julian Day JULDAT. Used to  
 !     scale solar source function. Formula taken from "Atmospheric Radia
 !     Transfer", J. Lenoble, 1993.                                      
@@ -220,7 +274,12 @@
          write(ipr,*) 'JULDAT = ',JULDAT,                               &
      &        ', scale factor for solar source function = ',XJUL_SCALE  
       endif 
-!                                                                       
+
+!     Combine Julian day scaling with solar source scaling when there is no solar variability
+      if (isolvar.le.0) then
+          xjul_scale = xjul_scale*solvar(1)
+      endif
+
 !     FOR AEROSOL RUNS, MOVE YID (IFILE) INTO YID (LFILE)               
 !                                                                       
 !     Read file header of solar radiance file and determine dv ratio    
@@ -392,7 +451,13 @@
    30    CONTINUE 
          IPANEM = IPANEM+1 
          CALL CPUTIM (TIMSL1) 
-         CALL SOLIN_sgl (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(1),LSEOF) 
+         if (isolvar.le.0) then
+            CALL SOLIN_sgl (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(1),LSEOF) 
+         else
+            CALL SOLIN_tri (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR3,LSEOF)
+            call comb_solar (solar3,solar(1),nlim,isolvar,svar) 
+         end if
+
          CALL CPUTIM (TIMSL2) 
          TIMRD = TIMRD+TIMSL2-TIMSL1 
          IF (LSEOF.LE.0) GO TO 110 
@@ -629,7 +694,13 @@
 !                                                                       
       IF (V2P.LE.V2PO+DVP .AND.LSEOF.GT.0) THEN 
    70    CALL CPUTIM(TIMSL2) 
-         CALL SOLIN_sgl(V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(NPE+1),LSEOF) 
+         if (isolvar.le.0) then
+            CALL SOLIN_sgl (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR(NPE+1),LSEOF) 
+         else
+            CALL SOLIN_tri (V1P,V2P,DVP,NLIM,ISOLFL,SOLAR3,LSEOF)
+            call comb_solar (solar3,solar(npe+1),nlim,isolvar,svar) 
+         endif
+      
          CALL CPUTIM(TIMSL3) 
          TIMRD = TIMRD+TIMSL3-TIMSL2 
          IF (LSEOF.LE.0) GO TO 80 
@@ -1046,6 +1117,65 @@
       END                                           
 !                                                                       
 !     ----------------------------------------------------------------  
+      SUBROUTINE SOLIN_tri (V1P,V2P,DVP,NLIM,KFILE,XARRAY,KEOF) 
+!                                                                       
+!                                                                       
+!                  Written  :         January 2017
+!                                                                       
+!                  IMPLEMENTATION:    K. E. Cady-Pereira 
+
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
+
+      IMPLICIT REAL*8           (V) 
+!                                                                       
+!     SUBROUTINE SOLIN_tri inputs files for use with solar radiation    
+!     calculations for interpolation in SOLINT.  Reads files with       
+!     three records per panel. SOLIN_tri reads single precision files      
+!                                                                       
+      COMMON /BUFPNL_s/ V1PBF,V2PBF,dvpbf,nlimbf 
+!                                                                       
+      DIMENSION PNLHDR(2),XARRAY(2400,3)
+!                                                                       
+      EQUIVALENCE (PNLHDR(1),V1PBF) 
+!                                                                       
+      real*4 dvpbf,pnlhdr,xarray_s(2410) 
+                                                                        
+      integer*4 kfil_s,keof_s,nphdr_s,nphdrf,nlimbf 
+                                                                        
+      data nphdrf / 6 / 
+                                                                        
+      kfil_s = KFILE 
+      keof_s = KEOF 
+                                                                        
+      CALL BUFIN_sgl (kfil_s,keof_s,pnlhdr(1),nphdrf) 
+                                                                        
+      KEOF = keof_s 
+      IF (KEOF.LE.0) RETURN 
+                                                                        
+!     The variable XARRAY (either single or double, depending on the    
+!     complile option specified, is set equal to the real*4 variable xar
+                                                                        
+      do ivar=1,3
+         CALL BUFIN_sgl (kfil_s,keof_s,xarray_s(1),nlimbf) 
+         xarray(1:nlimbf,ivar) = xarray_s
+         !if (ivar.eq.1) then
+         !   do il=1,nlimbf 
+         !      print *, xarray(il,ivar)
+         !   end do
+         !endif
+      end do
+!                                                                       
+      KEOF = keof_s 
+                                                                        
+      V1P = V1PBF 
+      V2P = V2PBF 
+      DVP = dvpbf 
+      NLIM = nlimbf 
+!                                                                       
+      RETURN 
+!                                                                       
+      END                                           
+!                                                                       
 !                                                                       
       SUBROUTINE SOLIN2 (V1P,V2P,DVP,NLIM,KFILE,XARAY1,XARAY2,KEOF) 
 !                                                                       
@@ -1108,9 +1238,191 @@
       RETURN 
 !                                                                       
       END                                           
-!                                                                       
 !     ----------------------------------------------------------------  
 !                                                                       
+      SUBROUTINE scale_solar (isolvar,scon,solcycfrac,solvar,svar)
+
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
+!                                                                       
+!                         Written:    January 2017
+!                                                                       
+!                  IMPLEMENTATION:    K. E. Cady-Pereira
+!
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
+
+! Calculates the scaling factors  of the solar term from the options
+! selected by the user
+!                                                                       
+
+      use solar_cycle
+      
+      dimension solvar(2)   ! input solar variability scale factors or indices
+      real indsolvar(2)     ! calculated solar index amplitude scale factors or indices
+      real svar(3)          ! final quiet, facular and sunspot term scale factors
+
+      real nsfm1_inv, nsfm1_inv_2
+      real intfrac
+
+      indsolvar(:) = 1.0
+      svar(:) = 1.0
+      
+      if (isolvar.eq.1) then 
+         indsolvar=solvar
+
+! Adjust amplitude scaling to be 1.0 at solar min to be the requested indsolvar at solar max,
+!  and to vary between those values at other solcycfrac. 
+         if (indsolvar(1).ne.1.0.or.indsolvar(2).ne.1.0) then
+            if (solcycfrac.ge.0.0.and.solcycfrac.lt.solcyc_min) then
+               wgt = (solcycfrac+1.0-solcyc_max)/(1.0+solcyc_min-solcyc_max)
+               indsolvar(:) = indsolvar(:) + wgt * (1.0-indsolvar(:))
+            endif
+            if (solcycfrac.ge.solcyc_min.and.solcycfrac.le.solcyc_max) then
+               wgt = (solcycfrac-solcyc_min)/(solcyc_max-solcyc_min)
+               indsolvar(:) = 1.0 + wgt * (indsolvar(:)-1.0)
+            endif
+            if (solcycfrac.gt.solcyc_max.and.solcycfrac.le.1.0) then
+               wgt = (solcycfrac-solcyc_max)/(1.0+solcyc_min-solcyc_max)
+               indsolvar(:) = indsolvar(:) + wgt * (1.0-indsolvar(:))
+            endif
+         endif
+
+!   Interpolate svar_f_0 and svar_s_0 from lookup tables using provided solar cycle fraction
+!   Lookup tables points are located at the middle of each month, except for first and last points,
+!   which correspond to the first and last days of the 11-year solar cycle.
+	 if (solcycfrac .le. 0.0) then 
+	    tmp_f_0 = mgavgcyc(1)
+	    tmp_s_0 = sbavgcyc(1)
+	 elseif (solcycfrac .ge. 1.0) then 
+	    tmp_f_0 = mgavgcyc(nsolfrac)
+	    tmp_s_0 = sbavgcyc(nsolfrac)
+	 else
+	    nsfm1_inv = 1.0 / (nsolfrac-2)
+            nsfm1_inv_2 = nsfm1_inv/2.0 
+            if (solcycfrac.le.nsfm1_inv_2) then
+               isfid = 0
+               fraclo = 0.0
+               frachi = nsfm1_inv_2
+            elseif (solcycfrac.gt.(1.0-nsfm1_inv_2)) then
+               isfid = nsolfrac-1
+               fraclo = 1.0-nsfm1_inv_2
+               frachi = 1.0 
+            else
+	       isfid = floor((solcycfrac-nsfm1_inv_2) * (nsolfrac-3)) + 2
+	       fraclo = (isfid-2) * nsfm1_inv+nsfm1_inv_2
+	       frachi = (isfid-1) * nsfm1_inv+nsfm1_inv_2
+            endif
+	    intfrac = (solcycfrac - fraclo) / (frachi - fraclo)
+	    tmp_f_0 = mgavgcyc(isfid) + intfrac * (mgavgcyc(isfid+1) - mgavgcyc(isfid))
+	    tmp_s_0 = sbavgcyc(isfid) + intfrac * (sbavgcyc(isfid+1) - sbavgcyc(isfid))
+	 endif
+	 svar_f_0 = tmp_f_0
+	 svar_s_0 = tmp_s_0
+      endif
+
+      if (isolvar.eq.2) indsolvar(:) = solvar
+
+      if (scon.eq.0.0) then 
+!   No solar cycle and no solar variability (Kurucz solar irradiance)
+         if (isolvar .eq. -1) then 
+            solvar(:) = 1.0
+         endif 
+
+!   Mean solar cycle with no solar variability (NRLSSI2 model solar irradiance)
+!   Quiet sun, facular, and sunspot terms averaged over the mean solar cycle 
+!   (defined as average of Solar Cycles 13-24).
+         if (isolvar .eq. 0) then 
+            solvar(:) = 1.0
+         endif 
+
+!   Mean solar cycle with solar variability (NRLSSI2 model)
+!   Facular and sunspot terms interpolated from LUTs to input solar cycle 
+!   fraction for mean solar cycle. Scalings defined below to convert from 
+!   averaged Mg and SB terms to Mg and SB terms interpolated here.
+!   (Includes optional facular and sunspot amplitude scale factors)
+         if (isolvar .eq. 1) then 
+            svar(2) = indsolvar(1) * (svar_f_0 - Foffset) / (svar_f_avg - Foffset)
+            svar(3) = indsolvar(2) * (svar_s_0 - Soffset) / (svar_s_avg - Soffset)
+         endif
+
+!   Specific solar cycle with solar variability (NRLSSI2 model)
+!   Facular and sunspot index terms input directly to model specific 
+!   solar cycle.  Scalings defined below to convert from averaged
+!   Mg and SB terms to specified Mg and SB terms. 
+         if (isolvar .eq. 2) then
+            svar(2)= (indsolvar(1) - Foffset) / (svar_f_avg - Foffset)
+            svar(3) = (indsolvar(2) - Soffset) / (svar_s_avg - Soffset)
+         endif
+
+     endif
+
+     if (scon.gt.0) then
+
+!   No solar cycle and no solar variability (Kurucz or NRLSSI2 model solar irradiance)
+!   Quiet sun, facular, and sunspot terms averaged over the mean solar cycle 
+!   (defined as average of Solar Cycles 13-24).
+!   Scale from internal solar constant to requested solar constant.
+         if (isolvar .eq. -1) then
+            solvar(:) = scon/scon_kurucz 
+         else if (isolvar.eq.0) then
+            solvar(:) = scon/scon_nrlssi2 
+         end if
+
+!   Mean solar cycle with solar variability (NRLSSI2 model)
+!   Facular and sunspot terms interpolated from LUTs to input solar cycle 
+!   fraction for mean solar cycle. Scalings defined below to convert from 
+!   averaged Mg and SB terms to Mg and SB terms interpolated here.
+!   Scale internal solar constant to requested solar constant. 
+!   (Includes optional facular and sunspot amplitude scale factors)
+
+         if (isolvar .eq. 1) then 
+            svar(1)= (scon - (indsolvar(1) * Fint + indsolvar(2) * Sint)) / Iint
+            svar(2)= indsolvar(1) * (svar_f_0 - Foffset) / (svar_f_avg - Foffset)
+            svar(3)= indsolvar(2) * (svar_s_0 - Soffset) / (svar_s_avg - Soffset)
+         endif 
+     
+      endif
+
+
+      return
+
+      end
+!     ----------------------------------------------------------------  
+
+!                                                                       
+            subroutine comb_solar (solar3,solar,nlim,isolvar,svar) 
+
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
+!                                                                       
+!                         Written:    January 2017
+!                                                                       
+!                  IMPLEMENTATION:    K. E. Cady-Pereira
+!
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
+
+! Combines the three components (quiet, facular and sunspot contributions) according
+! to the options selected by the user
+!                                                                       
+
+      use solar_cycle
+      
+      DIMENSION SOLAR(*) 
+      DIMENSION SOLAR3(2400,3) 
+      dimension svar(3)
+
+      !if ((isolvar.eq.0.OR.isolvar.eq.-1).AND.scon.eq.0.0) then
+      !if (isolvar.eq.0) then
+      !   solar(1:nlim) = solar3(1:nlim,1)+solar3(1:nlim,2)+solar3(1:nlim,3)
+      !endif
+
+      if (isolvar.gt.0.AND.isolvar.le.2) then
+         solar(1:nlim) = solar3(1:nlim,1)*svar(1)     &
+     &     +solar3(1:nlim,2)*svar(2)+solar3(1:nlim,3)*svar(3)
+      end if
+      return
+
+      end
+!     ----------------------------------------------------------------  
+
       SUBROUTINE SOLOUT (V1P,V2P,DVP,NLIM,SOLRAD,LFILE,NPTS,NPANLS) 
 !                                                                       
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
