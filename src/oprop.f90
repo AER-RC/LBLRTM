@@ -87,7 +87,7 @@
 !     DIMENSION RR2 =  NBOUND/2 + 1 + DIM(R2)                           
 !     DIMENSION RR3 =  NBOUND/4 + 1 + DIM(R3)                           
 !                                                                       
-      COMMON RR1(6099),RR2(2075),RR3(429) 
+      COMMON RR1(-8704:11169),RR2(-2560:3177),RR3(-1024:1179) 
       COMMON /IOU/ IOUT(250) 
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NP,H1F,H2F,       &
@@ -158,7 +158,7 @@
      &            (IATM,FSCDID(15)) , (YI1,IOD) , (XID(1),FILHDR(1)),   &
      &            (V1P,IWD(1)) , (NPNLXP,LSTWDX),                       &
      &            (YID(10),LTNSAV, dv_lbl)                              
-      EQUIVALENCE (R1(1), RR1(2049)),(R2(1),RR2(1025)),(R3(1),RR3(129)) 
+      EQUIVALENCE (R1(1), RR1(1)),(R2(1),RR2(1)),(R3(1),RR3(1)) 
 !                                                                       
 !                                                                       
 !     NOTE that DXFF1 = (HWFF1/(NFPTS-1))                               
@@ -231,8 +231,16 @@
       NSHIFT = 32 
 !                                                                       
 !     SAMPLE IS AVERAGE ALPHA / DV                                      
+! "*0.04/ALFAL0" is a temporary solution to keep ALFMAX to be close to the 
+! original default value. It may enlarge the ALFMAX in regions dominated
+! Doppler broadening where ALFAL0 is supposed to have no effect if user
+! sets ALFAL0 to a value less than 0.04.
+!    previous expression:  NBOUND = 4.*(2.*HWF3)*SAMPLE+0.01 
+!
+      ALFMAX = 4*SAMPLE*DV * 0.04/ALFAL0
+      nALFMAX = ALFMAX/DV
+      NBOUND = (2.*HWF3)*nALFMAX+0.01
 !                                                                       
-      NBOUND = 4.*(2.*HWF3)*SAMPLE+0.01 
       NLIM1 = 2401 
       NLIM2 = (NLIM1/4)+1 
       NLIM3 = (NLIM2/4)+1 
@@ -274,19 +282,26 @@
       DVP = DV 
       DVR2 = (DXF2/DXF1)*DV 
       DVR3 = (DXF3/DXF1)*DV 
-      MAX1 = NSHIFT+NLIM1+(NBOUND/2) 
+! previous code
+!      MAX1 = NSHIFT+NLIM1+(NBOUND/2) 
+!      MAX2 = MAX1/4 
+!      MAX3 = MAX1/16 
+!      MAX1 = MAX1+NSHIFT+1+16 
+!      MAX2 = MAX2+NSHIFT+1+4 
+!      MAX3 = MAX3+NSHIFT+1+1 
+      MAX1 = NSHIFT+NLIM1+NSHIFT+NBOUND/2
       MAX2 = MAX1/4 
       MAX3 = MAX1/16 
-      MAX1 = MAX1+NSHIFT+1+16 
-      MAX2 = MAX2+NSHIFT+1+4 
-      MAX3 = MAX3+NSHIFT+1+1 
+      MAX1 = MAX1 +  4*nALFMAX
+      MAX2 = MAX2 + 16*nALFMAX/4 + 1  !+1 to account for rounding error
+      MAX3 = MAX3 + 64*nALFMAX/16 + 1 !+1 to account for rounding error
 !                                                                       
 !     FOR CONSTANTS IN PROGRAM  MAX1=4018  MAX2=1029  MAX3=282          
 !                                                                       
       CALL CPUTIM(TPAT0) 
       BOUND =  REAL(NBOUND)*DV/2. 
       BOUNF3 = BOUND/2. 
-      ALFMAX = BOUND/HWF3 
+!      ALFMAX = BOUND/HWF3 
       NLO = NSHIFT+1 
       NHI = NLIM1+NSHIFT-1 
       DO 10 I = 1, MAX1 
@@ -511,7 +526,6 @@
 ! Matt Alvarado 20150819 Put in Yingtao fix for VF1
             VF1 = V1+floor((VF1-V1)/DVR4)*DVR4 
             VF2 = VFT+2.*DVR4+ REAL(N2R3+4)*DVR3 
-            !print *,'vf1 = ',vf1,' vf2 = ',vf2
             IF (VF2.GT.V2R4.AND.V2R4.NE.V2R4ST) THEN 
                CALL LBLF4 (JRAD,VF1,V2R4ST) 
                IF (IXSECT.GE.1.AND.IR4.EQ.1) THEN 
@@ -1038,7 +1052,6 @@
             IF (IFLAG.EQ.1) THEN 
                YI = A(ILC)+SLOPEA*TMPDIF 
                GI = B(ILC)+SLOPEB*TMPDIF 
-               !print *,'slope ',vnu(i),yi,gi
             ELSE 
                GAMMA1 = A(ILC)+SLOPEA*TMPDIF 
                GAMMA2 = B(ILC)+SLOPEB*TMPDIF 
@@ -1050,19 +1063,11 @@
 !                                                                       
 !     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS         
 !                                                                       
-         !print *,' '
-         !print '(f20.8,3f16.8)',vnu(i),alfa0(i),hwhms(i),tmpalf(i)
-         !print '(2f16.8)', pshift(i),brd_mol_shft(1,i)
-         !print '(a10,7i4)', 'brd_flg ',brd_mol_flg(:,i)
-         !print '(a12,7f14.6)', 'brd_mol_hw',brd_mol_hw(:,i)
-         !print '(a12,7f14.6)', 'brd_mol_shft',brd_mol_shft(:,i)
-         !print '(a12,7f14.6)', 'brd_mol_tmp',brd_mol_tmp(:,i)
          VNU(I) = VNU(I)+RHORAT*PSHIFT(I) 
          if(sum(brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then
             vnu(i) = vnu(i)+sum(rhoslf(1:mxbrdmol)*brd_mol_flg(:,i)* &
      &           (brd_mol_shft(:,i)-pshift(i)))
          endif
-         !print *,vnu(i)
 
 !                                                                       
 !     TEMPERATURE CORRECTION OF THE HALFWIDTH                           
@@ -1612,8 +1617,6 @@
       IF (V1PO_SAVE.NE.0.0) THEN 
           V1PO = V1PO_SAVE
       ENDIF
-      !print *,' '
-      !print *, ' v1p ',v1p,' v1pO ',v1pO, ' v1po_save ',v1po_save
       NPNXPO = NPNLXP 
       DVPO = DVOUT 
       NPPANL = 1 
@@ -1625,7 +1628,6 @@
 !                                                                       
 !                                                                       
 !     1/1 ratio only                                                    
-      !print *, 'atype ',atype,'nlim ',nlim,' v1p ',v1p,' v1pO ',v1pO
 !                                                                       
       IF (ATYPE.EQ.0.) THEN 
          CALL PMNMX (R1,NLIM,RMIN,RMAX) 
@@ -1680,7 +1682,6 @@
       V2PO = V1PO+ REAL(LIMOUT)*DVOUT 
 !                                                                       
       IF (V2P.LE.V2PO+DVP.AND.ILAST.EQ.0.AND.NPPANL.LE.0) GO TO 40 
-      !print *,'v2po after 20 ',v2po
 !                                                                       
 !     Four possibilities:                                               
 !       1a.  Last panel to be done, set the appropriate                 
@@ -1725,7 +1726,6 @@
          ILAST = 0 
       ENDIF 
 !                                                                       
-      !print *,'v2po after if ',v2po
       RATDV = DVOUT/DVP 
 !                                                                       
 !     FJJ is offset by 2. for rounding purposes                         
@@ -1734,7 +1734,6 @@
 !                                                                       
 !     Interpolate R1 to DVOUT                                           
 !                                                                       
-      !print *,'nlim1 ',nlim1,' nlim2 ',nlim2
       DO 30 II = NLIM1, NLIM2 
          FJJ = FJ1DIF+RATDV* REAL(II-1) 
          JJ = INT(FJJ)-2 
@@ -1755,8 +1754,6 @@
 !                                                                       
          CALL BUFOUT (KFILE,PNLHDO(1),NPHDRF) 
          CALL BUFOUT (KFILE,R1OUT(1),NLIM2) 
-         !print *,kfile
-         !print *, r1out(1:100)
                                                                         
          IF (NPTS.GT.0) CALL R1PRNT (V1PO,DVOUT,NLIM2,R1OUT,1,NPTS,     &
          KFILE,IENTER)                                                  
@@ -1768,7 +1765,6 @@
          NLIM1 = NLIM2+1 
          NPPANL = -1 
       ENDIF 
-      !print *,'v1po just before ilast.ne.1 test ',v1po
 !                                                                       
 !     If not at last point, continue interpolation                      
 !                                                                       
@@ -3448,10 +3444,9 @@
          end do
          bufr%speed_dep(i) = rdlnbuf%speed_dep(i)
 
-      !  MJA 20140909
 !  HITRAN provides widths for broadening by air; LBLRTM and MONORTM have always treated these widths as foreign
 !  This assumption is valid for most species, but not for N2 or O2. We now adjust the HITRAN widths to obtain
-!  true foreign widths. Similar ajdustment is applied is self shift information is available.
+!  true foreign widths. Similar ajdustment is applied if self shift information is available.
           M = MOD(bufr%mol(I),100)
           if (M.eq.7 .AND. bufr%IFLG(i).ge.0) then
              rvmr = 0.21
@@ -3470,8 +3465,6 @@
 !            endif
          endif
    15 continue 
-
-
 !                                                                       
       DO 20 J = 1, RDLNPNL%NREC 
          IF (BUFR%IFLG(J).GE.0) THEN 
@@ -3724,7 +3717,7 @@
          VI = V1R4+DVR4* REAL(NPTSI1-1) 
          RADVI = RADFNI(VI,DVR4,XKT,VITST,RDEL,RDLAST) 
 !                                                                       
-         NPTSI2 = (VITST-V1R4)/DVR4+1.001 
+         NPTSI2 = (VITST-V1R4)/DVR4+0.001 
          NPTSI2 = MIN(NPTSI2,NPTR4) 
 !                                                                       
          DO 50 I = NPTSI1, NPTSI2 
@@ -4510,7 +4503,7 @@
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),  &
      &       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),  &
      &       ZETAI(250),IZETA(250)                                      
-      COMMON RR1(6099),RR2(2075),RR3(429) 
+      COMMON RR1(-8704:11169),RR2(-2560:3177),RR3(-1024:1179) 
       COMMON /IOU/ IOUT(250) 
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
@@ -4557,7 +4550,7 @@
       DIMENSION FILHDR(2) 
       LOGICAL OPCL 
 !                                                                       
-      EQUIVALENCE (R1(1),RR1(2049)),(R2(1),RR2(1025)),(R3(1),RR3(129)) 
+      EQUIVALENCE (R1(1), RR1(1)),(R2(1),RR2(1)),(R3(1),RR3(1)) 
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),              &
      &            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),              &
      &            (JRAD,FSCDID(9)) , (IATM,FSCDID(15)),                 &
@@ -4897,7 +4890,7 @@
             VI = V1X+ REAL(NPTSI1-1)*DVX 
             RADVI = RADFNI(VI,DVX,XKT,VITST,RDEL,RDLAST) 
 !                                                                       
-            NPTSI2 = (VITST-V1X)/DVX+1.001 
+            NPTSI2 = (VITST-V1X)/DVX+0.001 
             NPTSI2 = MIN(NPTSI2,NPTSX) 
 !                                                                       
             DO 130 I = NPTSI1, NPTSI2 
@@ -4941,7 +4934,6 @@
          CALL XINT (V1X,V2X,DVX,RX,1.0,V1R4,DVR4,R4,1,NPTR4) 
          IF (IR4.EQ.0) VFX2 = V2R4+2.*DVX 
          IR4 = 1 
-         !print *,r4(1:100)
       ENDIF 
       CALL CPUTIM (TIME) 
       TXSPNL = TXSPNL+TIME-TIME0 

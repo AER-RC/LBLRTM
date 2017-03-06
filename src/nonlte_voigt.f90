@@ -770,8 +770,8 @@
 !     DIMENSION RR2 =  NBOUND/2 + 1 + DIM(R2)                           
 !     DIMENSION RR3 =  NBOUND/4 + 1 + DIM(R3)                           
 !                                                                       
-      COMMON RR1(6099),RR2(2075),RR3(429) 
-      COMMON /XRNLTE/ RR1s(-2043:4050),RR2s(-1023:1050),RR3s(-128:300) 
+      COMMON RR1(-8704:11169),RR2(-2560:3177),RR3(-1024:1179) 
+      COMMON /XRNLTE/ RR1s(-8704:11169),RR2s(-2560:3177),RR3s(-1024:1179) 
       COMMON /IOU/ IOUT(250) 
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NP,H1F,H2F,       &
@@ -846,7 +846,7 @@
      &            (IATM,FSCDID(15)) , (YI1,IOD) , (XID(1),FILHDR(1)),   &
      &            (V1P,IWD(1)) , (NPNLXP,LSTWDX),                       &
      &            (EPP(1),SRAD(1))                                      
-      EQUIVALENCE (R1(1), RR1(2049)),(R2(1),RR2(1025)),(R3(1),RR3(129)) 
+      EQUIVALENCE (R1(1), RR1(1)),(R2(1),RR2(1)),(R3(1),RR3(1)) 
 !                                                                       
 !                                                                       
 !     NOTE that DXFF1 = (HWFF1/(NFPTS-1))                               
@@ -919,8 +919,16 @@
       NSHIFT = 32 
 !                                                                       
 !     SAMPLE IS AVERAGE ALPHA / DV                                      
+! "*0.04/ALFAL0" is a temporary solution to keep ALFMAX to be close to the 
+! original default value. It may enlarge the ALFMAX in regions dominated
+! Doppler broadening where ALFAL0 is supposed to have no effect if user
+! sets ALFAL0 to a value less than 0.04.
+!    previous expression:  NBOUND = 4.*(2.*HWF3)*SAMPLE+0.01 
+!
+      ALFMAX = 4*SAMPLE*DV * 0.04/ALFAL0
+      nALFMAX = ALFMAX/DV
+      NBOUND = (2.*HWF3)*nALFMAX+0.01
 !                                                                       
-      NBOUND = 4.*(2.*HWF3)*SAMPLE+0.01 
       NLIM1 = 2401 
       NLIM2 = (NLIM1/4)+1 
       NLIM3 = (NLIM2/4)+1 
@@ -960,19 +968,26 @@
       DVP = DV 
       DVR2 = (DXF2/DXF1)*DV 
       DVR3 = (DXF3/DXF1)*DV 
-      MAX1 = NSHIFT+NLIM1+(NBOUND/2) 
+! previous code
+!      MAX1 = NSHIFT+NLIM1+(NBOUND/2) 
+!      MAX2 = MAX1/4 
+!      MAX3 = MAX1/16 
+!      MAX1 = MAX1+NSHIFT+1+16 
+!      MAX2 = MAX2+NSHIFT+1+4 
+!      MAX3 = MAX3+NSHIFT+1+1 
+      MAX1 = NSHIFT+NLIM1+NSHIFT+NBOUND/2
       MAX2 = MAX1/4 
       MAX3 = MAX1/16 
-      MAX1 = MAX1+NSHIFT+1+16 
-      MAX2 = MAX2+NSHIFT+1+4 
-      MAX3 = MAX3+NSHIFT+1+1 
+      MAX1 = MAX1 +  4*nALFMAX
+      MAX2 = MAX2 + 16*nALFMAX/4 + 1  !+1 to account for rounding error
+      MAX3 = MAX3 + 64*nALFMAX/16 + 1 !+1 to account for rounding error
 !                                                                       
 !     FOR CONSTANTS IN PROGRAM  MAX1=4018  MAX2=1029  MAX3=282          
 !                                                                       
       CALL CPUTIM(TPAT0) 
       BOUND =  REAL(NBOUND)*DV/2. 
       BOUNF3 = BOUND/2. 
-      ALFMAX = BOUND/HWF3 
+!      ALFMAX = BOUND/HWF3 
       NLO = NSHIFT+1 
       NHI = NLIM1+NSHIFT-1 
       DO 10 I = 1, MAX1 
@@ -1770,7 +1785,7 @@
 !                                                                       
       DIMENSION VNU(*),SP(*),SRAD(*),SPPSP(*),RECALF(*) 
       DIMENSION R1(*),R2(*),R3(*) 
-      DIMENSION RR1(-2043:4050),RR2(-1023:1050),RR3(-128:300) 
+      DIMENSION RR1(-8704:11169),RR2(-2560:3177),RR3(-1024:1179) 
 !      DIMENSION RR1(*),RR2(*),RR3(*)                                   
       DIMENSION IZETA(*),ZETAI(*) 
 !                                                                       
@@ -1985,7 +2000,7 @@
      &              NLTEFL,LNFIL4,LNGTH4                                
       COMMON /IODFLG/ DVOUT 
       DIMENSION R1(*),R2(*),R3(*) 
-      DIMENSION RR1(-2043:4050),RR2(-1023:1050),RR3(-128:300) 
+      DIMENSION RR1(-8704:11169),RR2(-2560:3177),RR3(-1024:1179) 
 !     DIMENSION RR1(*),RR2(*),RR3(*)                                    
       DIMENSION PNLHDR(2) 
 !                                                                       
@@ -2784,7 +2799,7 @@
          VI = V1R4+DVR4* REAL(NPTSI1-1) 
          RADVI = RADFNI(VI,DVR4,XKT,VITST,RDEL,RDLAST) 
 !                                                                       
-         NPTSI2 = (VITST-V1R4)/DVR4+1.001 
+         NPTSI2 = (VITST-V1R4)/DVR4+0.001 
          NPTSI2 = MIN(NPTSI2,NPTR4) 
 !                                                                       
          DO 50 I = NPTSI1, NPTSI2 

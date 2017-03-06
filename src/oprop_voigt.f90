@@ -90,7 +90,7 @@
 !     DIMENSION RR2 =  NBOUND/2 + 1 + DIM(R2)                           
 !     DIMENSION RR3 =  NBOUND/4 + 1 + DIM(R3)                           
 !                                                                       
-      COMMON RR1(6099),RR2(2075),RR3(429) 
+      COMMON RR1(-8704:11169),RR2(-2560:3177),RR3(-1024:1179) 
       COMMON /IOU/ IOUT(250) 
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NP,H1F,H2F,       &
@@ -165,7 +165,7 @@
      &            (IATM,FSCDID(15)) , (YI1,IOD) , (XID(1),FILHDR(1)),   &
      &            (V1P,IWD(1)) , (NPNLXP,LSTWDX),                       &
      &            (YID(10),LTNSAV, dv_lbl)                              
-      EQUIVALENCE (R1(1), RR1(2049)),(R2(1),RR2(1025)),(R3(1),RR3(129)) 
+      EQUIVALENCE (R1(1), RR1(1)),(R2(1),RR2(1)),(R3(1),RR3(1)) 
 !                                                                       
 !                                                                       
 !     NOTE that DXFF1 = (HWFF1/(NFPTS-1))                               
@@ -238,8 +238,16 @@
       NSHIFT = 32 
 !                                                                       
 !     SAMPLE IS AVERAGE ALPHA / DV                                      
+! "*0.04/ALFAL0" is a temporary solution to keep ALFMAX to be close to the 
+! original default value. It may enlarge the ALFMAX in regions dominated
+! Doppler broadening where ALFAL0 is supposed to have no effect if user
+! sets ALFAL0 to a value less than 0.04.
+!    previous expression:  NBOUND = 4.*(2.*HWF3)*SAMPLE+0.01 
+!
+      ALFMAX = 4*SAMPLE*DV * 0.04/ALFAL0
+      nALFMAX = ALFMAX/DV
+      NBOUND = (2.*HWF3)*nALFMAX+0.01
 !                                                                       
-      NBOUND = 4.*(2.*HWF3)*SAMPLE+0.01 
       NLIM1 = 2401 
       NLIM2 = (NLIM1/4)+1 
       NLIM3 = (NLIM2/4)+1 
@@ -279,19 +287,26 @@
       DVP = DV 
       DVR2 = (DXF2/DXF1)*DV 
       DVR3 = (DXF3/DXF1)*DV 
-      MAX1 = NSHIFT+NLIM1+(NBOUND/2) 
+! previous code
+!      MAX1 = NSHIFT+NLIM1+(NBOUND/2) 
+!      MAX2 = MAX1/4 
+!      MAX3 = MAX1/16 
+!      MAX1 = MAX1+NSHIFT+1+16 
+!      MAX2 = MAX2+NSHIFT+1+4 
+!      MAX3 = MAX3+NSHIFT+1+1 
+      MAX1 = NSHIFT+NLIM1+NSHIFT+NBOUND/2
       MAX2 = MAX1/4 
       MAX3 = MAX1/16 
-      MAX1 = MAX1+NSHIFT+1+16 
-      MAX2 = MAX2+NSHIFT+1+4 
-      MAX3 = MAX3+NSHIFT+1+1 
+      MAX1 = MAX1 +  4*nALFMAX
+      MAX2 = MAX2 + 16*nALFMAX/4 + 1  !+1 to account for rounding error
+      MAX3 = MAX3 + 64*nALFMAX/16 + 1 !+1 to account for rounding error
 !                                                                       
 !     FOR CONSTANTS IN PROGRAM  MAX1=4018  MAX2=1029  MAX3=282          
 !                                                                       
       CALL CPUTIM(TPAT0) 
       BOUND =  REAL(NBOUND)*DV/2. 
       BOUNF3 = BOUND/2. 
-      ALFMAX = BOUND/HWF3 
+!      ALFMAX = BOUND/HWF3 
       NLO = NSHIFT+1 
       NHI = NLIM1+NSHIFT-1 
       DO 10 I = 1, MAX1 
@@ -809,18 +824,27 @@
 !  MJA 20140909
 !  HITRAN provides widths for broadening by air; LBLRTM and MONORTM have always treated these widths as foreign
 !  This assumption is valid for most species, but not for N2 or O2. We now adjust the HITRAN widths to obtain
-!  true foreign widths.
+!  true foreign widths. Similar ajdustment is applied if self shift information is available.
           M = MOD(MOL(I),100)
           !WRITE(*,*) M
           if (M.eq.7 .AND. IFLG(i).ge.0) then
              !WRITE(*,*) M, ALFA0(i),HWHMS(i) 
              rvmr = 0.21
              ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
+             if (brd_mol_flg(m,i).gt.0) then 
+                pshift(i) = (pshift(i)-rvmr*brd_mol_shft(m,i))/(1.0-rvmr)
+             endif
              !WRITE(*,*) M, ALFA0(i),HWHMS(i)
          endif
          if (M.eq.22 .AND. IFLG(i).ge.0) then 
              rvmr = 0.79
              ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
+! Currently species-by-species broadening has only been coded for the first seven 
+! HITRAN species. When parameters becomes available for N2, the next three lines 
+! should be uncommented.
+             !if (brd_mol_flg(m,i).gt.0) then 
+             !   pshift(i) = (pshift(i)-rvmr*brd_mol_shft(m,i))/(1.0-rvmr)
+             !endif
          endif
                                                                         
    15    continue 
@@ -1593,10 +1617,12 @@
       COMMON /R1SAV/ R1OUT(2410) 
       COMMON /IODFLG/ DVOUT 
 !                                                                       
-!     SAVE statement to preserve value of NLIM1 when returning to       
+!     SAVE statement to preserve value of NLIM1 and V1PO when returning to       
 !     subroutine                                                        
 !                                                                       
       SAVE NLIM1 
+      SAVE V1PO_SAVE
+   
 !                                                                       
       DIMENSION A1(0:100),A2(0:100),A3(0:100),A4(0:100) 
       DIMENSION R1(*) 
@@ -1617,6 +1643,9 @@
 !                                                                       
 !     The value of DVOUT is carried from COMMON BLOCK /IODFLG/          
 !                                                                       
+      IF (V1PO_SAVE.NE.0.0) THEN 
+          V1PO = V1PO_SAVE
+      ENDIF
       NPNXPO = NPNLXP 
       DVPO = DVOUT 
       NPPANL = 1 
@@ -1779,7 +1808,7 @@
 !      CALL CPUTIM (TIME1)                                              
 !      TIM = TIME1-TIME                                                 
 !      WRITE (IPR,905) TIME1,TIM                                        
-!                                                                       
+      V1PO_SAVE = V1PO                                                                  
       RETURN 
 !                                                                       
 !  900 FORMAT ('0 THE TIME AT THE START OF PNLINT IS ',F12.3)           
@@ -2294,7 +2323,7 @@
 !                                                                       
       XVI = VI 
 !                                                                       
-!     IF FIRST CALL, INITIALIZE RDLAST                                  
+!     IF FIRST CALL, INITIALIZE RDLAST  (Compare to RADFN)                               
 !                                                                       
       IF (RDLAST.LT.0.) THEN 
          IF (XKT.GT.0.0) THEN 
@@ -2368,7 +2397,7 @@
             RDNEXT = XVINEW*XMINUSNEW/XPLUSNEW                                                                        
 !            RDNEXT = XVINEW*XMINUS/XPLUS 
 !                                                                       
-         ELSE 
+         ELSE !XVIOKT > 10.0, assume radiation term is just wavenumber
             IF (VINEW.GE.0.0) THEN 
                VINEW = VI+(FACT1*XVI) 
                INTVLS = (VINEW-VI)/DVI 
@@ -2383,7 +2412,7 @@
 !                                                                       
             RDNEXT = XVINEW 
          ENDIF 
-      ELSE 
+      ELSE !XKT < 0.0, assume radiation term is just wavenumber
          IF (VINEW.GE.0.0) THEN 
             VINEW = VI+(FACT1*XVI) 
             INTVLS = (VINEW-VI)/DVI 
@@ -3397,6 +3426,28 @@
             j = j+3
          end do
          bufr%speed_dep(i) = rdlnbuf%speed_dep(i)
+
+!  HITRAN provides widths for broadening by air; LBLRTM and MONORTM have always treated these widths as foreign
+!  This assumption is valid for most species, but not for N2 or O2. We now adjust the HITRAN widths to obtain
+!  true foreign widths. Similar ajdustment is applied if self shift information is available.
+          M = MOD(bufr%mol(I),100)
+          if (M.eq.7 .AND. bufr%IFLG(i).ge.0) then
+             rvmr = 0.21
+             bufr%ALFA(i) = ( bufr%ALFA(i)-rvmr*bufr%HWHM(i))/(1.0-rvmr)
+             if (bufr%brd_mol_flg(m,i) .gt. 0) then
+                bufr%pshift(i) = (bufr%pshift(i)-rvmr*bufr%brd_mol_shft(m,i))/(1.0-rvmr)
+             endif
+         endif
+         if (M.eq.22 .AND. bufr%IFLG(i).ge.0) then
+             rvmr = 0.79
+             bufr%ALFA(i) = ( bufr%ALFA(i)-rvmr*bufr%HWHM(i))/(1.0-rvmr)
+! Currently species-by-species broadening has only been coded for the first seven 
+! HITRAN species. When parameters becomes available for N2, the next three lines 
+! should be uncommented.
+!            if (bufr%brd_mol_flg(m,i) .gt. 0) then
+!               bufr%pshift(i) = (bufr%pshift(i)-rvmr*bufr%brd_mol_shft(m,i))/(1.0-rvmr)
+!            endif
+         endif
    15 continue 
 !                                                                       
       DO 20 J = 1, RDLNPNL%NREC 
@@ -3556,7 +3607,7 @@
 !
       type(LINE_SHRINK)  ::  LINE
 !      COMMON /BUF/  VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),         &
-!     &              MOL(1250),SPP(1250)                                
+!     &              MOL(1250),SPP(1250),SRAD(1250)                     
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     &
      &              DPTMIN,DPTFAC,ALTAV,AVTRAT,TDIFF1,TDIFF2,ALTD1,     &
@@ -3650,7 +3701,7 @@
          VI = V1R4+DVR4* REAL(NPTSI1-1) 
          RADVI = RADFNI(VI,DVR4,XKT,VITST,RDEL,RDLAST) 
 !                                                                       
-         NPTSI2 = (VITST-V1R4)/DVR4+1.001 
+         NPTSI2 = (VITST-V1R4)/DVR4+0.001 
          NPTSI2 = MIN(NPTSI2,NPTR4) 
 !                                                                       
          DO 50 I = NPTSI1, NPTSI2 
@@ -4424,7 +4475,7 @@
       COMMON VNU(250),SP(250),ALFA0(250),EPP(250),MOL(250),HWHMS(250),  &
      &       TMPALF(250),PSHIFT(250),IFLG(250),SPPSP(250),RECALF(250),  &
      &       ZETAI(250),IZETA(250)                                      
-      COMMON RR1(6099),RR2(2075),RR3(429) 
+      COMMON RR1(-8704:11169),RR2(-2560:3177),RR3(-1024:1179) 
       COMMON /IOU/ IOUT(250) 
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
@@ -4471,7 +4522,7 @@
       DIMENSION FILHDR(2) 
       LOGICAL OPCL 
 !                                                                       
-      EQUIVALENCE (R1(1),RR1(2049)),(R2(1),RR2(1025)),(R3(1),RR3(129)) 
+      EQUIVALENCE (R1(1), RR1(1)),(R2(1),RR2(1)),(R3(1),RR3(1)) 
       EQUIVALENCE (IHIRAC,FSCDID(1)) , (ILBLF4,FSCDID(2)),              &
      &            (IXSCNT,FSCDID(3)) , (IAERSL,FSCDID(4)),              &
      &            (JRAD,FSCDID(9)) , (IATM,FSCDID(15)),                 &
@@ -4810,7 +4861,7 @@
             VI = V1X+ REAL(NPTSI1-1)*DVX 
             RADVI = RADFNI(VI,DVX,XKT,VITST,RDEL,RDLAST) 
 !                                                                       
-            NPTSI2 = (VITST-V1X)/DVX+1.001 
+            NPTSI2 = (VITST-V1X)/DVX+0.001 
             NPTSI2 = MIN(NPTSI2,NPTSX) 
 !                                                                       
             DO 130 I = NPTSI1, NPTSI2 
