@@ -798,20 +798,26 @@
 !  MJA 20140909
 !  HITRAN provides widths for broadening by air; LBLRTM and MONORTM have always treated these widths as foreign
 !  This assumption is valid for most species, but not for N2 or O2. We now adjust the HITRAN widths to obtain
-!  true foreign widths.
+!  true foreign widths. Similar ajdustment is applied if self shift information is available.
           M = MOD(MOL(I),100)
           !WRITE(*,*) M
           if (M.eq.7 .AND. IFLG(i).ge.0) then
              !WRITE(*,*) M, ALFA0(i),HWHMS(i) 
              rvmr = 0.21
              ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
-             pshift(i) = (pshift(i)-rvmr*brd_mol_shft(m,i))/(1.0-rvmr)
+             if (brd_mol_flg(m,i).gt.0) then 
+                pshift(i) = (pshift(i)-rvmr*brd_mol_shft(m,i))/(1.0-rvmr)
+             endif
              !WRITE(*,*) M, ALFA0(i),HWHMS(i)
          endif
          if (M.eq.22 .AND. IFLG(i).ge.0) then 
              rvmr = 0.79
              ALFA0(i) = ( ALFA0(i)-rvmr*HWHMS(i))/(1.0-rvmr)
-             pshift(i) = (pshift(i)-rvmr*brd_mol_shft(m,i))/(1.0-rvmr)
+! Currently SBS broadening is only code for the first seven HITRAN species
+! When it becomes available for N2, the next three lines should become executable
+             !if (brd_mol_flg(m,i).gt.0) then 
+             !   pshift(i) = (pshift(i)-rvmr*brd_mol_shft(m,i))/(1.0-rvmr)
+             !endif
          endif
                                                                         
    15    continue 
@@ -1044,11 +1050,19 @@
 !                                                                       
 !     IFLAG = 3 TREATS LINE COUPLING IN TERMS OF REDUCED WIDTHS         
 !                                                                       
+         !print *,' '
+         !print '(f20.8,3f16.8)',vnu(i),alfa0(i),hwhms(i),tmpalf(i)
+         !print '(2f16.8)', pshift(i),brd_mol_shft(1,i)
+         !print '(a10,7i4)', 'brd_flg ',brd_mol_flg(:,i)
+         !print '(a12,7f14.6)', 'brd_mol_hw',brd_mol_hw(:,i)
+         !print '(a12,7f14.6)', 'brd_mol_shft',brd_mol_shft(:,i)
+         !print '(a12,7f14.6)', 'brd_mol_tmp',brd_mol_tmp(:,i)
          VNU(I) = VNU(I)+RHORAT*PSHIFT(I) 
          if(sum(brd_mol_flg(:,i)).gt.0.AND.ibrd.gt.0) then
             vnu(i) = vnu(i)+sum(rhoslf(1:mxbrdmol)*brd_mol_flg(:,i)* &
      &           (brd_mol_shft(:,i)-pshift(i)))
          endif
+         !print *,vnu(i)
 
 !                                                                       
 !     TEMPERATURE CORRECTION OF THE HALFWIDTH                           
@@ -3433,7 +3447,31 @@
             j = j+3
          end do
          bufr%speed_dep(i) = rdlnbuf%speed_dep(i)
+
+      !  MJA 20140909
+!  HITRAN provides widths for broadening by air; LBLRTM and MONORTM have always treated these widths as foreign
+!  This assumption is valid for most species, but not for N2 or O2. We now adjust the HITRAN widths to obtain
+!  true foreign widths. Similar ajdustment is applied is self shift information is available.
+          M = MOD(bufr%mol(I),100)
+          if (M.eq.7 .AND. bufr%IFLG(i).ge.0) then
+             rvmr = 0.21
+             bufr%ALFA(i) = ( bufr%ALFA(i)-rvmr*bufr%HWHM(i))/(1.0-rvmr)
+             if (bufr%brd_mol_flg(m,i) .gt. 0) then
+                bufr%pshift(i) = (bufr%pshift(i)-rvmr*bufr%brd_mol_shft(m,i))/(1.0-rvmr)
+             endif
+         endif
+         if (M.eq.22 .AND. bufr%IFLG(i).ge.0) then
+             rvmr = 0.79
+             bufr%ALFA(i) = ( bufr%ALFA(i)-rvmr*bufr%HWHM(i))/(1.0-rvmr)
+! Currently SBS broadening is only code for the first seven HITRAN species
+! When it becomes available for N2, the next three lines should become executable
+!            if (bufr%brd_mol_flg(m,i) .gt. 0) then
+!               bufr%pshift(i) = (bufr%pshift(i)-rvmr*bufr%brd_mol_shft(m,i))/(1.0-rvmr)
+!            endif
+         endif
    15 continue 
+
+
 !                                                                       
       DO 20 J = 1, RDLNPNL%NREC 
          IF (BUFR%IFLG(J).GE.0) THEN 
