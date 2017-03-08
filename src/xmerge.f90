@@ -4,7 +4,7 @@
 !     presently: %H%  %T%
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
+! |  Copyright Å©, Atmospheric and Environmental Research, Inc., 2015         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -128,7 +128,7 @@
             IF (IMRG.eq.36 .or. IMRG.eq.46) THEN 
                IF (LAYER.EQ.1) THEN 
                   TBND = TMPBND 
-                  CALL FLINIT (NPTS,MFILE,JPATHL,TBND) 
+                  CALL FLINIT (NPTS,MFILE,JPATHL,TBND, 1) 
                ELSE 
                   CALL FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND) 
                ENDIF 
@@ -249,9 +249,11 @@
       ELSE 
          IF (LAYER.EQ.LH1.AND.IANT.NE.-1) THEN 
             TBND = TMPBND 
-            CALL FLINIT (NPTS,MFILE,JPATHL,TBND) 
-         ELSE 
-            CALL FLUXDN (NPTS,LFILE,MFILE,JPATHL,TBND) 
+            CALL FLINIT (NPTS,MFILE,JPATHL,TBND,-1) 
+         elseif (layer.eq.1) then
+            CALL FLUXDN (NPTS,LFILE,MFILE,JPATHL,TBND,1) 
+         else
+            CALL FLUXDN (NPTS,LFILE,MFILE,JPATHL,TBND,-1) 
          ENDIF 
       ENDIF 
 !                                                                       
@@ -7499,7 +7501,7 @@
 !
 !     ----------------------------------------------------------------
 !
-      SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND)                          
+      SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND,refl_flg)                          
 !                                                                         
       USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V)                                      
@@ -7562,6 +7564,10 @@
 !                                                                         
       CHARACTER*40 CEXT,CYID                                              
 !                                                                         
+      integer refl_flg
+      real emdown(2*nlimo)
+      integer ifiledown
+
       REAL NEWEM,NEWTR                                                    
 !                                                                         
       DIMENSION XFILHD(2),OPNLHD(2)                                       
@@ -7607,7 +7613,15 @@
       SECNT = 1.0/DIRCOS                                                  
       SECANT = SECNT                                                      
       SECNT0 = SECNT                                                      
-      WRITE (IPR,910) DIRCOS                                              
+      WRITE (IPR,910) DIRCOS 
+
+      if (dircos .gt. 0.6) then
+         ifiledown = 601
+      elseif (dircos .gt. 0.3) then
+         ifiledown = 602
+      else
+         ifiledown = 603
+      endif
 !                                                                         
 !     IF BOUNDARY PROPERTIES ARE SUPPLIED, AND DOWNWARD LOOKING           
 !     CASE; SET IPATHL TO REFLECTED ATMOSPHERE CASE                       
@@ -7663,6 +7677,10 @@
          BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)                
          IEMBB = 0                                                        
          IF (VIDVBD.GT.VIDVEM) IEMBB = 1                                  
+
+         if (refl_flg .eq. 1) then
+            call bufin (ifiledown, keof, emdown, nlimo)
+         endif
 !                                                                         
    30    NLIM1 = NLIM2+1                                                  
 !                                                                         
@@ -7684,8 +7702,10 @@
          ENDIF
          NLIM2 = MIN(NLIM2,NLIMO)                                         
 !                                                                         
+!    Modified (2017) to properly handle downwelling reflected off surface
          DO 40 J = NLIM1, NLIM2                                           
-            NEWEM(J) = EMLAYR(J)+TRALYR(J)*BB*EMISIV                      
+            NEWEM(J) = EMLAYR(J) + TRALYR(J) *                            &
+     &             (BB*EMISIV + emdown(j)*(1.-emisiv))           
 !
 !           Increment interpolation values
 !
@@ -7702,6 +7722,10 @@
       TIME = TIME1-TIME                                                   
       WRITE (IPR,925) TIME,TIMEM                                          
 !                                                                         
+      if (refl_flg .eq. 1) then
+         close(ifiledown)
+      endif
+         
       RETURN                                                              
 !                                                                         
   900 FORMAT (' TIME AT THE START OF --FLINIT-- ',F10.3)                  
@@ -8088,7 +8112,7 @@
 !
 !     ----------------------------------------------------------------
 !
-      SUBROUTINE FLUXDN (NPTS,LFILE,MFILE,JPATHL,TBND)                    
+      SUBROUTINE FLUXDN (NPTS,LFILE,MFILE,JPATHL,TBND,refl_flg)                    
 !                                                                         
       USE phys_consts, ONLY: radcn2
       IMPLICIT REAL*8           (V)                                      
@@ -8148,8 +8172,11 @@
       DIMENSION A1(0:100),A2(0:100),A3(0:100),A4(0:100)                   
       DIMENSION RADO(2),TRAO(2)                                           
       DIMENSION WKSAV(35)                                                 
+      dimension raddown(2410)
 !                                                                         
       CHARACTER*40 CYID                                                   
+      integer refl_flg
+      integer ifiledown
 !                                                                         
       EQUIVALENCE (XFILHD(1),XID(1)) , (PNLHDR(1),V1P),                   &
      &            (OPNLHD(1),V1PO)                                        
@@ -8170,9 +8197,22 @@
       TIMRD = 0.0                                                         
       TIMTB = 0.0                                                         
       TIMOT = 0.0                                                         
+      jdownsum = 0
+      iend = 0
+      nlimlast = 0
 !                                                                         
       CALL BUFIN (LFILE,LEOF,XFILHD(1),NFHDRF)                            
-      SECNT = SECANT                                                      
+      SECNT = SECANT
+      dircos = 1./secnt
+      if (dircos .gt. 0.6) then
+         ifiledown = 601
+      elseif (dircos .gt. 0.3) then
+         ifiledown = 602
+      else
+         ifiledown = 603
+      endif
+
+                                                      
       DVL = DV                                                            
       LAY1SV = LAYR1                                                      
       PL = PAVE                                                           
@@ -8239,7 +8279,7 @@
    30    CONTINUE                                                         
          CALL CPUTIM (TIMEM1)                                             
          CALL FLXIN (V1P,V2P,DVP,NLIM,KFILE,RADLYR(1),TRALYR(1),KEOF,     &
-     &               NPANLS)                                              
+     &               NPANLS) 
          CALL CPUTIM (TIMEM2)                                             
          TIMEM = TIMEM+TIMEM2-TIMEM1                                      
          IF (KEOF.LE.0) GO TO 110                                         
@@ -8247,11 +8287,18 @@
          CALL BUFIN (LFILE,LEOF,RADO(1),NLIMO)                            
          CALL BUFIN (LFILE,LEOF,TRAO(1),NLIMO)                            
          CALL CPUTIM (TIMEM3)                                             
+
          TIMRD = TIMRD+TIMEM3-TIMEM2                                      
          DO 40 I = 1, NLIM                                                
             RADN(I) = RADO(I)*TRALYR(I)+RADLYR(I)                         
             TRAN(I) = TRALYR(I)*TRAO(I)                                   
    40    CONTINUE                                                         
+
+! Write out downwelling at surface for use by upwelling calculation.
+         if (refl_flg .eq. 1) then
+            call bufout (ifiledown,radn,nlim)
+         endif
+
          CALL CPUTIM (TIMEM1)                                             
          IF (TBND.GT.0.)                                                  &
      &        CALL EMBND (V1PO,V2PO,DVPO,NLIMO,RADN,TRAN,TBND)            
@@ -8304,15 +8351,22 @@
       TIMRD = TIMRD+TIMEM2-TIMEM1                                         
       II = 1                                                              
 !                                                                         
-      IF (V2P.LE.V2PO+DVP .AND. KEOF.GT.0) THEN                           
-   70    CALL CPUTIM (TIMEM2)                                             
-         CALL FLXIN (V1P,V2P,DVP,NLIM,KFILE,RADLYR(NPE+1),                &
+!      IF (V2P.LE.V2PO+DVP .AND. KEOF.GT.0) THEN                           
+      IF (V2P.LE.V2PO+DVP) then
+!         if (refl_flg .eq. 1.and.dvp.ne.0.0) then
+!            call bufout (ifiledown,raddown,nlim)
+!         endif
+         if (KEOF.GT.0) THEN 
+   70       CALL CPUTIM (TIMEM2)                                             
+            CALL FLXIN (V1P,V2P,DVP,NLIM,KFILE,RADLYR(NPE+1),              &
      &               TRALYR(NPE+1),KEOF,NPANLS)                           
-         CALL CPUTIM (TIMEM3)                                             
-         TIMEM = TIMEM+TIMEM3-TIMEM2                                      
-         IF (KEOF.LE.0) GO TO 80                                          
-         V1P = V1P- REAL(NPE)*DVP                                         
-         NPE = NLIM+NPE                                                   
+            CALL CPUTIM (TIMEM3)                                             
+            TIMEM = TIMEM+TIMEM3-TIMEM2                                      
+            IF (KEOF.LE.0) GO TO 80                                          
+            V1P = V1P- REAL(NPE)*DVP                                         
+
+            NPE = NLIM+NPE                                                   
+         endif
          IF (V2P.LE.V2PO+DVP) GO TO 70                                    
       ENDIF                                                               
 !                                                                         
@@ -8365,6 +8419,33 @@
      &              A4(JP)*RADLYR(JJ+2))                                  
 !                                                                         
          TRAN(II) = TRNLYR*TRAO(II)                                       
+
+! Write out downwelling at surface for use by upwelling calculation.
+         if (refl_flg.eq.1 .and.                                          &
+     &        jj .ne. int(FJ1DIF+RATDV*REAL(II-2))-2) then
+            if (iend.eq.0 .and. nlim.ne.2400) then
+               iend = 1
+               nlimlast = nlim
+            endif
+
+            jdownsum = jdownsum + 1
+            raddown(jdownsum)=radn(ii)
+
+            if (jdownsum .eq. 2400) then
+! Case where we are at the end of a coarse panel that is not the final panel
+               call bufout (ifiledown,raddown,jdownsum)
+               jdownsum = 0
+            elseif (nlim.ne.2400 .and. jdownsum.eq.nlimlast) then
+! Case where the last coarse panel point has been reached
+               call bufout (ifiledown,raddown,jdownsum)
+               jdownsum = 0
+            endif
+         elseif (jdownsum .eq. nlimlast-1 .and. ii .eq. nlimo) then
+! Use the final fine panel point to match the last coarse point
+            jdownsum = jdownsum + 1
+            raddown(jdownsum)=radn(ii)
+            call bufout (ifiledown,raddown,jdownsum)
+         endif
 !                                                                         
    90 CONTINUE                                                            
 !                                                                         
@@ -8394,6 +8475,7 @@
       GO TO 60                                                            
   110 CONTINUE                                                            
 !                                                                         
+      close(ifiledown)
       CALL CPUTIM (TIME1)                                                 
       TIM = TIME1-TIME                                                    
       WRITE (IPR,910) TIME1,TIM,TIMEM,TIMRD,TIMTB,TIMOT                   
