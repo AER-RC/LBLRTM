@@ -42,7 +42,8 @@ SRCPATH = ../src
 SRCS = lblrtm.f90 oprop_voigt.f90 contnm.f90 xmerge.f90 testmm.f90 \
 lblatm.f90 lbllow.f90 postsub.f90 pltlbl.f90 \
 lbldum.f90 solar.f90 nonlte_voigt.f90 fftscn$(FFTEXT).f90 $(UTIL_FILE) \
-phys_consts.f90 planet_earth.f90 lblparams.f90 struct_types.f90
+phys_consts.f90 planet_earth.f90 lblparams.f90 struct_types.f90 \
+solar_cycle.f90
 
 # Object file names
 OBJECTS = ${SRCS:.f90=.o}
@@ -69,7 +70,7 @@ $(OBJPATH)/pltlbl.o:	$(SRCPATH)/pltlbl.f90 phys_consts.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/lbldum.o:	$(SRCPATH)/lbldum.f90
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
-$(OBJPATH)/solar.o:	$(SRCPATH)/solar.f90 phys_consts.mod
+$(OBJPATH)/solar.o:	$(SRCPATH)/solar.f90 phys_consts.mod solar_cycle.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/nonlte_voigt.o:	$(SRCPATH)/nonlte_voigt.f90 phys_consts.mod struct_types.mod lblparams.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
@@ -87,6 +88,8 @@ planet_consts.mod:	$(SRCPATH)/planet_earth.f90
 	$(FC) -c $(FCFLAG) -I. $< -o $(OBJPATH)/planet_earth.o
 struct_types.mod:	$(SRCPATH)/struct_types.f90
 	$(FC) -c $(FCFLAG) $< -o $(OBJPATH)/struct_types.o
+solar_cycle.mod:        $(SRCPATH)/solar_cycle.f90
+	$(FC) -c $(FCFLAG) $< -o $(OBJPATH)/solar_cycle.o
 $(OBJPATH)/lblparams.o:	$(SRCPATH)/lblparams.f90
 	$(FC) -c $(FCFLAG) -I. $< -o $@
 $(OBJPATH)/phys_consts.o:	$(SRCPATH)/phys_consts.f90
@@ -95,6 +98,9 @@ $(OBJPATH)/planet_earth.o:	$(SRCPATH)/planet_earth.f90  phys_consts.mod
 	$(FC) -c $(FCFLAG) -I. $< -o $@
 $(OBJPATH)/struct_types.o:	$(SRCPATH)/struct_types.f90
 	$(FC) -c $(FCFLAG) -I. $< -o $@
+$(OBJPATH)/solar_cycle.o:       $(SRCPATH)/solar_cycle.f90
+	$(FC) -c $(FCFLAG) -I. $< -o $@
 
-build : $(OBJPATH)/lblrtm.o $(OBJPATH)/oprop_voigt.o $(OBJPATH)/contnm.o $(OBJPATH)/xmerge.o $(OBJPATH)/testmm.o $(OBJPATH)/lblatm.o $(OBJPATH)/lbllow.o $(OBJPATH)/postsub.o  $(OBJPATH)/pltlbl.o $(OBJPATH)/lbldum.o $(OBJPATH)/solar.o $(OBJPATH)/nonlte_voigt.o $(OBJPATH)/fftscn$(FFTEXT).o  $(OBJPATH)/$(UTIL_OBJ) $(OBJPATH)/phys_consts.o $(OBJPATH)/planet_earth.o $(OBJPATH)/lblparams.o $(OBJPATH)/struct_types.o
+
+build : $(OBJPATH)/lblrtm.o $(OBJPATH)/oprop_voigt.o $(OBJPATH)/contnm.o $(OBJPATH)/xmerge.o $(OBJPATH)/testmm.o $(OBJPATH)/lblatm.o $(OBJPATH)/lbllow.o $(OBJPATH)/postsub.o  $(OBJPATH)/pltlbl.o $(OBJPATH)/lbldum.o $(OBJPATH)/solar.o $(OBJPATH)/nonlte_voigt.o $(OBJPATH)/fftscn$(FFTEXT).o  $(OBJPATH)/$(UTIL_OBJ) $(OBJPATH)/phys_consts.o $(OBJPATH)/planet_earth.o $(OBJPATH)/lblparams.o $(OBJPATH)/struct_types.o $(OBJPATH)/solar_cycle.o
 	$(FC) $(FCFLAG) -o ../$(OUTPUT) $^
