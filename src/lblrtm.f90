@@ -762,8 +762,7 @@
          ENDIF 
          INFLAG = 0 
          IOTFLG = 0 
-         READ(IRD,1010) INFLAG,IOTFLG,JULDAT 
-         READ(IRD,1011) ISOLVAR,SCON,SOLCYCFRAC,SOLVAR
+         READ(IRD,1010) INFLAG,IOTFLG,JULDAT,ISOLVAR,SCON,SOLCYCFRAC,SOLVAR
          IF (INFLAG.EQ.1) THEN 
 !            IFILE = KFILE                                              
             IFILE = MFILE 
@@ -1183,8 +1182,7 @@
   995 FORMAT ('0 TIME  LEAVING LBLRTM ',F15.4,' TOTAL',F15.4) 
  1000 FORMAT ('0 Modules and versions used in this calculation:',/,/,   &
      &         7(5X,a18,2X,A18,10X, a18,2X,A18,/))                      
- 1010 FORMAT (2I5,2X,I3) 
- 1011 FORMAT (I5,f10.4,5x,f10.4,5x,2f10.5) 
+ 1010 FORMAT (2I5,2X,I3,I5,f10.4,5x,f10.4,5x,2f10.5) 
  1020 FORMAT (/,'  The continuum scale factors are as follows: ',       &
      &         /,5x,'H2O Self:    ',f10.3,                              &
      &         /,5x,'H2O Foreign: ',f10.3,                              &
