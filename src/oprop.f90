@@ -4280,7 +4280,8 @@
      &    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',       &
      &    'CFC13     ', 'CFC115    ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
-     &    'ACETONE   ', 21*' ZZZZZZZZ ' /                                
+     &    'ACETONE   ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CCL2FCH3  ',       &
+     &    'CH3CCLF2  ',   17*' ZZZZZZZZ ' /                                
       DATA (ALIAS(4,I),I=1,mx_xs)/                                      &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',       &
      &    'F11       ', 'F12       ', 'F114      ', 'F113      ',       &
