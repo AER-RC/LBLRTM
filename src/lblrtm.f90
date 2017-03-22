@@ -895,7 +895,9 @@
 !                                                                       
          READ (IRD,970,END=80,err=82) V1,V2,SAMPLE,DVSET,ALFAL0,AVMASS, &
          DPTMIN, DPTFAC,ILNFLG,DVOUT, nmol_scal,n_xs_scal               
-                                                                        
+         IF (ALFAL0.LE.0.) ALFAL0 = 0.04  
+         IF (SAMPLE.LE.0) SAMPLE = 4
+         IF (AVMASS.LE.0.) AVMASS = 36.0                                                                     
 !_______________________________________________________________________
 !     read information to scale the entire profile for indicated species
 !                                                                       
