@@ -7565,7 +7565,7 @@
       CHARACTER*40 CEXT,CYID                                              
 !                                                                         
       integer refl_flg
-      real emdown(2*nlimo)
+      real emdown(5000)
       integer ifiledown
 
       REAL NEWEM,NEWTR                                                    
