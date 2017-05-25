@@ -1004,7 +1004,7 @@
 !                                                                       
       DATA I_1/1/ 
 !                                                                       
-      DATA FACTOR / 0.003 / 
+      DATA FACTOR / 0.00003 / 
 !                                                                       
 !     if xkt small, e.g. xkt = 0., trap and return                      
                                                                         
