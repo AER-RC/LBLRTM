@@ -1,3 +1,48 @@
+LBLRTM v12.8
+August 2017
+
+* The continuum was updated to MT_CKD_3.2, which has new self continnum coeffients
+  in window regions for wavenumbers greater than 2000 cm-1 and updated self
+  continuum temperature dependence from 1800-3500 cm-1 (E.J. Mlawer, M.J. Alvarado)
+  K.E. Cady-Pereira)
+
+LBLRTM v12.7.1
+July 2017 (not publicly released)
+
+* The error tolerance in BBFN was reduced, making the Planck function evaluation
+  more accurate (E.J. Mlawer, K.E. Cady-Pereira)
+* The continuum was updated to MT_CKD_3.1, which includes collision-induced
+  absorption in the oxygen A-band (E.J. Mlawer, D. Gombos, V.H. Payne, B. Drouin,
+  K.E. Cady-Pereira)
+
+LBLRTM v12.7
+March 2017
+
+* The capability to handle solar variability as modeled by the NRLSSI2 model
+  has been added. (K.E. Cady-Pereira, E.J. Mlawer, M.J. Iacono)
+
+* Code to handle non-unity surface emissivity for flux calculations was 
+  implemented. Similar code was added to radsum. (E. J. Mlawer, X.Chen, X. Huang,
+  H. Cheng, M.J. Alvarado)
+
+* Fixed a bug in modules that calculate optical depths (e.g. oprop, nonlte) to 
+  allow the code to work properly when users input values of SAMPLE other than
+  the default. For the default value of SAMPLE=4, the optical depths of narrow 
+  lines can have an accuracy that is inferior to the stated accuracy of LBLRTM. 
+  This can manifest itself in a greater-than-expected dependence of the output 
+  values on the initial wavenumber (v1) input to the calculation. This issue can 
+  now be avoided by using a greater value for SAMPLE, such as 8 or 16 (max value 
+  allowed is 32). However, the computation time will be greater when SAMPLE is 
+  increased. (Y. Ma, E.J. Mlawer, M.J. Alvarado)
+
+* Fixed a bug related to the pressure shifts of oxygen and nitrogen lines when
+  additional broadening parameters are used. (K.E. Cady-Pereira, E.J. Mlawer,
+  M. J. Alvarado)
+
+* Fixed a minor indexing bug in the cross-section code. (E.J. Mlawer, Y. Ma,
+  M.J. Alvarado)
+
+
 LBLRTM v12.6
 November 2016
 
