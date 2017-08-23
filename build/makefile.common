@@ -283,8 +283,8 @@ osxINTELdbl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=intel \
 	PLTFRM=OS_X  \
 	FC=ifort \
-	FCFLAG="  -O3 -r8 -i8 "
-	UTIL_FILE = util_OS_X_ifort.f90
+	FCFLAG="  -O3 -r8 -i8 "\
+	UTIL_FILE =util_OS_X_ifort.f90
 
 
 ##############################################################
@@ -295,8 +295,8 @@ osxINTELsgl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=intel \
 	PLTFRM=OS_X \
 	FC=ifort \
-	FCFLAG=" -O3 "
-	UTIL_FILE = util_OS_X_ifort.f90
+	FCFLAG=" -O3 "\
+	UTIL_FILE =util_OS_X_ifort.f90
 
 
 ##############################################################
