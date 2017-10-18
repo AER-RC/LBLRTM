@@ -1065,24 +1065,27 @@
 !     Rayleigh scattering in the direct beam is only calculated for     
 !     model runs > 3100 cm-1.                                           
 !                                                                       
-         If ((iaersl.eq.0 .or. iaersl.eq.5).and. v2.ge.3100.            &
+         If ((iaersl.eq.0 .or. iaersl.eq.5).and. v2.ge.820.            &
      &       .and. xrayl.gt.0.) then                                    
 !                                                                       
 !        Thus the current formulation is                                
-                                                                        
             conv_cm2mol = xrayl*1.E-20/(2.68675e-1*1.e5)                
 !                                                                       
             do 95 i=1,nptabs                                            
                vrayleigh = v1abs+(i-1)*dvabs                            
                xvrayleigh = vrayleigh/1.e4                              
            ray_ext = (xvrayleigh**3/(9.38076E2-10.8426*xvrayleigh**2))  &
-     &                 *(wtot*conv_cm2mol)                              
+     &                 *(wtot*conv_cm2mol)
                                                                         
 !           Radiation field                                             
-                                                                        
-               IF (JRAD.EQ.1) ray_ext = ray_ext*xvrayleigh              
+            IF (JRAD.EQ.1) then
+              ray_ext = ray_ext*xvrayleigh
+            elseif (JRAD.eq. 0) then
+              ray_ext = ray_ext/1.e4
+            endif
                                                                         
             absrb(i) = absrb(i)+ray_ext                                 
+
    95    continue                                                       
 !                                                                       
       endif                                                             
