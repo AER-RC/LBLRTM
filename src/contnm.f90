@@ -1063,7 +1063,7 @@
 !     absorption by xvrayleigh.                                         
 !                                                                       
 !     Rayleigh scattering in the direct beam is only calculated for     
-!     model runs > 3100 cm-1.                                           
+!     model runs > 820 cm-1.                                           
 !                                                                       
          If ((iaersl.eq.0 .or. iaersl.eq.5).and. v2.ge.820.            &
      &       .and. xrayl.gt.0.) then                                    
