@@ -1055,12 +1055,12 @@
                XVIOKT + 8.)                                             
                DELTAV = SQRT(ABS(FACTOR*XDELT)) 
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2 
-               INTVLS = ((DELTAV)/DVI) + 1. 
+               INTVLS = ((DELTAV)/DVI) + 1.001 
                INTVLS = MAX(INTVLS,I_1) 
                VINEW = VI+DVI* REAL(INTVLS) 
             ELSE 
                VINEW = ABS(VINEW) 
-               INTVLS = ((VINEW-VI)/DVI) + 1. 
+               INTVLS = ((VINEW-VI)/DVI) + 1.001 
             ENDIF 
             XVINEW = VINEW 
 !                                                                       
@@ -1072,7 +1072,7 @@
                DELT2C = (1./GNU2)*(2.*BOX-FRONT*(1.+BOX-FRONT*EXPNEG)) 
                DELTAV = SQRT(ABS(FACTOR/DELT2C)) 
                IF (DELTAV .GT. DELTAV2) DELTAV = DELTAV2 
-               INTVLS = ((DELTAV)/DVI) + 1. 
+               INTVLS = ((DELTAV)/DVI) + 1.001 
                INTVLS = MAX(INTVLS,I_1) 
                VINEW = VI+DVI* REAL(INTVLS) 
             ELSE 
@@ -1089,7 +1089,7 @@
                   BBLAST = BBNEXT 
                   RETURN 
                ENDIF 
-               INTVLS = ((VINEW-VI)/DVI) + 1. 
+               INTVLS = ((VINEW-VI)/DVI) + 1.001
                INTVLS = MAX(INTVLS,I_1) 
             ENDIF 
             XVINEW = VINEW 
