@@ -7964,7 +7964,7 @@
 !                                                                       
       DATA DR/0.005/ 
 !                                                                       
-      IF (RANGEI .LT. DR) STOP'STOPPED IN FNDPTH' 
+      IF (RANGEI .LT. DR) STOP 'STOPPED IN FNDPTH' 
 !                                                                       
 !     (RANGEI .LT. DR) SHOULD NOT HAPPEN; SO THIS CHECK IS REDUNDANT.   
 !                                                                       
