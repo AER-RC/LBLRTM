@@ -24,14 +24,14 @@ MODULE solar_cycle   ! Constants needed to to scale Kurucz and NRLSSI2 extraterr
       real, parameter  :: scon_kurucz = 1368.22     ! W/m2
       !should be 1360.95
       real, parameter  :: scon_nrlssi2 = 1360.85     ! W/m2
-      real, parameter  :: solcyc_min = 0.026515
-      real, parameter  :: solcyc_max = 0.382576
+      real, parameter  :: solcyc_min = 0.01890       !Solar cycle fraction at solar minimum
+      real, parameter  :: solcyc_max = 0.3750        !Solar cycle fraction at solar maximum
 !                                                                       
 ! Mean quiet sun, facular brightening, and sunspot dimming coefficient terms (NRLSSI2, 100-50000 cm-1), 
 ! spectrally integrated from hi-res values 
       real, parameter :: Iint = 1360.375     ! Solar quiet term integrated
-      real, parameter :: Fint = 0.9901864    ! Solar facular brightening term (index-offset), integrated
-      real, parameter :: Sint = -0.5079809   ! Solar sunspot dimming term (index-offset), integrated
+      real, parameter :: Fint = 0.996047     ! Solar facular brightening term (index-offset), integrated
+      real, parameter :: Sint = -0.511590    ! Solar sunspot dimming term (index-offset), integrated
       real, parameter :: Foffset = 0.14959542    ! Solar facular offset
       real, parameter :: Soffset = 0.00066696    ! Solar sunspot offset
 

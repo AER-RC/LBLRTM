@@ -1269,7 +1269,7 @@
       if (isolvar.eq.1) then 
          indsolvar=solvar
 
-! Adjust amplitude scaling to be 1.0 at solar min to be the requested indsolvar at solar max,
+! Adjust amplitude scaling to be 1.0 at solar min,to be the requested indsolvar at solar max,
 !  and to vary between those values at other solcycfrac. 
          if (indsolvar(1).ne.1.0.or.indsolvar(2).ne.1.0) then
             if (solcycfrac.ge.0.0.and.solcycfrac.lt.solcyc_min) then
@@ -1289,17 +1289,20 @@
 !   Interpolate svar_f_0 and svar_s_0 from lookup tables using provided solar cycle fraction
 !   Lookup tables points are located at the middle of each month, except for first and last points,
 !   which correspond to the first and last days of the 11-year solar cycle.
+!   Initial half interval (1)
 	 if (solcycfrac .le. 0.0) then 
 	    tmp_f_0 = mgavgcyc(1)
 	    tmp_s_0 = sbavgcyc(1)
+!   Final half interval (1)
 	 elseif (solcycfrac .ge. 1.0) then 
 	    tmp_f_0 = mgavgcyc(nsolfrac)
 	    tmp_s_0 = sbavgcyc(nsolfrac)
+!   Main whole intervals (131)
 	 else
 	    nsfm1_inv = 1.0 / (nsolfrac-2)
             nsfm1_inv_2 = nsfm1_inv/2.0 
             if (solcycfrac.le.nsfm1_inv_2) then
-               isfid = 0
+               isfid = 1
                fraclo = 0.0
                frachi = nsfm1_inv_2
             elseif (solcycfrac.gt.(1.0-nsfm1_inv_2)) then
@@ -1307,7 +1310,7 @@
                fraclo = 1.0-nsfm1_inv_2
                frachi = 1.0 
             else
-	       isfid = floor((solcycfrac-nsfm1_inv_2) * (nsolfrac-3)) + 2
+	       isfid = floor((solcycfrac-nsfm1_inv_2) * (nsolfrac-2)) + 2
 	       fraclo = (isfid-2) * nsfm1_inv+nsfm1_inv_2
 	       frachi = (isfid-1) * nsfm1_inv+nsfm1_inv_2
             endif
