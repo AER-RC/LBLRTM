@@ -2076,9 +2076,9 @@
      &            (Y1D(8),LH2SAV)    , (Y1D(9),LH1SAV) ,                &
      &            (Y1D(10),LTNSAV, dv_lbl)                              
                                                                         
-      equivalence (FSCDI1(8),IPTHD1),(FSCDI1(17),NLAYD1),               &
-     &            (Y1D(10),LTNSAV, dv_lbl1) ,                           &
-     &            (Y1D(8),LH2SAV),  (Y1D(9),LH1SAV)                     
+      equivalence (FSCDI1(8),IPTHD1),(FSCDI1(17),NLAYD1)!,               &
+!     &            (Y1D(10),LTNSAV, dv_lbl1) ,                           &
+!     &            (Y1D(8),LH2SAV),  (Y1D(9),LH1SAV)                     
 !                                                                       
       DATA I_10/10/ 
       data h_blank /' '/ 
