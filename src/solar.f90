@@ -48,7 +48,9 @@
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 !                                                                       
       USE phys_consts, ONLY: pi, radcn2
-      PARAMETER (NSOL=2000001) 
+! mji - This array expanded to accommodate spectral extension to 86500 cm-1
+!      PARAMETER (NSOL=2000001) 
+      PARAMETER (NSOL=2700001) 
 !                                                                       
       IMPLICIT REAL*8           (V) 
 !                                                                       
