@@ -1,0 +1,233 @@
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/aer/!svn/ver/32418/project/RD/LBLRTM/trunk/src
+END
+util_dos.f90
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_dos.f90
+END
+fftscn.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/fftscn.f90
+END
+util_linux_intel.f90
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_linux_intel.f90
+END
+lblparams.inc
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aer/!svn/ver/26663/project/RD/LBLRTM/trunk/src/lblparams.inc
+END
+ncargks.f90
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/ncargks.f90
+END
+util_OS_X_g95.f90
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_OS_X_g95.f90
+END
+lbllow.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/lbllow.f90
+END
+contnm.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/32037/project/RD/LBLRTM/trunk/src/contnm.f90
+END
+util_sun.f90
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_sun.f90
+END
+util_hp.f90
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_hp.f90
+END
+planet_mars.f90
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/planet_mars.f90
+END
+planet_earth.f90
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/planet_earth.f90
+END
+nonlte_voigt.f90
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/aer/!svn/ver/31066/project/RD/LBLRTM/trunk/src/nonlte_voigt.f90
+END
+oprop_voigt.f90
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aer/!svn/ver/31066/project/RD/LBLRTM/trunk/src/oprop_voigt.f90
+END
+lblatm.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/32197/project/RD/LBLRTM/trunk/src/lblatm.f90
+END
+phys_consts.f90
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/phys_consts.f90
+END
+util_alpha.f90
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_alpha.f90
+END
+xmerge.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/32131/project/RD/LBLRTM/trunk/src/xmerge.f90
+END
+pltlbl.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/pltlbl.f90
+END
+util_cray.f90
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_cray.f90
+END
+util_linux_pgi.f90
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_linux_pgi.f90
+END
+lblrtm.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/32310/project/RD/LBLRTM/trunk/src/lblrtm.f90
+END
+util_OS_X_ibm_xl.f90
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_OS_X_ibm_xl.f90
+END
+solar_cycle.f90
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/aer/!svn/ver/32288/project/RD/LBLRTM/trunk/src/solar_cycle.f90
+END
+postsub.f90
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/postsub.f90
+END
+nonlte.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/31066/project/RD/LBLRTM/trunk/src/nonlte.f90
+END
+oprop.f90
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/aer/!svn/ver/31155/project/RD/LBLRTM/trunk/src/oprop.f90
+END
+util_OS_X_absoft.f90
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_OS_X_absoft.f90
+END
+fftscn_dbl.f90
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/fftscn_dbl.f90
+END
+util_OS_X_ifort.f90
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_OS_X_ifort.f90
+END
+struct_types.f90
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/struct_types.f90
+END
+testmm.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/testmm.f90
+END
+lblparams.f90
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aer/!svn/ver/27620/project/RD/LBLRTM/trunk/src/lblparams.f90
+END
+util_aix.f90
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_aix.f90
+END
+util_gfortran.f90
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_gfortran.f90
+END
+lbldum.f90
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/aer/!svn/ver/27087/project/RD/LBLRTM/trunk/src/lbldum.f90
+END
+util_sgi.f90
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/aer/!svn/ver/29563/project/RD/LBLRTM/trunk/src/util_sgi.f90
+END
+solar.f90
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/aer/!svn/ver/32418/project/RD/LBLRTM/trunk/src/solar.f90
+END

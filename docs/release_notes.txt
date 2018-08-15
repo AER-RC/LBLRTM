@@ -1,0 +1,614 @@
+LBLRTM v12.8
+August 2017
+
+* The continuum was updated to MT_CKD_3.2, which has new self continnum coeffients
+  in window regions for wavenumbers greater than 2000 cm-1 and updated self
+  continuum temperature dependence from 1800-3500 cm-1 (E.J. Mlawer, M.J. Alvarado)
+  K.E. Cady-Pereira)
+
+LBLRTM v12.7.1
+July 2017 (not publicly released)
+
+* The error tolerance in BBFN was reduced, making the Planck function evaluation
+  more accurate (E.J. Mlawer, K.E. Cady-Pereira)
+* The continuum was updated to MT_CKD_3.1, which includes collision-induced
+  absorption in the oxygen A-band (E.J. Mlawer, D. Gombos, V.H. Payne, B. Drouin,
+  K.E. Cady-Pereira)
+
+LBLRTM v12.7
+March 2017
+
+* The capability to handle solar variability as modeled by the NRLSSI2 model
+  has been added. (K.E. Cady-Pereira, E.J. Mlawer, M.J. Iacono)
+
+* Code to handle non-unity surface emissivity for flux calculations was 
+  implemented. Similar code was added to radsum. (E. J. Mlawer, X.Chen, X. Huang,
+  H. Cheng, M.J. Alvarado)
+
+* Fixed a bug in modules that calculate optical depths (e.g. oprop, nonlte) to 
+  allow the code to work properly when users input values of SAMPLE other than
+  the default. For the default value of SAMPLE=4, the optical depths of narrow 
+  lines can have an accuracy that is inferior to the stated accuracy of LBLRTM. 
+  This can manifest itself in a greater-than-expected dependence of the output 
+  values on the initial wavenumber (v1) input to the calculation. This issue can 
+  now be avoided by using a greater value for SAMPLE, such as 8 or 16 (max value 
+  allowed is 32). However, the computation time will be greater when SAMPLE is 
+  increased. (Y. Ma, E.J. Mlawer, M.J. Alvarado)
+
+* Fixed a bug related to the pressure shifts of oxygen and nitrogen lines when
+  additional broadening parameters are used. (K.E. Cady-Pereira, E.J. Mlawer,
+  M. J. Alvarado)
+
+* Fixed a minor indexing bug in the cross-section code. (E.J. Mlawer, Y. Ma,
+  M.J. Alvarado)
+
+
+LBLRTM v12.6
+November 2016
+
+* The continuum has been updated to MT_CKD v3.0, which included modifications
+  to the H2O foreign continuum from 0-600 cm-1 and the self continuum in the 
+  microwave that resulted from an analysis of measurements taken at the ARM
+  RHUBC-II campaign and a re-analysis of RHUBC-I measurements. (E.J. Mlawer, 
+  D.D. Turner, S.N. Paine, V.H. Payne)     
+
+                                          
+LBLRTM v12.5
+July 2016
+
+* The continuum has been updated to MT_CKD v2.8, which has modifications
+  to the H2O foreign continuum in all window regions > 1800 cm-1, the H2O
+  self continuum from 1880-2390 cm-1, and the efficiency of N2 collision-
+  induced absorption with respect to H2O from 2000-2900 cm-1. (E.J. Mlawer 
+  and M.J. Alvarado)
+
+* Saved a variable used by the output code to solve problems when code 
+  was compiled with ifort. (K.E. Cady-Pereira and S. DeSouza-Machado)
+
+
+LBLRTM v12.4
+February 2016
+
+* LBLRTM has been updated to accommodate all molecules and isotopologues 
+  in HITRAN 2012. This requires the use of LNFL v3.0 to prepare the input 
+  binary line file or TAPE3. (M. J. Alvarado, M. J. Iacono) 
+
+* LBLRTM now allows the use of gas-specific broadening parameters, such as 
+  CO2 broadened by H2O, when the IBRD flag is activated. This requires the use 
+  of LNFL v3.0 to prepare the input binary line file or TAPE3. 
+  (K. E. Cady-Pereira)
+
+* LBLRTM now allows for the input of isotopologue profiles; thus the
+  default HITRAN ratios are no longer the only option for users. 
+  (K. E. Cady-Pereira, M. J. Iacono)
+
+* The continuum has been updated to MT_CKD v2.7, including the addition of 
+  the first overtone of the N2 fundamental band. (E. J. Mlawer, D. Gombos)
+
+* Several new cross-section molecules have been added to LBLRTM, 
+  including isoprene. (K. E. Cady-Pereira, G. Uymin)
+
+* Fixed a bug in calculation of altitude when the user specifies an input 
+  profile on pressure levels. Now the hydrostatic equation is applied 
+  with no interpolation of the informational altitudes in the input profile. 
+  (K. E. Cady-Pereira, E. J. Mlawer, E. Morgan)
+
+* Fixed a bug in the calculation of the analytic Jacobians for temperature 
+  in the MT_CKD 2.7 continuum. (K. E. Cady-Pereira, E. J. Mlawer, C. Lampen)
+
+* Fixed a bug in the calculation of the O2 and N2 foreign widths from the 
+  HITRAN air widths. (K. E. Cady-Pereira, M. J. Alvarado, E. J. Mlawer).
+
+* Fixed a bug in the calculation of the radiation term near 1000 cm-1. 
+  (E.J. Mlawer, M. J. Alvarado, S. DeSouza-Machado)
+
+* Fixed several minor bugs in the PANEL and RADFNI subroutines that have 
+  negligible impacts on the model results. (Y. Ma, M. J. Alvarado, 
+  E. J. Mlawer) 
+ 
+
+LBLRTM v12.2
+Oct 2012
+
+* Please note that we no longer recommend the use of the LOWTRAN aerosol 
+  options in LBLRTM (IAERSL = 1 or 7), as they are severely out of date. 
+  We recommend using the spectral absorption by layer (IAERSL=5) option 
+  instead to model an absorber with slowly varying spectral dependence via 
+  the file 'in_lblrtm_cld'. This allows you to input spectrally dependent 
+  optical depths at each level. AER will not be providing debugging support 
+  for runs using LOWTRAN going forward.
+
+* Fixed bug in fftscn.f90 and fftscn_dbl.f90 for truncated Gaussian 
+  line shapes (JFN = -2, variable 'param' non-zero). In v12.1, the 
+  assumed definition of maximum optical path difference (max OPD) for 
+  this function was a factor of 2 off from how this parameter is defined 
+  for other FTS scan functions in LBLRTM. For example, to model the IASI 
+  line shape in LBLRTM v12.2, you should enter 1.968 cm for the maximum 
+  optical path difference (including field of view correction) in the TAPE5 
+  and set param to 0.25. Note that v12.1 would give identical results to v12.2 
+  if 3.936 cm is entered as the max OPD in v12.1. (M. J. Alvarado)
+
+* Fixed bug that prevented calculating analytic Jacobians for 
+  standard model atmospheres. (A. Merrelli, M. J. Alvarado)
+
+* Fixed variable initialization bugs in lblrtm.f90 and postsub.f90.
+  (E. Rusin, M. J. Alvarado)
+
+* New module (lblparams.f90) to define LBLRTM array dimensions 
+  in a single place in the code. (D. Weisenstein, M. J. Alvarado)
+
+* Increased use of structures (defined in struct_types.f90) in oprop.f90
+  and nonlte.f90. (D. Weisenstein)
+
+* Updated makefiles to automatically delete *.mod files before recompiling
+  and fixed flags for xlf90 compiler. (Bi YanMeng, M. J. Alvarado)
+
+* Downwelling Solar and Non-Local Thermodynamic Equilibrium (NLTE) examples
+  added to package. (M. J. Alvarado, K. E. Cady-Pereira)
+
+LBLRTM v12.1
+Oct 2011
+
+* .f files updated to .f90 (D. Weisenstein)
+
+* New modules to define physical constants in a single place in the code:
+  - phys_consts.f90 to define fundamental physical constants
+  - planet_earth.f90 to define Earth-related constants
+
+* lblatm.f90
+  - Corrected molecular weight for C2H4 (M. J. Alvarado, K. E. Cady-Pereira)
+
+* fftscn.f90 and fftscn_dbl.f90 (M. J. Alvarado)
+  - LPTFFT was increased by a factor of 4. This gives better 
+    accuracy for regions with large changes in radiance 
+    (e.g., CO2 nu3 bandhead region).
+  - When param keyword is non-zero for a Gaussian line shape 
+    (JFN = -2), truncate the Gaussian in the time domain based on 
+    the maximum optical path difference.
+
+* Fixed cross-section related bugs (V. H. Payne)
+  - Capitalization of CCLF3 in FSCDXS
+  - Corrected "C" spectral range for CLONO2 in FSCDXS and added the C range spectral
+    files to the xs_files directory
+  - Reverted to HITRAN 2000 data for CLONO2 to avoid issues with large number of xs
+    data points
+
+* Corrected various issues with variables that had not been properly initialized
+  (M. J. Alvarado)
+
+* Updated lblrtm instructions.
+
+LBLRTM v12.0
+Jan 2011
+
+* contnm.f (MT_CKD_2.5.2)
+  - Added ‘if’ tests needed for speed improvements in monortm (K. E. Cady-Pereira, E.J. Mlawer)
+
+  - Other software updates include:
+	* In N2 pure rotation band, fixed incorrect indexing related to contribution from N2-O2 
+	(E.J. Mlawer, A.E. Lipton, V.H. Payne)
+        * Increased number of output points in all continuum modules to prevent possible truncation at
+	high wavenumber end (E.J. Mlawer, S.A. Clough, C.H. Kohler)
+	* Near-IR O2 continuum modified to allow for calculations over domains greater than 2000 cm-1; 
+	needed by standalone continuum code (E.J. Mlawer, P. Hedelt)
+	* O2 fundamental modified to correct 5 cm-1 shift (E.J. Mlawer, S.A. Clough, C.H. Kohler)
+	* Rayleigh is now computed for IAERSL=5 (E.J. Mlawer, K.E. Cady-Pereira)
+
+    - Updated historical information (E.J. Mlawer, V.H. Payne)
+
+* Added new cross-sections to the archive [acetone (CH3COCH3), PAN, CH3CN].  
+  - The acetone data was derived by A. Waterfall (Thesis, 2003); PAN and CH3CN were obtained from HITRAN 2008.
+  - Documentation of cross-section data now provided.
+
+* lblatm.f
+  - Bugs introduced in v11.8.1 lblatm.f common block changes repaired.
+
+* Updates have been made to non-LTE subroutines and to TAPE4 (non-LTE input) format 
+  - A distinction between vibrational temperature profiles for minor isotopologues of a given 
+  molecule now enabled. (V. Payne and D. Weisenstein).
+  - An error has been fixed that led to small discrepancies between the TAPE5 temperature 
+  profile and the temperature profile for states in LTE when using IHIRAC=4 (D. Weisenstein).
+  - Bug fix related to compiler-dependent memory allocation and to starting-wavenumber dependent 
+  differences in the application of the radiation field within non-LTE calculations (D. Weisenstein,
+  M. Alvarado, E. Mlawer).
+
+* Simplified makefile system in the build directory; includes new platforms such as Windows and capability to easily add new platforms.
+
+* Updated lblrtm_instructions.
+
+LBLRTM v11.8.1 (AER internal release only)
+May 11, 2010
+
+1) lblatm.f
+
+   - Removed BTZ and RGAS variables, replaced with BOLTZ and GASCON from constant
+  data block in lblrtm.f
+
+  - Fixed bug in which if REF_LAT is 0.0 on the input file, it was reset to 45.  
+  Now using string read for ref_lat variable and converting afterwards.
+
+  - Revised gravity formulation to use "grav" constant rather
+  than hard-wired value of 9.80612 in the formula for g0.
+
+2) Added gravity, specific heat of air, molecular weight of air, sec/day to NIST data 
+block in rrtm.f; Updated NIST constants in lblrtm.f; Modified common blocks accordingly; 
+removed AIRMWT data statement from lblatm.f
+
+3) lbllow.f: removed AIRMWT data statement 
+
+LBLRTM_v11.8
+May 2010
+
+NOTE: In tagging v11.8, I did not check in the makefiles so the compile will still produce v11.7
+
+1) The non-LTE routines have been updated to read an updated TAPE4 input format. 
+   - The updated TAPE4 format puts the vibrational state information for each molecule 
+   into the TAPE4 with the vibrational temperature profiles. Previously, vibrational 
+   state information was hard-coded into the source code.  The updated TAPE4 format 
+   also specifies the isotopologue number associated with each vibrational state.
+
+   - Instruction manual was updated.
+
+LBLRTM_v11.7
+January 2010
+
+1) MT_CKD_2.5 continuum modifications included in this release are based on analyses of 
+IASI, AIRS, and AERI measurements in the region past the bandhead of the CO2 v3 band (~2385 cm-1):
+
+	- Introduction of temperature dependence of carbon dioxide continuum absorption 
+	from 2386-2434 cm-1 from IASI measurements (E.J. Mlawer and V.H. Payne)
+
+	- Modification of carbon dioxide continuum coefficients from 2000-3000 cm-1 from 
+	IASI and AERI (from ARM) measurements (E.J. Mlawer, V.H. Payne, and M.W. Shephard)
+
+	- Modification of water vapor self continuum coefficients from 2000-3200 cm-1 from 
+	IASI and AIRS measurements; fit based on near-IR studies of Bicknell et al. (2006) and 
+	Fulghum and Tilleman (1991) (E.J. Mlawer and V.H. Payne)
+
+
+LBLRTM_v11.6
+
+
+1) There were several analytic Jacobian related issues resolved in this release.
+
+-  Fixed an issue with TOA Jacobians producing NaN in the top layer. (S.A. Clough and Paolo Antonelli)
+
+-  Fixed a documentation error in the LBLRTM instructions. (K.E. Cady-Pereira)
+
+2) Fixed a coding error is the solar source function. (K.E. Cady-Pereria and S. Ferron)  
+
+3) Modified LBLRTM to handle underflow problem in convolution routine. (M.W. Shephard, S.A. Clough, G. Uymin)
+
+4) Modified the LBLRTM default option for zeroing very small atmospheric profile amounts. (S.A. Clough and Hal Woolf)
+
+5)  MT_CKD_2.2: Solved the issue of N2 Jacobians being included in the Jacobians generated for other molecules (S.A. Clough and M.W. Shephard) 
+
+6)  MT_CKD_2.3: Fixed an issue with the water vapor Jacobians in which the analytic Jacobians were dependent on the starting wavenumber. (K.E. Cady-Pereira and S. Tjemkes) 
+
+7)  MT_CKD_2.4:  Modifications to the water vapor continuum arise from new analyses of ARM measurements in the microwave and far-IR regions (S.A. Clough, J. Delamere, V.H. Payne, E.J. Mlawer)
+
+- Analyses of measurements in the microwave are based primarily on the two-channel
+MWR (23.8 and 31.4 GHz) at SGP, with supporting evidence from 150 GHz MWRHF measurements during the COPS campaign and from 170 GHz GVRP measurements at SGP (Payne et al.,
+2009). 
+
+- Measurements in the far-IR were from the AERI_ext at the NSA site, in the time surrounding and including the RHUBC-I campaign (Delamere et al., 2009).
+
+LBLRTM_v11.3
+
+1) Included NO2 as a cross-section in list of cross-section molecule aliases. 
+   Modified LBLRTM to include a default profile for NO2 when it is specified as a
+   cross-section.  The default profile is identical to that when an NO2 profile is
+   requested for use when NO2 lines are present. (J. Delamere, S.A. Clough)
+        
+2) Molecules number extended to include molecule # 39;  ch3oh
+   (S.A. Clough)
+        
+3) Fixed an error in the scaling option.
+   (J. Delamere, S.A. Clough) 
+
+4) Corrected and indexing issue in the N2 continuum that effected calculations below 
+   350 cm-1 (S.A. Clough, Bill Snow, Bob d'Entremont, M.W. Shephard)  
+
+
+LBLRTM_v11.1
+
+1) The continuum for co2 has been calculated using Niro et al. (2005) line coupling with a
+   factor of 0.75 applied to the nu_3 band.  This factor was chosen to get the best 
+   agreeement with airs test cases in the nu_3 spectral region.
+   (S.A. Clough, M.W. Shephard, V.H. Payne)
+
+2) The the value of chi for co2 set to 1. This has been made possible because the
+   apparent sub-lorentzian line shape at the nu_3 bandhead is now taken care of with 
+   Niro et al. (2005) line coupling.
+   (S.A. Clough, M.W. Shephard, V.H. Payne)
+
+Very Important: Since the CO2 continuum and the CHI factor depend on the line
+coupling, the line coupling must be used in the calculations in order to obtain accurate
+results.  Therefore, accompanying this LBLRTM release a new line file 
+containing Niro et al. (2005) line coupling parameters (aer_v_2.0) and corresponding 
+LNFL_v_2.4 program that converts the ascii line file into an input binary file for
+LBLRTM.  
+
+
+LBLRTM_v10.7
+
+1)  The option for reading spectral cloud optical depths has been changed:
+    IAERSL must now be set to 5 to invoke this option
+    (S.A. Clough)
+
+2) Modification was made so that the correct 'plotting' of transmittances from
+   optical depths occurs.
+   (S.A. Clough)
+
+3) Number of input levels (sonde levels) has been increased to 6000.
+   (S.A. Clough and J. Delamere)
+
+4) A test has been added for ikmax to provide a proper result for a horizontal (or single) layer with aerosols.
+   (S.A. Clough)
+
+5) Capability to scale cross section (xs) profiles has been added.
+   (S. A. Clough)
+
+6) Incorrect implementation of IMRG 40 and 41 (42 and 43) option  for Analytic Jacobians has been corrected.
+   (S. A. Clough)
+
+7) A change was made to enable execution with g95 in single and double precision.
+
+8) A change was made to enable the proper opening/closing of file. 
+   (M.W. Shephard, J. Gu, and D. Feldman) 
+
+9) Variable specifications were modified to be consistent within the module and to ensure proper performance with the single precision solar file for both single and double versions of lblrtm.
+   (S. A. Clough)
+
+LBLRTM_v10.3
+
+1) Treatment of mixing ratios has been made more consistent and the volume molar
+   density has been treated more precisely.  For example, the coding was modified 
+   to allow for variable mixing ratios of nitrogen and oxygen.  This is useful for
+   mixing ratios of nitrogen and oxygen different from earth values.
+   (S.A. Clough)
+
+2) Continuum module was also made more flexible for atmospheres that do not have
+   fixed nitrogen and oxygen values. (S.A. Clough)
+
+3) The nitrogen collision induced fundamental has been modified using data provided
+   by Walter Lafferty at NIST.  There is minimal change in the results from the previous implementation. 
+   (S.A. Clough, W. Lafferty, and E.J. Mlawer)
+
+4) Fixed an error in the coding of the subroutines that load the continuum coefficients into the arrays.  
+   Roundoff protection was not provided and in certain cases the loading of the array could be in error by one element.
+   (S.A. Clough)
+
+5) Fixed an associated with the new scaling capability has been found and fixed.
+   (S.A. Clough and M.W. Shephard)     
+   
+6) The role of IOD=3 has been made more general and more robust. (see instructions)
+   (K.E. Cady-Pereira and S.A. Clough)
+
+7) IMRG=10 is no longer an available option.  The same results can be obtained with IMRG=1.
+   (S.A. Clough and K.E. Cady-Pereira)
+
+LBLRTM_v10.1
+
+1) Modifed the program so that the layer optical depth calculation options
+   work as specified in the instructions and are consistent with versions previous to LBLRTM_v10.0.
+   (S.A. Clough and M.W. Shephard)
+
+Lblrtm_v10.0
+
+1) Modified the Analytic Jacobian calculations to be more efficient and accurate.
+   (S.A. Clough)
+
+2) Added the capability to scale the molecular profile values
+   (S.A. Clough)
+
+3) MT_CKD_v1.3 : Modified CO2 continuum based primarly on LBLRTM validations with SHIS/TES/AIRS observations
+   (M.W. Shephard)
+
+4) Correction for horizontal propagation with aerosols for any altitude above 1 m (0.001 km).
+   (T. Scharlemann and S.A. Clough)   
+
+5) Modified LBLRTM implementation of TIPS so that it can handle molecules with HITRAN
+   molecule numbers larger than 33.
+   (S.A. Clough and M.W. Shephard)
+
+6) Also, available for the LBLRTM calculations are additonal CO2 P/Q/R line coupling adapted
+   from Niro et al. (2005) for the CO2 v2 (600-800 cm-1). The line coupling
+   parameters are provide with the spectroscopic line parameters and in the LNFL
+   (www.rtweb.aer.com) example.  LNFL merges the line coupling parameters with a
+   spectroscopic line database to create input spectroscopic  
+   parameters for LBLRTM.
+   (M.W. Shephard and S.A. Clough)
+	 
+   F. Niro, K. Jucks, J.-M. Hartmann, Spectra calculations in
+          central and wing regions of CO2 IR bands. IV : Software and
+          database for the computation of atmospheric spectra, in
+          J Quant Spectrosc Radiat Transfer. Vol. 95, 2005, pp. 469-481
+
+
+Lblrtm_v9.4
+
+1) Fixed a minor bug in the hydrostatic calculation where a variable name was
+   mistyped.
+
+2) Modified the double precision f90 makefile for OS X.  
+
+
+LBLRTM_v9.3
+
+1) Fixed a minor bug in the analytic derivative computation.
+   (H. Snell)
+
+LBLRTM_v9.2
+
+1) A correction to the collision induced nitrogen absorption in the 0-350 cm-1 region
+   has been implemented.  The magnitude of the increase is ~35% from 0 to 250 cm-1.
+   (S.A. Clough and R. Tipping)
+
+LBLRTM_v9.1
+
+1)The foreign water vapor continuum has been modified in the 250 - 500 cm-1 region to 
+  provide improved agreement with AERI_extended_range measurements from SHEBA and 
+  North Slope of Alaska (NSA).  The consequence is that in this spectral region, 
+  the mt_ckd_1.1 foreign continuum provides results similar to those previously 
+  obtained with ckd_2.4.1 (S.A. Clough and J. Delamere).
+
+LBLRTM_v9.0
+
+1) Implementation of analytic Jacobians/derivatives in LBLRTM. This effort was supported 
+   by EUMETSAT and designed to require a minimal amount of setup on the part of 
+   the user while exploiting pre-existing LBLRTM calculation options.  Refer to user
+   instructions and additional documentation for more details.   
+   (H. Snell, M.W. Shephard, S.A. Clough, and S. Tjemkes)  
+
+LBLRTM_v8.4
+
+1) Minor bug fixs to the LOWTRAN7 routin in LBLRTM (lbllow.f) that
+   includes the moving of an ENDIF to the proper location and the
+   proper alignment of ZMDL and ALTZ arrays
+   (S.A. Clough and S. Shald)
+
+2) In the continuum module, the coding of the partial pressure of water vapor has
+   been simplified by introducing a varaiable h2o_frac.  The factor of 1.e-20 has
+   been removed from Wtot.  In conjunction with this, the factor of 1e-20 has been 
+   removed from the calculation of fractions for the other species, including the 
+   Rayleigh scattering section.
+   (S.A. Clough)
+
+3) The common blocks in several subroutines have been modified to eliminate compiler
+   Warning Messages
+   (S.A. Clough)
+
+4) Minor bug fix in postsub.f 
+   (S.A. Clough)
+
+5) Changes to xmerge.f to get it ready for analytic derivation implementation. 
+   (H. Snell)
+
+
+LBLRTM_v8.3
+
+1) Minor bug fix in SCNMRG subroutine.
+   (M.W. Shephard and J. Gu)
+
+LBLRTM_v8.2
+
+1) Minor bug fix to the LOWTRAN7 routine in LBLRTM (lbllow.f), which accounts
+   for clouds and aerosols.
+   (S.A. Clough)
+
+2) Added makefiles and utilities to run LBLRTM on LINUX INTEL.
+   (M.W. Shephard and H. Nair) 
+
+LBLRTM_v8.1
+
+
+1) The partition function routine has been changed to TIPS_2003
+    Fischer,J., R.R. Gamache, A. Goldman, L.S. Rothman and A. Perrin.
+    Total internal partition sums for molecular species in the 2000
+    edition of the HITRAN database, JQSRT 2003;82:401-412.
+    (S.A. Clough)
+
+2) The number of molecules that can be handled is 38, consistent with 
+   HITRAN 2000.
+   (S.A. Clough)
+
+3) The chi factor for carbon dioxide has been modified.  The chi factor is 
+   now computed in a separate subroutine.
+   (S.A. Clough)
+
+4) The cumulus cloud option is now working. 
+   (S.A. Clough and M.W. Shephard)
+
+5) The line coupling coefficients for the oxygen lines in the microwave 
+   region have been modified based on the data of Cimini et al. (2003).
+   (K. Cady-Pereira and S.A. Clough)
+
+6) The method of handling the temperature correction for transitions with  
+   unknown lower state energies has been modified.
+   (S.A. Clough and M.W. Shephard)
+
+7) The CO2 Mixing Ratio parameter read from TAPE5 (if non zero) prevails 
+   over all other input values.  This provides a ready means to globally 
+   change the carbon dioxide mixing ratio.
+   (S.A. Clough)
+
+8) Spectral range over which carbon dioxide continuum has been increased 
+   by a factor of 7.0 has been extended to 0-1200 cm-1.
+   (S.A. Clough)
+
+________________________________________________________
+
+
+LBLRTM_v7.04
+
+1) The interface between LBLRTM and LOWTRAN7 has been updated to 
+   run operationally (i.e. including aerosols and clouds).
+   (S.A. Clough, M.W. Shephard, and S. Tjemkes)
+
+2) To function more efficiently as a stand alone program the common
+   blocks in LBLATM has been made more consistent.
+   (S.A. Clough and D. Turner)
+
+
+LBLRTM_v7.03
+
+1) There was code implemented to report and skip over spectral lines that
+   cannot be handled properly by TIPS in LBLRTM.
+   (H. Snell and S.A. Clough)
+
+2) Pressures adjacent to 35 km in the built in US STD ATMOS was modified. 
+   (W.O. Gallery)
+
+
+LBLRTM_v7.01
+
+1) Completely new water vapor continuum model (0-20,000 cm-1):  MT_CKD_1.00
+    See the release notes for the MT_CKD continuum for further details.
+    (E.J. Mlawer, D.C Tobin and S.A. Clough)
+
+2) LBLRTM modified to read the single precision SOLAR.RAD file when
+    running LBLRTM in double precision (solar applications)
+    (S.A. Clough).
+
+3) Fixed a bug when using cross sections (XS directory) specified on
+    pressure levels when the first reference altitude is zero.
+    (M.W. Shephard)
+
+4) For LBLATM (IATM=1), volume mixing ratio values on TAPE6 (output) have
+    been changed from ppv to ppmv with the units indicated in the text.
+    This provides consistency with volume mixing ratio input for LBLATM (TAPE5).
+    Note that the vmr variables internal to the code are ppv.
+    (M.W. Shephard)
+
+5) Increased the maximum number of LBLATM input levels from 3400 to 4000 in
+    order to input full radiosonde profiles.
+    (M.W. Shephard)
+
+6) Increased the portability of LBLRTM by providing makefiles and utilities
+    to run LBLRTM on IBM (AIX) and on OS X (Mac).
+    (S.A. Clough, M.W. Shephard, P. VanDelst, A. Goldman)
+
+    Note: This version of LBLRTM has been executed on the following platforms:
+
+     System     Mfr.        Compiler       sgl       dbl
+                                         
+      IRIX      SGI                       f90,f77   f90,f77
+      SOLARIS   SUN                       f90,f77   f90,f77   
+      AIX       IBM                       f90       f90	
+      LINUX     ----         PGI          f90     **f90**
+      OS X      Apple        Absoft       f90       f90
+                             g77 (gnu)    g77      
+
+   Makefiles are included for the compilers appearing in bold in the above table.
+
+   **f90** for compiling LINUX in double precision, the script "linux_dbl_script"
+           must be executed which includes the appropriate makefile.
+
+   LBLRTM has previously been run by us on DEC alpha, Cray, MS_dos, and HP
+   platforms.  The associated utilities used are included in this release but are likely outdated.
+
+
+    
+
+

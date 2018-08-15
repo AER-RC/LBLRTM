@@ -1,0 +1,34 @@
+#     path:      $HeadURL: https://svn.aer.com/svn/aer/project/RD/LBLRTM/trunk/build/README.build_instructions $
+#     author:    $Author: dweisens $
+#     revision:  $Revision: 10663 $
+#     created:   $Date: 2011-10-13 19:00:53 -0400 (Thu, 13 Oct 2011) $
+
+* Makefiles are designed for use with gmake. 
+* From lblrtm/build directory, type: gmake -f make_lblrtm <TARGET>
+
+OPTION            DESCRIPTION                                                       COMPILE EXECUTABLE NAME
+aixIBMdbl         IBM/AIX OS using IBM fortran,double precision                     xlf90
+aixIBMsgl         IBM/AIX OS using IBM fortran,single precision                     xlf90
+linuxPGIdbl       Linux OS using PGI fortran,double precision                       pgf90
+linuxPGIsgl       Linux OS using PGI fortran,single precision                       pgf90
+linuxGNUdbl       Linux OS using GNU fortran,double precision                       gfortran
+linuxGNUsgl       Linux OS using GNU fortran,single precision                       gfortran
+linuxG95dbl       Linux OS using G95 fortran,double precision                       g95
+linuxG95sgl       Linux OS using G95 fortran,single precision                       g95
+linuxINTELdbl     Linux OS using Intel fortran,double precision                     ifort
+linuxINTELsgl     Linux OS using Intel fortran,single precision                     ifort
+mingwGNUdbl       Windows unix shell environment using gfortran,double precision    gfortran
+mingwGNUsgl       Windows unix shell environment using gfortran,single precision    gfortran
+osxABSOFTdbl      Mac OS_X using Absoft Pro fortran,double precision                f90
+osxABSOFTsgl      Mac OS_X using Absoft Pro fortran,singleprecision                 f90
+osxGNUdbl         Mac OS_X using GNU fortran,double precision                       gfortran
+osxGNUsgl         Mac OS_X using GNU fortran,singleprecision                        gfortran
+osxIBMdbl         Mac OS_X using IBM XL fortran,double precision                    xlf90
+osxIBMsgl         Mac OS_X using IBM XL fortran,singleprecision                     xlf90
+osxINTELdbl       Mac OS_X using Intel fortran,double precision                     ifort
+osxINTELsgl       Mac OS_X using Intel fortran,single precision                     ifort
+sunSUNdbl         Sun/Solaris OS using Sun fortran,double precision                 sunf90
+sunSUNsgl         Sun/Solaris OS using Sun fortran,single precision                 sunf90
+sgiMIPSdbl        SGI/IRIX64 OS using MIPS fortran,double precision                 f90
+sgiMIPSsgl        SGI/IRIX64 OS using MIPS fortran,single precision                 f90
+

@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/aer/!svn/ver/32045/project/RD/LBLRTM/trunk/build
+END
+README.build_instructions
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svn/aer/!svn/ver/10663/project/RD/LBLRTM/trunk/build/README.build_instructions
+END
+make_lblrtm_voigt
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/aer/!svn/ver/32045/project/RD/LBLRTM/trunk/build/make_lblrtm_voigt
+END
+makefile.common
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/aer/!svn/ver/31720/project/RD/LBLRTM/trunk/build/makefile.common
+END
+make_lblrtm
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/aer/!svn/ver/32045/project/RD/LBLRTM/trunk/build/make_lblrtm
+END
