@@ -4264,7 +4264,7 @@
      &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &
      &    'CH3CClF2  ', 'CHClF2    ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &
      &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ', 'ISOP      ',       &
-     &    'CHF3      ',  5*' ZZZZZZZZ ' /
+     &    'CHF3      ', 'BRO       ', 4*' ZZZZZZZZ ' /
       DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
      &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
      &    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',       &
@@ -4274,20 +4274,20 @@
      &    'HFC-143a  ', 'HFC-152a  ', 'HFC-32    ', 'HCFC-141b ',       &
      &    'HCFC-142b ', 'HCFC-22   ', 'HCFC-123  ', 'HCFC-124  ',       &
      &    'HCFC-225ca', 'HCFC-225cb', ' ZZZZZZZZ ', 'C5H8      ',       &
-     &    'HFC-23    ',   5*' ZZZZZZZZ ' /
+     &    'HFC-23    ', 'BRO       ',   4*' ZZZZZZZZ ' /
       DATA (ALIAS(3,I),I=1,mx_xs)/                                      &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
      &    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',       &
      &    'CFC13     ', 'CFC115    ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    'ACETONE   ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CCL2FCH3  ',       &
-     &    'CH3CCLF2  ',   17*' ZZZZZZZZ ' /                                
+     &    'CH3CCLF2  ', 'BRO       ',   16*' ZZZZZZZZ ' /                                
       DATA (ALIAS(4,I),I=1,mx_xs)/                                      &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',       &
      &    'F11       ', 'F12       ', 'F114      ', 'F113      ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F14       ', 'F22       ',       &
      &    'F13       ', 'F115      ',  ' ZZZZZZZZ ', ' ZZZZZZZZ ',      &
-     &    'CH3C(O)CH3', 21*' ZZZZZZZZ ' /                               
+     &    'CH3C(O)CH3', 'BRO       ', 20*' ZZZZZZZZ ' /                               
 !                                                                       
 !     XSMASS IS MASS OF EACH CROSS-SECTION                              
 !                                                                       
@@ -4302,7 +4302,7 @@
      &      84.04     ,   66.05     ,   52.02     ,  116.95     ,       &
      &     100.50     ,   86.47     ,  152.93     ,  136.48     ,       &
      &     202.94     ,  202.94     ,   64.06     ,   68.12     ,       &
-     &      70.01     ,  5*0.00 /
+     &      70.01     ,  95.903     ,  4*0.00 /
 !                                                                       
       DATA V1FX / 190*0.0 /,V2FX / 190*0.0 /,DVFX / 190*0.0 /,          &
      &     WXM / mx_xs*0.0 /                                            
