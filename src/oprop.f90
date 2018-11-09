@@ -4281,13 +4281,22 @@
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',       &
      &    'CFC13     ', 'CFC115    ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    'ACETONE   ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CCL2FCH3  ',       &
-     &    'CH3CCLF2  ', 'BRO       ',   16*' ZZZZZZZZ ' /                                
+     &    'CH3CCLF2  ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', 'BRO       ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', ' ZZZZZZZZ ' /
       DATA (ALIAS(4,I),I=1,mx_xs)/                                      &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',       &
      &    'F11       ', 'F12       ', 'F114      ', 'F113      ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F14       ', 'F22       ',       &
      &    'F13       ', 'F115      ',  ' ZZZZZZZZ ', ' ZZZZZZZZ ',      &
-     &    'CH3C(O)CH3', 'BRO       ', 20*' ZZZZZZZZ ' /                               
+     &    'CH3C(O)CH3', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', 'BRO       ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', ' ZZZZZZZZ ' /
 !                                                                       
 !     XSMASS IS MASS OF EACH CROSS-SECTION                              
 !                                                                       
