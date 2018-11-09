@@ -1,6 +1,6 @@
 !     path:      $HeadURL: https://svn.aer.com/svn/aer/project/RD/LBLRTM/trunk/src/lblatm.f90 $
-!     revision:  $Revision: 32197 $
-!     created:   $Date: 2018-01-19 13:30:32 -0500 (Fri, 19 Jan 2018) $  
+!     revision:  $Revision: 32600 $
+!     created:   $Date: 2018-11-09 13:08:18 -0500 (Fri, 09 Nov 2018) $  
 !     presently: %H%  %T%
 !
 !  --------------------------------------------------------------------------
@@ -163,7 +163,7 @@
 !                                                                       
 !     ASSIGN CVS VERSION NUMBER TO MODULE                               
 !                                                                       
-      HVRATM = '$Revision: 32197 $' 
+      HVRATM = '$Revision: 32600 $' 
 !                                                                       
 !     IBDIM IS THE MAXIMUM NUMBER OF LAYERS FOR OUTPUT TO LBLRTM        
 !     IOUTDM IS THE MAXIMUN NUMBER OF OUTPUT LAYERS                     
@@ -7763,10 +7763,19 @@
      &    1.412e-05,  1.408e-05,  1.404e-05,  1.401e-05,  1.398e-05,          &
       &     MXZ50*0.0/
 !                                                                       
-!     DATA AMOL34 / ?????? /                                            
+!     DATA AMOL34 / BrO /                                            
 !                                                                       
       DATA AMOL34 /                                                     &
-     &  50*-99.                                              ,          &
+     &    0.000e+00,  0.000e+00,  0.000e+00,  0.000e+00,  1.741e-11,          &
+     &    4.149e-11,  6.558e-11,  8.966e-11,  1.281e-10,  1.853e-10,          &
+     &    2.908e-10,  4.351e-10,  6.323e-10,  8.120e-10,  1.013e-09,          &
+     &    1.211e-09,  1.416e-09,  1.657e-09,  1.898e-09,  2.174e-09,          &
+     &    2.543e-09,  3.049e-09,  3.654e-09,  4.460e-09,  5.329e-09,          &
+     &    6.482e-09,  1.106e-08,  1.855e-08,  2.969e-08,  4.489e-08,          &
+     &    6.543e-08,  8.670e-08,  1.016e-07,  1.028e-07,  9.041e-08,          &
+     &    7.027e-08,  2.802e-08,  0.000e+00,  0.000e+00,  0.000e+00,          &
+     &    0.000e+00,  0.000e+00,  0.000e+00,  0.000e+00,  0.000e+00,          &
+     &    0.000e+00,  0.000e+00,  0.000e+00,  0.000e+00,  0.000e+00,          &
      &  MXZ50*0.0/                                                      
 !                                                                       
 !     DATA AMOL35 / ?????? /                                            
