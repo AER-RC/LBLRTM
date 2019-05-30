@@ -4280,7 +4280,7 @@
      &    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',       &
      &    'CFC13     ', 'CFC115    ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
-     &    'ACETONE   ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CCL2FCH3  ',       &
+     &    'ACETONE   ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    'CH3CCLF2  ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
