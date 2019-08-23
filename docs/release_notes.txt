@@ -1,3 +1,27 @@
+LBLRTM v12.10
+August 2019
+
+* Module oprop.f90 was revised to allow handling of the UV O2 lines (M.J. Iacono, E.J. Mlawer)
+
+* Updated to MT_CKD 3.3 (E.J. Mlawer)
+
+* Accommodated extension of solar irradiance to 86500 cm-1 (M.J. Iacono)
+
+* added BrO to cross-sections (K.E. Cady-Pereira, R.L. Pernak)
+
+* fixed aliases for cross sections HFC-134a and HFC-141b (K.E. Cady-Pereira, R.L. Pernak, E.J. Mlawer)
+
+* made small adjustments to solar variability code (M.J. Iacono, K.E. Cady-Pereira)
+
+* Added space after STOP in lblatm.f90 to prevent issues on some compilers (M.J. Alvarado, K.E. Cady-Pereira, D.D. Turner)
+
+LBLRTM v12.9
+December 2017 (not publicly released)
+
+* Small adjustment to BBFN() in xmerge.f90 to ensure correct rounding to integer (Y. Ma, M.J. Alvarado, E.J. Mlawer)
+ 
+* Set lower limit for Rayleigh to 820 cm-1 (K.E. Cady-Pereira, J.S. Delamere)
+
 LBLRTM v12.8
 August 2017
 
