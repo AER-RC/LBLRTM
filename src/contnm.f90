@@ -321,8 +321,8 @@
          sh2ot0 = 0.
          sh2ot1 = 0.
 !                                                                       
-            CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0)                        
-            CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1)                        
+            CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0,v1ss,v2ss)                        
+            CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1,v1ss,v2ss)                        
 !                                                                       
 !           Loop calculating self continuum optical depth               
 !                                                                       
@@ -382,8 +382,10 @@
 !                                                                       
 !           Interpolate to total optical depth grid                     
                                                                         
-            CALL XINT (V1C,V2C,DVC,cself,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)
-                                                                        
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,cself,1.0,V1ABS,DVABS,ABSRB,ist,last)    
+
          endif                                                          
 !                                                                       
 !=======================================================================
@@ -428,7 +430,7 @@
 !     coefficents.
                                                 
 !                                                                       
-            CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O)                         
+            CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O,v1ss,v2ss)                         
 !                                                                       
             DO 24 J = 1, NPTC                                           
                VJ = V1C+DVC* REAL(J-1)                                  
@@ -467,7 +469,9 @@
 !                                                                       
    24       CONTINUE                                                    
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
 !                                                                       
 !           ------------------------------------------------------------
 !                                                                       
@@ -477,7 +481,9 @@
                   c(j) =  cself(j)-cfrgn_aj(j)                          
                enddo                                                    
                                                                         
-               Call XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS) 
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
                                                                         
             endif                                                       
                                                                         
@@ -498,7 +504,7 @@
 !                                                                       
             WCO2 = WK(2) * RHOAVE * 1.0E-20 * xco2c                     
 !                                                                       
-            CALL FRNCO2 (V1C,V2C,DVC,NPTC,FCO2,tave)                    
+            CALL FRNCO2 (V1C,V2C,DVC,NPTC,FCO2,tave,v1ss,v2ss)                    
 !                                                                       
             DO 30 J = 1, NPTC                                           
                VJ = V1C+DVC* REAL(J-1)                                  
@@ -531,7 +537,9 @@
 !                                                                       
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
    30       CONTINUE                                                    
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
                                                                         
          endif                                                          
 !                                                                       
@@ -542,12 +550,12 @@
 !     region.                                                           
 !                                                                       
          IF (V2.GT.8920.0.AND.V1.LE.24665.0.and.xo3cn.gt.0.) THEN       
-            cch0 = 0.
-            cch1 = 0.
-            cch2 = 0.
+            cch0(:) = 0.
+            cch1(:) = 0.
+            cch2(:) = 0.
 
             WO3 = WK(3) * 1.0E-20 * xo3cn                               
-            CALL XO3CHP (V1C,V2C,DVC,NPTO3,CCH0,CCH1,CCH2)              
+            CALL XO3CHP (V1C,V2C,DVC,NPTO3,CCH0,CCH1,CCH2,v1ss,v2ss)              
 !                                                                       
             DT=TAVE-273.15                                              
 !                                                                       
@@ -556,17 +564,19 @@
                VJ = V1C+DVC* REAL(J-1)                                  
                IF (JRAD.EQ.1) CCH0(J) = CCH0(J)*RADFN(VJ,XKT)           
    50       CONTINUE                                                    
-            CALL XINT (V1C,V2C,DVC,CCH0,1.0,V1ABS,DVABS,ABSRB,1,NPTABS) 
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,CCH0,1.0,V1ABS,DVABS,ABSRB,ist,last)    
          ENDIF                                                          
 !                                                                       
          IF (V2.GT.27370..AND.V1.LT.40800. .and.xo3cn.gt.0.) THEN       
-            c0 = 0.
-            ct1 = 0.
-            ct2 = 0.
+            c0(:) = 0.
+            ct1(:) = 0.
+            ct2(:) = 0.
 
             WO3 = WK(3) * 1.E-20 * xo3cn                                
             TC = TAVE-273.15                                            
-            CALL O3HHT0 (V1C,V2C,DVC,NPTO3,C0)                          
+            CALL O3HHT0 (V1C,V2C,DVC,NPTO3,C0,v1ss,v2ss)                          
             CALL O3HHT1 (V1T1,V2T1,DVT1,NPT1,CT1)                       
             CALL O3HHT2 (V1T2,V2T2,DVT2,NPT2,CT2)                       
 !                                                                       
@@ -591,7 +601,9 @@
 !                                                                       
 !           Combine Hartley Huggins with previous optical depths        
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
 !                                                                       
 !           If V2 > 40800 cm-1, replace points with previously          
 !           saved values (non-Hartley Huggins contribution)             
@@ -606,10 +618,10 @@
 !        If V2 > 40800 cm-1, add UV Hartley Huggins contribution        
 !                                                                       
          IF (V2.GT.40800..AND.V1.LT.54000. .and.xo3cn.gt.0.) THEN       
-            c0 = 0.
+            c0(:) = 0.
 
             WO3 = WK(3) * xo3cn                                         
-            CALL O3HHUV (V1C,V2C,DVC,NPTO3,C0)                          
+            CALL O3HHUV (V1C,V2C,DVC,NPTO3,C0,v1ss,v2ss)                          
 !                                                                       
             DO 70 J = 1, NPTO3                                          
                C(J) = C0(J)*WO3                                         
@@ -630,7 +642,9 @@
 !                                                                       
 !           Combine UV Hartley Huggins with previous optical depths     
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
 !                                                                       
 !           If V1 < 40800 cm-1, replace points with previously          
 !           saved values (non-Hartley Huggins UV contribution)          
@@ -657,7 +671,7 @@
 !        Only calculate if V2 > 1340. cm-1 and V1 <  1850. cm-1         
                                                                         
          if ((V2.gt.1340.0).and.(V1.lt.1850.).and. xo2cn.gt.0.) then    
-            c0 = 0.
+            c0(:) = 0.
 !                                                                       
             tau_fac = xo2cn *  Wk(7) * 1.e-20 * amagat                  
 !                                                                       
@@ -666,7 +680,7 @@
 !                                                                       
 !           The temperature correction is done in the subroutine o2_ver_
 !                                                                       
-            call o2_ver_1 (v1c,v2c,dvc,nptc,c0,tave)                    
+            call o2_ver_1 (v1c,v2c,dvc,nptc,c0,tave,v1ss,v2ss)                    
 !                                                                       
 !           c0 are the oxygen absorption coefficients at temperature
 !           tave
@@ -687,7 +701,9 @@
 !                                                                       
    80       CONTINUE                                                    
                                                                         
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
          endif                                                          
                                                                         
 !        ********    O2 Collision Induced   ********                    
@@ -707,7 +723,7 @@
 !        Only calculate if V2 > 7536. cm-1 and V1 <  8500. cm-1         
 !                                                                       
          if ((V2.gt.7536.0).and.(V1.lt.8500.).and. xo2cn.gt.0.) then    
-            c0 = 0.
+            c0(:) = 0.
 !                                                                       
             a_o2  = 1./0.446                                            
             a_n2  = 0.3/0.446                                           
@@ -717,7 +733,7 @@
      &           (a_o2*x_vmr_o2+a_n2*x_vmr_n2+a_h2o*x_vmr_h2o)          
                                                                         
 !                                                                       
-            CALL O2INF1 (V1C,V2C,DVC,NPTC,C0)                           
+            CALL O2INF1 (V1C,V2C,DVC,NPTC,C0,v1ss,v2ss)                           
 !                                                                       
             DO 92 J = 1, NPTC                                           
                C(J) = tau_fac * C0(J)                                   
@@ -729,7 +745,9 @@
                                                                         
    92       CONTINUE                                                    
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
 !                                                                       
          endif                                                          
 !                                                                       
@@ -742,9 +760,9 @@
 !        Only calculate if V2 > 9100. cm-1 and V1 <  11000. cm-1        
 !                                                                       
          if ((V2.gt.9100.0).and.(V1.lt.11000.).and. xo2cn.gt.0.) then   
-            c0 = 0.
+            c0(:) = 0.
 !                                                                       
-            CALL O2INF2 (V1C,V2C,DVC,NPTC,C0)                           
+            CALL O2INF2 (V1C,V2C,DVC,NPTC,C0,v1ss,v2ss)                           
             WO2 = xo2cn * (WK(7)*1.e-20) * RHOAVE                       
             ADJWO2 = (WK(7)/WTOT) * (1./0.209) * WO2                    
 !                                                                       
@@ -758,7 +776,9 @@
 !                                                                       
    93       CONTINUE                                                    
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
 !                                                                       
          endif  
                                                         
@@ -771,12 +791,12 @@
 !        Only calculate if V2 > 12990.5 cm-1 and V1 < 13223.5 cm-1         
 !                                                                       
          if ((V2.gt.12990.5).and.(V1.lt.13223.5).and. xo2cn.gt.0.) then    
-            c0 = 0.
+            c0(:) = 0.
 !                                                                       
             tau_fac = xo2cn * (Wk(7)/xlosmt) * amagat 
 !                                                                        
 !                                                                       
-            CALL O2INF3 (V1C,V2C,DVC,NPTC,C0)                           
+            CALL O2INF3 (V1C,V2C,DVC,NPTC,C0,v1ss,v2ss)                           
 !                                                                       
             DO 94 J = 1, NPTC                                           
                C(J) = tau_fac * C0(J)                                   
@@ -787,7 +807,9 @@
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
    94       CONTINUE                                                    
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
 !                                                                       
          endif
                                                           
@@ -804,13 +826,13 @@
 !        Only calculate if V2 > 15000. cm-1 and V1 <  29870. cm-1       
 !                                                                       
          if ((V2.gt.15000.0).and.(V1.lt.29870.).and. xo2cn.gt.0.) then  
-            c0 = 0.
+            c0(:) = 0.
 !                                                                       
             WO2 = WK(7) * 1.e-20 * ((pave/1013.)*(273./tave)) * xo2cn   
             CHIO2 =  WK(7)/WTOT                                         
             ADJWO2 = chio2 * WO2                                        
 !                                                                       
-            CALL O2_vis (V1C,V2C,DVC,NPTC,C0)                           
+            CALL O2_vis (V1C,V2C,DVC,NPTC,C0,v1ss,v2ss)                           
 !                                                                       
             DO 96 J = 1, NPTC                                           
                C(J) = C0(J)*ADJWO2                                      
@@ -822,17 +844,19 @@
 !                                                                       
    96       CONTINUE                                                    
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
 !                                                                       
          endif                                                          
 !                                                                       
 !        Only calculate if V2 > 36000. cm-1                             
                                                                         
          if (V2.gt.36000.0 .and. xo2cn.gt.0.) then                      
-            c0 = 0.
+            c0(:) = 0.
             WO2 = WK(7) * 1.e-20 * xo2cn                                
 !                                                                       
-            CALL O2HERZ (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                 
+            CALL O2HERZ (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE,v1ss,v2ss)                 
             DO 90 J = 1, NPTC                                           
                C(J) = C0(J)*WO2                                         
                VJ = V1C+DVC* REAL(J-1)                                  
@@ -841,29 +865,33 @@
 !                                                                       
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
    90       CONTINUE                                                    
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
                                                                         
          endif                                                          
 !
 !  ******
 !        O2 in far-UV (large portion is referred to as Schumann-Runge continuum)
-!        Only calculate if V2 > 55000. cm-1.                             
+!        Only calculate if V2 > 56740. cm-1.                             
                                                                         
-         if (V2.gt.55000.0 .and. xo2cn.gt.0.) then                      
-            c0 = 0.
+         if (V2.gt.56740.0 .and. xo2cn.gt.0.) then                      
+            c0(:) = 0.
             WO2 = WK(7) * 1.e-20 * xo2cn                                
-            write(*,*)"o2 column amount",wk(7)
 !                                                                       
-            CALL O2FUV (V1C,V2C,DVC,NPTC,C0,TAVE,PAVE)                 
+            CALL O2FUV (V1C,V2C,DVC,NPTC,C0,v1ss,v2ss) 
             DO 97 J = 1, NPTC                                           
-               C(J) = C0(J)*WO2                                         
                VJ = V1C+DVC* REAL(J-1)                                  
+               C(J) = C0(J)*WO2                                         
 !                                                                       
 !              Radiation field                                          
 !                                                                       
-               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
-   97       CONTINUE                                                    
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+               IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)
+   97       CONTINUE   
+
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
                                                                         
          endif                                                          
 !                                                                       
@@ -894,8 +922,8 @@
 !        Only calculate if V2 > -10. cm-1 and V1 <  350. cm-1           
 !                                                                       
          if ((V2.gt.-10.0).and.(V1.lt.350.).and. xn2cn.gt.0.) then      
-            c0 = 0.
-            c1 = 0.
+            c0(:) = 0.
+            c1(:) = 0.
 !                                                                       
 !           The following puts WXN2 units in 1./(CM AMAGAT)             
 !                                                                       
@@ -908,7 +936,7 @@
 !                                                                       
             tau_fac =  xn2cn * (Wn2/xlosmt) * amagat                    
 !                                                                       
-            CALL xn2_r (V1C,V2C,DVC,NPTC,c0,c1,Tave)                    
+            CALL xn2_r (V1C,V2C,DVC,NPTC,c0,c1,Tave,v1ss,v2ss)                    
 !                                                                       
 !           c1 is  ~ the ratio of alpha(n2-o2)/alpha(n2-n2)             
 !           Eq's 7 and 8 in the Boissoles paper.                        
@@ -926,7 +954,9 @@
                                                                         
    40       CONTINUE                                                    
                                                                         
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
                                                                         
          endif                                                          
 !                                                                       
@@ -967,7 +997,7 @@
 !           adjustments for relative broadening efficiency are done in 
 !           subroutine n2_ver_1:                                
 !                                                                       
-            call n2_ver_1 (v1c,v2c,dvc,nptc,cn0,cn1,cn2,tave)                    
+            call n2_ver_1 (v1c,v2c,dvc,nptc,cn0,cn1,cn2,tave,v1ss,v2ss)                    
 !                                                                       
 !           cn0 are the nitrogen absorption coefficients at              
 !           temperature tave                                            
@@ -990,7 +1020,9 @@
                                                                         
    45       CONTINUE                                                    
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
                                                                         
          endif 
         
@@ -1006,7 +1038,7 @@
 !        Only calculate if V2 > 4340. cm-1 and V1 <  4910. cm-1.         
 !                                                                       
          if ((V2.gt.4340.0).and.(V1.lt.4910.).and. xn2cn.gt.0.) then    
-            c0 = 0.
+            c0(:) = 0.
 !                                                                       
 !        All species are assumed to have the same broadening efficiency.                                                            
 !           a_o2  represents the relative broadening efficiency of o2   
@@ -1027,7 +1059,7 @@
 !           The absorption coefficients are assumed to have no 
 !           temperature dependence. 
 !                                                                       
-            call n2_overtone1 (v1c,v2c,dvc,nptc,c0)                    
+            call n2_overtone1 (v1c,v2c,dvc,nptc,c0,v1ss,v2ss)                    
 !                                                                       
 !           c0 are the nitrogen absorption coefficients
 !              - these absorption coefficients are in units of          
@@ -1046,7 +1078,10 @@
                                                                         
    48       CONTINUE                                                    
 !                                                                       
-            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
+            call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)    
+!            CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,1,NPTABS)    
                                                                         
          endif                                                          
 !                                                                       
@@ -1125,6 +1160,27 @@
       END                                           
 !                                                                       
 !     --------------------------------------------------------------    
+
+      subroutine pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+!   Set up needed variables for call to XINT
+!   Output variables 
+!     v1abs_loc - wavenumber of first value to be processed in XINT
+!     nptabs_loc - number of values to be processed in XINT
+!     ist - index of first value to be processed in XINT
+
+        nbnd_v1c =  2 +  (v1ss-v1abs)/dvabs + 1.e-5
+        ist = max(1,nbnd_v1c)
+        v1abs_loc = v1abs + dvabs * float(ist-1)
+
+        nbnd_v2c = 1 + (v2ss-v1abs)/dvabs + 1.e-5
+        last = min(nptabs,nbnd_v2c)
+
+        return
+      end 
+
+!     --------------------------------------------------------------    
+
 !                                                                       
 !                                                                       
       SUBROUTINE PRCNTM 
@@ -1377,7 +1433,7 @@
       END                                                               
 !                                                                       
 !                                                                       
-      SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C)                             
+      SUBROUTINE SL296 (V1C,V2C,DVC,NPTC,C,v1ss,v2ss)                             
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V)                                     
@@ -1387,6 +1443,8 @@
       DIMENSION C(*)                                                    
 !                                                                       
       DVC = DVS                                                         
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC                                                   
       V2C = V2ABS+DVC                                                   
 !                                                                       
@@ -1884,7 +1942,7 @@
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE SL260 (V1C,V2C,DVC,NPTC,C) 
+      SUBROUTINE SL260 (V1C,V2C,DVC,NPTC,C,v1ss,v2ss) 
                                                                         
       Use lblparams, ONLY: n_absrb 
 !                                                                       
@@ -1895,6 +1953,8 @@
       DIMENSION C(*) 
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -2392,7 +2452,7 @@
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE FRN296 (V1C,V2C,DVC,NPTC,C) 
+      SUBROUTINE FRN296 (V1C,V2C,DVC,NPTC,C,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
@@ -2402,6 +2462,8 @@
       DIMENSION C(*) 
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -2900,7 +2962,7 @@
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE FRNCO2 (V1C,V2C,DVC,NPTC,C,tave) 
+      SUBROUTINE FRNCO2 (V1C,V2C,DVC,NPTC,C,tave,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
@@ -2926,6 +2988,8 @@
       trat = tave/t_eff 
                                                                         
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -4100,7 +4164,7 @@
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE xn2_r (V1C,V2C,DVC,NPTC,C,fo2,Tave) 
+      SUBROUTINE xn2_r (V1C,V2C,DVC,NPTC,C,fo2,Tave,v1ss,v2ss) 
 !                                                                       
 !     Model used:                                                       
 !      Borysow, A, and L. Frommhold, "Collision-induced                 
@@ -4133,6 +4197,8 @@
       tfac = (TAVE-T_296)/(T_220-T_296) 
                                                                         
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -4269,14 +4335,14 @@
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      subroutine n2_ver_1 (v1c,v2c,dvc,nptc,c,c1,c2,T) 
+      subroutine n2_ver_1 (v1c,v2c,dvc,nptc,c,c1,c2,T,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8 (v) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
 !                                                                       
-      COMMON /n2_f/V1S,V2S,DVS,NPTS,xn2_272(230),xn2_228(230),a_h2o(230)
+      COMMON /n2_f/V1S,V2S,DVS,NPTS,xn2_272(228),xn2_228(228),a_h2o(228)
 !                                                                       
       dimension c(*),c1(*),c2(*) 
 !                                                                       
@@ -4308,6 +4374,8 @@
 !     are for pure nitrogen (absorber and broadener)                    
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -4360,13 +4428,12 @@
       IMPLICIT REAL*8 (v) 
                                                                         
       COMMON /n2_f/ V1n2f,V2n2f,DVn2f,NPTn2f,                           &
-     &          xn2_272(230),xn2_228(230),a_h2o(230)                              
-!     &          xn2_272(179),xn2_228(179),a_h2o(179)                              
+     &          xn2_272(228),xn2_228(228),a_h2o(228)                              
                                                                         
       DATA V1n2f,V2n2f,DVn2f,NPTn2f                                     &
-     &     /1993.803434, 2905.558123, 3.981461525, 230/                 
+     &     /1997.784896, 2901.576661, 3.981461525, 228/                 
       DATA xn2_272/                                                     &
-     &      0.000E+00,  0.000E+00,                                      &
+     &      0.000E+00,                                                  &
      &      4.691E-11,  5.960E-11,  7.230E-11,  9.435E-11,  1.171E-10,  &
      &      1.472E-10,  1.874E-10,  2.276E-10,  2.960E-10,  3.671E-10,  &
      &      4.605E-10,  5.874E-10,  7.144E-10,  9.293E-10,  1.155E-09,  &
@@ -4412,10 +4479,10 @@
      &      1.994E-10,  1.825E-10,  1.676E-10,  1.527E-10,  1.406E-10,  &
      &      1.287E-10,  1.178E-10,  1.082E-10,  9.859E-11,  9.076E-11,  &
      &      8.305E-11,  7.599E-11,  6.981E-11,  6.363E-11,  5.857E-11,  &
-     &      5.362E-11,  0.000E+00,  0.000E+00/                                                                        
+     &      5.362E-11,  0.000E+00/                                                                        
                                                                                                                                                 
       DATA xn2_228/                                                     &
-     &      0.000E+00,  0.000E+00,                                      &
+     &      0.000E+00,                                                  &
      &      5.736E-11,  7.296E-11,  8.856E-11,  1.154E-10,  1.431E-10,  &
      &      1.799E-10,  2.291E-10,  2.783E-10,  3.623E-10,  4.497E-10,  &
      &      5.642E-10,  7.195E-10,  8.749E-10,  1.137E-09,  1.413E-09,  &
@@ -4461,10 +4528,10 @@
      &      6.298E-11,  5.695E-11,  5.172E-11,  4.650E-11,  4.237E-11,  &
      &      3.829E-11,  3.462E-11,  3.145E-11,  2.828E-11,  2.576E-11,  &
      &      2.329E-11,  2.104E-11,  1.912E-11,  1.720E-11,  1.566E-11,  &
-     &      1.416E-11,  0.000E+00,  0.000E+00/
+     &      1.416E-11,  0.000E+00/
 
       DATA a_h2o/                                                       &
-     &      200.00,  200.00,                                            &
+     &      200.00,                                                     &
      &      199.95,  179.14,  158.32,  143.10,  128.29,                 &
      &      115.21,  104.51,  93.816,  85.716,  77.876,                 &
      &      70.838,  65.017,  59.196,  54.652,  50.272,                 &
@@ -4510,20 +4577,20 @@
      &      494.70,  513.92,  534.12,  554.33,  576.47,                 &
      &      598.70,  621.92,  646.40,  670.87,  697.63,                 &
      &      724.56,  752.63,  782.27,  811.91,  844.26,                 &
-     &      876.88,  876.88,  876.88/
+     &      876.88,  876.88/
                                                                         
       END                                           
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      subroutine n2_overtone1 (v1c,v2c,dvc,nptc,c) 
+      subroutine n2_overtone1 (v1c,v2c,dvc,nptc,c,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8 (v) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
 !                                                                       
-      COMMON /n2_f1/ V1S,V2S,DVS,NPTS,xn2(201)
+      COMMON /n2_f1/ V1S,V2S,DVS,NPTS,xn2(191)
 !                                                                       
       dimension c(*) 
 !                                                                       
@@ -4535,6 +4602,8 @@
 !     broadener.
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -4572,12 +4641,11 @@
                                                                         
       IMPLICIT REAL*8 (v) 
                                                                         
-      COMMON /n2_f1/ V1n2f,V2n2f,DVn2f,NPTn2f,xn2(201)                               
+      COMMON /n2_f1/ V1n2f,V2n2f,DVn2f,NPTn2f,xn2(191)                               
                                                                         
       DATA V1n2f,V2n2f,DVn2f,NPTn2f                                     &
-     &     /4325.0, 4925.0, 3.0, 201/                 
-      DATA xn2/                                                     &
-     &      0.000E+00, 0.000E+00, 0.000E+00, 0.000E+00, 0.000E+00, &
+     &     /4340.0, 4910.0, 3.0, 191/                 
+      DATA xn2/                                                    &
      &      0.000E+00, 3.709E-11, 7.418E-11, 1.113E-10, 1.484E-10, &
      &      1.843E-10, 2.163E-10, 2.482E-10, 2.802E-10, 3.122E-10, &
      &      3.442E-10, 3.640E-10, 3.776E-10, 3.912E-10, 4.048E-10, &
@@ -4616,13 +4684,12 @@
      &      3.770E-10, 3.504E-10, 3.238E-10, 2.972E-10, 2.706E-10, &
      &      2.409E-10, 2.099E-10, 1.788E-10, 1.478E-10, 1.225E-10, &
      &      1.021E-10, 8.165E-11, 6.123E-11, 4.082E-11, 2.041E-11, &
-     &      0.000E+00, 0.000E+00, 0.000E+00, 0.000E+00, 0.000E+00, &
      &      0.000E+00/                                                                        
       END                                           
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE XO3CHP (V1C,V2C,DVC,NPTC,C0,C1,C2) 
+      SUBROUTINE XO3CHP (V1C,V2C,DVC,NPTC,C0,C1,C2,v1ss,v2ss) 
                                                                         
       Use lblparams, ONLY: n_absrb 
 !                                                                       
@@ -4633,6 +4700,8 @@
       DIMENSION C0(*),C1(*),C2(*) 
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -6785,7 +6854,7 @@
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE O3HHT0 (V1C,V2C,DVC,NPTC,C) 
+      SUBROUTINE O3HHT0 (V1C,V2C,DVC,NPTC,C,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
@@ -6795,6 +6864,8 @@
       DIMENSION C(*) 
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -8759,7 +8830,7 @@
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE O3HHUV (V1C,V2C,DVC,NPTC,C) 
+      SUBROUTINE O3HHUV (V1C,V2C,DVC,NPTC,C,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
@@ -8769,6 +8840,8 @@
       DIMENSION C(*) 
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -8848,7 +8921,7 @@
 !                                                                       
 !     --------------------------------------------------------------    
                                                                         
-      subroutine o2_ver_1 (v1c,v2c,dvc,nptc,c,T) 
+      subroutine o2_ver_1 (v1c,v2c,dvc,nptc,c,T,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8 (v) 
@@ -8881,6 +8954,8 @@
 !     column amount.
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
@@ -8976,7 +9051,7 @@
                                                                         
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE O2INF1 (V1C,V2C,DVC,NPTC,C) 
+      SUBROUTINE O2INF1 (V1C,V2C,DVC,NPTC,C,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
@@ -9001,6 +9076,8 @@
 !   ***********                                                         
                                                                         
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
 !                                                                       
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
@@ -9154,7 +9231,7 @@
                                                                         
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE O2INF2 (V1C,V2C,DVC,NPTC,C) 
+      SUBROUTINE O2INF2 (V1C,V2C,DVC,NPTC,C,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
@@ -9169,6 +9246,8 @@
       v2s = 11000. 
       DVS = 2. 
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
 !                                                                       
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
@@ -9207,7 +9286,7 @@
       END                                           
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE O2INF3 (V1C,V2C,DVC,NPTC,C) 
+      SUBROUTINE O2INF3 (V1C,V2C,DVC,NPTC,C,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
@@ -9215,16 +9294,18 @@
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       DIMENSION C(*) 
                                                                         
-      COMMON /o2inf3_aband/ V1S,V2S,DVS,NPTS,xo2inf3(234) 
+      COMMON /o2inf3_aband/ V1S,V2S,DVS,NPTS,xo2inf3(229) 
                                                                         
 !                                                                       
 !        O2 A-band continuum formulated by Mlawer and Gombos based on
 !        solar FTS measurements (TCCON at SGP).  Spectral range is 
-!        12990.5 - 13223.5 cm-1.
+!        12992.5 - 13220.5 cm-1.
 !         
 !   ***********                                                         
                                                                         
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
 !                                                                       
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
@@ -9258,12 +9339,12 @@
                                                                         
       IMPLICIT REAL*8 (V) 
                                                                         
-      COMMON /o2inf3_aband/ V1,V2,DV,NPT,x02inf3(234)                                    
+      COMMON /o2inf3_aband/ V1,V2,DV,NPT,x02inf3(229)                                    
                                                                         
-      DATA V1,V2,DV,NPT /12990.5, 13223.5, 1.0, 234/ 
+      DATA V1,V2,DV,NPT /12992.5, 13220.5, 1.0, 229/ 
 
       DATA x02inf3/                                                     &
-     &      0.000E+00,  0.000E+00,  0.000E+00,  1.000E-10,  2.000E-10,  &
+     &      0.000E+00,  1.000E-10,  2.000E-10,                          &
      &      3.040E-10,  3.570E-10,  4.200E-10,  4.950E-10,  5.820E-10,  &
      &      6.857E-10,  8.143E-10,  9.429E-10,  1.071E-09,  1.200E-09,  &
      &      1.329E-09,  1.457E-09,  1.586E-09,  1.714E-09,  1.843E-09,  &
@@ -9309,19 +9390,20 @@
      &      5.367E-09,  4.857E-09,  4.350E-09,  3.976E-09,  3.598E-09,  &
      &      3.255E-09,  2.946E-09,  2.665E-09,  2.350E-09,  2.000E-09,  &
      &      1.670E-09,  1.330E-09,  1.000E-09,  6.600E-10,  3.000E-10,  &
-     &      0.000E+00,  0.000E+00,  0.000E+00,  0.000E+00/                                                                                      
+     &      0.000E+00/                                                                                      
+
       END                                           
                                                                                                                                                 
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE O2_vis (V1C,V2C,DVC,NPTC,C) 
+      SUBROUTINE O2_vis (V1C,V2C,DVC,NPTC,C,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       DIMENSION C(*) 
-      COMMON /o2_o2_vis/ V1s,V2s,DVs,NPTs, s(1488) 
+      COMMON /o2_o2_vis/ V1s,V2s,DVs,NPTs, s(1474) 
                                                                         
       DATA XLOSMT / 2.68675E+19 / 
 !                                                                       
@@ -9341,6 +9423,8 @@
       factor = 1./((xlosmt*1.e-20*(55.*273./296.)**2)*89.5) 
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
 !                                                                       
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
@@ -9378,7 +9462,7 @@
       IMPLICIT REAL*8 (V) 
                                                                         
       COMMON /o2_o2_vis/ V1,V2,DV,NPT,                                  &
-     &  o2vis0001(50),o2vis0051(50),o2vis0101(50),o2vis0151(50),        &
+     &  o2vis0001(36),o2vis0051(50),o2vis0101(50),o2vis0151(50),        &
      &  o2vis0201(50),o2vis0251(50),o2vis0301(50),o2vis0351(50),        &
      &  o2vis0401(50),o2vis0451(50),o2vis0501(50),o2vis0551(50),        &
      &  o2vis0601(50),o2vis0651(50),o2vis0701(50),o2vis0751(50),        &
@@ -9387,12 +9471,10 @@
      &  o2vis1201(50),o2vis1251(50),o2vis1301(50),o2vis1351(50),        &
      &  o2vis1401(50),o2vis1451(38)                                     
                                                                         
-      DATA V1,V2,DV,NPT /15000.0, 29870.0, 10.0,  1488/ 
+      DATA V1,V2,DV,NPT /15140.0, 29870.0, 10.0,  1474/ 
                                                                         
       DATA o2vis0001/                                                   &
-     &      0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   &
-     &      0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   &
-     &      0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   &
+     &      0.00E+00,                                                   &
      &      1.00E-03,   1.00E-03,   1.00E-03,   1.00E-03,   1.00E-03,   &
      &      1.00E-03,   1.00E-03,   1.00E-03,   1.00E-03,   0.00E+00,   &
      &      0.00E+00,   0.00E+00,   6.06E-04,   1.00E-03,   1.00E-03,   &
@@ -9722,7 +9804,7 @@
                                                                         
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE O2HERZ (V1C,V2C,DVC,NPTC,C,T,P) 
+      SUBROUTINE O2HERZ (V1C,V2C,DVC,NPTC,C,T,P,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
@@ -9731,6 +9813,9 @@
       DIMENSION C(*) 
 !                                                                       
       V1S = 36000. 
+      v1ss = V1S
+      v2ss = 99999.
+
       DVS = 10. 
       DVC = DVS 
 !                                                                       
@@ -9863,43 +9948,45 @@
 !                                                                       
 !     --------------------------------------------------------------    
 !                                                                       
-      SUBROUTINE O2FUV (V1C,V2C,DVC,NPTC,C) 
+      SUBROUTINE O2FUV (V1C,V2C,DVC,NPTC,C,v1ss,v2ss) 
 !                                                                       
       Use lblparams, ONLY: n_absrb 
       IMPLICIT REAL*8           (V) 
 !                                                                       
       COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb) 
       DIMENSION C(*) 
-      COMMON /o2_fuv/ V1s,V2s,DVs,NPTs, s(1600) 
+      COMMON /o2_fuv/ V1s,V2s,DVs,NPTs, s(1512) 
 !                                                                       
 !     O2 continuum in the far-UV is from Lu et al. (2010) 
 !                                                                       
       DVC = DVS 
+      v1ss = v1s
+      v2ss = v2s
 !                                                                       
       V1C = V1ABS-DVC 
       V2C = V2ABS+DVC 
 !                                                                       
       IF (V1C.LT.V1S) then 
          I1 = -1 
-         else 
-         I1 = (V1C-V1S)/DVS + 0.01 
-         end if 
+      else 
+         I1 = (V1C-V1S)/DVS + 1.e-5 
+      end if
+      V1C = V1S + DVS*REAL(I1-1) 
+
+      I2 = (V2C-V1S)/DVS + 1.e-5
+
+      NPTC = I2-I1+3 
+      IF (NPTC.GT.NPTS) NPTC=NPTS+4 
+      V2C = V1C + DVS*REAL(NPTC-1) 
 !                                                                       
-         V1C = V1S + DVS*REAL(I1-1) 
-         I2 = (V2C-V1S)/DVS + 0.01 
-         NPTC = I2-I1+3 
-         IF (NPTC.GT.NPTS) NPTC=NPTS+4 
-         V2C = V1C + DVS*REAL(NPTC-1) 
-!                                                                       
-         DO 10 J = 1, NPTC 
-            I = I1+(J-1) 
-            C(J) = 0. 
-            IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10 
-            vj = v1c + dvc* REAL(j-1) 
-!                                                                       
-            C(J) = S(I)/vj 
-                                                                        
-   10    END DO 
+      DO 10 J = 1, NPTC 
+         I = I1+(J-1) 
+         C(J) = 0. 
+         IF ((I.LT.1).OR.(I.GT.NPTS)) GO TO 10 
+         vj = v1c + dvc* REAL(j-1) 
+         !                                                                       
+         C(J) = S(I)/vj 
+ 10   END DO
 !                                                                       
          RETURN 
 !                                                                       
@@ -9912,42 +9999,24 @@
       IMPLICIT REAL*8 (V) 
 !     Only valid up to 87000 cm-1.
 
-      COMMON /o2_fuv/ V1,V2,DV,NPT,                                     &
-     &  o2fuv0001(50),o2fuv0051(50),o2fuv0101(50),o2fuv0151(50),        &
+      COMMON /o2_fuv/ V1,V2,DV,NPT,                                     & 
+     &  o2fuv0001(13),o2fuv0051(50),o2fuv0101(50),o2fuv0151(50),        &
      &  o2fuv0201(50),o2fuv0251(50),o2fuv0301(50),o2fuv0351(50),        &
      &  o2fuv0401(50),o2fuv0451(50),o2fuv0501(50),o2fuv0551(50),        &
      &  o2fuv0601(50),o2fuv0651(50),o2fuv0701(50),o2fuv0751(50),        &
      &  o2fuv0801(50),o2fuv0851(50),o2fuv0901(50),o2fuv0951(50),        &
      &  o2fuv1001(50),o2fuv1051(50),o2fuv1101(50),o2fuv1151(50),        &
      &  o2fuv1201(50),o2fuv1251(50),o2fuv1301(50),o2fuv1351(50),        &
-     &  o2fuv1401(50),o2fuv1451(50),o2fuv1501(50),o2fuv1551(50)
+     &  o2fuv1401(50),o2fuv1451(50),o2fuv1501(49)
                                                                         
-      DATA V1,V2,DV,NPT /55000.0, 90080.0, 20.0,  1755/ 
+      DATA V1,V2,DV,NPT /56740.0, 86960.0, 20.0,  1512/ 
                                                                         
       DATA o2fuv0001/                                                   &
-     &      0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   &
-     &      0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   &
-     &      0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   &
-     &      0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   &
-     &      0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   0.00E+00,   &
-     &      0.00E+00,   0.00E+00,   0.00E+00,   6.67E+00,   1.75E+00,   &
-     &      6.54E+00,   2.00E+00,   1.51E+01,   5.67E+00,   3.17E+01,   &
-     &      3.31E+00,   2.23E+01,   2.82E+01,   2.71E+01,   2.45E+01,   &
-     &      1.63E+00,   9.08E+00,   2.14E+00,   1.24E+00,   1.58E+01,   &
-     &      8.68E+00,   2.67E+00,   2.29E+00,   3.29E+00,   4.34E+00/
+     &      0.00E+00,   1.50E-01,   6.00E-01,                           &
+     &      2.81E+00,   8.44E+00,   1.05E+01,   1.89E+01,   1.93E+01,   &
+     &      1.57E+01,   2.49E+01,   2.97E+01,   2.29E+01,   2.33E+01/   
       DATA o2fuv0051/                                                   &
-     &      3.93E+00,   1.68E+01,   1.23E+01,   3.74E+01,   1.57E+01,   &
-     &      4.94E+00,   9.83E+00,   3.07E+00,   2.17E+00,   8.45E+00,   &
-     &      1.71E+01,   1.52E+01,   1.59E+01,   1.89E+01,   8.53E+00,   &
-     &      1.22E+01,   2.11E+01,   1.44E+01,   7.34E+00,   1.64E+01,   &
-     &      1.41E+01,   1.32E+01,   6.45E+00,   1.05E+01,   2.06E+01,   &
-     &      2.21E+01,   3.41E+01,   3.00E+01,   7.72E+00,   1.70E+01,   &
-     &      1.42E+01,   1.53E+01,   1.41E+01,   2.94E+01,   2.71E+01,   &
-     &      3.42E+01,   2.09E+01,   1.69E+01,   2.84E+01,   2.12E+01,   &
-     &      2.26E+01,   2.61E+01,   3.55E+01,   2.91E+01,   3.18E+01,   &
-     &      2.52E+01,   4.24E+01,   4.20E+01,   3.12E+01,   2.96E+01/
-      DATA o2fuv0101/                                                   &
-     &      4.04E+01,   4.15E+01,   3.87E+01,   3.90E+01,   4.62E+01,   &
+     &      3.18E+01,   3.42E+01,   3.86E+01,   3.90E+01,   4.62E+01,   &
      &      4.71E+01,   4.68E+01,   4.82E+01,   4.89E+01,   4.97E+01,   &
      &      5.05E+01,   5.18E+01,   5.15E+01,   5.27E+01,   5.40E+01,   &
      &      5.47E+01,   5.48E+01,   5.60E+01,   5.81E+01,   5.86E+01,   &
@@ -9957,7 +10026,7 @@
      &      7.41E+01,   7.55E+01,   7.69E+01,   7.76E+01,   7.75E+01,   &
      &      7.96E+01,   7.64E+01,   7.78E+01,   7.98E+01,   8.05E+01,   &
      &      7.95E+01,   8.91E+01,   7.85E+01,   8.26E+01,   8.71E+01/
-      DATA o2fuv0151/                                                   &
+      DATA o2fuv0101/                                                   &
      &      8.64E+01,   9.15E+01,   8.38E+01,   9.18E+01,   8.85E+01,   &
      &      9.26E+01,   8.80E+01,   8.57E+01,   9.37E+01,   8.91E+01,   &
      &      9.19E+01,   1.01E+02,   9.63E+01,   1.01E+02,   1.00E+02,   &
@@ -9968,7 +10037,7 @@
      &      1.15E+02,   1.18E+02,   1.18E+02,   1.24E+02,   1.25E+02,   &
      &      1.18E+02,   1.28E+02,   1.27E+02,   1.25E+02,   1.26E+02,   &
      &      1.33E+02,   1.35E+02,   1.33E+02,   1.28E+02,   1.27E+02/
-      DATA o2fuv0201/                                                   &
+      DATA o2fuv0151/                                                   &
      &      1.37E+02,   1.39E+02,   1.41E+02,   1.39E+02,   1.42E+02,   &
      &      1.44E+02,   1.40E+02,   1.49E+02,   1.49E+02,   1.56E+02,   &
      &      1.58E+02,   1.54E+02,   1.51E+02,   1.55E+02,   1.53E+02,   &
@@ -9979,7 +10048,7 @@
      &      1.79E+02,   1.91E+02,   1.86E+02,   1.94E+02,   1.95E+02,   &
      &      1.94E+02,   1.92E+02,   1.98E+02,   1.99E+02,   2.10E+02,   &
      &      2.08E+02,   2.01E+02,   2.07E+02,   2.09E+02,   2.14E+02/
-      DATA o2fuv0251/                                                   &
+      DATA o2fuv0201/                                                   &
      &      2.10E+02,   2.10E+02,   2.18E+02,   2.21E+02,   2.20E+02,   &
      &      2.16E+02,   2.23E+02,   2.22E+02,   2.29E+02,   2.25E+02,   &
      &      2.33E+02,   2.36E+02,   2.29E+02,   2.29E+02,   2.37E+02,   &
@@ -9990,7 +10059,7 @@
      &      2.78E+02,   2.82E+02,   2.84E+02,   2.89E+02,   2.93E+02,   &
      &      2.90E+02,   2.92E+02,   2.96E+02,   2.96E+02,   3.00E+02,   &
      &      2.96E+02,   3.00E+02,   3.01E+02,   3.15E+02,   3.09E+02/
-      DATA o2fuv0301/                                                   &
+      DATA o2fuv0251/                                                   &
      &      3.15E+02,   3.13E+02,   3.16E+02,   3.25E+02,   3.22E+02,   &
      &      3.18E+02,   3.21E+02,   3.27E+02,   3.29E+02,   3.33E+02,   &
      &      3.27E+02,   3.30E+02,   3.44E+02,   3.47E+02,   3.45E+02,   &
@@ -10001,7 +10070,7 @@
      &      3.91E+02,   3.95E+02,   4.05E+02,   4.03E+02,   4.01E+02,   &
      &      4.07E+02,   4.15E+02,   4.11E+02,   4.24E+02,   4.24E+02,   &
      &      4.23E+02,   4.32E+02,   4.24E+02,   4.31E+02,   4.35E+02/
-      DATA o2fuv0351/                                                   &
+      DATA o2fuv0301/                                                   &
      &      4.34E+02,   4.41E+02,   4.41E+02,   4.48E+02,   4.48E+02,   &
      &      4.47E+02,   4.48E+02,   4.55E+02,   4.58E+02,   4.66E+02,   &
      &      4.68E+02,   4.66E+02,   4.73E+02,   4.80E+02,   4.76E+02,   &
@@ -10012,7 +10081,7 @@
      &      5.39E+02,   5.45E+02,   5.51E+02,   5.55E+02,   5.58E+02,   &
      &      5.57E+02,   5.67E+02,   5.68E+02,   5.64E+02,   5.75E+02,   &
      &      5.74E+02,   5.76E+02,   5.81E+02,   5.84E+02,   5.91E+02/
-      DATA o2fuv0401/                                                   &
+      DATA o2fuv0351/                                                   &
      &      5.97E+02,   5.95E+02,   6.00E+02,   5.99E+02,   6.08E+02,   &
      &      6.11E+02,   6.15E+02,   6.15E+02,   6.13E+02,   6.21E+02,   &
      &      6.24E+02,   6.23E+02,   6.33E+02,   6.35E+02,   6.39E+02,   &
@@ -10023,7 +10092,7 @@
      &      7.17E+02,   7.17E+02,   7.19E+02,   7.23E+02,   7.21E+02,   &
      &      7.30E+02,   7.40E+02,   7.47E+02,   7.43E+02,   7.48E+02,   &
      &      7.50E+02,   7.47E+02,   7.53E+02,   7.70E+02,   7.56E+02/
-      DATA o2fuv0451/                                                   &
+      DATA o2fuv0401/                                                   &
      &      7.68E+02,   7.68E+02,   7.74E+02,   7.71E+02,   7.86E+02,   &
      &      7.92E+02,   7.84E+02,   7.93E+02,   7.99E+02,   8.05E+02,   &
      &      8.09E+02,   8.12E+02,   8.04E+02,   8.12E+02,   8.14E+02,   &
@@ -10034,7 +10103,7 @@
      &      8.98E+02,   9.06E+02,   9.07E+02,   9.10E+02,   9.15E+02,   &
      &      9.20E+02,   9.21E+02,   9.19E+02,   9.19E+02,   9.28E+02,   &
      &      9.37E+02,   9.40E+02,   9.38E+02,   9.48E+02,   9.51E+02/
-      DATA o2fuv0501/                                                   &
+      DATA o2fuv0451/                                                   &
      &      9.52E+02,   9.58E+02,   9.49E+02,   9.67E+02,   9.66E+02,   &
      &      9.72E+02,   9.78E+02,   9.85E+02,   9.81E+02,   9.78E+02,   &
      &      9.86E+02,   9.90E+02,   9.96E+02,   1.01E+03,   1.00E+03,   &
@@ -10045,7 +10114,7 @@
      &      1.08E+03,   1.08E+03,   1.09E+03,   1.09E+03,   1.09E+03,   &
      &      1.09E+03,   1.10E+03,   1.11E+03,   1.11E+03,   1.10E+03,   &
      &      1.11E+03,   1.11E+03,   1.13E+03,   1.12E+03,   1.12E+03/
-      DATA o2fuv0551/                                                   &
+      DATA o2fuv0501/                                                   &
      &      1.13E+03,   1.13E+03,   1.13E+03,   1.13E+03,   1.14E+03,   &
      &      1.14E+03,   1.14E+03,   1.15E+03,   1.16E+03,   1.16E+03,   &
      &      1.18E+03,   1.17E+03,   1.16E+03,   1.17E+03,   1.18E+03,   &
@@ -10056,7 +10125,7 @@
      &      1.26E+03,   1.26E+03,   1.25E+03,   1.25E+03,   1.26E+03,   &
      &      1.26E+03,   1.27E+03,   1.27E+03,   1.28E+03,   1.28E+03,   &
      &      1.28E+03,   1.27E+03,   1.28E+03,   1.29E+03,   1.29E+03/
-      DATA o2fuv0601/                                                   &
+      DATA o2fuv0551/                                                   &
      &      1.30E+03,   1.30E+03,   1.29E+03,   1.30E+03,   1.30E+03,   &
      &      1.31E+03,   1.31E+03,   1.30E+03,   1.32E+03,   1.31E+03,   &
      &      1.32E+03,   1.32E+03,   1.33E+03,   1.33E+03,   1.33E+03,   &
@@ -10067,7 +10136,7 @@
      &      1.38E+03,   1.39E+03,   1.39E+03,   1.39E+03,   1.39E+03,   &
      &      1.40E+03,   1.40E+03,   1.41E+03,   1.41E+03,   1.41E+03,   &
      &      1.41E+03,   1.40E+03,   1.41E+03,   1.40E+03,   1.42E+03/
-      DATA o2fuv0651/                                                   &
+      DATA o2fuv0601/                                                   &
      &      1.42E+03,   1.43E+03,   1.43E+03,   1.43E+03,   1.42E+03,   &
      &      1.43E+03,   1.44E+03,   1.42E+03,   1.43E+03,   1.43E+03,   &
      &      1.44E+03,   1.44E+03,   1.43E+03,   1.45E+03,   1.45E+03,   &
@@ -10078,7 +10147,7 @@
      &      1.48E+03,   1.49E+03,   1.48E+03,   1.47E+03,   1.48E+03,   &
      &      1.50E+03,   1.50E+03,   1.50E+03,   1.50E+03,   1.50E+03,   &
      &      1.51E+03,   1.50E+03,   1.50E+03,   1.50E+03,   1.50E+03/
-      DATA o2fuv0701/                                                   &
+      DATA o2fuv0651/                                                   &
      &      1.50E+03,   1.50E+03,   1.49E+03,   1.51E+03,   1.52E+03,   &
      &      1.51E+03,   1.51E+03,   1.52E+03,   1.51E+03,   1.51E+03,   &
      &      1.52E+03,   1.53E+03,   1.53E+03,   1.52E+03,   1.53E+03,   &
@@ -10089,7 +10158,7 @@
      &      1.52E+03,   1.52E+03,   1.54E+03,   1.56E+03,   1.55E+03,   &
      &      1.55E+03,   1.55E+03,   1.54E+03,   1.55E+03,   1.55E+03,   &
      &      1.54E+03,   1.52E+03,   1.53E+03,   1.55E+03,   1.54E+03/
-      DATA o2fuv0751/                                                   &
+      DATA o2fuv0701/                                                   &
      &      1.55E+03,   1.54E+03,   1.54E+03,   1.53E+03,   1.52E+03,   &
      &      1.55E+03,   1.54E+03,   1.56E+03,   1.56E+03,   1.55E+03,   &
      &      1.57E+03,   1.55E+03,   1.55E+03,   1.55E+03,   1.55E+03,   &
@@ -10100,7 +10169,7 @@
      &      1.53E+03,   1.54E+03,   1.53E+03,   1.54E+03,   1.55E+03,   &
      &      1.55E+03,   1.55E+03,   1.54E+03,   1.54E+03,   1.54E+03,   &
      &      1.54E+03,   1.54E+03,   1.54E+03,   1.54E+03,   1.54E+03/
-      DATA o2fuv0801/                                                   &
+      DATA o2fuv0751/                                                   &
      &      1.53E+03,   1.54E+03,   1.53E+03,   1.53E+03,   1.53E+03,   &
      &      1.52E+03,   1.54E+03,   1.53E+03,   1.53E+03,   1.53E+03,   &
      &      1.52E+03,   1.54E+03,   1.53E+03,   1.53E+03,   1.54E+03,   &
@@ -10111,7 +10180,7 @@
      &      1.50E+03,   1.49E+03,   1.50E+03,   1.52E+03,   1.51E+03,   &
      &      1.52E+03,   1.52E+03,   1.48E+03,   1.50E+03,   1.50E+03,   &
      &      1.50E+03,   1.50E+03,   1.48E+03,   1.49E+03,   1.48E+03/
-      DATA o2fuv0851/                                                   &
+      DATA o2fuv0801/                                                   &
      &      1.47E+03,   1.48E+03,   1.48E+03,   1.50E+03,   1.50E+03,   &
      &      1.48E+03,   1.45E+03,   1.47E+03,   1.47E+03,   1.46E+03,   &
      &      1.47E+03,   1.47E+03,   1.46E+03,   1.45E+03,   1.45E+03,   &
@@ -10122,7 +10191,7 @@
      &      1.36E+03,   1.37E+03,   1.35E+03,   1.33E+03,   1.34E+03,   &
      &      1.35E+03,   1.33E+03,   1.32E+03,   1.32E+03,   1.29E+03,   &
      &      1.28E+03,   1.27E+03,   1.25E+03,   1.25E+03,   1.24E+03/
-      DATA o2fuv0901/                                                   &
+      DATA o2fuv0851/                                                   &
      &      1.23E+03,   1.21E+03,   1.19E+03,   1.18E+03,   1.17E+03,   &
      &      1.15E+03,   1.13E+03,   1.12E+03,   1.11E+03,   1.07E+03,   &
      &      1.06E+03,   1.04E+03,   1.02E+03,   1.01E+03,   9.90E+02,   &
@@ -10133,7 +10202,7 @@
      &      7.59E+02,   7.53E+02,   7.41E+02,   7.51E+02,   7.64E+02,   &
      &      7.63E+02,   7.65E+02,   7.67E+02,   7.67E+02,   7.58E+02,   &
      &      7.38E+02,   7.20E+02,   7.05E+02,   7.01E+02,   6.71E+02/
-      DATA o2fuv0951/                                                   &
+      DATA o2fuv0901/                                                   &
      &      6.49E+02,   6.48E+02,   6.25E+02,   5.98E+02,   5.71E+02,   &
      &      5.45E+02,   5.06E+02,   4.84E+02,   4.73E+02,   4.45E+02,   &
      &      4.24E+02,   4.00E+02,   3.69E+02,   3.53E+02,   3.39E+02,   &
@@ -10144,7 +10213,7 @@
      &      2.37E+02,   2.43E+02,   2.47E+02,   2.50E+02,   2.48E+02,   &
      &      2.44E+02,   2.41E+02,   2.37E+02,   2.33E+02,   2.32E+02,   &
      &      2.30E+02,   2.30E+02,   2.34E+02,   2.47E+02,   2.48E+02/
-      DATA o2fuv1001/                                                   &
+      DATA o2fuv0951/                                                   &
      &      2.45E+02,   2.39E+02,   2.48E+02,   2.53E+02,   2.50E+02,   &
      &      2.28E+02,   2.31E+02,   2.39E+02,   2.45E+02,   2.40E+02,   &
      &      2.33E+02,   2.25E+02,   2.19E+02,   2.18E+02,   2.16E+02,   &
@@ -10155,7 +10224,7 @@
      &      1.30E+02,   1.26E+02,   1.23E+02,   1.21E+02,   1.13E+02,   &
      &      1.09E+02,   1.06E+02,   1.01E+02,   9.54E+01,   9.08E+01,   &
      &      8.81E+01,   8.50E+01,   8.12E+01,   7.68E+01,   7.57E+01/
-      DATA o2fuv1051/                                                   &
+      DATA o2fuv1001/                                                   &
      &      7.21E+01,   6.72E+01,   6.38E+01,   6.10E+01,   5.76E+01,   &
      &      5.19E+01,   5.02E+01,   4.84E+01,   4.53E+01,   4.06E+01,   &
      &      4.77E+01,   5.24E+01,   3.21E+01,   2.91E+01,   3.15E+01,   &
@@ -10166,7 +10235,7 @@
      &      2.71E+01,   4.48E+01,   3.24E+01,   4.10E+01,   3.09E+01,   &
      &      5.75E+01,   4.17E+01,   4.27E+01,   3.34E+01,   4.28E+01,   &
      &      4.43E+01,   6.25E+01,   5.29E+01,   4.58E+01,   5.00E+01/
-      DATA o2fuv1101/                                                   &
+      DATA o2fuv1051/                                                   &
      &      5.35E+01,   5.64E+01,   7.03E+01,   5.49E+01,   5.02E+01,   &
      &      4.99E+01,   5.43E+01,   5.11E+01,   6.67E+01,   4.96E+01,   &
      &      3.67E+01,   7.64E+01,   5.68E+01,   5.43E+01,   6.72E+01,   &
@@ -10177,7 +10246,7 @@
      &      4.50E+01,   4.47E+01,   5.20E+01,   6.93E+01,   4.93E+01,   &
      &      4.83E+01,   5.13E+01,   3.73E+01,   4.88E+01,   4.62E+01,   &
      &      4.17E+01,   3.50E+01,   3.12E+01,   3.65E+01,   3.89E+01/
-      DATA o2fuv1151/                                                   &
+      DATA o2fuv1101/                                                   &
      &      5.29E+01,   4.43E+01,   5.46E+01,   4.33E+01,   3.36E+01,   &
      &      3.41E+01,   3.88E+01,   2.80E+01,   2.87E+01,   2.81E+01,   &
      &      2.77E+01,   3.40E+01,   2.41E+01,   3.97E+01,   2.70E+01,   &
@@ -10188,7 +10257,7 @@
      &      2.24E+00,   3.89E+00,   1.04E+01,   1.00E+01,   1.58E+01,   &
      &      2.70E+01,   2.25E+01,   1.05E+01,   2.22E+01,   1.93E+01,   &
      &      1.39E+00,   2.08E+01,   3.38E+01,   1.24E+01,   3.37E+01/
-      DATA o2fuv1201/                                                   &
+      DATA o2fuv1151/                                                   &
      &      7.77E+00,   8.82E+00,   2.21E+01,   7.28E+00,   2.12E+01,   &
      &      3.22E+01,   1.18E+01,   2.04E+01,   4.08E+01,   4.33E+01,   &
      &      4.11E+01,   4.78E+01,   5.46E+01,   3.50E+01,   5.61E+01,   &
@@ -10199,7 +10268,7 @@
      &      7.83E+01,   8.50E+01,   8.20E+01,   9.01E+01,   9.17E+01,   &
      &      8.37E+01,   9.41E+01,   1.01E+02,   9.00E+01,   1.11E+02,   &
      &      1.05E+02,   1.00E+02,   1.32E+02,   1.51E+02,   1.56E+02/
-      DATA o2fuv1251/                                                   &
+      DATA o2fuv1201/                                                   &
      &      1.76E+02,   1.65E+02,   1.35E+02,   1.56E+02,   1.80E+02,   &
      &      1.57E+02,   1.95E+02,   1.66E+02,   1.84E+02,   1.90E+02,   &
      &      2.31E+02,   2.52E+02,   2.98E+02,   3.92E+02,   5.95E+02,   &
@@ -10210,7 +10279,7 @@
      &      4.09E+01,   3.63E+01,   3.31E+01,   6.51E+01,   5.23E+01,   &
      &      4.38E+01,   5.59E+01,   7.41E+01,   3.86E+01,   5.56E+01,   &
      &      5.50E+01,   3.96E+01,   6.23E+01,   5.22E+01,   7.83E+01/
-      DATA o2fuv1301/                                                   &
+      DATA o2fuv1251/                                                   &
      &      6.92E+01,   4.53E+01,   4.24E+01,   4.84E+01,   1.02E+02,   &
      &      5.88E+01,   7.17E+01,   5.04E+01,   4.49E+01,   1.41E+01,   &
      &      5.84E+01,   4.82E+01,   6.24E+01,   2.86E+01,   5.23E+01,   &
@@ -10221,7 +10290,7 @@
      &      1.37E+01,   1.91E+01,   3.45E+01,   1.73E+01,   2.99E+01,   &
      &      3.11E+01,   4.81E+01,   2.16E+01,   3.75E+01,   3.03E+01,   &
      &      2.94E+01,   2.07E+01,   3.12E+01,   1.89E+01,   8.00E+00/
-      DATA o2fuv1351/                                                   &
+      DATA o2fuv1301/                                                   &
      &      4.80E-01,   2.03E+01,   1.21E+01,   4.53E+01,   1.46E+01,   &
      &      3.63E+01,   6.59E+00,   1.58E+01,   1.63E+01,   1.30E+01,   &
      &      1.14E+00,   1.76E+01,   2.24E+01,   2.29E+01,   2.01E+01,   &
@@ -10232,7 +10301,7 @@
      &      3.73E+02,   5.95E+02,   7.50E+02,   9.79E+02,   1.21E+03,   &
      &      1.26E+03,   1.32E+03,   1.30E+03,   1.44E+03,   1.41E+03,   &
      &      1.53E+03,   1.73E+03,   1.81E+03,   1.84E+03,   1.70E+03/
-      DATA o2fuv1401/                                                   &
+      DATA o2fuv1351/                                                   &
      &      1.53E+03,   1.30E+03,   1.15E+03,   9.53E+02,   8.98E+02,   &
      &      6.83E+02,   7.02E+02,   5.10E+02,   4.85E+02,   4.98E+02,   &
      &      3.62E+02,   4.05E+02,   2.97E+02,   2.60E+02,   2.95E+02,   &
@@ -10243,7 +10312,7 @@
      &      5.32E+01,   7.80E+01,   8.18E+01,   4.63E+01,   3.39E+01,   &
      &      3.88E+01,   1.78E+01,   4.35E+01,   3.87E+01,   2.20E+00,   &
      &      1.15E+01,   6.25E+00,   7.12E+01,   2.73E+01,   2.58E+01/
-      DATA o2fuv1451/                                                   &
+      DATA o2fuv1401/                                                   &
      &      9.90E+00,   7.16E+00,   1.57E+01,   1.28E+01,   7.76E+00,   &
      &      2.79E+00,   5.46E+00,   7.73E+00,   2.65E+01,   7.39E+00,   &
      &      4.60E+00,   1.15E+00,   6.40E+00,   7.02E+00,   5.32E+00,   &
@@ -10254,7 +10323,7 @@
      &      1.75E+01,   1.83E+01,   3.11E+01,   1.62E+01,   3.31E+01,   &
      &      3.33E+01,   2.44E+01,   2.23E+01,   2.86E+01,   2.70E+01,   &
      &      2.83E+01,   4.04E+01,   5.29E+01,   6.31E+01,   6.27E+01/
-      DATA o2fuv1501/                                                   &
+      DATA o2fuv1451/                                                   &
      &      6.03E+01,   7.34E+01,   8.07E+01,   8.87E+01,   8.87E+01,   &
      &      1.02E+02,   1.36E+02,   1.38E+02,   1.47E+02,   1.50E+02,   &
      &      1.63E+02,   1.65E+02,   1.48E+02,   1.40E+02,   1.12E+02,   &
@@ -10265,7 +10334,7 @@
      &      4.54E+00,   1.69E+00,   7.87E+00,   1.42E+01,   9.46E+00,   &
      &      1.41E+01,   3.61E+01,   9.26E+01,   1.78E+02,   1.47E+02,   &
      &      2.36E+02,   1.03E+02,   1.44E+02,   1.86E+02,   1.65E+02/
-      DATA o2fuv1551/                                                   &
+      DATA o2fuv1501/                                                   &
      &      1.89E+02,   1.47E+02,   1.18E+02,   3.07E+02,   1.11E+02,   &
      &      7.62E+01,   2.89E+01,   1.57E+01,   1.69E-01,   2.56E+00,   &
      &      5.14E+00,   2.00E+00,   3.91E-01,   8.80E+00,   2.83E+00,   &
@@ -10275,7 +10344,7 @@
      &      1.40E+02,   3.14E+02,   4.33E+02,   3.61E+02,   3.65E+02,   &
      &      3.48E+02,   4.25E+02,   2.92E+02,   2.33E+02,   2.07E+02,   &
      &      3.27E+02,   4.09E+02,   3.90E+02,   2.57E+02,   1.47E+02,   &
-     &      1.09E+02,   9.49E+01,   5.31E+01,   0.00E+00,   0.00E+00/
+     &      1.09E+02,   9.49E+01,   5.31E+01,   0.00E+00/
 
       end
 

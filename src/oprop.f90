@@ -1088,6 +1088,10 @@
      &           alfl = alfl + rhoslf(m)*(hwhmsi-alfa0i)
          end if
 
+! mji - Revise code to skip broadening for incoming lines with flag = -1
+         if(brd_mol_flg(m,i).eq.-1.and.ibrd.gt.0) then
+            alfl = hwhmsi
+         end if
 !                                                                       
          IF (IFLAG.EQ.3) ALFL = ALFL*(1.0-GAMMA1*PAVP0-GAMMA2*PAVP2) 
 !                                                                       
@@ -3196,6 +3200,10 @@
      &           shrunk%alfa(ij) = shrunk%alfa(ij) + rhoslf(m)*(hwhmsi-alfa0i)
          end if
 
+! mji - Revise code to skip broadening for incoming lines with flag = -1
+         if(bufr%brd_mol_flg(m,i).eq.-1.and.ibrd.gt.0) then
+            shrunk%alfa(ij) = hwhmsi
+         end if
 !                                                                       
          IF (IFLAG.EQ.3) SHRUNK%ALFA(IJ) = SHRUNK%ALFA(IJ)* &
             (1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)                                                         
@@ -4281,7 +4289,7 @@
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',       &
      &    'CFC13     ', 'CFC115    ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    'ACETONE   ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
-     &    'CH3CCLF2  ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+     &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
      &    ' ZZZZZZZZ ', 'BRO       ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
