@@ -2073,12 +2073,12 @@
      &            (FSCDID(13),HWHM)  , (FSCDID(14),IDABS),              &
      &            (FSCDID(15),IATM)  , (FSCDID(16),LAYR1),              &
      &            (FSCDID(17),NLAYHD),                                  &
-     &            (Y1D(8),LH2SAV)    , (Y1D(9),LH1SAV) ,                &
-     &            (Y1D(10),LTNSAV, dv_lbl)                              
+     &            (Y1D(8),LH2SAV)    , (Y1D(9),LH1SAV)!,                &
+!    &            (Y1D(10),LTNSAV, dv_lbl)                              
                                                                         
-      equivalence (FSCDI1(8),IPTHD1),(FSCDI1(17),NLAYD1)!,               &
-!     &            (Y1D(10),LTNSAV, dv_lbl1) ,                           &
-!     &            (Y1D(8),LH2SAV),  (Y1D(9),LH1SAV)                     
+      equivalence (FSCDI1(8),IPTHD1),(FSCDI1(17),NLAYD1),              &
+     &            (Y1D(10),LTNSAV, dv_lbl1)! ,                           &
+!    &            (Y1D(8),LH2SAV),  (Y1D(9),LH1SAV)                     
 !                                                                       
       DATA I_10/10/ 
       data h_blank /' '/ 
@@ -2770,6 +2770,8 @@
                                                                         
                         nlayer = nlayd1 
                         dv_lbl = dv_lbl1 
+                        print *,'dv_lbl ',dv_lbl
+                        print *,'dv_lbl1 ',dv_lbl1
                                                                         
                         lh1 = nlayer 
                         lh2 = 1 
