@@ -532,10 +532,12 @@
 !**********                                                             
 !                                                                       
                C(J) = FCO2(J)*WCO2                                      
+              
 !                                                                       
 !              Radiation field                                          
 !                                                                       
                IF (JRAD.EQ.1) C(J) = C(J)*RADFN(VJ,XKT)                 
+               
    30       CONTINUE                                                    
             call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
 
@@ -1162,6 +1164,8 @@
 !     --------------------------------------------------------------    
 
       subroutine pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
+
+      IMPLICIT REAL*8           (V)
 
 !   Set up needed variables for call to XINT
 !   Output variables 
