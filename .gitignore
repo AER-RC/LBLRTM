@@ -1,3 +1,6 @@
 lblrtm_v*
 build/*.obj
 build/*.mod
+build/.svn
+src/.svn
+docs/.svn
