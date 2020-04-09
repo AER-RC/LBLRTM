@@ -169,4 +169,8 @@ Unformatted optical depth files can be requested in the LBLRTM using options spe
 * Edit any parameters necessary in the input file `TAPE5`.
 * Run the LBLRTM executable.
 
-# General Questions 
+# General Questions
+
+1. What is the difference between a line-by-line calculation and a band-model calculation?
+
+Absorption/emission spectra are comprised of a complicated array of spectral lines.  The HITRAN 2008 Database (Version 13.0) contains over 2,713,000 lines for 39 different molecules. In order to resolve these individual lines, a nominal spectral sampling rate of less than the mean line half width must be utilized.  Such highly resolved radiative transfer calculations are called line-by-line (LBL) calculations. The computational time associated with calculating broadband fluxes from LBL calculations is formidable.  A band model aims to simplify radiative transfer calculations by using approximations to represent the line-by-line characteristics of a particular spectral interval.  Band models are appropriate for situations where the desired spectral resolution is much smaller than the Lorentz and Doppler widths of the spectral lines. Such approximations are also of use in general circulation models.
