@@ -1,5 +1,10 @@
 # LBLRTM
-Line-By-Line Radiatve Transfer Model by Atmospheric and Environmental Research
+
+LBLRTM (Line-By-Line Radiative Transfer Model) is an accurate and efficient line-by-line radiative transfer model derived from the Fast Atmospheric Signature Code (FASCODE). LBLRTM has been, and continues to be, extensively validated against atmospheric radiance spectra from the ultraviolet to the sub-millimeter.
+
+The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for the line parameters used in LBLRTM. These line parameters, as well as additional line parameters from other sources, are extracted for use in LBLRTM by a line file creation program called LNFL. A line parameter database built from HITRAN and suitable for use with LNFL is available from the [AER RT web site](http://rtweb.aer.com).
+
+[Add plantUML diagram]
 
 # Cloning
 
@@ -16,4 +21,97 @@ git submodule init
 git submodule update
 ```
 
-in the `LBLRTM` directory
+in the `LBLRTM` directory.
+
+# General LNFL/LBLRTM File Information
+
+## Platforms on which LBLRTM can be run
+
+It is recommended that LNFL and LBLRTM be compiled in Fortran 90. LBLRTM has previously been run on DEC alpha, Cray, MS-DOS, and HP platforms.
+
+Some users have ported the code to the Windows/DOS environment. AER presently does not officially support this implementation; however, the following description of how LBLRTM was used in XP by a user (Christopher Rice, Air Force Institute of Technology [AFIT]):
+
+* Obtain the newest Intel Fortran Compiler (v 9.1) and Visual Studio.net 2003.
+* Install visual studio .net 2003.
+*	Install Intel Fortran Compiler (Fortran compiler options will appear in MSVS 2003 after
+the Intel Fortran Compiler is installed.
+*	Decompress source codes for LBLRTM and LNFL into their appropriate folders.
+*	Compile LNFL:
+  * Open Visual Studio 2003.
+	* Open a new project.
+  * Select “Intel Fortran Projects” under “Project Types” and choose “Console Application” from “Templates”.
+  * Name this project accordingly. (e.g., `LNFL_Exe`)
+  * After the project is created a “Solution Explorer” will show the solution named as above. Right click on “Source Files” and add the following files:
+      * `lnfl.f90`
+      * `util_dos.f90`
+  * Note that the `util_linux_intel` makefile can be used as a reference for the files to be included, replacing `util_linux.f90` with the file `util_dos.f90`.
+  * Make sure the compiler is set to “release” NOT “debug”.
+  * Build the Project.
+  * On successful build find the `.exe` in the “release” folder where the project is saved
+* Compile LBLRTM:
+  * Open Visual Studio 2003.
+  * Open a new project.
+  * Select “Intel Fortran Projects” under “Project Types” and choose “Console Application” from “Templates”.
+  * Name this project accordingly. (e.g., `LBLRTM_Exe`)
+  * After the project is created a “Solution Explorer” will show a solution named as above. Right click on “Source Files” and add the following files:
+    * `contnm.f90`
+    *	`fftscn.f90`
+    *	`lblatm.f90`
+    *	`lbldum.f90`
+    *	`lbllow.f90`
+    *	`lblrtm.f90`
+    *	`nonlte.f90`
+    * `oprop.f90`
+    *	`pltlbl.f90`
+    *	`postsub.f90`
+    *	`solar.f90`
+    *	`testmm.f90`
+    *	`util_dos.f90`
+    *	`xmerge.f90`
+  * Note that the `util_linux_intel` makefile can be used as a reference for the files to be included, replacing `util_linux.f90` with the file `util_dos.f90`.
+  * Make sure the compiler is set to “release” NOT “debug” – LBLRTM will not operate correctly when compiled in “Debug” mode.
+  * Build the Project.
+  * On successful build find the exe in the “release” folder where the project is saved.
+* Use LNFL with `TAPE5` to create `TAPE3` as described in the documentation,
+* Use `TAPE3` with LBLRTM to satisfy your requirements as described in documentation.
+
+## Issues relating to unformatted files on UNIX and LINUX systems
+
+Unformatted files are often not compatible between systems due to differences in the way the bytes are written to the files (big-endian versus little-endian).  Note that the `byteswap` option available with most compilers will not work with most LBLRTM unformatted output files because of the mixing of real and integer data within records.
+
+## LNFL/LBLRTM Naming Convention
+
+Specific information on the input/output files from LNFL and LBLRTM is located in their respective input files, `lnfl_instructions` and `lblrtm_instructions`, and the examples provided in the code `tar` files.
+
+Most file names are given as `TAPEx` where `x` is a one- or two-digit number.  The name is case-sensitive, and is uppercase.  Tape numbers may be same for LNFL and LBLRTM but do not represent identical files. For example, the primary LNFL input file is `TAPE5`, and the primary LBLRTM input file is `TAPE5`.  However, they have neither the same input information nor the same formatting. The instruction manual for each code details the input file information.
+
+## LNFL/LBLRTM Input File (TAPE5) Format
+
+The `TAPE5` input files are read as formatted FORTRAN. As a consequence of the formatted read, any blank space will be read as "zero".  Thus, one may leave blanks for most of the parameters and within the code they will default to an acceptable value.
+
+Real numbers format input as either `E` or `F` format, with the entire number within the range specified in the input instructions.  Integers must be specified exactly in the integer format.  For example, the spectral bandwidth (_v<sub>1</sub>_ to _v<sub>2</sub>_) in LBLRTM `TAPE5` is input as 10 character real numbers. This means that the value can be written anywhere within these 10 characters, as long as there is a decimal point (e.g. "---600.000" or "-600.000--", where "-" is a blank space).
+
+Integers are read in with the `I` format.  For example, the model atmosphere (`iatm`) in LBLRTM `TAPE5` is input as `I5`, so it must be "----2", and not "2----" as this will be read as 20000.
+
+## LBLRTM Output File Format
+
+The general structure of the files involves the use of panels, which are blocks of output usually containing 2400 points. Each panel contains a header to describe the starting and ending points of the panel (_v<sub>1</sub>_ and _v<sub>2</sub>_), the spectral spacing of the points (`dvp`), and the number of points in the panel (`npts`). The panel header is followed by either one or two (see below) blocks of output, consisting of `npts` points.
+
+`TAPE12`: Radiances and transmittances
+(1) file header
+(2,i)-panel header
+(3,i) radiances
+(4,i) transmittances
+Lines 2-4 repeat for i=1,N times to cover the entire spectral region.
+
+`TAPE11`: Filtered radiance or transmittance (also applies to any user-designated output file which contains radiances, transmittances, or optical depths, such as the "ODint" file)
+(1)file header
+(2,i)-panel header
+(3,i) radiances or transmittances
+Lines 2-3 repeat for i=1,N times to cover the entire spectral region.
+
+Note that a limited amount of spectral output information may also be put in the `TAPE6` using the `MPTS`/`NPTS` options of `TAPE5` record 1.2.
+
+# Instructions and Tips for Running LNFL
+
+More to come...
