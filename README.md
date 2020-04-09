@@ -114,4 +114,25 @@ Note that a limited amount of spectral output information may also be put in the
 
 # Instructions and Tips for Running LNFL
 
-More to come...
+LNFL is used to generate a unformatted file (`TAPE3`) of all the line parameters required by LBLRTM.
+
+## Input files for LNFL
+
+1. `TAPE1`: The line parameter database in ASCII format (also available on [RTWeb](www.rtweb.aer.com)).
+
+2. `TAPE5`: LNFL input file.
+
+## Output files for LNFL
+
+1. `TAPE3`: Unformatted LNFL output file containing the line parameters for LBLRTM.
+2. `TAPE6`: Informational output file.
+3. `TAPE7`: Optional output file containing ASCII version of the parameters contained in `TAPE3`.
+
+## Sequence for running LNFL
+
+*	Download latest LNFL tar code (containing the source code) and the latest line parameter database from [RTWeb](rtweb.aer.com).
+*	Compile LNFL using the makefiles found in the LNFL tar file.  Note, one needs to compile in the build directory.
+*	Link the line parameter database to TAPE1 in the LNFL working directory.
+*	Remove TAPE3 file from the LNFL working directory.
+*	Edit necessary parameters in the TAPE5 input file.  Note that the beginning and ending wavenumber (v1, v2) in TAPE5 must extend at least 25 cm-1 beyond each end of the desired spectral range for the LBLRTM calculations.
+*	Run the LNFL executable.
