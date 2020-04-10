@@ -169,12 +169,87 @@ Unformatted optical depth files can be requested in the LBLRTM using options spe
 * Edit any parameters necessary in the input file `TAPE5`.
 * Run the LBLRTM executable.
 
-# Tests 
+# Tests
 
 [Run examples doc]
 
 # General Questions
 
-1. What is the difference between a line-by-line calculation and a band-model calculation?
+1. **What is the difference between a line-by-line calculation and a band-model calculation?**
 
 Absorption/emission spectra are comprised of a complicated array of spectral lines.  The HITRAN 2008 Database (Version 13.0) contains over 2,713,000 lines for 39 different molecules. In order to resolve these individual lines, a nominal spectral sampling rate of less than the mean line half width must be utilized.  Such highly resolved radiative transfer calculations are called line-by-line (LBL) calculations. The computational time associated with calculating broadband fluxes from LBL calculations is formidable.  A band model aims to simplify radiative transfer calculations by using approximations to represent the line-by-line characteristics of a particular spectral interval.  Band models are appropriate for situations where the desired spectral resolution is much smaller than the Lorentz and Doppler widths of the spectral lines. Such approximations are also of use in general circulation models.
+
+2. **What are the standard units used in LBLRTM calculations?**
+
+| Output Variable | Units |
+| :---: | :---: |
+| Wavenumber | cm<sup>-1</sup> |
+| Radiance | W cm<sup>-2</sup> sr<sup>-1</sup> /  cm-1 |
+| Brightness Temperature | K |
+| Analytic Jacobians (dR/dx) | <ul><li>molecules: W cm<sup>-2</sup> sr<sup>-1</sup> / cm<sup>-1</sup> / log(VMR)</li><li>temperature: W cm<sup>-2</sup> sr<sup>-1</sup> / cm-1  / K |
+
+3. **Radiance Derivatives (Jacobians)**
+
+This section describes the Analytical Jacobian capability in LBLRTM, Version 10.0 and later. The results from earlier versions are not reliable and should NOT be used.
+The implementation of the analytic Jacobians in LBLRTM has been designed to require a minimal amount of setup on the part of the user while exploiting pre-existing LBLRTM calculation options. There are three steps required to obtain layer and level Analytic Jacobians:
+
+  1. Create the `ODint_lll` files using `IMRG=1` and `IOD =3`; "lll" is the layer number.  Following LBLRTM convention, layer 1 is at the highest pressure level (lowest altitude). The spectral grid for the monochromatic calculation is determined by the DV of the highest layer (`DVSET` is automatically set by the program).
+
+  2. Create the `RDDN_lll` files which provide the radiances from the top of the profile to level "lll" using `IMRG=40` and `IOD=3`.  Note that the `RDDNlayer_001` file is the downwelling radiance at the surface. The `ODint` files from Step 1 are used for this calculation.
+
+  3. Create the layer and level Analytic Jacobian files in directory `AJ`; `RDderivUPW_xx_lll` and `LEV_RDderivUPW_xx_lll` are the layer and level derivatives files of the upwelling radiance at the upper boundary of the profile (`IMRG=41` and `IOD=3`) taken with respect to state parameter xx. Similarly, the files `RDderivDNW_xx_lll` and `LEV_RDderivDNW_xx_lll` are obtained for the downwelling radiance at the lower boundary (`IMRG=40` and `IOD=3`) with the Jacobian taken with respect to state vector
+type xx where:
+
+  * xx = -1 surface parameters
+  * xx = 0 temperature
+  * xx = mol molecule number (1-38)
+
+Multiple runs of Step 3 may be performed once Step 1 and Step 2 have been run, the radiometric representation for the Jacobians having been established,
+
+All the unformatted files resulting from these operations are fully consistent with LBLRTM files. The layer and level Jacobian files have the Radiance Jacobians in the normal radiance panel and the transmittance from the lowest boundary of the problem to the bottom level of the layer lll in the transmittance panel or to the designated level in the case of level Jacobians. These transmittances are included only to retain consistency with the LBLRTM file structures. Consequently, postprocessing including the application of selected instrument functions is accomplished in a manner identical to that for radiances. Note that selecting brightness temperature in the postprocessing will not provide a meaningful result.  In general, the input parameters for AJ calculations is described in the LBLRTM instructions where the required parameter is described, particularly note RECORD 1.2.b.  The `scanmrg` option (`IMRG=42,43` in this case) has not been tested and should be used with extreme caution.
+
+Finally, a script has been included with ALL necessary files to run a sample set of Jacobian calculations. A second script has been provided to perform symmetric finite difference calculations to check the AJ results.  A PowerPoint document with plots showing the results from the two scripts has been included. The file `lblrtm_AJ_readme.txt` explains the two scripts.
+
+4. **Is it possible to scale the profile of one or more species?**
+
+Yes. The instructions for using this capability are provided in the lblrtm instructions. See records 1.3, 1.3.a and 1.3.b.
+
+5. **Does LBLRTM include heavy molecule parameters (cross-sectional species)?**
+
+Heavy molecules (such as CCL4, F11, and others listed in Table II of the lblrtm_instruction manual) can be included in LBLRTM calculations by setting the `IXSECT` input variable to 1 and adding Record 2.2 or Record 3.7 to the LBLRTM `TAPE5`  An additional file (`FSCDXS`) and directory (`xs`) are required for these calculations and can be obtained from the LBLRTM example tar file (available on [RTWeb](http://rtweb.aer.com)).
+
+6. **Format of external surface emissivity/reflectivity files**
+
+Sea surface spectral emissivity and reflectivity files are provided with the example (available on [RTWeb](http://rtweb.aer.com)). The files must have the file names of `EMISSIVITY` and `REFLECTIVITY`. The format is as follows:
+
+| Parameter | Format | Description |
+| :--- | :---: | :--- |
+ | `V1EMIS` | `E10.3` | Initial emissivity/reflectivity frequency value [cm<sup>-1</sup>] |
+| `V2EMIS` | `E10.3` | Finial emissivity/reflectivity frequency value [cm<sup>-1</sup>] |
+| `DVEMIS` | `E10.3` | Frequency Increment [cm<sup>-1</sup>] |
+| `NLIMEM` | `I5` | Number of spectral emissivity/reflectivity points in the file |
+| `ZEMIS` | `E15.7` | Emissivity at each spectral point |
+
+**NOTE**: It is assumed that the spectral emissivity/reflectivity points are equally spaced and there is a maximum number of points (see instructions).
+
+7. **Absorption due to clouds/aerosols and LOWTRAN5 routines**
+
+Absorption due to clouds and aerosols can be computed in LBLRTM by setting the `IAERSL` flag in the input `TAPE5` file (refer to instructions).  This flag allows for LBLRTM to utilize the aerosol capabilities of LOWTRAN5.
+
+8. **Solar Radiance**
+
+Solar radiance calculations can be performed by utilizing LBLRTM input options such as `IEMIT=2` and a particular solar source function file `SOLAR.RAD`. A `SOLAR.RAD` file can be generated with program `extract_solar` available on the AER RT web site and the Kurucz solar source function.  The Kurucz solar source function has been used in AER’s research in shortwave radiation and is based on theoretical radiative transfer calculations for the solar atmosphere. The solar source function is available is at a high spectral resolution (i.e. for monochromatic calculations) and 1 cm<sup>-1</sup> resolution.
+
+9. **Line coupling/mixing**
+
+Line coupling parameters are utilized in LBLRTM for O<sub>2</sub>, CO<sub>2</sub> and CH<sub>4</sub>. The line coupling parameters are provided in the AER line parameter database (available on [RTWeb](http://rtweb.aer.com)) and are written to the line parameter input file (`TAPE3`) by LNFL.
+
+10. **What is the appropriate reference for LBLRTM calculations in journal articles and presentations?**
+
+Clough SA, Shephard MW, Mlawer EJ, Delamere JS, Iacono MJ, Cady-Pereira K, Boukabara S, Brown PD.Atmospheric radiative transfer modeling: a summary of the AER codes • SHORT COMMUNICATION• _J Quant. Spectrosc. and Radiat Transfer_, **91**, 233-244 (2005).
+
+Also, please refer to [RTWeb](rtweb.aer.com) for the complete list of references.
+
+11. **How do you calculate fluxes?**
+
+Source code and instructions available: [RADSUM](http://rtweb.aer.com/radsum_frame.html)
