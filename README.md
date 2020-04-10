@@ -169,6 +169,10 @@ Unformatted optical depth files can be requested in the LBLRTM using options spe
 * Edit any parameters necessary in the input file `TAPE5`.
 * Run the LBLRTM executable.
 
+# Tests 
+
+[Run examples doc]
+
 # General Questions
 
 1. What is the difference between a line-by-line calculation and a band-model calculation?
