@@ -31,7 +31,7 @@ The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for 
 
 [Add plantUML diagram]
 
-# Cloning <a name="cloning"></a>
+# Cloning the Latest Release <a name="cloning"></a>
 
 Assuming the output directory should be `LBLRTM`:
 
