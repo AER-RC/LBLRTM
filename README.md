@@ -31,6 +31,8 @@ The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for 
 
 [Add plantUML diagram]
 
+For more, please see the [Description Wiki page](https://github.com/AER-RC/LBLRTM/wiki/Description)
+
 # Cloning the Latest Release <a name="cloning"></a>
 
 Assuming the output directory should be `LBLRTM`:
@@ -281,7 +283,7 @@ Line coupling parameters are utilized in LBLRTM for O<sub>2</sub>, CO<sub>2</sub
 
 Clough SA, Shephard MW, Mlawer EJ, Delamere JS, Iacono MJ, Cady-Pereira K, Boukabara S, Brown PD.Atmospheric radiative transfer modeling: a summary of the AER codes • SHORT COMMUNICATION• _J Quant. Spectrosc. and Radiat Transfer_, **91**, 233-244 (2005).
 
-Also, please refer to [RTWeb](rtweb.aer.com) for the complete list of references.
+Also, please refer to the [References Wiki Page](https://github.com/AER-RC/LBLRTM/wiki/References-and-Publications) for the complete list of references.
 
 11. **How do you calculate fluxes?**
 
