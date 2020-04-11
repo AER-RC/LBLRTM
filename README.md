@@ -31,7 +31,7 @@ The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for 
 
 [Add plantUML diagram]
 
-# Cloning <a name="cloning "></a>
+# Cloning <a name="cloning"></a>
 
 Assuming the output directory should be `LBLRTM`:
 
@@ -127,6 +127,8 @@ Integers are read in with the `I` format.  For example, the model atmosphere (`i
 ## LBLRTM Output File Format <a name="lblout"></a>
 
 The general structure of the files involves the use of panels, which are blocks of output usually containing 2400 points. Each panel contains a header to describe the starting and ending points of the panel (_v<sub>1</sub>_ and _v<sub>2</sub>_), the spectral spacing of the points (`dvp`), and the number of points in the panel (`npts`). The panel header is followed by either one or two (see below) blocks of output, consisting of `npts` points.
+
+[this needs work]
 
 `TAPE12`: Radiances and transmittances
 (1) file header
