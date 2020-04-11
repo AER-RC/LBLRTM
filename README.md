@@ -1,12 +1,37 @@
 # LBLRTM
 
+---
+**Contents**
+
+1. [Introduction](#intro)
+2. [Cloning](#cloning)
+3. [General LNFL/LBLRTM File Information](#general)
+    1. [Platforms on which LBLRTM can be run](#platforms)
+    2. [Issues relating to unformatted files on UNIX and LINUX systems](#unformatted)
+	3. [LNFL/LBLRTM Naming Convention](#nomenclature)
+	4. [LNFL/LBLRTM Input File (TAPE5) Format](#tape5)
+	5. [LBLRTM Output File Format](#lblout)
+4. [Instructions and Tips for Running LNFL](#runlnfl)
+	1. [Input files for LNFL](#lnflin)
+	2. [Output files for LNFL](#lnflout)
+	3. [Sequence for running LNFL](#lnflseq)
+5. [Instructions and Tips for Compiling and Running LBLRTM](#runlbl)
+	1. [Required input files for LBLRTM](#lblin)
+	2. [Layer numbering scheme](#laynum)
+	3. [Output files for LBLRTM](#lblout)
+	4. [Sequence for running LBLRTM](#lblseq)
+5. [Tests](#tests)
+6. [General Questions](#faq)
+
+# Introduction <a name="intro"></a>
+
 LBLRTM (Line-By-Line Radiative Transfer Model) is an accurate and efficient line-by-line radiative transfer model derived from the Fast Atmospheric Signature Code (FASCODE). LBLRTM has been, and continues to be, extensively validated against atmospheric radiance spectra from the ultraviolet to the sub-millimeter.
 
 The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for the line parameters used in LBLRTM. These line parameters, as well as additional line parameters from other sources, are extracted for use in LBLRTM by a line file creation program called LNFL. A line parameter database built from HITRAN and suitable for use with LNFL is available from the [AER RT web site](http://rtweb.aer.com).
 
 [Add plantUML diagram]
 
-# Cloning
+# Cloning <a name="cloning "></a>
 
 Assuming the output directory should be `LBLRTM`:
 
@@ -23,9 +48,15 @@ git submodule update
 
 in the `LBLRTM` directory.
 
-# General LNFL/LBLRTM File Information
+Currently, the latest release is LBLRTM v12.9, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.9` tag:
 
-## Platforms on which LBLRTM can be run
+```
+git checkout tags/v12.9
+```
+
+# General LNFL/LBLRTM File Information <a name="general"></a>
+
+## Platforms on which LBLRTM can be run <a name="platforms"></a>
 
 It is recommended that LNFL and LBLRTM be compiled in Fortran 90. LBLRTM has previously been run on DEC alpha, Cray, MS-DOS, and HP platforms.
 
@@ -75,17 +106,17 @@ the Intel Fortran Compiler is installed.
 * Use LNFL with `TAPE5` to create `TAPE3` as described in the documentation,
 * Use `TAPE3` with LBLRTM to satisfy your requirements as described in documentation.
 
-## Issues relating to unformatted files on UNIX and LINUX systems
+## Issues relating to unformatted files on UNIX and LINUX systems <a name="unformatted"></a>
 
 Unformatted files are often not compatible between systems due to differences in the way the bytes are written to the files (big-endian versus little-endian).  Note that the `byteswap` option available with most compilers will not work with most LBLRTM unformatted output files because of the mixing of real and integer data within records.
 
-## LNFL/LBLRTM Naming Convention
+## LNFL/LBLRTM Naming Convention <a name="nomenclature"></a>
 
 Specific information on the input/output files from LNFL and LBLRTM is located in their respective input files, `lnfl_instructions` and `lblrtm_instructions`, and the examples provided in the code `tar` files.
 
 Most file names are given as `TAPEx` where `x` is a one- or two-digit number.  The name is case-sensitive, and is uppercase.  Tape numbers may be same for LNFL and LBLRTM but do not represent identical files. For example, the primary LNFL input file is `TAPE5`, and the primary LBLRTM input file is `TAPE5`.  However, they have neither the same input information nor the same formatting. The instruction manual for each code details the input file information.
 
-## LNFL/LBLRTM Input File (TAPE5) Format
+## LNFL/LBLRTM Input File (TAPE5) Format <a name="tape5"></a>
 
 The `TAPE5` input files are read as formatted FORTRAN. As a consequence of the formatted read, any blank space will be read as "zero".  Thus, one may leave blanks for most of the parameters and within the code they will default to an acceptable value.
 
@@ -93,7 +124,7 @@ Real numbers format input as either `E` or `F` format, with the entire number wi
 
 Integers are read in with the `I` format.  For example, the model atmosphere (`iatm`) in LBLRTM `TAPE5` is input as `I5`, so it must be "----2", and not "2----" as this will be read as 20000.
 
-## LBLRTM Output File Format
+## LBLRTM Output File Format <a name="lblout"></a>
 
 The general structure of the files involves the use of panels, which are blocks of output usually containing 2400 points. Each panel contains a header to describe the starting and ending points of the panel (_v<sub>1</sub>_ and _v<sub>2</sub>_), the spectral spacing of the points (`dvp`), and the number of points in the panel (`npts`). The panel header is followed by either one or two (see below) blocks of output, consisting of `npts` points.
 
@@ -112,23 +143,23 @@ Lines 2-3 repeat for i=1,N times to cover the entire spectral region.
 
 Note that a limited amount of spectral output information may also be put in the `TAPE6` using the `MPTS`/`NPTS` options of `TAPE5` record 1.2.
 
-# Instructions and Tips for Running LNFL
+# Instructions and Tips for Running LNFL <a name="runlnfl"></a>
 
 LNFL is used to generate a unformatted file (`TAPE3`) of all the line parameters required by LBLRTM.
 
-## Input files for LNFL
+## Input files for LNFL <a name="lnflin"></a>
 
 1. `TAPE1`: The line parameter database in ASCII format (also available on [RTWeb](www.rtweb.aer.com)).
 
 2. `TAPE5`: LNFL input file.
 
-## Output files for LNFL
+## Output files for LNFL <a name="lnflout"></a>
 
 1. `TAPE3`: Unformatted LNFL output file containing the line parameters for LBLRTM.
 2. `TAPE6`: Informational output file.
 3. `TAPE7`: Optional output file containing ASCII version of the parameters contained in `TAPE3`.
 
-## Sequence for running LNFL
+## Sequence for running LNFL <a name="lnflseq"></a>
 
 *	Download latest LNFL tar code (containing the source code) and the latest line parameter database from [RTWeb](rtweb.aer.com).
 *	Compile LNFL using the makefiles found in the LNFL tar file.  Note: one needs to compile in the `build` directory.
@@ -137,11 +168,11 @@ LNFL is used to generate a unformatted file (`TAPE3`) of all the line parameters
 *	Edit necessary parameters in the `TAPE5` input file.  Note that the beginning and ending wavenumber (_v<sub>1</sub>_, _v<sub>2</sub>_) in `TAPE5` must extend at least 25 cm<sup>-1</sup> beyond each end of the desired spectral range for the LBLRTM calculations.
 *	Run the LNFL executable.
 
-# Instructions and Tips for Compiling and Running LBLRTM
+# Instructions and Tips for Compiling and Running LBLRTM <a name="runlbl"></a>
 
 LBLRTM is used to generate line-by-line upwelling and downwelling transmittances and radiances.
 
-## Required input files for LBLRTM
+## Required input files for LBLRTM <a name="lblin"></a>
 1. `TAPE3`: Unformatted file containing line parameter information, generated by LNFL (see above). The `TAPE3` file should include lines from at least 25 cm<sup>-1</sup> on either end of the calculation region.
 2. `TAPE5`: Input file required to run LBLRTM.
 
@@ -149,11 +180,11 @@ The spectral interval (_v<sub>1</sub>_, _v<sub>2</sub>_) for any LBLRTM run must
 
 Other input files are required if you are using the solar source function, cross sections, surface emissivity, etc. See the LBLRTM instruction manual and provide example.
 
-## Layer numbering scheme
+## Layer numbering scheme <a name="laynum"></a>
 
 The LBLRTM convention is that layer 1 is at the highest pressure level (lowest altitude).  The layer information for a given run may be found in `TAPE6`.
 
-## Output files for LBLRTM
+## Output files for LBLRTM <a name="lblout"></a>
 1. `TAPE6`: Informational output file
 2. `TAPE11`: Unformatted file containing filtered output, if requested in `TAPE5`.
 3. `TAPE12`: Unformatted file containing transmittances/radiances.
@@ -162,18 +193,18 @@ ASCII file of unformatted unformatted files can be requested in the LBLRTM TAPE5
 
 Unformatted optical depth files can be requested in the LBLRTM using options specified in `TAPE5`.
 
-## Sequence for running LBLRTM
+## Sequence for running LBLRTM <a name="lblseq"></a>
 * Download latest LBLRTM tar code (containing the source code) and the latest line parameter database from [RTWeb](http://rtweb.aer.com).
 * Compile LBLRTM following makefiles in the LBLRTM tar file. Note, one needs to compile in the `build` directory
 * Link the line parameter database (`TAPE3` from LNFL) to the LBLRTM working directory.
 * Edit any parameters necessary in the input file `TAPE5`.
 * Run the LBLRTM executable.
 
-# Tests
+# Tests <a name="tests"></a>
 
 [Run examples doc]
 
-# General Questions
+# General Questions <a name="faq"></a>
 
 1. **What is the difference between a line-by-line calculation and a band-model calculation?**
 
@@ -224,7 +255,7 @@ Sea surface spectral emissivity and reflectivity files are provided with the exa
 
 | Parameter | Format | Description |
 | :--- | :---: | :--- |
- | `V1EMIS` | `E10.3` | Initial emissivity/reflectivity frequency value [cm<sup>-1</sup>] |
+| `V1EMIS` | `E10.3` | Initial emissivity/reflectivity frequency value [cm<sup>-1</sup>] |
 | `V2EMIS` | `E10.3` | Finial emissivity/reflectivity frequency value [cm<sup>-1</sup>] |
 | `DVEMIS` | `E10.3` | Frequency Increment [cm<sup>-1</sup>] |
 | `NLIMEM` | `I5` | Number of spectral emissivity/reflectivity points in the file |
