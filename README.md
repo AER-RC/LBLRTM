@@ -4,7 +4,7 @@
 **Contents**
 
 1. [Introduction](#intro)
-2. [Cloning](#cloning)
+2. [Cloning the Latest Release](#cloning)
 3. [General LNFL/LBLRTM File Information](#general)
     1. [Platforms on which LBLRTM can be run](#platforms)
     2. [Issues relating to unformatted files on UNIX and LINUX systems](#unformatted)
