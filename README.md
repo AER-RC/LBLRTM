@@ -21,7 +21,7 @@
 	3. [Output files for LBLRTM](#lblout)
 	4. [Sequence for running LBLRTM](#lblseq)
 5. [Tests](#tests)
-6. [General Questions](#faq)
+6. [Frequently Asked Questions](#faq)
 
 # Introduction <a name="intro"></a>
 
@@ -208,7 +208,7 @@ Unformatted optical depth files can be requested in the LBLRTM using options spe
 
 [Run examples doc]
 
-# General Questions <a name="faq"></a>
+# Frequently Asked Questions <a name="faq"></a>
 
 1. **What is the difference between a line-by-line calculation and a band-model calculation?**
 
