@@ -56,6 +56,8 @@ Currently, the latest release is LBLRTM v12.9, and it is recommended that this b
 git checkout tags/v12.9
 ```
 
+No releases before v12.9 are available via GitHub, but they can be requested by contacting the [AER R&C group](aer_lblrtm@aer.com). For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
+
 # General LNFL/LBLRTM File Information <a name="general"></a>
 
 ## Platforms on which LBLRTM can be run <a name="platforms"></a>
