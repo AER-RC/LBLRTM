@@ -66,49 +66,49 @@ It is recommended that LNFL and LBLRTM be compiled in Fortran 90. LBLRTM has pre
 
 Some users have ported the code to the Windows/DOS environment. AER presently does not officially support this implementation; however, the following description of how LBLRTM was used in XP by a user (Christopher Rice, Air Force Institute of Technology [AFIT]):
 
-* Obtain the newest Intel Fortran Compiler (v 9.1) and Visual Studio.net 2003.
-* Install visual studio .net 2003.
-*	Install Intel Fortran Compiler (Fortran compiler options will appear in MSVS 2003 after
-the Intel Fortran Compiler is installed.
-*	Decompress source codes for LBLRTM and LNFL into their appropriate folders.
-*	Compile LNFL:
-  * Open Visual Studio 2003.
-	* Open a new project.
-  * Select “Intel Fortran Projects” under “Project Types” and choose “Console Application” from “Templates”.
-  * Name this project accordingly. (e.g., `LNFL_Exe`)
-  * After the project is created a “Solution Explorer” will show the solution named as above. Right click on “Source Files” and add the following files:
-      * `lnfl.f90`
-      * `util_dos.f90`
-  * Note that the `util_linux_intel` makefile can be used as a reference for the files to be included, replacing `util_linux.f90` with the file `util_dos.f90`.
-  * Make sure the compiler is set to “release” NOT “debug”.
-  * Build the Project.
-  * On successful build find the `.exe` in the “release” folder where the project is saved
-* Compile LBLRTM:
-  * Open Visual Studio 2003.
-  * Open a new project.
-  * Select “Intel Fortran Projects” under “Project Types” and choose “Console Application” from “Templates”.
-  * Name this project accordingly. (e.g., `LBLRTM_Exe`)
-  * After the project is created a “Solution Explorer” will show a solution named as above. Right click on “Source Files” and add the following files:
-    * `contnm.f90`
-    *	`fftscn.f90`
-    *	`lblatm.f90`
-    *	`lbldum.f90`
-    *	`lbllow.f90`
-    *	`lblrtm.f90`
-    *	`nonlte.f90`
-    * `oprop.f90`
-    *	`pltlbl.f90`
-    *	`postsub.f90`
-    *	`solar.f90`
-    *	`testmm.f90`
-    *	`util_dos.f90`
-    *	`xmerge.f90`
-  * Note that the `util_linux_intel` makefile can be used as a reference for the files to be included, replacing `util_linux.f90` with the file `util_dos.f90`.
-  * Make sure the compiler is set to “release” NOT “debug” – LBLRTM will not operate correctly when compiled in “Debug” mode.
-  * Build the Project.
-  * On successful build find the exe in the “release” folder where the project is saved.
-* Use LNFL with `TAPE5` to create `TAPE3` as described in the documentation,
-* Use `TAPE3` with LBLRTM to satisfy your requirements as described in documentation.
+> * Obtain the newest Intel Fortran Compiler (v 9.1) and Visual Studio.net 2003.
+> * Install visual studio .net 2003.
+> *	Install Intel Fortran Compiler (Fortran compiler options will appear in MSVS 2003 after
+> the Intel Fortran Compiler is installed.
+> *	Decompress source codes for LBLRTM and LNFL into their appropriate folders.
+> *	Compile LNFL:
+>   * Open Visual Studio 2003.
+> 	* Open a new project.
+>   * Select “Intel Fortran Projects” under “Project Types” and choose “Console Application” from “Templates”.
+>   * Name this project accordingly. (e.g., `LNFL_Exe`)
+>   * After the project is created a “Solution Explorer” will show the solution named as above. Right click on “Source Files” and add the following files:
+>       * `lnfl.f90`
+>       * `util_dos.f90`
+>   * Note that the `util_linux_intel` makefile can be used as a reference for the files to be included, replacing `util_linux.f90` with the file `util_dos.f90`.
+>   * Make sure the compiler is set to “release” NOT “debug”.
+>   * Build the Project.
+>   * On successful build find the `.exe` in the “release” folder where the project is saved
+> * Compile LBLRTM:
+>   * Open Visual Studio 2003.
+>   * Open a new project.
+>   * Select “Intel Fortran Projects” under “Project Types” and choose “Console Application” from “Templates”.
+>   * Name this project accordingly. (e.g., `LBLRTM_Exe`)
+>   * After the project is created a “Solution Explorer” will show a solution named as above. Right click on “Source Files” and add the following files:
+>     * `contnm.f90`
+>     *	`fftscn.f90`
+>     *	`lblatm.f90`
+>     *	`lbldum.f90`
+>     *	`lbllow.f90`
+>     *	`lblrtm.f90`
+>     *	`nonlte.f90`
+>     * `oprop.f90`
+>     *	`pltlbl.f90`
+>     *	`postsub.f90`
+>     *	`solar.f90`
+>     *	`testmm.f90`
+>     *	`util_dos.f90`
+>     *	`xmerge.f90`
+>   * Note that the `util_linux_intel` makefile can be used as a reference for the files to be included, replacing `util_linux.f90` with the file `util_dos.f90`.
+>   * Make sure the compiler is set to “release” NOT “debug” – LBLRTM will not operate correctly when compiled in “Debug” mode.
+>   * Build the Project.
+>   * On successful build find the exe in the “release” folder where the project is saved.
+> * Use LNFL with `TAPE5` to create `TAPE3` as described in the documentation,
+> * Use `TAPE3` with LBLRTM to satisfy your requirements as described in documentation.
 
 ## Issues relating to unformatted files on UNIX and LINUX systems <a name="unformatted"></a>
 
