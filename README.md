@@ -5,23 +5,24 @@
 
 1. [Introduction](#intro)
 2. [Cloning the Latest Release](#cloning)
-3. [General LNFL/LBLRTM File Information](#general)
+3. [LBLRTM and Docker](#docker)
+4. [General LNFL/LBLRTM File Information](#general)
     1. [Platforms on which LBLRTM can be run](#platforms)
     2. [Issues relating to unformatted files on UNIX and LINUX systems](#unformatted)
 	3. [LNFL/LBLRTM Naming Convention](#nomenclature)
 	4. [LNFL/LBLRTM Input File (TAPE5) Format](#tape5)
 	5. [LBLRTM Output File Format](#lblout)
-4. [Instructions and Tips for Running LNFL](#runlnfl)
+5. [Instructions and Tips for Running LNFL](#runlnfl)
 	1. [Input files for LNFL](#lnflin)
 	2. [Output files for LNFL](#lnflout)
 	3. [Sequence for running LNFL](#lnflseq)
-5. [Instructions and Tips for Compiling and Running LBLRTM](#runlbl)
+6. [Instructions and Tips for Compiling and Running LBLRTM](#runlbl)
 	1. [Required input files for LBLRTM](#lblin)
 	2. [Layer numbering scheme](#laynum)
 	3. [Output files for LBLRTM](#lblout)
 	4. [Sequence for running LBLRTM](#lblseq)
-5. [Tests](#tests)
-6. [Frequently Asked Questions](#faq)
+7. [Tests](#tests)
+8. [Frequently Asked Questions](#faq)
 
 # Introduction <a name="intro"></a>
 
@@ -57,6 +58,20 @@ git checkout tags/v12.9
 ```
 
 No releases before v12.9 are available via GitHub, but they can be requested by emailing <aer_lblrtm@aer.com>. For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
+
+# LBLRTM and Docker <a name="docker"></a>
+
+More doc to come, but see the [GitHub package page](https://github.com/AER-RC/LBLRTM/packages/200551) for Docker image pull directions. And to run:
+
+```
+docker pull docker.pkg.github.com/aer-rc/lblrtm/lblrtm:latest
+
+docker tag docker.pkg.github.com/aer-rc/lblrtm/lblrtm:latest lblrtm
+
+docker run -it --rm -v ~/Work/RC/LBLRTM/LBL_In:/LBLRTM/LBLRTM_In -v ~/Work/RC/LBLRTM/LBL_Out:/LBLRTM/LBLRTM_Out lblrtm
+```
+
+Volume mounts are necessary to provide LBLRTM inputs and for the user to have access to the outputs. Currently, the `TAPE3`, `TAPE5`, and cross section database are assumed to be in the LBLRTM input directory. `EMISSIVITY` and `REFLECTIVITY` could conceivably work with the correct volume mounts. Cross sections will be their own submodule at some point. The [LBLRTM input file naming convention](#lblin) is assumed.
 
 # General LNFL/LBLRTM File Information <a name="general"></a>
 
