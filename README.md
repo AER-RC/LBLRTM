@@ -27,7 +27,7 @@
 
 LBLRTM (Line-By-Line Radiative Transfer Model) is an accurate and efficient line-by-line radiative transfer model derived from the Fast Atmospheric Signature Code (FASCODE). LBLRTM has been, and continues to be, extensively validated against atmospheric radiance spectra from the ultraviolet to the sub-millimeter.
 
-The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for the line parameters used in LBLRTM. These line parameters, as well as additional line parameters from other sources, are extracted for use in LBLRTM by a line file creation program called LNFL. A line parameter database built from HITRAN and suitable for use with LNFL is available from the [AER RT web site](http://rtweb.aer.com).
+The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for the line parameters used in LBLRTM. These line parameters, as well as additional line parameters from other sources, are extracted for use in LBLRTM by a line file creation program called LNFL. A line parameter database built from HITRAN and suitable for use with LNFL is available on the [AER RT web site](http://rtweb.aer.com).
 
 [Add plantUML diagram]
 
@@ -167,7 +167,7 @@ LNFL is used to generate a unformatted file (`TAPE3`) of all the line parameters
 
 ## Sequence for running LNFL <a name="lnflseq"></a>
 
-*	Download latest LNFL tar code (containing the source code) and the latest line parameter database from [RTWeb](rtweb.aer.com).
+*	[Clone the latest LNFL code](https://github.com/AER-RC/LNFL#cloning-)  and download the latest line parameter database from [RTWeb](rtweb.aer.com).
 *	Compile LNFL using the makefiles found in the LNFL tar file.  Note: one needs to compile in the `build` directory.
 *	Link the line parameter database to `TAPE1` in the LNFL working directory.
 *	Remove `TAPE3` file from the LNFL working directory.
@@ -200,7 +200,7 @@ ASCII file of unformatted unformatted files can be requested in the LBLRTM TAPE5
 Unformatted optical depth files can be requested in the LBLRTM using options specified in `TAPE5`.
 
 ## Sequence for running LBLRTM <a name="lblseq"></a>
-* Download latest LBLRTM tar code (containing the source code) and the latest line parameter database from [RTWeb](http://rtweb.aer.com).
+* [Clone the latest LBLRTM code](https://github.com/AER-RC/LBLRTM#cloning-the-latest-release-) and download the latest line parameter database from [RTWeb](http://rtweb.aer.com).
 * Compile LBLRTM following makefiles in the LBLRTM tar file. Note, one needs to compile in the `build` directory
 * Link the line parameter database (`TAPE3` from LNFL) to the LBLRTM working directory.
 * Edit any parameters necessary in the input file `TAPE5`.
