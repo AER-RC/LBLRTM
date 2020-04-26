@@ -17,5 +17,6 @@ echo "Running LBL"
 # move outputs to directory that is volume mounted
 export OUTDIR=/LBLRTM/LBLRTM_Out
 mv TAPE* $OUTDIR
+mv OD* $OUTDIR
 
 exit
