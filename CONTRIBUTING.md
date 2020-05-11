@@ -1,6 +1,6 @@
 # Local Version
 
-The `master` branch of hosted in GitHub *is* the local version of LBLRTM. Releases are in "Releases" and have tags. At AER, we have a single clone accessible to everyone for the purpose of having a single build to which we can all point (`/nas/project/rc/rc1/lblrtm_local_version`), but this clone IS NOT FOR DEVELOPMENT! For developing the model, please refer to the [Incoming section](#Incoming).
+The `master` branch of hosted in GitHub *is* the local version of LBLRTM. Releases are in "Releases" and have tags. At AER, we have a single clone accessible to everyone for the purpose of having builds to which we can all point (`/nas/project/rc/rc1/lblrtm_local_version`, with PGI and Intel builds), but this clone IS NOT FOR DEVELOPMENT! For developing the model, please refer to the [Incoming section](#Incoming).
 
 # Incoming <a href="Incoming"></a>
 
