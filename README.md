@@ -42,7 +42,7 @@ Assuming the output directory should be `LBLRTM`:
 % git clone --recursive git@github.com:AER-RC/LBLRTM.git
 ```
 
-`--recursive` is important, because this repository is linked with our [common FORTRAN modules repository](https://github.com/AER-RC/aer_rt_utils) that are required in the model builds. If this keyword is forgotten, one can do:
+`--recursive` is important, because this repository is linked with our [common FORTRAN modules repository](https://github.com/AER-RC/aer_rt_utils) that are required in the model builds. The [cross section database](https://github.com/AER-RC/cross-sections) is also added as a submodule (it is not required for all model runs). If this keyword is forgotten, one can do:
 
 ```
 git submodule init

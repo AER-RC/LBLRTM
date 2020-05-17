@@ -1,3 +1,6 @@
 [submodule "aer_rt_utils"]
 	path = aer_rt_utils
 	url = git@github.com:AER-RC/aer_rt_utils.git
+[submodule "cross-sections"]
+	path = cross-sections
+	url = git@github.com:AER-RC/cross-sections.git
