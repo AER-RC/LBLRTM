@@ -1,4 +1,4 @@
-LBLRTM v12.10
+LBLRTM v12.9
 August 2019
 
 * Module oprop.f90 was revised to allow handling of the UV O2 lines (M.J. Iacono, E.J. Mlawer)
@@ -15,7 +15,7 @@ August 2019
 
 * Added space after STOP in lblatm.f90 to prevent issues on some compilers (M.J. Alvarado, K.E. Cady-Pereira, D.D. Turner)
 
-LBLRTM v12.9
+LBLRTM v12.9_beta
 December 2017 (not publicly released)
 
 * Small adjustment to BBFN() in xmerge.f90 to ensure correct rounding to integer (Y. Ma, M.J. Alvarado, E.J. Mlawer)
