@@ -2,3 +2,6 @@ run_examples
 *.doc
 LBL_In
 LBL_Out
+lblrtm_v*
+build/lblrtm_v*
+build/*.mod
