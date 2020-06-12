@@ -4,7 +4,7 @@
 !     created:   $Date$
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2012         |
+! |  Copyright ï¿½, Atmospheric and Environmental Research, Inc., 2012         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -27,7 +27,7 @@ MODULE lblparams   ! Parameters for array dimensions in lblrtm
 
       integer, parameter :: MXMOL=47, MXSPC=5, Max_ISO=20, MXISOTPL=10
 !
-      integer, parameter :: MXFSC=600, MXLAY=MXFSC+3, MX_XS=38
+      integer, parameter :: MXFSC=600, MXLAY=MXFSC+3, MX_XS=40
       integer, parameter :: MXZMD=7000, MXPDIM=MXLAY+MXZMD
       integer, parameter :: IM2=MXPDIM-2, MXTRAC=41
       integer, parameter :: NFPTS=2001, NFMX=1.3*NFPTS
