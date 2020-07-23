@@ -24,24 +24,24 @@
 !
 MODULE planet_consts   ! Physical constants for Mars
 
-  implicit none
+   implicit none
 
-  real, parameter :: AIRMWT = 44.000  ! air molecular weight (grams/mole)
-  real, parameter :: XMASS_DRY = AIRMWT*1.E-3
+   real, parameter :: AIRMWT = 44.000  ! air molecular weight (grams/mole)
+   real, parameter :: XMASS_DRY = AIRMWT*1.E-3
 
 
 CONTAINS
 
-  FUNCTION GRAV_CONST(LATITUDE)
+   FUNCTION GRAV_CONST(LATITUDE)
 
-    REAL, INTENT(IN), OPTIONAL  :: LATITUDE    ! in degrees
-    REAL, INTENT(OUT)           :: G0          ! in meters/s^2
-    REAL                        :: REF_LAT
-    REAL, PARAMETER             :: DEFAULT_LAT= 45.   ! in degrees
+      REAL, INTENT(IN), OPTIONAL  :: LATITUDE    ! in degrees
+      REAL, INTENT(OUT)           :: G0          ! in meters/s^2
+      REAL                        :: REF_LAT
+      REAL, PARAMETER             :: DEFAULT_LAT= 45.   ! in degrees
 
 !         Gravitational constant for Mars in meters/s^2
-      GRAV_CONST = 3.73 
+      GRAV_CONST = 3.73
 
-  END FUNCTION GRAV_CONST
+   end function GRAV_CONST
 
-END MODULE planet_consts
+end module planet_consts

@@ -24,25 +24,25 @@
 !
 MODULE phys_consts   ! Physical constants
 
-  implicit none
-!                                                                       
+   implicit none
+!
 !    Constants from NIST May 2010
-!                                                                       
-!     units are generally cgs                                           
-!                                                                       
-      real, parameter  :: PI = 3.1415926535898
-      real, parameter  :: PLANCK = 6.62606876E-27 
-      real, parameter  :: BOLTZ = 1.3806503E-16 
-      real, parameter  :: CLIGHT = 2.99792458E+10
-      real, parameter  :: AVOGAD = 6.02214199E+23 
-      real, parameter  :: ALOSMT = 2.6867775E+19 
-      real, parameter  :: GASCON = 8.314472E+07 
-      real, parameter  :: RADCN1 = 1.191042722E-12 
-      real, parameter  :: RADCN2 = 1.4387752 
-!                                                                       
-!     The first and second radiation constants are taken from NIST.     
-!     They were previously obtained from the relations:                 
-!                            RADCN1 = 2.*PLANCK*CLIGHT*CLIGHT*1.E-07    
-!                            RADCN2 = PLANCK*CLIGHT/BOLTZ               
+!
+!     units are generally cgs
+!
+   real, parameter  :: PI = 3.1415926535898
+   real, parameter  :: PLANCK = 6.62606876E-27
+   real, parameter  :: BOLTZ = 1.3806503E-16
+   real, parameter  :: CLIGHT = 2.99792458E+10
+   real, parameter  :: AVOGAD = 6.02214199E+23
+   real, parameter  :: ALOSMT = 2.6867775E+19
+   real, parameter  :: GASCON = 8.314472E+07
+   real, parameter  :: RADCN1 = 1.191042722E-12
+   real, parameter  :: RADCN2 = 1.4387752
+!
+!     The first and second radiation constants are taken from NIST.
+!     They were previously obtained from the relations:
+!                            RADCN1 = 2.*PLANCK*CLIGHT*CLIGHT*1.E-07
+!                            RADCN2 = PLANCK*CLIGHT/BOLTZ
 
-END MODULE phys_consts
+end module phys_consts

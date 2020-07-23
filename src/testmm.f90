@@ -1,6 +1,6 @@
 !     path:      $HeadURL$
 !     revision:  $Revision$
-!     created:   $Date$  
+!     created:   $Date$
 !     presently: %H%  %T%
 !
 !  --------------------------------------------------------------------------
@@ -22,2692 +22,2692 @@
 ! |                       (http://www.rtweb.aer.com/)                        |
 !  --------------------------------------------------------------------------
 !
-      SUBROUTINE TESTMM (LINFIL) 
-!                                                                       
-      IMPLICIT REAL*8           (V) 
-!                                                                       
-      REAL*4 STR,ALF,EPP,     HWHMS,                                    &
-     &       TMPALF,PSHIFT,amol                                         
-      real*8 xlinc,xlind 
-      real*8 x_100 
-      integer*4  MOL,IFLG,lstwdl,iso(250) 
-!                                                                       
-      COMMON VNU(250),STR(250),ALF(250),EPP(250),MOL(250),HWHMS(250),   &
-     &       TMPALF(250),PSHIFT(250),IFLG(250),lstwdl                   
-      COMMON /CVRTST/ HNAMTST,HVRTST 
-!      COMMON /LINES/ XLINC(5,1027),XLIND(6,1027)                       
-      COMMON /LINES/ XLINC(5,1068),XLIND(6,1068) 
-!                                                                       
-      CHARACTER*8        HID,HMOLID,HID1,HLINHD 
-!                                                                       
-      real*4       SUMSTR,FLINLO,FLINHI 
-      integer*4    MOLCNT,MCNTLC,                                       &
-     &             MCNTNL,NMOL,                                         &
-     &             ILIN,ILINLC,ILINNL,IREC,IRECTL,                      &
-     &             linfil_4,ilngthp,ilngth                              
-!                                                                       
-      COMMON /BUFID_l/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),        &
-     &               MCNTNL(64),SUMSTR(64),NMOL,FLINLO,FLINHI,          &
-     &               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2)             
-      COMMON /BUFIDC/ CHID,CHMOL(64),CHID1 
-      CHARACTER CHID*80,CHMOL*6,CHID1*16 
-                                                                        
-      real*4         rcdhdr 
-      integer*4      jlin,nwds 
-                                                                        
-      COMMON /TPANEL/ VNULO,VNUHI,JLIN,NWDS,lstwdp 
-      COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
-     &              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,      &
-     &              NLTEFL,LNFIL4,LNGTH4                                
-      DIMENSION RCDHDR(2),IWD(2),HLINHD(2),AMOL(250) 
-!                                                                       
-      EQUIVALENCE (VNULO,RCDHDR(1)) , (MOL(1),AMOL(1)),                 &
-     &            (HLINHD(1),HID(1),IWD(1))                             
-!                                                                       
-      CHARACTER*18 HNAMTST,HVRTST 
-!                                                                       
-!     LINCPL - IS THE FLAG FOR LINE COUPLING --- 0 = OFF; 1 = ON        
-!                                                                       
-      DATA LINCPL / 1 / 
-      data x_100 / 100.0d0 / 
-!                                                                       
-!********************************************************************** 
-!                                                                       
-!     NOTE: ISOTOPE IS NOT CURRENTLY PROVIDED IN BLOCK DATA STATEMENTS. 
-!           ISOTOPE IS ARTIFICIALLY SET TO '1' FOR ALL LINES.           
-!                                                                       
-!********************************************************************** 
-!                                                                       
-!      DATA ISO / 1 /                                                   
-!                                                                       
-!     ASSIGN CVS VERSION NUMBER TO MODULE                               
-!                                                                       
-      HVRTST = '$Revision$' 
-!                                                                       
-      linfil_4 = linfil 
-!     this definition is so that the tape # is always integer*4         
-!     required by some compilers                                        
-                                                                        
-!                                                                       
-      OPEN (LINFIL,FILE='TAPE3',STATUS='NEW',FORM='unformatted') 
-!                                                                       
-      lstwdp = -654321 
-      ilngthp = NWDL_4 (rcdhdr(1),LSTWDp) 
-!                                                                       
-      lstwdl = -654321 
-      ilngth = NWDL_4 (vnu(1),LSTWDL) 
-!                                                                       
-      DO 10 M = 1, 64 
-         READ (CHMOL(M),900) HMOLID(M) 
-         MOLCNT(M) = 0 
-         MCNTLC(M) = 0 
-         MCNTNL(M) = 0 
-         SUMSTR(M) = 0. 
-   10 END DO 
-!                                                                       
-      READ (CHID,905) (HID(I),I=1,10) 
-      READ (CHID1,905) (HID1(I),I=1,2) 
-!                                                                       
-      WRITE (IPR,910) 
-      FLINLO = XLINC(2,1) 
-      FLINHI = XLINC(2,IRECTL) 
-      DO 20 I = 1, IRECTL 
-         IFLAG = XLIND(6,I) 
-         IF (IFLAG.GE.0) THEN 
-            M = mod(XLIND(1,I),x_100) 
-            IF (IFLAG.GT.0.AND.LINCPL.EQ.1) MCNTLC(M) = MCNTLC(M)+1 
-            MOLCNT(M) = MOLCNT(M)+1 
-            SUMSTR(M) = SUMSTR(M)+XLINC(3,I) 
-         ENDIF 
-   20 END DO 
-      REWIND LINFIL_4 
-!                                                                       
-      write (linfil_4) HID,HMOLID,MOLCNT,MCNTLC,                        &
-     &               MCNTNL,SUMSTR,NMOL,FLINLO,FLINHI,                  &
-     &               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1                
-!                                                                       
-      NREC = IRECTL 
-      K = 0 
-      DO 70 I = 1, NREC 
-!                                                                       
-!     CHECK FOR LINE COUPLING - IF TURNED OFF, ZERO FLAG AND IGNORE Y'S 
-!                                                                       
-         IF (LINCPL.EQ.0) THEN 
-            IF (XLIND(6,I).GE.0.0) THEN 
-               XLIND(6,I) = 0.0 
-            ELSE 
-               GO TO 30 
-            ENDIF 
-         ENDIF 
-!                                                                       
-         K = K+1 
-         IFLGK = XLIND(6,I) 
-                                                                        
-         IF (IFLGK.GE.0) THEN 
-                                                                        
-            iso(k) = xlinc(1,i)/100. 
-            MOL(K) = mod(XLINC(1,I),x_100) 
-                                                                        
-            VNU(K) = XLINC(2,I) 
-            STR(K) = XLINC(3,I) 
-            ALF(K) = XLINC(4,I) 
-            EPP(K) = XLINC(5,I) 
-            HWHMS(K) = XLIND(3,I) 
-            TMPALF(K) = XLIND(4,I) 
-            PSHIFT(K) = XLIND(5,I) 
-            IFLG(K) = XLIND(6,I) 
-!                                                                       
-!     ADD ISOTOPE TO MOLECULE FOR USE BY LBLRTM                         
-!                                                                       
-            MOL(K) = MOL(K)+ISO(k)*100 
-!                                                                       
-         ELSE 
-!                                                                       
+SUBROUTINE TESTMM (LINFIL)
+!
+   IMPLICIT REAL*8           (V)
+!
+   REAL*4 STR,ALF,EPP,     HWHMS,                                    &
+   &       TMPALF,PSHIFT,amol
+   real*8 xlinc,xlind
+   real*8 x_100
+   integer*4  MOL,IFLG,lstwdl,iso(250)
+!
+   COMMON VNU(250),STR(250),ALF(250),EPP(250),MOL(250),HWHMS(250),   &
+   &       TMPALF(250),PSHIFT(250),IFLG(250),lstwdl
+   COMMON /CVRTST/ HNAMTST,HVRTST
+!      COMMON /LINES/ XLINC(5,1027),XLIND(6,1027)
+   COMMON /LINES/ XLINC(5,1068),XLIND(6,1068)
+!
+   CHARACTER*8        HID,HMOLID,HID1,HLINHD
+!
+   real*4       SUMSTR,FLINLO,FLINHI
+   integer*4    MOLCNT,MCNTLC,                                       &
+   &             MCNTNL,NMOL,                                         &
+   &             ILIN,ILINLC,ILINNL,IREC,IRECTL,                      &
+   &             linfil_4,ilngthp,ilngth
+!
+   COMMON /BUFID_l/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),        &
+   &               MCNTNL(64),SUMSTR(64),NMOL,FLINLO,FLINHI,          &
+   &               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2)
+   COMMON /BUFIDC/ CHID,CHMOL(64),CHID1
+   CHARACTER CHID*80,CHMOL*6,CHID1*16
+
+   real*4         rcdhdr
+   integer*4      jlin,nwds
+
+   COMMON /TPANEL/ VNULO,VNUHI,JLIN,NWDS,lstwdp
+   COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
+   &              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,      &
+   &              NLTEFL,LNFIL4,LNGTH4
+   DIMENSION RCDHDR(2),IWD(2),HLINHD(2),AMOL(250)
+!
+   EQUIVALENCE (VNULO,RCDHDR(1)) , (MOL(1),AMOL(1)),                 &
+   &            (HLINHD(1),HID(1),IWD(1))
+!
+   CHARACTER*18 HNAMTST,HVRTST
+!
+!     LINCPL - IS THE FLAG FOR LINE COUPLING --- 0 = OFF; 1 = ON
+!
+   DATA LINCPL / 1 /
+   data x_100 / 100.0d0 /
+!
+!**********************************************************************
+!
+!     NOTE: ISOTOPE IS NOT CURRENTLY PROVIDED IN BLOCK DATA STATEMENTS.
+!           ISOTOPE IS ARTIFICIALLY SET TO '1' FOR ALL LINES.
+!
+!**********************************************************************
+!
+!      DATA ISO / 1 /
+!
+!     ASSIGN CVS VERSION NUMBER TO MODULE
+!
+   HVRTST = '$Revision$'
+!
+   linfil_4 = linfil
+!     this definition is so that the tape # is always integer*4
+!     required by some compilers
+
+!
+   OPEN (LINFIL,FILE='TAPE3',STATUS='NEW',FORM='unformatted')
+!
+   lstwdp = -654321
+   ilngthp = NWDL_4 (rcdhdr(1),LSTWDp)
+!
+   lstwdl = -654321
+   ilngth = NWDL_4 (vnu(1),LSTWDL)
+!
+   DO 10 M = 1, 64
+      READ (CHMOL(M),900) HMOLID(M)
+      MOLCNT(M) = 0
+      MCNTLC(M) = 0
+      MCNTNL(M) = 0
+      SUMSTR(M) = 0.
+10 END DO
+!
+   READ (CHID,905) (HID(I),I=1,10)
+   READ (CHID1,905) (HID1(I),I=1,2)
+!
+   WRITE (IPR,910)
+   FLINLO = XLINC(2,1)
+   FLINHI = XLINC(2,IRECTL)
+   DO 20 I = 1, IRECTL
+      IFLAG = XLIND(6,I)
+      IF (IFLAG.GE.0) THEN
+         M = mod(XLIND(1,I),x_100)
+         IF (IFLAG.GT.0.AND.LINCPL.EQ.1) MCNTLC(M) = MCNTLC(M)+1
+         MOLCNT(M) = MOLCNT(M)+1
+         SUMSTR(M) = SUMSTR(M)+XLINC(3,I)
+      ENDIF
+20 END DO
+   REWIND LINFIL_4
+!
+   write (linfil_4) HID,HMOLID,MOLCNT,MCNTLC,                        &
+   &               MCNTNL,SUMSTR,NMOL,FLINLO,FLINHI,                  &
+   &               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1
+!
+   NREC = IRECTL
+   K = 0
+   DO 70 I = 1, NREC
+!
+!     CHECK FOR LINE COUPLING - IF TURNED OFF, ZERO FLAG AND IGNORE Y'S
+!
+      IF (LINCPL.EQ.0) THEN
+         IF (XLIND(6,I).GE.0.0) THEN
+            XLIND(6,I) = 0.0
+         ELSE
+            GO TO 30
+         ENDIF
+      ENDIF
+!
+      K = K+1
+      IFLGK = XLIND(6,I)
+
+      IF (IFLGK.GE.0) THEN
+
+         iso(k) = xlinc(1,i)/100.
+         MOL(K) = mod(XLINC(1,I),x_100)
+
+         VNU(K) = XLINC(2,I)
+         STR(K) = XLINC(3,I)
+         ALF(K) = XLINC(4,I)
+         EPP(K) = XLINC(5,I)
+         HWHMS(K) = XLIND(3,I)
+         TMPALF(K) = XLIND(4,I)
+         PSHIFT(K) = XLIND(5,I)
+         IFLG(K) = XLIND(6,I)
+!
+!     ADD ISOTOPE TO MOLECULE FOR USE BY LBLRTM
+!
+         MOL(K) = MOL(K)+ISO(k)*100
+!
+      ELSE
+!
 !     -modify the oxygen line coupling coefficients based on the data of
-!      Cimini et al. 2003 (kcp and sac)                                 
-!                                                                       
-            MOLK = mod(XLINC(1,I),x_100) 
-                                                                        
-            y1 = XLINC(2,I) 
-            g1 = XLINC(3,I) 
-            y2 = XLINC(4,I) 
-            g2 = XLINC(5,I) 
-            y3 = XLIND(1,I) 
-            g3 = XLIND(3,I) 
-            y4 = XLIND(4,I) 
-            g4 = XLIND(5,I) 
-!                                                                       
+!      Cimini et al. 2003 (kcp and sac)
+!
+         MOLK = mod(XLINC(1,I),x_100)
+
+         y1 = XLINC(2,I)
+         g1 = XLINC(3,I)
+         y2 = XLINC(4,I)
+         g2 = XLINC(5,I)
+         y3 = XLIND(1,I)
+         g3 = XLIND(3,I)
+         y4 = XLIND(4,I)
+         g4 = XLIND(5,I)
+!
 !     -line coupling for zero frequency oxygen line is not modified  bas
-!      Cimini et al. 2003 (kcp and sac)                                 
-                                                                        
-            if (i.eq.2) then 
-            y_fac = 1. 
-            g_fac = 1. 
-            else 
-            y_fac = 0.87 
-            g_fac = 0. 
-            endif 
-!                                                                       
-            VNU(K) = y_fac*y1 
-            STR(K) = g_fac*g1 
-            ALF(K) = y_fac*y2 
-            EPP(K) = g_fac*g2 
-                                                                        
-            AMOL(K) = y_fac*y3 
-            HWHMS(K) = g_fac*g3 
-            TMPALF(K) = y_fac*y4 
-            PSHIFT(K) = g_fac*g4 
-                                                                        
-            IFLG(K) = XLIND(6,I) 
-!                                                                       
-         ENDIF 
-!                                                                       
-!     CHECK LAST LINE - TO SEE IF FIRST RECORD OF LINE COUPLED LINE     
-!     IF SO, DON'T DO UNTIL NEXT GROUPING OF 250                        
-!                                                                       
-         IF (K.EQ.249.AND.LINCPL.EQ.1) THEN 
-            IF (XLIND(6,I+1).GT.0.0) GO TO 40 
-         ENDIF 
-   30    IF (I.EQ.NREC) GO TO 40 
-         IF (K.LT.250) GO TO 70 
-   40    VNULO = VNU(1) 
-         VNUHI = VNU(K) 
-         JLIN = K 
-!                                                                       
-         NWDS = ILNGTH 
-!                                                                       
-         write(linfil_4) VNULO,VNUHI,JLIN,NWDS 
-!         CALL BUFOUT_sgl (LINFIL_4,RCDHDR(1),ilngthp)                  
-         IF (K.GE.250) GO TO 60 
-         KLO = K+1 
-         KHI = 250 
-         DO 50 K = KLO, KHI 
-            VNU(K) = 0. 
-            STR(K) = 0. 
-            ALF(K) = 0. 
-            EPP(K) = 0. 
-            MOL(K) = 0. 
-            HWHMS(K) = 0. 
-            TMPALF(K) = 0. 
-            PSHIFT(K) = 0. 
-            IFLG(K) = 0. 
-   50    CONTINUE 
-!                                                                       
-   60    CALL BUFOUT_sgl (LINFIL_4,VNU(1),ILNGTH) 
-         K = 0 
-   70 END DO 
-      ENDFILE LINFIL_4 
-      REWIND LINFIL_4 
-!                                                                       
-      RETURN 
-!                                                                       
-                                                                        
-  920 FORMAT (I5,F12.6,D10.3,E10.3,2F5.4,F10.4,F4.2,F8.6,31x,           &
-     &     I2)                                                          
-  925 FORMAT (I5,1P,4(E13.6,E11.4),0P,I2) 
-  900 FORMAT (A6) 
-  905 FORMAT (10A8) 
-  910 FORMAT ('0',/' **************    TEST     ********************',  &
-     &        /,'0 LINES FOR TESTING LBLRTM IN THE 0-80 CM-1 ',         &
-     &        'SPECTRAL REGION',/,'0 INCLUDES THE MOST IMPORTANT ',     &
-     &        'H2O,O3,N2O AND O2 LINES',' BASED ON AN OPTICAL DEPTH ',  &
-     &        'CUTOFF FOR A LIMB ATMOSPHERIC PATH',/,'0 FOR ',          &
-     &        'CONTRIBUTIONS FROM ALL LINES, USE AFGL LINE FILE',/,     &
-     &        '0 LINES ARE FROM 1996 AFGL LINE FILE',/,'0')             
-                                                                        
-!    *        /,'0 LINES FOR TESTING LBLRTM IN THE 0-50 CM-1 ',         
-!    *        'SPECTRAL REGION',/,'0 INCLUDES THE MOST IMPORTANT ',     
-!    *        'H2O,O3,N2O AND O2 LINES',' BASED ON AN OPTICAL DEPTH ',  
-!    *        'CUTOFF FOR A LIMB ATMOSPHERIC PATH',/,'0 FOR ',          
-!    *        'CONTRIBUTIONS FROM ALL LINES, USE AFGL LINE FILE',/,     
-!    *        '0 LINES ARE FROM 1986 AFGL LINE FILE',/,'0')             
-!                                                                       
-      END                                           
-                                                                        
-      FUNCTION NWDL_4 (IWD,ILAST) 
-!                                                                       
-      implicit real*4 (a-h,o-z) 
-      implicit integer*4 (i-m) 
-                                                                        
-      DIMENSION IWD(*) 
-!                                                                       
-      DO 10 I = 1, 9000 
-         IF (IWD(I).EQ.ILAST) THEN 
-            NWDL_4 = I-1 
-            RETURN 
-         ENDIF 
-   10 END DO 
-!                                                                       
-      STOP ' NWDL - IWD,ILAST ' 
-!                                                                       
-      END                                           
-                                                                        
-      BLOCK DATA BTEST 
-!                                                                       
-      IMPLICIT REAL*8           (V) 
-      real*8         C0001     ,C0016     ,C0031     ,C0046     ,       &
-     &               C0061     ,C0076     ,C0091     ,C0106     ,       &
-     &               C0121     ,C0136     ,C0151     ,C0166     ,       &
-     &               C0181     ,C0196     ,C0211     ,C0226     ,       &
-     &               C0241     ,C0256     ,C0271     ,C0286     ,       &
-     &               C0301     ,C0316     ,C0331     ,C0346     ,       &
-     &               C0361     ,C0376     ,C0391     ,C0406     ,       &
-     &               C0421     ,C0436     ,C0451     ,C0466     ,       &
-     &               C0481     ,C0496     ,C0511     ,C0526     ,       &
-     &               C0541     ,C0556     ,C0571     ,C0586     ,       &
-     &               C0601     ,C0616     ,C0631     ,C0646     ,       &
-     &               C0661     ,C0676     ,C0691     ,C0706     ,       &
-     &               C0721     ,C0736     ,C0751     ,C0766     ,       &
-     &               C0781     ,C0796     ,C0811     ,C0826     ,       &
-     &               C0841     ,C0856     ,C0871     ,C0886     ,       &
-     &               C0901     ,C0916     ,C0931     ,C0946     ,       &
-     &               C0961     ,C0976     ,C0991     ,C1006     ,       &
-     &               C1021                                              
-      real*8         D0001     ,D0016     ,D0031     ,D0046     ,       &
-     &               D0061     ,D0076     ,D0091     ,D0106     ,       &
-     &               D0121     ,D0136     ,D0151     ,D0166     ,       &
-     &               D0181     ,D0196     ,D0211     ,D0226     ,       &
-     &               D0241     ,D0256     ,D0271     ,D0286     ,       &
-     &               D0301     ,D0316     ,D0331     ,D0346     ,       &
-     &               D0361     ,D0376     ,D0391     ,D0406     ,       &
-     &               D0421     ,D0436     ,D0451     ,D0466     ,       &
-     &               D0481     ,D0496     ,D0511     ,D0526     ,       &
-     &               D0541     ,D0556     ,D0571     ,D0586     ,       &
-     &               D0601     ,D0616     ,D0631     ,D0646     ,       &
-     &               D0661     ,D0676     ,D0691     ,D0706     ,       &
-     &               D0721     ,D0736     ,D0751     ,D0766     ,       &
-     &               D0781     ,D0796     ,D0811     ,D0826     ,       &
-     &               D0841     ,D0856     ,D0871     ,D0886     ,       &
-     &               D0901     ,D0916     ,D0931     ,D0946     ,       &
-     &               D0961     ,D0976     ,D0991     ,D1006     ,       &
-     &               D1021                                              
-!                                                                       
+!      Cimini et al. 2003 (kcp and sac)
+
+         if (i.eq.2) then
+            y_fac = 1.
+            g_fac = 1.
+         else
+            y_fac = 0.87
+            g_fac = 0.
+         endif
+!
+         VNU(K) = y_fac*y1
+         STR(K) = g_fac*g1
+         ALF(K) = y_fac*y2
+         EPP(K) = g_fac*g2
+
+         AMOL(K) = y_fac*y3
+         HWHMS(K) = g_fac*g3
+         TMPALF(K) = y_fac*y4
+         PSHIFT(K) = g_fac*g4
+
+         IFLG(K) = XLIND(6,I)
+!
+      ENDIF
+!
+!     CHECK LAST LINE - TO SEE IF FIRST RECORD OF LINE COUPLED LINE
+!     IF SO, DON'T DO UNTIL NEXT GROUPING OF 250
+!
+      IF (K.EQ.249.AND.LINCPL.EQ.1) THEN
+         IF (XLIND(6,I+1).GT.0.0) GO TO 40
+      ENDIF
+30    IF (I.EQ.NREC) GO TO 40
+      IF (K.LT.250) GO TO 70
+40    VNULO = VNU(1)
+      VNUHI = VNU(K)
+      JLIN = K
+!
+      NWDS = ILNGTH
+!
+      write(linfil_4) VNULO,VNUHI,JLIN,NWDS
+!         CALL BUFOUT_sgl (LINFIL_4,RCDHDR(1),ilngthp)
+      IF (K.GE.250) GO TO 60
+      KLO = K+1
+      KHI = 250
+      DO 50 K = KLO, KHI
+         VNU(K) = 0.
+         STR(K) = 0.
+         ALF(K) = 0.
+         EPP(K) = 0.
+         MOL(K) = 0.
+         HWHMS(K) = 0.
+         TMPALF(K) = 0.
+         PSHIFT(K) = 0.
+         IFLG(K) = 0.
+50    CONTINUE
+!
+60    CALL BUFOUT_sgl (LINFIL_4,VNU(1),ILNGTH)
+      K = 0
+70 END DO
+   ENDFILE LINFIL_4
+   REWIND LINFIL_4
+!
+   RETURN
+!
+
+920 FORMAT (I5,F12.6,D10.3,E10.3,2F5.4,F10.4,F4.2,F8.6,31x,           &
+   &     I2)
+925 FORMAT (I5,1P,4(E13.6,E11.4),0P,I2)
+900 FORMAT (A6)
+905 FORMAT (10A8)
+910 FORMAT ('0',/' **************    TEST     ********************',  &
+   &        /,'0 LINES FOR TESTING LBLRTM IN THE 0-80 CM-1 ',         &
+   &        'SPECTRAL REGION',/,'0 INCLUDES THE MOST IMPORTANT ',     &
+   &        'H2O,O3,N2O AND O2 LINES',' BASED ON AN OPTICAL DEPTH ',  &
+   &        'CUTOFF FOR A LIMB ATMOSPHERIC PATH',/,'0 FOR ',          &
+   &        'CONTRIBUTIONS FROM ALL LINES, USE AFGL LINE FILE',/,     &
+   &        '0 LINES ARE FROM 1996 AFGL LINE FILE',/,'0')
+
+!    *        /,'0 LINES FOR TESTING LBLRTM IN THE 0-50 CM-1 ',
+!    *        'SPECTRAL REGION',/,'0 INCLUDES THE MOST IMPORTANT ',
+!    *        'H2O,O3,N2O AND O2 LINES',' BASED ON AN OPTICAL DEPTH ',
+!    *        'CUTOFF FOR A LIMB ATMOSPHERIC PATH',/,'0 FOR ',
+!    *        'CONTRIBUTIONS FROM ALL LINES, USE AFGL LINE FILE',/,
+!    *        '0 LINES ARE FROM 1986 AFGL LINE FILE',/,'0')
+!
+end subroutine TESTMM
+
+FUNCTION NWDL_4 (IWD,ILAST)
+!
+   implicit real*4 (a-h,o-z)
+   implicit integer*4 (i-m)
+
+   DIMENSION IWD(*)
+!
+   DO 10 I = 1, 9000
+      IF (IWD(I).EQ.ILAST) THEN
+         NWDL_4 = I-1
+         RETURN
+      ENDIF
+10 END DO
+!
+   STOP ' NWDL - IWD,ILAST '
+!
+end function NWDL_4
+
+BLOCK DATA BTEST
+!
+   IMPLICIT REAL*8           (V)
+   real*8         C0001     ,C0016     ,C0031     ,C0046     ,       &
+   &               C0061     ,C0076     ,C0091     ,C0106     ,       &
+   &               C0121     ,C0136     ,C0151     ,C0166     ,       &
+   &               C0181     ,C0196     ,C0211     ,C0226     ,       &
+   &               C0241     ,C0256     ,C0271     ,C0286     ,       &
+   &               C0301     ,C0316     ,C0331     ,C0346     ,       &
+   &               C0361     ,C0376     ,C0391     ,C0406     ,       &
+   &               C0421     ,C0436     ,C0451     ,C0466     ,       &
+   &               C0481     ,C0496     ,C0511     ,C0526     ,       &
+   &               C0541     ,C0556     ,C0571     ,C0586     ,       &
+   &               C0601     ,C0616     ,C0631     ,C0646     ,       &
+   &               C0661     ,C0676     ,C0691     ,C0706     ,       &
+   &               C0721     ,C0736     ,C0751     ,C0766     ,       &
+   &               C0781     ,C0796     ,C0811     ,C0826     ,       &
+   &               C0841     ,C0856     ,C0871     ,C0886     ,       &
+   &               C0901     ,C0916     ,C0931     ,C0946     ,       &
+   &               C0961     ,C0976     ,C0991     ,C1006     ,       &
+   &               C1021
+   real*8         D0001     ,D0016     ,D0031     ,D0046     ,       &
+   &               D0061     ,D0076     ,D0091     ,D0106     ,       &
+   &               D0121     ,D0136     ,D0151     ,D0166     ,       &
+   &               D0181     ,D0196     ,D0211     ,D0226     ,       &
+   &               D0241     ,D0256     ,D0271     ,D0286     ,       &
+   &               D0301     ,D0316     ,D0331     ,D0346     ,       &
+   &               D0361     ,D0376     ,D0391     ,D0406     ,       &
+   &               D0421     ,D0436     ,D0451     ,D0466     ,       &
+   &               D0481     ,D0496     ,D0511     ,D0526     ,       &
+   &               D0541     ,D0556     ,D0571     ,D0586     ,       &
+   &               D0601     ,D0616     ,D0631     ,D0646     ,       &
+   &               D0661     ,D0676     ,D0691     ,D0706     ,       &
+   &               D0721     ,D0736     ,D0751     ,D0766     ,       &
+   &               D0781     ,D0796     ,D0811     ,D0826     ,       &
+   &               D0841     ,D0856     ,D0871     ,D0886     ,       &
+   &               D0901     ,D0916     ,D0931     ,D0946     ,       &
+   &               D0961     ,D0976     ,D0991     ,D1006     ,       &
+   &               D1021
+!
 !***********************************************************************
-!                                                                       
-!     THE FOLLOWING LINE DATA IS FROM THE HITRAN (1986) DATA SET.       
-!     A PARTIAL LISTING OF TAPE 6 IS PROVIDED BELOW:                    
-!                                                                       
-!            NO. OF LINES      SUM STRENGTH   STR REJECTION             
-!                                                                       
-!           H2O  =    517       3.2835E-19      2.500E-27               
-!           CO2  =      0       0.0000E+00      9.500E-26               
-!            O3  =    417       4.1361E-20      5.000E-23               
-!           N2O  =     28       4.4007E-21      8.000E-23               
-!            CO  =      0       0.0000E+00      2.500E-22               
-!           CH4  =      0       0.0000E+00      1.800E-23               
-!            O2  =    314       9.4329E-23      1.500E-28               
-!                                                                       
-!       LOWEST LINE =  .000010 CM-1,   HIGHEST LINE =  79.785907 CM-1,  
-!                                                                       
-!                      TOTAL NUMBER OF LINES = 1277                     
-!                                                                       
-!         ** NOTE **  THE STRENGTH REJECTIONS WERE BASED ON A LIMB      
-!                     VIEW FOR A TROPICAL ATMOSPHERE HAVING AN          
-!                     INTEGRATED OPTICAL DEPTH IN THE RANGE 0.01        
-!                     TO 0.05 (MOLECULE DEPENDENT).                     
-!                                                                       
+!
+!     THE FOLLOWING LINE DATA IS FROM THE HITRAN (1986) DATA SET.
+!     A PARTIAL LISTING OF TAPE 6 IS PROVIDED BELOW:
+!
+!            NO. OF LINES      SUM STRENGTH   STR REJECTION
+!
+!           H2O  =    517       3.2835E-19      2.500E-27
+!           CO2  =      0       0.0000E+00      9.500E-26
+!            O3  =    417       4.1361E-20      5.000E-23
+!           N2O  =     28       4.4007E-21      8.000E-23
+!            CO  =      0       0.0000E+00      2.500E-22
+!           CH4  =      0       0.0000E+00      1.800E-23
+!            O2  =    314       9.4329E-23      1.500E-28
+!
+!       LOWEST LINE =  .000010 CM-1,   HIGHEST LINE =  79.785907 CM-1,
+!
+!                      TOTAL NUMBER OF LINES = 1277
+!
+!         ** NOTE **  THE STRENGTH REJECTIONS WERE BASED ON A LIMB
+!                     VIEW FOR A TROPICAL ATMOSPHERE HAVING AN
+!                     INTEGRATED OPTICAL DEPTH IN THE RANGE 0.01
+!                     TO 0.05 (MOLECULE DEPENDENT).
+!
 !#######################################################################
-!                                                                       
-!       THE FOLLOWING MODIFICATIONS WERE MADE TO THE 1986 HITRAN DATA:  
-!                                                                       
-!         1) A LINE AT .000010 CM-1 WAS ADDED FOR O2 IN ORDER TO        
-!            TREAT THE "ZERO" FREQUENCY O2 BAND AS A SINGLE LINE.       
-!                                                                       
-!         2) LINE-COUPLING INFORMATION WAS PROVIDED FOR 40 O2 LINES.    
-!            THE O2 LINE COUPLING COEFFICIENTS WERE PROVIDED BY         
-!            CLOUGH (1987). Y'S AND G'S WERE CALCULATED FOR OXYGEN      
-!            USING A RELAXATION MATRIX WHICH WAS FIT TO SMITH'S         
-!            HALFWIDTHS.                                                
-!                                                                       
-!    These coefficients have been updated to provide consistency with   
-!    HITRAN96 oxygen and carbon dioxide line parameters (June 1999).    
-!                                                                       
-!              NT        TEMP         X       A1            A2          
-!                                                                       
-!               1     200.0000     .7500  7.328597E-03  7.303265E-01    
-!               2     250.0000     .7500  5.467282E-03  7.535262E-01    
-!               3     296.0000     .7500  4.371108E-03  7.712720E-01    
-!               4     340.0000     .7500  3.632896E-03  7.855163E-01    
-!                                                                       
-!         ALPHA(T) = ALPHA(TO)*(TO/T)**X                                
-!                                                                       
-!         W(J,K) = A1*SQRT(RHO(J)/RHO(K))*EXP(-A2*BETA*ABS(E(J)-E(K)))  
-!                                                                       
+!
+!       THE FOLLOWING MODIFICATIONS WERE MADE TO THE 1986 HITRAN DATA:
+!
+!         1) A LINE AT .000010 CM-1 WAS ADDED FOR O2 IN ORDER TO
+!            TREAT THE "ZERO" FREQUENCY O2 BAND AS A SINGLE LINE.
+!
+!         2) LINE-COUPLING INFORMATION WAS PROVIDED FOR 40 O2 LINES.
+!            THE O2 LINE COUPLING COEFFICIENTS WERE PROVIDED BY
+!            CLOUGH (1987). Y'S AND G'S WERE CALCULATED FOR OXYGEN
+!            USING A RELAXATION MATRIX WHICH WAS FIT TO SMITH'S
+!            HALFWIDTHS.
+!
+!    These coefficients have been updated to provide consistency with
+!    HITRAN96 oxygen and carbon dioxide line parameters (June 1999).
+!
+!              NT        TEMP         X       A1            A2
+!
+!               1     200.0000     .7500  7.328597E-03  7.303265E-01
+!               2     250.0000     .7500  5.467282E-03  7.535262E-01
+!               3     296.0000     .7500  4.371108E-03  7.712720E-01
+!               4     340.0000     .7500  3.632896E-03  7.855163E-01
+!
+!         ALPHA(T) = ALPHA(TO)*(TO/T)**X
+!
+!         W(J,K) = A1*SQRT(RHO(J)/RHO(K))*EXP(-A2*BETA*ABS(E(J)-E(K)))
+!
 !***********************************************************************
-!                                                                       
-      COMMON /LINES/ C0001(080),C0016(075),C0031(130),C0046(140),       &
-     &               C0061(135),C0076(090),C0091(080),C0106(075),       &
-     &               C0121(075),C0136(075),C0151(075),C0166(075),       &
-     &               C0181(075),C0196(075),C0211(075),C0226(075),       &
-     &               C0241(075),C0256(075),C0271(075),C0286(075),       &
-     &               C0301(075),C0316(075),C0331(075),C0346(075),       &
-     &               C0361(075),C0376(075),C0391(075),C0406(075),       &
-     &               C0421(075),C0436(075),C0451(075),C0466(075),       &
-     &               C0481(075),C0496(075),C0511(075),C0526(075),       &
-     &               C0541(075),C0556(075),C0571(075),C0586(075),       &
-     &               C0601(075),C0616(075),C0631(075),C0646(075),       &
-     &               C0661(075),C0676(075),C0691(075),C0706(075),       &
-     &               C0721(075),C0736(075),C0751(075),C0766(075),       &
-     &               C0781(075),C0796(075),C0811(075),C0826(075),       &
-     &               C0841(075),C0856(075),C0871(075),C0886(075),       &
-     &               C0901(075),C0916(075),C0931(075),C0946(075),       &
-     &               C0961(075),C0976(075),C0991(075),C1006(075),       &
-     &               C1021(035)                                         
-      COMMON /LINES/ D0001(096),D0016(090),D0031(156),D0046(168),       &
-     &               D0061(162),D0076(108),D0091(096),D0106(090),       &
-     &               D0121(090),D0136(090),D0151(090),D0166(090),       &
-     &               D0181(090),D0196(090),D0211(090),D0226(090),       &
-     &               D0241(090),D0256(090),D0271(090),D0286(090),       &
-     &               D0301(090),D0316(090),D0331(090),D0346(090),       &
-     &               D0361(090),D0376(090),D0391(090),D0406(090),       &
-     &               D0421(090),D0436(090),D0451(090),D0466(090),       &
-     &               D0481(090),D0496(090),D0511(090),D0526(090),       &
-     &               D0541(090),D0556(090),D0571(090),D0586(090),       &
-     &               D0601(090),D0616(090),D0631(090),D0646(090),       &
-     &               D0661(090),D0676(090),D0691(090),D0706(090),       &
-     &               D0721(090),D0736(090),D0751(090),D0766(090),       &
-     &               D0781(090),D0796(090),D0811(090),D0826(090),       &
-     &               D0841(090),D0856(090),D0871(090),D0886(090),       &
-     &               D0901(090),D0916(090),D0931(090),D0946(090),       &
-     &               D0961(090),D0976(090),D0991(090),D1006(090),       &
-     &               D1021(042)                                         
-!                                                                       
-      CHARACTER*8        HID,HMOLID,HID1 
-!                                                                       
-      real*4       SUMSTR,FLINLO,FLINHI 
-      integer*4    MOLCNT,MCNTLC,                                       &
-     &             MCNTNL,NMOL,                                         &
-     &             ILIN,ILINLC,ILINNL,IREC,IRECTL                       
-!                                                                       
-      COMMON /BUFID_l/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),        &
-     &               MCNTNL(64),SUMSTR(64),NMOL,FLINLO,FLINHI,          &
-     &               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2)             
-      COMMON /BUFIDC/ CHID(2),CHMOL(64),CHID1(2) 
-!                                                                       
-      CHARACTER CHID*40,CHMOL*6,CHID1*8 
-!                                                                       
-      DATA CHMOL / '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ',        &
-     &             '  CH4 ','   O2 ',57*'      ' /                      
-!     DATA CHID / ' LINES FOR LBLRTM IN THE 0-50 CM-1 SPE',             
-!    *            'CTRAL REGION: 1/31/94 f=1.22    TSTMM86I' /          
-      DATA CHID / ' LINES FOR LBLRTM IN THE 0-80 CM-1 SPE',             &
-     &            'CTRAL REGION                    TSTMM96I' /          
-      DATA CHID1 / '06/15/99','15.28.27' / 
-      DATA NMOL,ILIN,ILINLC,ILINNL,IREC,IRECTL / 7,1027,41,0,1068,1068/ 
-!                                                                       
-      DATA C0001/                                                       &
-     &  107.,  0.0000100,4.9400E-23,  .0340,    0.0000,                 &
-     &    7.,   5.00000E-01, 0.00000E+00, 5.00000E-01, 0.00000E+00,     &
-     &  401.,  0.0070020,5.2030E-26,  .0560,  818.0067,                 &
-     &  401.,  0.0162290,2.2500E-25,  .0634,  480.2427,                 &
-     &  401.,  0.0275080,6.5250E-25,  .0773,  233.0237,                 &
-     &  401.,  0.0297640,2.5310E-26,  .0610,  942.5326,                 &
-     &  401.,  0.0798740,1.2130E-25,  .0703,  573.8908,                 &
-     &  401.,  0.1015610,1.1490E-26,  .0601, 1082.7854,                 &
-     &  401.,  0.1099660,3.4550E-27,  .0952,  221.8361,                 &
-     &  401.,  0.1902240,3.7090E-25,  .0825,  295.4873,                 &
-     &  401.,  0.2861250,6.1860E-26,  .0708,  683.3240,                 &
-     &  401.,  0.2947780,4.9040E-27,  .0657, 1238.7949,                 &
-     &  103.,  0.3411000,5.6100E-23,  .0782,   50.3021,                 &
-     &  401.,  0.3428450,7.4100E-25,  .0960,  108.9263,                 &
-     &  103.,  0.3693000,5.2090E-23,  .0818,    8.0217,                 &
-     &  101.,  0.4007000,2.9880E-25,  .0813, 1907.6169/                 
-      DATA D0001/                                                       &
-     &    7.,  0.0000100, 0.0340,  .00,0.00000, 3.,                     &
-     & 5.00000E-01,0., 0.00000E+00, 5.00000E-01, 0.00000E+00, -3.,      &
-     &  401.,  0.0070020, 0.2800,  .36,0.00000, 0.,                     &
-     &  401.,  0.0162290, 0.3170,  .36,0.00000, 0.,                     &
-     &  401.,  0.0275080, 0.3865,  .36,0.00000, 0.,                     &
-     &  401.,  0.0297640, 0.3050,  .36,0.00000, 0.,                     &
-     &  401.,  0.0798740, 0.3515,  .36,0.00000, 0.,                     &
-     &  401.,  0.1015610, 0.3005,  .36,0.00000, 0.,                     &
-     &  401.,  0.1099660, 0.4760,  .36,0.00000, 0.,                     &
-     &  401.,  0.1902240, 0.4125,  .36,0.00000, 0.,                     &
-     &  401.,  0.2861250, 0.3540,  .36,0.00000, 0.,                     &
-     &  401.,  0.2947780, 0.3285,  .36,0.00000, 0.,                     &
-     &  103.,  0.3411000, 0.1050,  .24,0.00000, 0.,                     &
-     &  401.,  0.3428450, 0.4800,  .36,0.00000, 0.,                     &
-     &  103.,  0.3693000, 0.1091,  .24,0.00000, 0.,                     &
-     &  101.,  0.4007000, 0.4170,  .36,-.00220, 0./                     
-      DATA C0016/                                                       &
-     &  401.,  0.6824720,2.7700E-25,  .0955,  156.3823,                 &
-     &  101.,  0.7416820,1.6450E-22,  .0906,  446.5110,                 &
-     &  401.,  0.7441040,2.0580E-25,  .0833,  373.6659,                 &
-     &  401.,  0.8300670,2.9560E-26,  .0749,  808.5632,                 &
-     &  101.,  0.8949000,9.3710E-26,  .0754, 2129.6001,                 &
-     &  401.,  0.8966330,5.7190E-26,  .0885,  403.5491,                 &
-     &  103.,  1.0024000,5.0690E-23,  .0749,  128.1196,                 &
-     &  103.,  1.2620000,5.1960E-23,  .0750,  156.9033,                 &
-     &  107.,  1.4979510,1.9030E-33,  .0320, 5028.4063,                 &
-     &  107.,  1.5146970,9.0900E-33,  .0320, 4699.7075,                 &
-     &  107.,  1.5314620,4.1150E-32,  .0320, 4381.7451,                 &
-     &  107.,  1.5482480,1.7650E-31,  .0320, 4074.5713,                 &
-     &  107.,  1.5650580,7.1760E-31,  .0320, 3778.2361,                 &
-     &  107.,  1.5818930,2.7620E-30,  .0320, 3492.7881,                 &
-     &  107.,  1.5987570,1.0070E-29,  .0320, 3218.2739/                 
-      DATA D0016/                                                       &
-     &  401.,  0.6824720, 0.4775,  .36,0.00000, 0.,                     &
-     &  101.,  0.7416820, 0.4400,  .36,-.00195, 0.,                     &
-     &  401.,  0.7441040, 0.4165,  .36,0.00000, 0.,                     &
-     &  401.,  0.8300670, 0.3745,  .36,0.00000, 0.,                     &
-     &  101.,  0.8949000, 0.3630,  .36,0.00160, 0.,                     &
-     &  401.,  0.8966330, 0.4425,  .36,0.00000, 0.,                     &
-     &  103.,  1.0024000, 0.1023,  .24,0.00000, 0.,                     &
-     &  103.,  1.2620000, 0.1006,  .24,0.00000, 0.,                     &
-     &  107.,  1.4979510, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  1.5146970, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  1.5314620, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  1.5482480, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  1.5650580, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  1.5818930, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  1.5987570, 0.0314,  .29,0.00000, 0./                     
-      DATA C0031/                                                       &
-     &  107.,  1.6156530,3.4700E-29,  .0320, 2954.7380,                 &
-     &  107.,  1.6325840,1.1320E-28,  .0320, 2702.2239,                 &
-     &  107.,  1.6495550,3.4930E-28,  .0320, 2460.7722,                 &
-     &  107.,  1.6665720,1.0190E-27,  .0320, 2230.4224,                 &
-     &    7.,   1.08369E+00,-3.51470E-01, 8.37876E-01,-2.07510E-01,     &
-     &  401.,  1.6757020,4.0830E-25,  .0946,  155.3890,                 &
-     &  107.,  1.6836410,2.8060E-27,  .0320, 2011.2119,                 &
-     &    7.,   1.09563E+00,-3.64490E-01, 8.35671E-01,-2.13450E-01,     &
-     &  107.,  1.7007700,7.3060E-27,  .0320, 1803.1765,                 &
-     &    7.,   1.11581E+00,-3.78570E-01, 8.45091E-01,-2.20060E-01,     &
-     &  107.,  1.7179680,1.7940E-26,  .0320, 1606.3500,                 &
-     &    7.,   1.13228E+00,-3.92240E-01, 8.51867E-01,-2.25960E-01,     &
-     &  107.,  1.7352490,4.1560E-26,  .0320, 1420.7642,                 &
-     &    7.,   1.14544E+00,-4.05370E-01, 8.55668E-01,-2.31060E-01,     &
-     &  107.,  1.7526270,9.0800E-26,  .0320, 1246.4493,                 &
-     &    7.,   1.15371E+00,-4.16540E-01, 8.55028E-01,-2.34340E-01,     &
-     &  107.,  1.7701230,1.8700E-25,  .0320, 1083.4335,                 &
-     &    7.,   1.15215E+00,-4.23780E-01, 8.46128E-01,-2.34490E-01,     &
-     &  107.,  1.7877630,3.6240E-25,  .0320,  931.7433,                 &
-     &    7.,   1.14230E+00,-4.24780E-01, 8.30189E-01,-2.30100E-01,     &
-     &  107.,  1.8055830,6.6040E-25,  .0380,  791.4032,                 &
-     &    7.,   1.11817E+00,-4.14980E-01, 8.02641E-01,-2.18540E-01,     &
-     &  107.,  1.8236340,1.1310E-24,  .0350,  662.4359,                 &
-     &    7.,   1.07180E+00,-3.89370E-01, 7.57766E-01,-1.97160E-01,     &
-     &  107.,  1.8419870,1.8160E-24,  .0370,  544.8622,                 &
-     &    7.,   1.00360E+00,-3.43860E-01, 6.96196E-01,-1.64090E-01/     
-      DATA D0031/                                                       &
-     &  107.,  1.6156530, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  1.6325840, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  1.6495550, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  1.6665720, 0.0314,  .29,0.00000, 1.,                     &
-     & 6.86012E-01,0.,-1.37220E-01, 5.81018E-01,-9.70550E-02, -1.,      &
-     &  401.,  1.6757020, 0.4730,  .36,0.00000, 0.,                     &
-     &  107.,  1.6836410, 0.0314,  .29,0.00000, 1.,                     &
-     & 6.75013E-01,0.,-1.40190E-01, 5.64065E-01,-9.84560E-02, -1.,      &
-     &  107.,  1.7007700, 0.0314,  .29,0.00000, 1.,                     &
-     & 6.78147E-01,0.,-1.43720E-01, 5.62946E-01,-1.00450E-01, -1.,      &
-     &  107.,  1.7179680, 0.0314,  .29,0.00000, 1.,                     &
-     & 6.79759E-01,0.,-1.46500E-01, 5.61329E-01,-1.01710E-01, -1.,      &
-     &  107.,  1.7352490, 0.0314,  .29,0.00000, 1.,                     &
-     & 6.78853E-01,0.,-1.48440E-01, 5.57669E-01,-1.02200E-01, -1.,      &
-     &  107.,  1.7526270, 0.0314,  .29,0.00000, 1.,                     &
-     & 6.73985E-01,0.,-1.48840E-01, 5.50495E-01,-1.01380E-01, -1.,      &
-     &  107.,  1.7701230, 0.0314,  .29,0.00000, 1.,                     &
-     & 6.62020E-01,0.,-1.46770E-01, 5.37137E-01,-9.85470E-02, -1.,      &
-     &  107.,  1.7877630, 0.0314,  .29,0.00000, 1.,                     &
-     & 6.43965E-01,0.,-1.41270E-01, 5.18434E-01,-9.30640E-02, -1.,      &
-     &  107.,  1.8055830, 0.0373,  .29,0.00000, 1.,                     &
-     & 6.16124E-01,0.,-1.30660E-01, 4.91294E-01,-8.37840E-02, -1.,      &
-     &  107.,  1.8236340, 0.0343,  .29,0.00000, 1.,                     &
-     & 5.74103E-01,0.,-1.13390E-01, 4.52210E-01,-6.97460E-02, -1.,      &
-     &  107.,  1.8419870, 0.0363,  .29,0.00000, 1.,                     &
-     & 5.18585E-01,0.,-8.85010E-02, 4.01851E-01,-5.04550E-02, -1./      
-      DATA C0046/                                                       &
-     &  107.,  1.8607470,2.7290E-24,  .0380,  438.7010,                 &
-     &    7.,   9.01863E-01,-2.71400E-01, 6.09393E-01,-1.16160E-01,     &
-     &  107.,  1.8767910,1.5990E-24,  .0450,    2.0843,                 &
-     &    7.,   9.55046E-01,-3.95800E-01, 8.04211E-01,-2.88010E-01,     &
-     &  107.,  1.8800800,3.8280E-24,  .0380,  343.9694,                 &
-     &    7.,   7.60121E-01,-1.70460E-01, 4.93230E-01,-5.41910E-02,     &
-     &  107.,  1.9002550,4.9930E-24,  .0390,  260.6825,                 &
-     &    7.,   5.72222E-01,-4.71040E-02, 3.43767E-01, 1.59090E-02,     &
-     &  107.,  1.9217450,6.0220E-24,  .0410,  188.8531,                 &
-     &    7.,   3.29789E-01, 7.64820E-02, 1.55763E-01, 7.82510E-02,     &
-     &  107.,  1.9454750,6.6570E-24,  .0430,  128.4921,                 &
-     &    7.,   3.91869E-02, 1.50520E-01,-6.46302E-02, 1.02630E-01,     &
-     &  107.,  1.9495680,4.0840E-24,  .0440,   16.3876,                 &
-     &    7.,   7.89065E-01,-1.64620E-01, 6.80358E-01,-1.43060E-01,     &
-     &  107.,  1.9735050,6.6290E-24,  .0440,   79.6070,                 &
-     &    7.,  -2.77950E-01, 1.13000E-01,-3.00273E-01, 5.69200E-02,     &
-     &  107.,  1.9877410,5.7970E-24,  .0420,   42.2240,                 &
-     &    7.,   4.79461E-01, 1.02620E-01, 4.53600E-01, 3.52990E-02,     &
-     &  107.,  2.0115940,5.7630E-24,  .0440,   42.2001,                 &
-     &    7.,  -5.32785E-01,-3.55790E-02,-4.81609E-01,-4.63900E-02,     &
-     &  107.,  2.0158870,6.6490E-24,  .0410,   79.5646,                 &
-     &    7.,   1.23544E-01, 2.13280E-01, 1.88360E-01, 1.29780E-01,     &
-     &  107.,  2.0397630,6.6640E-24,  .0400,  128.3978,                 &
-     &    7.,  -2.06347E-01, 1.63570E-01,-6.14357E-02, 1.26040E-01,     &
-     &  401.,  2.0409430,1.9360E-25,  .0890,  293.6366,                 &
-     &  401.,  2.0582430,1.3180E-26,  .0773,  949.5776,                 &
-     &  107.,  2.0614310,6.0280E-24,  .0390,  188.7134,                 &
-     &    7.,  -4.83105E-01, 3.29460E-02,-2.74935E-01, 6.46240E-02/     
-      DATA D0046/                                                       &
-     &  107.,  1.8607470, 0.0373,  .29,0.00000, 1.,                     &
-     & 4.42884E-01,0.,-5.44660E-02, 3.34770E-01,-2.52020E-02, -1.,      &
-     &  107.,  1.8767910, 0.0441,  .29,0.00000, 1.,                     &
-     & 7.02595E-01,0.,-2.23870E-01, 6.26993E-01,-1.80880E-01, -1.,      &
-     &  107.,  1.8800800, 0.0373,  .29,0.00000, 1.,                     &
-     & 3.44111E-01,0.,-1.27760E-02, 2.48835E-01, 4.37200E-03, -1.,      &
-     &  107.,  1.9002550, 0.0382,  .29,0.00000, 1.,                     &
-     & 2.19468E-01,0., 3.14750E-02, 1.41943E-01, 3.39800E-02, -1.,      &
-     &  107.,  1.9217450, 0.0402,  .29,0.00000, 1.,                     &
-     & 6.53486E-02,0., 6.64890E-02, 1.14746E-02, 5.46110E-02, -1.,      &
-     &  107.,  1.9454750, 0.0422,  .29,0.00000, 1.,                     &
-     &-1.12561E-01,0., 7.21650E-02,-1.37358E-01, 5.21220E-02, -1.,      &
-     &  107.,  1.9495680, 0.0431,  .29,0.00000, 1.,                     &
-     & 6.02238E-01,0.,-1.22250E-01, 5.41859E-01,-1.04960E-01, -1.,      &
-     &  107.,  1.9735050, 0.0431,  .29,0.00000, 1.,                     &
-     &-3.00074E-01,0., 2.96930E-02,-2.92497E-01, 1.47390E-02, -1.,      &
-     &  107.,  1.9877410, 0.0412,  .29,0.00000, 1.,                     &
-     & 4.23182E-01,0., 6.80590E-03, 3.94336E-01,-6.87940E-03, -1.,      &
-     &  107.,  2.0115940, 0.0431,  .29,0.00000, 1.,                     &
-     &-4.39618E-01,0.,-4.64990E-02,-4.04759E-01,-4.37160E-02, -1.,      &
-     &  107.,  2.0158870, 0.0402,  .29,0.00000, 1.,                     &
-     & 2.11405E-01,0., 8.44450E-02, 2.18515E-01, 5.71320E-02, -1.,      &
-     &  107.,  2.0397630, 0.0392,  .29,0.00000, 1.,                     &
-     & 9.82196E-03,0., 9.55380E-02, 4.98315E-02, 7.32780E-02, -1.,      &
-     &  401.,  2.0409430, 0.4450,  .36,0.00000, 0.,                     &
-     &  401.,  2.0582430, 0.3865,  .36,0.00000, 0.,                     &
-     &  107.,  2.0614310, 0.0382,  .29,0.00000, 1.,                     &
-     &-1.64651E-01,0., 6.37430E-02,-9.75567E-02, 5.64680E-02, -1./      
-      DATA C0061/                                                       &
-     &  107.,  2.0818140,5.0000E-24,  .0380,  260.5009,                 &
-     &    7.,  -6.96836E-01,-1.10400E-01,-4.43793E-01,-1.42860E-02,     &
-     &  107.,  2.0843170,3.9820E-24,  .0470,   16.2529,                 &
-     &    7.,  -5.65193E-01,-1.16750E-01,-4.87890E-01,-9.02820E-02,     &
-     &  107.,  2.1013860,3.8330E-24,  .0340,  343.7481,                 &
-     &    7.,  -8.58328E-01,-2.30580E-01,-5.74545E-01,-8.62450E-02,     &
-     &  107.,  2.1204170,2.7320E-24,  .0360,  438.4414,                 &
-     &    7.,  -9.78104E-01,-3.20060E-01,-6.74942E-01,-1.43860E-01,     &
-     &  107.,  2.1390720,1.8190E-24,  .0350,  544.5651,                 &
-     &    7.,  -1.06093E+00,-3.78970E-01,-7.47867E-01,-1.85210E-01,     &
-     &  401.,  2.1490650,1.0840E-25,  .0849,  467.5146,                 &
-     &  107.,  2.1574560,1.1330E-24,  .0350,  662.1021,                 &
-     &    7.,  -1.11475E+00,-4.11890E-01,-7.98685E-01,-2.11580E-01,     &
-     &  107.,  2.1756400,6.6150E-25,  .0320,  791.0332,                 &
-     &    7.,  -1.14838E+00,-4.26910E-01,-8.33846E-01,-2.27000E-01,     &
-     &  107.,  2.1936760,3.6310E-25,  .0320,  931.3374,                 &
-     &    7.,  -1.16429E+00,-4.27860E-01,-8.54945E-01,-2.33370E-01,     &
-     &  107.,  2.2115990,1.8740E-25,  .0320, 1082.9921,                 &
-     &    7.,  -1.16792E+00,-4.20680E-01,-8.65987E-01,-2.34020E-01,     &
-     &  107.,  2.2294350,9.1050E-26,  .0320, 1245.9725,                 &
-     &    7.,  -1.16322E+00,-4.08650E-01,-8.70001E-01,-2.30930E-01,     &
-     &  103.,  2.2468000,8.8100E-23,  .0811,   15.3506,                 &
-     &  107.,  2.2472060,4.1660E-26,  .0320, 1420.2523,                 &
-     &    7.,  -1.14958E+00,-3.93620E-01,-8.66289E-01,-2.25210E-01,     &
-     &  101.,  2.2619000,5.0140E-25,  .0942, 1819.3370,                 &
-     &  107.,  2.2649270,1.7980E-26,  .0320, 1605.8030,                 &
-     &    7.,  -1.13243E+00,-3.77440E-01,-8.59210E-01,-2.18130E-01/     
-      DATA D0061/                                                       &
-     &  107.,  2.0818140, 0.0373,  .29,0.00000, 1.,                     &
-     &-3.04879E-01,0., 1.53320E-02,-2.17464E-01, 2.49720E-02, -1.,      &
-     &  107.,  2.0843170, 0.0461,  .29,0.00000, 1.,                     &
-     &-4.33877E-01,0.,-7.28660E-02,-3.92734E-01,-6.04620E-02, -1.,      &
-     &  107.,  2.1013860, 0.0333,  .29,0.00000, 1.,                     &
-     &-4.15190E-01,0.,-3.21020E-02,-3.12886E-01,-8.06340E-03, -1.,      &
-     &  107.,  2.1204170, 0.0353,  .29,0.00000, 1.,                     &
-     &-5.01782E-01,0.,-7.22350E-02,-3.89009E-01,-3.73630E-02, -1.,      &
-     &  107.,  2.1390720, 0.0343,  .29,0.00000, 1.,                     &
-     &-5.66577E-01,0.,-1.02690E-01,-4.47176E-01,-6.05900E-02, -1.,      &
-     &  401.,  2.1490650, 0.4245,  .36,0.00000, 0.,                     &
-     &  107.,  2.1574560, 0.0343,  .29,0.00000, 1.,                     &
-     &-6.13518E-01,0.,-1.23530E-01,-4.90436E-01,-7.72880E-02, -1.,      &
-     &  107.,  2.1756400, 0.0314,  .29,0.00000, 1.,                     &
-     &-6.47688E-01,0.,-1.37030E-01,-5.22961E-01,-8.87830E-02, -1.,      &
-     &  107.,  2.1936760, 0.0314,  .29,0.00000, 1.,                     &
-     &-6.70196E-01,0.,-1.44230E-01,-5.45556E-01,-9.56690E-02, -1.,      &
-     &  107.,  2.2115990, 0.0314,  .29,0.00000, 1.,                     &
-     &-6.84207E-01,0.,-1.47210E-01,-5.60821E-01,-9.93360E-02, -1.,      &
-     &  107.,  2.2294350, 0.0314,  .29,0.00000, 1.,                     &
-     &-6.92162E-01,0.,-1.47290E-01,-5.70788E-01,-1.00720E-01, -1.,      &
-     &  103.,  2.2468000, 0.1081,  .24,0.00000, 0.,                     &
-     &  107.,  2.2472060, 0.0314,  .29,0.00000, 1.,                     &
-     &-6.93352E-01,0.,-1.45210E-01,-5.74772E-01,-1.00310E-01, -1.,      &
-     &  101.,  2.2619000, 0.4500,  .36,-.00200, 0.,                     &
-     &  107.,  2.2649270, 0.0314,  .29,0.00000, 1.,                     &
-     &-6.91450E-01,0.,-1.41840E-01,-5.75968E-01,-9.87670E-02, -1./      
-      DATA C0076/                                                       &
-     &  107.,  2.2826110,7.3210E-27,  .0320, 1802.5947,                 &
-     &    7.,  -1.11164E+00,-3.61360E-01,-8.48771E-01,-2.10600E-01,     &
-     &  107.,  2.3002660,2.8150E-27,  .0320, 2010.5953,                 &
-     &    7.,  -1.09048E+00,-3.45570E-01,-8.38365E-01,-2.02830E-01,     &
-     &  107.,  2.3179020,1.0220E-27,  .0320, 2229.7710,                 &
-     &    7.,  -1.07650E+00,-3.31480E-01,-8.38524E-01,-1.96070E-01,     &
-     &  107.,  2.3355250,3.5040E-28,  .0320, 2460.0862,                 &
-     &  107.,  2.3531400,1.1360E-28,  .0320, 2701.5032,                 &
-     &  107.,  2.3707530,3.4830E-29,  .0320, 2953.9829,                 &
-     &  107.,  2.3883670,1.0100E-29,  .0320, 3217.4844,                 &
-     &  107.,  2.4059850,2.7730E-30,  .0320, 3491.9641,                 &
-     &  107.,  2.4236120,7.2050E-31,  .0320, 3777.3777,                 &
-     &  107.,  2.4412490,1.7730E-31,  .0320, 4073.6785,                 &
-     &  107.,  2.4588980,4.1350E-32,  .0320, 4380.8179,                 &
-     &  107.,  2.4765620,9.1310E-33,  .0320, 4698.7456,                 &
-     &  107.,  2.4942440,1.9130E-33,  .0320, 5027.4102,                 &
-     &  103.,  2.5529000,6.9240E-23,  .0778,   67.9028,                 &
-     &  401.,  2.6877980,4.8730E-25,  .1016,   29.8086/                 
-      DATA D0076/                                                       &
-     &  107.,  2.2826110, 0.0314,  .29,0.00000, 1.,                     &
-     &-6.86631E-01,0.,-1.37880E-01,-5.74720E-01,-9.66040E-02, -1.,      &
-     &  107.,  2.3002660, 0.0314,  .29,0.00000, 1.,                     &
-     &-6.82525E-01,0.,-1.33480E-01,-5.74882E-01,-9.39420E-02, -1.,      &
-     &  107.,  2.3179020, 0.0314,  .29,0.00000, 1.,                     &
-     &-6.91482E-01,0.,-1.29890E-01,-5.89809E-01,-9.20270E-02, -1.,      &
-     &  107.,  2.3355250, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  2.3531400, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  2.3707530, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  2.3883670, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  2.4059850, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  2.4236120, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  2.4412490, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  2.4588980, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  2.4765620, 0.0314,  .29,0.00000, 0.,                     &
-     &  107.,  2.4942440, 0.0314,  .29,0.00000, 0.,                     &
-     &  103.,  2.5529000, 0.1042,  .24,0.00000, 0.,                     &
-     &  401.,  2.6877980, 0.5080,  .36,0.00000, 0./                     
-      DATA C0091/                                                       &
-     &  401.,  2.9341230,7.7020E-26,  .0793,  573.9706,                 &
-     &  103.,  3.2098000,8.3520E-23,  .0829,    2.5195,                 &
-     &  101.,  3.2114000,3.0560E-26,  .0676, 2126.4070,                 &
-     &  103.,  3.3936000,1.4190E-22,  .0825,    8.3910,                 &
-     &  103.,  3.6545000,5.2060E-23,  .0750,  188.0547,                 &
-     &  103.,  3.6971000,1.8680E-22,  .0820,   17.5973,                 &
-     &  107.,  3.9610850,1.3180E-24,  .0500,    0.0000,                 &
-     &    7.,  -6.87401E-02,-1.59620E-03,-6.16835E-02,-1.27120E-03,     &
-     &  101.,  4.0074000,1.8500E-25,  .0959, 1739.4850,                 &
-     &  401.,  4.0287260,2.1630E-25,  .0939,  221.8361,                 &
-     &  103.,  4.1391000,2.1470E-22,  .0814,   30.1119,                 &
-     &  103.,  4.1825000,1.2360E-22,  .0803,   25.9294,                 &
-     &  104.,  4.1900230,9.8370E-23,  .0870,    8.3800,                 &
-     &  401.,  4.4954500,5.4550E-27,  .0773, 1106.2646,                 &
-     &  401.,  4.6208820,1.2370E-25,  .0919,  303.9948,                 &
-     &  103.,  4.7425000,2.2580E-22,  .0806,   45.9008/                 
-      DATA D0091/                                                       &
-     &  401.,  2.9341230, 0.3965,  .36,0.00000, 0.,                     &
-     &  103.,  3.2098000, 0.1109,  .24,0.00000, 0.,                     &
-     &  101.,  3.2114000, 0.3400,  .36,0.00000, 0.,                     &
-     &  103.,  3.3936000, 0.1099,  .24,0.00000, 0.,                     &
-     &  103.,  3.6545000, 0.0999,  .24,0.00000, 0.,                     &
-     &  103.,  3.6971000, 0.1090,  .24,0.00000, 0.,                     &
-     &  107.,  3.9610850, 0.0490,  .29,0.00000, 1.,                     &
-     &-5.66601E-02,0.,-1.05850E-03,-5.27672E-02,-9.05420E-04, -1.,      &
-     &  101.,  4.0074000, 0.4490,  .36,0.00000, 0.,                     &
-     &  401.,  4.0287260, 0.4695,  .36,0.00000, 0.,                     &
-     &  103.,  4.1391000, 0.1081,  .24,0.00000, 0.,                     &
-     &  103.,  4.1825000, 0.1072,  .24,0.00000, 0.,                     &
-     &  104.,  4.1900230, 0.0870,  .20,0.00000, 0.,                     &
-     &  401.,  4.4954500, 0.3865,  .36,0.00000, 0.,                     &
-     &  401.,  4.6208820, 0.4595,  .36,0.00000, 0.,                     &
-     &  103.,  4.7425000, 0.1073,  .24,0.00000, 0./                     
-      DATA C0106/                                                       &
-     &  401.,  4.7942230,2.2550E-25,  .0937,  217.0419,                 &
-     &  103.,  4.8340000,8.0970E-23,  .0774,   88.8347,                 &
-     &  104.,  5.0279810,1.1530E-22,  .0857,   12.5700,                 &
-     &  401.,  5.0573710,5.3500E-26,  .0871,  576.9047,                 &
-     &  401.,  5.3480150,3.9490E-27,  .0629, 1239.0896,                 &
-     &  103.,  5.5022000,6.7630E-23,  .0820,    2.5195,                 &
-     &  103.,  5.5300000,2.1950E-22,  .0798,   64.9257,                 &
-     &  401.,  5.6454400,3.9530E-27,  .0620, 1238.7949,                 &
-     &  104.,  5.8659120,1.3160E-22,  .0845,   17.5980,                 &
-     &  101.,  6.1145670,4.3390E-22,  .0959,  136.1640,                 &
-     &  103.,  6.1502000,1.5840E-22,  .0794,   39.7506,                 &
-     &  103.,  6.1626000,5.0970E-23,  .0749,  222.5716,                 &
-     &  301.,  6.4710000,1.5820E-25,  .0912,  135.4330,                 &
-     &  103.,  6.5189000,2.0160E-22,  .0789,   87.1499,                 &
-     &  104.,  6.7038130,1.4610E-22,  .0834,   23.4640/                 
-      DATA D0106/                                                       &
-     &  401.,  4.7942230, 0.4685,  .36,0.00000, 0.,                     &
-     &  103.,  4.8340000, 0.1034,  .24,0.00000, 0.,                     &
-     &  104.,  5.0279810, 0.0857,  .21,0.00000, 0.,                     &
-     &  401.,  5.0573710, 0.4355,  .36,0.00000, 0.,                     &
-     &  401.,  5.3480150, 0.3145,  .36,0.00000, 0.,                     &
-     &  103.,  5.5022000, 0.1109,  .24,0.00000, 0.,                     &
-     &  103.,  5.5300000, 0.1065,  .24,0.00000, 0.,                     &
-     &  401.,  5.6454400, 0.3100,  .36,0.00000, 0.,                     &
-     &  104.,  5.8659120, 0.0845,  .22,0.00000, 0.,                     &
-     &  101.,  6.1145670, 0.4490,  .36,-.00250, 0.,                     &
-     &  103.,  6.1502000, 0.1063,  .24,0.00000, 0.,                     &
-     &  103.,  6.1626000, 0.0993,  .24,0.00000, 0.,                     &
-     &  301.,  6.4710000, 0.4560,  .36,0.00000, 0.,                     &
-     &  103.,  6.5189000, 0.1057,  .24,0.00000, 0.,                     &
-     &  104.,  6.7038130, 0.0834,  .23,0.00000, 0./                     
-      DATA C0121/                                                       &
-     &  201.,  6.7850000,8.6320E-25,  .0900,  134.7820,                 &
-     &  401.,  6.9084830,3.2830E-27,  .0964,  150.1563,                 &
-     &  401.,  6.9163080,2.4190E-26,  .0875,  513.2073,                 &
-     &  103.,  6.9596000,1.0060E-22,  .0815,    8.3910,                 &
-     &  101.,  6.9757000,7.0520E-27,  .0611, 2399.1660,                 &
-     &  401.,  7.0152080,1.7650E-26,  .0697,  942.5624,                 &
-     &  103.,  7.1701000,9.0800E-23,  .0768,  113.0870,                 &
-     &  401.,  7.5351030,3.5460E-25,  .0972,  108.9263,                 &
-     &  104.,  7.5416800,1.5910E-22,  .0823,   30.1680,                 &
-     &  103.,  7.7147000,1.7750E-22,  .0779,  112.5424,                 &
-     &  101.,  7.7614000,2.1230E-26,  .0560, 2398.3821,                 &
-     &  103.,  7.8624000,2.4630E-22,  .0775,  120.2571,                 &
-     &  103.,  7.9103000,2.3490E-22,  .0778,   93.6687,                 &
-     &  103.,  7.9753000,2.4400E-22,  .0771,  150.1900,                 &
-     &  401.,  8.0576250,2.3720E-25,  .0983,   58.1269/                 
-      DATA D0121/                                                       &
-     &  201.,  6.7850000, 0.4500,  .36,0.00000, 0.,                     &
-     &  401.,  6.9084830, 0.4820,  .36,0.00000, 0.,                     &
-     &  401.,  6.9163080, 0.4375,  .36,0.00000, 0.,                     &
-     &  103.,  6.9596000, 0.1099,  .24,0.00000, 0.,                     &
-     &  101.,  6.9757000, 0.2780,  .36,0.00000, 0.,                     &
-     &  401.,  7.0152080, 0.3485,  .36,0.00000, 0.,                     &
-     &  103.,  7.1701000, 0.1026,  .24,0.00000, 0.,                     &
-     &  401.,  7.5351030, 0.4860,  .36,0.00000, 0.,                     &
-     &  104.,  7.5416800, 0.0823,  .23,0.00000, 0.,                     &
-     &  103.,  7.7147000, 0.1050,  .24,0.00000, 0.,                     &
-     &  101.,  7.7614000, 0.2810,  .36,0.00000, 0.,                     &
-     &  103.,  7.8624000, 0.1036,  .24,0.00000, 0.,                     &
-     &  103.,  7.9103000, 0.1044,  .24,0.00000, 0.,                     &
-     &  103.,  7.9753000, 0.1029,  .24,0.00000, 0.,                     &
-     &  401.,  8.0576250, 0.4915,  .36,0.00000, 0./                     
-      DATA C0136/                                                       &
-     &  401.,  8.0713690,7.9220E-26,  .0854,  573.8908,                 &
-     &  103.,  8.0829000,2.1190E-22,  .0780,   70.4557,                 &
-     &  103.,  8.1207000,1.8990E-22,  .0783,   56.8050,                 &
-     &  103.,  8.2785000,2.2970E-22,  .0767,  183.4307,                 &
-     &  103.,  8.3321000,1.3270E-22,  .0808,   17.5973,                 &
-     &  103.,  8.3378000,1.8090E-22,  .0783,   50.6432,                 &
-     &  104.,  8.3795090,1.7040E-22,  .0814,   37.7100,                 &
-     &  401.,  8.5075600,2.1700E-25,  .0907,  295.4873,                 &
-     &  401.,  8.6134170,2.2710E-26,  .0717,  809.3933,                 &
-     &  103.,  8.6298000,1.4500E-22,  .0785,   34.2510,                 &
-     &  103.,  8.7958000,2.0540E-22,  .0761,  219.9383,                 &
-     &  401.,  8.8781770,2.1410E-25,  .0955,  100.3909,                 &
-     &  103.,  8.9151000,1.0760E-22,  .0788,   21.2944,                 &
-     &  401.,  9.1032150,1.7770E-26,  .0752,  942.5326,                 &
-     &  103.,  9.1080000,1.5080E-22,  .0768,  141.0820/                 
-      DATA D0136/                                                       &
-     &  401.,  8.0713690, 0.4270,  .36,0.00000, 0.,                     &
-     &  103.,  8.0829000, 0.1051,  .24,0.00000, 0.,                     &
-     &  103.,  8.1207000, 0.1055,  .24,0.00000, 0.,                     &
-     &  103.,  8.2785000, 0.1023,  .24,0.00000, 0.,                     &
-     &  103.,  8.3321000, 0.1090,  .24,0.00000, 0.,                     &
-     &  103.,  8.3378000, 0.1059,  .24,0.00000, 0.,                     &
-     &  104.,  8.3795090, 0.0814,  .24,0.00000, 0.,                     &
-     &  401.,  8.5075600, 0.4535,  .36,0.00000, 0.,                     &
-     &  401.,  8.6134170, 0.3585,  .36,0.00000, 0.,                     &
-     &  103.,  8.6298000, 0.1068,  .24,0.00000, 0.,                     &
-     &  103.,  8.7958000, 0.1017,  .24,0.00000, 0.,                     &
-     &  401.,  8.8781770, 0.4775,  .36,0.00000, 0.,                     &
-     &  103.,  8.9151000, 0.1077,  .24,0.00000, 0.,                     &
-     &  401.,  9.1032150, 0.3760,  .36,0.00000, 0.,                     &
-     &  103.,  9.1080000, 0.1043,  .24,0.00000, 0./                     
-      DATA C0151/                                                       &
-     &  103.,  9.1556000,6.9510E-23,  .0790,   11.7846,                 &
-     &  104.,  9.2172940,1.8000E-22,  .0805,   46.0890,                 &
-     &  401.,  9.4504900,2.2740E-26,  .0695,  808.5632,                 &
-     &  103.,  9.5429000,9.8950E-23,  .0762,  140.6471,                 &
-     &  103.,  9.5452000,1.7520E-22,  .0755,  259.6697,                 &
-     &  103.,  9.6386000,1.6320E-22,  .0800,   30.1119,                 &
-     &  103.,  9.7791000,7.9300E-23,  .0784,   15.3506,                 &
-     &  101.,  9.7969000,3.9070E-27,  .0481, 2724.1680,                 &
-     &  104., 10.0550320,1.8790E-22,  .0797,   55.3060,                 &
-     &  103., 10.0674000,2.1630E-22,  .0770,   77.0825,                 &
-     &  103., 10.1125000,1.0330E-22,  .0779,   25.9294,                 &
-     &  401., 10.1749900,2.4640E-26,  .0862,  701.6204,                 &
-     &  401., 10.3582750,1.2090E-25,  .0938,  293.6366,                 &
-     &  401., 10.4655930,1.9840E-25,  .0871,  374.4100,                 &
-     &  103., 10.5365000,1.4350E-22,  .0748,  302.5836/                 
-      DATA D0151/                                                       &
-     &  103.,  9.1556000, 0.1086,  .24,0.00000, 0.,                     &
-     &  104.,  9.2172940, 0.0805,  .24,0.00000, 0.,                     &
-     &  401.,  9.4504900, 0.3475,  .36,0.00000, 0.,                     &
-     &  103.,  9.5429000, 0.1019,  .24,0.00000, 0.,                     &
-     &  103.,  9.5452000, 0.1011,  .24,0.00000, 0.,                     &
-     &  103.,  9.6386000, 0.1081,  .24,0.00000, 0.,                     &
-     &  103.,  9.7791000, 0.1081,  .24,0.00000, 0.,                     &
-     &  101.,  9.7969000, 0.2390,  .36,0.00000, 0.,                     &
-     &  104., 10.0550320, 0.0797,  .25,0.00000, 0.,                     &
-     &  103., 10.0674000, 0.1047,  .24,0.00000, 0.,                     &
-     &  103., 10.1125000, 0.1072,  .24,0.00000, 0.,                     &
-     &  401., 10.1749900, 0.4310,  .36,0.00000, 0.,                     &
-     &  401., 10.3582750, 0.4690,  .36,0.00000, 0.,                     &
-     &  401., 10.4655930, 0.4355,  .36,0.00000, 0.,                     &
-     &  103., 10.5365000, 0.1005,  .24,0.00000, 0./                     
-      DATA C0166/                                                       &
-     &  103., 10.5515000,1.2000E-22,  .0774,   39.7506,                 &
-     &  401., 10.5790260,7.6000E-26,  .0818,  469.6636,                 &
-     &  103., 10.6739000,1.2560E-22,  .0757,  172.7568,                 &
-     &  101., 10.7149340,4.6890E-24,  .0732, 1282.9189,                 &
-     &  201., 10.7560000,3.1030E-25,  .0840,  314.4580,                 &
-     &  301., 10.8020000,5.7910E-26,  .0852,  315.0790,                 &
-     &  101., 10.8459340,1.6340E-22,  .0923,  315.7790,                 &
-     &  104., 10.8927190,1.9400E-22,  .0789,   65.3610,                 &
-     &  103., 10.9042000,1.9190E-22,  .0790,   45.9008,                 &
-     &  103., 11.0978000,1.2940E-22,  .0768,   56.8050,                 &
-     &  401., 11.1060000,2.5010E-27,  .0623, 1399.4612,                 &
-     &  401., 11.1875890,1.2560E-25,  .0902,  221.8361,                 &
-     &  101., 11.2141000,9.0940E-26,  .0906, 2042.7550,                 &
-     &  104., 11.7303500,1.9840E-22,  .0782,   76.2540,                 &
-     &  103., 11.7523000,1.3190E-22,  .0762,   77.0825/                 
-      DATA D0166/                                                       &
-     &  103., 10.5515000, 0.1063,  .24,0.00000, 0.,                     &
-     &  401., 10.5790260, 0.4090,  .36,0.00000, 0.,                     &
-     &  103., 10.6739000, 0.1036,  .24,0.00000, 0.,                     &
-     &  101., 10.7149340, 0.3730,  .36,-.00500, 0.,                     &
-     &  201., 10.7560000, 0.4200,  .36,0.00000, 0.,                     &
-     &  301., 10.8020000, 0.4260,  .36,0.00000, 0.,                     &
-     &  101., 10.8459340, 0.4420,  .36,-.00170, 0.,                     &
-     &  104., 10.8927190, 0.0789,  .25,0.00000, 0.,                     &
-     &  103., 10.9042000, 0.1073,  .24,0.00000, 0.,                     &
-     &  103., 11.0978000, 0.1055,  .24,0.00000, 0.,                     &
-     &  401., 11.1060000, 0.3115,  .36,0.00000, 0.,                     &
-     &  401., 11.1875890, 0.4510,  .36,0.00000, 0.,                     &
-     &  101., 11.2141000, 0.4400,  .36,0.00000, 0.,                     &
-     &  104., 11.7303500, 0.0782,  .25,0.00000, 0.,                     &
-     &  103., 11.7523000, 0.1047,  .24,0.00000, 0./                     
-      DATA C0181/                                                       &
-     &  103., 11.7686000,1.1370E-22,  .0741,  348.6451,                 &
-     &  103., 11.8421000,5.5250E-23,  .0795,    5.7293,                 &
-     &  103., 11.9292000,1.0450E-22,  .0754,  171.5015,                 &
-     &  103., 11.9483000,1.0960E-22,  .0746,  411.0551,                 &
-     &  103., 11.9701000,2.3350E-22,  .0758,  100.5723,                 &
-     &  103., 11.9966000,1.2760E-22,  .0749,  360.4137,                 &
-     &  103., 12.1240000,9.0650E-23,  .0743,  464.9994,                 &
-     &  103., 12.1567000,2.1500E-22,  .0778,   64.9257,                 &
-     &  103., 12.2344000,1.4300E-22,  .0752,  313.1201,                 &
-     &  103., 12.3760000,1.0310E-22,  .0746,  207.5623,                 &
-     &  103., 12.5146000,1.2860E-22,  .0755,  100.5723,                 &
-     &  103., 12.5500000,7.2030E-23,  .0732,  522.1992,                 &
-     &  104., 12.5679210,2.0010E-22,  .0775,   87.9840,                 &
-     &  103., 12.6181000,1.5450E-22,  .0753,  269.2148,                 &
-     &  101., 12.6820190,1.0930E-21,  .0942,  212.1560/                 
-      DATA D0181/                                                       &
-     &  103., 11.7686000, 0.1000,  .24,0.00000, 0.,                     &
-     &  103., 11.8421000, 0.1095,  .24,0.00000, 0.,                     &
-     &  103., 11.9292000, 0.1012,  .24,0.00000, 0.,                     &
-     &  103., 11.9483000, 0.0982,  .24,0.00000, 0.,                     &
-     &  103., 11.9701000, 0.1040,  .24,0.00000, 0.,                     &
-     &  103., 11.9966000, 0.0987,  .24,0.00000, 0.,                     &
-     &  103., 12.1240000, 0.0978,  .24,0.00000, 0.,                     &
-     &  103., 12.1567000, 0.1065,  .24,0.00000, 0.,                     &
-     &  103., 12.2344000, 0.0992,  .24,0.00000, 0.,                     &
-     &  103., 12.3760000, 0.1030,  .24,0.00000, 0.,                     &
-     &  103., 12.5146000, 0.1040,  .24,0.00000, 0.,                     &
-     &  103., 12.5500000, 0.0974,  .24,0.00000, 0.,                     &
-     &  104., 12.5679210, 0.0775,  .25,0.00000, 0.,                     &
-     &  103., 12.6181000, 0.0997,  .24,0.00000, 0.,                     &
-     &  101., 12.6820190, 0.4500,  .36,-.00200, 0./                     
-      DATA C0196/                                                       &
-     &  401., 12.7443190,7.6160E-26,  .0780,  467.5146,                 &
-     &  301., 12.8680000,3.9350E-25,  .0875,  211.4370,                 &
-     &  103., 12.9185000,5.8630E-23,  .0789,    8.0217,                 &
-     &  101., 13.0143800,3.5970E-25,  .0650, 1525.1370,                 &
-     &  201., 13.0290000,2.1260E-24,  .0864,  210.7990,                 &
-     &  103., 13.0975000,1.6340E-22,  .0753,  228.7342,                 &
-     &  103., 13.2268000,8.7540E-23,  .0734,  397.8283,                 &
-     &  103., 13.2434000,5.5110E-23,  .0684,  582.6059,                 &
-     &  103., 13.3451000,6.8000E-23,  .0790,   11.7846,                 &
-     &  103., 13.3832000,1.2100E-22,  .0747,  127.2639,                 &
-     &  104., 13.4054280,2.0100E-22,  .0768,  100.5520,                 &
-     &  103., 13.4225000,2.3360E-22,  .0765,   87.1499,                 &
-     &  103., 13.6192000,1.6850E-22,  .0753,  191.7092,                 &
-     &  103., 13.8180000,2.4290E-22,  .0745,  127.2639,                 &
-     &  103., 14.1321000,1.6950E-22,  .0752,  158.1653/                 
-      DATA D0196/                                                       &
-     &  401., 12.7443190, 0.3900,  .36,0.00000, 0.,                     &
-     &  301., 12.8680000, 0.4375,  .36,0.00000, 0.,                     &
-     &  103., 12.9185000, 0.1091,  .24,0.00000, 0.,                     &
-     &  101., 13.0143800, 0.3400,  .36,0.00000, 0.,                     &
-     &  201., 13.0290000, 0.4320,  .36,0.00000, 0.,                     &
-     &  103., 13.0975000, 0.1003,  .24,0.00000, 0.,                     &
-     &  103., 13.2268000, 0.0996,  .24,0.00000, 0.,                     &
-     &  103., 13.2434000, 0.0971,  .24,0.00000, 0.,                     &
-     &  103., 13.3451000, 0.1086,  .24,0.00000, 0.,                     &
-     &  103., 13.3832000, 0.1033,  .24,0.00000, 0.,                     &
-     &  104., 13.4054280, 0.0768,  .25,0.00000, 0.,                     &
-     &  103., 13.4225000, 0.1057,  .24,0.00000, 0.,                     &
-     &  103., 13.6192000, 0.1009,  .24,0.00000, 0.,                     &
-     &  103., 13.8180000, 0.1033,  .24,0.00000, 0.,                     &
-     &  103., 14.1321000, 0.1016,  .24,0.00000, 0./                     
-      DATA C0211/                                                       &
-     &  103., 14.1713000,8.3750E-23,  .0736,  245.4984,                 &
-     &  101., 14.1995000,4.3720E-27,  .0479, 2905.4351,                 &
-     &  104., 14.2428670,2.0050E-22,  .0762,  113.9580,                 &
-     &  103., 14.3030000,1.0720E-22,  .0746,  205.6354,                 &
-     &  103., 14.3544000,1.0960E-22,  .0739,  157.1471,                 &
-     &  101., 14.5883160,4.8470E-24,  .0467, 1045.0590,                 &
-     &  103., 14.5932000,1.6610E-22,  .0750,  128.1196,                 &
-     &  101., 14.6484940,7.1120E-23,  .0560,  742.0760,                 &
-     &  103., 14.7215000,2.4490E-22,  .0753,  112.5424,                 &
-     &  103., 14.7475000,8.0770E-23,  .0788,   21.2944,                 &
-     &  101., 14.7775000,1.4550E-23,  .0481, 1045.0580,                 &
-     &  103., 14.8589000,6.5870E-23,  .0784,   15.3506,                 &
-     &  103., 14.8818000,6.5960E-23,  .0727,  450.1177,                 &
-     &  101., 14.9437070,8.2810E-22,  .0813,  285.4190,                 &
-     &  103., 14.9729000,1.5980E-22,  .0748,  101.5791/                 
-      DATA D0211/                                                       &
-     &  103., 14.1713000, 0.1024,  .24,0.00000, 0.,                     &
-     &  101., 14.1995000, 0.2210,  .36,-.00055, 0.,                     &
-     &  104., 14.2428670, 0.0762,  .25,0.00000, 0.,                     &
-     &  103., 14.3030000, 0.1006,  .24,0.00000, 0.,                     &
-     &  103., 14.3544000, 0.1026,  .24,0.00000, 0.,                     &
-     &  101., 14.5883160, 0.2320,  .36,0.00310, 0.,                     &
-     &  103., 14.5932000, 0.1023,  .24,0.00000, 0.,                     &
-     &  101., 14.6484940, 0.2810,  .36,0.00095, 0.,                     &
-     &  103., 14.7215000, 0.1050,  .24,0.00000, 0.,                     &
-     &  103., 14.7475000, 0.1077,  .24,0.00000, 0.,                     &
-     &  101., 14.7775000, 0.2390,  .36,0.00290, 0.,                     &
-     &  103., 14.8589000, 0.1081,  .24,0.00000, 0.,                     &
-     &  103., 14.8818000, 0.0991,  .24,0.00000, 0.,                     &
-     &  101., 14.9437070, 0.4170,  .36,-.00220, 0.,                     &
-     &  103., 14.9729000, 0.1030,  .24,0.00000, 0./                     
-      DATA C0226/                                                       &
-     &  104., 15.0802330,1.9800E-22,  .0757,  128.2010,                 &
-     &  103., 15.2577000,1.4950E-22,  .0746,   78.5386,                 &
-     &  103., 15.4229000,9.6950E-23,  .0732,  190.2125,                 &
-     &  101., 15.4495000,1.1720E-25,  .0853, 1907.4520,                 &
-     &  103., 15.4503000,1.3240E-22,  .0745,   58.9810,                 &
-     &  401., 15.5082110,3.7480E-25,  .0854,    0.0000,                 &
-     &  103., 15.5655000,1.1110E-22,  .0745,   42.8809,                 &
-     &  103., 15.6097000,2.4290E-22,  .0733,  157.1471,                 &
-     &  103., 15.6241000,8.3670E-23,  .0746,   30.2095,                 &
-     &  103., 15.6602000,6.7340E-23,  .0747,   25.1297,                 &
-     &  301., 15.6710000,3.0360E-25,  .0807,  283.7690,                 &
-     &  103., 15.6760000,9.8250E-23,  .0745,   36.0419,                 &
-     &  101., 15.7071650,2.3820E-23,  .0611,  742.0730,                 &
-     &  103., 15.7106000,1.2210E-22,  .0743,   50.3021,                 &
-     &  103., 15.7742000,1.3910E-22,  .0742,   67.9028/                 
-      DATA D0226/                                                       &
-     &  104., 15.0802330, 0.0757,  .24,0.00000, 0.,                     &
-     &  103., 15.2577000, 0.1038,  .24,0.00000, 0.,                     &
-     &  103., 15.4229000, 0.1020,  .24,0.00000, 0.,                     &
-     &  101., 15.4495000, 0.4190,  .36,-.00150, 0.,                     &
-     &  103., 15.4503000, 0.1046,  .24,0.00000, 0.,                     &
-     &  401., 15.5082110, 0.4270,  .36,0.00000, 0.,                     &
-     &  103., 15.5655000, 0.1054,  .24,0.00000, 0.,                     &
-     &  103., 15.6097000, 0.1026,  .24,0.00000, 0.,                     &
-     &  103., 15.6241000, 0.1063,  .24,0.00000, 0.,                     &
-     &  103., 15.6602000, 0.1068,  .24,0.00000, 0.,                     &
-     &  301., 15.6710000, 0.4035,  .36,0.00000, 0.,                     &
-     &  103., 15.6760000, 0.1059,  .24,0.00000, 0.,                     &
-     &  101., 15.7071650, 0.2780,  .36,0.00210, 0.,                     &
-     &  103., 15.7106000, 0.1050,  .24,0.00000, 0.,                     &
-     &  103., 15.7742000, 0.1042,  .24,0.00000, 0./                     
-      DATA C0241/                                                       &
-     &  101., 15.8339250,9.2930E-23,  .0676,  488.1340,                 &
-     &  103., 15.8783000,1.5090E-22,  .0741,   88.8347,                 &
-     &  104., 15.9175220,1.9410E-22,  .0752,  143.2810,                 &
-     &  401., 16.0093200,1.2260E-25,  .0880,  217.0419,                 &
-     &  103., 16.0172000,6.7510E-23,  .0726,  286.5665,                 &
-     &  103., 16.0350000,1.5550E-22,  .0740,  113.0870,                 &
-     &  103., 16.0511000,9.2140E-23,  .0785,   34.2510,                 &
-     &  103., 16.0651000,2.4690E-22,  .0740,  141.0820,                 &
-     &  401., 16.0704330,1.3660E-25,  .0967,  100.3909,                 &
-     &  301., 16.0830000,2.5880E-26,  .0587,  737.6230,                 &
-     &  103., 16.2562000,1.5460E-22,  .0738,  140.6471,                 &
-     &  101., 16.2943100,1.7810E-23,  .0851,  586.4790,                 &
-     &  201., 16.3130000,1.6810E-24,  .0798,  282.3070,                 &
-     &  401., 16.3645410,1.4310E-24,  .1018,   29.8086,                 &
-     &  103., 16.5533000,1.4770E-22,  .0735,  171.5015/                 
-      DATA D0241/                                                       &
-     &  101., 15.8339250, 0.3400,  .36,-.00180, 0.,                     &
-     &  103., 15.8783000, 0.1034,  .24,0.00000, 0.,                     &
-     &  104., 15.9175220, 0.0752,  .24,0.00000, 0.,                     &
-     &  401., 16.0093200, 0.4400,  .36,0.00000, 0.,                     &
-     &  103., 16.0172000, 0.1019,  .24,0.00000, 0.,                     &
-     &  103., 16.0350000, 0.1026,  .24,0.00000, 0.,                     &
-     &  103., 16.0511000, 0.1068,  .24,0.00000, 0.,                     &
-     &  103., 16.0651000, 0.1043,  .24,0.00000, 0.,                     &
-     &  401., 16.0704330, 0.4835,  .36,0.00000, 0.,                     &
-     &  301., 16.0830000, 0.2935,  .36,0.00000, 0.,                     &
-     &  103., 16.2562000, 0.1019,  .24,0.00000, 0.,                     &
-     &  101., 16.2943100, 0.4360,  .36,0.00000, 0.,                     &
-     &  201., 16.3130000, 0.3990,  .36,0.00000, 0.,                     &
-     &  401., 16.3645410, 0.5090,  .36,0.00000, 0.,                     &
-     &  103., 16.5533000, 0.1012,  .24,0.00000, 0./                     
-      DATA C0256/                                                       &
-     &  103., 16.5814000,8.3330E-23,  .0724,  226.4519,                 &
-     &  101., 16.6278000,8.6750E-27,  .0580, 2552.8811,                 &
-     &  103., 16.6364000,1.0760E-22,  .0737,  243.0333,                 &
-     &  104., 16.7547300,1.8920E-22,  .0747,  159.1980,                 &
-     &  101., 16.7985000,2.4290E-24,  .0394, 1394.8140,                 &
-     &  101., 16.8329000,8.0910E-25,  .0396, 1394.8140,                 &
-     &  103., 16.9363000,1.3750E-22,  .0732,  205.6354,                 &
-     &  301., 16.9430000,3.4120E-26,  .0704,  485.2370,                 &
-     &  103., 16.9515000,6.8320E-23,  .0781,   25.9294,                 &
-     &  401., 16.9881650,3.6240E-24,  .1030,   15.5082,                 &
-     &  301., 17.1920000,8.6340E-27,  .0619,  737.6210,                 &
-     &  201., 17.2510000,3.3300E-26,  .0789,  583.9850,                 &
-     &  103., 17.2596000,1.0220E-22,  .0781,   50.6432,                 &
-     &  103., 17.3498000,2.3450E-22,  .0723,  190.2125,                 &
-     &  201., 17.3500000,1.4540E-25,  .0582,  733.6830/                 
-      DATA D0256/                                                       &
-     &  103., 16.5814000, 0.1014,  .24,0.00000, 0.,                     &
-     &  101., 16.6278000, 0.2830,  .36,-.00145, 0.,                     &
-     &  103., 16.6364000, 0.1000,  .24,0.00000, 0.,                     &
-     &  104., 16.7547300, 0.0747,  .23,0.00000, 0.,                     &
-     &  101., 16.7985000, 0.1900,  .36,0.00200, 0.,                     &
-     &  101., 16.8329000, 0.1900,  .36,0.00220, 0.,                     &
-     &  103., 16.9363000, 0.1006,  .24,0.00000, 0.,                     &
-     &  301., 16.9430000, 0.3520,  .36,0.00000, 0.,                     &
-     &  103., 16.9515000, 0.1072,  .24,0.00000, 0.,                     &
-     &  401., 16.9881650, 0.5150,  .36,0.00000, 0.,                     &
-     &  301., 17.1920000, 0.3095,  .36,0.00000, 0.,                     &
-     &  201., 17.2510000, 0.3945,  .36,0.00000, 0.,                     &
-     &  103., 17.2596000, 0.1059,  .24,0.00000, 0.,                     &
-     &  103., 17.3498000, 0.1020,  .24,0.00000, 0.,                     &
-     &  201., 17.3500000, 0.2910,  .36,0.00000, 0./                     
-      DATA C0271/                                                       &
-     &  103., 17.4136000,1.2310E-22,  .0728,  243.0333,                 &
-     &  103., 17.4557000,2.4150E-22,  .0729,  172.7568,                 &
-     &  104., 17.5918540,1.8310E-22,  .0742,  175.9530,                 &
-     &  103., 17.6684000,5.6600E-23,  .0733,  534.7491,                 &
-     &  101., 17.6932000,1.5640E-26,  .0563, 2533.7930,                 &
-     &  201., 17.7970000,9.8990E-27,  .0492, 1033.1940,                 &
-     &  103., 17.8214000,7.0330E-23,  .0717,  265.8579,                 &
-     &  103., 17.8765000,5.3910E-23,  .0717,  330.7686,                 &
-     &  201., 17.9240000,1.8990E-25,  .0698,  482.6720,                 &
-     &  103., 17.9915000,1.0820E-22,  .0724,  283.6794,                 &
-     &  201., 18.0100000,2.9810E-26,  .0487, 1033.1940,                 &
-     &  401., 18.0103210,6.4450E-26,  .0764,  683.6101,                 &
-     &  401., 18.0249330,1.0520E-26,  .0868,  841.3677,                 &
-     &  103., 18.1745000,7.9390E-23,  .0741,   15.0520,                 &
-     &  101., 18.2333000,1.2930E-25,  .0819, 2005.9170/                 
-      DATA D0271/                                                       &
-     &  103., 17.4136000, 0.1000,  .24,0.00000, 0.,                     &
-     &  103., 17.4557000, 0.1036,  .24,0.00000, 0.,                     &
-     &  104., 17.5918540, 0.0742,  .23,0.00000, 0.,                     &
-     &  103., 17.6684000, 0.0961,  .24,0.00000, 0.,                     &
-     &  101., 17.6932000, 0.3350,  .36,-.00520, 0.,                     &
-     &  201., 17.7970000, 0.2460,  .36,0.00000, 0.,                     &
-     &  103., 17.8214000, 0.1008,  .24,0.00000, 0.,                     &
-     &  103., 17.8765000, 0.1014,  .24,0.00000, 0.,                     &
-     &  201., 17.9240000, 0.3490,  .36,0.00000, 0.,                     &
-     &  103., 17.9915000, 0.0994,  .24,0.00000, 0.,                     &
-     &  201., 18.0100000, 0.2435,  .36,0.00000, 0.,                     &
-     &  401., 18.0103210, 0.3820,  .36,0.00000, 0.,                     &
-     &  401., 18.0249330, 0.4340,  .36,0.00000, 0.,                     &
-     &  103., 18.1745000, 0.1082,  .24,0.00000, 0.,                     &
-     &  101., 18.2333000, 0.4070,  .36,-.00290, 0./                     
-      DATA C0286/                                                       &
-     &  201., 18.2680000,6.6360E-23,  .0997,   23.7550,                 &
-     &  401., 18.2978240,9.6970E-27,  .0832,  634.7911,                 &
-     &  103., 18.3790000,1.1010E-22,  .0777,   70.4557,                 &
-     &  103., 18.3939000,6.7380E-23,  .0739,  477.1235,                 &
-     &  301., 18.4130000,1.2120E-23,  .1011,   23.7740,                 &
-     &  104., 18.4288880,1.7610E-22,  .0738,  193.5450,                 &
-     &  201., 18.5080000,4.8670E-26,  .0615,  733.6790,                 &
-     &  101., 18.5773850,3.2850E-20,  .1046,   23.7940,                 &
-     &  401., 18.6734750,6.2330E-26,  .0909,  384.8756,                 &
-     &  103., 18.6741000,9.1950E-23,  .0720,  327.5579,                 &
-     &  103., 18.8895000,2.2930E-22,  .0718,  207.5623,                 &
-     &  103., 18.9042000,1.0420E-22,  .0729,  283.6794,                 &
-     &  103., 19.0164000,8.1600E-23,  .0746,   17.5714,                 &
-     &  103., 19.0465000,2.2030E-22,  .0713,  226.4519,                 &
-     &  101., 19.0777000,1.8290E-26,  .0403, 2414.7251/                 
-      DATA D0286/                                                       &
-     &  201., 18.2680000, 0.4985,  .36,0.00000, 0.,                     &
-     &  401., 18.2978240, 0.4160,  .36,0.00000, 0.,                     &
-     &  103., 18.3790000, 0.1051,  .24,0.00000, 0.,                     &
-     &  103., 18.3939000, 0.0964,  .24,0.00000, 0.,                     &
-     &  301., 18.4130000, 0.5055,  .36,0.00000, 0.,                     &
-     &  104., 18.4288880, 0.0738,  .22,0.00000, 0.,                     &
-     &  201., 18.5080000, 0.3075,  .36,0.00000, 0.,                     &
-     &  101., 18.5773850, 0.4630,  .36,0.00680, 0.,                     &
-     &  401., 18.6734750, 0.4545,  .36,0.00000, 0.,                     &
-     &  103., 18.6741000, 0.0989,  .24,0.00000, 0.,                     &
-     &  103., 18.8895000, 0.1030,  .24,0.00000, 0.,                     &
-     &  103., 18.9042000, 0.0994,  .24,0.00000, 0.,                     &
-     &  103., 19.0164000, 0.1077,  .24,0.00000, 0.,                     &
-     &  103., 19.0465000, 0.1014,  .24,0.00000, 0.,                     &
-     &  101., 19.0777000, 0.2370,  .36,0.00000, 0./                     
-      DATA C0301/                                                       &
-     &  103., 19.1091000,7.9060E-23,  .0739,  423.0033,                 &
-     &  103., 19.1333000,5.7910E-23,  .0711,  308.4246,                 &
-     &  103., 19.2305000,6.5260E-23,  .0778,   39.7506,                 &
-     &  104., 19.2658290,1.6840E-22,  .0734,  211.9740,                 &
-     &  101., 19.2825000,2.6200E-26,  .0671, 2552.8579,                 &
-     &  103., 19.4182000,1.1550E-22,  .0772,   93.6687,                 &
-     &  103., 19.4626000,7.6270E-23,  .0716,  374.6536,                 &
-     &  103., 19.7680000,9.1110E-23,  .0739,  372.4103,                 &
-     &  101., 19.8036000,3.5980E-27,  .0800, 2670.7920,                 &
-     &  101., 19.8493000,1.2160E-25,  .0689, 2251.8630,                 &
-     &  103., 19.8498000,8.5450E-23,  .0748,   20.9402,                 &
-     &  401., 20.0113990,4.7660E-24,  .1018,   46.1731,                 &
-     &  104., 20.1026730,1.5980E-22,  .0730,  231.2400,                 &
-     &  103., 20.3384000,1.0340E-22,  .0737,  325.3544,                 &
-     &  103., 20.3562000,6.1530E-23,  .0712,  424.9517/                 
-      DATA D0301/                                                       &
-     &  103., 19.1091000, 0.0969,  .24,0.00000, 0.,                     &
-     &  103., 19.1333000, 0.1003,  .24,0.00000, 0.,                     &
-     &  103., 19.2305000, 0.1063,  .24,0.00000, 0.,                     &
-     &  104., 19.2658290, 0.0734,  .22,0.00000, 0.,                     &
-     &  101., 19.2825000, 0.3090,  .36,0.00330, 0.,                     &
-     &  103., 19.4182000, 0.1044,  .24,0.00000, 0.,                     &
-     &  103., 19.4626000, 0.0984,  .24,0.00000, 0.,                     &
-     &  103., 19.7680000, 0.0973,  .24,0.00000, 0.,                     &
-     &  101., 19.8036000, 0.3900,  .36,-.00110, 0.,                     &
-     &  101., 19.8493000, 0.3480,  .36,-.00420, 0.,                     &
-     &  103., 19.8498000, 0.1072,  .24,0.00000, 0.,                     &
-     &  401., 20.0113990, 0.5090,  .36,0.00000, 0.,                     &
-     &  104., 20.1026730, 0.0730,  .21,0.00000, 0.,                     &
-     &  103., 20.3384000, 0.0978,  .24,0.00000, 0.,                     &
-     &  103., 20.3562000, 0.0980,  .24,0.00000, 0./                     
-      DATA C0316/                                                       &
-     &  103., 20.3596000,2.1160E-22,  .0709,  245.4984,                 &
-     &  103., 20.3900000,1.1950E-22,  .0766,  120.2571,                 &
-     &  103., 20.7039000,8.9300E-23,  .0746,   25.1297,                 &
-     &  101., 20.7043500,2.8750E-22,  .0754,  488.1080,                 &
-     &  103., 20.7085000,2.0070E-22,  .0705,  265.8579,                 &
-     &  401., 20.7637820,1.5450E-25,  .0852,  469.6636,                 &
-     &  103., 20.8040000,1.1490E-22,  .0734,  281.8329,                 &
-     &  104., 20.9394150,1.5100E-22,  .0726,  251.3420,                 &
-     &  103., 21.0872000,9.7840E-23,  .0720,  327.5579,                 &
-     &  103., 21.1634000,1.2570E-22,  .0731,  241.8317,                 &
-     &  103., 21.3115000,1.2160E-22,  .0759,  150.1900,                 &
-     &  103., 21.4265000,1.3400E-22,  .0728,  205.3285,                 &
-     &  103., 21.5084000,9.2740E-23,  .0746,   30.2095,                 &
-     &  101., 21.5427000,1.1070E-25,  .0341, 1789.0410,                 &
-     &  101., 21.5473000,3.3230E-25,  .0342, 1789.0410/                 
-      DATA D0316/                                                       &
-     &  103., 20.3596000, 0.1024,  .24,0.00000, 0.,                     &
-     &  103., 20.3900000, 0.1036,  .24,0.00000, 0.,                     &
-     &  103., 20.7039000, 0.1068,  .24,0.00000, 0.,                     &
-     &  101., 20.7043500, 0.3630,  .36,0.00160, 0.,                     &
-     &  103., 20.7085000, 0.1008,  .24,0.00000, 0.,                     &
-     &  401., 20.7637820, 0.4260,  .36,0.00000, 0.,                     &
-     &  103., 20.8040000, 0.0984,  .24,0.00000, 0.,                     &
-     &  104., 20.9394150, 0.0726,  .21,0.00000, 0.,                     &
-     &  103., 21.0872000, 0.0989,  .24,0.00000, 0.,                     &
-     &  103., 21.1634000, 0.0990,  .24,0.00000, 0.,                     &
-     &  103., 21.3115000, 0.1029,  .24,0.00000, 0.,                     &
-     &  103., 21.4265000, 0.0996,  .24,0.00000, 0.,                     &
-     &  103., 21.5084000, 0.1063,  .24,0.00000, 0.,                     &
-     &  101., 21.5427000, 0.1460,  .36,0.00000, 0.,                     &
-     &  101., 21.5473000, 0.1460,  .36,0.00000, 0./                     
-      DATA C0331/                                                       &
-     &  201., 21.5900000,2.8590E-26,  .0997, 1612.0490,                 &
-     &  103., 21.6096000,1.3970E-22,  .0725,  172.2974,                 &
-     &  103., 21.7309000,1.4090E-22,  .0722,  142.7128,                 &
-     &  103., 21.7336000,5.8290E-23,  .0775,   56.8050,                 &
-     &  301., 21.7590000,5.1290E-27,  .1011, 1615.1150,                 &
-     &  104., 21.7760510,1.4170E-22,  .0723,  272.2820,                 &
-     &  103., 21.8072000,1.3720E-22,  .0720,  116.5520,                 &
-     &  103., 21.8389000,1.3680E-22,  .0723,  188.0547,                 &
-     &  103., 21.8435000,1.4040E-22,  .0722,  156.9033,                 &
-     &  103., 21.8486000,1.2950E-22,  .0725,  222.5716,                 &
-     &  103., 21.8525000,1.2850E-22,  .0719,   93.7963,                 &
-     &  103., 21.8552000,1.3940E-22,  .0721,  129.1220,                 &
-     &  103., 21.8581000,1.9060E-22,  .0702,  286.5665,                 &
-     &  103., 21.8687000,1.3330E-22,  .0719,  104.7131,                 &
-     &  103., 21.8776000,1.1370E-22,  .0719,   74.4314/                 
-      DATA D0331/                                                       &
-     &  201., 21.5900000, 0.4985,  .36,0.00000, 0.,                     &
-     &  103., 21.6096000, 0.1002,  .24,0.00000, 0.,                     &
-     &  103., 21.7309000, 0.1009,  .24,0.00000, 0.,                     &
-     &  103., 21.7336000, 0.1055,  .24,0.00000, 0.,                     &
-     &  301., 21.7590000, 0.5055,  .36,0.00000, 0.,                     &
-     &  104., 21.7760510, 0.0723,  .20,0.00000, 0.,                     &
-     &  103., 21.8072000, 0.1017,  .24,0.00000, 0.,                     &
-     &  103., 21.8389000, 0.0999,  .24,0.00000, 0.,                     &
-     &  103., 21.8435000, 0.1006,  .24,0.00000, 0.,                     &
-     &  103., 21.8486000, 0.0993,  .24,0.00000, 0.,                     &
-     &  103., 21.8525000, 0.1024,  .24,0.00000, 0.,                     &
-     &  103., 21.8552000, 0.1013,  .24,0.00000, 0.,                     &
-     &  103., 21.8581000, 0.1019,  .24,0.00000, 0.,                     &
-     &  103., 21.8687000, 0.1020,  .24,0.00000, 0.,                     &
-     &  103., 21.8776000, 0.1032,  .24,0.00000, 0./                     
-      DATA C0346/                                                       &
-     &  103., 21.8805000,1.2180E-22,  .0719,   83.6770,                 &
-     &  103., 21.8820000,1.1910E-22,  .0725,  260.4468,                 &
-     &  103., 21.8893000,1.0360E-22,  .0719,   66.0127,                 &
-     &  103., 21.8902000,9.2330E-23,  .0720,   58.4464,                 &
-     &  103., 21.8946000,7.9170E-23,  .0721,   51.7179,                 &
-     &  103., 21.8958000,6.4230E-23,  .0722,   45.8336,                 &
-     &  101., 21.9488000,1.3600E-23,  .1046, 1618.5590,                 &
-     &  103., 21.9498000,1.0670E-22,  .0725,  301.6709,                 &
-     &  301., 21.9650000,1.0520E-25,  .0753,  485.2090,                 &
-     &  103., 22.0639000,9.3140E-23,  .0724,  346.2320,                 &
-     &  401., 22.1167840,5.5450E-27,  .0571, 1082.8868,                 &
-     &  103., 22.2046000,1.2100E-22,  .0751,  183.4307,                 &
-     &  401., 22.2188920,5.5390E-27,  .0560, 1082.7854,                 &
-     &  103., 22.2364000,7.9450E-23,  .0723,  394.1162,                 &
-     &  103., 22.3440000,1.7870E-22,  .0698,  308.4246/                 
-      DATA D0346/                                                       &
-     &  103., 21.8805000, 0.1028,  .24,0.00000, 0.,                     &
-     &  103., 21.8820000, 0.0987,  .24,0.00000, 0.,                     &
-     &  103., 21.8893000, 0.1036,  .24,0.00000, 0.,                     &
-     &  103., 21.8902000, 0.1041,  .24,0.00000, 0.,                     &
-     &  103., 21.8946000, 0.1045,  .24,0.00000, 0.,                     &
-     &  103., 21.8958000, 0.1050,  .24,0.00000, 0.,                     &
-     &  101., 21.9488000, 0.4630,  .36,0.00680, 0.,                     &
-     &  103., 21.9498000, 0.0981,  .24,0.00000, 0.,                     &
-     &  301., 21.9650000, 0.3765,  .36,0.00000, 0.,                     &
-     &  103., 22.0639000, 0.0976,  .24,0.00000, 0.,                     &
-     &  401., 22.1167840, 0.2855,  .36,0.00000, 0.,                     &
-     &  103., 22.2046000, 0.1023,  .24,0.00000, 0.,                     &
-     &  401., 22.2188920, 0.2800,  .36,0.00000, 0.,                     &
-     &  103., 22.2364000, 0.0971,  .24,0.00000, 0.,                     &
-     &  103., 22.3440000, 0.1003,  .24,0.00000, 0./                     
-      DATA C0361/                                                       &
-     &  103., 22.4045000,9.5600E-23,  .0744,   36.0419,                 &
-     &  103., 22.4794000,6.6180E-23,  .0721,  445.3079,                 &
-     &  104., 22.6125790,1.3260E-22,  .0720,  294.0580,                 &
-     &  103., 22.8037000,5.3920E-23,  .0718,  499.7902,                 &
-     &  201., 23.0850000,5.8770E-25,  .0745,  482.6430,                 &
-     &  103., 23.0949000,1.1830E-22,  .0743,  219.9383,                 &
-     &  103., 23.1318000,9.7970E-23,  .0745,   42.8809,                 &
-     &  103., 23.1747000,8.9510E-23,  .0713,  374.6536,                 &
-     &  401., 23.3776900,1.2070E-26,  .0660, 1082.8868,                 &
-     &  103., 23.3779000,1.6730E-22,  .0695,  330.7686,                 &
-     &  104., 23.4489920,1.2310E-22,  .0717,  316.6700,                 &
-     &  103., 23.9598000,1.5530E-22,  .0693,  354.1466,                 &
-     &  103., 24.0097000,1.1340E-22,  .0735,  259.6697,                 &
-     &  103., 24.1293000,9.9240E-23,  .0743,   50.3021,                 &
-     &  104., 24.2852880,1.1350E-22,  .0715,  340.1190/                 
-      DATA D0361/                                                       &
-     &  103., 22.4045000, 0.1059,  .24,0.00000, 0.,                     &
-     &  103., 22.4794000, 0.0967,  .24,0.00000, 0.,                     &
-     &  104., 22.6125790, 0.0720,  .20,0.00000, 0.,                     &
-     &  103., 22.8037000, 0.0962,  .24,0.00000, 0.,                     &
-     &  201., 23.0850000, 0.3725,  .36,0.00000, 0.,                     &
-     &  103., 23.0949000, 0.1017,  .24,0.00000, 0.,                     &
-     &  103., 23.1318000, 0.1054,  .24,0.00000, 0.,                     &
-     &  103., 23.1747000, 0.0984,  .24,0.00000, 0.,                     &
-     &  401., 23.3776900, 0.3300,  .36,0.00000, 0.,                     &
-     &  103., 23.3779000, 0.1014,  .24,0.00000, 0.,                     &
-     &  104., 23.4489920, 0.0717,  .19,0.00000, 0.,                     &
-     &  103., 23.9598000, 0.0998,  .24,0.00000, 0.,                     &
-     &  103., 24.0097000, 0.1011,  .24,0.00000, 0.,                     &
-     &  103., 24.1293000, 0.1050,  .24,0.00000, 0.,                     &
-     &  104., 24.2852880, 0.0715,  .19,0.00000, 0./                     
-      DATA C0376/                                                       &
-     &  401., 24.5558310,6.4060E-27,  .0827, 1024.5687,                 &
-     &  103., 24.6960000,1.0090E-22,  .0745,   58.9810,                 &
-     &  201., 24.8610000,2.4310E-23,  .0950,   69.9270,                 &
-     &  103., 24.9130000,1.4390E-22,  .0690,  378.1063,                 &
-     &  301., 24.9660000,4.4510E-24,  .0964,   70.0050,                 &
-     &  103., 24.9743000,1.0610E-22,  .0726,  302.5836,                 &
-     &  101., 25.0851280,1.2050E-20,  .0991,   70.0910,                 &
-     &  104., 25.1214630,1.0460E-22,  .0712,  364.4050,                 &
-     &  401., 25.1310890,4.6370E-24,  .0980,   91.3303,                 &
-     &  103., 25.1660000,7.9030E-23,  .0706,  424.9517,                 &
-     &  103., 25.2591000,1.0140E-22,  .0712,   33.2264,                 &
-     &  401., 25.5565330,2.3680E-26,  .0646,  683.6101,                 &
-     &  103., 25.5611000,1.3230E-22,  .0688,  403.0194,                 &
-     &  101., 25.5797000,5.5170E-26,  .0390, 1960.2080,                 &
-     &  401., 25.8438440,2.3700E-26,  .0653,  683.3240/                 
-      DATA D0376/                                                       &
-     &  401., 24.5558310, 0.4135,  .36,0.00000, 0.,                     &
-     &  103., 24.6960000, 0.1046,  .24,0.00000, 0.,                     &
-     &  201., 24.8610000, 0.4750,  .36,0.00000, 0.,                     &
-     &  103., 24.9130000, 0.1009,  .24,0.00000, 0.,                     &
-     &  301., 24.9660000, 0.4820,  .36,0.00000, 0.,                     &
-     &  103., 24.9743000, 0.1005,  .24,0.00000, 0.,                     &
-     &  101., 25.0851280, 0.4190,  .36,0.00600, 0.,                     &
-     &  104., 25.1214630, 0.0712,  .19,0.00000, 0.,                     &
-     &  401., 25.1310890, 0.4900,  .36,0.00000, 0.,                     &
-     &  103., 25.1660000, 0.0980,  .24,0.00000, 0.,                     &
-     &  103., 25.2591000, 0.1064,  .24,0.00000, 0.,                     &
-     &  401., 25.5565330, 0.3230,  .36,0.00000, 0.,                     &
-     &  103., 25.5611000, 0.0994,  .24,0.00000, 0.,                     &
-     &  101., 25.5797000, 0.1790,  .36,0.00000, 0.,                     &
-     &  401., 25.8438440, 0.3265,  .36,0.00000, 0./                     
-      DATA C0391/                                                       &
-     &  103., 25.8935000,9.9270E-23,  .0742,   67.9028,                 &
-     &  104., 25.9575120,9.5550E-23,  .0710,  389.5260,                 &
-     &  103., 26.0085000,9.6800E-23,  .0718,  348.6451,                 &
-     &  103., 26.0993000,1.0260E-22,  .0721,   36.5878,                 &
-     &  103., 26.1745000,1.0070E-22,  .0746,   78.5386,                 &
-     &  103., 26.4587000,1.2090E-22,  .0686,  428.5804,                 &
-     &  101., 26.4720000,4.5050E-27,  .1046, 3175.4409,                 &
-     &  401., 26.6013010,8.2750E-26,  .0943,  156.3823,                 &
-     &  104., 26.7934310,8.7110E-23,  .0708,  415.4840,                 &
-     &  103., 26.9394000,1.0430E-22,  .0722,   40.7900,                 &
-     &  103., 27.0402000,5.3750E-23,  .0726,  495.5174,                 &
-     &  103., 27.0675000,6.8030E-23,  .0698,  478.4390,                 &
-     &  103., 27.1234000,8.6260E-23,  .0710,  397.8283,                 &
-     &  103., 27.1518000,1.0990E-22,  .0683,  455.0392,                 &
-     &  103., 27.3438000,6.4650E-23,  .0725,  442.1125/                 
-      DATA D0391/                                                       &
-     &  103., 25.8935000, 0.1042,  .24,0.00000, 0.,                     &
-     &  104., 25.9575120, 0.0710,  .18,0.00000, 0.,                     &
-     &  103., 26.0085000, 0.1000,  .24,0.00000, 0.,                     &
-     &  103., 26.0993000, 0.1059,  .24,0.00000, 0.,                     &
-     &  103., 26.1745000, 0.1038,  .24,0.00000, 0.,                     &
-     &  103., 26.4587000, 0.1005,  .24,0.00000, 0.,                     &
-     &  101., 26.4720000, 0.5230,  .36,0.00000, 0.,                     &
-     &  401., 26.6013010, 0.4715,  .36,0.00000, 0.,                     &
-     &  104., 26.7934310, 0.0708,  .18,0.00000, 0.,                     &
-     &  103., 26.9394000, 0.1054,  .24,0.00000, 0.,                     &
-     &  103., 27.0402000, 0.0951,  .24,0.00000, 0.,                     &
-     &  103., 27.0675000, 0.0976,  .24,0.00000, 0.,                     &
-     &  103., 27.1234000, 0.0996,  .24,0.00000, 0.,                     &
-     &  103., 27.1518000, 0.0989,  .24,0.00000, 0.,                     &
-     &  103., 27.3438000, 0.0955,  .24,0.00000, 0./                     
-      DATA C0406/                                                       &
-     &  103., 27.5429000,9.7930E-23,  .0748,  101.5791,                 &
-     &  103., 27.5711000,7.5760E-23,  .0723,  392.1784,                 &
-     &  401., 27.5945340,7.2460E-25,  .0933,  155.3890,                 &
-     &  103., 27.7172000,9.6170E-23,  .0742,   88.8347,                 &
-     &  103., 27.7383000,8.7170E-23,  .0720,  345.6929,                 &
-     &  103., 27.7565000,5.8800E-23,  .0722,  467.7873,                 &
-     &  103., 27.7789000,1.0630E-22,  .0721,   45.8336,                 &
-     &  103., 27.8062000,6.9980E-23,  .0722,  416.3526,                 &
-     &  103., 27.8596000,9.8060E-23,  .0718,  302.6369,                 &
-     &  103., 27.8612000,8.1610E-23,  .0720,  368.2959,                 &
-     &  103., 27.9157000,9.2880E-23,  .0719,  323.6207,                 &
-     &  401., 27.9191330,4.7980E-26,  .0763,  374.4100,                 &
-     &  103., 27.9465000,1.0790E-22,  .0715,  262.9951,                 &
-     &  103., 27.9659000,1.0320E-22,  .0716,  282.3288,                 &
-     &  401., 27.9747110,1.2230E-26,  .0762, 1082.7854/                 
-      DATA D0406/                                                       &
-     &  103., 27.5429000, 0.1030,  .24,0.00000, 0.,                     &
-     &  103., 27.5711000, 0.0960,  .24,0.00000, 0.,                     &
-     &  401., 27.5945340, 0.4665,  .36,0.00000, 0.,                     &
-     &  103., 27.7172000, 0.1034,  .24,0.00000, 0.,                     &
-     &  103., 27.7383000, 0.0965,  .24,0.00000, 0.,                     &
-     &  103., 27.7565000, 0.0953,  .24,0.00000, 0.,                     &
-     &  103., 27.7789000, 0.1050,  .24,0.00000, 0.,                     &
-     &  103., 27.8062000, 0.0957,  .24,0.00000, 0.,                     &
-     &  103., 27.8596000, 0.0970,  .24,0.00000, 0.,                     &
-     &  103., 27.8612000, 0.0962,  .24,0.00000, 0.,                     &
-     &  103., 27.9157000, 0.0967,  .24,0.00000, 0.,                     &
-     &  401., 27.9191330, 0.3815,  .36,0.00000, 0.,                     &
-     &  103., 27.9465000, 0.0976,  .24,0.00000, 0.,                     &
-     &  103., 27.9659000, 0.0973,  .24,0.00000, 0.,                     &
-     &  401., 27.9747110, 0.3810,  .36,0.00000, 0./                     
-      DATA C0421/                                                       &
-     &  401., 27.9844670,9.3840E-26,  .0856,  581.9621,                 &
-     &  103., 28.0079000,1.1530E-22,  .0713,  226.7550,                 &
-     &  103., 28.0092000,1.1190E-22,  .0714,  244.4202,                 &
-     &  103., 28.0115000,9.9560E-23,  .0659,  482.1910,                 &
-     &  103., 28.0448000,1.1810E-22,  .0712,  209.8936,                 &
-     &  103., 28.0506000,1.2000E-22,  .0711,  193.9070,                 &
-     &  101., 28.0533000,5.1170E-25,  .0482, 1690.6650,                 &
-     &  103., 28.0723000,1.2090E-22,  .0710,  178.7469,                 &
-     &  103., 28.0798000,1.2060E-22,  .0709,  164.4437,                 &
-     &  103., 28.0926000,1.1940E-22,  .0709,  150.9772,                 &
-     &  103., 28.0991000,1.1680E-22,  .0709,  138.3592,                 &
-     &  103., 28.1066000,1.1310E-22,  .0709,  126.5818,                 &
-     &  103., 28.1113000,1.0810E-22,  .0709,  115.6488,                 &
-     &  103., 28.1156000,1.0140E-22,  .0710,  105.5576,                 &
-     &  103., 28.1185000,9.2980E-23,  .0711,   96.3089/                 
-      DATA D0421/                                                       &
-     &  401., 27.9844670, 0.4280,  .36,0.00000, 0.,                     &
-     &  103., 28.0079000, 0.0982,  .24,0.00000, 0.,                     &
-     &  103., 28.0092000, 0.0979,  .24,0.00000, 0.,                     &
-     &  103., 28.0115000, 0.1001,  .24,0.00000, 0.,                     &
-     &  103., 28.0448000, 0.0985,  .24,0.00000, 0.,                     &
-     &  103., 28.0506000, 0.0989,  .24,0.00000, 0.,                     &
-     &  101., 28.0533000, 0.2600,  .36,0.00000, 0.,                     &
-     &  103., 28.0723000, 0.0992,  .24,0.00000, 0.,                     &
-     &  103., 28.0798000, 0.0996,  .24,0.00000, 0.,                     &
-     &  103., 28.0926000, 0.0999,  .24,0.00000, 0.,                     &
-     &  103., 28.0991000, 0.1003,  .24,0.00000, 0.,                     &
-     &  103., 28.1066000, 0.1007,  .24,0.00000, 0.,                     &
-     &  103., 28.1113000, 0.1011,  .24,0.00000, 0.,                     &
-     &  103., 28.1156000, 0.1015,  .24,0.00000, 0.,                     &
-     &  103., 28.1185000, 0.1019,  .24,0.00000, 0./                     
-      DATA C0436/                                                       &
-     &  103., 28.1208000,8.3220E-23,  .0712,   87.9019,                 &
-     &  103., 28.1223000,7.1800E-23,  .0713,   80.3366,                 &
-     &  103., 28.1234000,5.8160E-23,  .0714,   73.6125,                 &
-     &  401., 28.3183160,4.8880E-25,  .0982,   29.8086,                 &
-     &  103., 28.3213000,7.4680E-23,  .0704,  450.1177,                 &
-     &  201., 28.3990000,1.0710E-26,  .0950, 1658.3361,                 &
-     &  401., 28.4714400,6.8750E-26,  .0855,  683.3240,                 &
-     &  101., 28.4853000,4.4250E-26,  .0324, 2246.8879,                 &
-     &  201., 28.5810000,1.2730E-26,  .0737, 1047.3270,                 &
-     &  103., 28.6187000,1.0820E-22,  .0720,   51.7179,                 &
-     &  401., 28.6650630,4.8010E-26,  .0762,  373.6659,                 &
-     &  101., 28.6818000,5.1170E-24,  .0991, 1664.9709,                 &
-     &  103., 28.7349000,8.9700E-23,  .0687,  510.2025,                 &
-     &  401., 28.7751030,4.2330E-27,  .0879,  995.7936,                 &
-     &  103., 28.7838000,9.3130E-23,  .0749,  128.1196/                 
-      DATA D0436/                                                       &
-     &  103., 28.1208000, 0.1023,  .24,0.00000, 0.,                     &
-     &  103., 28.1223000, 0.1027,  .24,0.00000, 0.,                     &
-     &  103., 28.1234000, 0.1032,  .24,0.00000, 0.,                     &
-     &  401., 28.3183160, 0.4910,  .36,0.00000, 0.,                     &
-     &  103., 28.3213000, 0.0991,  .24,0.00000, 0.,                     &
-     &  201., 28.3990000, 0.4750,  .36,0.00000, 0.,                     &
-     &  401., 28.4714400, 0.4275,  .36,0.00000, 0.,                     &
-     &  101., 28.4853000, 0.1190,  .36,0.00000, 0.,                     &
-     &  201., 28.5810000, 0.3685,  .36,0.00000, 0.,                     &
-     &  103., 28.6187000, 0.1045,  .24,0.00000, 0.,                     &
-     &  401., 28.6650630, 0.3810,  .36,0.00000, 0.,                     &
-     &  101., 28.6818000, 0.4190,  .36,0.00600, 0.,                     &
-     &  103., 28.7349000, 0.0986,  .24,0.00000, 0.,                     &
-     &  401., 28.7751030, 0.4395,  .36,0.00000, 0.,                     &
-     &  103., 28.7838000, 0.1023,  .24,0.00000, 0./                     
-      DATA C0451/                                                       &
-     &  101., 28.8151000,3.7710E-26,  .0305, 2225.4680,                 &
-     &  101., 28.8158000,1.2560E-26,  .0305, 2225.4680,                 &
-     &  103., 28.8909000,5.7060E-23,  .0687,  535.1031,                 &
-     &  103., 29.4556000,1.0940E-22,  .0720,   58.4464,                 &
-     &  103., 29.5688000,8.0580E-23,  .0684,  538.9375,                 &
-     &  103., 29.5966000,6.3040E-23,  .0681,  505.5065,                 &
-     &  103., 29.6258000,8.9600E-23,  .0741,  113.0870,                 &
-     &  401., 29.6961500,3.1320E-26,  .0885,  490.4274,                 &
-     &  401., 29.8085750,2.6110E-24,  .0829,    0.0000,                 &
-     &  401., 29.8831490,2.6240E-25,  .0886,  373.6659,                 &
-     &  103., 29.8895000,8.7090E-23,  .0750,  158.1653,                 &
-     &  101., 30.0011000,2.0270E-24,  .0987, 1634.9700,                 &
-     &  101., 30.1006000,1.0180E-26,  .0851, 2181.0920,                 &
-     &  101., 30.1063000,1.4080E-24,  .0935, 1742.3070,                 &
-     &  401., 30.1832580,1.8450E-26,  .0861,  859.3926/                 
-      DATA D0451/                                                       &
-     &  101., 28.8151000, 0.1280,  .36,0.00000, 0.,                     &
-     &  101., 28.8158000, 0.1280,  .36,0.00000, 0.,                     &
-     &  103., 28.8909000, 0.0972,  .24,0.00000, 0.,                     &
-     &  103., 29.4556000, 0.1041,  .24,0.00000, 0.,                     &
-     &  103., 29.5688000, 0.0998,  .24,0.00000, 0.,                     &
-     &  103., 29.5966000, 0.0988,  .24,0.00000, 0.,                     &
-     &  103., 29.6258000, 0.1026,  .24,0.00000, 0.,                     &
-     &  401., 29.6961500, 0.4425,  .36,0.00000, 0.,                     &
-     &  401., 29.8085750, 0.4145,  .36,0.00000, 0.,                     &
-     &  401., 29.8831490, 0.4430,  .36,0.00000, 0.,                     &
-     &  103., 29.8895000, 0.1016,  .24,0.00000, 0.,                     &
-     &  101., 30.0011000, 0.4380,  .36,-.00100, 0.,                     &
-     &  101., 30.1006000, 0.4360,  .36,0.00000, 0.,                     &
-     &  101., 30.1063000, 0.4680,  .36,-.00300, 0.,                     &
-     &  401., 30.1832580, 0.4305,  .36,0.00000, 0./                     
-      DATA C0466/                                                       &
-     &  101., 30.2272300,6.9730E-24,  .0800, 1050.1580,                 &
-     &  201., 30.2730000,4.2970E-27,  .0949, 1628.0640,                 &
-     &  103., 30.2963000,1.1040E-22,  .0719,   66.0127,                 &
-     &  103., 30.3124000,7.1760E-23,  .0681,  568.5063,                 &
-     &  101., 30.5601800,3.3900E-22,  .0853,  285.2190,                 &
-     &  401., 30.6649070,6.9230E-25,  .1031,   15.5082,                 &
-     &  101., 30.7911000,2.7340E-25,  .0829, 2130.4951,                 &
-     &  103., 30.8624000,8.0250E-23,  .0750,  191.7092,                 &
-     &  101., 30.8953000,4.2940E-26,  .0810, 2251.6960,                 &
-     &  103., 30.9394000,5.2080E-23,  .0684,  563.9940,                 &
-     &  103., 31.1262000,1.1050E-22,  .0719,   74.4314,                 &
-     &  103., 31.1289000,6.3830E-23,  .0678,  598.8187,                 &
-     &  201., 31.1760000,3.0110E-27,  .0879, 1734.2240,                 &
-     &  401., 31.3020050,4.5720E-26,  .0855,  711.7954,                 &
-     &  301., 31.5170000,1.2530E-25,  .0851,  283.5620/                 
-      DATA D0466/                                                       &
-     &  101., 30.2272300, 0.3900,  .36,-.00110, 0.,                     &
-     &  201., 30.2730000, 0.4745,  .36,0.00000, 0.,                     &
-     &  103., 30.2963000, 0.1036,  .24,0.00000, 0.,                     &
-     &  103., 30.3124000, 0.0983,  .24,0.00000, 0.,                     &
-     &  101., 30.5601800, 0.4190,  .36,-.00150, 0.,                     &
-     &  401., 30.6649070, 0.5155,  .36,0.00000, 0.,                     &
-     &  101., 30.7911000, 0.4040,  .36,-.00190, 0.,                     &
-     &  103., 30.8624000, 0.1009,  .24,0.00000, 0.,                     &
-     &  101., 30.8953000, 0.3910,  .36,0.00030, 0.,                     &
-     &  103., 30.9394000, 0.0984,  .24,0.00000, 0.,                     &
-     &  103., 31.1262000, 0.1032,  .24,0.00000, 0.,                     &
-     &  103., 31.1289000, 0.0995,  .24,0.00000, 0.,                     &
-     &  201., 31.1760000, 0.4395,  .36,0.00000, 0.,                     &
-     &  401., 31.3020050, 0.4275,  .36,0.00000, 0.,                     &
-     &  301., 31.5170000, 0.4255,  .36,0.00000, 0./                     
-      DATA C0481/                                                       &
-     &  103., 31.6502000,8.0210E-23,  .0740,  140.6471,                 &
-     &  103., 31.7127000,7.3060E-23,  .0748,  228.7342,                 &
-     &  103., 31.8856000,5.6360E-23,  .0676,  629.9476,                 &
-     &  103., 31.9718000,1.1020E-22,  .0719,   83.6770,                 &
-     &  401., 31.9743960,4.4540E-26,  .0761,  809.3933,                 &
-     &  101., 32.2920000,4.1360E-26,  .0826, 2462.8760,                 &
-     &  103., 32.3260000,1.1550E-22,  .0700,   58.4856,                 &
-     &  201., 32.3640000,6.9620E-25,  .0839,  282.0940,                 &
-     &  101., 32.3657300,3.4170E-22,  .0819,  383.8430,                 &
-     &  103., 32.4561000,6.5870E-23,  .0746,  269.2148,                 &
-     &  401., 32.5272500,3.8260E-27,  .0795,  769.1169,                 &
-     &  103., 32.7854000,1.0910E-22,  .0719,   93.7963,                 &
-     &  401., 32.8273020,3.7180E-24,  .0953,  150.1563,                 &
-     &  301., 32.9510000,1.2430E-25,  .0782,  382.1770,                 &
-     &  101., 32.9534000,5.1870E-21,  .0987,   37.1370/                 
-      DATA D0481/                                                       &
-     &  103., 31.6502000, 0.1019,  .24,0.00000, 0.,                     &
-     &  103., 31.7127000, 0.1003,  .24,0.00000, 0.,                     &
-     &  103., 31.8856000, 0.0980,  .24,0.00000, 0.,                     &
-     &  103., 31.9718000, 0.1028,  .24,0.00000, 0.,                     &
-     &  401., 31.9743960, 0.3805,  .36,0.00000, 0.,                     &
-     &  101., 32.2920000, 0.3970,  .36,0.00005, 0.,                     &
-     &  103., 32.3260000, 0.1045,  .24,0.00000, 0.,                     &
-     &  201., 32.3640000, 0.4195,  .36,0.00000, 0.,                     &
-     &  101., 32.3657300, 0.4070,  .36,-.00290, 0.,                     &
-     &  103., 32.4561000, 0.0997,  .24,0.00000, 0.,                     &
-     &  401., 32.5272500, 0.3975,  .36,0.00000, 0.,                     &
-     &  103., 32.7854000, 0.1024,  .24,0.00000, 0.,                     &
-     &  401., 32.8273020, 0.4765,  .36,0.00000, 0.,                     &
-     &  301., 32.9510000, 0.3910,  .36,0.00000, 0.,                     &
-     &  101., 32.9534000, 0.4380,  .36,-.00100, 0./                     
-      DATA C0496/                                                       &
-     &  301., 33.0730000,1.9180E-24,  .0962,   36.9320,                 &
-     &  103., 33.1119000,5.8910E-23,  .0742,  313.1201,                 &
-     &  103., 33.1663000,1.1520E-22,  .0711,   62.6872,                 &
-     &  201., 33.1790000,1.0600E-23,  .0949,   36.7480,                 &
-     &  401., 33.2033510,2.8090E-24,  .0971,   58.1269,                 &
-     &  201., 33.4650000,6.8270E-25,  .0774,  380.7020,                 &
-     &  103., 33.6461000,1.0740E-22,  .0720,  104.7131,                 &
-     &  401., 33.6881260,4.8150E-25,  .1017,   32.4964,                 &
-     &  103., 33.7025000,5.2230E-23,  .0738,  360.4137,                 &
-     &  103., 33.8270000,6.9020E-23,  .0740,  171.5015,                 &
-     &  103., 34.0065000,1.1540E-22,  .0713,   67.7294,                 &
-     &  103., 34.0407000,5.4320E-23,  .0717,  469.4562,                 &
-     &  103., 34.0997000,5.9130E-23,  .0716,  444.1588,                 &
-     &  103., 34.1152000,6.3880E-23,  .0715,  419.7495,                 &
-     &  103., 34.1558000,6.8710E-23,  .0714,  396.1571/                 
-      DATA D0496/                                                       &
-     &  301., 33.0730000, 0.4810,  .36,0.00000, 0.,                     &
-     &  103., 33.1119000, 0.0992,  .24,0.00000, 0.,                     &
-     &  103., 33.1663000, 0.1041,  .24,0.00000, 0.,                     &
-     &  201., 33.1790000, 0.4745,  .36,0.00000, 0.,                     &
-     &  401., 33.2033510, 0.4855,  .36,0.00000, 0.,                     &
-     &  201., 33.4650000, 0.3870,  .36,0.00000, 0.,                     &
-     &  103., 33.6461000, 0.1020,  .24,0.00000, 0.,                     &
-     &  401., 33.6881260, 0.5085,  .36,0.00000, 0.,                     &
-     &  103., 33.7025000, 0.0987,  .24,0.00000, 0.,                     &
-     &  103., 33.8270000, 0.1012,  .24,0.00000, 0.,                     &
-     &  103., 34.0065000, 0.1036,  .24,0.00000, 0.,                     &
-     &  103., 34.0407000, 0.0942,  .24,0.00000, 0.,                     &
-     &  103., 34.0997000, 0.0944,  .24,0.00000, 0.,                     &
-     &  103., 34.1152000, 0.0946,  .24,0.00000, 0.,                     &
-     &  103., 34.1558000, 0.0949,  .24,0.00000, 0./                     
-      DATA C0511/                                                       &
-     &  103., 34.1731000,7.3610E-23,  .0712,  373.4312,                 &
-     &  103., 34.2016000,7.8270E-23,  .0711,  351.5365,                 &
-     &  103., 34.2178000,8.2770E-23,  .0710,  330.4965,                 &
-     &  103., 34.2380000,8.6870E-23,  .0709,  310.2947,                 &
-     &  103., 34.2518000,9.0610E-23,  .0708,  290.9415,                 &
-     &  103., 34.2663000,9.3960E-23,  .0708,  272.4295,                 &
-     &  103., 34.2772000,9.6760E-23,  .0707,  254.7628,                 &
-     &  103., 34.2876000,9.8980E-23,  .0707,  237.9384,                 &
-     &  103., 34.2958000,1.0030E-22,  .0706,  221.9576,                 &
-     &  103., 34.3030000,1.0060E-22,  .0706,  206.8192,                 &
-     &  103., 34.3089000,1.0020E-22,  .0707,  192.5235,                 &
-     &  103., 34.3138000,9.8640E-23,  .0707,  179.0698,                 &
-     &  103., 34.3177000,9.5970E-23,  .0708,  166.4582,                 &
-     &  103., 34.3209000,9.1970E-23,  .0708,  154.6884,                 &
-     &  103., 34.3233000,8.6840E-23,  .0709,  143.7601/                 
-      DATA D0511/                                                       &
-     &  103., 34.1731000, 0.0951,  .24,0.00000, 0.,                     &
-     &  103., 34.2016000, 0.0954,  .24,0.00000, 0.,                     &
-     &  103., 34.2178000, 0.0957,  .24,0.00000, 0.,                     &
-     &  103., 34.2380000, 0.0960,  .24,0.00000, 0.,                     &
-     &  103., 34.2518000, 0.0963,  .24,0.00000, 0.,                     &
-     &  103., 34.2663000, 0.0966,  .24,0.00000, 0.,                     &
-     &  103., 34.2772000, 0.0969,  .24,0.00000, 0.,                     &
-     &  103., 34.2876000, 0.0972,  .24,0.00000, 0.,                     &
-     &  103., 34.2958000, 0.0975,  .24,0.00000, 0.,                     &
-     &  103., 34.3030000, 0.0979,  .24,0.00000, 0.,                     &
-     &  103., 34.3089000, 0.0982,  .24,0.00000, 0.,                     &
-     &  103., 34.3138000, 0.0986,  .24,0.00000, 0.,                     &
-     &  103., 34.3177000, 0.0990,  .24,0.00000, 0.,                     &
-     &  103., 34.3209000, 0.0993,  .24,0.00000, 0.,                     &
-     &  103., 34.3233000, 0.0997,  .24,0.00000, 0./                     
-      DATA C0526/                                                       &
-     &  103., 34.3252000,8.0190E-23,  .0711,  133.6731,                 &
-     &  103., 34.3265000,7.1850E-23,  .0712,  124.4274,                 &
-     &  103., 34.3275000,6.1980E-23,  .0713,  116.0227,                 &
-     &  103., 34.3281000,5.0420E-23,  .0714,  108.4589,                 &
-     &  103., 34.4252000,1.0520E-22,  .0721,  116.5520,                 &
-     &  103., 34.8464000,1.1570E-22,  .0713,   73.6125,                 &
-     &  103., 35.3217000,1.0230E-22,  .0721,  129.1220,                 &
-     &  101., 35.6460000,3.4210E-27,  .0248, 2550.8831,                 &
-     &  103., 35.6861000,1.1600E-22,  .0712,   80.3366,                 &
-     &  101., 35.9497000,4.1990E-26,  .0825, 2282.5911,                 &
-     &  103., 36.0341000,9.8970E-23,  .0723,  142.7128,                 &
-     &  103., 36.1963000,5.6850E-23,  .0739,  205.6354,                 &
-     &  103., 36.5255000,1.1560E-22,  .0711,   87.9019,                 &
-     &  201., 36.5460000,5.5140E-23,  .0921,  136.3360,                 &
-     &  301., 36.5720000,1.0110E-23,  .0934,  136.5390/                 
-      DATA D0526/                                                       &
-     &  103., 34.3252000, 0.1001,  .24,0.00000, 0.,                     &
-     &  103., 34.3265000, 0.1005,  .24,0.00000, 0.,                     &
-     &  103., 34.3275000, 0.1009,  .24,0.00000, 0.,                     &
-     &  103., 34.3281000, 0.1014,  .24,0.00000, 0.,                     &
-     &  103., 34.4252000, 0.1017,  .24,0.00000, 0.,                     &
-     &  103., 34.8464000, 0.1032,  .24,0.00000, 0.,                     &
-     &  103., 35.3217000, 0.1013,  .24,0.00000, 0.,                     &
-     &  101., 35.6460000, 0.1000,  .36,0.00000, 0.,                     &
-     &  103., 35.6861000, 0.1027,  .24,0.00000, 0.,                     &
-     &  101., 35.9497000, 0.4010,  .36,-.00080, 0.,                     &
-     &  103., 36.0341000, 0.1009,  .24,0.00000, 0.,                     &
-     &  103., 36.1963000, 0.1006,  .24,0.00000, 0.,                     &
-     &  103., 36.5255000, 0.1023,  .24,0.00000, 0.,                     &
-     &  201., 36.5460000, 0.4605,  .36,0.00000, 0.,                     &
-     &  301., 36.5720000, 0.4670,  .36,0.00000, 0./                     
-      DATA C0541/                                                       &
-     &  101., 36.6041300,2.7490E-20,  .0972,  136.7620,                 &
-     &  101., 36.7214000,1.7160E-26,  .0524, 2105.8760,                 &
-     &  201., 36.7480000,1.6590E-23,  .0769,    0.0000,                 &
-     &  301., 36.9320000,3.0150E-24,  .0911,    0.0000,                 &
-     &  103., 37.0037000,9.4890E-23,  .0723,  156.9033,                 &
-     &  101., 37.0118000,4.1190E-25,  .0531, 1437.9690,                 &
-     &  101., 37.1370800,8.2010E-21,  .0950,    0.0000,                 &
-     &  103., 37.3642000,1.1510E-22,  .0710,   96.3089,                 &
-     &  103., 37.5963000,9.0930E-23,  .0726,  172.2974,                 &
-     &  201., 37.9160000,5.4840E-23,  .0879,  172.8820,                 &
-     &  103., 38.2025000,1.1400E-22,  .0709,  105.5576,                 &
-     &  101., 38.2468100,1.7420E-23,  .0768,  744.1630,                 &
-     &  301., 38.3260000,9.9470E-24,  .0892,  173.1110,                 &
-     &  101., 38.4638800,3.8720E-21,  .0935,  134.9020,                 &
-     &  101., 38.4719000,2.6060E-25,  .0575, 1774.7520/                 
-      DATA D0541/                                                       &
-     &  101., 36.6041300, 0.4810,  .36,0.00460, 0.,                     &
-     &  101., 36.7214000, 0.2600,  .36,0.00000, 0.,                     &
-     &  201., 36.7480000, 0.3845,  .36,0.00000, 0.,                     &
-     &  301., 36.9320000, 0.4555,  .36,0.00000, 0.,                     &
-     &  103., 37.0037000, 0.1006,  .24,0.00000, 0.,                     &
-     &  101., 37.0118000, 0.3200,  .36,0.00000, 0.,                     &
-     &  101., 37.1370800, 0.4790,  .36,0.00470, 0.,                     &
-     &  103., 37.3642000, 0.1019,  .24,0.00000, 0.,                     &
-     &  103., 37.5963000, 0.1002,  .24,0.00000, 0.,                     &
-     &  201., 37.9160000, 0.4395,  .36,0.00000, 0.,                     &
-     &  103., 38.2025000, 0.1015,  .24,0.00000, 0.,                     &
-     &  101., 38.2468100, 0.4060,  .36,0.00000, 0.,                     &
-     &  301., 38.3260000, 0.4460,  .36,0.00000, 0.,                     &
-     &  101., 38.4638800, 0.4680,  .36,-.00300, 0.,                     &
-     &  101., 38.4719000, 0.2990,  .36,0.00000, 0./                     
-      DATA C0556/                                                       &
-     &  101., 38.5299000,3.5560E-27,  .0278, 2701.8911,                 &
-     &  401., 38.5658340,6.0830E-27,  .0549,  942.5624,                 &
-     &  401., 38.5956760,6.0890E-27,  .0542,  942.5326,                 &
-     &  101., 38.6362400,3.7030E-22,  .0689,  610.3410,                 &
-     &  103., 38.7002000,8.6040E-23,  .0724,  188.0547,                 &
-     &  401., 38.7585830,3.2450E-24,  .0933,  265.2362,                 &
-     &  101., 38.7911900,2.6850E-20,  .0913,  173.3650,                 &
-     &  401., 38.8525660,3.5600E-24,  .0940,  182.9836,                 &
-     &  301., 38.8850000,6.0770E-27,  .0706,  742.4920,                 &
-     &  301., 38.9650000,1.4370E-24,  .0891,  134.1460,                 &
-     &  101., 38.9685700,1.6660E-23,  .0479, 1216.1940,                 &
-     &  103., 39.0395000,1.1230E-22,  .0709,  115.6488,                 &
-     &  103., 39.0918000,8.1740E-23,  .0729,  205.3285,                 &
-     &  101., 39.1086600,2.9690E-23,  .0580,  888.6320,                 &
-     &  401., 39.3489690,7.1240E-27,  .0670, 1239.0896/                 
-      DATA D0556/                                                       &
-     &  101., 38.5299000, 0.1250,  .36,0.00000, 0.,                     &
-     &  401., 38.5658340, 0.2745,  .36,0.00000, 0.,                     &
-     &  401., 38.5956760, 0.2710,  .36,0.00000, 0.,                     &
-     &  101., 38.6362400, 0.3480,  .36,-.00420, 0.,                     &
-     &  103., 38.7002000, 0.0999,  .24,0.00000, 0.,                     &
-     &  401., 38.7585830, 0.4665,  .36,0.00000, 0.,                     &
-     &  101., 38.7911900, 0.4400,  .36,0.00220, 0.,                     &
-     &  401., 38.8525660, 0.4700,  .36,0.00000, 0.,                     &
-     &  301., 38.8850000, 0.3530,  .36,0.00000, 0.,                     &
-     &  301., 38.9650000, 0.4455,  .36,0.00000, 0.,                     &
-     &  101., 38.9685700, 0.2210,  .36,-.00055, 0.,                     &
-     &  103., 39.0395000, 0.1011,  .24,0.00000, 0.,                     &
-     &  103., 39.0918000, 0.0996,  .24,0.00000, 0.,                     &
-     &  101., 39.1086600, 0.2830,  .36,-.00145, 0.,                     &
-     &  401., 39.3489690, 0.3350,  .36,0.00000, 0./                     
-      DATA C0571/                                                       &
-     &  103., 39.3706000,1.2090E-22,  .0699,   90.8116,                 &
-     &  401., 39.3713730,5.0600E-26,  .0919,  225.8649,                 &
-     &  201., 39.4080000,7.9770E-24,  .0879,  133.4740,                 &
-     &  201., 39.4540000,3.2680E-26,  .0695,  740.9990,                 &
-     &  201., 39.6550000,1.5820E-23,  .0879,  274.8030,                 &
-     &  301., 39.6760000,1.3480E-25,  .0698,  607.3970,                 &
-     &  101., 39.7236000,5.5480E-24,  .0516, 1216.1890,                 &
-     &  201., 39.7850000,7.1330E-27,  .0769, 1588.2791,                 &
-     &  103., 39.8765000,1.1020E-22,  .0708,  126.5818,                 &
-     &  101., 39.9229000,2.9820E-27,  .0557, 3101.1240,                 &
-     &  301., 39.9470000,2.8790E-24,  .0892,  275.1320,                 &
-     &  201., 39.9940000,1.3320E-23,  .0908,   94.7880,                 &
-     &  103., 40.2109000,1.1930E-22,  .0710,   95.8535,                 &
-     &  101., 40.2220000,3.3880E-24,  .0950, 1594.7480,                 &
-     &  101., 40.2834100,7.7890E-21,  .0923,  275.4970/                 
-      DATA D0571/                                                       &
-     &  103., 39.3706000, 0.1027,  .24,0.00000, 0.,                     &
-     &  401., 39.3713730, 0.4595,  .36,0.00000, 0.,                     &
-     &  201., 39.4080000, 0.4395,  .36,0.00000, 0.,                     &
-     &  201., 39.4540000, 0.3475,  .36,0.00000, 0.,                     &
-     &  201., 39.6550000, 0.4395,  .36,0.00000, 0.,                     &
-     &  301., 39.6760000, 0.3490,  .36,0.00000, 0.,                     &
-     &  101., 39.7236000, 0.2470,  .36,0.00080, 0.,                     &
-     &  201., 39.7850000, 0.3845,  .36,0.00000, 0.,                     &
-     &  103., 39.8765000, 0.1007,  .24,0.00000, 0.,                     &
-     &  101., 39.9229000, 0.2680,  .36,0.00100, 0.,                     &
-     &  301., 39.9470000, 0.4460,  .36,0.00000, 0.,                     &
-     &  201., 39.9940000, 0.4540,  .36,0.00000, 0.,                     &
-     &  103., 40.2109000, 0.1023,  .24,0.00000, 0.,                     &
-     &  101., 40.2220000, 0.4790,  .36,0.00470, 0.,                     &
-     &  101., 40.2834100, 0.4510,  .36,0.00560, 0./                     
-      DATA C0586/                                                       &
-     &  201., 40.3800000,2.5150E-26,  .0921, 1725.0190,                 &
-     &  103., 40.3927000,5.2490E-23,  .0709,  453.8647,                 &
-     &  103., 40.4092000,5.6480E-23,  .0708,  430.3128,                 &
-     &  103., 40.4233000,6.0460E-23,  .0708,  407.6043,                 &
-     &  103., 40.4234000,7.5990E-23,  .0725,  222.5716,                 &
-     &  103., 40.4362000,6.4170E-23,  .0707,  385.7380,                 &
-     &  301., 40.4440000,4.5300E-27,  .0934, 1728.2620,                 &
-     &  103., 40.4473000,6.7740E-23,  .0707,  364.7143,                 &
-     &  103., 40.4572000,7.1160E-23,  .0707,  344.5328,                 &
-     &  301., 40.4620000,2.4090E-24,  .0920,   94.9710,                 &
-     &  103., 40.4658000,7.4180E-23,  .0706,  325.1933,                 &
-     &  103., 40.4732000,7.6780E-23,  .0706,  306.6958,                 &
-     &  103., 40.4796000,7.8840E-23,  .0707,  289.0401,                 &
-     &  103., 40.4851000,8.0200E-23,  .0707,  272.2260,                 &
-     &  103., 40.4896000,8.1010E-23,  .0707,  256.2534/                 
-      DATA D0586/                                                       &
-     &  201., 40.3800000, 0.4605,  .36,0.00000, 0.,                     &
-     &  103., 40.3927000, 0.0933,  .24,0.00000, 0.,                     &
-     &  103., 40.4092000, 0.0935,  .24,0.00000, 0.,                     &
-     &  103., 40.4233000, 0.0938,  .24,0.00000, 0.,                     &
-     &  103., 40.4234000, 0.0993,  .24,0.00000, 0.,                     &
-     &  103., 40.4362000, 0.0941,  .24,0.00000, 0.,                     &
-     &  301., 40.4440000, 0.4670,  .36,0.00000, 0.,                     &
-     &  103., 40.4473000, 0.0943,  .24,0.00000, 0.,                     &
-     &  103., 40.4572000, 0.0946,  .24,0.00000, 0.,                     &
-     &  301., 40.4620000, 0.4600,  .36,0.00000, 0.,                     &
-     &  103., 40.4658000, 0.0949,  .24,0.00000, 0.,                     &
-     &  103., 40.4732000, 0.0952,  .24,0.00000, 0.,                     &
-     &  103., 40.4796000, 0.0955,  .24,0.00000, 0.,                     &
-     &  103., 40.4851000, 0.0958,  .24,0.00000, 0.,                     &
-     &  103., 40.4896000, 0.0962,  .24,0.00000, 0./                     
-      DATA C0601/                                                       &
-     &  103., 40.4935000,8.1000E-23,  .0708,  241.1222,                 &
-     &  103., 40.4966000,8.0150E-23,  .0709,  226.8323,                 &
-     &  103., 40.4971000,7.1720E-23,  .0732,  241.8317,                 &
-     &  103., 40.4991000,7.8350E-23,  .0710,  213.3836,                 &
-     &  103., 40.5012000,7.5440E-23,  .0711,  200.7759,                 &
-     &  103., 40.5027000,7.1430E-23,  .0712,  189.0092,                 &
-     &  103., 40.5039000,6.6170E-23,  .0714,  178.0834,                 &
-     &  103., 40.5047000,5.9680E-23,  .0715,  167.9983,                 &
-     &  103., 40.5053000,5.1660E-23,  .0716,  158.7539,                 &
-     &  101., 40.5152000,1.2070E-23,  .0972, 1731.8979,                 &
-     &  301., 40.5280000,1.0750E-26,  .0596,  884.1140,                 &
-     &  101., 40.5308000,1.9450E-26,  .0594, 2724.1680,                 &
-     &  101., 40.5601000,8.3500E-25,  .0414, 1590.6910,                 &
-     &  201., 40.5900000,7.4990E-25,  .0693,  604.7930,                 &
-     &  401., 40.6033850,3.1490E-24,  .0968,  116.4614/                 
-      DATA D0601/                                                       &
-     &  103., 40.4935000, 0.0965,  .24,0.00000, 0.,                     &
-     &  103., 40.4966000, 0.0969,  .24,0.00000, 0.,                     &
-     &  103., 40.4971000, 0.0990,  .24,0.00000, 0.,                     &
-     &  103., 40.4991000, 0.0972,  .24,0.00000, 0.,                     &
-     &  103., 40.5012000, 0.0976,  .24,0.00000, 0.,                     &
-     &  103., 40.5027000, 0.0980,  .24,0.00000, 0.,                     &
-     &  103., 40.5039000, 0.0984,  .24,0.00000, 0.,                     &
-     &  103., 40.5047000, 0.0988,  .24,0.00000, 0.,                     &
-     &  103., 40.5053000, 0.0992,  .24,0.00000, 0.,                     &
-     &  101., 40.5152000, 0.4810,  .36,0.00460, 0.,                     &
-     &  301., 40.5280000, 0.2980,  .36,0.00000, 0.,                     &
-     &  101., 40.5308000, 0.2900,  .36,-.00270, 0.,                     &
-     &  101., 40.5601000, 0.2090,  .36,0.00120, 0.,                     &
-     &  201., 40.5900000, 0.3465,  .36,0.00000, 0.,                     &
-     &  401., 40.6033850, 0.4840,  .36,0.00000, 0./                     
-      DATA C0616/                                                       &
-     &  301., 40.6810000,5.9730E-27,  .0490, 1209.8180,                 &
-     &  101., 40.6938000,2.5060E-24,  .0423, 1590.6899,                 &
-     &  103., 40.7107000,1.0750E-22,  .0709,  138.3592,                 &
-     &  101., 40.7900000,3.1760E-26,  .0700, 2399.1660,                 &
-     &  101., 40.9883100,6.5100E-21,  .0944,   95.1760,                 &
-     &  401., 41.0418270,2.4520E-24,  .0919,  362.5072,                 &
-     &  103., 41.0512000,1.1820E-22,  .0713,  101.7359,                 &
-     &  103., 41.5462000,1.0440E-22,  .0709,  150.9772,                 &
-     &  201., 41.7810000,6.0290E-26,  .0594,  880.1140,                 &
-     &  103., 41.7878000,6.1580E-23,  .0734,  281.8329,                 &
-     &  201., 41.8740000,1.2190E-26,  .0579, 1074.7629,                 &
-     &  103., 41.8913000,1.1730E-22,  .0713,  108.4589,                 &
-     &  401., 41.9981210,1.5470E-26,  .0635,  573.9706,                 &
-     &  401., 42.0781040,1.5550E-26,  .0622,  573.8908,                 &
-     &  103., 42.1901000,6.5450E-23,  .0726,  260.4468/                 
-      DATA D0616/                                                       &
-     &  301., 40.6810000, 0.2450,  .36,0.00000, 0.,                     &
-     &  101., 40.6938000, 0.2090,  .36,0.00140, 0.,                     &
-     &  103., 40.7107000, 0.1003,  .24,0.00000, 0.,                     &
-     &  101., 40.7900000, 0.3520,  .36,-.00470, 0.,                     &
-     &  101., 40.9883100, 0.4210,  .36,0.00270, 0.,                     &
-     &  401., 41.0418270, 0.4595,  .36,0.00000, 0.,                     &
-     &  103., 41.0512000, 0.1018,  .24,0.00000, 0.,                     &
-     &  103., 41.5462000, 0.0999,  .24,0.00000, 0.,                     &
-     &  201., 41.7810000, 0.2970,  .36,0.00000, 0.,                     &
-     &  103., 41.7878000, 0.0984,  .24,0.00000, 0.,                     &
-     &  201., 41.8740000, 0.2895,  .36,0.00000, 0.,                     &
-     &  103., 41.8913000, 0.1014,  .24,0.00000, 0.,                     &
-     &  401., 41.9981210, 0.3175,  .36,0.00000, 0.,                     &
-     &  401., 42.0781040, 0.3110,  .36,0.00000, 0.,                     &
-     &  103., 42.1901000, 0.0987,  .24,0.00000, 0./                     
-      DATA C0631/                                                       &
-     &  201., 42.1950000,3.3870E-26,  .0489, 1204.1750,                 &
-     &  401., 42.2640140,7.5680E-25,  .0956,   58.1269,                 &
-     &  201., 42.3650000,1.5730E-25,  .0804,  839.5500,                 &
-     &  103., 42.3755000,1.0080E-22,  .0710,  164.4437,                 &
-     &  201., 42.4010000,8.5850E-27,  .0600,  879.4940,                 &
-     &  101., 42.4147000,3.2900E-26,  .0631, 2205.6521,                 &
-     &  401., 42.6186850,3.6240E-24,  .1001,   15.5082,                 &
-     &  101., 42.6355300,9.0100E-23,  .0671,  888.5990,                 &
-     &  103., 42.7312000,1.1600E-22,  .0712,  116.0227,                 &
-     &  301., 42.7870000,2.9370E-26,  .0814,  840.8660,                 &
-     &  103., 42.9414000,5.1920E-23,  .0736,  325.3544,                 &
-     &  201., 43.0360000,1.1310E-26,  .0541, 1204.1700,                 &
-     &  401., 43.0845660,2.0020E-24,  .0982,   66.1845,                 &
-     &  401., 43.1422810,1.5190E-26,  .0858,  609.9466,                 &
-     &  103., 43.2108000,9.6750E-23,  .0710,  178.7469/                 
-      DATA D0631/                                                       &
-     &  201., 42.1950000, 0.2445,  .36,0.00000, 0.,                     &
-     &  401., 42.2640140, 0.4780,  .36,0.00000, 0.,                     &
-     &  201., 42.3650000, 0.4020,  .36,0.00000, 0.,                     &
-     &  103., 42.3755000, 0.0996,  .24,0.00000, 0.,                     &
-     &  201., 42.4010000, 0.3000,  .36,0.00000, 0.,                     &
-     &  101., 42.4147000, 0.3440,  .36,-.00530, 0.,                     &
-     &  401., 42.6186850, 0.5005,  .36,0.00000, 0.,                     &
-     &  101., 42.6355300, 0.3090,  .36,0.00330, 0.,                     &
-     &  103., 42.7312000, 0.1009,  .24,0.00000, 0.,                     &
-     &  301., 42.7870000, 0.4070,  .36,0.00000, 0.,                     &
-     &  103., 42.9414000, 0.0978,  .24,0.00000, 0.,                     &
-     &  201., 43.0360000, 0.2705,  .36,0.00000, 0.,                     &
-     &  401., 43.0845660, 0.4910,  .36,0.00000, 0.,                     &
-     &  401., 43.1422810, 0.4290,  .36,0.00000, 0.,                     &
-     &  103., 43.2108000, 0.0992,  .24,0.00000, 0./                     
-      DATA C0646/                                                       &
-     &  101., 43.2424500,8.4780E-23,  .0826,  842.3570,                 &
-     &  401., 43.2901310,2.5810E-24,  .0936,  221.9461,                 &
-     &  103., 43.5709000,1.1460E-22,  .0711,  124.4274,                 &
-     &  101., 43.6290000,6.2610E-24,  .0586, 1079.0800,                 &
-     &  103., 44.0220000,5.4830E-23,  .0726,  301.6709,                 &
-     &  103., 44.0314000,9.2530E-23,  .0711,  193.9070,                 &
-     &  101., 44.0983400,6.7230E-22,  .0829,  508.8120,                 &
-     &  401., 44.1577590,2.5910E-26,  .0771,  951.6358,                 &
-     &  301., 44.2190000,3.2620E-26,  .0674,  884.0780,                 &
-     &  201., 44.3780000,5.1100E-27,  .0442, 1574.6790,                 &
-     &  103., 44.4102000,1.1270E-22,  .0710,  133.6731,                 &
-     &  301., 44.4350000,2.4100E-25,  .0801,  507.1750,                 &
-     &  101., 44.5432000,3.0790E-25,  .0369, 2009.8051,                 &
-     &  101., 44.5643000,1.0280E-25,  .0370, 2009.8051,                 &
-     &  201., 44.7230000,1.3160E-24,  .0792,  505.7290/                 
-      DATA D0646/                                                       &
-     &  101., 43.2424500, 0.3970,  .36,0.00005, 0.,                     &
-     &  401., 43.2901310, 0.4680,  .36,0.00000, 0.,                     &
-     &  103., 43.5709000, 0.1005,  .24,0.00000, 0.,                     &
-     &  101., 43.6290000, 0.3270,  .36,0.00000, 0.,                     &
-     &  103., 44.0220000, 0.0981,  .24,0.00000, 0.,                     &
-     &  103., 44.0314000, 0.0989,  .24,0.00000, 0.,                     &
-     &  101., 44.0983400, 0.4040,  .36,-.00190, 0.,                     &
-     &  401., 44.1577590, 0.3855,  .36,0.00000, 0.,                     &
-     &  301., 44.2190000, 0.3370,  .36,0.00000, 0.,                     &
-     &  201., 44.3780000, 0.2210,  .36,0.00000, 0.,                     &
-     &  103., 44.4102000, 0.1001,  .24,0.00000, 0.,                     &
-     &  301., 44.4350000, 0.4005,  .36,0.00000, 0.,                     &
-     &  101., 44.5432000, 0.1790,  .36,0.00000, 0.,                     &
-     &  101., 44.5643000, 0.1790,  .36,0.00000, 0.,                     &
-     &  201., 44.7230000, 0.3960,  .36,0.00000, 0./                     
-      DATA C0661/                                                       &
-     &  101., 44.8532000,4.3250E-24,  .0605,  882.8910,                 &
-     &  103., 44.8692000,8.7920E-23,  .0712,  209.8936,                 &
-     &  401., 45.1571320,8.9110E-25,  .1010,   46.1731,                 &
-     &  103., 45.2491000,1.1060E-22,  .0709,  143.7601,                 &
-     &  101., 45.3840000,4.6300E-27,  .0972, 3289.2419,                 &
-     &  201., 45.6240000,1.8400E-25,  .0671,  880.0770,                 &
-     &  103., 45.6745000,8.3130E-23,  .0713,  226.7550,                 &
-     &  201., 45.8920000,2.2230E-26,  .0879, 1765.3990,                 &
-     &  103., 46.0876000,1.0790E-22,  .0708,  154.6884,                 &
-     &  401., 46.2058220,1.5820E-24,  .0917,  473.9178,                 &
-     &  301., 46.3760000,3.9740E-27,  .0892, 1768.7050,                 &
-     &  103., 46.3882000,1.1850E-22,  .0701,  130.1822,                 &
-     &  401., 46.4627850,3.7260E-25,  .0951,  108.9263,                 &
-     &  103., 46.5213000,7.8170E-23,  .0714,  244.4202,                 &
-     &  103., 46.6128000,5.1110E-23,  .0707,  426.1742/                 
-      DATA D0661/                                                       &
-     &  101., 44.8532000, 0.3520,  .36,0.00000, 0.,                     &
-     &  103., 44.8692000, 0.0985,  .24,0.00000, 0.,                     &
-     &  401., 45.1571320, 0.5050,  .36,0.00000, 0.,                     &
-     &  103., 45.2491000, 0.0997,  .24,0.00000, 0.,                     &
-     &  101., 45.3840000, 0.4860,  .36,0.00000, 0.,                     &
-     &  201., 45.6240000, 0.3355,  .36,0.00000, 0.,                     &
-     &  103., 45.6745000, 0.0982,  .24,0.00000, 0.,                     &
-     &  201., 45.8920000, 0.4395,  .36,0.00000, 0.,                     &
-     &  103., 46.0876000, 0.0993,  .24,0.00000, 0.,                     &
-     &  401., 46.2058220, 0.4585,  .36,0.00000, 0.,                     &
-     &  301., 46.3760000, 0.4460,  .36,0.00000, 0.,                     &
-     &  103., 46.3882000, 0.1009,  .24,0.00000, 0.,                     &
-     &  401., 46.4627850, 0.4755,  .36,0.00000, 0.,                     &
-     &  103., 46.5213000, 0.0979,  .24,0.00000, 0.,                     &
-     &  103., 46.6128000, 0.0927,  .24,0.00000, 0./                     
-      DATA C0676/                                                       &
-     &  103., 46.6194000,5.3950E-23,  .0707,  405.1617,                 &
-     &  201., 46.6240000,6.5790E-27,  .0879, 1868.2560,                 &
-     &  103., 46.6253000,5.6480E-23,  .0707,  384.9900,                 &
-     &  103., 46.6303000,5.8690E-23,  .0707,  365.6591,                 &
-     &  103., 46.6346000,6.0580E-23,  .0708,  347.1690,                 &
-     &  103., 46.6383000,6.1940E-23,  .0708,  329.5197,                 &
-     &  103., 46.6413000,6.2890E-23,  .0709,  312.7110,                 &
-     &  103., 46.6439000,6.3200E-23,  .0710,  296.7431,                 &
-     &  103., 46.6460000,6.2770E-23,  .0711,  281.6157,                 &
-     &  103., 46.6476000,6.1600E-23,  .0712,  267.3289,                 &
-     &  103., 46.6489000,5.9590E-23,  .0713,  253.8827,                 &
-     &  103., 46.6499000,5.6630E-23,  .0715,  241.2771,                 &
-     &  103., 46.6507000,5.2720E-23,  .0716,  229.5119,                 &
-     &  201., 46.7980000,2.9830E-23,  .0887,  398.3610,                 &
-     &  301., 46.9140000,5.4460E-24,  .0900,  398.8800/                 
-      DATA D0676/                                                       &
-     &  103., 46.6194000, 0.0930,  .24,0.00000, 0.,                     &
-     &  201., 46.6240000, 0.4395,  .36,0.00000, 0.,                     &
-     &  103., 46.6253000, 0.0933,  .24,0.00000, 0.,                     &
-     &  103., 46.6303000, 0.0936,  .24,0.00000, 0.,                     &
-     &  103., 46.6346000, 0.0939,  .24,0.00000, 0.,                     &
-     &  103., 46.6383000, 0.0942,  .24,0.00000, 0.,                     &
-     &  103., 46.6413000, 0.0945,  .24,0.00000, 0.,                     &
-     &  103., 46.6439000, 0.0948,  .24,0.00000, 0.,                     &
-     &  103., 46.6460000, 0.0952,  .24,0.00000, 0.,                     &
-     &  103., 46.6476000, 0.0955,  .24,0.00000, 0.,                     &
-     &  103., 46.6489000, 0.0959,  .24,0.00000, 0.,                     &
-     &  103., 46.6499000, 0.0963,  .24,0.00000, 0.,                     &
-     &  103., 46.6507000, 0.0966,  .24,0.00000, 0.,                     &
-     &  201., 46.7980000, 0.4435,  .36,0.00000, 0.,                     &
-     &  301., 46.9140000, 0.4500,  .36,0.00000, 0./                     
-      DATA C0691/                                                       &
-     &  101., 46.9237000,1.0450E-23,  .0913, 1772.4130,                 &
-     &  103., 46.9254000,1.0450E-22,  .0707,  166.4582,                 &
-     &  101., 47.0543400,1.4760E-20,  .0934,  399.4570,                 &
-     &  103., 47.2285000,1.1560E-22,  .0712,  136.0644,                 &
-     &  103., 47.2997000,7.3180E-23,  .0716,  262.9951,                 &
-     &  101., 47.4280000,3.1130E-24,  .0923, 1875.4740,                 &
-     &  101., 47.6483000,6.6290E-27,  .0720, 2724.0430,                 &
-     &  103., 47.7625000,1.0110E-22,  .0706,  179.0698,                 &
-     &  401., 47.7956430,3.7240E-25,  .0956,  109.2691,                 &
-     &  101., 47.8661000,7.9810E-25,  .0472, 1293.0200,                 &
-     &  201., 47.9880000,1.7830E-25,  .0821,  658.6100,                 &
-     &  301., 48.0290000,3.3100E-26,  .0830,  659.9870,                 &
-     &  101., 48.0579900,9.3790E-23,  .0825,  661.5490,                 &
-     &  103., 48.0689000,1.1380E-22,  .0715,  142.7870,                 &
-     &  103., 48.1677000,6.8130E-23,  .0717,  282.3288/                 
-      DATA D0691/                                                       &
-     &  101., 46.9237000, 0.4400,  .36,0.00220, 0.,                     &
-     &  103., 46.9254000, 0.0990,  .24,0.00000, 0.,                     &
-     &  101., 47.0543400, 0.4510,  .36,0.00620, 0.,                     &
-     &  103., 47.2285000, 0.1005,  .24,0.00000, 0.,                     &
-     &  103., 47.2997000, 0.0976,  .24,0.00000, 0.,                     &
-     &  101., 47.4280000, 0.4510,  .36,0.00560, 0.,                     &
-     &  101., 47.6483000, 0.3450,  .36,0.00460, 0.,                     &
-     &  103., 47.7625000, 0.0986,  .24,0.00000, 0.,                     &
-     &  401., 47.7956430, 0.4780,  .36,0.00000, 0.,                     &
-     &  101., 47.8661000, 0.3210,  .36,0.00000, 0.,                     &
-     &  201., 47.9880000, 0.4105,  .36,0.00000, 0.,                     &
-     &  301., 48.0290000, 0.4150,  .36,0.00000, 0.,                     &
-     &  101., 48.0579900, 0.4010,  .36,-.00080, 0.,                     &
-     &  103., 48.0689000, 0.1000,  .24,0.00000, 0.,                     &
-     &  103., 48.1677000, 0.0973,  .24,0.00000, 0./                     
-      DATA C0706/                                                       &
-     &  201., 48.1710000,4.4650E-27,  .0611, 1198.1990,                 &
-     &  401., 48.1943230,9.9250E-25,  .0918,  217.0419,                 &
-     &  401., 48.4442300,7.3790E-27,  .0787, 1238.7949,                 &
-     &  103., 48.5988000,9.7800E-23,  .0706,  192.5235,                 &
-     &  201., 48.7070000,5.3950E-27,  .0908, 1686.7360,                 &
-     &  103., 48.8995000,6.3030E-23,  .0719,  302.6369,                 &
-     &  103., 48.9091000,1.1210E-22,  .0716,  150.3502,                 &
-     &  101., 49.1523000,5.7530E-25,  .0885, 2004.8170,                 &
-     &  201., 49.3380000,3.8970E-26,  .0643,  701.6960,                 &
-     &  103., 49.4342000,9.3660E-23,  .0706,  206.8192,                 &
-     &  103., 49.7491000,1.0950E-22,  .0715,  158.7539,                 &
-     &  401., 49.7653360,3.8340E-24,  .0963,  100.3909,                 &
-     &  103., 49.8105000,5.8070E-23,  .0719,  323.6207,                 &
-     &  101., 49.8398000,2.5460E-24,  .0944, 1693.6520,                 &
-     &  103., 50.2684000,8.9380E-23,  .0706,  221.9576/                 
-      DATA D0706/                                                       &
-     &  201., 48.1710000, 0.3055,  .36,0.00000, 0.,                     &
-     &  401., 48.1943230, 0.4590,  .36,0.00000, 0.,                     &
-     &  401., 48.4442300, 0.3935,  .36,0.00000, 0.,                     &
-     &  103., 48.5988000, 0.0982,  .24,0.00000, 0.,                     &
-     &  201., 48.7070000, 0.4540,  .36,0.00000, 0.,                     &
-     &  103., 48.8995000, 0.0970,  .24,0.00000, 0.,                     &
-     &  103., 48.9091000, 0.0996,  .24,0.00000, 0.,                     &
-     &  101., 49.1523000, 0.4360,  .36,-.00100, 0.,                     &
-     &  201., 49.3380000, 0.3215,  .36,0.00000, 0.,                     &
-     &  103., 49.4342000, 0.0979,  .24,0.00000, 0.,                     &
-     &  103., 49.7491000, 0.0992,  .24,0.00000, 0.,                     &
-     &  401., 49.7653360, 0.4815,  .36,0.00000, 0.,                     &
-     &  103., 49.8105000, 0.0967,  .24,0.00000, 0.,                     &
-     &  101., 49.8398000, 0.4210,  .36,0.00270, 0.,                     &
-     &  103., 50.2684000, 0.0975,  .24,0.00000, 0./                     
-      DATA C0721/                                                       &
-     &  401., 50.2768240,7.2840E-25,  .0991,   66.1845,                 &
-     &  103., 50.4642000,5.3290E-23,  .0721,  345.6929,                 &
-     &  103., 50.5890000,1.0700E-22,  .0714,  167.9983,                 &
-     &  401., 50.7993450,1.6460E-24,  .0961,   58.1269,                 &
-     &  301., 50.8200000,6.9850E-27,  .0653,  702.8860,                 &
-     &  401., 50.8293960,5.1400E-26,  .0867,  808.5632,                 &
-     &  101., 51.0092000,1.0450E-26,  .0336, 2471.2539,                 &
-     &  101., 51.0130000,3.1240E-26,  .0336, 2471.2539,                 &
-     &  103., 51.1017000,8.4790E-23,  .0707,  237.9384,                 &
-     &  101., 51.3250000,6.1510E-27,  .0979, 3237.9170,                 &
-     &  103., 51.4286000,1.0460E-22,  .0713,  178.0834,                 &
-     &  101., 51.4330000,1.3450E-22,  .0810,  610.1140,                 &
-     &  103., 51.9330000,8.0100E-23,  .0707,  254.7628,                 &
-     &  103., 52.2679000,1.0150E-22,  .0711,  189.0092,                 &
-     &  101., 52.5105000,1.9190E-23,  .0664,  704.2140/                 
-      DATA D0721/                                                       &
-     &  401., 50.2768240, 0.4955,  .36,0.00000, 0.,                     &
-     &  103., 50.4642000, 0.0965,  .24,0.00000, 0.,                     &
-     &  103., 50.5890000, 0.0988,  .24,0.00000, 0.,                     &
-     &  401., 50.7993450, 0.4805,  .36,0.00000, 0.,                     &
-     &  301., 50.8200000, 0.3265,  .36,0.00000, 0.,                     &
-     &  401., 50.8293960, 0.4335,  .36,0.00000, 0.,                     &
-     &  101., 51.0092000, 0.1640,  .36,0.00000, 0.,                     &
-     &  101., 51.0130000, 0.1640,  .36,0.00000, 0.,                     &
-     &  103., 51.1017000, 0.0972,  .24,0.00000, 0.,                     &
-     &  101., 51.3250000, 0.4895,  .36,0.00000, 0.,                     &
-     &  103., 51.4286000, 0.0984,  .24,0.00000, 0.,                     &
-     &  101., 51.4330000, 0.3910,  .36,0.00030, 0.,                     &
-     &  103., 51.9330000, 0.0969,  .24,0.00000, 0.,                     &
-     &  103., 52.2679000, 0.0980,  .24,0.00000, 0.,                     &
-     &  101., 52.5105000, 0.3820,  .36,0.00000, 0./                     
-      DATA C0736/                                                       &
-     &  401., 52.6090010,2.5860E-25,  .0884,  467.5146,                 &
-     &  201., 52.6420000,1.2870E-26,  .0887, 1993.2800,                 &
-     &  103., 52.7638000,7.5320E-23,  .0708,  272.4295,                 &
-     &  301., 52.8270000,4.9320E-26,  .0830,  607.1590,                 &
-     &  101., 53.1032000,6.1170E-24,  .0934, 2000.8660,                 &
-     &  103., 53.1068000,9.8490E-23,  .0710,  200.7759,                 &
-     &  101., 53.2451000,2.1580E-24,  .0638, 1201.9220,                 &
-     &  103., 53.3742000,1.0900E-22,  .0703,  176.5703,                 &
-     &  101., 53.4443900,5.6680E-21,  .0960,  222.0520,                 &
-     &  301., 53.5100000,2.0810E-24,  .0897,  221.6220,                 &
-     &  201., 53.5710000,1.1400E-23,  .0885,  221.2330,                 &
-     &  103., 53.5912000,7.0460E-23,  .0709,  290.9415,                 &
-     &  401., 53.7501060,1.2700E-26,  .0772, 1110.7601,                 &
-     &  401., 53.8915140,3.1000E-26,  .0895,  308.6157,                 &
-     &  103., 53.9453000,9.4830E-23,  .0709,  213.3836/                 
-      DATA D0736/                                                       &
-     &  401., 52.6090010, 0.4420,  .36,0.00000, 0.,                     &
-     &  201., 52.6420000, 0.4435,  .36,0.00000, 0.,                     &
-     &  103., 52.7638000, 0.0966,  .24,0.00000, 0.,                     &
-     &  301., 52.8270000, 0.4150,  .36,0.00000, 0.,                     &
-     &  101., 53.1032000, 0.4510,  .36,0.00620, 0.,                     &
-     &  103., 53.1068000, 0.0976,  .24,0.00000, 0.,                     &
-     &  101., 53.2451000, 0.3560,  .36,0.00000, 0.,                     &
-     &  103., 53.3742000, 0.0991,  .24,0.00000, 0.,                     &
-     &  101., 53.4443900, 0.4710,  .36,0.00310, 0.,                     &
-     &  301., 53.5100000, 0.4485,  .36,0.00000, 0.,                     &
-     &  201., 53.5710000, 0.4425,  .36,0.00000, 0.,                     &
-     &  103., 53.5912000, 0.0963,  .24,0.00000, 0.,                     &
-     &  401., 53.7501060, 0.3860,  .36,0.00000, 0.,                     &
-     &  401., 53.8915140, 0.4475,  .36,0.00000, 0.,                     &
-     &  103., 53.9453000, 0.0972,  .24,0.00000, 0./                     
-      DATA C0751/                                                       &
-     &  201., 54.0650000,2.7610E-25,  .0821,  604.5450,                 &
-     &  103., 54.2146000,1.0590E-22,  .0713,  183.2929,                 &
-     &  401., 54.2177920,4.3630E-24,  .1000,   46.1731,                 &
-     &  103., 54.4196000,6.5620E-23,  .0710,  310.2947,                 &
-     &  201., 54.4870000,2.8320E-23,  .0903,   78.9880,                 &
-     &  401., 54.5096480,3.6960E-27,  .0676, 1411.3204,                 &
-     &  401., 54.5256710,8.9010E-25,  .0889,  598.5632,                 &
-     &  401., 54.7766960,4.1940E-27,  .0500,  818.0137,                 &
-     &  103., 54.7834000,9.1350E-23,  .0708,  226.8323,                 &
-     &  401., 54.7837040,4.1930E-27,  .0502,  818.0067,                 &
-     &  101., 54.8352000,1.1460E-23,  .0979, 1677.0630,                 &
-     &  301., 54.9140000,4.3300E-27,  .0950, 1673.3480,                 &
-     &  301., 54.9190000,5.1450E-24,  .0914,   79.2270,                 &
-     &  101., 54.9254000,1.0020E-26,  .0768, 2337.6689,                 &
-     &  201., 54.9800000,2.4280E-26,  .0937, 1670.0389/                 
-      DATA D0751/                                                       &
-     &  201., 54.0650000, 0.4105,  .36,0.00000, 0.,                     &
-     &  103., 54.2146000, 0.0987,  .24,0.00000, 0.,                     &
-     &  401., 54.2177920, 0.5000,  .36,0.00000, 0.,                     &
-     &  103., 54.4196000, 0.0960,  .24,0.00000, 0.,                     &
-     &  201., 54.4870000, 0.4515,  .36,0.00000, 0.,                     &
-     &  401., 54.5096480, 0.3380,  .36,0.00000, 0.,                     &
-     &  401., 54.5256710, 0.4445,  .36,0.00000, 0.,                     &
-     &  401., 54.7766960, 0.2500,  .36,0.00000, 0.,                     &
-     &  103., 54.7834000, 0.0969,  .24,0.00000, 0.,                     &
-     &  401., 54.7837040, 0.2510,  .36,0.00000, 0.,                     &
-     &  101., 54.8352000, 0.4670,  .36,-.00140, 0.,                     &
-     &  301., 54.9140000, 0.4750,  .36,0.00000, 0.,                     &
-     &  301., 54.9190000, 0.4570,  .36,0.00000, 0.,                     &
-     &  101., 54.9254000, 0.4060,  .36,0.00000, 0.,                     &
-     &  201., 54.9800000, 0.4685,  .36,0.00000, 0./                     
-      DATA C0766/                                                       &
-     &  401., 54.9981150,2.2170E-24,  .0945,  100.3909,                 &
-     &  103., 55.0550000,1.0370E-22,  .0717,  190.8559,                 &
-     &  201., 55.2330000,6.6510E-23,  .0981,   23.7550,                 &
-     &  103., 55.2415000,6.0810E-23,  .0711,  330.4965,                 &
-     &  201., 55.2450000,1.1380E-25,  .0742,  324.0470,                 &
-     &  101., 55.4053600,1.3910E-20,  .0937,   79.4960,                 &
-     &  301., 55.4540000,1.2140E-23,  .0994,   23.7740,                 &
-     &  103., 55.6208000,8.7280E-23,  .0707,  241.1222,                 &
-     &  101., 55.7020800,3.2850E-20,  .1009,   23.7940,                 &
-     &  201., 55.7500000,3.0380E-26,  .0705,  444.8460,                 &
-     &  103., 55.8952000,1.0080E-22,  .0718,  199.2593,                 &
-     &  401., 55.9913440,8.6950E-25,  .0954,  100.3909,                 &
-     &  103., 56.0679000,5.6000E-23,  .0712,  351.5365,                 &
-     &  301., 56.1450000,2.0660E-26,  .0752,  324.6610,                 &
-     &  401., 56.1924270,1.6450E-24,  .0907,  306.3148/                 
-      DATA D0766/                                                       &
-     &  401., 54.9981150, 0.4725,  .36,0.00000, 0.,                     &
-     &  103., 55.0550000, 0.0982,  .24,0.00000, 0.,                     &
-     &  201., 55.2330000, 0.4905,  .36,0.00000, 0.,                     &
-     &  103., 55.2415000, 0.0957,  .24,0.00000, 0.,                     &
-     &  201., 55.2450000, 0.3710,  .36,0.00000, 0.,                     &
-     &  101., 55.4053600, 0.4770,  .36,0.00330, 0.,                     &
-     &  301., 55.4540000, 0.4970,  .36,0.00000, 0.,                     &
-     &  103., 55.6208000, 0.0965,  .24,0.00000, 0.,                     &
-     &  101., 55.7020800, 0.4180,  .36,0.00504, 0.,                     &
-     &  201., 55.7500000, 0.3525,  .36,0.00000, 0.,                     &
-     &  103., 55.8952000, 0.0978,  .24,0.00000, 0.,                     &
-     &  401., 55.9913440, 0.4770,  .36,0.00000, 0.,                     &
-     &  103., 56.0679000, 0.0954,  .24,0.00000, 0.,                     &
-     &  301., 56.1450000, 0.3760,  .36,0.00000, 0.,                     &
-     &  401., 56.1924270, 0.4535,  .36,0.00000, 0./                     
-      DATA C0781/                                                       &
-     &  103., 56.4576000,8.2660E-23,  .0707,  256.2534,                 &
-     &  301., 56.4610000,5.5570E-27,  .0712,  445.7190,                 &
-     &  101., 56.4872000,7.7420E-25,  .0400, 1524.8490,                 &
-     &  103., 56.7354000,9.7990E-23,  .0717,  208.5030,                 &
-     &  103., 56.8816000,5.1380E-23,  .0713,  373.4312,                 &
-     &  101., 57.1708600,5.6590E-23,  .0762,  325.3480,                 &
-     &  101., 57.2651100,2.9180E-20,  .0979,   79.4960,                 &
-     &  101., 57.2741800,1.5450E-23,  .0718,  446.6970,                 &
-     &  103., 57.2937000,7.8270E-23,  .0707,  272.2260,                 &
-     &  301., 57.3110000,1.0760E-23,  .0950,   79.2270,                 &
-     &  201., 57.3490000,5.9630E-23,  .0937,   78.9880,                 &
-     &  201., 57.3730000,4.3040E-24,  .0874,  601.2370,                 &
-     &  103., 57.5753000,9.5340E-23,  .0716,  218.5873,                 &
-     &  401., 57.7484580,4.3580E-25,  .0901,  801.6442,                 &
-     &  201., 57.9910000,2.8570E-26,  .0981, 1612.0490/                 
-      DATA D0781/                                                       &
-     &  103., 56.4576000, 0.0962,  .24,0.00000, 0.,                     &
-     &  301., 56.4610000, 0.3560,  .36,0.00000, 0.,                     &
-     &  101., 56.4872000, 0.3170,  .36,0.00000, 0.,                     &
-     &  103., 56.7354000, 0.0974,  .24,0.00000, 0.,                     &
-     &  103., 56.8816000, 0.0951,  .24,0.00000, 0.,                     &
-     &  101., 57.1708600, 0.4170,  .36,0.00000, 0.,                     &
-     &  101., 57.2651100, 0.4670,  .36,-.00140, 0.,                     &
-     &  101., 57.2741800, 0.4000,  .36,0.00000, 0.,                     &
-     &  103., 57.2937000, 0.0958,  .24,0.00000, 0.,                     &
-     &  301., 57.3110000, 0.4750,  .36,0.00000, 0.,                     &
-     &  201., 57.3490000, 0.4685,  .36,0.00000, 0.,                     &
-     &  201., 57.3730000, 0.4370,  .36,0.00000, 0.,                     &
-     &  103., 57.5753000, 0.0970,  .24,0.00000, 0.,                     &
-     &  401., 57.7484580, 0.4505,  .36,0.00000, 0.,                     &
-     &  201., 57.9910000, 0.4905,  .36,0.00000, 0./                     
-      DATA C0796/                                                       &
-     &  101., 58.0230000,2.5390E-24,  .0960, 1817.4510,                 &
-     &  301., 58.0260000,7.7840E-25,  .0886,  601.9610,                 &
-     &  101., 58.0540000,5.2610E-26,  .0712, 2572.1399,                 &
-     &  201., 58.0660000,5.2730E-27,  .0885, 1810.1899,                 &
-     &  101., 58.1220000,3.3350E-27,  .0913, 3334.6260,                 &
-     &  103., 58.1290000,7.4080E-23,  .0706,  289.0401,                 &
-     &  301., 58.2330000,5.1270E-27,  .0994, 1615.1150,                 &
-     &  103., 58.4151000,9.2110E-23,  .0715,  229.5119,                 &
-     &  101., 58.5034000,1.3600E-23,  .1009, 1618.5590,                 &
-     &  401., 58.5467410,7.3100E-27,  .0844,  743.0974,                 &
-     &  401., 58.7065430,7.3420E-25,  .0899,  653.0889,                 &
-     &  101., 58.7783400,2.0880E-21,  .0909,  602.7740,                 &
-     &  401., 58.8259960,9.5010E-25,  .0976,   91.3303,                 &
-     &  101., 58.9114400,9.4070E-23,  .0700,  757.7800,                 &
-     &  103., 58.9633000,6.9420E-23,  .0706,  306.6958/                 
-      DATA D0796/                                                       &
-     &  101., 58.0230000, 0.4710,  .36,0.00310, 0.,                     &
-     &  301., 58.0260000, 0.4430,  .36,0.00000, 0.,                     &
-     &  101., 58.0540000, 0.3660,  .36,-.00490, 0.,                     &
-     &  201., 58.0660000, 0.4425,  .36,0.00000, 0.,                     &
-     &  101., 58.1220000, 0.4565,  .36,0.00000, 0.,                     &
-     &  103., 58.1290000, 0.0955,  .24,0.00000, 0.,                     &
-     &  301., 58.2330000, 0.4970,  .36,0.00000, 0.,                     &
-     &  103., 58.4151000, 0.0966,  .24,0.00000, 0.,                     &
-     &  101., 58.5034000, 0.4180,  .36,0.00504, 0.,                     &
-     &  401., 58.5467410, 0.4220,  .36,0.00000, 0.,                     &
-     &  401., 58.7065430, 0.4495,  .36,0.00000, 0.,                     &
-     &  101., 58.7783400, 0.4160,  .36,0.00290, 0.,                     &
-     &  401., 58.8259960, 0.4880,  .36,0.00000, 0.,                     &
-     &  101., 58.9114400, 0.3520,  .36,-.00470, 0.,                     &
-     &  103., 58.9633000, 0.0952,  .24,0.00000, 0./                     
-      DATA C0811/                                                       &
-     &  201., 59.0970000,6.5600E-24,  .0872,  780.4530,                 &
-     &  103., 59.2546000,8.9020E-23,  .0714,  241.2771,                 &
-     &  301., 59.4880000,1.1920E-24,  .0884,  781.3780,                 &
-     &  401., 59.7179870,2.2530E-25,  .0899,  964.8507,                 &
-     &  103., 59.7966000,6.4980E-23,  .0706,  325.1933,                 &
-     &  301., 59.7980000,3.3950E-26,  .0686,  754.8130,                 &
-     &  101., 59.8659000,2.6270E-27,  .0309, 2972.8240,                 &
-     &  101., 59.8690600,2.4610E-21,  .0908,  542.9060,                 &
-     &  401., 59.8816750,5.2440E-27,  .0787, 1287.2391,                 &
-     &  101., 59.9493900,3.2070E-21,  .0910,  782.4100,                 &
-     &  301., 59.9640000,9.0360E-25,  .0864,  541.9970,                 &
-     &  201., 60.0580000,4.9520E-24,  .0851,  541.1790,                 &
-     &  103., 60.0938000,8.5400E-23,  .0713,  253.8827,                 &
-     &  103., 60.3242000,9.5230E-23,  .0701,  229.9445,                 &
-     &  201., 60.5700000,1.9810E-23,  .0866,  445.1590/                 
-      DATA D0811/                                                       &
-     &  201., 59.0970000, 0.4360,  .36,0.00000, 0.,                     &
-     &  103., 59.2546000, 0.0963,  .24,0.00000, 0.,                     &
-     &  301., 59.4880000, 0.4420,  .36,0.00000, 0.,                     &
-     &  401., 59.7179870, 0.4495,  .36,0.00000, 0.,                     &
-     &  103., 59.7966000, 0.0949,  .24,0.00000, 0.,                     &
-     &  301., 59.7980000, 0.3430,  .36,0.00000, 0.,                     &
-     &  101., 59.8659000, 0.1510,  .36,0.00000, 0.,                     &
-     &  101., 59.8690600, 0.4360,  .36,0.00640, 0.,                     &
-     &  401., 59.8816750, 0.3935,  .36,0.00000, 0.,                     &
-     &  101., 59.9493900, 0.4160,  .36,0.00570, 0.,                     &
-     &  301., 59.9640000, 0.4320,  .36,0.00000, 0.,                     &
-     &  201., 60.0580000, 0.4255,  .36,0.00000, 0.,                     &
-     &  103., 60.0938000, 0.0959,  .24,0.00000, 0.,                     &
-     &  103., 60.3242000, 0.0973,  .24,0.00000, 0.,                     &
-     &  201., 60.5700000, 0.4330,  .36,0.00000, 0./                     
-      DATA C0826/                                                       &
-     &  201., 60.5730000,1.8840E-25,  .0680,  752.1870,                 &
-     &  103., 60.6289000,6.0420E-23,  .0707,  344.5328,                 &
-     &  401., 60.6596490,2.1820E-24,  .0940,  156.3823,                 &
-     &  201., 60.8610000,2.3870E-26,  .0839,  221.2330,                 &
-     &  103., 60.9327000,8.1950E-23,  .0711,  267.3289,                 &
-     &  103., 61.1646000,9.2180E-23,  .0711,  237.5075,                 &
-     &  301., 61.3810000,3.5680E-24,  .0877,  445.7940,                 &
-     &  103., 61.4598000,5.5950E-23,  .0707,  364.7143,                 &
-     &  201., 61.6040000,5.1560E-26,  .0674,  583.7790,                 &
-     &  401., 61.6528770,5.3810E-25,  .0930,  155.3890,                 &
-     &  101., 61.6855000,9.0110E-25,  .0936, 1813.7880,                 &
-     &  101., 61.7500000,1.0740E-25,  .0637, 1813.2240,                 &
-     &  103., 61.7713000,7.8020E-23,  .0710,  281.6157,                 &
-     &  401., 61.8385360,1.0900E-24,  .0909,  520.1236,                 &
-     &  301., 61.9400000,4.3030E-27,  .0851,  221.6220/                 
-      DATA D0826/                                                       &
-     &  201., 60.5730000, 0.3400,  .36,0.00000, 0.,                     &
-     &  103., 60.6289000, 0.0946,  .24,0.00000, 0.,                     &
-     &  401., 60.6596490, 0.4700,  .36,0.00000, 0.,                     &
-     &  201., 60.8610000, 0.4195,  .36,0.00000, 0.,                     &
-     &  103., 60.9327000, 0.0955,  .24,0.00000, 0.,                     &
-     &  103., 61.1646000, 0.0969,  .24,0.00000, 0.,                     &
-     &  301., 61.3810000, 0.4385,  .36,0.00000, 0.,                     &
-     &  103., 61.4598000, 0.0943,  .24,0.00000, 0.,                     &
-     &  201., 61.6040000, 0.3370,  .36,0.00000, 0.,                     &
-     &  401., 61.6528770, 0.4650,  .36,0.00000, 0.,                     &
-     &  101., 61.6855000, 0.4360,  .36,-.00400, 0.,                     &
-     &  101., 61.7500000, 0.2810,  .36,0.00000, 0.,                     &
-     &  103., 61.7713000, 0.0952,  .24,0.00000, 0.,                     &
-     &  401., 61.8385360, 0.4545,  .36,0.00000, 0.,                     &
-     &  301., 61.9400000, 0.4255,  .36,0.00000, 0./                     
-      DATA C0841/                                                       &
-     &  103., 62.0051000,8.9870E-23,  .0716,  245.9108,                 &
-     &  301., 62.1320000,9.4470E-27,  .0679,  584.9410,                 &
-     &  103., 62.2896000,5.1560E-23,  .0707,  385.7380,                 &
-     &  101., 62.3039200,9.5830E-21,  .0900,  446.5110,                 &
-     &  401., 62.4635300,2.1760E-25,  .0799,  233.0237,                 &
-     &  101., 62.4760000,5.7330E-27,  .1009, 3175.4409,                 &
-     &  103., 62.6093000,7.4260E-23,  .0709,  296.7431,                 &
-     &  401., 62.6262480,2.1780E-25,  .0807,  233.0512,                 &
-     &  101., 62.7007100,1.9180E-24,  .0681,  920.2110,                 &
-     &  101., 62.7383000,2.6560E-23,  .0684,  586.2430,                 &
-     &  401., 62.7531230,5.4490E-27,  .1004,   46.1731,                 &
-     &  103., 62.8454000,8.7050E-23,  .0717,  255.1545,                 &
-     &  101., 62.8737000,6.6440E-23,  .0594, 1059.8350,                 &
-     &  101., 63.1676200,1.1680E-23,  .0863,  222.0520,                 &
-     &  201., 63.1880000,1.0770E-23,  .0893,  141.5670/                 
-      DATA D0841/                                                       &
-     &  103., 62.0051000, 0.0965,  .24,0.00000, 0.,                     &
-     &  301., 62.1320000, 0.3395,  .36,0.00000, 0.,                     &
-     &  103., 62.2896000, 0.0941,  .24,0.00000, 0.,                     &
-     &  101., 62.3039200, 0.4180,  .36,0.00140, 0.,                     &
-     &  401., 62.4635300, 0.3995,  .36,0.00000, 0.,                     &
-     &  101., 62.4760000, 0.5045,  .36,0.00000, 0.,                     &
-     &  103., 62.6093000, 0.0948,  .24,0.00000, 0.,                     &
-     &  401., 62.6262480, 0.4035,  .36,0.00000, 0.,                     &
-     &  101., 62.7007100, 0.3660,  .36,0.00000, 0.,                     &
-     &  101., 62.7383000, 0.3800,  .36,0.00000, 0.,                     &
-     &  401., 62.7531230, 0.5020,  .36,0.00000, 0.,                     &
-     &  103., 62.8454000, 0.0961,  .24,0.00000, 0.,                     &
-     &  101., 62.8737000, 0.2900,  .36,-.00270, 0.,                     &
-     &  101., 63.1676200, 0.4380,  .36,0.00000, 0.,                     &
-     &  201., 63.1880000, 0.4465,  .36,0.00000, 0./                     
-      DATA C0856/                                                       &
-     &  101., 63.1908000,3.5720E-27,  .0577, 2920.1340,                 &
-     &  101., 63.3305800,3.7840E-24,  .0503, 1411.6470,                 &
-     &  201., 63.3660000,1.1970E-26,  .0762,  541.1790,                 &
-     &  103., 63.4469000,7.0080E-23,  .0709,  312.7110,                 &
-     &  101., 63.5004800,5.9890E-25,  .0702, 1899.0081,                 &
-     &  101., 63.5064100,2.0570E-26,  .0476, 2042.3750,                 &
-     &  301., 63.5790000,1.9640E-24,  .0904,  141.9040,                 &
-     &  103., 63.6856000,8.3750E-23,  .0717,  265.2384,                 &
-     &  201., 63.9300000,3.6070E-27,  .0639,  916.2920,                 &
-     &  101., 63.9934800,1.7130E-21,  .0885,  382.5170,                 &
-     &  101., 64.0233500,5.3150E-21,  .0917,  142.2790,                 &
-     &  401., 64.0587750,1.4470E-26,  .0962,   91.3303,                 &
-     &  201., 64.1840000,1.1980E-26,  .0903, 1670.0389,                 &
-     &  301., 64.2320000,2.3860E-26,  .0598, 1055.2560,                 &
-     &  103., 64.2840000,6.6080E-23,  .0708,  329.5197/                 
-      DATA D0856/                                                       &
-     &  101., 63.1908000, 0.3090,  .36,-.00360, 0.,                     &
-     &  101., 63.3305800, 0.2320,  .36,-.00180, 0.,                     &
-     &  201., 63.3660000, 0.3810,  .36,0.00000, 0.,                     &
-     &  103., 63.4469000, 0.0945,  .24,0.00000, 0.,                     &
-     &  101., 63.5004800, 0.3560,  .36,-.00530, 0.,                     &
-     &  101., 63.5064100, 0.2500,  .36,0.00000, 0.,                     &
-     &  301., 63.5790000, 0.4520,  .36,0.00000, 0.,                     &
-     &  103., 63.6856000, 0.0957,  .24,0.00000, 0.,                     &
-     &  201., 63.9300000, 0.3195,  .36,0.00000, 0.,                     &
-     &  101., 63.9934800, 0.4360,  .36,-.00100, 0.,                     &
-     &  101., 64.0233500, 0.4270,  .36,0.00150, 0.,                     &
-     &  401., 64.0587750, 0.4810,  .36,0.00000, 0.,                     &
-     &  201., 64.1840000, 0.4515,  .36,0.00000, 0.,                     &
-     &  301., 64.2320000, 0.2990,  .36,0.00000, 0.,                     &
-     &  103., 64.2840000, 0.0942,  .24,0.00000, 0./                     
-      DATA C0871/                                                       &
-     &  401., 64.3530160,1.0070E-26,  .0815,  403.1616,                 &
-     &  101., 64.3850000,1.5490E-24,  .0432, 1810.5890,                 &
-     &  401., 64.3888180,7.4550E-27,  .0792,  512.5159,                 &
-     &  101., 64.4938000,1.1180E-25,  .0845, 2398.3821,                 &
-     &  103., 64.5256000,8.1170E-23,  .0717,  276.1626,                 &
-     &  401., 64.7713990,5.3500E-25,  .0952,  157.0647,                 &
-     &  101., 64.8804000,5.1630E-25,  .0448, 1810.5840,                 &
-     &  101., 64.9273000,1.0470E-24,  .0908, 2146.2649,                 &
-     &  301., 64.9880000,6.3060E-25,  .0859,  380.8060,                 &
-     &  401., 65.0520040,4.7290E-24,  .0969,   91.3303,                 &
-     &  401., 65.0629560,1.0260E-25,  .0878, 1141.6918,                 &
-     &  103., 65.1204000,6.1690E-23,  .0707,  347.1690,                 &
-     &  101., 65.2441000,5.6960E-24,  .0937, 1677.0630,                 &
-     &  103., 65.3655000,7.7560E-23,  .0716,  287.9270,                 &
-     &  201., 65.4330000,1.3350E-25,  .0593, 1051.2050/                 
-      DATA D0871/                                                       &
-     &  401., 64.3530160, 0.4075,  .36,0.00000, 0.,                     &
-     &  101., 64.3850000, 0.2300,  .36,0.00080, 0.,                     &
-     &  401., 64.3888180, 0.3960,  .36,0.00000, 0.,                     &
-     &  101., 64.4938000, 0.4060,  .36,0.00110, 0.,                     &
-     &  103., 64.5256000, 0.0953,  .24,0.00000, 0.,                     &
-     &  401., 64.7713990, 0.4760,  .36,0.00000, 0.,                     &
-     &  101., 64.8804000, 0.2300,  .36,0.00080, 0.,                     &
-     &  101., 64.9273000, 0.4360,  .36,0.00640, 0.,                     &
-     &  301., 64.9880000, 0.4295,  .36,0.00000, 0.,                     &
-     &  401., 65.0520040, 0.4845,  .36,0.00000, 0.,                     &
-     &  401., 65.0629560, 0.4390,  .36,0.00000, 0.,                     &
-     &  103., 65.1204000, 0.0939,  .24,0.00000, 0.,                     &
-     &  101., 65.2441000, 0.4770,  .36,0.00330, 0.,                     &
-     &  103., 65.3655000, 0.0949,  .24,0.00000, 0.,                     &
-     &  201., 65.4330000, 0.2965,  .36,0.00000, 0./                     
-      DATA C0886/                                                       &
-     &  401., 65.5638410,4.2420E-24,  .0954,  156.3823,                 &
-     &  101., 65.6852000,1.1420E-23,  .0557, 1411.6121,                 &
-     &  201., 65.8670000,3.5240E-24,  .0846,  379.2920,                 &
-     &  401., 65.9089010,4.4890E-25,  .0853,  735.7353,                 &
-     &  103., 65.9561000,5.7490E-23,  .0707,  365.6591,                 &
-     &  401., 66.1145620,1.4360E-24,  .0902,  403.5491,                 &
-     &  103., 66.2051000,7.4650E-23,  .0715,  300.5317,                 &
-     &  201., 66.2440000,7.8960E-24,  .0845,  314.4580,                 &
-     &  401., 66.5222190,8.0530E-25,  .0957,  116.4614,                 &
-     &  201., 66.5560000,7.6650E-27,  .0507, 1399.4630,                 &
-     &  103., 66.7911000,5.3570E-23,  .0707,  384.9900,                 &
-     &  401., 66.8856560,2.2190E-26,  .0951,  150.1563,                 &
-     &  103., 67.0445000,7.1330E-23,  .0713,  313.9766,                 &
-     &  301., 67.0990000,1.4190E-24,  .0857,  315.0790,                 &
-     &  201., 67.1060000,8.8340E-25,  .0849,  980.2220/                 
-      DATA D0886/                                                       &
-     &  401., 65.5638410, 0.4770,  .36,0.00000, 0.,                     &
-     &  101., 65.6852000, 0.2680,  .36,0.00100, 0.,                     &
-     &  201., 65.8670000, 0.4230,  .36,0.00000, 0.,                     &
-     &  401., 65.9089010, 0.4265,  .36,0.00000, 0.,                     &
-     &  103., 65.9561000, 0.0936,  .24,0.00000, 0.,                     &
-     &  401., 66.1145620, 0.4510,  .36,0.00000, 0.,                     &
-     &  103., 66.2051000, 0.0945,  .24,0.00000, 0.,                     &
-     &  201., 66.2440000, 0.4225,  .36,0.00000, 0.,                     &
-     &  401., 66.5222190, 0.4785,  .36,0.00000, 0.,                     &
-     &  201., 66.5560000, 0.2535,  .36,0.00000, 0.,                     &
-     &  103., 66.7911000, 0.0933,  .24,0.00000, 0.,                     &
-     &  401., 66.8856560, 0.4755,  .36,0.00000, 0.,                     &
-     &  103., 67.0445000, 0.0942,  .24,0.00000, 0.,                     &
-     &  301., 67.0990000, 0.4285,  .36,0.00000, 0.,                     &
-     &  201., 67.1060000, 0.4245,  .36,0.00000, 0./                     
-      DATA C0901/                                                       &
-     &  301., 67.1630000,1.6090E-25,  .0861,  981.4940,                 &
-     &  401., 67.1921160,4.5450E-27,  .0755,  634.4283,                 &
-     &  101., 67.2080000,5.7130E-24,  .0786,  542.9060,                 &
-     &  103., 67.2339000,7.9490E-23,  .0696,  290.2686,                 &
-     &  101., 67.2473600,4.3520E-22,  .0875,  982.9120,                 &
-     &  401., 67.3510930,1.0530E-26,  .0867,  306.3148,                 &
-     &  101., 67.5304000,5.7150E-26,  .0389, 2254.2839,                 &
-     &  301., 67.5360000,4.0900E-27,  .0573, 1405.1490,                 &
-     &  101., 67.6216000,1.7100E-25,  .0392, 2254.2830,                 &
-     &  401., 67.7716750,1.8140E-24,  .0926,  225.8649,                 &
-     &  103., 67.8836000,6.7610E-23,  .0712,  328.2617,                 &
-     &  101., 68.0647400,3.8280E-21,  .0875,  315.7790,                 &
-     &  103., 68.0745000,7.6650E-23,  .0707,  298.6722,                 &
-     &  201., 68.0750000,3.1390E-27,  .0431, 1794.3800,                 &
-     &  101., 68.4113000,7.3890E-26,  .0332, 1774.6190/                 
-      DATA D0901/                                                       &
-     &  301., 67.1630000, 0.4305,  .36,0.00000, 0.,                     &
-     &  401., 67.1921160, 0.3775,  .36,0.00000, 0.,                     &
-     &  101., 67.2080000, 0.3820,  .36,0.00000, 0.,                     &
-     &  103., 67.2339000, 0.0955,  .24,0.00000, 0.,                     &
-     &  101., 67.2473600, 0.4160,  .36,0.00870, 0.,                     &
-     &  401., 67.3510930, 0.4335,  .36,0.00000, 0.,                     &
-     &  101., 67.5304000, 0.2090,  .36,0.00000, 0.,                     &
-     &  301., 67.5360000, 0.2865,  .36,0.00000, 0.,                     &
-     &  101., 67.6216000, 0.2090,  .36,0.00000, 0.,                     &
-     &  401., 67.7716750, 0.4630,  .36,0.00000, 0.,                     &
-     &  103., 67.8836000, 0.0938,  .24,0.00000, 0.,                     &
-     &  101., 68.0647400, 0.4150,  .36,0.00140, 0.,                     &
-     &  103., 68.0745000, 0.0951,  .24,0.00000, 0.,                     &
-     &  201., 68.0750000, 0.2155,  .36,0.00000, 0.,                     &
-     &  101., 68.4113000, 0.2990,  .36,0.00000, 0./                     
-      DATA C0916/                                                       &
-     &  103., 68.7224000,6.4050E-23,  .0711,  343.3870,                 &
-     &  401., 68.8706770,1.1130E-24,  .0918,  293.6366,                 &
-     &  103., 68.9149000,7.3920E-23,  .0712,  307.9159,                 &
-     &  201., 69.0130000,2.5880E-27,  .0872, 2384.0449,                 &
-     &  201., 69.1830000,2.3230E-26,  .0572, 1399.4290,                 &
-     &  101., 69.1955000,2.5300E-21,  .0936,  206.3010,                 &
-     &  401., 69.4720420,1.8730E-26,  .0875,  404.4457,                 &
-     &  401., 69.4825990,8.5360E-25,  .0941,  156.3823,                 &
-     &  103., 69.5609000,6.0630E-23,  .0710,  359.3524,                 &
-     &  301., 69.6490000,9.3990E-25,  .0882,  205.4830,                 &
-     &  101., 69.7411000,7.1320E-27,  .0722, 2771.6909,                 &
-     &  103., 69.7553000,7.1290E-23,  .0714,  317.9999,                 &
-     &  201., 70.0480000,5.2440E-24,  .0871,  204.7550,                 &
-     &  101., 70.2817000,1.2190E-24,  .0910, 2392.5940,                 &
-     &  103., 70.3989000,5.6860E-23,  .0709,  376.1580/                 
-      DATA D0916/                                                       &
-     &  103., 68.7224000, 0.0935,  .24,0.00000, 0.,                     &
-     &  401., 68.8706770, 0.4590,  .36,0.00000, 0.,                     &
-     &  103., 68.9149000, 0.0947,  .24,0.00000, 0.,                     &
-     &  201., 69.0130000, 0.4360,  .36,0.00000, 0.,                     &
-     &  201., 69.1830000, 0.2860,  .36,0.00000, 0.,                     &
-     &  101., 69.1955000, 0.4360,  .36,-.00400, 0.,                     &
-     &  401., 69.4720420, 0.4375,  .36,0.00000, 0.,                     &
-     &  401., 69.4825990, 0.4705,  .36,0.00000, 0.,                     &
-     &  103., 69.5609000, 0.0931,  .24,0.00000, 0.,                     &
-     &  301., 69.6490000, 0.4410,  .36,0.00000, 0.,                     &
-     &  101., 69.7411000, 0.3720,  .36,-.00510, 0.,                     &
-     &  103., 69.7553000, 0.0943,  .24,0.00000, 0.,                     &
-     &  201., 70.0480000, 0.4355,  .36,0.00000, 0.,                     &
-     &  101., 70.2817000, 0.4160,  .36,0.00570, 0.,                     &
-     &  103., 70.3989000, 0.0928,  .24,0.00000, 0./                     
-      DATA C0931/                                                       &
-     &  401., 70.4151590,1.6710E-24,  .0913,  303.9948,                 &
-     &  103., 70.5955000,6.8270E-23,  .0715,  328.9240,                 &
-     &  401., 70.7561950,9.9550E-25,  .0878,  403.1616,                 &
-     &  401., 70.8769380,3.9940E-27,  .0794, 1410.5673,                 &
-     &  103., 71.2365000,5.3240E-23,  .0708,  393.8036,                 &
-     &  101., 71.3990000,7.7380E-25,  .0909, 2211.1919,                 &
-     &  103., 71.4356000,6.5850E-23,  .0715,  340.6882,                 &
-     &  201., 71.5090000,1.9720E-23,  .0835,  210.7990,                 &
-     &  201., 71.6410000,2.5540E-23,  .0945,   69.9270,                 &
-     &  401., 71.6904330,2.4460E-26,  .0941,  221.9461,                 &
-     &  401., 71.7898480,8.9840E-25,  .0963,  150.1563,                 &
-     &  201., 71.8490000,7.8850E-27,  .0607,  740.9110,                 &
-     &  301., 71.8990000,4.6400E-24,  .0958,   70.0050,                 &
-     &  101., 72.1291000,2.2920E-23,  .0720, 1059.6470,                 &
-     &  101., 72.1879700,1.2590E-20,  .0994,   70.0910/                 
-      DATA D0931/                                                       &
-     &  401., 70.4151590, 0.4565,  .36,0.00000, 0.,                     &
-     &  103., 70.5955000, 0.0939,  .24,0.00000, 0.,                     &
-     &  401., 70.7561950, 0.4390,  .36,0.00000, 0.,                     &
-     &  401., 70.8769380, 0.3970,  .36,0.00000, 0.,                     &
-     &  103., 71.2365000, 0.0925,  .24,0.00000, 0.,                     &
-     &  101., 71.3990000, 0.4160,  .36,0.00290, 0.,                     &
-     &  103., 71.4356000, 0.0936,  .24,0.00000, 0.,                     &
-     &  201., 71.5090000, 0.4175,  .36,0.00000, 0.,                     &
-     &  201., 71.6410000, 0.4725,  .36,0.00000, 0.,                     &
-     &  401., 71.6904330, 0.4705,  .36,0.00000, 0.,                     &
-     &  401., 71.7898480, 0.4815,  .36,0.00000, 0.,                     &
-     &  201., 71.8490000, 0.3035,  .36,0.00000, 0.,                     &
-     &  301., 71.8990000, 0.4790,  .36,0.00000, 0.,                     &
-     &  101., 72.1291000, 0.3450,  .36,0.00460, 0.,                     &
-     &  101., 72.1879700, 0.4210,  .36,0.00538, 0./                     
-      DATA C0946/                                                       &
-     &  103., 72.2755000,6.2590E-23,  .0714,  353.2925,                 &
-     &  301., 72.3320000,3.5720E-24,  .0846,  211.4370,                 &
-     &  101., 72.6336100,4.0910E-24,  .0620,  744.0640,                 &
-     &  401., 72.8279630,3.0400E-27,  .0768,  735.7353,                 &
-     &  101., 73.0942000,1.5560E-26,  .0356, 2740.4199,                 &
-     &  101., 73.1123000,5.1670E-27,  .0357, 2740.4199,                 &
-     &  103., 73.1152000,5.9440E-23,  .0713,  366.7368,                 &
-     &  101., 73.2630700,9.6580E-21,  .0844,  212.1560,                 &
-     &  201., 73.3140000,4.6410E-27,  .0893, 1732.2640,                 &
-     &  401., 73.5411530,7.3740E-27,  .0912,  221.9461,                 &
-     &  401., 73.8413450,1.6620E-24,  .0909,  221.8361,                 &
-     &  301., 73.8820000,8.2990E-27,  .0713, 1055.0560,                 &
-     &  401., 73.9084750,4.1650E-26,  .0846, 1331.2172,                 &
-     &  201., 73.9270000,1.0890E-26,  .0945, 1658.3361,                 &
-     &  103., 73.9547000,5.6420E-23,  .0712,  381.0211/                 
-      DATA D0946/                                                       &
-     &  103., 72.2755000, 0.0932,  .24,0.00000, 0.,                     &
-     &  301., 72.3320000, 0.4230,  .36,0.00000, 0.,                     &
-     &  101., 72.6336100, 0.3530,  .36,0.00000, 0.,                     &
-     &  401., 72.8279630, 0.3840,  .36,0.00000, 0.,                     &
-     &  101., 73.0942000, 0.1710,  .36,0.00000, 0.,                     &
-     &  101., 73.1123000, 0.1710,  .36,0.00000, 0.,                     &
-     &  103., 73.1152000, 0.0928,  .24,0.00000, 0.,                     &
-     &  101., 73.2630700, 0.4120,  .36,0.00360, 0.,                     &
-     &  201., 73.3140000, 0.4465,  .36,0.00000, 0.,                     &
-     &  401., 73.5411530, 0.4560,  .36,0.00000, 0.,                     &
-     &  401., 73.8413450, 0.4545,  .36,0.00000, 0.,                     &
-     &  301., 73.8820000, 0.3565,  .36,0.00000, 0.,                     &
-     &  401., 73.9084750, 0.4230,  .36,0.00000, 0.,                     &
-     &  201., 73.9270000, 0.4725,  .36,0.00000, 0.,                     &
-     &  103., 73.9547000, 0.0925,  .24,0.00000, 0./                     
-      DATA C0961/                                                       &
-     &  101., 73.9604000,6.5370E-27,  .0737, 2998.7681,                 &
-     &  103., 74.0994000,6.3810E-23,  .0688,  357.5026,                 &
-     &  101., 74.1100000,9.6350E-21,  .0900,  325.3480,                 &
-     &  301., 74.2190000,3.5500E-24,  .0856,  324.6610,                 &
-     &  101., 74.3036000,2.2110E-24,  .0917, 1739.4850,                 &
-     &  201., 74.3140000,1.9400E-23,  .0844,  324.0470,                 &
-     &  101., 74.5142000,5.1670E-24,  .0994, 1664.9709,                 &
-     &  201., 74.5280000,7.5500E-27,  .0866, 2045.9220,                 &
-     &  401., 74.7429270,1.2910E-26,  .0845, 1618.7004,                 &
-     &  201., 74.7920000,2.6100E-23,  .0843,  223.8280,                 &
-     &  103., 74.7939000,5.3510E-23,  .0711,  396.1453,                 &
-     &  101., 74.8754400,1.4800E-22,  .0712,  931.2370,                 &
-     &  103., 74.9400000,6.1190E-23,  .0701,  366.7466,                 &
-     &  101., 74.9790000,1.7120E-25,  .0875, 2595.8130,                 &
-     &  401., 74.9911060,3.4530E-26,  .0879,  949.5776/                 
-      DATA D0961/                                                       &
-     &  101., 73.9604000, 0.3710,  .36,-.00520, 0.,                     &
-     &  103., 74.0994000, 0.0938,  .24,0.00000, 0.,                     &
-     &  101., 74.1100000, 0.4410,  .36,0.00160, 0.,                     &
-     &  301., 74.2190000, 0.4280,  .36,0.00000, 0.,                     &
-     &  101., 74.3036000, 0.4270,  .36,0.00150, 0.,                     &
-     &  201., 74.3140000, 0.4220,  .36,0.00000, 0.,                     &
-     &  101., 74.5142000, 0.4210,  .36,0.00538, 0.,                     &
-     &  201., 74.5280000, 0.4330,  .36,0.00000, 0.,                     &
-     &  401., 74.7429270, 0.4225,  .36,0.00000, 0.,                     &
-     &  201., 74.7920000, 0.4215,  .36,0.00000, 0.,                     &
-     &  103., 74.7939000, 0.0921,  .24,0.00000, 0.,                     &
-     &  101., 74.8754400, 0.3660,  .36,-.00490, 0.,                     &
-     &  103., 74.9400000, 0.0934,  .24,0.00000, 0.,                     &
-     &  101., 74.9790000, 0.4160,  .36,0.00870, 0.,                     &
-     &  401., 74.9911060, 0.4395,  .36,0.00000, 0./                     
-      DATA C0976/                                                       &
-     &  301., 75.1350000,4.7420E-24,  .0853,  224.3050,                 &
-     &  401., 75.2747920,3.4250E-27,  .0811,  889.5759,                 &
-     &  201., 75.4020000,6.9580E-25,  .0824, 1279.7980,                 &
-     &  201., 75.4480000,4.6630E-26,  .0709, 1050.9910,                 &
-     &  301., 75.4870000,5.3050E-26,  .0715,  928.2970,                 &
-     &  101., 75.5247200,1.2840E-20,  .0866,  224.8380,                 &
-     &  103., 75.6329000,5.0290E-23,  .0710,  412.1094,                 &
-     &  401., 75.7086070,4.6760E-24,  .0952,  150.1563,                 &
-     &  103., 75.7804000,5.8670E-23,  .0707,  376.8308,                 &
-     &  401., 75.9864960,1.2100E-24,  .0909,  157.0647,                 &
-     &  201., 76.0050000,2.9090E-25,  .0712,  925.7010,                 &
-     &  401., 76.1841270,2.2480E-25,  .0872,  576.9047,                 &
-     &  401., 76.2598710,1.3380E-24,  .0880,  308.6157,                 &
-     &  301., 76.2870000,1.2520E-25,  .0834, 1281.2710,                 &
-     &  401., 76.3184370,3.1200E-26,  .0870, 1405.1257/                 
-      DATA D0976/                                                       &
-     &  301., 75.1350000, 0.4265,  .36,0.00000, 0.,                     &
-     &  401., 75.2747920, 0.4055,  .36,0.00000, 0.,                     &
-     &  201., 75.4020000, 0.4120,  .36,0.00000, 0.,                     &
-     &  201., 75.4480000, 0.3545,  .36,0.00000, 0.,                     &
-     &  301., 75.4870000, 0.3575,  .36,0.00000, 0.,                     &
-     &  101., 75.5247200, 0.4390,  .36,0.00440, 0.,                     &
-     &  103., 75.6329000, 0.0918,  .24,0.00000, 0.,                     &
-     &  401., 75.7086070, 0.4760,  .36,0.00000, 0.,                     &
-     &  103., 75.7804000, 0.0930,  .24,0.00000, 0.,                     &
-     &  401., 75.9864960, 0.4545,  .36,0.00000, 0.,                     &
-     &  201., 76.0050000, 0.3560,  .36,0.00000, 0.,                     &
-     &  401., 76.1841270, 0.4360,  .36,0.00000, 0.,                     &
-     &  401., 76.2598710, 0.4400,  .36,0.00000, 0.,                     &
-     &  301., 76.2870000, 0.4170,  .36,0.00000, 0.,                     &
-     &  401., 76.3184370, 0.4350,  .36,0.00000, 0./                     
-      DATA C0991/                                                       &
-     &  401., 76.4298640,3.3480E-24,  .1002,   32.4964,                 &
-     &  401., 76.4858820,4.7580E-27,  .0827, 1846.4017,                 &
-     &  101., 76.5259000,3.5380E-24,  .0900, 2053.9690,                 &
-     &  401., 76.5946250,5.6280E-25,  .0924,  217.0419,                 &
-     &  101., 76.6182000,2.5810E-27,  .0586, 2688.0801,                 &
-     &  103., 76.6208000,5.6240E-23,  .0709,  387.7551,                 &
-     &  101., 76.7347000,8.4140E-25,  .0749,  982.9120,                 &
-     &  201., 77.2830000,7.6440E-26,  .0802, 1534.3660,                 &
-     &  101., 77.3207500,3.3520E-22,  .0853, 1282.9189,                 &
-     &  201., 77.3380000,6.3960E-24,  .0823,  204.7550,                 &
-     &  103., 77.4610000,5.3490E-23,  .0710,  399.5194,                 &
-     &  401., 77.6346920,1.2010E-24,  .0891,  155.3890,                 &
-     &  301., 77.7440000,1.3820E-26,  .0811, 1536.1550,                 &
-     &  401., 77.9135070,1.0060E-25,  .0607,  402.3291,                 &
-     &  201., 77.9260000,9.7680E-27,  .0904, 1732.2640/                 
-      DATA D0991/                                                       &
-     &  401., 76.4298640, 0.5010,  .36,0.00000, 0.,                     &
-     &  401., 76.4858820, 0.4135,  .36,0.00000, 0.,                     &
-     &  101., 76.5259000, 0.4180,  .36,0.00140, 0.,                     &
-     &  401., 76.5946250, 0.4620,  .36,0.00000, 0.,                     &
-     &  101., 76.6182000, 0.3270,  .36,0.00000, 0.,                     &
-     &  103., 76.6208000, 0.0926,  .24,0.00000, 0.,                     &
-     &  101., 76.7347000, 0.3610,  .36,0.00000, 0.,                     &
-     &  201., 77.2830000, 0.4010,  .36,0.00000, 0.,                     &
-     &  101., 77.3207500, 0.3930,  .36,0.00320, 0.,                     &
-     &  201., 77.3380000, 0.4115,  .36,0.00000, 0.,                     &
-     &  103., 77.4610000, 0.0922,  .24,0.00000, 0.,                     &
-     &  401., 77.6346920, 0.4455,  .36,0.00000, 0.,                     &
-     &  301., 77.7440000, 0.4055,  .36,0.00000, 0.,                     &
-     &  401., 77.9135070, 0.3035,  .36,0.00000, 0.,                     &
-     &  201., 77.9260000, 0.4520,  .36,0.00000, 0./                     
-      DATA C1006/                                                       &
-     &  401., 77.9279140,1.0050E-25,  .0605,  402.3310,                 &
-     &  101., 77.9661000,4.5950E-24,  .0938, 1739.4850,                 &
-     &  301., 78.0790000,1.1600E-24,  .0832,  205.4830,                 &
-     &  401., 78.1786230,2.9620E-25,  .0813,  295.4873,                 &
-     &  101., 78.1971500,3.1750E-21,  .0828,  704.2140,                 &
-     &  103., 78.3012000,5.0830E-23,  .0710,  412.1238,                 &
-     &  101., 78.3051600,3.7110E-23,  .0828, 1538.1500,                 &
-     &  401., 78.4453450,1.6330E-24,  .0886,  217.0419,                 &
-     &  301., 78.4920000,1.1730E-24,  .0810,  702.8860,                 &
-     &  401., 78.5607850,2.1290E-26,  .0894,  306.3148,                 &
-     &  101., 78.6176300,1.0970E-24,  .0737, 1616.4520,                 &
-     &  401., 78.7324950,2.9600E-25,  .0842,  295.6775,                 &
-     &  201., 78.7580000,6.4270E-24,  .0797,  701.6960,                 &
-     &  101., 78.9187300,3.1340E-21,  .0820,  206.3010,                 &
-     &  101., 79.0081000,2.7430E-27,  .0575, 2533.7930/                 
-      DATA D1006/                                                       &
-     &  401., 77.9279140, 0.3025,  .36,0.00000, 0.,                     &
-     &  101., 77.9661000, 0.4580,  .36,-.00120, 0.,                     &
-     &  301., 78.0790000, 0.4160,  .36,0.00000, 0.,                     &
-     &  401., 78.1786230, 0.4065,  .36,0.00000, 0.,                     &
-     &  101., 78.1971500, 0.4140,  .36,0.00650, 0.,                     &
-     &  103., 78.3012000, 0.0918,  .24,0.00000, 0.,                     &
-     &  101., 78.3051600, 0.4120,  .36,0.00820, 0.,                     &
-     &  401., 78.4453450, 0.4430,  .36,0.00000, 0.,                     &
-     &  301., 78.4920000, 0.4050,  .36,0.00000, 0.,                     &
-     &  401., 78.5607850, 0.4470,  .36,0.00000, 0.,                     &
-     &  101., 78.6176300, 0.3630,  .36,-.00530, 0.,                     &
-     &  401., 78.7324950, 0.4210,  .36,0.00000, 0.,                     &
-     &  201., 78.7580000, 0.3985,  .36,0.00000, 0.,                     &
-     &  101., 78.9187300, 0.3930,  .36,0.00375, 0.,                     &
-     &  101., 79.0081000, 0.2875,  .36,0.00000, 0./                     
-      DATA C1021/                                                       &
-     &  201., 79.1120000,5.7810E-25,  .0854, 1047.3270,                 &
-     &  101., 79.1337000,1.1400E-26,  .0756, 2919.6340,                 &
-     &  401., 79.4605100,3.0910E-24,  .0981,   29.8086,                 &
-     &  201., 79.6650000,2.3770E-23,  .0904,  141.5670,                 &
-     &  301., 79.7180000,4.2950E-24,  .0916,  141.9040,                 &
-     &  101., 79.7744600,1.1660E-20,  .0938,  142.2790,                 &
-     &  401., 79.7859070,2.1210E-25,  .0819,  885.0648/                 
-      DATA D1021/                                                       &
-     &  201., 79.1120000, 0.4270,  .36,0.00000, 0.,                     &
-     &  101., 79.1337000, 0.3710,  .36,0.00590, 0.,                     &
-     &  401., 79.4605100, 0.4905,  .36,0.00000, 0.,                     &
-     &  201., 79.6650000, 0.4520,  .36,0.00000, 0.,                     &
-     &  301., 79.7180000, 0.4580,  .36,0.00000, 0.,                     &
-     &  101., 79.7744600, 0.4580,  .36,-.00120, 0.,                     &
-     &  401., 79.7859070, 0.4095,  .36,0.00000, 0./                     
-!                                                                       
-      END                                           
+!
+   COMMON /LINES/ C0001(080),C0016(075),C0031(130),C0046(140),       &
+   &               C0061(135),C0076(090),C0091(080),C0106(075),       &
+   &               C0121(075),C0136(075),C0151(075),C0166(075),       &
+   &               C0181(075),C0196(075),C0211(075),C0226(075),       &
+   &               C0241(075),C0256(075),C0271(075),C0286(075),       &
+   &               C0301(075),C0316(075),C0331(075),C0346(075),       &
+   &               C0361(075),C0376(075),C0391(075),C0406(075),       &
+   &               C0421(075),C0436(075),C0451(075),C0466(075),       &
+   &               C0481(075),C0496(075),C0511(075),C0526(075),       &
+   &               C0541(075),C0556(075),C0571(075),C0586(075),       &
+   &               C0601(075),C0616(075),C0631(075),C0646(075),       &
+   &               C0661(075),C0676(075),C0691(075),C0706(075),       &
+   &               C0721(075),C0736(075),C0751(075),C0766(075),       &
+   &               C0781(075),C0796(075),C0811(075),C0826(075),       &
+   &               C0841(075),C0856(075),C0871(075),C0886(075),       &
+   &               C0901(075),C0916(075),C0931(075),C0946(075),       &
+   &               C0961(075),C0976(075),C0991(075),C1006(075),       &
+   &               C1021(035)
+   COMMON /LINES/ D0001(096),D0016(090),D0031(156),D0046(168),       &
+   &               D0061(162),D0076(108),D0091(096),D0106(090),       &
+   &               D0121(090),D0136(090),D0151(090),D0166(090),       &
+   &               D0181(090),D0196(090),D0211(090),D0226(090),       &
+   &               D0241(090),D0256(090),D0271(090),D0286(090),       &
+   &               D0301(090),D0316(090),D0331(090),D0346(090),       &
+   &               D0361(090),D0376(090),D0391(090),D0406(090),       &
+   &               D0421(090),D0436(090),D0451(090),D0466(090),       &
+   &               D0481(090),D0496(090),D0511(090),D0526(090),       &
+   &               D0541(090),D0556(090),D0571(090),D0586(090),       &
+   &               D0601(090),D0616(090),D0631(090),D0646(090),       &
+   &               D0661(090),D0676(090),D0691(090),D0706(090),       &
+   &               D0721(090),D0736(090),D0751(090),D0766(090),       &
+   &               D0781(090),D0796(090),D0811(090),D0826(090),       &
+   &               D0841(090),D0856(090),D0871(090),D0886(090),       &
+   &               D0901(090),D0916(090),D0931(090),D0946(090),       &
+   &               D0961(090),D0976(090),D0991(090),D1006(090),       &
+   &               D1021(042)
+!
+   CHARACTER*8        HID,HMOLID,HID1
+!
+   real*4       SUMSTR,FLINLO,FLINHI
+   integer*4    MOLCNT,MCNTLC,                                       &
+   &             MCNTNL,NMOL,                                         &
+   &             ILIN,ILINLC,ILINNL,IREC,IRECTL
+!
+   COMMON /BUFID_l/ HID(10),HMOLID(64),MOLCNT(64),MCNTLC(64),        &
+   &               MCNTNL(64),SUMSTR(64),NMOL,FLINLO,FLINHI,          &
+   &               ILIN,ILINLC,ILINNL,IREC,IRECTL,HID1(2)
+   COMMON /BUFIDC/ CHID(2),CHMOL(64),CHID1(2)
+!
+   CHARACTER CHID*40,CHMOL*6,CHID1*8
+!
+   DATA CHMOL / '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ',        &
+   &             '  CH4 ','   O2 ',57*'      ' /
+!     DATA CHID / ' LINES FOR LBLRTM IN THE 0-50 CM-1 SPE',
+!    *            'CTRAL REGION: 1/31/94 f=1.22    TSTMM86I' /
+   DATA CHID / ' LINES FOR LBLRTM IN THE 0-80 CM-1 SPE',             &
+   &            'CTRAL REGION                    TSTMM96I' /
+   DATA CHID1 / '06/15/99','15.28.27' /
+   DATA NMOL,ILIN,ILINLC,ILINNL,IREC,IRECTL / 7,1027,41,0,1068,1068/
+!
+   DATA C0001/                                                       &
+   &  107.,  0.0000100,4.9400E-23,  .0340,    0.0000,                 &
+   &    7.,   5.00000E-01, 0.00000E+00, 5.00000E-01, 0.00000E+00,     &
+   &  401.,  0.0070020,5.2030E-26,  .0560,  818.0067,                 &
+   &  401.,  0.0162290,2.2500E-25,  .0634,  480.2427,                 &
+   &  401.,  0.0275080,6.5250E-25,  .0773,  233.0237,                 &
+   &  401.,  0.0297640,2.5310E-26,  .0610,  942.5326,                 &
+   &  401.,  0.0798740,1.2130E-25,  .0703,  573.8908,                 &
+   &  401.,  0.1015610,1.1490E-26,  .0601, 1082.7854,                 &
+   &  401.,  0.1099660,3.4550E-27,  .0952,  221.8361,                 &
+   &  401.,  0.1902240,3.7090E-25,  .0825,  295.4873,                 &
+   &  401.,  0.2861250,6.1860E-26,  .0708,  683.3240,                 &
+   &  401.,  0.2947780,4.9040E-27,  .0657, 1238.7949,                 &
+   &  103.,  0.3411000,5.6100E-23,  .0782,   50.3021,                 &
+   &  401.,  0.3428450,7.4100E-25,  .0960,  108.9263,                 &
+   &  103.,  0.3693000,5.2090E-23,  .0818,    8.0217,                 &
+   &  101.,  0.4007000,2.9880E-25,  .0813, 1907.6169/
+   DATA D0001/                                                       &
+   &    7.,  0.0000100, 0.0340,  .00,0.00000, 3.,                     &
+   & 5.00000E-01,0., 0.00000E+00, 5.00000E-01, 0.00000E+00, -3.,      &
+   &  401.,  0.0070020, 0.2800,  .36,0.00000, 0.,                     &
+   &  401.,  0.0162290, 0.3170,  .36,0.00000, 0.,                     &
+   &  401.,  0.0275080, 0.3865,  .36,0.00000, 0.,                     &
+   &  401.,  0.0297640, 0.3050,  .36,0.00000, 0.,                     &
+   &  401.,  0.0798740, 0.3515,  .36,0.00000, 0.,                     &
+   &  401.,  0.1015610, 0.3005,  .36,0.00000, 0.,                     &
+   &  401.,  0.1099660, 0.4760,  .36,0.00000, 0.,                     &
+   &  401.,  0.1902240, 0.4125,  .36,0.00000, 0.,                     &
+   &  401.,  0.2861250, 0.3540,  .36,0.00000, 0.,                     &
+   &  401.,  0.2947780, 0.3285,  .36,0.00000, 0.,                     &
+   &  103.,  0.3411000, 0.1050,  .24,0.00000, 0.,                     &
+   &  401.,  0.3428450, 0.4800,  .36,0.00000, 0.,                     &
+   &  103.,  0.3693000, 0.1091,  .24,0.00000, 0.,                     &
+   &  101.,  0.4007000, 0.4170,  .36,-.00220, 0./
+   DATA C0016/                                                       &
+   &  401.,  0.6824720,2.7700E-25,  .0955,  156.3823,                 &
+   &  101.,  0.7416820,1.6450E-22,  .0906,  446.5110,                 &
+   &  401.,  0.7441040,2.0580E-25,  .0833,  373.6659,                 &
+   &  401.,  0.8300670,2.9560E-26,  .0749,  808.5632,                 &
+   &  101.,  0.8949000,9.3710E-26,  .0754, 2129.6001,                 &
+   &  401.,  0.8966330,5.7190E-26,  .0885,  403.5491,                 &
+   &  103.,  1.0024000,5.0690E-23,  .0749,  128.1196,                 &
+   &  103.,  1.2620000,5.1960E-23,  .0750,  156.9033,                 &
+   &  107.,  1.4979510,1.9030E-33,  .0320, 5028.4063,                 &
+   &  107.,  1.5146970,9.0900E-33,  .0320, 4699.7075,                 &
+   &  107.,  1.5314620,4.1150E-32,  .0320, 4381.7451,                 &
+   &  107.,  1.5482480,1.7650E-31,  .0320, 4074.5713,                 &
+   &  107.,  1.5650580,7.1760E-31,  .0320, 3778.2361,                 &
+   &  107.,  1.5818930,2.7620E-30,  .0320, 3492.7881,                 &
+   &  107.,  1.5987570,1.0070E-29,  .0320, 3218.2739/
+   DATA D0016/                                                       &
+   &  401.,  0.6824720, 0.4775,  .36,0.00000, 0.,                     &
+   &  101.,  0.7416820, 0.4400,  .36,-.00195, 0.,                     &
+   &  401.,  0.7441040, 0.4165,  .36,0.00000, 0.,                     &
+   &  401.,  0.8300670, 0.3745,  .36,0.00000, 0.,                     &
+   &  101.,  0.8949000, 0.3630,  .36,0.00160, 0.,                     &
+   &  401.,  0.8966330, 0.4425,  .36,0.00000, 0.,                     &
+   &  103.,  1.0024000, 0.1023,  .24,0.00000, 0.,                     &
+   &  103.,  1.2620000, 0.1006,  .24,0.00000, 0.,                     &
+   &  107.,  1.4979510, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  1.5146970, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  1.5314620, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  1.5482480, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  1.5650580, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  1.5818930, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  1.5987570, 0.0314,  .29,0.00000, 0./
+   DATA C0031/                                                       &
+   &  107.,  1.6156530,3.4700E-29,  .0320, 2954.7380,                 &
+   &  107.,  1.6325840,1.1320E-28,  .0320, 2702.2239,                 &
+   &  107.,  1.6495550,3.4930E-28,  .0320, 2460.7722,                 &
+   &  107.,  1.6665720,1.0190E-27,  .0320, 2230.4224,                 &
+   &    7.,   1.08369E+00,-3.51470E-01, 8.37876E-01,-2.07510E-01,     &
+   &  401.,  1.6757020,4.0830E-25,  .0946,  155.3890,                 &
+   &  107.,  1.6836410,2.8060E-27,  .0320, 2011.2119,                 &
+   &    7.,   1.09563E+00,-3.64490E-01, 8.35671E-01,-2.13450E-01,     &
+   &  107.,  1.7007700,7.3060E-27,  .0320, 1803.1765,                 &
+   &    7.,   1.11581E+00,-3.78570E-01, 8.45091E-01,-2.20060E-01,     &
+   &  107.,  1.7179680,1.7940E-26,  .0320, 1606.3500,                 &
+   &    7.,   1.13228E+00,-3.92240E-01, 8.51867E-01,-2.25960E-01,     &
+   &  107.,  1.7352490,4.1560E-26,  .0320, 1420.7642,                 &
+   &    7.,   1.14544E+00,-4.05370E-01, 8.55668E-01,-2.31060E-01,     &
+   &  107.,  1.7526270,9.0800E-26,  .0320, 1246.4493,                 &
+   &    7.,   1.15371E+00,-4.16540E-01, 8.55028E-01,-2.34340E-01,     &
+   &  107.,  1.7701230,1.8700E-25,  .0320, 1083.4335,                 &
+   &    7.,   1.15215E+00,-4.23780E-01, 8.46128E-01,-2.34490E-01,     &
+   &  107.,  1.7877630,3.6240E-25,  .0320,  931.7433,                 &
+   &    7.,   1.14230E+00,-4.24780E-01, 8.30189E-01,-2.30100E-01,     &
+   &  107.,  1.8055830,6.6040E-25,  .0380,  791.4032,                 &
+   &    7.,   1.11817E+00,-4.14980E-01, 8.02641E-01,-2.18540E-01,     &
+   &  107.,  1.8236340,1.1310E-24,  .0350,  662.4359,                 &
+   &    7.,   1.07180E+00,-3.89370E-01, 7.57766E-01,-1.97160E-01,     &
+   &  107.,  1.8419870,1.8160E-24,  .0370,  544.8622,                 &
+   &    7.,   1.00360E+00,-3.43860E-01, 6.96196E-01,-1.64090E-01/
+   DATA D0031/                                                       &
+   &  107.,  1.6156530, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  1.6325840, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  1.6495550, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  1.6665720, 0.0314,  .29,0.00000, 1.,                     &
+   & 6.86012E-01,0.,-1.37220E-01, 5.81018E-01,-9.70550E-02, -1.,      &
+   &  401.,  1.6757020, 0.4730,  .36,0.00000, 0.,                     &
+   &  107.,  1.6836410, 0.0314,  .29,0.00000, 1.,                     &
+   & 6.75013E-01,0.,-1.40190E-01, 5.64065E-01,-9.84560E-02, -1.,      &
+   &  107.,  1.7007700, 0.0314,  .29,0.00000, 1.,                     &
+   & 6.78147E-01,0.,-1.43720E-01, 5.62946E-01,-1.00450E-01, -1.,      &
+   &  107.,  1.7179680, 0.0314,  .29,0.00000, 1.,                     &
+   & 6.79759E-01,0.,-1.46500E-01, 5.61329E-01,-1.01710E-01, -1.,      &
+   &  107.,  1.7352490, 0.0314,  .29,0.00000, 1.,                     &
+   & 6.78853E-01,0.,-1.48440E-01, 5.57669E-01,-1.02200E-01, -1.,      &
+   &  107.,  1.7526270, 0.0314,  .29,0.00000, 1.,                     &
+   & 6.73985E-01,0.,-1.48840E-01, 5.50495E-01,-1.01380E-01, -1.,      &
+   &  107.,  1.7701230, 0.0314,  .29,0.00000, 1.,                     &
+   & 6.62020E-01,0.,-1.46770E-01, 5.37137E-01,-9.85470E-02, -1.,      &
+   &  107.,  1.7877630, 0.0314,  .29,0.00000, 1.,                     &
+   & 6.43965E-01,0.,-1.41270E-01, 5.18434E-01,-9.30640E-02, -1.,      &
+   &  107.,  1.8055830, 0.0373,  .29,0.00000, 1.,                     &
+   & 6.16124E-01,0.,-1.30660E-01, 4.91294E-01,-8.37840E-02, -1.,      &
+   &  107.,  1.8236340, 0.0343,  .29,0.00000, 1.,                     &
+   & 5.74103E-01,0.,-1.13390E-01, 4.52210E-01,-6.97460E-02, -1.,      &
+   &  107.,  1.8419870, 0.0363,  .29,0.00000, 1.,                     &
+   & 5.18585E-01,0.,-8.85010E-02, 4.01851E-01,-5.04550E-02, -1./
+   DATA C0046/                                                       &
+   &  107.,  1.8607470,2.7290E-24,  .0380,  438.7010,                 &
+   &    7.,   9.01863E-01,-2.71400E-01, 6.09393E-01,-1.16160E-01,     &
+   &  107.,  1.8767910,1.5990E-24,  .0450,    2.0843,                 &
+   &    7.,   9.55046E-01,-3.95800E-01, 8.04211E-01,-2.88010E-01,     &
+   &  107.,  1.8800800,3.8280E-24,  .0380,  343.9694,                 &
+   &    7.,   7.60121E-01,-1.70460E-01, 4.93230E-01,-5.41910E-02,     &
+   &  107.,  1.9002550,4.9930E-24,  .0390,  260.6825,                 &
+   &    7.,   5.72222E-01,-4.71040E-02, 3.43767E-01, 1.59090E-02,     &
+   &  107.,  1.9217450,6.0220E-24,  .0410,  188.8531,                 &
+   &    7.,   3.29789E-01, 7.64820E-02, 1.55763E-01, 7.82510E-02,     &
+   &  107.,  1.9454750,6.6570E-24,  .0430,  128.4921,                 &
+   &    7.,   3.91869E-02, 1.50520E-01,-6.46302E-02, 1.02630E-01,     &
+   &  107.,  1.9495680,4.0840E-24,  .0440,   16.3876,                 &
+   &    7.,   7.89065E-01,-1.64620E-01, 6.80358E-01,-1.43060E-01,     &
+   &  107.,  1.9735050,6.6290E-24,  .0440,   79.6070,                 &
+   &    7.,  -2.77950E-01, 1.13000E-01,-3.00273E-01, 5.69200E-02,     &
+   &  107.,  1.9877410,5.7970E-24,  .0420,   42.2240,                 &
+   &    7.,   4.79461E-01, 1.02620E-01, 4.53600E-01, 3.52990E-02,     &
+   &  107.,  2.0115940,5.7630E-24,  .0440,   42.2001,                 &
+   &    7.,  -5.32785E-01,-3.55790E-02,-4.81609E-01,-4.63900E-02,     &
+   &  107.,  2.0158870,6.6490E-24,  .0410,   79.5646,                 &
+   &    7.,   1.23544E-01, 2.13280E-01, 1.88360E-01, 1.29780E-01,     &
+   &  107.,  2.0397630,6.6640E-24,  .0400,  128.3978,                 &
+   &    7.,  -2.06347E-01, 1.63570E-01,-6.14357E-02, 1.26040E-01,     &
+   &  401.,  2.0409430,1.9360E-25,  .0890,  293.6366,                 &
+   &  401.,  2.0582430,1.3180E-26,  .0773,  949.5776,                 &
+   &  107.,  2.0614310,6.0280E-24,  .0390,  188.7134,                 &
+   &    7.,  -4.83105E-01, 3.29460E-02,-2.74935E-01, 6.46240E-02/
+   DATA D0046/                                                       &
+   &  107.,  1.8607470, 0.0373,  .29,0.00000, 1.,                     &
+   & 4.42884E-01,0.,-5.44660E-02, 3.34770E-01,-2.52020E-02, -1.,      &
+   &  107.,  1.8767910, 0.0441,  .29,0.00000, 1.,                     &
+   & 7.02595E-01,0.,-2.23870E-01, 6.26993E-01,-1.80880E-01, -1.,      &
+   &  107.,  1.8800800, 0.0373,  .29,0.00000, 1.,                     &
+   & 3.44111E-01,0.,-1.27760E-02, 2.48835E-01, 4.37200E-03, -1.,      &
+   &  107.,  1.9002550, 0.0382,  .29,0.00000, 1.,                     &
+   & 2.19468E-01,0., 3.14750E-02, 1.41943E-01, 3.39800E-02, -1.,      &
+   &  107.,  1.9217450, 0.0402,  .29,0.00000, 1.,                     &
+   & 6.53486E-02,0., 6.64890E-02, 1.14746E-02, 5.46110E-02, -1.,      &
+   &  107.,  1.9454750, 0.0422,  .29,0.00000, 1.,                     &
+   &-1.12561E-01,0., 7.21650E-02,-1.37358E-01, 5.21220E-02, -1.,      &
+   &  107.,  1.9495680, 0.0431,  .29,0.00000, 1.,                     &
+   & 6.02238E-01,0.,-1.22250E-01, 5.41859E-01,-1.04960E-01, -1.,      &
+   &  107.,  1.9735050, 0.0431,  .29,0.00000, 1.,                     &
+   &-3.00074E-01,0., 2.96930E-02,-2.92497E-01, 1.47390E-02, -1.,      &
+   &  107.,  1.9877410, 0.0412,  .29,0.00000, 1.,                     &
+   & 4.23182E-01,0., 6.80590E-03, 3.94336E-01,-6.87940E-03, -1.,      &
+   &  107.,  2.0115940, 0.0431,  .29,0.00000, 1.,                     &
+   &-4.39618E-01,0.,-4.64990E-02,-4.04759E-01,-4.37160E-02, -1.,      &
+   &  107.,  2.0158870, 0.0402,  .29,0.00000, 1.,                     &
+   & 2.11405E-01,0., 8.44450E-02, 2.18515E-01, 5.71320E-02, -1.,      &
+   &  107.,  2.0397630, 0.0392,  .29,0.00000, 1.,                     &
+   & 9.82196E-03,0., 9.55380E-02, 4.98315E-02, 7.32780E-02, -1.,      &
+   &  401.,  2.0409430, 0.4450,  .36,0.00000, 0.,                     &
+   &  401.,  2.0582430, 0.3865,  .36,0.00000, 0.,                     &
+   &  107.,  2.0614310, 0.0382,  .29,0.00000, 1.,                     &
+   &-1.64651E-01,0., 6.37430E-02,-9.75567E-02, 5.64680E-02, -1./
+   DATA C0061/                                                       &
+   &  107.,  2.0818140,5.0000E-24,  .0380,  260.5009,                 &
+   &    7.,  -6.96836E-01,-1.10400E-01,-4.43793E-01,-1.42860E-02,     &
+   &  107.,  2.0843170,3.9820E-24,  .0470,   16.2529,                 &
+   &    7.,  -5.65193E-01,-1.16750E-01,-4.87890E-01,-9.02820E-02,     &
+   &  107.,  2.1013860,3.8330E-24,  .0340,  343.7481,                 &
+   &    7.,  -8.58328E-01,-2.30580E-01,-5.74545E-01,-8.62450E-02,     &
+   &  107.,  2.1204170,2.7320E-24,  .0360,  438.4414,                 &
+   &    7.,  -9.78104E-01,-3.20060E-01,-6.74942E-01,-1.43860E-01,     &
+   &  107.,  2.1390720,1.8190E-24,  .0350,  544.5651,                 &
+   &    7.,  -1.06093E+00,-3.78970E-01,-7.47867E-01,-1.85210E-01,     &
+   &  401.,  2.1490650,1.0840E-25,  .0849,  467.5146,                 &
+   &  107.,  2.1574560,1.1330E-24,  .0350,  662.1021,                 &
+   &    7.,  -1.11475E+00,-4.11890E-01,-7.98685E-01,-2.11580E-01,     &
+   &  107.,  2.1756400,6.6150E-25,  .0320,  791.0332,                 &
+   &    7.,  -1.14838E+00,-4.26910E-01,-8.33846E-01,-2.27000E-01,     &
+   &  107.,  2.1936760,3.6310E-25,  .0320,  931.3374,                 &
+   &    7.,  -1.16429E+00,-4.27860E-01,-8.54945E-01,-2.33370E-01,     &
+   &  107.,  2.2115990,1.8740E-25,  .0320, 1082.9921,                 &
+   &    7.,  -1.16792E+00,-4.20680E-01,-8.65987E-01,-2.34020E-01,     &
+   &  107.,  2.2294350,9.1050E-26,  .0320, 1245.9725,                 &
+   &    7.,  -1.16322E+00,-4.08650E-01,-8.70001E-01,-2.30930E-01,     &
+   &  103.,  2.2468000,8.8100E-23,  .0811,   15.3506,                 &
+   &  107.,  2.2472060,4.1660E-26,  .0320, 1420.2523,                 &
+   &    7.,  -1.14958E+00,-3.93620E-01,-8.66289E-01,-2.25210E-01,     &
+   &  101.,  2.2619000,5.0140E-25,  .0942, 1819.3370,                 &
+   &  107.,  2.2649270,1.7980E-26,  .0320, 1605.8030,                 &
+   &    7.,  -1.13243E+00,-3.77440E-01,-8.59210E-01,-2.18130E-01/
+   DATA D0061/                                                       &
+   &  107.,  2.0818140, 0.0373,  .29,0.00000, 1.,                     &
+   &-3.04879E-01,0., 1.53320E-02,-2.17464E-01, 2.49720E-02, -1.,      &
+   &  107.,  2.0843170, 0.0461,  .29,0.00000, 1.,                     &
+   &-4.33877E-01,0.,-7.28660E-02,-3.92734E-01,-6.04620E-02, -1.,      &
+   &  107.,  2.1013860, 0.0333,  .29,0.00000, 1.,                     &
+   &-4.15190E-01,0.,-3.21020E-02,-3.12886E-01,-8.06340E-03, -1.,      &
+   &  107.,  2.1204170, 0.0353,  .29,0.00000, 1.,                     &
+   &-5.01782E-01,0.,-7.22350E-02,-3.89009E-01,-3.73630E-02, -1.,      &
+   &  107.,  2.1390720, 0.0343,  .29,0.00000, 1.,                     &
+   &-5.66577E-01,0.,-1.02690E-01,-4.47176E-01,-6.05900E-02, -1.,      &
+   &  401.,  2.1490650, 0.4245,  .36,0.00000, 0.,                     &
+   &  107.,  2.1574560, 0.0343,  .29,0.00000, 1.,                     &
+   &-6.13518E-01,0.,-1.23530E-01,-4.90436E-01,-7.72880E-02, -1.,      &
+   &  107.,  2.1756400, 0.0314,  .29,0.00000, 1.,                     &
+   &-6.47688E-01,0.,-1.37030E-01,-5.22961E-01,-8.87830E-02, -1.,      &
+   &  107.,  2.1936760, 0.0314,  .29,0.00000, 1.,                     &
+   &-6.70196E-01,0.,-1.44230E-01,-5.45556E-01,-9.56690E-02, -1.,      &
+   &  107.,  2.2115990, 0.0314,  .29,0.00000, 1.,                     &
+   &-6.84207E-01,0.,-1.47210E-01,-5.60821E-01,-9.93360E-02, -1.,      &
+   &  107.,  2.2294350, 0.0314,  .29,0.00000, 1.,                     &
+   &-6.92162E-01,0.,-1.47290E-01,-5.70788E-01,-1.00720E-01, -1.,      &
+   &  103.,  2.2468000, 0.1081,  .24,0.00000, 0.,                     &
+   &  107.,  2.2472060, 0.0314,  .29,0.00000, 1.,                     &
+   &-6.93352E-01,0.,-1.45210E-01,-5.74772E-01,-1.00310E-01, -1.,      &
+   &  101.,  2.2619000, 0.4500,  .36,-.00200, 0.,                     &
+   &  107.,  2.2649270, 0.0314,  .29,0.00000, 1.,                     &
+   &-6.91450E-01,0.,-1.41840E-01,-5.75968E-01,-9.87670E-02, -1./
+   DATA C0076/                                                       &
+   &  107.,  2.2826110,7.3210E-27,  .0320, 1802.5947,                 &
+   &    7.,  -1.11164E+00,-3.61360E-01,-8.48771E-01,-2.10600E-01,     &
+   &  107.,  2.3002660,2.8150E-27,  .0320, 2010.5953,                 &
+   &    7.,  -1.09048E+00,-3.45570E-01,-8.38365E-01,-2.02830E-01,     &
+   &  107.,  2.3179020,1.0220E-27,  .0320, 2229.7710,                 &
+   &    7.,  -1.07650E+00,-3.31480E-01,-8.38524E-01,-1.96070E-01,     &
+   &  107.,  2.3355250,3.5040E-28,  .0320, 2460.0862,                 &
+   &  107.,  2.3531400,1.1360E-28,  .0320, 2701.5032,                 &
+   &  107.,  2.3707530,3.4830E-29,  .0320, 2953.9829,                 &
+   &  107.,  2.3883670,1.0100E-29,  .0320, 3217.4844,                 &
+   &  107.,  2.4059850,2.7730E-30,  .0320, 3491.9641,                 &
+   &  107.,  2.4236120,7.2050E-31,  .0320, 3777.3777,                 &
+   &  107.,  2.4412490,1.7730E-31,  .0320, 4073.6785,                 &
+   &  107.,  2.4588980,4.1350E-32,  .0320, 4380.8179,                 &
+   &  107.,  2.4765620,9.1310E-33,  .0320, 4698.7456,                 &
+   &  107.,  2.4942440,1.9130E-33,  .0320, 5027.4102,                 &
+   &  103.,  2.5529000,6.9240E-23,  .0778,   67.9028,                 &
+   &  401.,  2.6877980,4.8730E-25,  .1016,   29.8086/
+   DATA D0076/                                                       &
+   &  107.,  2.2826110, 0.0314,  .29,0.00000, 1.,                     &
+   &-6.86631E-01,0.,-1.37880E-01,-5.74720E-01,-9.66040E-02, -1.,      &
+   &  107.,  2.3002660, 0.0314,  .29,0.00000, 1.,                     &
+   &-6.82525E-01,0.,-1.33480E-01,-5.74882E-01,-9.39420E-02, -1.,      &
+   &  107.,  2.3179020, 0.0314,  .29,0.00000, 1.,                     &
+   &-6.91482E-01,0.,-1.29890E-01,-5.89809E-01,-9.20270E-02, -1.,      &
+   &  107.,  2.3355250, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  2.3531400, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  2.3707530, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  2.3883670, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  2.4059850, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  2.4236120, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  2.4412490, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  2.4588980, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  2.4765620, 0.0314,  .29,0.00000, 0.,                     &
+   &  107.,  2.4942440, 0.0314,  .29,0.00000, 0.,                     &
+   &  103.,  2.5529000, 0.1042,  .24,0.00000, 0.,                     &
+   &  401.,  2.6877980, 0.5080,  .36,0.00000, 0./
+   DATA C0091/                                                       &
+   &  401.,  2.9341230,7.7020E-26,  .0793,  573.9706,                 &
+   &  103.,  3.2098000,8.3520E-23,  .0829,    2.5195,                 &
+   &  101.,  3.2114000,3.0560E-26,  .0676, 2126.4070,                 &
+   &  103.,  3.3936000,1.4190E-22,  .0825,    8.3910,                 &
+   &  103.,  3.6545000,5.2060E-23,  .0750,  188.0547,                 &
+   &  103.,  3.6971000,1.8680E-22,  .0820,   17.5973,                 &
+   &  107.,  3.9610850,1.3180E-24,  .0500,    0.0000,                 &
+   &    7.,  -6.87401E-02,-1.59620E-03,-6.16835E-02,-1.27120E-03,     &
+   &  101.,  4.0074000,1.8500E-25,  .0959, 1739.4850,                 &
+   &  401.,  4.0287260,2.1630E-25,  .0939,  221.8361,                 &
+   &  103.,  4.1391000,2.1470E-22,  .0814,   30.1119,                 &
+   &  103.,  4.1825000,1.2360E-22,  .0803,   25.9294,                 &
+   &  104.,  4.1900230,9.8370E-23,  .0870,    8.3800,                 &
+   &  401.,  4.4954500,5.4550E-27,  .0773, 1106.2646,                 &
+   &  401.,  4.6208820,1.2370E-25,  .0919,  303.9948,                 &
+   &  103.,  4.7425000,2.2580E-22,  .0806,   45.9008/
+   DATA D0091/                                                       &
+   &  401.,  2.9341230, 0.3965,  .36,0.00000, 0.,                     &
+   &  103.,  3.2098000, 0.1109,  .24,0.00000, 0.,                     &
+   &  101.,  3.2114000, 0.3400,  .36,0.00000, 0.,                     &
+   &  103.,  3.3936000, 0.1099,  .24,0.00000, 0.,                     &
+   &  103.,  3.6545000, 0.0999,  .24,0.00000, 0.,                     &
+   &  103.,  3.6971000, 0.1090,  .24,0.00000, 0.,                     &
+   &  107.,  3.9610850, 0.0490,  .29,0.00000, 1.,                     &
+   &-5.66601E-02,0.,-1.05850E-03,-5.27672E-02,-9.05420E-04, -1.,      &
+   &  101.,  4.0074000, 0.4490,  .36,0.00000, 0.,                     &
+   &  401.,  4.0287260, 0.4695,  .36,0.00000, 0.,                     &
+   &  103.,  4.1391000, 0.1081,  .24,0.00000, 0.,                     &
+   &  103.,  4.1825000, 0.1072,  .24,0.00000, 0.,                     &
+   &  104.,  4.1900230, 0.0870,  .20,0.00000, 0.,                     &
+   &  401.,  4.4954500, 0.3865,  .36,0.00000, 0.,                     &
+   &  401.,  4.6208820, 0.4595,  .36,0.00000, 0.,                     &
+   &  103.,  4.7425000, 0.1073,  .24,0.00000, 0./
+   DATA C0106/                                                       &
+   &  401.,  4.7942230,2.2550E-25,  .0937,  217.0419,                 &
+   &  103.,  4.8340000,8.0970E-23,  .0774,   88.8347,                 &
+   &  104.,  5.0279810,1.1530E-22,  .0857,   12.5700,                 &
+   &  401.,  5.0573710,5.3500E-26,  .0871,  576.9047,                 &
+   &  401.,  5.3480150,3.9490E-27,  .0629, 1239.0896,                 &
+   &  103.,  5.5022000,6.7630E-23,  .0820,    2.5195,                 &
+   &  103.,  5.5300000,2.1950E-22,  .0798,   64.9257,                 &
+   &  401.,  5.6454400,3.9530E-27,  .0620, 1238.7949,                 &
+   &  104.,  5.8659120,1.3160E-22,  .0845,   17.5980,                 &
+   &  101.,  6.1145670,4.3390E-22,  .0959,  136.1640,                 &
+   &  103.,  6.1502000,1.5840E-22,  .0794,   39.7506,                 &
+   &  103.,  6.1626000,5.0970E-23,  .0749,  222.5716,                 &
+   &  301.,  6.4710000,1.5820E-25,  .0912,  135.4330,                 &
+   &  103.,  6.5189000,2.0160E-22,  .0789,   87.1499,                 &
+   &  104.,  6.7038130,1.4610E-22,  .0834,   23.4640/
+   DATA D0106/                                                       &
+   &  401.,  4.7942230, 0.4685,  .36,0.00000, 0.,                     &
+   &  103.,  4.8340000, 0.1034,  .24,0.00000, 0.,                     &
+   &  104.,  5.0279810, 0.0857,  .21,0.00000, 0.,                     &
+   &  401.,  5.0573710, 0.4355,  .36,0.00000, 0.,                     &
+   &  401.,  5.3480150, 0.3145,  .36,0.00000, 0.,                     &
+   &  103.,  5.5022000, 0.1109,  .24,0.00000, 0.,                     &
+   &  103.,  5.5300000, 0.1065,  .24,0.00000, 0.,                     &
+   &  401.,  5.6454400, 0.3100,  .36,0.00000, 0.,                     &
+   &  104.,  5.8659120, 0.0845,  .22,0.00000, 0.,                     &
+   &  101.,  6.1145670, 0.4490,  .36,-.00250, 0.,                     &
+   &  103.,  6.1502000, 0.1063,  .24,0.00000, 0.,                     &
+   &  103.,  6.1626000, 0.0993,  .24,0.00000, 0.,                     &
+   &  301.,  6.4710000, 0.4560,  .36,0.00000, 0.,                     &
+   &  103.,  6.5189000, 0.1057,  .24,0.00000, 0.,                     &
+   &  104.,  6.7038130, 0.0834,  .23,0.00000, 0./
+   DATA C0121/                                                       &
+   &  201.,  6.7850000,8.6320E-25,  .0900,  134.7820,                 &
+   &  401.,  6.9084830,3.2830E-27,  .0964,  150.1563,                 &
+   &  401.,  6.9163080,2.4190E-26,  .0875,  513.2073,                 &
+   &  103.,  6.9596000,1.0060E-22,  .0815,    8.3910,                 &
+   &  101.,  6.9757000,7.0520E-27,  .0611, 2399.1660,                 &
+   &  401.,  7.0152080,1.7650E-26,  .0697,  942.5624,                 &
+   &  103.,  7.1701000,9.0800E-23,  .0768,  113.0870,                 &
+   &  401.,  7.5351030,3.5460E-25,  .0972,  108.9263,                 &
+   &  104.,  7.5416800,1.5910E-22,  .0823,   30.1680,                 &
+   &  103.,  7.7147000,1.7750E-22,  .0779,  112.5424,                 &
+   &  101.,  7.7614000,2.1230E-26,  .0560, 2398.3821,                 &
+   &  103.,  7.8624000,2.4630E-22,  .0775,  120.2571,                 &
+   &  103.,  7.9103000,2.3490E-22,  .0778,   93.6687,                 &
+   &  103.,  7.9753000,2.4400E-22,  .0771,  150.1900,                 &
+   &  401.,  8.0576250,2.3720E-25,  .0983,   58.1269/
+   DATA D0121/                                                       &
+   &  201.,  6.7850000, 0.4500,  .36,0.00000, 0.,                     &
+   &  401.,  6.9084830, 0.4820,  .36,0.00000, 0.,                     &
+   &  401.,  6.9163080, 0.4375,  .36,0.00000, 0.,                     &
+   &  103.,  6.9596000, 0.1099,  .24,0.00000, 0.,                     &
+   &  101.,  6.9757000, 0.2780,  .36,0.00000, 0.,                     &
+   &  401.,  7.0152080, 0.3485,  .36,0.00000, 0.,                     &
+   &  103.,  7.1701000, 0.1026,  .24,0.00000, 0.,                     &
+   &  401.,  7.5351030, 0.4860,  .36,0.00000, 0.,                     &
+   &  104.,  7.5416800, 0.0823,  .23,0.00000, 0.,                     &
+   &  103.,  7.7147000, 0.1050,  .24,0.00000, 0.,                     &
+   &  101.,  7.7614000, 0.2810,  .36,0.00000, 0.,                     &
+   &  103.,  7.8624000, 0.1036,  .24,0.00000, 0.,                     &
+   &  103.,  7.9103000, 0.1044,  .24,0.00000, 0.,                     &
+   &  103.,  7.9753000, 0.1029,  .24,0.00000, 0.,                     &
+   &  401.,  8.0576250, 0.4915,  .36,0.00000, 0./
+   DATA C0136/                                                       &
+   &  401.,  8.0713690,7.9220E-26,  .0854,  573.8908,                 &
+   &  103.,  8.0829000,2.1190E-22,  .0780,   70.4557,                 &
+   &  103.,  8.1207000,1.8990E-22,  .0783,   56.8050,                 &
+   &  103.,  8.2785000,2.2970E-22,  .0767,  183.4307,                 &
+   &  103.,  8.3321000,1.3270E-22,  .0808,   17.5973,                 &
+   &  103.,  8.3378000,1.8090E-22,  .0783,   50.6432,                 &
+   &  104.,  8.3795090,1.7040E-22,  .0814,   37.7100,                 &
+   &  401.,  8.5075600,2.1700E-25,  .0907,  295.4873,                 &
+   &  401.,  8.6134170,2.2710E-26,  .0717,  809.3933,                 &
+   &  103.,  8.6298000,1.4500E-22,  .0785,   34.2510,                 &
+   &  103.,  8.7958000,2.0540E-22,  .0761,  219.9383,                 &
+   &  401.,  8.8781770,2.1410E-25,  .0955,  100.3909,                 &
+   &  103.,  8.9151000,1.0760E-22,  .0788,   21.2944,                 &
+   &  401.,  9.1032150,1.7770E-26,  .0752,  942.5326,                 &
+   &  103.,  9.1080000,1.5080E-22,  .0768,  141.0820/
+   DATA D0136/                                                       &
+   &  401.,  8.0713690, 0.4270,  .36,0.00000, 0.,                     &
+   &  103.,  8.0829000, 0.1051,  .24,0.00000, 0.,                     &
+   &  103.,  8.1207000, 0.1055,  .24,0.00000, 0.,                     &
+   &  103.,  8.2785000, 0.1023,  .24,0.00000, 0.,                     &
+   &  103.,  8.3321000, 0.1090,  .24,0.00000, 0.,                     &
+   &  103.,  8.3378000, 0.1059,  .24,0.00000, 0.,                     &
+   &  104.,  8.3795090, 0.0814,  .24,0.00000, 0.,                     &
+   &  401.,  8.5075600, 0.4535,  .36,0.00000, 0.,                     &
+   &  401.,  8.6134170, 0.3585,  .36,0.00000, 0.,                     &
+   &  103.,  8.6298000, 0.1068,  .24,0.00000, 0.,                     &
+   &  103.,  8.7958000, 0.1017,  .24,0.00000, 0.,                     &
+   &  401.,  8.8781770, 0.4775,  .36,0.00000, 0.,                     &
+   &  103.,  8.9151000, 0.1077,  .24,0.00000, 0.,                     &
+   &  401.,  9.1032150, 0.3760,  .36,0.00000, 0.,                     &
+   &  103.,  9.1080000, 0.1043,  .24,0.00000, 0./
+   DATA C0151/                                                       &
+   &  103.,  9.1556000,6.9510E-23,  .0790,   11.7846,                 &
+   &  104.,  9.2172940,1.8000E-22,  .0805,   46.0890,                 &
+   &  401.,  9.4504900,2.2740E-26,  .0695,  808.5632,                 &
+   &  103.,  9.5429000,9.8950E-23,  .0762,  140.6471,                 &
+   &  103.,  9.5452000,1.7520E-22,  .0755,  259.6697,                 &
+   &  103.,  9.6386000,1.6320E-22,  .0800,   30.1119,                 &
+   &  103.,  9.7791000,7.9300E-23,  .0784,   15.3506,                 &
+   &  101.,  9.7969000,3.9070E-27,  .0481, 2724.1680,                 &
+   &  104., 10.0550320,1.8790E-22,  .0797,   55.3060,                 &
+   &  103., 10.0674000,2.1630E-22,  .0770,   77.0825,                 &
+   &  103., 10.1125000,1.0330E-22,  .0779,   25.9294,                 &
+   &  401., 10.1749900,2.4640E-26,  .0862,  701.6204,                 &
+   &  401., 10.3582750,1.2090E-25,  .0938,  293.6366,                 &
+   &  401., 10.4655930,1.9840E-25,  .0871,  374.4100,                 &
+   &  103., 10.5365000,1.4350E-22,  .0748,  302.5836/
+   DATA D0151/                                                       &
+   &  103.,  9.1556000, 0.1086,  .24,0.00000, 0.,                     &
+   &  104.,  9.2172940, 0.0805,  .24,0.00000, 0.,                     &
+   &  401.,  9.4504900, 0.3475,  .36,0.00000, 0.,                     &
+   &  103.,  9.5429000, 0.1019,  .24,0.00000, 0.,                     &
+   &  103.,  9.5452000, 0.1011,  .24,0.00000, 0.,                     &
+   &  103.,  9.6386000, 0.1081,  .24,0.00000, 0.,                     &
+   &  103.,  9.7791000, 0.1081,  .24,0.00000, 0.,                     &
+   &  101.,  9.7969000, 0.2390,  .36,0.00000, 0.,                     &
+   &  104., 10.0550320, 0.0797,  .25,0.00000, 0.,                     &
+   &  103., 10.0674000, 0.1047,  .24,0.00000, 0.,                     &
+   &  103., 10.1125000, 0.1072,  .24,0.00000, 0.,                     &
+   &  401., 10.1749900, 0.4310,  .36,0.00000, 0.,                     &
+   &  401., 10.3582750, 0.4690,  .36,0.00000, 0.,                     &
+   &  401., 10.4655930, 0.4355,  .36,0.00000, 0.,                     &
+   &  103., 10.5365000, 0.1005,  .24,0.00000, 0./
+   DATA C0166/                                                       &
+   &  103., 10.5515000,1.2000E-22,  .0774,   39.7506,                 &
+   &  401., 10.5790260,7.6000E-26,  .0818,  469.6636,                 &
+   &  103., 10.6739000,1.2560E-22,  .0757,  172.7568,                 &
+   &  101., 10.7149340,4.6890E-24,  .0732, 1282.9189,                 &
+   &  201., 10.7560000,3.1030E-25,  .0840,  314.4580,                 &
+   &  301., 10.8020000,5.7910E-26,  .0852,  315.0790,                 &
+   &  101., 10.8459340,1.6340E-22,  .0923,  315.7790,                 &
+   &  104., 10.8927190,1.9400E-22,  .0789,   65.3610,                 &
+   &  103., 10.9042000,1.9190E-22,  .0790,   45.9008,                 &
+   &  103., 11.0978000,1.2940E-22,  .0768,   56.8050,                 &
+   &  401., 11.1060000,2.5010E-27,  .0623, 1399.4612,                 &
+   &  401., 11.1875890,1.2560E-25,  .0902,  221.8361,                 &
+   &  101., 11.2141000,9.0940E-26,  .0906, 2042.7550,                 &
+   &  104., 11.7303500,1.9840E-22,  .0782,   76.2540,                 &
+   &  103., 11.7523000,1.3190E-22,  .0762,   77.0825/
+   DATA D0166/                                                       &
+   &  103., 10.5515000, 0.1063,  .24,0.00000, 0.,                     &
+   &  401., 10.5790260, 0.4090,  .36,0.00000, 0.,                     &
+   &  103., 10.6739000, 0.1036,  .24,0.00000, 0.,                     &
+   &  101., 10.7149340, 0.3730,  .36,-.00500, 0.,                     &
+   &  201., 10.7560000, 0.4200,  .36,0.00000, 0.,                     &
+   &  301., 10.8020000, 0.4260,  .36,0.00000, 0.,                     &
+   &  101., 10.8459340, 0.4420,  .36,-.00170, 0.,                     &
+   &  104., 10.8927190, 0.0789,  .25,0.00000, 0.,                     &
+   &  103., 10.9042000, 0.1073,  .24,0.00000, 0.,                     &
+   &  103., 11.0978000, 0.1055,  .24,0.00000, 0.,                     &
+   &  401., 11.1060000, 0.3115,  .36,0.00000, 0.,                     &
+   &  401., 11.1875890, 0.4510,  .36,0.00000, 0.,                     &
+   &  101., 11.2141000, 0.4400,  .36,0.00000, 0.,                     &
+   &  104., 11.7303500, 0.0782,  .25,0.00000, 0.,                     &
+   &  103., 11.7523000, 0.1047,  .24,0.00000, 0./
+   DATA C0181/                                                       &
+   &  103., 11.7686000,1.1370E-22,  .0741,  348.6451,                 &
+   &  103., 11.8421000,5.5250E-23,  .0795,    5.7293,                 &
+   &  103., 11.9292000,1.0450E-22,  .0754,  171.5015,                 &
+   &  103., 11.9483000,1.0960E-22,  .0746,  411.0551,                 &
+   &  103., 11.9701000,2.3350E-22,  .0758,  100.5723,                 &
+   &  103., 11.9966000,1.2760E-22,  .0749,  360.4137,                 &
+   &  103., 12.1240000,9.0650E-23,  .0743,  464.9994,                 &
+   &  103., 12.1567000,2.1500E-22,  .0778,   64.9257,                 &
+   &  103., 12.2344000,1.4300E-22,  .0752,  313.1201,                 &
+   &  103., 12.3760000,1.0310E-22,  .0746,  207.5623,                 &
+   &  103., 12.5146000,1.2860E-22,  .0755,  100.5723,                 &
+   &  103., 12.5500000,7.2030E-23,  .0732,  522.1992,                 &
+   &  104., 12.5679210,2.0010E-22,  .0775,   87.9840,                 &
+   &  103., 12.6181000,1.5450E-22,  .0753,  269.2148,                 &
+   &  101., 12.6820190,1.0930E-21,  .0942,  212.1560/
+   DATA D0181/                                                       &
+   &  103., 11.7686000, 0.1000,  .24,0.00000, 0.,                     &
+   &  103., 11.8421000, 0.1095,  .24,0.00000, 0.,                     &
+   &  103., 11.9292000, 0.1012,  .24,0.00000, 0.,                     &
+   &  103., 11.9483000, 0.0982,  .24,0.00000, 0.,                     &
+   &  103., 11.9701000, 0.1040,  .24,0.00000, 0.,                     &
+   &  103., 11.9966000, 0.0987,  .24,0.00000, 0.,                     &
+   &  103., 12.1240000, 0.0978,  .24,0.00000, 0.,                     &
+   &  103., 12.1567000, 0.1065,  .24,0.00000, 0.,                     &
+   &  103., 12.2344000, 0.0992,  .24,0.00000, 0.,                     &
+   &  103., 12.3760000, 0.1030,  .24,0.00000, 0.,                     &
+   &  103., 12.5146000, 0.1040,  .24,0.00000, 0.,                     &
+   &  103., 12.5500000, 0.0974,  .24,0.00000, 0.,                     &
+   &  104., 12.5679210, 0.0775,  .25,0.00000, 0.,                     &
+   &  103., 12.6181000, 0.0997,  .24,0.00000, 0.,                     &
+   &  101., 12.6820190, 0.4500,  .36,-.00200, 0./
+   DATA C0196/                                                       &
+   &  401., 12.7443190,7.6160E-26,  .0780,  467.5146,                 &
+   &  301., 12.8680000,3.9350E-25,  .0875,  211.4370,                 &
+   &  103., 12.9185000,5.8630E-23,  .0789,    8.0217,                 &
+   &  101., 13.0143800,3.5970E-25,  .0650, 1525.1370,                 &
+   &  201., 13.0290000,2.1260E-24,  .0864,  210.7990,                 &
+   &  103., 13.0975000,1.6340E-22,  .0753,  228.7342,                 &
+   &  103., 13.2268000,8.7540E-23,  .0734,  397.8283,                 &
+   &  103., 13.2434000,5.5110E-23,  .0684,  582.6059,                 &
+   &  103., 13.3451000,6.8000E-23,  .0790,   11.7846,                 &
+   &  103., 13.3832000,1.2100E-22,  .0747,  127.2639,                 &
+   &  104., 13.4054280,2.0100E-22,  .0768,  100.5520,                 &
+   &  103., 13.4225000,2.3360E-22,  .0765,   87.1499,                 &
+   &  103., 13.6192000,1.6850E-22,  .0753,  191.7092,                 &
+   &  103., 13.8180000,2.4290E-22,  .0745,  127.2639,                 &
+   &  103., 14.1321000,1.6950E-22,  .0752,  158.1653/
+   DATA D0196/                                                       &
+   &  401., 12.7443190, 0.3900,  .36,0.00000, 0.,                     &
+   &  301., 12.8680000, 0.4375,  .36,0.00000, 0.,                     &
+   &  103., 12.9185000, 0.1091,  .24,0.00000, 0.,                     &
+   &  101., 13.0143800, 0.3400,  .36,0.00000, 0.,                     &
+   &  201., 13.0290000, 0.4320,  .36,0.00000, 0.,                     &
+   &  103., 13.0975000, 0.1003,  .24,0.00000, 0.,                     &
+   &  103., 13.2268000, 0.0996,  .24,0.00000, 0.,                     &
+   &  103., 13.2434000, 0.0971,  .24,0.00000, 0.,                     &
+   &  103., 13.3451000, 0.1086,  .24,0.00000, 0.,                     &
+   &  103., 13.3832000, 0.1033,  .24,0.00000, 0.,                     &
+   &  104., 13.4054280, 0.0768,  .25,0.00000, 0.,                     &
+   &  103., 13.4225000, 0.1057,  .24,0.00000, 0.,                     &
+   &  103., 13.6192000, 0.1009,  .24,0.00000, 0.,                     &
+   &  103., 13.8180000, 0.1033,  .24,0.00000, 0.,                     &
+   &  103., 14.1321000, 0.1016,  .24,0.00000, 0./
+   DATA C0211/                                                       &
+   &  103., 14.1713000,8.3750E-23,  .0736,  245.4984,                 &
+   &  101., 14.1995000,4.3720E-27,  .0479, 2905.4351,                 &
+   &  104., 14.2428670,2.0050E-22,  .0762,  113.9580,                 &
+   &  103., 14.3030000,1.0720E-22,  .0746,  205.6354,                 &
+   &  103., 14.3544000,1.0960E-22,  .0739,  157.1471,                 &
+   &  101., 14.5883160,4.8470E-24,  .0467, 1045.0590,                 &
+   &  103., 14.5932000,1.6610E-22,  .0750,  128.1196,                 &
+   &  101., 14.6484940,7.1120E-23,  .0560,  742.0760,                 &
+   &  103., 14.7215000,2.4490E-22,  .0753,  112.5424,                 &
+   &  103., 14.7475000,8.0770E-23,  .0788,   21.2944,                 &
+   &  101., 14.7775000,1.4550E-23,  .0481, 1045.0580,                 &
+   &  103., 14.8589000,6.5870E-23,  .0784,   15.3506,                 &
+   &  103., 14.8818000,6.5960E-23,  .0727,  450.1177,                 &
+   &  101., 14.9437070,8.2810E-22,  .0813,  285.4190,                 &
+   &  103., 14.9729000,1.5980E-22,  .0748,  101.5791/
+   DATA D0211/                                                       &
+   &  103., 14.1713000, 0.1024,  .24,0.00000, 0.,                     &
+   &  101., 14.1995000, 0.2210,  .36,-.00055, 0.,                     &
+   &  104., 14.2428670, 0.0762,  .25,0.00000, 0.,                     &
+   &  103., 14.3030000, 0.1006,  .24,0.00000, 0.,                     &
+   &  103., 14.3544000, 0.1026,  .24,0.00000, 0.,                     &
+   &  101., 14.5883160, 0.2320,  .36,0.00310, 0.,                     &
+   &  103., 14.5932000, 0.1023,  .24,0.00000, 0.,                     &
+   &  101., 14.6484940, 0.2810,  .36,0.00095, 0.,                     &
+   &  103., 14.7215000, 0.1050,  .24,0.00000, 0.,                     &
+   &  103., 14.7475000, 0.1077,  .24,0.00000, 0.,                     &
+   &  101., 14.7775000, 0.2390,  .36,0.00290, 0.,                     &
+   &  103., 14.8589000, 0.1081,  .24,0.00000, 0.,                     &
+   &  103., 14.8818000, 0.0991,  .24,0.00000, 0.,                     &
+   &  101., 14.9437070, 0.4170,  .36,-.00220, 0.,                     &
+   &  103., 14.9729000, 0.1030,  .24,0.00000, 0./
+   DATA C0226/                                                       &
+   &  104., 15.0802330,1.9800E-22,  .0757,  128.2010,                 &
+   &  103., 15.2577000,1.4950E-22,  .0746,   78.5386,                 &
+   &  103., 15.4229000,9.6950E-23,  .0732,  190.2125,                 &
+   &  101., 15.4495000,1.1720E-25,  .0853, 1907.4520,                 &
+   &  103., 15.4503000,1.3240E-22,  .0745,   58.9810,                 &
+   &  401., 15.5082110,3.7480E-25,  .0854,    0.0000,                 &
+   &  103., 15.5655000,1.1110E-22,  .0745,   42.8809,                 &
+   &  103., 15.6097000,2.4290E-22,  .0733,  157.1471,                 &
+   &  103., 15.6241000,8.3670E-23,  .0746,   30.2095,                 &
+   &  103., 15.6602000,6.7340E-23,  .0747,   25.1297,                 &
+   &  301., 15.6710000,3.0360E-25,  .0807,  283.7690,                 &
+   &  103., 15.6760000,9.8250E-23,  .0745,   36.0419,                 &
+   &  101., 15.7071650,2.3820E-23,  .0611,  742.0730,                 &
+   &  103., 15.7106000,1.2210E-22,  .0743,   50.3021,                 &
+   &  103., 15.7742000,1.3910E-22,  .0742,   67.9028/
+   DATA D0226/                                                       &
+   &  104., 15.0802330, 0.0757,  .24,0.00000, 0.,                     &
+   &  103., 15.2577000, 0.1038,  .24,0.00000, 0.,                     &
+   &  103., 15.4229000, 0.1020,  .24,0.00000, 0.,                     &
+   &  101., 15.4495000, 0.4190,  .36,-.00150, 0.,                     &
+   &  103., 15.4503000, 0.1046,  .24,0.00000, 0.,                     &
+   &  401., 15.5082110, 0.4270,  .36,0.00000, 0.,                     &
+   &  103., 15.5655000, 0.1054,  .24,0.00000, 0.,                     &
+   &  103., 15.6097000, 0.1026,  .24,0.00000, 0.,                     &
+   &  103., 15.6241000, 0.1063,  .24,0.00000, 0.,                     &
+   &  103., 15.6602000, 0.1068,  .24,0.00000, 0.,                     &
+   &  301., 15.6710000, 0.4035,  .36,0.00000, 0.,                     &
+   &  103., 15.6760000, 0.1059,  .24,0.00000, 0.,                     &
+   &  101., 15.7071650, 0.2780,  .36,0.00210, 0.,                     &
+   &  103., 15.7106000, 0.1050,  .24,0.00000, 0.,                     &
+   &  103., 15.7742000, 0.1042,  .24,0.00000, 0./
+   DATA C0241/                                                       &
+   &  101., 15.8339250,9.2930E-23,  .0676,  488.1340,                 &
+   &  103., 15.8783000,1.5090E-22,  .0741,   88.8347,                 &
+   &  104., 15.9175220,1.9410E-22,  .0752,  143.2810,                 &
+   &  401., 16.0093200,1.2260E-25,  .0880,  217.0419,                 &
+   &  103., 16.0172000,6.7510E-23,  .0726,  286.5665,                 &
+   &  103., 16.0350000,1.5550E-22,  .0740,  113.0870,                 &
+   &  103., 16.0511000,9.2140E-23,  .0785,   34.2510,                 &
+   &  103., 16.0651000,2.4690E-22,  .0740,  141.0820,                 &
+   &  401., 16.0704330,1.3660E-25,  .0967,  100.3909,                 &
+   &  301., 16.0830000,2.5880E-26,  .0587,  737.6230,                 &
+   &  103., 16.2562000,1.5460E-22,  .0738,  140.6471,                 &
+   &  101., 16.2943100,1.7810E-23,  .0851,  586.4790,                 &
+   &  201., 16.3130000,1.6810E-24,  .0798,  282.3070,                 &
+   &  401., 16.3645410,1.4310E-24,  .1018,   29.8086,                 &
+   &  103., 16.5533000,1.4770E-22,  .0735,  171.5015/
+   DATA D0241/                                                       &
+   &  101., 15.8339250, 0.3400,  .36,-.00180, 0.,                     &
+   &  103., 15.8783000, 0.1034,  .24,0.00000, 0.,                     &
+   &  104., 15.9175220, 0.0752,  .24,0.00000, 0.,                     &
+   &  401., 16.0093200, 0.4400,  .36,0.00000, 0.,                     &
+   &  103., 16.0172000, 0.1019,  .24,0.00000, 0.,                     &
+   &  103., 16.0350000, 0.1026,  .24,0.00000, 0.,                     &
+   &  103., 16.0511000, 0.1068,  .24,0.00000, 0.,                     &
+   &  103., 16.0651000, 0.1043,  .24,0.00000, 0.,                     &
+   &  401., 16.0704330, 0.4835,  .36,0.00000, 0.,                     &
+   &  301., 16.0830000, 0.2935,  .36,0.00000, 0.,                     &
+   &  103., 16.2562000, 0.1019,  .24,0.00000, 0.,                     &
+   &  101., 16.2943100, 0.4360,  .36,0.00000, 0.,                     &
+   &  201., 16.3130000, 0.3990,  .36,0.00000, 0.,                     &
+   &  401., 16.3645410, 0.5090,  .36,0.00000, 0.,                     &
+   &  103., 16.5533000, 0.1012,  .24,0.00000, 0./
+   DATA C0256/                                                       &
+   &  103., 16.5814000,8.3330E-23,  .0724,  226.4519,                 &
+   &  101., 16.6278000,8.6750E-27,  .0580, 2552.8811,                 &
+   &  103., 16.6364000,1.0760E-22,  .0737,  243.0333,                 &
+   &  104., 16.7547300,1.8920E-22,  .0747,  159.1980,                 &
+   &  101., 16.7985000,2.4290E-24,  .0394, 1394.8140,                 &
+   &  101., 16.8329000,8.0910E-25,  .0396, 1394.8140,                 &
+   &  103., 16.9363000,1.3750E-22,  .0732,  205.6354,                 &
+   &  301., 16.9430000,3.4120E-26,  .0704,  485.2370,                 &
+   &  103., 16.9515000,6.8320E-23,  .0781,   25.9294,                 &
+   &  401., 16.9881650,3.6240E-24,  .1030,   15.5082,                 &
+   &  301., 17.1920000,8.6340E-27,  .0619,  737.6210,                 &
+   &  201., 17.2510000,3.3300E-26,  .0789,  583.9850,                 &
+   &  103., 17.2596000,1.0220E-22,  .0781,   50.6432,                 &
+   &  103., 17.3498000,2.3450E-22,  .0723,  190.2125,                 &
+   &  201., 17.3500000,1.4540E-25,  .0582,  733.6830/
+   DATA D0256/                                                       &
+   &  103., 16.5814000, 0.1014,  .24,0.00000, 0.,                     &
+   &  101., 16.6278000, 0.2830,  .36,-.00145, 0.,                     &
+   &  103., 16.6364000, 0.1000,  .24,0.00000, 0.,                     &
+   &  104., 16.7547300, 0.0747,  .23,0.00000, 0.,                     &
+   &  101., 16.7985000, 0.1900,  .36,0.00200, 0.,                     &
+   &  101., 16.8329000, 0.1900,  .36,0.00220, 0.,                     &
+   &  103., 16.9363000, 0.1006,  .24,0.00000, 0.,                     &
+   &  301., 16.9430000, 0.3520,  .36,0.00000, 0.,                     &
+   &  103., 16.9515000, 0.1072,  .24,0.00000, 0.,                     &
+   &  401., 16.9881650, 0.5150,  .36,0.00000, 0.,                     &
+   &  301., 17.1920000, 0.3095,  .36,0.00000, 0.,                     &
+   &  201., 17.2510000, 0.3945,  .36,0.00000, 0.,                     &
+   &  103., 17.2596000, 0.1059,  .24,0.00000, 0.,                     &
+   &  103., 17.3498000, 0.1020,  .24,0.00000, 0.,                     &
+   &  201., 17.3500000, 0.2910,  .36,0.00000, 0./
+   DATA C0271/                                                       &
+   &  103., 17.4136000,1.2310E-22,  .0728,  243.0333,                 &
+   &  103., 17.4557000,2.4150E-22,  .0729,  172.7568,                 &
+   &  104., 17.5918540,1.8310E-22,  .0742,  175.9530,                 &
+   &  103., 17.6684000,5.6600E-23,  .0733,  534.7491,                 &
+   &  101., 17.6932000,1.5640E-26,  .0563, 2533.7930,                 &
+   &  201., 17.7970000,9.8990E-27,  .0492, 1033.1940,                 &
+   &  103., 17.8214000,7.0330E-23,  .0717,  265.8579,                 &
+   &  103., 17.8765000,5.3910E-23,  .0717,  330.7686,                 &
+   &  201., 17.9240000,1.8990E-25,  .0698,  482.6720,                 &
+   &  103., 17.9915000,1.0820E-22,  .0724,  283.6794,                 &
+   &  201., 18.0100000,2.9810E-26,  .0487, 1033.1940,                 &
+   &  401., 18.0103210,6.4450E-26,  .0764,  683.6101,                 &
+   &  401., 18.0249330,1.0520E-26,  .0868,  841.3677,                 &
+   &  103., 18.1745000,7.9390E-23,  .0741,   15.0520,                 &
+   &  101., 18.2333000,1.2930E-25,  .0819, 2005.9170/
+   DATA D0271/                                                       &
+   &  103., 17.4136000, 0.1000,  .24,0.00000, 0.,                     &
+   &  103., 17.4557000, 0.1036,  .24,0.00000, 0.,                     &
+   &  104., 17.5918540, 0.0742,  .23,0.00000, 0.,                     &
+   &  103., 17.6684000, 0.0961,  .24,0.00000, 0.,                     &
+   &  101., 17.6932000, 0.3350,  .36,-.00520, 0.,                     &
+   &  201., 17.7970000, 0.2460,  .36,0.00000, 0.,                     &
+   &  103., 17.8214000, 0.1008,  .24,0.00000, 0.,                     &
+   &  103., 17.8765000, 0.1014,  .24,0.00000, 0.,                     &
+   &  201., 17.9240000, 0.3490,  .36,0.00000, 0.,                     &
+   &  103., 17.9915000, 0.0994,  .24,0.00000, 0.,                     &
+   &  201., 18.0100000, 0.2435,  .36,0.00000, 0.,                     &
+   &  401., 18.0103210, 0.3820,  .36,0.00000, 0.,                     &
+   &  401., 18.0249330, 0.4340,  .36,0.00000, 0.,                     &
+   &  103., 18.1745000, 0.1082,  .24,0.00000, 0.,                     &
+   &  101., 18.2333000, 0.4070,  .36,-.00290, 0./
+   DATA C0286/                                                       &
+   &  201., 18.2680000,6.6360E-23,  .0997,   23.7550,                 &
+   &  401., 18.2978240,9.6970E-27,  .0832,  634.7911,                 &
+   &  103., 18.3790000,1.1010E-22,  .0777,   70.4557,                 &
+   &  103., 18.3939000,6.7380E-23,  .0739,  477.1235,                 &
+   &  301., 18.4130000,1.2120E-23,  .1011,   23.7740,                 &
+   &  104., 18.4288880,1.7610E-22,  .0738,  193.5450,                 &
+   &  201., 18.5080000,4.8670E-26,  .0615,  733.6790,                 &
+   &  101., 18.5773850,3.2850E-20,  .1046,   23.7940,                 &
+   &  401., 18.6734750,6.2330E-26,  .0909,  384.8756,                 &
+   &  103., 18.6741000,9.1950E-23,  .0720,  327.5579,                 &
+   &  103., 18.8895000,2.2930E-22,  .0718,  207.5623,                 &
+   &  103., 18.9042000,1.0420E-22,  .0729,  283.6794,                 &
+   &  103., 19.0164000,8.1600E-23,  .0746,   17.5714,                 &
+   &  103., 19.0465000,2.2030E-22,  .0713,  226.4519,                 &
+   &  101., 19.0777000,1.8290E-26,  .0403, 2414.7251/
+   DATA D0286/                                                       &
+   &  201., 18.2680000, 0.4985,  .36,0.00000, 0.,                     &
+   &  401., 18.2978240, 0.4160,  .36,0.00000, 0.,                     &
+   &  103., 18.3790000, 0.1051,  .24,0.00000, 0.,                     &
+   &  103., 18.3939000, 0.0964,  .24,0.00000, 0.,                     &
+   &  301., 18.4130000, 0.5055,  .36,0.00000, 0.,                     &
+   &  104., 18.4288880, 0.0738,  .22,0.00000, 0.,                     &
+   &  201., 18.5080000, 0.3075,  .36,0.00000, 0.,                     &
+   &  101., 18.5773850, 0.4630,  .36,0.00680, 0.,                     &
+   &  401., 18.6734750, 0.4545,  .36,0.00000, 0.,                     &
+   &  103., 18.6741000, 0.0989,  .24,0.00000, 0.,                     &
+   &  103., 18.8895000, 0.1030,  .24,0.00000, 0.,                     &
+   &  103., 18.9042000, 0.0994,  .24,0.00000, 0.,                     &
+   &  103., 19.0164000, 0.1077,  .24,0.00000, 0.,                     &
+   &  103., 19.0465000, 0.1014,  .24,0.00000, 0.,                     &
+   &  101., 19.0777000, 0.2370,  .36,0.00000, 0./
+   DATA C0301/                                                       &
+   &  103., 19.1091000,7.9060E-23,  .0739,  423.0033,                 &
+   &  103., 19.1333000,5.7910E-23,  .0711,  308.4246,                 &
+   &  103., 19.2305000,6.5260E-23,  .0778,   39.7506,                 &
+   &  104., 19.2658290,1.6840E-22,  .0734,  211.9740,                 &
+   &  101., 19.2825000,2.6200E-26,  .0671, 2552.8579,                 &
+   &  103., 19.4182000,1.1550E-22,  .0772,   93.6687,                 &
+   &  103., 19.4626000,7.6270E-23,  .0716,  374.6536,                 &
+   &  103., 19.7680000,9.1110E-23,  .0739,  372.4103,                 &
+   &  101., 19.8036000,3.5980E-27,  .0800, 2670.7920,                 &
+   &  101., 19.8493000,1.2160E-25,  .0689, 2251.8630,                 &
+   &  103., 19.8498000,8.5450E-23,  .0748,   20.9402,                 &
+   &  401., 20.0113990,4.7660E-24,  .1018,   46.1731,                 &
+   &  104., 20.1026730,1.5980E-22,  .0730,  231.2400,                 &
+   &  103., 20.3384000,1.0340E-22,  .0737,  325.3544,                 &
+   &  103., 20.3562000,6.1530E-23,  .0712,  424.9517/
+   DATA D0301/                                                       &
+   &  103., 19.1091000, 0.0969,  .24,0.00000, 0.,                     &
+   &  103., 19.1333000, 0.1003,  .24,0.00000, 0.,                     &
+   &  103., 19.2305000, 0.1063,  .24,0.00000, 0.,                     &
+   &  104., 19.2658290, 0.0734,  .22,0.00000, 0.,                     &
+   &  101., 19.2825000, 0.3090,  .36,0.00330, 0.,                     &
+   &  103., 19.4182000, 0.1044,  .24,0.00000, 0.,                     &
+   &  103., 19.4626000, 0.0984,  .24,0.00000, 0.,                     &
+   &  103., 19.7680000, 0.0973,  .24,0.00000, 0.,                     &
+   &  101., 19.8036000, 0.3900,  .36,-.00110, 0.,                     &
+   &  101., 19.8493000, 0.3480,  .36,-.00420, 0.,                     &
+   &  103., 19.8498000, 0.1072,  .24,0.00000, 0.,                     &
+   &  401., 20.0113990, 0.5090,  .36,0.00000, 0.,                     &
+   &  104., 20.1026730, 0.0730,  .21,0.00000, 0.,                     &
+   &  103., 20.3384000, 0.0978,  .24,0.00000, 0.,                     &
+   &  103., 20.3562000, 0.0980,  .24,0.00000, 0./
+   DATA C0316/                                                       &
+   &  103., 20.3596000,2.1160E-22,  .0709,  245.4984,                 &
+   &  103., 20.3900000,1.1950E-22,  .0766,  120.2571,                 &
+   &  103., 20.7039000,8.9300E-23,  .0746,   25.1297,                 &
+   &  101., 20.7043500,2.8750E-22,  .0754,  488.1080,                 &
+   &  103., 20.7085000,2.0070E-22,  .0705,  265.8579,                 &
+   &  401., 20.7637820,1.5450E-25,  .0852,  469.6636,                 &
+   &  103., 20.8040000,1.1490E-22,  .0734,  281.8329,                 &
+   &  104., 20.9394150,1.5100E-22,  .0726,  251.3420,                 &
+   &  103., 21.0872000,9.7840E-23,  .0720,  327.5579,                 &
+   &  103., 21.1634000,1.2570E-22,  .0731,  241.8317,                 &
+   &  103., 21.3115000,1.2160E-22,  .0759,  150.1900,                 &
+   &  103., 21.4265000,1.3400E-22,  .0728,  205.3285,                 &
+   &  103., 21.5084000,9.2740E-23,  .0746,   30.2095,                 &
+   &  101., 21.5427000,1.1070E-25,  .0341, 1789.0410,                 &
+   &  101., 21.5473000,3.3230E-25,  .0342, 1789.0410/
+   DATA D0316/                                                       &
+   &  103., 20.3596000, 0.1024,  .24,0.00000, 0.,                     &
+   &  103., 20.3900000, 0.1036,  .24,0.00000, 0.,                     &
+   &  103., 20.7039000, 0.1068,  .24,0.00000, 0.,                     &
+   &  101., 20.7043500, 0.3630,  .36,0.00160, 0.,                     &
+   &  103., 20.7085000, 0.1008,  .24,0.00000, 0.,                     &
+   &  401., 20.7637820, 0.4260,  .36,0.00000, 0.,                     &
+   &  103., 20.8040000, 0.0984,  .24,0.00000, 0.,                     &
+   &  104., 20.9394150, 0.0726,  .21,0.00000, 0.,                     &
+   &  103., 21.0872000, 0.0989,  .24,0.00000, 0.,                     &
+   &  103., 21.1634000, 0.0990,  .24,0.00000, 0.,                     &
+   &  103., 21.3115000, 0.1029,  .24,0.00000, 0.,                     &
+   &  103., 21.4265000, 0.0996,  .24,0.00000, 0.,                     &
+   &  103., 21.5084000, 0.1063,  .24,0.00000, 0.,                     &
+   &  101., 21.5427000, 0.1460,  .36,0.00000, 0.,                     &
+   &  101., 21.5473000, 0.1460,  .36,0.00000, 0./
+   DATA C0331/                                                       &
+   &  201., 21.5900000,2.8590E-26,  .0997, 1612.0490,                 &
+   &  103., 21.6096000,1.3970E-22,  .0725,  172.2974,                 &
+   &  103., 21.7309000,1.4090E-22,  .0722,  142.7128,                 &
+   &  103., 21.7336000,5.8290E-23,  .0775,   56.8050,                 &
+   &  301., 21.7590000,5.1290E-27,  .1011, 1615.1150,                 &
+   &  104., 21.7760510,1.4170E-22,  .0723,  272.2820,                 &
+   &  103., 21.8072000,1.3720E-22,  .0720,  116.5520,                 &
+   &  103., 21.8389000,1.3680E-22,  .0723,  188.0547,                 &
+   &  103., 21.8435000,1.4040E-22,  .0722,  156.9033,                 &
+   &  103., 21.8486000,1.2950E-22,  .0725,  222.5716,                 &
+   &  103., 21.8525000,1.2850E-22,  .0719,   93.7963,                 &
+   &  103., 21.8552000,1.3940E-22,  .0721,  129.1220,                 &
+   &  103., 21.8581000,1.9060E-22,  .0702,  286.5665,                 &
+   &  103., 21.8687000,1.3330E-22,  .0719,  104.7131,                 &
+   &  103., 21.8776000,1.1370E-22,  .0719,   74.4314/
+   DATA D0331/                                                       &
+   &  201., 21.5900000, 0.4985,  .36,0.00000, 0.,                     &
+   &  103., 21.6096000, 0.1002,  .24,0.00000, 0.,                     &
+   &  103., 21.7309000, 0.1009,  .24,0.00000, 0.,                     &
+   &  103., 21.7336000, 0.1055,  .24,0.00000, 0.,                     &
+   &  301., 21.7590000, 0.5055,  .36,0.00000, 0.,                     &
+   &  104., 21.7760510, 0.0723,  .20,0.00000, 0.,                     &
+   &  103., 21.8072000, 0.1017,  .24,0.00000, 0.,                     &
+   &  103., 21.8389000, 0.0999,  .24,0.00000, 0.,                     &
+   &  103., 21.8435000, 0.1006,  .24,0.00000, 0.,                     &
+   &  103., 21.8486000, 0.0993,  .24,0.00000, 0.,                     &
+   &  103., 21.8525000, 0.1024,  .24,0.00000, 0.,                     &
+   &  103., 21.8552000, 0.1013,  .24,0.00000, 0.,                     &
+   &  103., 21.8581000, 0.1019,  .24,0.00000, 0.,                     &
+   &  103., 21.8687000, 0.1020,  .24,0.00000, 0.,                     &
+   &  103., 21.8776000, 0.1032,  .24,0.00000, 0./
+   DATA C0346/                                                       &
+   &  103., 21.8805000,1.2180E-22,  .0719,   83.6770,                 &
+   &  103., 21.8820000,1.1910E-22,  .0725,  260.4468,                 &
+   &  103., 21.8893000,1.0360E-22,  .0719,   66.0127,                 &
+   &  103., 21.8902000,9.2330E-23,  .0720,   58.4464,                 &
+   &  103., 21.8946000,7.9170E-23,  .0721,   51.7179,                 &
+   &  103., 21.8958000,6.4230E-23,  .0722,   45.8336,                 &
+   &  101., 21.9488000,1.3600E-23,  .1046, 1618.5590,                 &
+   &  103., 21.9498000,1.0670E-22,  .0725,  301.6709,                 &
+   &  301., 21.9650000,1.0520E-25,  .0753,  485.2090,                 &
+   &  103., 22.0639000,9.3140E-23,  .0724,  346.2320,                 &
+   &  401., 22.1167840,5.5450E-27,  .0571, 1082.8868,                 &
+   &  103., 22.2046000,1.2100E-22,  .0751,  183.4307,                 &
+   &  401., 22.2188920,5.5390E-27,  .0560, 1082.7854,                 &
+   &  103., 22.2364000,7.9450E-23,  .0723,  394.1162,                 &
+   &  103., 22.3440000,1.7870E-22,  .0698,  308.4246/
+   DATA D0346/                                                       &
+   &  103., 21.8805000, 0.1028,  .24,0.00000, 0.,                     &
+   &  103., 21.8820000, 0.0987,  .24,0.00000, 0.,                     &
+   &  103., 21.8893000, 0.1036,  .24,0.00000, 0.,                     &
+   &  103., 21.8902000, 0.1041,  .24,0.00000, 0.,                     &
+   &  103., 21.8946000, 0.1045,  .24,0.00000, 0.,                     &
+   &  103., 21.8958000, 0.1050,  .24,0.00000, 0.,                     &
+   &  101., 21.9488000, 0.4630,  .36,0.00680, 0.,                     &
+   &  103., 21.9498000, 0.0981,  .24,0.00000, 0.,                     &
+   &  301., 21.9650000, 0.3765,  .36,0.00000, 0.,                     &
+   &  103., 22.0639000, 0.0976,  .24,0.00000, 0.,                     &
+   &  401., 22.1167840, 0.2855,  .36,0.00000, 0.,                     &
+   &  103., 22.2046000, 0.1023,  .24,0.00000, 0.,                     &
+   &  401., 22.2188920, 0.2800,  .36,0.00000, 0.,                     &
+   &  103., 22.2364000, 0.0971,  .24,0.00000, 0.,                     &
+   &  103., 22.3440000, 0.1003,  .24,0.00000, 0./
+   DATA C0361/                                                       &
+   &  103., 22.4045000,9.5600E-23,  .0744,   36.0419,                 &
+   &  103., 22.4794000,6.6180E-23,  .0721,  445.3079,                 &
+   &  104., 22.6125790,1.3260E-22,  .0720,  294.0580,                 &
+   &  103., 22.8037000,5.3920E-23,  .0718,  499.7902,                 &
+   &  201., 23.0850000,5.8770E-25,  .0745,  482.6430,                 &
+   &  103., 23.0949000,1.1830E-22,  .0743,  219.9383,                 &
+   &  103., 23.1318000,9.7970E-23,  .0745,   42.8809,                 &
+   &  103., 23.1747000,8.9510E-23,  .0713,  374.6536,                 &
+   &  401., 23.3776900,1.2070E-26,  .0660, 1082.8868,                 &
+   &  103., 23.3779000,1.6730E-22,  .0695,  330.7686,                 &
+   &  104., 23.4489920,1.2310E-22,  .0717,  316.6700,                 &
+   &  103., 23.9598000,1.5530E-22,  .0693,  354.1466,                 &
+   &  103., 24.0097000,1.1340E-22,  .0735,  259.6697,                 &
+   &  103., 24.1293000,9.9240E-23,  .0743,   50.3021,                 &
+   &  104., 24.2852880,1.1350E-22,  .0715,  340.1190/
+   DATA D0361/                                                       &
+   &  103., 22.4045000, 0.1059,  .24,0.00000, 0.,                     &
+   &  103., 22.4794000, 0.0967,  .24,0.00000, 0.,                     &
+   &  104., 22.6125790, 0.0720,  .20,0.00000, 0.,                     &
+   &  103., 22.8037000, 0.0962,  .24,0.00000, 0.,                     &
+   &  201., 23.0850000, 0.3725,  .36,0.00000, 0.,                     &
+   &  103., 23.0949000, 0.1017,  .24,0.00000, 0.,                     &
+   &  103., 23.1318000, 0.1054,  .24,0.00000, 0.,                     &
+   &  103., 23.1747000, 0.0984,  .24,0.00000, 0.,                     &
+   &  401., 23.3776900, 0.3300,  .36,0.00000, 0.,                     &
+   &  103., 23.3779000, 0.1014,  .24,0.00000, 0.,                     &
+   &  104., 23.4489920, 0.0717,  .19,0.00000, 0.,                     &
+   &  103., 23.9598000, 0.0998,  .24,0.00000, 0.,                     &
+   &  103., 24.0097000, 0.1011,  .24,0.00000, 0.,                     &
+   &  103., 24.1293000, 0.1050,  .24,0.00000, 0.,                     &
+   &  104., 24.2852880, 0.0715,  .19,0.00000, 0./
+   DATA C0376/                                                       &
+   &  401., 24.5558310,6.4060E-27,  .0827, 1024.5687,                 &
+   &  103., 24.6960000,1.0090E-22,  .0745,   58.9810,                 &
+   &  201., 24.8610000,2.4310E-23,  .0950,   69.9270,                 &
+   &  103., 24.9130000,1.4390E-22,  .0690,  378.1063,                 &
+   &  301., 24.9660000,4.4510E-24,  .0964,   70.0050,                 &
+   &  103., 24.9743000,1.0610E-22,  .0726,  302.5836,                 &
+   &  101., 25.0851280,1.2050E-20,  .0991,   70.0910,                 &
+   &  104., 25.1214630,1.0460E-22,  .0712,  364.4050,                 &
+   &  401., 25.1310890,4.6370E-24,  .0980,   91.3303,                 &
+   &  103., 25.1660000,7.9030E-23,  .0706,  424.9517,                 &
+   &  103., 25.2591000,1.0140E-22,  .0712,   33.2264,                 &
+   &  401., 25.5565330,2.3680E-26,  .0646,  683.6101,                 &
+   &  103., 25.5611000,1.3230E-22,  .0688,  403.0194,                 &
+   &  101., 25.5797000,5.5170E-26,  .0390, 1960.2080,                 &
+   &  401., 25.8438440,2.3700E-26,  .0653,  683.3240/
+   DATA D0376/                                                       &
+   &  401., 24.5558310, 0.4135,  .36,0.00000, 0.,                     &
+   &  103., 24.6960000, 0.1046,  .24,0.00000, 0.,                     &
+   &  201., 24.8610000, 0.4750,  .36,0.00000, 0.,                     &
+   &  103., 24.9130000, 0.1009,  .24,0.00000, 0.,                     &
+   &  301., 24.9660000, 0.4820,  .36,0.00000, 0.,                     &
+   &  103., 24.9743000, 0.1005,  .24,0.00000, 0.,                     &
+   &  101., 25.0851280, 0.4190,  .36,0.00600, 0.,                     &
+   &  104., 25.1214630, 0.0712,  .19,0.00000, 0.,                     &
+   &  401., 25.1310890, 0.4900,  .36,0.00000, 0.,                     &
+   &  103., 25.1660000, 0.0980,  .24,0.00000, 0.,                     &
+   &  103., 25.2591000, 0.1064,  .24,0.00000, 0.,                     &
+   &  401., 25.5565330, 0.3230,  .36,0.00000, 0.,                     &
+   &  103., 25.5611000, 0.0994,  .24,0.00000, 0.,                     &
+   &  101., 25.5797000, 0.1790,  .36,0.00000, 0.,                     &
+   &  401., 25.8438440, 0.3265,  .36,0.00000, 0./
+   DATA C0391/                                                       &
+   &  103., 25.8935000,9.9270E-23,  .0742,   67.9028,                 &
+   &  104., 25.9575120,9.5550E-23,  .0710,  389.5260,                 &
+   &  103., 26.0085000,9.6800E-23,  .0718,  348.6451,                 &
+   &  103., 26.0993000,1.0260E-22,  .0721,   36.5878,                 &
+   &  103., 26.1745000,1.0070E-22,  .0746,   78.5386,                 &
+   &  103., 26.4587000,1.2090E-22,  .0686,  428.5804,                 &
+   &  101., 26.4720000,4.5050E-27,  .1046, 3175.4409,                 &
+   &  401., 26.6013010,8.2750E-26,  .0943,  156.3823,                 &
+   &  104., 26.7934310,8.7110E-23,  .0708,  415.4840,                 &
+   &  103., 26.9394000,1.0430E-22,  .0722,   40.7900,                 &
+   &  103., 27.0402000,5.3750E-23,  .0726,  495.5174,                 &
+   &  103., 27.0675000,6.8030E-23,  .0698,  478.4390,                 &
+   &  103., 27.1234000,8.6260E-23,  .0710,  397.8283,                 &
+   &  103., 27.1518000,1.0990E-22,  .0683,  455.0392,                 &
+   &  103., 27.3438000,6.4650E-23,  .0725,  442.1125/
+   DATA D0391/                                                       &
+   &  103., 25.8935000, 0.1042,  .24,0.00000, 0.,                     &
+   &  104., 25.9575120, 0.0710,  .18,0.00000, 0.,                     &
+   &  103., 26.0085000, 0.1000,  .24,0.00000, 0.,                     &
+   &  103., 26.0993000, 0.1059,  .24,0.00000, 0.,                     &
+   &  103., 26.1745000, 0.1038,  .24,0.00000, 0.,                     &
+   &  103., 26.4587000, 0.1005,  .24,0.00000, 0.,                     &
+   &  101., 26.4720000, 0.5230,  .36,0.00000, 0.,                     &
+   &  401., 26.6013010, 0.4715,  .36,0.00000, 0.,                     &
+   &  104., 26.7934310, 0.0708,  .18,0.00000, 0.,                     &
+   &  103., 26.9394000, 0.1054,  .24,0.00000, 0.,                     &
+   &  103., 27.0402000, 0.0951,  .24,0.00000, 0.,                     &
+   &  103., 27.0675000, 0.0976,  .24,0.00000, 0.,                     &
+   &  103., 27.1234000, 0.0996,  .24,0.00000, 0.,                     &
+   &  103., 27.1518000, 0.0989,  .24,0.00000, 0.,                     &
+   &  103., 27.3438000, 0.0955,  .24,0.00000, 0./
+   DATA C0406/                                                       &
+   &  103., 27.5429000,9.7930E-23,  .0748,  101.5791,                 &
+   &  103., 27.5711000,7.5760E-23,  .0723,  392.1784,                 &
+   &  401., 27.5945340,7.2460E-25,  .0933,  155.3890,                 &
+   &  103., 27.7172000,9.6170E-23,  .0742,   88.8347,                 &
+   &  103., 27.7383000,8.7170E-23,  .0720,  345.6929,                 &
+   &  103., 27.7565000,5.8800E-23,  .0722,  467.7873,                 &
+   &  103., 27.7789000,1.0630E-22,  .0721,   45.8336,                 &
+   &  103., 27.8062000,6.9980E-23,  .0722,  416.3526,                 &
+   &  103., 27.8596000,9.8060E-23,  .0718,  302.6369,                 &
+   &  103., 27.8612000,8.1610E-23,  .0720,  368.2959,                 &
+   &  103., 27.9157000,9.2880E-23,  .0719,  323.6207,                 &
+   &  401., 27.9191330,4.7980E-26,  .0763,  374.4100,                 &
+   &  103., 27.9465000,1.0790E-22,  .0715,  262.9951,                 &
+   &  103., 27.9659000,1.0320E-22,  .0716,  282.3288,                 &
+   &  401., 27.9747110,1.2230E-26,  .0762, 1082.7854/
+   DATA D0406/                                                       &
+   &  103., 27.5429000, 0.1030,  .24,0.00000, 0.,                     &
+   &  103., 27.5711000, 0.0960,  .24,0.00000, 0.,                     &
+   &  401., 27.5945340, 0.4665,  .36,0.00000, 0.,                     &
+   &  103., 27.7172000, 0.1034,  .24,0.00000, 0.,                     &
+   &  103., 27.7383000, 0.0965,  .24,0.00000, 0.,                     &
+   &  103., 27.7565000, 0.0953,  .24,0.00000, 0.,                     &
+   &  103., 27.7789000, 0.1050,  .24,0.00000, 0.,                     &
+   &  103., 27.8062000, 0.0957,  .24,0.00000, 0.,                     &
+   &  103., 27.8596000, 0.0970,  .24,0.00000, 0.,                     &
+   &  103., 27.8612000, 0.0962,  .24,0.00000, 0.,                     &
+   &  103., 27.9157000, 0.0967,  .24,0.00000, 0.,                     &
+   &  401., 27.9191330, 0.3815,  .36,0.00000, 0.,                     &
+   &  103., 27.9465000, 0.0976,  .24,0.00000, 0.,                     &
+   &  103., 27.9659000, 0.0973,  .24,0.00000, 0.,                     &
+   &  401., 27.9747110, 0.3810,  .36,0.00000, 0./
+   DATA C0421/                                                       &
+   &  401., 27.9844670,9.3840E-26,  .0856,  581.9621,                 &
+   &  103., 28.0079000,1.1530E-22,  .0713,  226.7550,                 &
+   &  103., 28.0092000,1.1190E-22,  .0714,  244.4202,                 &
+   &  103., 28.0115000,9.9560E-23,  .0659,  482.1910,                 &
+   &  103., 28.0448000,1.1810E-22,  .0712,  209.8936,                 &
+   &  103., 28.0506000,1.2000E-22,  .0711,  193.9070,                 &
+   &  101., 28.0533000,5.1170E-25,  .0482, 1690.6650,                 &
+   &  103., 28.0723000,1.2090E-22,  .0710,  178.7469,                 &
+   &  103., 28.0798000,1.2060E-22,  .0709,  164.4437,                 &
+   &  103., 28.0926000,1.1940E-22,  .0709,  150.9772,                 &
+   &  103., 28.0991000,1.1680E-22,  .0709,  138.3592,                 &
+   &  103., 28.1066000,1.1310E-22,  .0709,  126.5818,                 &
+   &  103., 28.1113000,1.0810E-22,  .0709,  115.6488,                 &
+   &  103., 28.1156000,1.0140E-22,  .0710,  105.5576,                 &
+   &  103., 28.1185000,9.2980E-23,  .0711,   96.3089/
+   DATA D0421/                                                       &
+   &  401., 27.9844670, 0.4280,  .36,0.00000, 0.,                     &
+   &  103., 28.0079000, 0.0982,  .24,0.00000, 0.,                     &
+   &  103., 28.0092000, 0.0979,  .24,0.00000, 0.,                     &
+   &  103., 28.0115000, 0.1001,  .24,0.00000, 0.,                     &
+   &  103., 28.0448000, 0.0985,  .24,0.00000, 0.,                     &
+   &  103., 28.0506000, 0.0989,  .24,0.00000, 0.,                     &
+   &  101., 28.0533000, 0.2600,  .36,0.00000, 0.,                     &
+   &  103., 28.0723000, 0.0992,  .24,0.00000, 0.,                     &
+   &  103., 28.0798000, 0.0996,  .24,0.00000, 0.,                     &
+   &  103., 28.0926000, 0.0999,  .24,0.00000, 0.,                     &
+   &  103., 28.0991000, 0.1003,  .24,0.00000, 0.,                     &
+   &  103., 28.1066000, 0.1007,  .24,0.00000, 0.,                     &
+   &  103., 28.1113000, 0.1011,  .24,0.00000, 0.,                     &
+   &  103., 28.1156000, 0.1015,  .24,0.00000, 0.,                     &
+   &  103., 28.1185000, 0.1019,  .24,0.00000, 0./
+   DATA C0436/                                                       &
+   &  103., 28.1208000,8.3220E-23,  .0712,   87.9019,                 &
+   &  103., 28.1223000,7.1800E-23,  .0713,   80.3366,                 &
+   &  103., 28.1234000,5.8160E-23,  .0714,   73.6125,                 &
+   &  401., 28.3183160,4.8880E-25,  .0982,   29.8086,                 &
+   &  103., 28.3213000,7.4680E-23,  .0704,  450.1177,                 &
+   &  201., 28.3990000,1.0710E-26,  .0950, 1658.3361,                 &
+   &  401., 28.4714400,6.8750E-26,  .0855,  683.3240,                 &
+   &  101., 28.4853000,4.4250E-26,  .0324, 2246.8879,                 &
+   &  201., 28.5810000,1.2730E-26,  .0737, 1047.3270,                 &
+   &  103., 28.6187000,1.0820E-22,  .0720,   51.7179,                 &
+   &  401., 28.6650630,4.8010E-26,  .0762,  373.6659,                 &
+   &  101., 28.6818000,5.1170E-24,  .0991, 1664.9709,                 &
+   &  103., 28.7349000,8.9700E-23,  .0687,  510.2025,                 &
+   &  401., 28.7751030,4.2330E-27,  .0879,  995.7936,                 &
+   &  103., 28.7838000,9.3130E-23,  .0749,  128.1196/
+   DATA D0436/                                                       &
+   &  103., 28.1208000, 0.1023,  .24,0.00000, 0.,                     &
+   &  103., 28.1223000, 0.1027,  .24,0.00000, 0.,                     &
+   &  103., 28.1234000, 0.1032,  .24,0.00000, 0.,                     &
+   &  401., 28.3183160, 0.4910,  .36,0.00000, 0.,                     &
+   &  103., 28.3213000, 0.0991,  .24,0.00000, 0.,                     &
+   &  201., 28.3990000, 0.4750,  .36,0.00000, 0.,                     &
+   &  401., 28.4714400, 0.4275,  .36,0.00000, 0.,                     &
+   &  101., 28.4853000, 0.1190,  .36,0.00000, 0.,                     &
+   &  201., 28.5810000, 0.3685,  .36,0.00000, 0.,                     &
+   &  103., 28.6187000, 0.1045,  .24,0.00000, 0.,                     &
+   &  401., 28.6650630, 0.3810,  .36,0.00000, 0.,                     &
+   &  101., 28.6818000, 0.4190,  .36,0.00600, 0.,                     &
+   &  103., 28.7349000, 0.0986,  .24,0.00000, 0.,                     &
+   &  401., 28.7751030, 0.4395,  .36,0.00000, 0.,                     &
+   &  103., 28.7838000, 0.1023,  .24,0.00000, 0./
+   DATA C0451/                                                       &
+   &  101., 28.8151000,3.7710E-26,  .0305, 2225.4680,                 &
+   &  101., 28.8158000,1.2560E-26,  .0305, 2225.4680,                 &
+   &  103., 28.8909000,5.7060E-23,  .0687,  535.1031,                 &
+   &  103., 29.4556000,1.0940E-22,  .0720,   58.4464,                 &
+   &  103., 29.5688000,8.0580E-23,  .0684,  538.9375,                 &
+   &  103., 29.5966000,6.3040E-23,  .0681,  505.5065,                 &
+   &  103., 29.6258000,8.9600E-23,  .0741,  113.0870,                 &
+   &  401., 29.6961500,3.1320E-26,  .0885,  490.4274,                 &
+   &  401., 29.8085750,2.6110E-24,  .0829,    0.0000,                 &
+   &  401., 29.8831490,2.6240E-25,  .0886,  373.6659,                 &
+   &  103., 29.8895000,8.7090E-23,  .0750,  158.1653,                 &
+   &  101., 30.0011000,2.0270E-24,  .0987, 1634.9700,                 &
+   &  101., 30.1006000,1.0180E-26,  .0851, 2181.0920,                 &
+   &  101., 30.1063000,1.4080E-24,  .0935, 1742.3070,                 &
+   &  401., 30.1832580,1.8450E-26,  .0861,  859.3926/
+   DATA D0451/                                                       &
+   &  101., 28.8151000, 0.1280,  .36,0.00000, 0.,                     &
+   &  101., 28.8158000, 0.1280,  .36,0.00000, 0.,                     &
+   &  103., 28.8909000, 0.0972,  .24,0.00000, 0.,                     &
+   &  103., 29.4556000, 0.1041,  .24,0.00000, 0.,                     &
+   &  103., 29.5688000, 0.0998,  .24,0.00000, 0.,                     &
+   &  103., 29.5966000, 0.0988,  .24,0.00000, 0.,                     &
+   &  103., 29.6258000, 0.1026,  .24,0.00000, 0.,                     &
+   &  401., 29.6961500, 0.4425,  .36,0.00000, 0.,                     &
+   &  401., 29.8085750, 0.4145,  .36,0.00000, 0.,                     &
+   &  401., 29.8831490, 0.4430,  .36,0.00000, 0.,                     &
+   &  103., 29.8895000, 0.1016,  .24,0.00000, 0.,                     &
+   &  101., 30.0011000, 0.4380,  .36,-.00100, 0.,                     &
+   &  101., 30.1006000, 0.4360,  .36,0.00000, 0.,                     &
+   &  101., 30.1063000, 0.4680,  .36,-.00300, 0.,                     &
+   &  401., 30.1832580, 0.4305,  .36,0.00000, 0./
+   DATA C0466/                                                       &
+   &  101., 30.2272300,6.9730E-24,  .0800, 1050.1580,                 &
+   &  201., 30.2730000,4.2970E-27,  .0949, 1628.0640,                 &
+   &  103., 30.2963000,1.1040E-22,  .0719,   66.0127,                 &
+   &  103., 30.3124000,7.1760E-23,  .0681,  568.5063,                 &
+   &  101., 30.5601800,3.3900E-22,  .0853,  285.2190,                 &
+   &  401., 30.6649070,6.9230E-25,  .1031,   15.5082,                 &
+   &  101., 30.7911000,2.7340E-25,  .0829, 2130.4951,                 &
+   &  103., 30.8624000,8.0250E-23,  .0750,  191.7092,                 &
+   &  101., 30.8953000,4.2940E-26,  .0810, 2251.6960,                 &
+   &  103., 30.9394000,5.2080E-23,  .0684,  563.9940,                 &
+   &  103., 31.1262000,1.1050E-22,  .0719,   74.4314,                 &
+   &  103., 31.1289000,6.3830E-23,  .0678,  598.8187,                 &
+   &  201., 31.1760000,3.0110E-27,  .0879, 1734.2240,                 &
+   &  401., 31.3020050,4.5720E-26,  .0855,  711.7954,                 &
+   &  301., 31.5170000,1.2530E-25,  .0851,  283.5620/
+   DATA D0466/                                                       &
+   &  101., 30.2272300, 0.3900,  .36,-.00110, 0.,                     &
+   &  201., 30.2730000, 0.4745,  .36,0.00000, 0.,                     &
+   &  103., 30.2963000, 0.1036,  .24,0.00000, 0.,                     &
+   &  103., 30.3124000, 0.0983,  .24,0.00000, 0.,                     &
+   &  101., 30.5601800, 0.4190,  .36,-.00150, 0.,                     &
+   &  401., 30.6649070, 0.5155,  .36,0.00000, 0.,                     &
+   &  101., 30.7911000, 0.4040,  .36,-.00190, 0.,                     &
+   &  103., 30.8624000, 0.1009,  .24,0.00000, 0.,                     &
+   &  101., 30.8953000, 0.3910,  .36,0.00030, 0.,                     &
+   &  103., 30.9394000, 0.0984,  .24,0.00000, 0.,                     &
+   &  103., 31.1262000, 0.1032,  .24,0.00000, 0.,                     &
+   &  103., 31.1289000, 0.0995,  .24,0.00000, 0.,                     &
+   &  201., 31.1760000, 0.4395,  .36,0.00000, 0.,                     &
+   &  401., 31.3020050, 0.4275,  .36,0.00000, 0.,                     &
+   &  301., 31.5170000, 0.4255,  .36,0.00000, 0./
+   DATA C0481/                                                       &
+   &  103., 31.6502000,8.0210E-23,  .0740,  140.6471,                 &
+   &  103., 31.7127000,7.3060E-23,  .0748,  228.7342,                 &
+   &  103., 31.8856000,5.6360E-23,  .0676,  629.9476,                 &
+   &  103., 31.9718000,1.1020E-22,  .0719,   83.6770,                 &
+   &  401., 31.9743960,4.4540E-26,  .0761,  809.3933,                 &
+   &  101., 32.2920000,4.1360E-26,  .0826, 2462.8760,                 &
+   &  103., 32.3260000,1.1550E-22,  .0700,   58.4856,                 &
+   &  201., 32.3640000,6.9620E-25,  .0839,  282.0940,                 &
+   &  101., 32.3657300,3.4170E-22,  .0819,  383.8430,                 &
+   &  103., 32.4561000,6.5870E-23,  .0746,  269.2148,                 &
+   &  401., 32.5272500,3.8260E-27,  .0795,  769.1169,                 &
+   &  103., 32.7854000,1.0910E-22,  .0719,   93.7963,                 &
+   &  401., 32.8273020,3.7180E-24,  .0953,  150.1563,                 &
+   &  301., 32.9510000,1.2430E-25,  .0782,  382.1770,                 &
+   &  101., 32.9534000,5.1870E-21,  .0987,   37.1370/
+   DATA D0481/                                                       &
+   &  103., 31.6502000, 0.1019,  .24,0.00000, 0.,                     &
+   &  103., 31.7127000, 0.1003,  .24,0.00000, 0.,                     &
+   &  103., 31.8856000, 0.0980,  .24,0.00000, 0.,                     &
+   &  103., 31.9718000, 0.1028,  .24,0.00000, 0.,                     &
+   &  401., 31.9743960, 0.3805,  .36,0.00000, 0.,                     &
+   &  101., 32.2920000, 0.3970,  .36,0.00005, 0.,                     &
+   &  103., 32.3260000, 0.1045,  .24,0.00000, 0.,                     &
+   &  201., 32.3640000, 0.4195,  .36,0.00000, 0.,                     &
+   &  101., 32.3657300, 0.4070,  .36,-.00290, 0.,                     &
+   &  103., 32.4561000, 0.0997,  .24,0.00000, 0.,                     &
+   &  401., 32.5272500, 0.3975,  .36,0.00000, 0.,                     &
+   &  103., 32.7854000, 0.1024,  .24,0.00000, 0.,                     &
+   &  401., 32.8273020, 0.4765,  .36,0.00000, 0.,                     &
+   &  301., 32.9510000, 0.3910,  .36,0.00000, 0.,                     &
+   &  101., 32.9534000, 0.4380,  .36,-.00100, 0./
+   DATA C0496/                                                       &
+   &  301., 33.0730000,1.9180E-24,  .0962,   36.9320,                 &
+   &  103., 33.1119000,5.8910E-23,  .0742,  313.1201,                 &
+   &  103., 33.1663000,1.1520E-22,  .0711,   62.6872,                 &
+   &  201., 33.1790000,1.0600E-23,  .0949,   36.7480,                 &
+   &  401., 33.2033510,2.8090E-24,  .0971,   58.1269,                 &
+   &  201., 33.4650000,6.8270E-25,  .0774,  380.7020,                 &
+   &  103., 33.6461000,1.0740E-22,  .0720,  104.7131,                 &
+   &  401., 33.6881260,4.8150E-25,  .1017,   32.4964,                 &
+   &  103., 33.7025000,5.2230E-23,  .0738,  360.4137,                 &
+   &  103., 33.8270000,6.9020E-23,  .0740,  171.5015,                 &
+   &  103., 34.0065000,1.1540E-22,  .0713,   67.7294,                 &
+   &  103., 34.0407000,5.4320E-23,  .0717,  469.4562,                 &
+   &  103., 34.0997000,5.9130E-23,  .0716,  444.1588,                 &
+   &  103., 34.1152000,6.3880E-23,  .0715,  419.7495,                 &
+   &  103., 34.1558000,6.8710E-23,  .0714,  396.1571/
+   DATA D0496/                                                       &
+   &  301., 33.0730000, 0.4810,  .36,0.00000, 0.,                     &
+   &  103., 33.1119000, 0.0992,  .24,0.00000, 0.,                     &
+   &  103., 33.1663000, 0.1041,  .24,0.00000, 0.,                     &
+   &  201., 33.1790000, 0.4745,  .36,0.00000, 0.,                     &
+   &  401., 33.2033510, 0.4855,  .36,0.00000, 0.,                     &
+   &  201., 33.4650000, 0.3870,  .36,0.00000, 0.,                     &
+   &  103., 33.6461000, 0.1020,  .24,0.00000, 0.,                     &
+   &  401., 33.6881260, 0.5085,  .36,0.00000, 0.,                     &
+   &  103., 33.7025000, 0.0987,  .24,0.00000, 0.,                     &
+   &  103., 33.8270000, 0.1012,  .24,0.00000, 0.,                     &
+   &  103., 34.0065000, 0.1036,  .24,0.00000, 0.,                     &
+   &  103., 34.0407000, 0.0942,  .24,0.00000, 0.,                     &
+   &  103., 34.0997000, 0.0944,  .24,0.00000, 0.,                     &
+   &  103., 34.1152000, 0.0946,  .24,0.00000, 0.,                     &
+   &  103., 34.1558000, 0.0949,  .24,0.00000, 0./
+   DATA C0511/                                                       &
+   &  103., 34.1731000,7.3610E-23,  .0712,  373.4312,                 &
+   &  103., 34.2016000,7.8270E-23,  .0711,  351.5365,                 &
+   &  103., 34.2178000,8.2770E-23,  .0710,  330.4965,                 &
+   &  103., 34.2380000,8.6870E-23,  .0709,  310.2947,                 &
+   &  103., 34.2518000,9.0610E-23,  .0708,  290.9415,                 &
+   &  103., 34.2663000,9.3960E-23,  .0708,  272.4295,                 &
+   &  103., 34.2772000,9.6760E-23,  .0707,  254.7628,                 &
+   &  103., 34.2876000,9.8980E-23,  .0707,  237.9384,                 &
+   &  103., 34.2958000,1.0030E-22,  .0706,  221.9576,                 &
+   &  103., 34.3030000,1.0060E-22,  .0706,  206.8192,                 &
+   &  103., 34.3089000,1.0020E-22,  .0707,  192.5235,                 &
+   &  103., 34.3138000,9.8640E-23,  .0707,  179.0698,                 &
+   &  103., 34.3177000,9.5970E-23,  .0708,  166.4582,                 &
+   &  103., 34.3209000,9.1970E-23,  .0708,  154.6884,                 &
+   &  103., 34.3233000,8.6840E-23,  .0709,  143.7601/
+   DATA D0511/                                                       &
+   &  103., 34.1731000, 0.0951,  .24,0.00000, 0.,                     &
+   &  103., 34.2016000, 0.0954,  .24,0.00000, 0.,                     &
+   &  103., 34.2178000, 0.0957,  .24,0.00000, 0.,                     &
+   &  103., 34.2380000, 0.0960,  .24,0.00000, 0.,                     &
+   &  103., 34.2518000, 0.0963,  .24,0.00000, 0.,                     &
+   &  103., 34.2663000, 0.0966,  .24,0.00000, 0.,                     &
+   &  103., 34.2772000, 0.0969,  .24,0.00000, 0.,                     &
+   &  103., 34.2876000, 0.0972,  .24,0.00000, 0.,                     &
+   &  103., 34.2958000, 0.0975,  .24,0.00000, 0.,                     &
+   &  103., 34.3030000, 0.0979,  .24,0.00000, 0.,                     &
+   &  103., 34.3089000, 0.0982,  .24,0.00000, 0.,                     &
+   &  103., 34.3138000, 0.0986,  .24,0.00000, 0.,                     &
+   &  103., 34.3177000, 0.0990,  .24,0.00000, 0.,                     &
+   &  103., 34.3209000, 0.0993,  .24,0.00000, 0.,                     &
+   &  103., 34.3233000, 0.0997,  .24,0.00000, 0./
+   DATA C0526/                                                       &
+   &  103., 34.3252000,8.0190E-23,  .0711,  133.6731,                 &
+   &  103., 34.3265000,7.1850E-23,  .0712,  124.4274,                 &
+   &  103., 34.3275000,6.1980E-23,  .0713,  116.0227,                 &
+   &  103., 34.3281000,5.0420E-23,  .0714,  108.4589,                 &
+   &  103., 34.4252000,1.0520E-22,  .0721,  116.5520,                 &
+   &  103., 34.8464000,1.1570E-22,  .0713,   73.6125,                 &
+   &  103., 35.3217000,1.0230E-22,  .0721,  129.1220,                 &
+   &  101., 35.6460000,3.4210E-27,  .0248, 2550.8831,                 &
+   &  103., 35.6861000,1.1600E-22,  .0712,   80.3366,                 &
+   &  101., 35.9497000,4.1990E-26,  .0825, 2282.5911,                 &
+   &  103., 36.0341000,9.8970E-23,  .0723,  142.7128,                 &
+   &  103., 36.1963000,5.6850E-23,  .0739,  205.6354,                 &
+   &  103., 36.5255000,1.1560E-22,  .0711,   87.9019,                 &
+   &  201., 36.5460000,5.5140E-23,  .0921,  136.3360,                 &
+   &  301., 36.5720000,1.0110E-23,  .0934,  136.5390/
+   DATA D0526/                                                       &
+   &  103., 34.3252000, 0.1001,  .24,0.00000, 0.,                     &
+   &  103., 34.3265000, 0.1005,  .24,0.00000, 0.,                     &
+   &  103., 34.3275000, 0.1009,  .24,0.00000, 0.,                     &
+   &  103., 34.3281000, 0.1014,  .24,0.00000, 0.,                     &
+   &  103., 34.4252000, 0.1017,  .24,0.00000, 0.,                     &
+   &  103., 34.8464000, 0.1032,  .24,0.00000, 0.,                     &
+   &  103., 35.3217000, 0.1013,  .24,0.00000, 0.,                     &
+   &  101., 35.6460000, 0.1000,  .36,0.00000, 0.,                     &
+   &  103., 35.6861000, 0.1027,  .24,0.00000, 0.,                     &
+   &  101., 35.9497000, 0.4010,  .36,-.00080, 0.,                     &
+   &  103., 36.0341000, 0.1009,  .24,0.00000, 0.,                     &
+   &  103., 36.1963000, 0.1006,  .24,0.00000, 0.,                     &
+   &  103., 36.5255000, 0.1023,  .24,0.00000, 0.,                     &
+   &  201., 36.5460000, 0.4605,  .36,0.00000, 0.,                     &
+   &  301., 36.5720000, 0.4670,  .36,0.00000, 0./
+   DATA C0541/                                                       &
+   &  101., 36.6041300,2.7490E-20,  .0972,  136.7620,                 &
+   &  101., 36.7214000,1.7160E-26,  .0524, 2105.8760,                 &
+   &  201., 36.7480000,1.6590E-23,  .0769,    0.0000,                 &
+   &  301., 36.9320000,3.0150E-24,  .0911,    0.0000,                 &
+   &  103., 37.0037000,9.4890E-23,  .0723,  156.9033,                 &
+   &  101., 37.0118000,4.1190E-25,  .0531, 1437.9690,                 &
+   &  101., 37.1370800,8.2010E-21,  .0950,    0.0000,                 &
+   &  103., 37.3642000,1.1510E-22,  .0710,   96.3089,                 &
+   &  103., 37.5963000,9.0930E-23,  .0726,  172.2974,                 &
+   &  201., 37.9160000,5.4840E-23,  .0879,  172.8820,                 &
+   &  103., 38.2025000,1.1400E-22,  .0709,  105.5576,                 &
+   &  101., 38.2468100,1.7420E-23,  .0768,  744.1630,                 &
+   &  301., 38.3260000,9.9470E-24,  .0892,  173.1110,                 &
+   &  101., 38.4638800,3.8720E-21,  .0935,  134.9020,                 &
+   &  101., 38.4719000,2.6060E-25,  .0575, 1774.7520/
+   DATA D0541/                                                       &
+   &  101., 36.6041300, 0.4810,  .36,0.00460, 0.,                     &
+   &  101., 36.7214000, 0.2600,  .36,0.00000, 0.,                     &
+   &  201., 36.7480000, 0.3845,  .36,0.00000, 0.,                     &
+   &  301., 36.9320000, 0.4555,  .36,0.00000, 0.,                     &
+   &  103., 37.0037000, 0.1006,  .24,0.00000, 0.,                     &
+   &  101., 37.0118000, 0.3200,  .36,0.00000, 0.,                     &
+   &  101., 37.1370800, 0.4790,  .36,0.00470, 0.,                     &
+   &  103., 37.3642000, 0.1019,  .24,0.00000, 0.,                     &
+   &  103., 37.5963000, 0.1002,  .24,0.00000, 0.,                     &
+   &  201., 37.9160000, 0.4395,  .36,0.00000, 0.,                     &
+   &  103., 38.2025000, 0.1015,  .24,0.00000, 0.,                     &
+   &  101., 38.2468100, 0.4060,  .36,0.00000, 0.,                     &
+   &  301., 38.3260000, 0.4460,  .36,0.00000, 0.,                     &
+   &  101., 38.4638800, 0.4680,  .36,-.00300, 0.,                     &
+   &  101., 38.4719000, 0.2990,  .36,0.00000, 0./
+   DATA C0556/                                                       &
+   &  101., 38.5299000,3.5560E-27,  .0278, 2701.8911,                 &
+   &  401., 38.5658340,6.0830E-27,  .0549,  942.5624,                 &
+   &  401., 38.5956760,6.0890E-27,  .0542,  942.5326,                 &
+   &  101., 38.6362400,3.7030E-22,  .0689,  610.3410,                 &
+   &  103., 38.7002000,8.6040E-23,  .0724,  188.0547,                 &
+   &  401., 38.7585830,3.2450E-24,  .0933,  265.2362,                 &
+   &  101., 38.7911900,2.6850E-20,  .0913,  173.3650,                 &
+   &  401., 38.8525660,3.5600E-24,  .0940,  182.9836,                 &
+   &  301., 38.8850000,6.0770E-27,  .0706,  742.4920,                 &
+   &  301., 38.9650000,1.4370E-24,  .0891,  134.1460,                 &
+   &  101., 38.9685700,1.6660E-23,  .0479, 1216.1940,                 &
+   &  103., 39.0395000,1.1230E-22,  .0709,  115.6488,                 &
+   &  103., 39.0918000,8.1740E-23,  .0729,  205.3285,                 &
+   &  101., 39.1086600,2.9690E-23,  .0580,  888.6320,                 &
+   &  401., 39.3489690,7.1240E-27,  .0670, 1239.0896/
+   DATA D0556/                                                       &
+   &  101., 38.5299000, 0.1250,  .36,0.00000, 0.,                     &
+   &  401., 38.5658340, 0.2745,  .36,0.00000, 0.,                     &
+   &  401., 38.5956760, 0.2710,  .36,0.00000, 0.,                     &
+   &  101., 38.6362400, 0.3480,  .36,-.00420, 0.,                     &
+   &  103., 38.7002000, 0.0999,  .24,0.00000, 0.,                     &
+   &  401., 38.7585830, 0.4665,  .36,0.00000, 0.,                     &
+   &  101., 38.7911900, 0.4400,  .36,0.00220, 0.,                     &
+   &  401., 38.8525660, 0.4700,  .36,0.00000, 0.,                     &
+   &  301., 38.8850000, 0.3530,  .36,0.00000, 0.,                     &
+   &  301., 38.9650000, 0.4455,  .36,0.00000, 0.,                     &
+   &  101., 38.9685700, 0.2210,  .36,-.00055, 0.,                     &
+   &  103., 39.0395000, 0.1011,  .24,0.00000, 0.,                     &
+   &  103., 39.0918000, 0.0996,  .24,0.00000, 0.,                     &
+   &  101., 39.1086600, 0.2830,  .36,-.00145, 0.,                     &
+   &  401., 39.3489690, 0.3350,  .36,0.00000, 0./
+   DATA C0571/                                                       &
+   &  103., 39.3706000,1.2090E-22,  .0699,   90.8116,                 &
+   &  401., 39.3713730,5.0600E-26,  .0919,  225.8649,                 &
+   &  201., 39.4080000,7.9770E-24,  .0879,  133.4740,                 &
+   &  201., 39.4540000,3.2680E-26,  .0695,  740.9990,                 &
+   &  201., 39.6550000,1.5820E-23,  .0879,  274.8030,                 &
+   &  301., 39.6760000,1.3480E-25,  .0698,  607.3970,                 &
+   &  101., 39.7236000,5.5480E-24,  .0516, 1216.1890,                 &
+   &  201., 39.7850000,7.1330E-27,  .0769, 1588.2791,                 &
+   &  103., 39.8765000,1.1020E-22,  .0708,  126.5818,                 &
+   &  101., 39.9229000,2.9820E-27,  .0557, 3101.1240,                 &
+   &  301., 39.9470000,2.8790E-24,  .0892,  275.1320,                 &
+   &  201., 39.9940000,1.3320E-23,  .0908,   94.7880,                 &
+   &  103., 40.2109000,1.1930E-22,  .0710,   95.8535,                 &
+   &  101., 40.2220000,3.3880E-24,  .0950, 1594.7480,                 &
+   &  101., 40.2834100,7.7890E-21,  .0923,  275.4970/
+   DATA D0571/                                                       &
+   &  103., 39.3706000, 0.1027,  .24,0.00000, 0.,                     &
+   &  401., 39.3713730, 0.4595,  .36,0.00000, 0.,                     &
+   &  201., 39.4080000, 0.4395,  .36,0.00000, 0.,                     &
+   &  201., 39.4540000, 0.3475,  .36,0.00000, 0.,                     &
+   &  201., 39.6550000, 0.4395,  .36,0.00000, 0.,                     &
+   &  301., 39.6760000, 0.3490,  .36,0.00000, 0.,                     &
+   &  101., 39.7236000, 0.2470,  .36,0.00080, 0.,                     &
+   &  201., 39.7850000, 0.3845,  .36,0.00000, 0.,                     &
+   &  103., 39.8765000, 0.1007,  .24,0.00000, 0.,                     &
+   &  101., 39.9229000, 0.2680,  .36,0.00100, 0.,                     &
+   &  301., 39.9470000, 0.4460,  .36,0.00000, 0.,                     &
+   &  201., 39.9940000, 0.4540,  .36,0.00000, 0.,                     &
+   &  103., 40.2109000, 0.1023,  .24,0.00000, 0.,                     &
+   &  101., 40.2220000, 0.4790,  .36,0.00470, 0.,                     &
+   &  101., 40.2834100, 0.4510,  .36,0.00560, 0./
+   DATA C0586/                                                       &
+   &  201., 40.3800000,2.5150E-26,  .0921, 1725.0190,                 &
+   &  103., 40.3927000,5.2490E-23,  .0709,  453.8647,                 &
+   &  103., 40.4092000,5.6480E-23,  .0708,  430.3128,                 &
+   &  103., 40.4233000,6.0460E-23,  .0708,  407.6043,                 &
+   &  103., 40.4234000,7.5990E-23,  .0725,  222.5716,                 &
+   &  103., 40.4362000,6.4170E-23,  .0707,  385.7380,                 &
+   &  301., 40.4440000,4.5300E-27,  .0934, 1728.2620,                 &
+   &  103., 40.4473000,6.7740E-23,  .0707,  364.7143,                 &
+   &  103., 40.4572000,7.1160E-23,  .0707,  344.5328,                 &
+   &  301., 40.4620000,2.4090E-24,  .0920,   94.9710,                 &
+   &  103., 40.4658000,7.4180E-23,  .0706,  325.1933,                 &
+   &  103., 40.4732000,7.6780E-23,  .0706,  306.6958,                 &
+   &  103., 40.4796000,7.8840E-23,  .0707,  289.0401,                 &
+   &  103., 40.4851000,8.0200E-23,  .0707,  272.2260,                 &
+   &  103., 40.4896000,8.1010E-23,  .0707,  256.2534/
+   DATA D0586/                                                       &
+   &  201., 40.3800000, 0.4605,  .36,0.00000, 0.,                     &
+   &  103., 40.3927000, 0.0933,  .24,0.00000, 0.,                     &
+   &  103., 40.4092000, 0.0935,  .24,0.00000, 0.,                     &
+   &  103., 40.4233000, 0.0938,  .24,0.00000, 0.,                     &
+   &  103., 40.4234000, 0.0993,  .24,0.00000, 0.,                     &
+   &  103., 40.4362000, 0.0941,  .24,0.00000, 0.,                     &
+   &  301., 40.4440000, 0.4670,  .36,0.00000, 0.,                     &
+   &  103., 40.4473000, 0.0943,  .24,0.00000, 0.,                     &
+   &  103., 40.4572000, 0.0946,  .24,0.00000, 0.,                     &
+   &  301., 40.4620000, 0.4600,  .36,0.00000, 0.,                     &
+   &  103., 40.4658000, 0.0949,  .24,0.00000, 0.,                     &
+   &  103., 40.4732000, 0.0952,  .24,0.00000, 0.,                     &
+   &  103., 40.4796000, 0.0955,  .24,0.00000, 0.,                     &
+   &  103., 40.4851000, 0.0958,  .24,0.00000, 0.,                     &
+   &  103., 40.4896000, 0.0962,  .24,0.00000, 0./
+   DATA C0601/                                                       &
+   &  103., 40.4935000,8.1000E-23,  .0708,  241.1222,                 &
+   &  103., 40.4966000,8.0150E-23,  .0709,  226.8323,                 &
+   &  103., 40.4971000,7.1720E-23,  .0732,  241.8317,                 &
+   &  103., 40.4991000,7.8350E-23,  .0710,  213.3836,                 &
+   &  103., 40.5012000,7.5440E-23,  .0711,  200.7759,                 &
+   &  103., 40.5027000,7.1430E-23,  .0712,  189.0092,                 &
+   &  103., 40.5039000,6.6170E-23,  .0714,  178.0834,                 &
+   &  103., 40.5047000,5.9680E-23,  .0715,  167.9983,                 &
+   &  103., 40.5053000,5.1660E-23,  .0716,  158.7539,                 &
+   &  101., 40.5152000,1.2070E-23,  .0972, 1731.8979,                 &
+   &  301., 40.5280000,1.0750E-26,  .0596,  884.1140,                 &
+   &  101., 40.5308000,1.9450E-26,  .0594, 2724.1680,                 &
+   &  101., 40.5601000,8.3500E-25,  .0414, 1590.6910,                 &
+   &  201., 40.5900000,7.4990E-25,  .0693,  604.7930,                 &
+   &  401., 40.6033850,3.1490E-24,  .0968,  116.4614/
+   DATA D0601/                                                       &
+   &  103., 40.4935000, 0.0965,  .24,0.00000, 0.,                     &
+   &  103., 40.4966000, 0.0969,  .24,0.00000, 0.,                     &
+   &  103., 40.4971000, 0.0990,  .24,0.00000, 0.,                     &
+   &  103., 40.4991000, 0.0972,  .24,0.00000, 0.,                     &
+   &  103., 40.5012000, 0.0976,  .24,0.00000, 0.,                     &
+   &  103., 40.5027000, 0.0980,  .24,0.00000, 0.,                     &
+   &  103., 40.5039000, 0.0984,  .24,0.00000, 0.,                     &
+   &  103., 40.5047000, 0.0988,  .24,0.00000, 0.,                     &
+   &  103., 40.5053000, 0.0992,  .24,0.00000, 0.,                     &
+   &  101., 40.5152000, 0.4810,  .36,0.00460, 0.,                     &
+   &  301., 40.5280000, 0.2980,  .36,0.00000, 0.,                     &
+   &  101., 40.5308000, 0.2900,  .36,-.00270, 0.,                     &
+   &  101., 40.5601000, 0.2090,  .36,0.00120, 0.,                     &
+   &  201., 40.5900000, 0.3465,  .36,0.00000, 0.,                     &
+   &  401., 40.6033850, 0.4840,  .36,0.00000, 0./
+   DATA C0616/                                                       &
+   &  301., 40.6810000,5.9730E-27,  .0490, 1209.8180,                 &
+   &  101., 40.6938000,2.5060E-24,  .0423, 1590.6899,                 &
+   &  103., 40.7107000,1.0750E-22,  .0709,  138.3592,                 &
+   &  101., 40.7900000,3.1760E-26,  .0700, 2399.1660,                 &
+   &  101., 40.9883100,6.5100E-21,  .0944,   95.1760,                 &
+   &  401., 41.0418270,2.4520E-24,  .0919,  362.5072,                 &
+   &  103., 41.0512000,1.1820E-22,  .0713,  101.7359,                 &
+   &  103., 41.5462000,1.0440E-22,  .0709,  150.9772,                 &
+   &  201., 41.7810000,6.0290E-26,  .0594,  880.1140,                 &
+   &  103., 41.7878000,6.1580E-23,  .0734,  281.8329,                 &
+   &  201., 41.8740000,1.2190E-26,  .0579, 1074.7629,                 &
+   &  103., 41.8913000,1.1730E-22,  .0713,  108.4589,                 &
+   &  401., 41.9981210,1.5470E-26,  .0635,  573.9706,                 &
+   &  401., 42.0781040,1.5550E-26,  .0622,  573.8908,                 &
+   &  103., 42.1901000,6.5450E-23,  .0726,  260.4468/
+   DATA D0616/                                                       &
+   &  301., 40.6810000, 0.2450,  .36,0.00000, 0.,                     &
+   &  101., 40.6938000, 0.2090,  .36,0.00140, 0.,                     &
+   &  103., 40.7107000, 0.1003,  .24,0.00000, 0.,                     &
+   &  101., 40.7900000, 0.3520,  .36,-.00470, 0.,                     &
+   &  101., 40.9883100, 0.4210,  .36,0.00270, 0.,                     &
+   &  401., 41.0418270, 0.4595,  .36,0.00000, 0.,                     &
+   &  103., 41.0512000, 0.1018,  .24,0.00000, 0.,                     &
+   &  103., 41.5462000, 0.0999,  .24,0.00000, 0.,                     &
+   &  201., 41.7810000, 0.2970,  .36,0.00000, 0.,                     &
+   &  103., 41.7878000, 0.0984,  .24,0.00000, 0.,                     &
+   &  201., 41.8740000, 0.2895,  .36,0.00000, 0.,                     &
+   &  103., 41.8913000, 0.1014,  .24,0.00000, 0.,                     &
+   &  401., 41.9981210, 0.3175,  .36,0.00000, 0.,                     &
+   &  401., 42.0781040, 0.3110,  .36,0.00000, 0.,                     &
+   &  103., 42.1901000, 0.0987,  .24,0.00000, 0./
+   DATA C0631/                                                       &
+   &  201., 42.1950000,3.3870E-26,  .0489, 1204.1750,                 &
+   &  401., 42.2640140,7.5680E-25,  .0956,   58.1269,                 &
+   &  201., 42.3650000,1.5730E-25,  .0804,  839.5500,                 &
+   &  103., 42.3755000,1.0080E-22,  .0710,  164.4437,                 &
+   &  201., 42.4010000,8.5850E-27,  .0600,  879.4940,                 &
+   &  101., 42.4147000,3.2900E-26,  .0631, 2205.6521,                 &
+   &  401., 42.6186850,3.6240E-24,  .1001,   15.5082,                 &
+   &  101., 42.6355300,9.0100E-23,  .0671,  888.5990,                 &
+   &  103., 42.7312000,1.1600E-22,  .0712,  116.0227,                 &
+   &  301., 42.7870000,2.9370E-26,  .0814,  840.8660,                 &
+   &  103., 42.9414000,5.1920E-23,  .0736,  325.3544,                 &
+   &  201., 43.0360000,1.1310E-26,  .0541, 1204.1700,                 &
+   &  401., 43.0845660,2.0020E-24,  .0982,   66.1845,                 &
+   &  401., 43.1422810,1.5190E-26,  .0858,  609.9466,                 &
+   &  103., 43.2108000,9.6750E-23,  .0710,  178.7469/
+   DATA D0631/                                                       &
+   &  201., 42.1950000, 0.2445,  .36,0.00000, 0.,                     &
+   &  401., 42.2640140, 0.4780,  .36,0.00000, 0.,                     &
+   &  201., 42.3650000, 0.4020,  .36,0.00000, 0.,                     &
+   &  103., 42.3755000, 0.0996,  .24,0.00000, 0.,                     &
+   &  201., 42.4010000, 0.3000,  .36,0.00000, 0.,                     &
+   &  101., 42.4147000, 0.3440,  .36,-.00530, 0.,                     &
+   &  401., 42.6186850, 0.5005,  .36,0.00000, 0.,                     &
+   &  101., 42.6355300, 0.3090,  .36,0.00330, 0.,                     &
+   &  103., 42.7312000, 0.1009,  .24,0.00000, 0.,                     &
+   &  301., 42.7870000, 0.4070,  .36,0.00000, 0.,                     &
+   &  103., 42.9414000, 0.0978,  .24,0.00000, 0.,                     &
+   &  201., 43.0360000, 0.2705,  .36,0.00000, 0.,                     &
+   &  401., 43.0845660, 0.4910,  .36,0.00000, 0.,                     &
+   &  401., 43.1422810, 0.4290,  .36,0.00000, 0.,                     &
+   &  103., 43.2108000, 0.0992,  .24,0.00000, 0./
+   DATA C0646/                                                       &
+   &  101., 43.2424500,8.4780E-23,  .0826,  842.3570,                 &
+   &  401., 43.2901310,2.5810E-24,  .0936,  221.9461,                 &
+   &  103., 43.5709000,1.1460E-22,  .0711,  124.4274,                 &
+   &  101., 43.6290000,6.2610E-24,  .0586, 1079.0800,                 &
+   &  103., 44.0220000,5.4830E-23,  .0726,  301.6709,                 &
+   &  103., 44.0314000,9.2530E-23,  .0711,  193.9070,                 &
+   &  101., 44.0983400,6.7230E-22,  .0829,  508.8120,                 &
+   &  401., 44.1577590,2.5910E-26,  .0771,  951.6358,                 &
+   &  301., 44.2190000,3.2620E-26,  .0674,  884.0780,                 &
+   &  201., 44.3780000,5.1100E-27,  .0442, 1574.6790,                 &
+   &  103., 44.4102000,1.1270E-22,  .0710,  133.6731,                 &
+   &  301., 44.4350000,2.4100E-25,  .0801,  507.1750,                 &
+   &  101., 44.5432000,3.0790E-25,  .0369, 2009.8051,                 &
+   &  101., 44.5643000,1.0280E-25,  .0370, 2009.8051,                 &
+   &  201., 44.7230000,1.3160E-24,  .0792,  505.7290/
+   DATA D0646/                                                       &
+   &  101., 43.2424500, 0.3970,  .36,0.00005, 0.,                     &
+   &  401., 43.2901310, 0.4680,  .36,0.00000, 0.,                     &
+   &  103., 43.5709000, 0.1005,  .24,0.00000, 0.,                     &
+   &  101., 43.6290000, 0.3270,  .36,0.00000, 0.,                     &
+   &  103., 44.0220000, 0.0981,  .24,0.00000, 0.,                     &
+   &  103., 44.0314000, 0.0989,  .24,0.00000, 0.,                     &
+   &  101., 44.0983400, 0.4040,  .36,-.00190, 0.,                     &
+   &  401., 44.1577590, 0.3855,  .36,0.00000, 0.,                     &
+   &  301., 44.2190000, 0.3370,  .36,0.00000, 0.,                     &
+   &  201., 44.3780000, 0.2210,  .36,0.00000, 0.,                     &
+   &  103., 44.4102000, 0.1001,  .24,0.00000, 0.,                     &
+   &  301., 44.4350000, 0.4005,  .36,0.00000, 0.,                     &
+   &  101., 44.5432000, 0.1790,  .36,0.00000, 0.,                     &
+   &  101., 44.5643000, 0.1790,  .36,0.00000, 0.,                     &
+   &  201., 44.7230000, 0.3960,  .36,0.00000, 0./
+   DATA C0661/                                                       &
+   &  101., 44.8532000,4.3250E-24,  .0605,  882.8910,                 &
+   &  103., 44.8692000,8.7920E-23,  .0712,  209.8936,                 &
+   &  401., 45.1571320,8.9110E-25,  .1010,   46.1731,                 &
+   &  103., 45.2491000,1.1060E-22,  .0709,  143.7601,                 &
+   &  101., 45.3840000,4.6300E-27,  .0972, 3289.2419,                 &
+   &  201., 45.6240000,1.8400E-25,  .0671,  880.0770,                 &
+   &  103., 45.6745000,8.3130E-23,  .0713,  226.7550,                 &
+   &  201., 45.8920000,2.2230E-26,  .0879, 1765.3990,                 &
+   &  103., 46.0876000,1.0790E-22,  .0708,  154.6884,                 &
+   &  401., 46.2058220,1.5820E-24,  .0917,  473.9178,                 &
+   &  301., 46.3760000,3.9740E-27,  .0892, 1768.7050,                 &
+   &  103., 46.3882000,1.1850E-22,  .0701,  130.1822,                 &
+   &  401., 46.4627850,3.7260E-25,  .0951,  108.9263,                 &
+   &  103., 46.5213000,7.8170E-23,  .0714,  244.4202,                 &
+   &  103., 46.6128000,5.1110E-23,  .0707,  426.1742/
+   DATA D0661/                                                       &
+   &  101., 44.8532000, 0.3520,  .36,0.00000, 0.,                     &
+   &  103., 44.8692000, 0.0985,  .24,0.00000, 0.,                     &
+   &  401., 45.1571320, 0.5050,  .36,0.00000, 0.,                     &
+   &  103., 45.2491000, 0.0997,  .24,0.00000, 0.,                     &
+   &  101., 45.3840000, 0.4860,  .36,0.00000, 0.,                     &
+   &  201., 45.6240000, 0.3355,  .36,0.00000, 0.,                     &
+   &  103., 45.6745000, 0.0982,  .24,0.00000, 0.,                     &
+   &  201., 45.8920000, 0.4395,  .36,0.00000, 0.,                     &
+   &  103., 46.0876000, 0.0993,  .24,0.00000, 0.,                     &
+   &  401., 46.2058220, 0.4585,  .36,0.00000, 0.,                     &
+   &  301., 46.3760000, 0.4460,  .36,0.00000, 0.,                     &
+   &  103., 46.3882000, 0.1009,  .24,0.00000, 0.,                     &
+   &  401., 46.4627850, 0.4755,  .36,0.00000, 0.,                     &
+   &  103., 46.5213000, 0.0979,  .24,0.00000, 0.,                     &
+   &  103., 46.6128000, 0.0927,  .24,0.00000, 0./
+   DATA C0676/                                                       &
+   &  103., 46.6194000,5.3950E-23,  .0707,  405.1617,                 &
+   &  201., 46.6240000,6.5790E-27,  .0879, 1868.2560,                 &
+   &  103., 46.6253000,5.6480E-23,  .0707,  384.9900,                 &
+   &  103., 46.6303000,5.8690E-23,  .0707,  365.6591,                 &
+   &  103., 46.6346000,6.0580E-23,  .0708,  347.1690,                 &
+   &  103., 46.6383000,6.1940E-23,  .0708,  329.5197,                 &
+   &  103., 46.6413000,6.2890E-23,  .0709,  312.7110,                 &
+   &  103., 46.6439000,6.3200E-23,  .0710,  296.7431,                 &
+   &  103., 46.6460000,6.2770E-23,  .0711,  281.6157,                 &
+   &  103., 46.6476000,6.1600E-23,  .0712,  267.3289,                 &
+   &  103., 46.6489000,5.9590E-23,  .0713,  253.8827,                 &
+   &  103., 46.6499000,5.6630E-23,  .0715,  241.2771,                 &
+   &  103., 46.6507000,5.2720E-23,  .0716,  229.5119,                 &
+   &  201., 46.7980000,2.9830E-23,  .0887,  398.3610,                 &
+   &  301., 46.9140000,5.4460E-24,  .0900,  398.8800/
+   DATA D0676/                                                       &
+   &  103., 46.6194000, 0.0930,  .24,0.00000, 0.,                     &
+   &  201., 46.6240000, 0.4395,  .36,0.00000, 0.,                     &
+   &  103., 46.6253000, 0.0933,  .24,0.00000, 0.,                     &
+   &  103., 46.6303000, 0.0936,  .24,0.00000, 0.,                     &
+   &  103., 46.6346000, 0.0939,  .24,0.00000, 0.,                     &
+   &  103., 46.6383000, 0.0942,  .24,0.00000, 0.,                     &
+   &  103., 46.6413000, 0.0945,  .24,0.00000, 0.,                     &
+   &  103., 46.6439000, 0.0948,  .24,0.00000, 0.,                     &
+   &  103., 46.6460000, 0.0952,  .24,0.00000, 0.,                     &
+   &  103., 46.6476000, 0.0955,  .24,0.00000, 0.,                     &
+   &  103., 46.6489000, 0.0959,  .24,0.00000, 0.,                     &
+   &  103., 46.6499000, 0.0963,  .24,0.00000, 0.,                     &
+   &  103., 46.6507000, 0.0966,  .24,0.00000, 0.,                     &
+   &  201., 46.7980000, 0.4435,  .36,0.00000, 0.,                     &
+   &  301., 46.9140000, 0.4500,  .36,0.00000, 0./
+   DATA C0691/                                                       &
+   &  101., 46.9237000,1.0450E-23,  .0913, 1772.4130,                 &
+   &  103., 46.9254000,1.0450E-22,  .0707,  166.4582,                 &
+   &  101., 47.0543400,1.4760E-20,  .0934,  399.4570,                 &
+   &  103., 47.2285000,1.1560E-22,  .0712,  136.0644,                 &
+   &  103., 47.2997000,7.3180E-23,  .0716,  262.9951,                 &
+   &  101., 47.4280000,3.1130E-24,  .0923, 1875.4740,                 &
+   &  101., 47.6483000,6.6290E-27,  .0720, 2724.0430,                 &
+   &  103., 47.7625000,1.0110E-22,  .0706,  179.0698,                 &
+   &  401., 47.7956430,3.7240E-25,  .0956,  109.2691,                 &
+   &  101., 47.8661000,7.9810E-25,  .0472, 1293.0200,                 &
+   &  201., 47.9880000,1.7830E-25,  .0821,  658.6100,                 &
+   &  301., 48.0290000,3.3100E-26,  .0830,  659.9870,                 &
+   &  101., 48.0579900,9.3790E-23,  .0825,  661.5490,                 &
+   &  103., 48.0689000,1.1380E-22,  .0715,  142.7870,                 &
+   &  103., 48.1677000,6.8130E-23,  .0717,  282.3288/
+   DATA D0691/                                                       &
+   &  101., 46.9237000, 0.4400,  .36,0.00220, 0.,                     &
+   &  103., 46.9254000, 0.0990,  .24,0.00000, 0.,                     &
+   &  101., 47.0543400, 0.4510,  .36,0.00620, 0.,                     &
+   &  103., 47.2285000, 0.1005,  .24,0.00000, 0.,                     &
+   &  103., 47.2997000, 0.0976,  .24,0.00000, 0.,                     &
+   &  101., 47.4280000, 0.4510,  .36,0.00560, 0.,                     &
+   &  101., 47.6483000, 0.3450,  .36,0.00460, 0.,                     &
+   &  103., 47.7625000, 0.0986,  .24,0.00000, 0.,                     &
+   &  401., 47.7956430, 0.4780,  .36,0.00000, 0.,                     &
+   &  101., 47.8661000, 0.3210,  .36,0.00000, 0.,                     &
+   &  201., 47.9880000, 0.4105,  .36,0.00000, 0.,                     &
+   &  301., 48.0290000, 0.4150,  .36,0.00000, 0.,                     &
+   &  101., 48.0579900, 0.4010,  .36,-.00080, 0.,                     &
+   &  103., 48.0689000, 0.1000,  .24,0.00000, 0.,                     &
+   &  103., 48.1677000, 0.0973,  .24,0.00000, 0./
+   DATA C0706/                                                       &
+   &  201., 48.1710000,4.4650E-27,  .0611, 1198.1990,                 &
+   &  401., 48.1943230,9.9250E-25,  .0918,  217.0419,                 &
+   &  401., 48.4442300,7.3790E-27,  .0787, 1238.7949,                 &
+   &  103., 48.5988000,9.7800E-23,  .0706,  192.5235,                 &
+   &  201., 48.7070000,5.3950E-27,  .0908, 1686.7360,                 &
+   &  103., 48.8995000,6.3030E-23,  .0719,  302.6369,                 &
+   &  103., 48.9091000,1.1210E-22,  .0716,  150.3502,                 &
+   &  101., 49.1523000,5.7530E-25,  .0885, 2004.8170,                 &
+   &  201., 49.3380000,3.8970E-26,  .0643,  701.6960,                 &
+   &  103., 49.4342000,9.3660E-23,  .0706,  206.8192,                 &
+   &  103., 49.7491000,1.0950E-22,  .0715,  158.7539,                 &
+   &  401., 49.7653360,3.8340E-24,  .0963,  100.3909,                 &
+   &  103., 49.8105000,5.8070E-23,  .0719,  323.6207,                 &
+   &  101., 49.8398000,2.5460E-24,  .0944, 1693.6520,                 &
+   &  103., 50.2684000,8.9380E-23,  .0706,  221.9576/
+   DATA D0706/                                                       &
+   &  201., 48.1710000, 0.3055,  .36,0.00000, 0.,                     &
+   &  401., 48.1943230, 0.4590,  .36,0.00000, 0.,                     &
+   &  401., 48.4442300, 0.3935,  .36,0.00000, 0.,                     &
+   &  103., 48.5988000, 0.0982,  .24,0.00000, 0.,                     &
+   &  201., 48.7070000, 0.4540,  .36,0.00000, 0.,                     &
+   &  103., 48.8995000, 0.0970,  .24,0.00000, 0.,                     &
+   &  103., 48.9091000, 0.0996,  .24,0.00000, 0.,                     &
+   &  101., 49.1523000, 0.4360,  .36,-.00100, 0.,                     &
+   &  201., 49.3380000, 0.3215,  .36,0.00000, 0.,                     &
+   &  103., 49.4342000, 0.0979,  .24,0.00000, 0.,                     &
+   &  103., 49.7491000, 0.0992,  .24,0.00000, 0.,                     &
+   &  401., 49.7653360, 0.4815,  .36,0.00000, 0.,                     &
+   &  103., 49.8105000, 0.0967,  .24,0.00000, 0.,                     &
+   &  101., 49.8398000, 0.4210,  .36,0.00270, 0.,                     &
+   &  103., 50.2684000, 0.0975,  .24,0.00000, 0./
+   DATA C0721/                                                       &
+   &  401., 50.2768240,7.2840E-25,  .0991,   66.1845,                 &
+   &  103., 50.4642000,5.3290E-23,  .0721,  345.6929,                 &
+   &  103., 50.5890000,1.0700E-22,  .0714,  167.9983,                 &
+   &  401., 50.7993450,1.6460E-24,  .0961,   58.1269,                 &
+   &  301., 50.8200000,6.9850E-27,  .0653,  702.8860,                 &
+   &  401., 50.8293960,5.1400E-26,  .0867,  808.5632,                 &
+   &  101., 51.0092000,1.0450E-26,  .0336, 2471.2539,                 &
+   &  101., 51.0130000,3.1240E-26,  .0336, 2471.2539,                 &
+   &  103., 51.1017000,8.4790E-23,  .0707,  237.9384,                 &
+   &  101., 51.3250000,6.1510E-27,  .0979, 3237.9170,                 &
+   &  103., 51.4286000,1.0460E-22,  .0713,  178.0834,                 &
+   &  101., 51.4330000,1.3450E-22,  .0810,  610.1140,                 &
+   &  103., 51.9330000,8.0100E-23,  .0707,  254.7628,                 &
+   &  103., 52.2679000,1.0150E-22,  .0711,  189.0092,                 &
+   &  101., 52.5105000,1.9190E-23,  .0664,  704.2140/
+   DATA D0721/                                                       &
+   &  401., 50.2768240, 0.4955,  .36,0.00000, 0.,                     &
+   &  103., 50.4642000, 0.0965,  .24,0.00000, 0.,                     &
+   &  103., 50.5890000, 0.0988,  .24,0.00000, 0.,                     &
+   &  401., 50.7993450, 0.4805,  .36,0.00000, 0.,                     &
+   &  301., 50.8200000, 0.3265,  .36,0.00000, 0.,                     &
+   &  401., 50.8293960, 0.4335,  .36,0.00000, 0.,                     &
+   &  101., 51.0092000, 0.1640,  .36,0.00000, 0.,                     &
+   &  101., 51.0130000, 0.1640,  .36,0.00000, 0.,                     &
+   &  103., 51.1017000, 0.0972,  .24,0.00000, 0.,                     &
+   &  101., 51.3250000, 0.4895,  .36,0.00000, 0.,                     &
+   &  103., 51.4286000, 0.0984,  .24,0.00000, 0.,                     &
+   &  101., 51.4330000, 0.3910,  .36,0.00030, 0.,                     &
+   &  103., 51.9330000, 0.0969,  .24,0.00000, 0.,                     &
+   &  103., 52.2679000, 0.0980,  .24,0.00000, 0.,                     &
+   &  101., 52.5105000, 0.3820,  .36,0.00000, 0./
+   DATA C0736/                                                       &
+   &  401., 52.6090010,2.5860E-25,  .0884,  467.5146,                 &
+   &  201., 52.6420000,1.2870E-26,  .0887, 1993.2800,                 &
+   &  103., 52.7638000,7.5320E-23,  .0708,  272.4295,                 &
+   &  301., 52.8270000,4.9320E-26,  .0830,  607.1590,                 &
+   &  101., 53.1032000,6.1170E-24,  .0934, 2000.8660,                 &
+   &  103., 53.1068000,9.8490E-23,  .0710,  200.7759,                 &
+   &  101., 53.2451000,2.1580E-24,  .0638, 1201.9220,                 &
+   &  103., 53.3742000,1.0900E-22,  .0703,  176.5703,                 &
+   &  101., 53.4443900,5.6680E-21,  .0960,  222.0520,                 &
+   &  301., 53.5100000,2.0810E-24,  .0897,  221.6220,                 &
+   &  201., 53.5710000,1.1400E-23,  .0885,  221.2330,                 &
+   &  103., 53.5912000,7.0460E-23,  .0709,  290.9415,                 &
+   &  401., 53.7501060,1.2700E-26,  .0772, 1110.7601,                 &
+   &  401., 53.8915140,3.1000E-26,  .0895,  308.6157,                 &
+   &  103., 53.9453000,9.4830E-23,  .0709,  213.3836/
+   DATA D0736/                                                       &
+   &  401., 52.6090010, 0.4420,  .36,0.00000, 0.,                     &
+   &  201., 52.6420000, 0.4435,  .36,0.00000, 0.,                     &
+   &  103., 52.7638000, 0.0966,  .24,0.00000, 0.,                     &
+   &  301., 52.8270000, 0.4150,  .36,0.00000, 0.,                     &
+   &  101., 53.1032000, 0.4510,  .36,0.00620, 0.,                     &
+   &  103., 53.1068000, 0.0976,  .24,0.00000, 0.,                     &
+   &  101., 53.2451000, 0.3560,  .36,0.00000, 0.,                     &
+   &  103., 53.3742000, 0.0991,  .24,0.00000, 0.,                     &
+   &  101., 53.4443900, 0.4710,  .36,0.00310, 0.,                     &
+   &  301., 53.5100000, 0.4485,  .36,0.00000, 0.,                     &
+   &  201., 53.5710000, 0.4425,  .36,0.00000, 0.,                     &
+   &  103., 53.5912000, 0.0963,  .24,0.00000, 0.,                     &
+   &  401., 53.7501060, 0.3860,  .36,0.00000, 0.,                     &
+   &  401., 53.8915140, 0.4475,  .36,0.00000, 0.,                     &
+   &  103., 53.9453000, 0.0972,  .24,0.00000, 0./
+   DATA C0751/                                                       &
+   &  201., 54.0650000,2.7610E-25,  .0821,  604.5450,                 &
+   &  103., 54.2146000,1.0590E-22,  .0713,  183.2929,                 &
+   &  401., 54.2177920,4.3630E-24,  .1000,   46.1731,                 &
+   &  103., 54.4196000,6.5620E-23,  .0710,  310.2947,                 &
+   &  201., 54.4870000,2.8320E-23,  .0903,   78.9880,                 &
+   &  401., 54.5096480,3.6960E-27,  .0676, 1411.3204,                 &
+   &  401., 54.5256710,8.9010E-25,  .0889,  598.5632,                 &
+   &  401., 54.7766960,4.1940E-27,  .0500,  818.0137,                 &
+   &  103., 54.7834000,9.1350E-23,  .0708,  226.8323,                 &
+   &  401., 54.7837040,4.1930E-27,  .0502,  818.0067,                 &
+   &  101., 54.8352000,1.1460E-23,  .0979, 1677.0630,                 &
+   &  301., 54.9140000,4.3300E-27,  .0950, 1673.3480,                 &
+   &  301., 54.9190000,5.1450E-24,  .0914,   79.2270,                 &
+   &  101., 54.9254000,1.0020E-26,  .0768, 2337.6689,                 &
+   &  201., 54.9800000,2.4280E-26,  .0937, 1670.0389/
+   DATA D0751/                                                       &
+   &  201., 54.0650000, 0.4105,  .36,0.00000, 0.,                     &
+   &  103., 54.2146000, 0.0987,  .24,0.00000, 0.,                     &
+   &  401., 54.2177920, 0.5000,  .36,0.00000, 0.,                     &
+   &  103., 54.4196000, 0.0960,  .24,0.00000, 0.,                     &
+   &  201., 54.4870000, 0.4515,  .36,0.00000, 0.,                     &
+   &  401., 54.5096480, 0.3380,  .36,0.00000, 0.,                     &
+   &  401., 54.5256710, 0.4445,  .36,0.00000, 0.,                     &
+   &  401., 54.7766960, 0.2500,  .36,0.00000, 0.,                     &
+   &  103., 54.7834000, 0.0969,  .24,0.00000, 0.,                     &
+   &  401., 54.7837040, 0.2510,  .36,0.00000, 0.,                     &
+   &  101., 54.8352000, 0.4670,  .36,-.00140, 0.,                     &
+   &  301., 54.9140000, 0.4750,  .36,0.00000, 0.,                     &
+   &  301., 54.9190000, 0.4570,  .36,0.00000, 0.,                     &
+   &  101., 54.9254000, 0.4060,  .36,0.00000, 0.,                     &
+   &  201., 54.9800000, 0.4685,  .36,0.00000, 0./
+   DATA C0766/                                                       &
+   &  401., 54.9981150,2.2170E-24,  .0945,  100.3909,                 &
+   &  103., 55.0550000,1.0370E-22,  .0717,  190.8559,                 &
+   &  201., 55.2330000,6.6510E-23,  .0981,   23.7550,                 &
+   &  103., 55.2415000,6.0810E-23,  .0711,  330.4965,                 &
+   &  201., 55.2450000,1.1380E-25,  .0742,  324.0470,                 &
+   &  101., 55.4053600,1.3910E-20,  .0937,   79.4960,                 &
+   &  301., 55.4540000,1.2140E-23,  .0994,   23.7740,                 &
+   &  103., 55.6208000,8.7280E-23,  .0707,  241.1222,                 &
+   &  101., 55.7020800,3.2850E-20,  .1009,   23.7940,                 &
+   &  201., 55.7500000,3.0380E-26,  .0705,  444.8460,                 &
+   &  103., 55.8952000,1.0080E-22,  .0718,  199.2593,                 &
+   &  401., 55.9913440,8.6950E-25,  .0954,  100.3909,                 &
+   &  103., 56.0679000,5.6000E-23,  .0712,  351.5365,                 &
+   &  301., 56.1450000,2.0660E-26,  .0752,  324.6610,                 &
+   &  401., 56.1924270,1.6450E-24,  .0907,  306.3148/
+   DATA D0766/                                                       &
+   &  401., 54.9981150, 0.4725,  .36,0.00000, 0.,                     &
+   &  103., 55.0550000, 0.0982,  .24,0.00000, 0.,                     &
+   &  201., 55.2330000, 0.4905,  .36,0.00000, 0.,                     &
+   &  103., 55.2415000, 0.0957,  .24,0.00000, 0.,                     &
+   &  201., 55.2450000, 0.3710,  .36,0.00000, 0.,                     &
+   &  101., 55.4053600, 0.4770,  .36,0.00330, 0.,                     &
+   &  301., 55.4540000, 0.4970,  .36,0.00000, 0.,                     &
+   &  103., 55.6208000, 0.0965,  .24,0.00000, 0.,                     &
+   &  101., 55.7020800, 0.4180,  .36,0.00504, 0.,                     &
+   &  201., 55.7500000, 0.3525,  .36,0.00000, 0.,                     &
+   &  103., 55.8952000, 0.0978,  .24,0.00000, 0.,                     &
+   &  401., 55.9913440, 0.4770,  .36,0.00000, 0.,                     &
+   &  103., 56.0679000, 0.0954,  .24,0.00000, 0.,                     &
+   &  301., 56.1450000, 0.3760,  .36,0.00000, 0.,                     &
+   &  401., 56.1924270, 0.4535,  .36,0.00000, 0./
+   DATA C0781/                                                       &
+   &  103., 56.4576000,8.2660E-23,  .0707,  256.2534,                 &
+   &  301., 56.4610000,5.5570E-27,  .0712,  445.7190,                 &
+   &  101., 56.4872000,7.7420E-25,  .0400, 1524.8490,                 &
+   &  103., 56.7354000,9.7990E-23,  .0717,  208.5030,                 &
+   &  103., 56.8816000,5.1380E-23,  .0713,  373.4312,                 &
+   &  101., 57.1708600,5.6590E-23,  .0762,  325.3480,                 &
+   &  101., 57.2651100,2.9180E-20,  .0979,   79.4960,                 &
+   &  101., 57.2741800,1.5450E-23,  .0718,  446.6970,                 &
+   &  103., 57.2937000,7.8270E-23,  .0707,  272.2260,                 &
+   &  301., 57.3110000,1.0760E-23,  .0950,   79.2270,                 &
+   &  201., 57.3490000,5.9630E-23,  .0937,   78.9880,                 &
+   &  201., 57.3730000,4.3040E-24,  .0874,  601.2370,                 &
+   &  103., 57.5753000,9.5340E-23,  .0716,  218.5873,                 &
+   &  401., 57.7484580,4.3580E-25,  .0901,  801.6442,                 &
+   &  201., 57.9910000,2.8570E-26,  .0981, 1612.0490/
+   DATA D0781/                                                       &
+   &  103., 56.4576000, 0.0962,  .24,0.00000, 0.,                     &
+   &  301., 56.4610000, 0.3560,  .36,0.00000, 0.,                     &
+   &  101., 56.4872000, 0.3170,  .36,0.00000, 0.,                     &
+   &  103., 56.7354000, 0.0974,  .24,0.00000, 0.,                     &
+   &  103., 56.8816000, 0.0951,  .24,0.00000, 0.,                     &
+   &  101., 57.1708600, 0.4170,  .36,0.00000, 0.,                     &
+   &  101., 57.2651100, 0.4670,  .36,-.00140, 0.,                     &
+   &  101., 57.2741800, 0.4000,  .36,0.00000, 0.,                     &
+   &  103., 57.2937000, 0.0958,  .24,0.00000, 0.,                     &
+   &  301., 57.3110000, 0.4750,  .36,0.00000, 0.,                     &
+   &  201., 57.3490000, 0.4685,  .36,0.00000, 0.,                     &
+   &  201., 57.3730000, 0.4370,  .36,0.00000, 0.,                     &
+   &  103., 57.5753000, 0.0970,  .24,0.00000, 0.,                     &
+   &  401., 57.7484580, 0.4505,  .36,0.00000, 0.,                     &
+   &  201., 57.9910000, 0.4905,  .36,0.00000, 0./
+   DATA C0796/                                                       &
+   &  101., 58.0230000,2.5390E-24,  .0960, 1817.4510,                 &
+   &  301., 58.0260000,7.7840E-25,  .0886,  601.9610,                 &
+   &  101., 58.0540000,5.2610E-26,  .0712, 2572.1399,                 &
+   &  201., 58.0660000,5.2730E-27,  .0885, 1810.1899,                 &
+   &  101., 58.1220000,3.3350E-27,  .0913, 3334.6260,                 &
+   &  103., 58.1290000,7.4080E-23,  .0706,  289.0401,                 &
+   &  301., 58.2330000,5.1270E-27,  .0994, 1615.1150,                 &
+   &  103., 58.4151000,9.2110E-23,  .0715,  229.5119,                 &
+   &  101., 58.5034000,1.3600E-23,  .1009, 1618.5590,                 &
+   &  401., 58.5467410,7.3100E-27,  .0844,  743.0974,                 &
+   &  401., 58.7065430,7.3420E-25,  .0899,  653.0889,                 &
+   &  101., 58.7783400,2.0880E-21,  .0909,  602.7740,                 &
+   &  401., 58.8259960,9.5010E-25,  .0976,   91.3303,                 &
+   &  101., 58.9114400,9.4070E-23,  .0700,  757.7800,                 &
+   &  103., 58.9633000,6.9420E-23,  .0706,  306.6958/
+   DATA D0796/                                                       &
+   &  101., 58.0230000, 0.4710,  .36,0.00310, 0.,                     &
+   &  301., 58.0260000, 0.4430,  .36,0.00000, 0.,                     &
+   &  101., 58.0540000, 0.3660,  .36,-.00490, 0.,                     &
+   &  201., 58.0660000, 0.4425,  .36,0.00000, 0.,                     &
+   &  101., 58.1220000, 0.4565,  .36,0.00000, 0.,                     &
+   &  103., 58.1290000, 0.0955,  .24,0.00000, 0.,                     &
+   &  301., 58.2330000, 0.4970,  .36,0.00000, 0.,                     &
+   &  103., 58.4151000, 0.0966,  .24,0.00000, 0.,                     &
+   &  101., 58.5034000, 0.4180,  .36,0.00504, 0.,                     &
+   &  401., 58.5467410, 0.4220,  .36,0.00000, 0.,                     &
+   &  401., 58.7065430, 0.4495,  .36,0.00000, 0.,                     &
+   &  101., 58.7783400, 0.4160,  .36,0.00290, 0.,                     &
+   &  401., 58.8259960, 0.4880,  .36,0.00000, 0.,                     &
+   &  101., 58.9114400, 0.3520,  .36,-.00470, 0.,                     &
+   &  103., 58.9633000, 0.0952,  .24,0.00000, 0./
+   DATA C0811/                                                       &
+   &  201., 59.0970000,6.5600E-24,  .0872,  780.4530,                 &
+   &  103., 59.2546000,8.9020E-23,  .0714,  241.2771,                 &
+   &  301., 59.4880000,1.1920E-24,  .0884,  781.3780,                 &
+   &  401., 59.7179870,2.2530E-25,  .0899,  964.8507,                 &
+   &  103., 59.7966000,6.4980E-23,  .0706,  325.1933,                 &
+   &  301., 59.7980000,3.3950E-26,  .0686,  754.8130,                 &
+   &  101., 59.8659000,2.6270E-27,  .0309, 2972.8240,                 &
+   &  101., 59.8690600,2.4610E-21,  .0908,  542.9060,                 &
+   &  401., 59.8816750,5.2440E-27,  .0787, 1287.2391,                 &
+   &  101., 59.9493900,3.2070E-21,  .0910,  782.4100,                 &
+   &  301., 59.9640000,9.0360E-25,  .0864,  541.9970,                 &
+   &  201., 60.0580000,4.9520E-24,  .0851,  541.1790,                 &
+   &  103., 60.0938000,8.5400E-23,  .0713,  253.8827,                 &
+   &  103., 60.3242000,9.5230E-23,  .0701,  229.9445,                 &
+   &  201., 60.5700000,1.9810E-23,  .0866,  445.1590/
+   DATA D0811/                                                       &
+   &  201., 59.0970000, 0.4360,  .36,0.00000, 0.,                     &
+   &  103., 59.2546000, 0.0963,  .24,0.00000, 0.,                     &
+   &  301., 59.4880000, 0.4420,  .36,0.00000, 0.,                     &
+   &  401., 59.7179870, 0.4495,  .36,0.00000, 0.,                     &
+   &  103., 59.7966000, 0.0949,  .24,0.00000, 0.,                     &
+   &  301., 59.7980000, 0.3430,  .36,0.00000, 0.,                     &
+   &  101., 59.8659000, 0.1510,  .36,0.00000, 0.,                     &
+   &  101., 59.8690600, 0.4360,  .36,0.00640, 0.,                     &
+   &  401., 59.8816750, 0.3935,  .36,0.00000, 0.,                     &
+   &  101., 59.9493900, 0.4160,  .36,0.00570, 0.,                     &
+   &  301., 59.9640000, 0.4320,  .36,0.00000, 0.,                     &
+   &  201., 60.0580000, 0.4255,  .36,0.00000, 0.,                     &
+   &  103., 60.0938000, 0.0959,  .24,0.00000, 0.,                     &
+   &  103., 60.3242000, 0.0973,  .24,0.00000, 0.,                     &
+   &  201., 60.5700000, 0.4330,  .36,0.00000, 0./
+   DATA C0826/                                                       &
+   &  201., 60.5730000,1.8840E-25,  .0680,  752.1870,                 &
+   &  103., 60.6289000,6.0420E-23,  .0707,  344.5328,                 &
+   &  401., 60.6596490,2.1820E-24,  .0940,  156.3823,                 &
+   &  201., 60.8610000,2.3870E-26,  .0839,  221.2330,                 &
+   &  103., 60.9327000,8.1950E-23,  .0711,  267.3289,                 &
+   &  103., 61.1646000,9.2180E-23,  .0711,  237.5075,                 &
+   &  301., 61.3810000,3.5680E-24,  .0877,  445.7940,                 &
+   &  103., 61.4598000,5.5950E-23,  .0707,  364.7143,                 &
+   &  201., 61.6040000,5.1560E-26,  .0674,  583.7790,                 &
+   &  401., 61.6528770,5.3810E-25,  .0930,  155.3890,                 &
+   &  101., 61.6855000,9.0110E-25,  .0936, 1813.7880,                 &
+   &  101., 61.7500000,1.0740E-25,  .0637, 1813.2240,                 &
+   &  103., 61.7713000,7.8020E-23,  .0710,  281.6157,                 &
+   &  401., 61.8385360,1.0900E-24,  .0909,  520.1236,                 &
+   &  301., 61.9400000,4.3030E-27,  .0851,  221.6220/
+   DATA D0826/                                                       &
+   &  201., 60.5730000, 0.3400,  .36,0.00000, 0.,                     &
+   &  103., 60.6289000, 0.0946,  .24,0.00000, 0.,                     &
+   &  401., 60.6596490, 0.4700,  .36,0.00000, 0.,                     &
+   &  201., 60.8610000, 0.4195,  .36,0.00000, 0.,                     &
+   &  103., 60.9327000, 0.0955,  .24,0.00000, 0.,                     &
+   &  103., 61.1646000, 0.0969,  .24,0.00000, 0.,                     &
+   &  301., 61.3810000, 0.4385,  .36,0.00000, 0.,                     &
+   &  103., 61.4598000, 0.0943,  .24,0.00000, 0.,                     &
+   &  201., 61.6040000, 0.3370,  .36,0.00000, 0.,                     &
+   &  401., 61.6528770, 0.4650,  .36,0.00000, 0.,                     &
+   &  101., 61.6855000, 0.4360,  .36,-.00400, 0.,                     &
+   &  101., 61.7500000, 0.2810,  .36,0.00000, 0.,                     &
+   &  103., 61.7713000, 0.0952,  .24,0.00000, 0.,                     &
+   &  401., 61.8385360, 0.4545,  .36,0.00000, 0.,                     &
+   &  301., 61.9400000, 0.4255,  .36,0.00000, 0./
+   DATA C0841/                                                       &
+   &  103., 62.0051000,8.9870E-23,  .0716,  245.9108,                 &
+   &  301., 62.1320000,9.4470E-27,  .0679,  584.9410,                 &
+   &  103., 62.2896000,5.1560E-23,  .0707,  385.7380,                 &
+   &  101., 62.3039200,9.5830E-21,  .0900,  446.5110,                 &
+   &  401., 62.4635300,2.1760E-25,  .0799,  233.0237,                 &
+   &  101., 62.4760000,5.7330E-27,  .1009, 3175.4409,                 &
+   &  103., 62.6093000,7.4260E-23,  .0709,  296.7431,                 &
+   &  401., 62.6262480,2.1780E-25,  .0807,  233.0512,                 &
+   &  101., 62.7007100,1.9180E-24,  .0681,  920.2110,                 &
+   &  101., 62.7383000,2.6560E-23,  .0684,  586.2430,                 &
+   &  401., 62.7531230,5.4490E-27,  .1004,   46.1731,                 &
+   &  103., 62.8454000,8.7050E-23,  .0717,  255.1545,                 &
+   &  101., 62.8737000,6.6440E-23,  .0594, 1059.8350,                 &
+   &  101., 63.1676200,1.1680E-23,  .0863,  222.0520,                 &
+   &  201., 63.1880000,1.0770E-23,  .0893,  141.5670/
+   DATA D0841/                                                       &
+   &  103., 62.0051000, 0.0965,  .24,0.00000, 0.,                     &
+   &  301., 62.1320000, 0.3395,  .36,0.00000, 0.,                     &
+   &  103., 62.2896000, 0.0941,  .24,0.00000, 0.,                     &
+   &  101., 62.3039200, 0.4180,  .36,0.00140, 0.,                     &
+   &  401., 62.4635300, 0.3995,  .36,0.00000, 0.,                     &
+   &  101., 62.4760000, 0.5045,  .36,0.00000, 0.,                     &
+   &  103., 62.6093000, 0.0948,  .24,0.00000, 0.,                     &
+   &  401., 62.6262480, 0.4035,  .36,0.00000, 0.,                     &
+   &  101., 62.7007100, 0.3660,  .36,0.00000, 0.,                     &
+   &  101., 62.7383000, 0.3800,  .36,0.00000, 0.,                     &
+   &  401., 62.7531230, 0.5020,  .36,0.00000, 0.,                     &
+   &  103., 62.8454000, 0.0961,  .24,0.00000, 0.,                     &
+   &  101., 62.8737000, 0.2900,  .36,-.00270, 0.,                     &
+   &  101., 63.1676200, 0.4380,  .36,0.00000, 0.,                     &
+   &  201., 63.1880000, 0.4465,  .36,0.00000, 0./
+   DATA C0856/                                                       &
+   &  101., 63.1908000,3.5720E-27,  .0577, 2920.1340,                 &
+   &  101., 63.3305800,3.7840E-24,  .0503, 1411.6470,                 &
+   &  201., 63.3660000,1.1970E-26,  .0762,  541.1790,                 &
+   &  103., 63.4469000,7.0080E-23,  .0709,  312.7110,                 &
+   &  101., 63.5004800,5.9890E-25,  .0702, 1899.0081,                 &
+   &  101., 63.5064100,2.0570E-26,  .0476, 2042.3750,                 &
+   &  301., 63.5790000,1.9640E-24,  .0904,  141.9040,                 &
+   &  103., 63.6856000,8.3750E-23,  .0717,  265.2384,                 &
+   &  201., 63.9300000,3.6070E-27,  .0639,  916.2920,                 &
+   &  101., 63.9934800,1.7130E-21,  .0885,  382.5170,                 &
+   &  101., 64.0233500,5.3150E-21,  .0917,  142.2790,                 &
+   &  401., 64.0587750,1.4470E-26,  .0962,   91.3303,                 &
+   &  201., 64.1840000,1.1980E-26,  .0903, 1670.0389,                 &
+   &  301., 64.2320000,2.3860E-26,  .0598, 1055.2560,                 &
+   &  103., 64.2840000,6.6080E-23,  .0708,  329.5197/
+   DATA D0856/                                                       &
+   &  101., 63.1908000, 0.3090,  .36,-.00360, 0.,                     &
+   &  101., 63.3305800, 0.2320,  .36,-.00180, 0.,                     &
+   &  201., 63.3660000, 0.3810,  .36,0.00000, 0.,                     &
+   &  103., 63.4469000, 0.0945,  .24,0.00000, 0.,                     &
+   &  101., 63.5004800, 0.3560,  .36,-.00530, 0.,                     &
+   &  101., 63.5064100, 0.2500,  .36,0.00000, 0.,                     &
+   &  301., 63.5790000, 0.4520,  .36,0.00000, 0.,                     &
+   &  103., 63.6856000, 0.0957,  .24,0.00000, 0.,                     &
+   &  201., 63.9300000, 0.3195,  .36,0.00000, 0.,                     &
+   &  101., 63.9934800, 0.4360,  .36,-.00100, 0.,                     &
+   &  101., 64.0233500, 0.4270,  .36,0.00150, 0.,                     &
+   &  401., 64.0587750, 0.4810,  .36,0.00000, 0.,                     &
+   &  201., 64.1840000, 0.4515,  .36,0.00000, 0.,                     &
+   &  301., 64.2320000, 0.2990,  .36,0.00000, 0.,                     &
+   &  103., 64.2840000, 0.0942,  .24,0.00000, 0./
+   DATA C0871/                                                       &
+   &  401., 64.3530160,1.0070E-26,  .0815,  403.1616,                 &
+   &  101., 64.3850000,1.5490E-24,  .0432, 1810.5890,                 &
+   &  401., 64.3888180,7.4550E-27,  .0792,  512.5159,                 &
+   &  101., 64.4938000,1.1180E-25,  .0845, 2398.3821,                 &
+   &  103., 64.5256000,8.1170E-23,  .0717,  276.1626,                 &
+   &  401., 64.7713990,5.3500E-25,  .0952,  157.0647,                 &
+   &  101., 64.8804000,5.1630E-25,  .0448, 1810.5840,                 &
+   &  101., 64.9273000,1.0470E-24,  .0908, 2146.2649,                 &
+   &  301., 64.9880000,6.3060E-25,  .0859,  380.8060,                 &
+   &  401., 65.0520040,4.7290E-24,  .0969,   91.3303,                 &
+   &  401., 65.0629560,1.0260E-25,  .0878, 1141.6918,                 &
+   &  103., 65.1204000,6.1690E-23,  .0707,  347.1690,                 &
+   &  101., 65.2441000,5.6960E-24,  .0937, 1677.0630,                 &
+   &  103., 65.3655000,7.7560E-23,  .0716,  287.9270,                 &
+   &  201., 65.4330000,1.3350E-25,  .0593, 1051.2050/
+   DATA D0871/                                                       &
+   &  401., 64.3530160, 0.4075,  .36,0.00000, 0.,                     &
+   &  101., 64.3850000, 0.2300,  .36,0.00080, 0.,                     &
+   &  401., 64.3888180, 0.3960,  .36,0.00000, 0.,                     &
+   &  101., 64.4938000, 0.4060,  .36,0.00110, 0.,                     &
+   &  103., 64.5256000, 0.0953,  .24,0.00000, 0.,                     &
+   &  401., 64.7713990, 0.4760,  .36,0.00000, 0.,                     &
+   &  101., 64.8804000, 0.2300,  .36,0.00080, 0.,                     &
+   &  101., 64.9273000, 0.4360,  .36,0.00640, 0.,                     &
+   &  301., 64.9880000, 0.4295,  .36,0.00000, 0.,                     &
+   &  401., 65.0520040, 0.4845,  .36,0.00000, 0.,                     &
+   &  401., 65.0629560, 0.4390,  .36,0.00000, 0.,                     &
+   &  103., 65.1204000, 0.0939,  .24,0.00000, 0.,                     &
+   &  101., 65.2441000, 0.4770,  .36,0.00330, 0.,                     &
+   &  103., 65.3655000, 0.0949,  .24,0.00000, 0.,                     &
+   &  201., 65.4330000, 0.2965,  .36,0.00000, 0./
+   DATA C0886/                                                       &
+   &  401., 65.5638410,4.2420E-24,  .0954,  156.3823,                 &
+   &  101., 65.6852000,1.1420E-23,  .0557, 1411.6121,                 &
+   &  201., 65.8670000,3.5240E-24,  .0846,  379.2920,                 &
+   &  401., 65.9089010,4.4890E-25,  .0853,  735.7353,                 &
+   &  103., 65.9561000,5.7490E-23,  .0707,  365.6591,                 &
+   &  401., 66.1145620,1.4360E-24,  .0902,  403.5491,                 &
+   &  103., 66.2051000,7.4650E-23,  .0715,  300.5317,                 &
+   &  201., 66.2440000,7.8960E-24,  .0845,  314.4580,                 &
+   &  401., 66.5222190,8.0530E-25,  .0957,  116.4614,                 &
+   &  201., 66.5560000,7.6650E-27,  .0507, 1399.4630,                 &
+   &  103., 66.7911000,5.3570E-23,  .0707,  384.9900,                 &
+   &  401., 66.8856560,2.2190E-26,  .0951,  150.1563,                 &
+   &  103., 67.0445000,7.1330E-23,  .0713,  313.9766,                 &
+   &  301., 67.0990000,1.4190E-24,  .0857,  315.0790,                 &
+   &  201., 67.1060000,8.8340E-25,  .0849,  980.2220/
+   DATA D0886/                                                       &
+   &  401., 65.5638410, 0.4770,  .36,0.00000, 0.,                     &
+   &  101., 65.6852000, 0.2680,  .36,0.00100, 0.,                     &
+   &  201., 65.8670000, 0.4230,  .36,0.00000, 0.,                     &
+   &  401., 65.9089010, 0.4265,  .36,0.00000, 0.,                     &
+   &  103., 65.9561000, 0.0936,  .24,0.00000, 0.,                     &
+   &  401., 66.1145620, 0.4510,  .36,0.00000, 0.,                     &
+   &  103., 66.2051000, 0.0945,  .24,0.00000, 0.,                     &
+   &  201., 66.2440000, 0.4225,  .36,0.00000, 0.,                     &
+   &  401., 66.5222190, 0.4785,  .36,0.00000, 0.,                     &
+   &  201., 66.5560000, 0.2535,  .36,0.00000, 0.,                     &
+   &  103., 66.7911000, 0.0933,  .24,0.00000, 0.,                     &
+   &  401., 66.8856560, 0.4755,  .36,0.00000, 0.,                     &
+   &  103., 67.0445000, 0.0942,  .24,0.00000, 0.,                     &
+   &  301., 67.0990000, 0.4285,  .36,0.00000, 0.,                     &
+   &  201., 67.1060000, 0.4245,  .36,0.00000, 0./
+   DATA C0901/                                                       &
+   &  301., 67.1630000,1.6090E-25,  .0861,  981.4940,                 &
+   &  401., 67.1921160,4.5450E-27,  .0755,  634.4283,                 &
+   &  101., 67.2080000,5.7130E-24,  .0786,  542.9060,                 &
+   &  103., 67.2339000,7.9490E-23,  .0696,  290.2686,                 &
+   &  101., 67.2473600,4.3520E-22,  .0875,  982.9120,                 &
+   &  401., 67.3510930,1.0530E-26,  .0867,  306.3148,                 &
+   &  101., 67.5304000,5.7150E-26,  .0389, 2254.2839,                 &
+   &  301., 67.5360000,4.0900E-27,  .0573, 1405.1490,                 &
+   &  101., 67.6216000,1.7100E-25,  .0392, 2254.2830,                 &
+   &  401., 67.7716750,1.8140E-24,  .0926,  225.8649,                 &
+   &  103., 67.8836000,6.7610E-23,  .0712,  328.2617,                 &
+   &  101., 68.0647400,3.8280E-21,  .0875,  315.7790,                 &
+   &  103., 68.0745000,7.6650E-23,  .0707,  298.6722,                 &
+   &  201., 68.0750000,3.1390E-27,  .0431, 1794.3800,                 &
+   &  101., 68.4113000,7.3890E-26,  .0332, 1774.6190/
+   DATA D0901/                                                       &
+   &  301., 67.1630000, 0.4305,  .36,0.00000, 0.,                     &
+   &  401., 67.1921160, 0.3775,  .36,0.00000, 0.,                     &
+   &  101., 67.2080000, 0.3820,  .36,0.00000, 0.,                     &
+   &  103., 67.2339000, 0.0955,  .24,0.00000, 0.,                     &
+   &  101., 67.2473600, 0.4160,  .36,0.00870, 0.,                     &
+   &  401., 67.3510930, 0.4335,  .36,0.00000, 0.,                     &
+   &  101., 67.5304000, 0.2090,  .36,0.00000, 0.,                     &
+   &  301., 67.5360000, 0.2865,  .36,0.00000, 0.,                     &
+   &  101., 67.6216000, 0.2090,  .36,0.00000, 0.,                     &
+   &  401., 67.7716750, 0.4630,  .36,0.00000, 0.,                     &
+   &  103., 67.8836000, 0.0938,  .24,0.00000, 0.,                     &
+   &  101., 68.0647400, 0.4150,  .36,0.00140, 0.,                     &
+   &  103., 68.0745000, 0.0951,  .24,0.00000, 0.,                     &
+   &  201., 68.0750000, 0.2155,  .36,0.00000, 0.,                     &
+   &  101., 68.4113000, 0.2990,  .36,0.00000, 0./
+   DATA C0916/                                                       &
+   &  103., 68.7224000,6.4050E-23,  .0711,  343.3870,                 &
+   &  401., 68.8706770,1.1130E-24,  .0918,  293.6366,                 &
+   &  103., 68.9149000,7.3920E-23,  .0712,  307.9159,                 &
+   &  201., 69.0130000,2.5880E-27,  .0872, 2384.0449,                 &
+   &  201., 69.1830000,2.3230E-26,  .0572, 1399.4290,                 &
+   &  101., 69.1955000,2.5300E-21,  .0936,  206.3010,                 &
+   &  401., 69.4720420,1.8730E-26,  .0875,  404.4457,                 &
+   &  401., 69.4825990,8.5360E-25,  .0941,  156.3823,                 &
+   &  103., 69.5609000,6.0630E-23,  .0710,  359.3524,                 &
+   &  301., 69.6490000,9.3990E-25,  .0882,  205.4830,                 &
+   &  101., 69.7411000,7.1320E-27,  .0722, 2771.6909,                 &
+   &  103., 69.7553000,7.1290E-23,  .0714,  317.9999,                 &
+   &  201., 70.0480000,5.2440E-24,  .0871,  204.7550,                 &
+   &  101., 70.2817000,1.2190E-24,  .0910, 2392.5940,                 &
+   &  103., 70.3989000,5.6860E-23,  .0709,  376.1580/
+   DATA D0916/                                                       &
+   &  103., 68.7224000, 0.0935,  .24,0.00000, 0.,                     &
+   &  401., 68.8706770, 0.4590,  .36,0.00000, 0.,                     &
+   &  103., 68.9149000, 0.0947,  .24,0.00000, 0.,                     &
+   &  201., 69.0130000, 0.4360,  .36,0.00000, 0.,                     &
+   &  201., 69.1830000, 0.2860,  .36,0.00000, 0.,                     &
+   &  101., 69.1955000, 0.4360,  .36,-.00400, 0.,                     &
+   &  401., 69.4720420, 0.4375,  .36,0.00000, 0.,                     &
+   &  401., 69.4825990, 0.4705,  .36,0.00000, 0.,                     &
+   &  103., 69.5609000, 0.0931,  .24,0.00000, 0.,                     &
+   &  301., 69.6490000, 0.4410,  .36,0.00000, 0.,                     &
+   &  101., 69.7411000, 0.3720,  .36,-.00510, 0.,                     &
+   &  103., 69.7553000, 0.0943,  .24,0.00000, 0.,                     &
+   &  201., 70.0480000, 0.4355,  .36,0.00000, 0.,                     &
+   &  101., 70.2817000, 0.4160,  .36,0.00570, 0.,                     &
+   &  103., 70.3989000, 0.0928,  .24,0.00000, 0./
+   DATA C0931/                                                       &
+   &  401., 70.4151590,1.6710E-24,  .0913,  303.9948,                 &
+   &  103., 70.5955000,6.8270E-23,  .0715,  328.9240,                 &
+   &  401., 70.7561950,9.9550E-25,  .0878,  403.1616,                 &
+   &  401., 70.8769380,3.9940E-27,  .0794, 1410.5673,                 &
+   &  103., 71.2365000,5.3240E-23,  .0708,  393.8036,                 &
+   &  101., 71.3990000,7.7380E-25,  .0909, 2211.1919,                 &
+   &  103., 71.4356000,6.5850E-23,  .0715,  340.6882,                 &
+   &  201., 71.5090000,1.9720E-23,  .0835,  210.7990,                 &
+   &  201., 71.6410000,2.5540E-23,  .0945,   69.9270,                 &
+   &  401., 71.6904330,2.4460E-26,  .0941,  221.9461,                 &
+   &  401., 71.7898480,8.9840E-25,  .0963,  150.1563,                 &
+   &  201., 71.8490000,7.8850E-27,  .0607,  740.9110,                 &
+   &  301., 71.8990000,4.6400E-24,  .0958,   70.0050,                 &
+   &  101., 72.1291000,2.2920E-23,  .0720, 1059.6470,                 &
+   &  101., 72.1879700,1.2590E-20,  .0994,   70.0910/
+   DATA D0931/                                                       &
+   &  401., 70.4151590, 0.4565,  .36,0.00000, 0.,                     &
+   &  103., 70.5955000, 0.0939,  .24,0.00000, 0.,                     &
+   &  401., 70.7561950, 0.4390,  .36,0.00000, 0.,                     &
+   &  401., 70.8769380, 0.3970,  .36,0.00000, 0.,                     &
+   &  103., 71.2365000, 0.0925,  .24,0.00000, 0.,                     &
+   &  101., 71.3990000, 0.4160,  .36,0.00290, 0.,                     &
+   &  103., 71.4356000, 0.0936,  .24,0.00000, 0.,                     &
+   &  201., 71.5090000, 0.4175,  .36,0.00000, 0.,                     &
+   &  201., 71.6410000, 0.4725,  .36,0.00000, 0.,                     &
+   &  401., 71.6904330, 0.4705,  .36,0.00000, 0.,                     &
+   &  401., 71.7898480, 0.4815,  .36,0.00000, 0.,                     &
+   &  201., 71.8490000, 0.3035,  .36,0.00000, 0.,                     &
+   &  301., 71.8990000, 0.4790,  .36,0.00000, 0.,                     &
+   &  101., 72.1291000, 0.3450,  .36,0.00460, 0.,                     &
+   &  101., 72.1879700, 0.4210,  .36,0.00538, 0./
+   DATA C0946/                                                       &
+   &  103., 72.2755000,6.2590E-23,  .0714,  353.2925,                 &
+   &  301., 72.3320000,3.5720E-24,  .0846,  211.4370,                 &
+   &  101., 72.6336100,4.0910E-24,  .0620,  744.0640,                 &
+   &  401., 72.8279630,3.0400E-27,  .0768,  735.7353,                 &
+   &  101., 73.0942000,1.5560E-26,  .0356, 2740.4199,                 &
+   &  101., 73.1123000,5.1670E-27,  .0357, 2740.4199,                 &
+   &  103., 73.1152000,5.9440E-23,  .0713,  366.7368,                 &
+   &  101., 73.2630700,9.6580E-21,  .0844,  212.1560,                 &
+   &  201., 73.3140000,4.6410E-27,  .0893, 1732.2640,                 &
+   &  401., 73.5411530,7.3740E-27,  .0912,  221.9461,                 &
+   &  401., 73.8413450,1.6620E-24,  .0909,  221.8361,                 &
+   &  301., 73.8820000,8.2990E-27,  .0713, 1055.0560,                 &
+   &  401., 73.9084750,4.1650E-26,  .0846, 1331.2172,                 &
+   &  201., 73.9270000,1.0890E-26,  .0945, 1658.3361,                 &
+   &  103., 73.9547000,5.6420E-23,  .0712,  381.0211/
+   DATA D0946/                                                       &
+   &  103., 72.2755000, 0.0932,  .24,0.00000, 0.,                     &
+   &  301., 72.3320000, 0.4230,  .36,0.00000, 0.,                     &
+   &  101., 72.6336100, 0.3530,  .36,0.00000, 0.,                     &
+   &  401., 72.8279630, 0.3840,  .36,0.00000, 0.,                     &
+   &  101., 73.0942000, 0.1710,  .36,0.00000, 0.,                     &
+   &  101., 73.1123000, 0.1710,  .36,0.00000, 0.,                     &
+   &  103., 73.1152000, 0.0928,  .24,0.00000, 0.,                     &
+   &  101., 73.2630700, 0.4120,  .36,0.00360, 0.,                     &
+   &  201., 73.3140000, 0.4465,  .36,0.00000, 0.,                     &
+   &  401., 73.5411530, 0.4560,  .36,0.00000, 0.,                     &
+   &  401., 73.8413450, 0.4545,  .36,0.00000, 0.,                     &
+   &  301., 73.8820000, 0.3565,  .36,0.00000, 0.,                     &
+   &  401., 73.9084750, 0.4230,  .36,0.00000, 0.,                     &
+   &  201., 73.9270000, 0.4725,  .36,0.00000, 0.,                     &
+   &  103., 73.9547000, 0.0925,  .24,0.00000, 0./
+   DATA C0961/                                                       &
+   &  101., 73.9604000,6.5370E-27,  .0737, 2998.7681,                 &
+   &  103., 74.0994000,6.3810E-23,  .0688,  357.5026,                 &
+   &  101., 74.1100000,9.6350E-21,  .0900,  325.3480,                 &
+   &  301., 74.2190000,3.5500E-24,  .0856,  324.6610,                 &
+   &  101., 74.3036000,2.2110E-24,  .0917, 1739.4850,                 &
+   &  201., 74.3140000,1.9400E-23,  .0844,  324.0470,                 &
+   &  101., 74.5142000,5.1670E-24,  .0994, 1664.9709,                 &
+   &  201., 74.5280000,7.5500E-27,  .0866, 2045.9220,                 &
+   &  401., 74.7429270,1.2910E-26,  .0845, 1618.7004,                 &
+   &  201., 74.7920000,2.6100E-23,  .0843,  223.8280,                 &
+   &  103., 74.7939000,5.3510E-23,  .0711,  396.1453,                 &
+   &  101., 74.8754400,1.4800E-22,  .0712,  931.2370,                 &
+   &  103., 74.9400000,6.1190E-23,  .0701,  366.7466,                 &
+   &  101., 74.9790000,1.7120E-25,  .0875, 2595.8130,                 &
+   &  401., 74.9911060,3.4530E-26,  .0879,  949.5776/
+   DATA D0961/                                                       &
+   &  101., 73.9604000, 0.3710,  .36,-.00520, 0.,                     &
+   &  103., 74.0994000, 0.0938,  .24,0.00000, 0.,                     &
+   &  101., 74.1100000, 0.4410,  .36,0.00160, 0.,                     &
+   &  301., 74.2190000, 0.4280,  .36,0.00000, 0.,                     &
+   &  101., 74.3036000, 0.4270,  .36,0.00150, 0.,                     &
+   &  201., 74.3140000, 0.4220,  .36,0.00000, 0.,                     &
+   &  101., 74.5142000, 0.4210,  .36,0.00538, 0.,                     &
+   &  201., 74.5280000, 0.4330,  .36,0.00000, 0.,                     &
+   &  401., 74.7429270, 0.4225,  .36,0.00000, 0.,                     &
+   &  201., 74.7920000, 0.4215,  .36,0.00000, 0.,                     &
+   &  103., 74.7939000, 0.0921,  .24,0.00000, 0.,                     &
+   &  101., 74.8754400, 0.3660,  .36,-.00490, 0.,                     &
+   &  103., 74.9400000, 0.0934,  .24,0.00000, 0.,                     &
+   &  101., 74.9790000, 0.4160,  .36,0.00870, 0.,                     &
+   &  401., 74.9911060, 0.4395,  .36,0.00000, 0./
+   DATA C0976/                                                       &
+   &  301., 75.1350000,4.7420E-24,  .0853,  224.3050,                 &
+   &  401., 75.2747920,3.4250E-27,  .0811,  889.5759,                 &
+   &  201., 75.4020000,6.9580E-25,  .0824, 1279.7980,                 &
+   &  201., 75.4480000,4.6630E-26,  .0709, 1050.9910,                 &
+   &  301., 75.4870000,5.3050E-26,  .0715,  928.2970,                 &
+   &  101., 75.5247200,1.2840E-20,  .0866,  224.8380,                 &
+   &  103., 75.6329000,5.0290E-23,  .0710,  412.1094,                 &
+   &  401., 75.7086070,4.6760E-24,  .0952,  150.1563,                 &
+   &  103., 75.7804000,5.8670E-23,  .0707,  376.8308,                 &
+   &  401., 75.9864960,1.2100E-24,  .0909,  157.0647,                 &
+   &  201., 76.0050000,2.9090E-25,  .0712,  925.7010,                 &
+   &  401., 76.1841270,2.2480E-25,  .0872,  576.9047,                 &
+   &  401., 76.2598710,1.3380E-24,  .0880,  308.6157,                 &
+   &  301., 76.2870000,1.2520E-25,  .0834, 1281.2710,                 &
+   &  401., 76.3184370,3.1200E-26,  .0870, 1405.1257/
+   DATA D0976/                                                       &
+   &  301., 75.1350000, 0.4265,  .36,0.00000, 0.,                     &
+   &  401., 75.2747920, 0.4055,  .36,0.00000, 0.,                     &
+   &  201., 75.4020000, 0.4120,  .36,0.00000, 0.,                     &
+   &  201., 75.4480000, 0.3545,  .36,0.00000, 0.,                     &
+   &  301., 75.4870000, 0.3575,  .36,0.00000, 0.,                     &
+   &  101., 75.5247200, 0.4390,  .36,0.00440, 0.,                     &
+   &  103., 75.6329000, 0.0918,  .24,0.00000, 0.,                     &
+   &  401., 75.7086070, 0.4760,  .36,0.00000, 0.,                     &
+   &  103., 75.7804000, 0.0930,  .24,0.00000, 0.,                     &
+   &  401., 75.9864960, 0.4545,  .36,0.00000, 0.,                     &
+   &  201., 76.0050000, 0.3560,  .36,0.00000, 0.,                     &
+   &  401., 76.1841270, 0.4360,  .36,0.00000, 0.,                     &
+   &  401., 76.2598710, 0.4400,  .36,0.00000, 0.,                     &
+   &  301., 76.2870000, 0.4170,  .36,0.00000, 0.,                     &
+   &  401., 76.3184370, 0.4350,  .36,0.00000, 0./
+   DATA C0991/                                                       &
+   &  401., 76.4298640,3.3480E-24,  .1002,   32.4964,                 &
+   &  401., 76.4858820,4.7580E-27,  .0827, 1846.4017,                 &
+   &  101., 76.5259000,3.5380E-24,  .0900, 2053.9690,                 &
+   &  401., 76.5946250,5.6280E-25,  .0924,  217.0419,                 &
+   &  101., 76.6182000,2.5810E-27,  .0586, 2688.0801,                 &
+   &  103., 76.6208000,5.6240E-23,  .0709,  387.7551,                 &
+   &  101., 76.7347000,8.4140E-25,  .0749,  982.9120,                 &
+   &  201., 77.2830000,7.6440E-26,  .0802, 1534.3660,                 &
+   &  101., 77.3207500,3.3520E-22,  .0853, 1282.9189,                 &
+   &  201., 77.3380000,6.3960E-24,  .0823,  204.7550,                 &
+   &  103., 77.4610000,5.3490E-23,  .0710,  399.5194,                 &
+   &  401., 77.6346920,1.2010E-24,  .0891,  155.3890,                 &
+   &  301., 77.7440000,1.3820E-26,  .0811, 1536.1550,                 &
+   &  401., 77.9135070,1.0060E-25,  .0607,  402.3291,                 &
+   &  201., 77.9260000,9.7680E-27,  .0904, 1732.2640/
+   DATA D0991/                                                       &
+   &  401., 76.4298640, 0.5010,  .36,0.00000, 0.,                     &
+   &  401., 76.4858820, 0.4135,  .36,0.00000, 0.,                     &
+   &  101., 76.5259000, 0.4180,  .36,0.00140, 0.,                     &
+   &  401., 76.5946250, 0.4620,  .36,0.00000, 0.,                     &
+   &  101., 76.6182000, 0.3270,  .36,0.00000, 0.,                     &
+   &  103., 76.6208000, 0.0926,  .24,0.00000, 0.,                     &
+   &  101., 76.7347000, 0.3610,  .36,0.00000, 0.,                     &
+   &  201., 77.2830000, 0.4010,  .36,0.00000, 0.,                     &
+   &  101., 77.3207500, 0.3930,  .36,0.00320, 0.,                     &
+   &  201., 77.3380000, 0.4115,  .36,0.00000, 0.,                     &
+   &  103., 77.4610000, 0.0922,  .24,0.00000, 0.,                     &
+   &  401., 77.6346920, 0.4455,  .36,0.00000, 0.,                     &
+   &  301., 77.7440000, 0.4055,  .36,0.00000, 0.,                     &
+   &  401., 77.9135070, 0.3035,  .36,0.00000, 0.,                     &
+   &  201., 77.9260000, 0.4520,  .36,0.00000, 0./
+   DATA C1006/                                                       &
+   &  401., 77.9279140,1.0050E-25,  .0605,  402.3310,                 &
+   &  101., 77.9661000,4.5950E-24,  .0938, 1739.4850,                 &
+   &  301., 78.0790000,1.1600E-24,  .0832,  205.4830,                 &
+   &  401., 78.1786230,2.9620E-25,  .0813,  295.4873,                 &
+   &  101., 78.1971500,3.1750E-21,  .0828,  704.2140,                 &
+   &  103., 78.3012000,5.0830E-23,  .0710,  412.1238,                 &
+   &  101., 78.3051600,3.7110E-23,  .0828, 1538.1500,                 &
+   &  401., 78.4453450,1.6330E-24,  .0886,  217.0419,                 &
+   &  301., 78.4920000,1.1730E-24,  .0810,  702.8860,                 &
+   &  401., 78.5607850,2.1290E-26,  .0894,  306.3148,                 &
+   &  101., 78.6176300,1.0970E-24,  .0737, 1616.4520,                 &
+   &  401., 78.7324950,2.9600E-25,  .0842,  295.6775,                 &
+   &  201., 78.7580000,6.4270E-24,  .0797,  701.6960,                 &
+   &  101., 78.9187300,3.1340E-21,  .0820,  206.3010,                 &
+   &  101., 79.0081000,2.7430E-27,  .0575, 2533.7930/
+   DATA D1006/                                                       &
+   &  401., 77.9279140, 0.3025,  .36,0.00000, 0.,                     &
+   &  101., 77.9661000, 0.4580,  .36,-.00120, 0.,                     &
+   &  301., 78.0790000, 0.4160,  .36,0.00000, 0.,                     &
+   &  401., 78.1786230, 0.4065,  .36,0.00000, 0.,                     &
+   &  101., 78.1971500, 0.4140,  .36,0.00650, 0.,                     &
+   &  103., 78.3012000, 0.0918,  .24,0.00000, 0.,                     &
+   &  101., 78.3051600, 0.4120,  .36,0.00820, 0.,                     &
+   &  401., 78.4453450, 0.4430,  .36,0.00000, 0.,                     &
+   &  301., 78.4920000, 0.4050,  .36,0.00000, 0.,                     &
+   &  401., 78.5607850, 0.4470,  .36,0.00000, 0.,                     &
+   &  101., 78.6176300, 0.3630,  .36,-.00530, 0.,                     &
+   &  401., 78.7324950, 0.4210,  .36,0.00000, 0.,                     &
+   &  201., 78.7580000, 0.3985,  .36,0.00000, 0.,                     &
+   &  101., 78.9187300, 0.3930,  .36,0.00375, 0.,                     &
+   &  101., 79.0081000, 0.2875,  .36,0.00000, 0./
+   DATA C1021/                                                       &
+   &  201., 79.1120000,5.7810E-25,  .0854, 1047.3270,                 &
+   &  101., 79.1337000,1.1400E-26,  .0756, 2919.6340,                 &
+   &  401., 79.4605100,3.0910E-24,  .0981,   29.8086,                 &
+   &  201., 79.6650000,2.3770E-23,  .0904,  141.5670,                 &
+   &  301., 79.7180000,4.2950E-24,  .0916,  141.9040,                 &
+   &  101., 79.7744600,1.1660E-20,  .0938,  142.2790,                 &
+   &  401., 79.7859070,2.1210E-25,  .0819,  885.0648/
+   DATA D1021/                                                       &
+   &  201., 79.1120000, 0.4270,  .36,0.00000, 0.,                     &
+   &  101., 79.1337000, 0.3710,  .36,0.00590, 0.,                     &
+   &  401., 79.4605100, 0.4905,  .36,0.00000, 0.,                     &
+   &  201., 79.6650000, 0.4520,  .36,0.00000, 0.,                     &
+   &  301., 79.7180000, 0.4580,  .36,0.00000, 0.,                     &
+   &  101., 79.7744600, 0.4580,  .36,-.00120, 0.,                     &
+   &  401., 79.7859070, 0.4095,  .36,0.00000, 0./
+!
+end block data BTEST

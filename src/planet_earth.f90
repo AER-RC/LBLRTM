@@ -24,30 +24,30 @@
 !
 MODULE planet_consts   ! Physical constants for Earth
 
-  implicit none
+   implicit none
 
-  real, parameter :: AIRMWT = 28.964  ! air molecular weight (grams/mole)
-  real, parameter :: XMASS_DRY = AIRMWT*1.E-3   ! previously was 0.0289654
+   real, parameter :: AIRMWT = 28.964  ! air molecular weight (grams/mole)
+   real, parameter :: XMASS_DRY = AIRMWT*1.E-3   ! previously was 0.0289654
 
 CONTAINS
 
-  FUNCTION GRAV_CONST(LATITUDE)
+   FUNCTION GRAV_CONST(LATITUDE)
 
-    USE phys_consts, ONLY: pi
-    REAL, INTENT(IN), OPTIONAL  :: LATITUDE      ! in degrees
-    REAL                        :: GRAV_CONST    ! in meters/s^2
-    REAL                        :: REF_LAT
-    REAL, PARAMETER             :: DEFAULT_LAT= 45.   ! in degrees
+      USE phys_consts, ONLY: pi
+      REAL, INTENT(IN), OPTIONAL  :: LATITUDE      ! in degrees
+      REAL                        :: GRAV_CONST    ! in meters/s^2
+      REAL                        :: REF_LAT
+      REAL, PARAMETER             :: DEFAULT_LAT= 45.   ! in degrees
 
 !         Latitude for which gravitational constant desired
       IF (PRESENT (LATITUDE) ) THEN
          REF_LAT = LATITUDE
       ELSE
-         REF_LAT = DEFAULT_LAT   
+         REF_LAT = DEFAULT_LAT
       END IF
 !         Gravitational constant for Earth in meters/s^2
       GRAV_CONST = 9.80665 - 0.02586*COS(2.0*PI*REF_LAT/180.0)
 
-  END FUNCTION GRAV_CONST
+   end function GRAV_CONST
 
-END MODULE planet_consts
+end module planet_consts

@@ -1,6 +1,6 @@
 !     path:      $HeadURL$
 !     revision:  $Revision$
-!     created:   $Date$  
+!     created:   $Date$
 !     presently: %H%  %T%
 !
 !  --------------------------------------------------------------------------
@@ -28,37 +28,37 @@
 !     END
 
       SUBROUTINE LASER(VLAS,MFILE,JAERSL)
-      PRINT * , ' LASER NOT IMPLEMENTED'
-      STOP
-      END
+         PRINT * , ' LASER NOT IMPLEMENTED'
+         STOP
+      end subroutine LASER
       FUNCTION RANDM(IRAND)
-      PRINT * , ' RANDM NOT IMPLEMENTED PROPERLY'
-      RANDM=0.5
-      IRAND=IABS(IRAND)
-      RETURN
-      END
+         PRINT * , ' RANDM NOT IMPLEMENTED PROPERLY'
+         RANDM=0.5
+         IRAND=IABS(IRAND)
+         RETURN
+      end function RANDM
       SUBROUTINE PLTID3(PROGID,XSIZ,YSIZ,SCAL)
-      DIMENSION PROGID(3)
-      PRINT * , ' PLTID3 NOT IMPLEMENTED'
-      RETURN
-      END
+         DIMENSION PROGID(3)
+         PRINT * , ' PLTID3 NOT IMPLEMENTED'
+         RETURN
+      end subroutine PLTID3
       SUBROUTINE ENDPLT
-      PRINT * , ' ENDPLT NOT IMPLEMENTED'
-      RETURN
-      END
+         PRINT * , ' ENDPLT NOT IMPLEMENTED'
+         RETURN
+      end subroutine ENDPLT
       SUBROUTINE NUMBER(X,Y,A,B,C,II)
-      PRINT * , ' NUMBER NOT IMPLEMENTED'
-      RETURN
-      END
+         PRINT * , ' NUMBER NOT IMPLEMENTED'
+         RETURN
+      end subroutine NUMBER
       SUBROUTINE SYMBOL(X,Y,A,B,C,II)
-      PRINT * , ' SYMBOL NOT IMPLEMENTED'
-      RETURN
-      END
+         PRINT * , ' SYMBOL NOT IMPLEMENTED'
+         RETURN
+      end subroutine SYMBOL
       SUBROUTINE PLOT(X,Y,II)
-      PRINT * , ' PLOT NOT IMPLEMENTED'
-      RETURN
-      END
+         PRINT * , ' PLOT NOT IMPLEMENTED'
+         RETURN
+      end subroutine PLOT
       SUBROUTINE LINE(X,Y,NPTS,I,J,K)
-      PRINT * , ' LINE NOT IMPLEMENTED'
-      RETURN
-      END
+         PRINT * , ' LINE NOT IMPLEMENTED'
+         RETURN
+      end subroutine LINE
