@@ -34,7 +34,7 @@ If any build or run issues occur, please [create an issue](https://github.com/AE
 
 [Add plantUML diagram]
 
-For more, please see the [Description Wiki page](https://github.com/AER-RC/LBLRTM/wiki/Description)
+For more, please see the [Wiki page](https://github.com/AER-RC/LBLRTM/wiki/)
 
 # Cloning the Latest Release <a name="cloning"></a>
 
