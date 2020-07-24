@@ -30,6 +30,8 @@ LBLRTM (Line-By-Line Radiative Transfer Model) is an accurate and efficient line
 
 The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for the line parameters used in LBLRTM. These line parameters, as well as additional line parameters from other sources, are extracted for use in LBLRTM by a line file creation program called LNFL. A line parameter database built from HITRAN and suitable for use with LNFL is available on the [AER RT web site](http://rtweb.aer.com).
 
+If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
+
 [Add plantUML diagram]
 
 For more, please see the [Description Wiki page](https://github.com/AER-RC/LBLRTM/wiki/Description)
