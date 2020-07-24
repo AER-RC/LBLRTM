@@ -59,6 +59,15 @@ git checkout tags/v12.9
 
 No releases before v12.9 are available via GitHub, but they can be requested by emailing <aer_lblrtm@aer.com>. For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
 
+Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/releases/tag/v12.9) and unpack it:
+
+```
+tar xvf lblrtm_v12.9.tar.gz
+mv LBLRTM-12.9/ lblrtm
+```
+
+Though not necessary, the move to `lblrtm` is for consistency with previous release packages and the associated documentation.
+
 # LBLRTM and Docker <a name="docker"></a>
 
 More doc to come, but see the [GitHub package page](https://github.com/AER-RC/LBLRTM/packages/200551) for Docker image pull directions. And to run:
