@@ -4,7 +4,7 @@
 !     created:   $Date$
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
+! |  Copyright ï¿½, Atmospheric and Environmental Research, Inc., 2015         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -63,5 +63,5 @@ MODULE STRUCT_TYPES
       INTEGER, DIMENSION(1250)  :: MOL
       REAL, DIMENSION(1250)    :: SPP, SRAD
    END TYPE LINE_SHRINK
-
+   LOGICAL, PARAMETER :: USESHRINK = .TRUE.
 end module STRUCT_TYPES

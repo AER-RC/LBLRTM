@@ -3533,6 +3533,11 @@ SUBROUTINE SHRINK(SHRUNK)
          SHRUNK%SPP(I) = 0.0
       ENDIF
 
+!      skip shrink if desired
+      IF (.NOT. USESHRINK) THEN
+         J = J+1
+         GO TO 10
+      ENDIF
 !
 !     IF LINE COUPLING, DON'T SHRINK LINE
 !

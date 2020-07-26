@@ -4,7 +4,7 @@
 !     created:   $Date$
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
+! |  Copyright ï¿½, Atmospheric and Environmental Research, Inc., 2015         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -2605,6 +2605,11 @@ SUBROUTINE SHRINQ(SHRUNK)
          SHRUNK%SPP(I) =0.0
       ENDIF
 
+!      skip shrink if desired
+      IF (.NOT. USESHRINK) THEN
+         J = J+1
+         GO TO 10
+      ENDIF
 !
 !     IF LINE COUPLING, DON'T SHRINK LINE
 !
