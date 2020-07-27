@@ -4,7 +4,7 @@
 !     presently: %H%  %T%
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
+! |  Copyright ï¿½ï¿½, Atmospheric and Environmental Research, Inc., 2015         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -164,7 +164,7 @@ SUBROUTINE XMERGE (NPTS,LFILE,MFILE,JPATHL)
 !
 900 FORMAT (///,1X,10A8,2X,2(1X,A8,1X))
 !
-end subroutine XMERGE
+END SUBROUTINE XMERGE
 !
 !     ----------------------------------------------------------------
 !
@@ -263,7 +263,7 @@ SUBROUTINE XMERGI (NPTS,LFILE,MFILE,JPATHL)
 !
 900 FORMAT (///,1X,10A8,2X,2(1X,A8,1X))
 !
-end subroutine XMERGI
+END SUBROUTINE XMERGI
 !
 !     ----------------------------------------------------------------
 !
@@ -366,7 +366,7 @@ SUBROUTINE ABINIT (NPTS,MFILE,JPATHL)
 910 FORMAT ('0 THE TIME AT THE END OF ABINIT IS ',F12.3/F12.3,        &
    &        ' SECS WERE REQUIRED FOR THIS MERGE ')
 !
-end subroutine ABINIT
+END SUBROUTINE ABINIT
 !
 !     ---------------------------------------------------------------
 !
@@ -430,7 +430,7 @@ SUBROUTINE OPNMRG(LFILE,PATH1,L1,FM1,PATH2,L2,FM2,MFILE,          &
    &        '       With file:  ',A57,/,                              &
    &        '  To obtain file:  ',A57,/)
 !
-end subroutine OPNMRG
+END SUBROUTINE OPNMRG
 !
 !     ----------------------------------------------------------------
 !
@@ -679,7 +679,7 @@ SUBROUTINE ABSMRG (NPTS,LFILE,MFILE,JPATHL)
 910 FORMAT (' THE TIME AT THE END OF ABSMRG IS',F12.3/F12.3,          &
    &        ' SECS. WERE REQUIRED FOR THIS ADDITION')
 !
-end subroutine ABSMRG
+END SUBROUTINE ABSMRG
 !
 !     ----------------------------------------------------------------
 !
@@ -914,7 +914,7 @@ SUBROUTINE ABSINT (NPTS,LFILE,MFILE,JPATHL)
 915 FORMAT ('0 THE TIME AT THE END OF ABSINT IS ',F12.3/F12.3,        &
    &        ' SECS WERE REQUIRED FOR THIS MERGE ')
 !
-end subroutine ABSINT
+END SUBROUTINE ABSINT
 !
 !     ----------------------------------------------------------------
 !
@@ -962,8 +962,123 @@ SUBROUTINE ABSOUT (V1PO,V2PO,DVPO,NLIMO,JLO,MFILE,NPTS,R1,NPANLS)
 905 FORMAT (' ')
 910 FORMAT (I8,2X,F12.6,1P,E15.7,0P,20X,I8,2X,F12.6,1P,E15.7)
 !
-end subroutine ABSOUT
+END SUBROUTINE ABSOUT
 !
+!     ----------------------------------------------------------------
+FUNCTION PLANCK (VI,XKT)
+!
+   USE phys_consts, ONLY: radcn1
+   IMPLICIT REAL*8           (V)
+!
+!     FUNCTION BBFN CALCULATES BLACK BODY FN FOR WAVENUMBER VALUE VI
+!     AND CALCULATES THE WAVENUMBER VALUE (VINEW) FOR NEXT BBFN CALC.
+!
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!
+!               LAST MODIFICATION:    01 JANUARY 2020
+!
+!                  IMPLEMENTATION:    
+!                                     I.   POLONSKY
+!
+!
+!                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.
+!                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139
+!
+!----------------------------------------------------------------------
+!
+!               WORK SUPPORTED BY:    THE ARM PROGRAM
+!                                     OFFICE OF ENERGY RESEARCH
+!                                     DEPARTMENT OF ENERGY
+!
+!
+!      SOURCE OF ORIGINAL ROUTINE:    AFGL LINE-BY-LINE MODEL
+!
+!                                             FASCOD3
+!
+!
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!
+!  if xkt small, e.g. xkt = 0., trap and return
+! to ensure smoothenss in single pressicion make all calculation in double precision   
+   VPLANCK  = 0d0
+   if (XKT > 0.0) then
+      VKT = real(XKT, kind=8)
+      VIOKT = VI/VKT
+      IF (VIOKT < 1d-2) THEN
+         VPLANCK = (VI**2)*VKT/(1.+0.5*VIOKT)
+      ELSEIF (VIOKT.LE.80d0) THEN
+         VEXPNEG = EXP(-VIOKT)
+         VPLANCK = (VI**3)*VEXPNEG/(1d0-VEXPNEG)
+      ENDIF
+   ENDIF
+   PLANCK = VPLANCK*RADCN1
+   RETURN
+!
+END FUNCTION PLANCK
+
+FUNCTION PLANCK_DT (VI,XKT, BBVAL)
+!
+   USE phys_consts, ONLY: radcn2
+   IMPLICIT REAL*8           (V)
+!
+!     FUNCTION PLANCK_DT calculates the derivative of the black body fn
+!     analytically for wavenumber value VI
+!
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!
+!                  IMPLEMENTATION:    P.D. Brown, I. Polonsky
+!
+!                     ATMOSPHERIC AND ENVIRONMENTAL RESEARCH INC.
+!                     840 MEMORIAL DRIVE,  CAMBRIDGE, MA   02139
+!
+!----------------------------------------------------------------------
+!
+!               WORK SUPPORTED BY:    THE ARM PROGRAM
+!                                     OFFICE OF ENERGY RESEARCH
+!                                     DEPARTMENT OF ENERGY
+!
+!
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!
+!
+!
+!     Incoming:
+!                BBVAL      Planck function at VI
+!                VI         Beginning wavenumber value for which BBdT is
+!                XKT        Temperature in units of wavenumbers
+!     Outgoing:
+!                PLANCK_DT  Derivative of Planck function at VI
+
+!
+!     Using the exact function,
+!
+!       BBFN{prime} = BBFN*(planck*clight*gnu/(boltz*t*t))*
+!                     1/[1-exp(-planck*clight*gnu/(boltz*t))]
+!     where
+!                   planck*clight/boltz = RADCN2
+!               boltz*t/(planck*clight) = XKT
+!             planck*clight*gnu/boltz*t = XVIOKT
+!
+!     and we can solve easily for t:
+!                                     t = XKT*RADCN2.
+!
+   
+   VPLANCK_DT = 0d0
+   IF (XKT.GT.0.0) THEN
+      VKT = real(XKT, kind=8)
+      VIOKT = VI/VKT
+      VTKELV  = VKT*real(RADCN2, kind=8)
+      IF (VIOKT.LE.1d-2) THEN
+         PLANCK_DT = 1d0/(-VTKELV*(1d0+5d-1*VIOKT))
+      ELSEIF (VIOKT.LE.80.0) THEN
+         PLANCK_DT = VIOKT/(VTKELV*(1d0-EXP(-VIOKT)))
+      ENDIF
+   ENDIF
+   PLANCK_DT = VPLANCK_DT*BBVAL
+   RETURN
+END FUNCTION PLANCK_DT
+
+!______________________________________________________________________
 !     ----------------------------------------------------------------
 !
 FUNCTION BBFN (VI,DVI,V2I,XKT,VINEW,BBDEL,BBLAST)
@@ -1109,7 +1224,7 @@ FUNCTION BBFN (VI,DVI,V2I,XKT,VINEW,BBDEL,BBLAST)
 !
    RETURN
 !
-end function BBFN
+END FUNCTION BBFN
 !
 !______________________________________________________________________
 
@@ -1272,7 +1387,7 @@ FUNCTION  BBDTFN(BBVAL,VI,DVI,V2I,XKT,VDnew,BBdTdel,BBDTLAST)
 !
    RETURN
 !
-end function BBDTFN
+END FUNCTION BBDTFN
 !
 !     ----------------------------------------------------------------
 !
@@ -1416,7 +1531,7 @@ FUNCTION EMISFN (VI,DVI,VINEM,EMDEL,EMLAST)
 !
    RETURN
 !
-end function EMISFN
+END FUNCTION EMISFN
 !
 !     ----------------------------------------------------------------
 !
@@ -1561,13 +1676,13 @@ FUNCTION REFLFN (VI,DVI,VINRF,RFDEL,RFLAST)
 !
    RETURN
 !
-end function REFLFN
+END FUNCTION REFLFN
 !
 !     ----------------------------------------------------------------
 !
 SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
-   USE lblparams, ONLY: NN_TBL
+   USE lblparams, ONLY: NN_TBL, dbg
    IMPLICIT REAL*8           (V)
 !
 !     SUBROUTINE EMIN INPUTS OPTICAL DEPTH VALUES FROM KFILE AND
@@ -1622,6 +1737,7 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
    character*1 surf_refl
    character*3 pad_3
+   LOGICAL :: AerosolIncluded
 !
 !      parameter (nn_tbl=10000)
 !
@@ -1693,6 +1809,7 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 ! **********************************************************************
 !
+   AerosolIncluded = .NOT. (IAERSL.EQ.0 .or. iaersl.eq.5)
    IF (IAERSL.EQ.0 .or. iaersl.eq.5) THEN
       IAFBB = -1
    ELSE
@@ -1716,6 +1833,10 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     - THIS SECTION TREATS THE LTE CASE
 !
       IF (IHIRAC.NE.4) THEN
+         if (dbg(1)) then
+            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE:  NOT FIXED'
+            dbg(1) = .false.
+         END IF
 !
 10       NLIM1 = NLIM2+1
 !
@@ -1781,26 +1902,17 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
             if (odvi .lt. -od_lo) odvi = -od_lo
-            if (odvi .gt. od_hi) odvi = od_hi
 !
-            !
+            tr_i = exp(-odvi)
             if (odvi .le. od_lo) then
-
                f_i = rec_6*odvi
-               tr(i) = 1. - odvi + 0.5*odvi*odvi
-
                !
             else
-
-               tau_fn = odvi/(aa_inv+odvi)
-               i_tbl = xnn * tau_fn + .5
-               f_i = tau_tbl(i_tbl)
+               f_i = 1. - 2.*(tr_i/(tr_i-1.) + 1./odvi   )
                !
-               tr(i) = exp_tbl(i_tbl)
-
             end if
-
-            em(i) = (1.-tr(i)) * (bb + bb_dif * f_i)
+            tr(i) = tr_i
+            em(i) = (1.-tr_i) * (bb + bb_dif * f_i)
 !
 !              Increment interpolation values
 !
@@ -1816,6 +1928,10 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE NLTE CASE
 !
+         if (dbg(2)) then
+            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: NOT FIXED'
+            dbg(2) = .false.
+         ENDIF
 30       NLIM1 = NLIM2+1
 !
          VI = V1P+ REAL(NLIM1-1)*DVP
@@ -1886,24 +2002,16 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
             if (odvi .lt. -od_lo) odvi = -od_lo
-            if (odvi .gt. od_hi) odvi = od_hi
-!
+            tr_i = exp(-odvi)
             if (odvi .le. od_lo) then
-
-               f_i = rec_6 * odvi
-               tr_i = 1. - odvi * (1. - 0.5 * odvi)
-               abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi)
-
+               f_i = rec_6*odvi
+               !
+               abs_i = (odvi   - c_nlte) * (1.- 0.5 * odvi)
             else
-
-               tau_fn = odvi/(aa_inv+odvi)
-               i_tbl = xnn * tau_fn + .5
-               f_i = tau_tbl(i_tbl)
-               tr_i = exp_tbl(i_tbl)
+               f_i = 1. - 2.*(tr_i/(tr_i-1.)     + 1./odvi   )
+               !
                abs_i = (1. - c_nlte/odvi) * (1.-tr_i)
-
             end if
-
             tr(i) = tr_i
             em(i) = abs_i * (bb + bb_dif * f_i)
 !
@@ -2024,6 +2132,10 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 
          if (surf_refl .eq. 's') then
 !
+            if (dbg(3)) then
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE: specular:  NOT FIXED'
+               dbg(3) = .false.
+            ENDIF
             DO 60 I = NLIM1, NLIM2
 !
                ODVI = TR(I)+EXT*RADFN0
@@ -2031,28 +2143,18 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
-               !
+               tr_i = exp(-odvi)
                if (odvi .le. od_lo) then
-
                   f_i = rec_6*odvi
-                  tr(i) = 1. - odvi + 0.5*odvi*odvi
-!
                   !
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
+                  f_i = 1. - 2.*(tr_i/(tr_i-1.) + 1./odvi   )
                   !
-                  tr(i) = exp_tbl(i_tbl)
-
-               endif
-
-               abs_i = (1.-tr(i))
+               end if
+               tr(i) = tr_i
+               abs_i = (1.-tr_i)
                em(i) = abs_i * (bb + bb_dif_a * f_i)
-               emb(i) = abs_i * (bb + bb_dif_b * f_i)
+               emb(i)= abs_i * (bb + bb_dif_b * f_i)
 !
 !     Increment interpolation values
 !
@@ -2065,6 +2167,10 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 60          CONTINUE
 !
          elseif (surf_refl .eq. 'l') then
+            if (dbg(4)) then
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE: Lambertian:  NOT FIXED'
+               dbg(4) = .false.
+            endif
 !ccc
 !     The following calculation is for an approximation to the
 !     downwelling flux for application to Lambertian surfaces. The
@@ -2080,37 +2186,22 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
                ODVI = TR(I)+EXT*RADFN0
                odvi_d = diffuse_fac * odvi
 !
-!       for odvi ouside the range of the table,  set optical depth to bo
+!       for odvi outside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
-               ! analytic regime
+               tr_i   = exp(-odvi)
+               tr_d_i = exp(-odvi_d)
                if (odvi .le. od_lo) then
-!
-                  f_i = rec_6*odvi
-                  tr(i) = 1. - odvi + 0.5*odvi*odvi
-!
+                  f_i   = rec_6*odvi
                   f_d_i = rec_6*odvi_d
-                  tr_d_i = 1. - odvi_d + 0.5*odvi_d*odvi_d
-!
                   !
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
+                  f_i   = 1. - 2.*(tr_i  /(tr_i  -1.) + 1./odvi   )
+                  f_d_i = 1. - 2.*(tr_d_i/(tr_d_i-1.) + 1./odvi_d )
                   !
-                  tr(i) = exp_tbl(i_tbl)
-!
-                  tau_fn = odvi_d/(aa_inv+odvi_d)
-                  i_tbl = xnn * tau_fn + .5
-                  f_d_i = tau_tbl(i_tbl)
-                  tr_d_i = exp_tbl(i_tbl)
-
                end if
-
-               em(i) = (1.-tr(i)) * (bb + bb_dif_a * f_i)
+               TR(i) = tr_i
+               em(i)  = (1.-tr_i  ) * (bb + bb_dif_a * f_i)
                emb(i) = (1.-tr_d_i) * (bb + bb_dif_b * f_d_i)
 !---
 !
@@ -2227,6 +2318,10 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !ccc
 
          if (surf_refl .eq. 's') then
+            if (dbg(5)) then
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: specular: NOT FIXED'
+               dbg(5) = .false.
+            ENDIF
 
             DO 80 I = NLIM1, NLIM2
 
@@ -2241,27 +2336,19 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
+               tr_i   = exp(-odvi)
                if (odvi .le. od_lo) then
-
-                  f_i = rec_6*odvi
-                  tr_i = 1. - odvi * (1. - 0.5 * odvi)
-                  abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi)
-
+                  f_i   = rec_6*odvi
+                  !
+                  abs_i = (odvi   - c_nlte) * (1.- 0.5 * odvi)
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
-                  tr_i = exp_tbl(i_tbl)
+                  f_i   = 1. - 2.*(tr_i  /(tr_i  -1.) + 1./odvi   )
+                  !
                   abs_i = (1. - c_nlte/odvi) * (1.-tr_i)
-
                end if
-
-               tr(i) = tr_i
+               TR(i) = tr_i
                em(i) = abs_i * (bb + bb_dif_a * f_i)
-               emb(i) = abs_i * (bb + bb_dif_b * f_i)
+               emb(i)= abs_i * (bb + bb_dif_b * f_i)
 
 !
 !     Increment interpolation values
@@ -2275,6 +2362,10 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 80          CONTINUE
 
          elseif (surf_refl .eq. 'l') then
+            if (dbg(6)) then
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: Lambertian: NOT FIXED'
+               dbg(6) = .false.
+            endif
 
 !ccc
 !     The following calculation is for an approximation to the
@@ -2300,36 +2391,22 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
+               tr_i   = exp(-odvi)
+               tr_d_i = exp(-odvi_d)
                if (odvi .le. od_lo) then
-
-                  f_i = rec_6*odvi
-                  tr_i = 1. - odvi * (1. - 0.5 * odvi)
-                  abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi)
-
+                  f_i   = rec_6*odvi
                   f_d_i = rec_6*odvi_d
-                  tr_d_i = 1. - odvi_d * (1. - 0.5 * odvi)
-                  abs_d_i = (odvi_d - c_nlte) * (1. - 0.5 * odvi)
-
+                  !
+                  abs_i = (odvi   - c_nlte) * (1.- 0.5 * odvi)
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
-                  tr_i = exp_tbl(i_tbl)
-                  abs_i = (1. - c_nlte/odvi) * (1.-tr_i)
-
-                  tau_fn = odvi_d/(aa_inv+odvi_d)
-                  i_tbl = xnn * tau_fn + .5
-                  f_d_i = tau_tbl(i_tbl)
-                  tr_d_i = exp_tbl(i_tbl)
-                  abs_d_i = (1. - c_nlte/odvi_d) * (1.-tr_d_i)
-
+                  f_i   = 1. - 2.*(tr_i  /(tr_i  -1.) + 1./odvi   )
+                  f_d_i = 1. - 2.*(tr_d_i/(tr_d_i-1.) + 1./odvi_d )
+                  !
+                  abs_i  = (1. - c_nlte/odvi  ) * (1.-tr_i)
                end if
-
-               tr(i) = tr_i
-               em(i) = abs_i * (bb + bb_dif_a * f_i)
+               TR(i)  = tr_i
+               abs_d_i= (1. - c_nlte/odvi_d) * (1.-tr_d_i)
+               em(i)  = abs_i   * (bb + bb_dif_a * f_i)
                emb(i) = abs_d_i * (bb + bb_dif_b * f_d_i)
 !
 !     Increment interpolation values
@@ -2363,7 +2440,7 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 906 FORMAT (' THE SURFACE REFLECTIVITY FLAG OF ', A1, 'IS NOT VALID')
 907 FORMAT (' THE SURFACE REFLECTIVITY FLAG OF: ', A1)
 !
-end subroutine EMIN
+END SUBROUTINE EMIN
 !
 !     ----------------------------------------------------------------
 !
@@ -2437,13 +2514,14 @@ Subroutine create_fn_tbls(itbl_calc)
 
    return
 
-end subroutine create_fn_tbls
+END SUBROUTINE create_fn_tbls
 !
 !     ----------------------------------------------------------------
 !
 SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
 !
    USE phys_consts, ONLY: radcn2
+   use lblparams, ONLY: dbg
    IMPLICIT REAL*8           (V)
 !
 !
@@ -2645,6 +2723,10 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
 30    CONTINUE
    ELSEIF ((IPATHL.EQ.1).AND.(TBND.GT.0.)) THEN
 !
+      if (dbg(7)) then
+         print *,'EMINIT (IPATHL.EQ.1).AND.(TBND.GT.0.): : NOT FIXED', IPATHL, TBND
+         dbg(7) = .false.
+      endif
       NLIM1 = 0
       NLIM2 = 0
       EMDUM = 0.
@@ -2688,6 +2770,10 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
 !
    ELSEIF (IPATHL.EQ.-1 .or. imrg_sfc.gt.0) then
 !
+      if (dbg(8)) then
+         print *,'EMINIT (IPATHL.EQ.1) .or. imrg_sfc.gt.0:: NOT FIXED', IPATHL, imrg_sfc
+         dbg(8) = .false.
+      endif
       NLIM1 = 0
       NLIM2 = 0
       EMDUM = 0.
@@ -2786,7 +2872,7 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
 915 FORMAT (' TIME REQUIRED FOR --EMINIT-- ',F10.3,                   &
    &        ' --EMIN-- ',F10.3)
 !
-end subroutine EMINIT
+END SUBROUTINE EMINIT
 !
 !     ----------------------------------------------------------------
 !
@@ -3098,7 +3184,7 @@ SUBROUTINE RADMRG (NPTS,LFILE,MFILE,JPATHL,TBND)
    &        ' SECS WERE REQUIRED FOR THIS MERGE  - EMIN - ',          &
    &        F12.3,' - READ - ',F12.3,' - EMOUT - ',F12.3)
 !
-end subroutine RADMRG
+END SUBROUTINE RADMRG
 !
 !     ----------------------------------------------------------------
 !
@@ -3483,7 +3569,7 @@ SUBROUTINE RADNN (RADLYR,TRALYR,RADO,TRAO,RADLYB,NLIM,            &
 !
    RETURN
 !
-end subroutine RADNN
+END SUBROUTINE RADNN
 !
 !     ----------------------------------------------------------------
 !
@@ -3530,7 +3616,7 @@ SUBROUTINE tr_diffus_tbl                                          &
 
    return
 
-end subroutine tr_diffus_tbl
+END SUBROUTINE tr_diffus_tbl
 !
 !     ----------------------------------------------------------------
 !
@@ -3851,13 +3937,14 @@ SUBROUTINE RADINT (NPTS,LFILE,MFILE,JPATHL,TBND)
    &        ' - READ - ',F12.3,' - EMBND - ',F12.3,' - EMOUT - ',     &
    &        F12.3)
 !
-end subroutine RADINT
+END SUBROUTINE RADINT
 !
 !     ----------------------------------------------------------------
 !
 SUBROUTINE EMBND (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,TBND)
 !
    USE phys_consts, ONLY: radcn2
+   USE lblparams, ONLY: dbg
    IMPLICIT REAL*8           (V)
 !
 !
@@ -3908,6 +3995,10 @@ SUBROUTINE EMBND (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,TBND)
    IEMBB = 0
    IF (VIDVBD.GT.VIDVEM) IEMBB = 1
 !
+   if (dbg(9)) then
+      print *, 'EMBND :: NOT FIXED'
+      dbg(9) = .false.
+   endif
 10 NLIM1 = NLIM2+1
 !
    VI = V1PO+ REAL(NLIM1-1)*DVPO
@@ -3941,7 +4032,7 @@ SUBROUTINE EMBND (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,TBND)
 !
    RETURN
 !
-end subroutine EMBND
+END SUBROUTINE EMBND
 !
 !     ----------------------------------------------------------------
 !
@@ -3996,13 +4087,13 @@ SUBROUTINE EMOUT (V1P,V2P,DVP,NLIM,NEWEM,NEWTR,MFILE,NPTS,NPANLS)
 905 FORMAT (' ')
 910 FORMAT (I8,2X,F12.6,1P2E15.7,20X,I8,2X,0PF12.6,1P2E15.7)
 !
-end subroutine EMOUT
+END SUBROUTINE EMOUT
 !
 !     ----------------------------------------------------------------
 !
 SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
-   USE lblparams, ONLY: NN_TBL
+   USE lblparams, ONLY: NN_TBL, dbg
    IMPLICIT REAL*8           (V)
 !
 !     SUBROUTINE EMDM INPUTS OPTICAL DEPTH VALUES FROM KFILE AND
@@ -4058,6 +4149,7 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
    character*1 surf_refl
    character*3 pad_3
+   logical :: AerosolIncluded
 !
 !      parameter (nn_tbl=10000)
 !
@@ -4129,6 +4221,7 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 ! **********************************************************************
 !
+   AerosolIncluded = .not. (IAERSL.EQ.0 .or. iaersl.eq.5)
    IF (IAERSL.EQ.0 .or. iaersl.eq.5) THEN
       IAFBB = -1
    ELSE
@@ -4153,6 +4246,10 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
       IF (IHIRAC.NE.4) THEN
 !
+         if (dbg(10)) then
+            print *, 'EMDM::IHIRAC.NE.4 XKTB.LE.0. ::LTE: : NOT FIXED'
+            dbg(10) = .false.
+         ENDIF
 10       NLIM1 = NLIM2+1
 !
          VI = V1P+ REAL(NLIM1-1)*DVP
@@ -4219,37 +4316,27 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
             if (odvi .lt. -od_lo) odvi = -od_lo
-            if (odvi .gt. od_hi) odvi = od_hi
-!
-            !
+            tr_i   = exp(-odvi)
             if (odvi .le. od_lo) then
-
-               f_i = rec_6*odvi
+               f_i       = rec_6*odvi
                df_dtau_i = rec_6
-               tr(i) = 1. - odvi + 0.5*odvi*odvi
-
                !
             else
-
-               tau_fn = odvi/(aa_inv+odvi)
-               i_tbl = xnn * tau_fn + .5
-               f_i = tau_tbl(i_tbl)
-               df_dtau_i = dtau_tbl(i_tbl)
+               f_i        = 1. - 2.*(tr_i/(tr_i -1.)    + 1./odvi   )
+               df_dtau_i  =     -2.*(tr_i/(tr_i -1.)**2 - 1./odvi**2)
                !
-               tr(i) = exp_tbl(i_tbl)
-
             end if
-
+            TR(i)    = tr_i
             bbeff(i) = bb + bb_dif*f_i
-            em(i) = (1.-tr(i)) * bbeff(i)
+            em(i)    = (1.-tr_i) * bbeff(i)
 !
 !---
 ! Store quantities for derivative calculation
 
-            fsav(i) = f_i
+            fsav(i)    = f_i
             dF_dtau(i) = df_dtau_i
-            BBSAV(I) = BB
-            BBASAV(I) = bb + bb_dif
+            BBSAV(I)   = BB
+            BBASAV(I)  = bb + bb_dif
 !---
 
 !              Increment interpolation values
@@ -4338,36 +4425,25 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
             if (odvi .lt. -od_lo) odvi = -od_lo
-            if (odvi .gt. od_hi) odvi = od_hi
-!
+            tr_i   = exp(-odvi)
             if (odvi .le. od_lo) then
-
-               f_i = rec_6 * odvi
-               tr_i = 1. - odvi * (1. - 0.5 * odvi)
-               abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi)
-
-               dF_dtau(i) = rec_6
-
+               f_i       = rec_6*odvi
+               df_dtau_i = rec_6
+               !
+               abs_i     = (odvi   - c_nlte) * (1.- 0.5 * odvi)
             else
-
-               tau_fn = odvi/(aa_inv+odvi)
-               i_tbl = xnn * tau_fn + .5
-               f_i = tau_tbl(i_tbl)
-               tr_i = exp_tbl(i_tbl)
-               abs_i = (1. - c_nlte/odvi) * (1.-tr_i)
-
-               dF_dtau(i) = dtau_tbl(i_tbl)
-
+               f_i        = 1. - 2.*(tr_i/(tr_i -1.)    + 1./odvi   )
+               df_dtau_i  =     -2.*(tr_i/(tr_i -1.)**2 - 1./odvi**2)
+               !
+               abs_i  = (1. - c_nlte/odvi  ) * (1.-tr_i)
             end if
-!---
-            tr(i) = tr_i
-
+            TR(i)    = tr_i
             bbeff(i) = bb + bb_dif * f_i
-            em(i) = abs_i * bbeff(i)
+            em(i)    = abs_i * bbeff(i)
 
-            fsav(i) = f_i
-
-            BBSAV(I) = BB
+            fsav(i)   = f_i
+            dF_dtau(i)= df_dtau_i
+            BBSAV(I)  = BB
             BBASAV(I) = bb + bb_dif
 !---
 !              Increment interpolation values
@@ -4488,6 +4564,10 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !ccc
 
          if (surf_refl .eq. 's') then
+            if (dbg(12)) then
+               print *, 'EMDM::IHIRAC!=4 XKTB>0. ::LTE:: specular :: NOT FIXED'
+               dbg(12) = .false.
+            ENDIF
 !
             DO 60 I = NLIM1, NLIM2
 !
@@ -4496,35 +4576,23 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
-               !
+               tr_i   = exp(-odvi)
                if (odvi .le. od_lo) then
-
-                  f_i = rec_6*odvi
-                  tr(i) = 1. - odvi + 0.5*odvi*odvi
-
-                  dF_dtau(i) = rec_6
-!
+                  f_i       = rec_6*odvi
+                  df_dtau_i = rec_6
                   !
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
+                  f_i        = 1. - 2.*(tr_i/(tr_i -1.)    + 1./odvi   )
+                  df_dtau_i  =     -2.*(tr_i/(tr_i -1.)**2 - 1./odvi**2)
                   !
-                  tr(i) = exp_tbl(i_tbl)
-
-                  dF_dtau(i) = dtau_tbl(i_tbl)
-
-               endif
-
-               abs_i = (1.-tr(i))
-               bbeff(i) = bb + bb_dif_a * f_i
-               em(i) = abs_i * bbeff(i)
-               emb(i) = abs_i * (bb + bb_dif_b * f_i)
-
-               fsav(i) = f_i
+               end if
+               TR(i)   = tr_i
+               abs_i   = (1.-tr_i)
+               bbeff(i)= bb + bb_dif_a * f_i
+               em(i)   = abs_i * bbeff(i)
+               emb(i)  = abs_i * (bb + bb_dif_b * f_i)
+               fsav(i)    = f_i
+               dF_dtau(i) = df_dtau_i
 !---
 ! Store BB, BBA, and XX for derivative source term
                BBSAV(I) = BB
@@ -4542,6 +4610,10 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 60          CONTINUE
 !
          elseif (surf_refl .eq. 'l') then
+            if (dbg(13)) then
+               print *, 'EMDM::IHIRAC!=4 XKTB>0. ::LTE:: Lambertian :: NOT FIXED'
+               dbg(13) = .false.
+            endif
 !ccc
 !     The following calculation is for an approximation to the
 !     downwelling flux for application to Lambertian surfaces. The
@@ -4560,45 +4632,28 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
-               !
+               tr_i   = exp(-odvi)
+               tr_d_i = exp(-odvi_d)
                if (odvi .le. od_lo) then
-!
-                  f_i = rec_6*odvi
-                  tr(i) = 1. - odvi + 0.5*odvi*odvi
-!
-                  f_d_i = rec_6*odvi_d
-                  tr_d_i = 1. - odvi_d + 0.5*odvi_d*odvi_d
-
-                  dF_dtau(i) = rec_6
-!
+                  f_i       = rec_6*odvi
+                  f_d_i     = rec_6*odvi_d
+                  df_dtau_i = rec_6
                   !
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
+                  f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
+                  f_d_i      = 1. - 2.*(tr_d_i/(tr_d_i -1.)    + 1./odvi_d )
+                  df_dtau_i  =     -2.*(tr_i  /(tr_i   -1.)**2 - 1./odvi**2)
                   !
-                  tr(i) = exp_tbl(i_tbl)
-!
-                  tau_fn = odvi_d/(aa_inv+odvi_d)
-                  i_tbl = xnn * tau_fn + .5
-                  f_d_i = tau_tbl(i_tbl)
-                  tr_d_i = exp_tbl(i_tbl)
-
-                  dF_dtau(I) = dtau_tbl(i_tbl)
-
                end if
-
-               tr(i) = tr_i
+               TR(i)   = tr_i
                fsav(i) = f_i
 
-               bbeff(i) = (bb + bb_dif_a * f_i)
-               em(i) = (1.-tr_i) * bbeff(i)
-               emb(i) = (1.-tr_d_i) * (bb + bb_dif_b * f_d_i) !mja, 10-27-2011
+               bbeff(i)= (bb + bb_dif_a * f_i)
+               em(i)   = (1.-tr_i  ) * bbeff(i)
+               emb(i)  = (1.-tr_d_i) * (bb + bb_dif_b * f_d_i) !mja, 10-27-2011
 !---
 ! Store BB, BBA, and XX for derivative source term
+               dF_dtau(i) = df_dtau_i
                BBSAV(I) = BB
                BBASAV(I) = bb + bb_dif_a
 !---
@@ -4718,7 +4773,10 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !ccc
 
          if (surf_refl .eq. 's') then
-
+            if (dbg(14)) then
+               print *, 'EMDM::IHIRAC==4 XKTB>0. ::NLTE:: specular :: NOT FIXED'
+               dbg(14) = .false.
+            END IF   
             DO 80 I = NLIM1, NLIM2
 
 !     tr(i) contains the layer optical depths at this stage
@@ -4732,33 +4790,24 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
+               tr_i   = exp(-odvi)
                if (odvi .le. od_lo) then
-
-                  f_i = rec_6*odvi
-                  tr_i = 1. - odvi * (1. - 0.5 * odvi)
-                  abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi)
-
-                  dF_dtau(i) = rec_6 !mja, 10-27-2011
-
+                  f_i        = rec_6*odvi
+                  df_dtau_i  = rec_6
+                  !
+                  abs_i   = (odvi   - c_nlte) * (1.- 0.5 * odvi)
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
-                  tr_i = exp_tbl(i_tbl)
-                  abs_i = (1. - c_nlte/odvi) * (1.-tr_i)
-
-                  dF_dtau(i) = dtau_tbl(i_tbl)
-
+                  f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
+                  df_dtau_i  =     -2.*(tr_i  /(tr_i   -1.)**2 - 1./odvi**2)
+                  !
+                  abs_i   = (1. - c_nlte/odvi  ) * (1.-tr_i)
                end if
-
-               tr(i) = tr_i
-               bbeff(i) = bb + bb_dif_a * f_i
-               em(i) = abs_i * bbeff(i)
-               emb(i) = abs_i * (bb + bb_dif_b * f_i)
-               fsav(i) = f_i
+               TR(i)     = tr_i
+               bbeff(i)  = bb + bb_dif_a * f_i
+               em(i)     = abs_i * bbeff(i)
+               emb(i)    = abs_i * (bb + bb_dif_b * f_i)
+               fsav(i)   = f_i
+               dF_dtau(i)= df_dtau_i
 
 !---
 ! Store BB, BBA, and XX for derivative source term
@@ -4777,7 +4826,10 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 80          CONTINUE
 
          elseif (surf_refl .eq. 'l') then
-
+            if (dbg(14)) then
+               print *, 'EMDM::IHIRAC==4 XKTB>0. ::NLTE:: Lambertian :: NOT FIXED'
+               dbg(14) = .false.
+            endif
 !ccc
 !     The following calculation is for an approximation to the
 !     downwelling flux for application to Lambertian surfaces. The
@@ -4802,51 +4854,29 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
-               ! analytic regime
+               tr_i   = exp(-odvi)
+               tr_d_i = exp(-odvi_d)
                if (odvi .le. od_lo) then
-
-                  f_i = rec_6 * odvi
-                  tr_i = 1. - odvi * (1. - 0.5 * odvi)
-                  abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi)
-
-                  dF_dtau_i = rec_6
-
-                  f_d_i = rec_6 * odvi_d
-                  tr_d_i = 1. - odvi_d * (1. - 0.5 * odvi_d)
-                  abs_d_i = (1. - c_nlte) * (1. - 0.5 * odvi_d)
-
-                  ! u
+                  f_i       = rec_6*odvi
+                  f_d_i     = rec_6*odvi_d
+                  df_dtau_i = rec_6
+                  !
+                  abs_i     = (odvi   - c_nlte) * (1.- 0.5 * odvi)
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
-                  ! tri = exp(-odvi)
-                  tr_i = exp_tbl(i_tbl)
-                  abs_i = (1.0 - c_nlte/odvi) * (1.-tr_i)
-                  tau_fn = odvi/(aa_inv+odvi)
-
-                  dF_dtau(I) = dtau_tbl(i_tbl)
-
-                  tau_fn = odvi_d/(aa_inv+odvi_d)
-                  i_tbl = xnn * tau_fn + .5
-                  f_d_i = tau_tbl(i_tbl)
-                  ! tri = exp(-odvi)
-                  tr_d_i = exp_tbl(i_tbl)
-                  abs_d_i = (1.0 - c_nlte/odvi) * (1.-tr_d_i)
-
+                  f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
+                  f_d_i      = 1. - 2.*(tr_d_i/(tr_d_i -1.)    + 1./odvi_d )
+                  df_dtau_i  =     -2.*(tr_i  /(tr_i   -1.)**2 - 1./odvi**2)
+                  !
+                  abs_i   = (1.0 - c_nlte/odvi) * (1.-tr_i)
                end if
-!---
-!
-               tr(i) = tr_i
+               TR(i)   = tr_i
+               abs_d_i = (1.0 - c_nlte/odvi) * (1.-tr_d_i)
+               bbeff(i)= bb + bb_dif_a * f_i
 
-               bbeff(i) = bb + bb_dif_a * f_i
-               em(i) = abs_i * bbeff(i)
-               emb(i) = abs_d_i * (bb + bb_dif_b * f_d_i)
+               em(i)   = abs_i   * bbeff(i)
+               emb(i)  = abs_d_i * (bb + bb_dif_b * f_d_i)
 
-               fsav(i) = f_i
+               fsav(i)   = f_i
                dF_dtau(i)= dF_dtau_i
 
 !     Store BB, BBA, and XX for derivative source term
@@ -4883,12 +4913,12 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 906 FORMAT (' THE SURFACE REFLECTIVITY FLAG OF ', A1, 'IS NOT VALID')
 907 FORMAT (' THE SURFACE REFLECTIVITY FLAG OF: ', A1)
 !
-end subroutine EMDM
+END SUBROUTINE EMDM
 !
 !     ---------------------------------------------------------------
 SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
-   USE lblparams, ONLY: NN_TBL
+   USE lblparams, ONLY: NN_TBL, dbg
    IMPLICIT REAL*8           (V)
 !
 !     SUBROUTINE EMDT inputs optical depth values from kfile and
@@ -4927,6 +4957,7 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
    character*1 surf_refl
    character*3 pad_3
+   logical ::    AerosolIncluded
 !
 !      parameter (nn_tbl=10000)
 !
@@ -5011,6 +5042,7 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 ! **********************************************************************
 !
+   AerosolIncluded = .not. (IAERSL.EQ.0 .or.iaersl.eq.5) 
    IF (IAERSL.EQ.0 .or.iaersl.eq.5) THEN
       IAFBB = -1
    ELSE
@@ -5034,6 +5066,10 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     - THIS SECTION TREATS THE LTE CASE
 !
       IF (IHIRAC.NE.4) THEN
+         if (dbg(15)) then
+            print *, 'EMDT::IHIRAC!=4 XKTB<=0. :: LTE: NOT FIXED'
+            dbg(15) = .false.
+         endif
 !
 10       NLIM1 = NLIM2+1
 !
@@ -5109,29 +5145,17 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
             if (odvi .lt. -od_lo) odvi = -od_lo
-            if (odvi .gt. od_hi) odvi = od_hi
-!
-            !
+            tr_i   = exp(-odvi)
             if (odvi .le. od_lo) then
-
-               f_i = rec_6*odvi
-               df_dtau_i = rec_6
-               tr(i) = 1. - odvi + 0.5*odvi*odvi
-
-               !
+               f_i        = rec_6*odvi
+               df_dtau_i  = rec_6
             else
-
-               tau_fn = odvi/(aa_inv+odvi)
-               i_tbl = xnn * tau_fn + .5
-               f_i = tau_tbl(i_tbl)
-               df_dtau_i = dtau_tbl(i_tbl)
-               !
-               tr(i) = exp_tbl(i_tbl)
-
+               f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
+               df_dtau_i  =     -2.*(tr_i  /(tr_i   -1.)**2 - 1./odvi**2)
             end if
-
+            TR(i)    = tr_i
             bbeff(i) = bb + bb_dif * f_i
-            em(i) = (1.-tr(i)) * bbeff(i)
+            em(i)    = (1.-tr_i) * bbeff(i)
 !---
 ! Store quantities for derivative calculation
 !
@@ -5159,6 +5183,10 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE NLTE CASE
 !
+         if (dbg(16)) then
+            print *, 'EMDT::IHIRAC==4 XKTB<=0. :: NLTE:: NOT FIXED'
+            dbg(16) = .false.
+         endif
 30       NLIM1 = NLIM2+1
 !
          VI = V1P+ REAL(NLIM1-1)*DVP
@@ -5231,31 +5259,21 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
             if (odvi .lt. -od_lo) odvi = -od_lo
-            if (odvi .gt. od_hi) odvi = od_hi
-!
+            tr_i   = exp(-odvi)
             if (odvi .le. od_lo) then
-
-               f_i = rec_6*odvi
-               tr_i = 1. - odvi * (1. - 0.5 * odvi)
-               abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi)
-
-               df_dtau_i = rec_6
-
+               f_i        = rec_6*odvi
+               df_dtau_i  = rec_6
+               !
+               abs_i   = (odvi   - c_nlte) * (1.- 0.5 * odvi)
             else
-
-               tau_fn = odvi/(aa_inv+odvi)
-               i_tbl = xnn * tau_fn + .5
-               f_i = tau_tbl(i_tbl)
-               tr_i = exp_tbl(i_tbl)
-               abs_i = (1.0 - c_nlte/odvi) * (1.-tr_i)
-
-               df_dtau_i = dtau_tbl(i_tbl)
-
+               f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
+               df_dtau_i  =     -2.*(tr_i  /(tr_i   -1.)**2 - 1./odvi**2)
+               !
+               abs_i   = (1. - c_nlte/odvi  ) * (1.-tr_i)
             end if
-
-            tr(i) = tr_i
+            TR(i)    = tr_i
             bbeff(i) = bb + bb_dif*f_i
-            em(i) = abs_i * bbeff(i)
+            em(i)    = abs_i * bbeff(i)
 !---
 ! Store quantities for derivative calculation
 
@@ -5383,6 +5401,10 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !ccc
 
          if (surf_refl .eq. 's') then
+            if (dbg(17)) then
+               print *, 'EMDT::IHIRAC!=4 XKTB>0. :: LTE:: specular :: NOT FIXED'
+               dbg(17) = .false.
+            endif
 !
             DO 60 I = NLIM1, NLIM2
 !
@@ -5391,40 +5413,25 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
-               !
+               tr_i   = exp(-odvi)
                if (odvi .le. od_lo) then
-
-                  f_i = rec_6*odvi
-                  tr(i) = 1. - odvi + 0.5*odvi*odvi
-
-                  df_dtau_i = rec_6
-!
-                  !
+                  f_i        = rec_6*odvi
+                  df_dtau_i  = rec_6
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
-                  !
-                  tr(i) = exp_tbl(i_tbl)
-
-                  df_dtau_i = dtau_tbl(i_tbl)
-
-               endif
-
+                  f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
+                  df_dtau_i  =     -2.*(tr_i  /(tr_i   -1.)**2 - 1./odvi**2)
+               end if
+               TR(i)    = tr_i
                bbeff(i) = bb + bb_dif_a * f_i
-
-               abs_i = (1.-tr(i))
-               em(i) = abs_i * bbeff(i)
-               emb(i) = abs_i * (bb + bb_dif_b * f_i)
+               abs_i    = (1.-tr_i)
+               em(i)    = abs_i * bbeff(i)
+               emb(i)   = abs_i * (bb + bb_dif_b * f_i)
 !---
 ! Store quantities for derivative calculation
 
-               fsav(i) = f_i
-               dF_dtau(i) = df_dtau_i
-               BBSAV(I) = BB
+               fsav(i)   = f_i
+               dF_dtau(i)= df_dtau_i
+               BBSAV(I)  = BB
                BBASAV(I) = bb + bb_dif_a
 !---
 !
@@ -5439,6 +5446,10 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 60          CONTINUE
 !
          elseif (surf_refl .eq. 'l') then
+            if (dbg(18)) then
+               print *, 'EMDT::IHIRAC!=4 XKTB>0. :: LTE:: Lambertian :: NOT FIXED'
+               dbg(18) = .false.
+            endif
 !ccc
 !     The following calculation is for an approximation to the
 !     downwelling flux for application to Lambertian surfaces. The
@@ -5457,47 +5468,31 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
-               !
+               tr_i   = exp(-odvi)
+               tr_d_i = exp(-odvi_d)
                if (odvi .le. od_lo) then
-!
-                  f_i = rec_6*odvi
-                  tr(i) = 1. - odvi + 0.5*odvi*odvi
-
+                  f_i       = rec_6*odvi
+                  f_d_i     = rec_6*odvi_d
                   df_dtau_i = rec_6
-!
-                  f_d_i = rec_6*odvi_d
-                  tr_d_i = 1. - odvi_d + 0.5*odvi_d*odvi_d
-!
                   !
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
+                  f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
+                  f_d_i      = 1. - 2.*(tr_d_i/(tr_d_i -1.)    + 1./odvi_d )
+                  df_dtau_i  =     -2.*(tr_i  /(tr_i   -1.)**2 - 1./odvi**2)
                   !
-                  tr(i) = exp_tbl(i_tbl)
-
-                  df_dtau_i = dtau_tbl(i_tbl)
-!
-                  tau_fn_d = odvi_d/(aa_inv+odvi_d)
-                  i_tbl_d = xnn * tau_fn_d + .5
-                  f_d_i = tau_tbl(i_tbl_d)
-                  tr_d_i = exp_tbl(i_tbl_d)
-
                end if
+               TR(i)   = tr_i
 
                bbeff(i) = bb + bb_dif_a * f_i
-               em(i) = (1.-tr(i)) * bbeff(i)
-               emb(i) = (1.-tr_d_i) * (bb + bb_dif_b * f_d_i)
+               em(i)    = (1.-tr_i) * bbeff(i)
+               emb(i)   = (1.-tr_d_i) * (bb + bb_dif_b * f_d_i)
 !---
 ! Store quantities for derivative calculation
 
-               fsav(i) = f_i
+               fsav(i)    = f_i
                dF_dtau(i) = df_dtau_i
-               BBSAV(I) = BB
-               BBASAV(I) = BB + bb_dif_a
+               BBSAV(I)   = BB
+               BBASAV(I)  = BB + bb_dif_a
 !---
 !
 !     Increment interpolation values
@@ -5615,7 +5610,10 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !ccc
 
          if (surf_refl .eq. 's') then
-
+            if (dbg(19)) then
+               print *, 'EMDT::IHIRAC==4 XKTB>0. :: NLTE:: specular :: NOT FIXED'
+               dbg(19) = .false.
+            endif
             DO 80 I = NLIM1, NLIM2
 
 !     tr(i) contains the layer optical depths at this stage
@@ -5629,40 +5627,30 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
+               tr_i   = exp(-odvi)
                if (odvi .le. od_lo) then
-
-                  f_i = rec_6*odvi
-                  tr_i = 1. - odvi * (1. - 0.5 * odvi)
-                  abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi)
-
-                  df_dtau_i = rec_6
-
+                  f_i        = rec_6*odvi
+                  df_dtau_i  = rec_6
+                  !
+                  abs_i   = (odvi   - c_nlte) * (1.- 0.5 * odvi)
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
-                  tr_i = exp_tbl(i_tbl)
-                  abs_i = (1. - c_nlte/odvi) * (1.-tr_i)
-
-                  dF_dtau_i = dtau_tbl(i_tbl)
-
+                  f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
+                  df_dtau_i  =     -2.*(tr_i  /(tr_i   -1.)**2 - 1./odvi**2)
+                  !
+                  abs_i   = (1. - c_nlte/odvi  ) * (1.-tr_i)
                end if
-
-               tr(i) = tr_i
+               TR(i)    = tr_i
                bbeff(i) = bb + bb_dif_a * f_i
-               em(i) = abs_i * bbeff(i)
-               emb(i) = abs_i * (bb + bb_dif_b * f_i)
+               em(i)    = abs_i * bbeff(i)
+               emb(i)   = abs_i * (bb + bb_dif_b * f_i)
 
 !---
 ! Other Derivative Terms
 
-               fsav(i) = f_i
+               fsav(i)    = f_i
                dF_dtau(i) = dF_dtau_i
-               BBSAV(I) = BB
-               BBASAV(I) = bb + bb_dif_a
+               BBSAV(I)   = BB
+               BBASAV(I)  = bb + bb_dif_a
 !---
 !
 !     Increment interpolation values
@@ -5676,6 +5664,10 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 80          CONTINUE
 
          elseif (surf_refl .eq. 'l') then
+            if (dbg(20)) then
+               print *, 'EMDT::IHIRAC==4 XKTB>0. :: NLTE:: Lambertian :: NOT FIXED'
+               dbg(20) = .false.
+            endif
 
 !ccc
 !     The following calculation is for an approximation to the
@@ -5701,53 +5693,36 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bo
 !
                if (odvi .lt. -od_lo) odvi = -od_lo
-               if (odvi .gt. od_hi) odvi = od_hi
-!
+               tr_i   = exp(-odvi)
+               tr_d_i = exp(-odvi_d)
                if (odvi .le. od_lo) then
-
-                  f_i = rec_6*odvi
-                  tr_i = 1. - odvi * (1. - 0.5 * odvi)
-                  abs_i = (odvi - c_nlte) * (1. - 0.5 * odvi)
-
-                  df_dtau_i = rec_6
-
-                  f_d_i = rec_6*odvi_d
-                  tr_d_i = 1. - odvi_d * (1.- 0.5 * odvi_d)
+                  f_i        = rec_6*odvi
+                  f_d_i      = rec_6*odvi_d
+                  df_dtau_i  = rec_6
+                  df_dtau_d_i= rec_6
+                  !
+                  abs_i   = (odvi   - c_nlte) * (1.- 0.5 * odvi)
                   abs_d_i = (odvi_d - c_nlte) * (1.- 0.5 * odvi_d)
-
-                  df_dtau_d_i = rec_6
-
                else
-
-                  tau_fn = odvi/(aa_inv+odvi)
-                  i_tbl = xnn * tau_fn + .5
-                  f_i = tau_tbl(i_tbl)
-                  tr_i = exp_tbl(i_tbl)
-                  abs_i = (1. - c_nlte/odvi) * (1.-tr_i)
-
-                  dF_dtau_i = dtau_tbl(i_tbl)
-
-                  tau_fn = odvi_d/(aa_inv+odvi_d)
-                  i_tbl = xnn * tau_fn + .5
-                  f_d_i = tau_tbl(i_tbl)
-                  tr_d_i = exp_tbl(i_tbl)
+                  f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
+                  f_d_i      = 1. - 2.*(tr_d_i/(tr_d_i -1.)    + 1./odvi_d )
+                  df_dtau_i  =     -2.*(tr_i  /(tr_i   -1.)**2 - 1./odvi**2)
+                  df_dtau_d_i=     -2.*(tr_d_i/(tr_d_i -1.)**2 - 1./odvi_d**2)
+                  !
+                  abs_i   = (1. - c_nlte/odvi  ) * (1.-tr_i)
                   abs_d_i = (1. - c_nlte/odvi_d) * (1.-tr_d_i)
-
-                  dF_dtau_d_i = dtau_tbl(i_tbl)
-
                end if
-
-               tr(i) = tr_i
-               bbeff(i) = bb + bb_dif_a * f_i
-               em(i) = abs_i * bbeff(i)
-               emb(i) = abs_d_i * (bb + bb_dif_b * f_d_i)
+               TR(i)   = tr_i
+               bbeff(i)= bb + bb_dif_a * f_i
+               em(i)   = abs_i   * bbeff(i)
+               emb(i)  = abs_d_i * (bb + bb_dif_b * f_d_i)
 !---
 ! Other Derivative Terms
 
-               fsav(i) = f_i
+               fsav(i)    = f_i
                dF_dtau(i) = dF_dtau_i
-               BBSAV(I) = BB
-               BBASAV(I) = bb + bb_dif_a
+               BBSAV(I)   = BB
+               BBASAV(I)  = bb + bb_dif_a
 !---
 !
 !     Increment interpolation values
@@ -5779,13 +5754,14 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 906 FORMAT (' THE SURFACE REFLECTIVITY FLAG OF ', A1, 'IS NOT VALID')
 907 FORMAT (' THE SURFACE REFLECTIVITY FLAG OF: ', A1)
 !
-end subroutine EMDT
+END SUBROUTINE EMDT
 !
 !     ---------------------------------------------------------------
 !
 SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)
 !
    USE phys_consts, ONLY: radcn2
+   USE lblparams, ONLY : dbg
    IMPLICIT REAL*8           (V)
 !
 !     Calculates radiance and radiance derivative for first layer
@@ -5990,6 +5966,10 @@ SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)
 !
       NLIM1 = 0
       NLIM2 = 0
+      if (dbg(21)) then
+         print *, 'EMADL1::(IPATHL.EQ.3): NOT FIXED'
+         dbg(21) = .false.
+      endif
       EMDUM = 0.
       BBDUM = 0.
       EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)
@@ -6164,7 +6144,7 @@ SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)
 915 FORMAT (' TIME REQUIRED FOR --EMADL1-- ',F10.3,                   &
    &        ' --EMDM-- ',F10.3)
 !
-end subroutine EMADL1
+END SUBROUTINE EMADL1
 !
 !     ---------------------------------------------------------------
 !
@@ -6546,7 +6526,7 @@ SUBROUTINE EMADMG (NPTS,LFILE,MFILE,JPATHL,TBND)
    &        ' SECS WERE REQUIRED FOR THIS MERGE  - EMDM - ',          &
    &        F12.3,' - READ - ',F12.3,' - EMOUT - ',F12.3)
 !
-end subroutine EMADMG
+END SUBROUTINE EMADMG
 !
 !     ---------------------------------------------------------------
 !
@@ -6716,7 +6696,7 @@ SUBROUTINE QDERIVup (KFILE,kradtot,RPRIME,RADO,TRAO,TRALYR,       &
 900 FORMAT ('kradtot, ',I2.2,', reached end prior to end of KFILE, ', &
    &        I2.2)
 !
-end subroutine QDERIVup
+END SUBROUTINE QDERIVup
 !
 !     ---------------------------------------------------------------
 !
@@ -6908,7 +6888,7 @@ SUBROUTINE TDERIVup (KFILE,kradtot,RPRIME,RADO,TRAO,TRALYR,       &
 900 FORMAT ('kradtot, ',I2.2,', reached end prior to end of KFILE, ', &
    &        I2.2)
 !
-end subroutine TDERIVup
+END SUBROUTINE TDERIVup
 !
 !     ---------------------------------------------------------------
 !
@@ -7073,7 +7053,7 @@ SUBROUTINE QDERIVdn (KFILE,kradtot,RPRIME,RADO,TRAO,TRALYR,       &
 900 FORMAT ('kradtot, ',I2.2,', reached end prior to end of KFILE, ', &
    &        I2.2)
 !
-end subroutine QDERIVdn
+END SUBROUTINE QDERIVdn
 !
 !     ---------------------------------------------------------------
 !
@@ -7261,13 +7241,13 @@ SUBROUTINE TDERIVdn (KFILE,kradtot,RPRIME,RADO,TRAO,TRALYR,       &
 900 FORMAT ('kradtot, ',I2.2,', reached end prior to end of KFILE, ', &
    &        I2.2)
 !
-end subroutine TDERIVdn
+END SUBROUTINE TDERIVdn
 !
 !     ----------------------------------------------------------------
 !
 SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
 !
-   USE lblparams, ONLY: NN_TBL
+   USE lblparams, ONLY: NN_TBL, dbg
    IMPLICIT REAL*8           (V)
 !
 !     SUBROUTINE FLXIN INPUTS OPTICAL DEPTH VALUES FROM KFILE AND
@@ -7398,6 +7378,10 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
 !     - WITH XKTA=0 THIS ALGORITHM REVERTS TO THE ORIGINAL
 !
    IF (XKTB.GT.0.) STOP ' XKTB GT 0.   FLXIN '
+   if (dbg(23)) then
+      print *, 'FLXIN:: NOT FIXED'
+      dbg(23) = .false.
+   endif
 !
 10 NLIM1 = NLIM2+1
 !
@@ -7458,6 +7442,11 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
    bb_dif = bba-bb
    bb_dif_del = bbdla-bbdel
 !
+   if (dbg(26)) then
+      print *, 'FLXIN:: NOT FIXED'
+      dbg(26) = .false.
+   endif
+
    DO 20 I = NLIM1, NLIM2
 
       ODVI = SECNT*TR(I)+EXT*RADFN0
@@ -7465,22 +7454,18 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
 !       for odvi ouside the range of the table,  set optical depth to bound
 !
       if (odvi .lt. -od_lo)  odvi = -od_lo
-      if (odvi .gt.  od_hi)  odvi =  od_hi
 !
 !       otherwise:
 !
+      tr_i   = exp(-odvi)
       if (odvi .le. od_lo) then                                     ! analytic regime
-         tr(i) = 1. - odvi + 0.5*odvi*odvi
-         em(i) = (1.-tr(i)) * (bb + bb_dif*rec_6*odvi)
-
+         f_i        = rec_6*odvi
       else                                                          ! use tables
-         tau_fn = odvi/(aa_inv+odvi)
-         i_tbl = xnn * tau_fn + .5
-         tr(i) = exp_tbl(i_tbl)                                     ! tri = exp(-odvi)
-         em(i) = (1.-tr(i)) * (bb + bb_dif*tau_tbl(i_tbl))
-
+         f_i        = 1. - 2.*(tr_i  /(tr_i   -1.)    + 1./odvi   )
       end if
-!
+      em(i) = (1.-tr_i) * (bb + bb_dif*f_i)
+      TR(i)   = tr_i
+      !
 !              Increment interpolation values
 !
       EXT = EXT+ADEL
@@ -7497,13 +7482,14 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
 900 FORMAT ('0EMISSION AND TRANSMISSION  (MOLECULAR) ')
 905 FORMAT ('0EMISSION AND TRANSMISSION (AEROSOLS EFFECTS INCLUDED)')
 !
-end subroutine FLXIN
+END SUBROUTINE FLXIN
 !
 !     ----------------------------------------------------------------
 !
 SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND,refl_flg)
 !
    USE phys_consts, ONLY: radcn2
+   USE lblparams, ONLY : dbg
    IMPLICIT REAL*8           (V)
 !
 !
@@ -7678,6 +7664,10 @@ SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND,refl_flg)
       IEMBB = 0
       IF (VIDVBD.GT.VIDVEM) IEMBB = 1
 
+      if (dbg(24)) then
+         print *, 'FLINIT:: ((IPATHL.EQ.3).AND.(TBND.GT.0.)):: NOT FIXED'
+         dbg(24) = .false.
+      endif
       if (refl_flg .eq. 1) then
          call bufin (ifiledown, keof, emdown, nlimo)
       endif
@@ -7737,7 +7727,7 @@ SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND,refl_flg)
 925 FORMAT (' TIME REQUIRED FOR --FLINIT-- ',F10.3,' --FLXIN-- ',       &
    &        F10.3)
 !
-end subroutine FLINIT
+END SUBROUTINE FLINIT
 !
 !     ----------------------------------------------------------------
 !
@@ -8012,7 +8002,7 @@ SUBROUTINE FLUXUP (NPTS,LFILE,MFILE,JPATHL,TBND)
    &        ' SECS WERE REQUIRED FOR THIS MERGE  - FLXIN - ',F12.3,     &
    &        ' - READ - ',F12.3,' - EMOUT - ',F12.3)
 !
-end subroutine FLUXUP
+END SUBROUTINE FLUXUP
 !
 !     ----------------------------------------------------------------
 !
@@ -8108,7 +8098,7 @@ SUBROUTINE FLUXNN (RADLYR,TRALYR,RADO,TRAO,NLIM,V1P,DVP,            &
 !
    RETURN
 !
-end subroutine FLUXNN
+END SUBROUTINE FLUXNN
 !
 !     ----------------------------------------------------------------
 !
@@ -8491,7 +8481,7 @@ SUBROUTINE FLUXDN (NPTS,LFILE,MFILE,JPATHL,TBND,refl_flg)
    &        ' - READ - ',F12.3,' - EMBND - ',F12.3,' - EMOUT - ',       &
    &        F12.3)
 !
-end subroutine FLUXDN
+END SUBROUTINE FLUXDN
 !
 !     ----------------------------------------------------------------
 !
@@ -8585,7 +8575,7 @@ SUBROUTINE GETEXT (IEXFIL,LYRNOW,IEMITT)
 !
    RETURN
 !
-end subroutine GETEXT
+END SUBROUTINE GETEXT
 !
 !     ----------------------------------------------------------------
 !
@@ -8699,7 +8689,7 @@ SUBROUTINE ADARSL (NNPTS,IEXFIL,MFILE,IAFIL,IEMIT)
    &        'FILE 20 AEROSOL EXTINCTIONS ADDED TO FILE 12 SENT TO ',    &
    &        'FILE 14')
 !
-end subroutine ADARSL
+END SUBROUTINE ADARSL
 !
 !     ----------------------------------------------------------------
 !
@@ -8760,7 +8750,7 @@ FUNCTION AERF (VI,DVI,VINXT,ADEL,TAUSCT,TDEL,GFACT,GDEL)
 !
    RETURN
 !
-end function AERF
+END FUNCTION AERF
 !
 !     ----------------------------------------------------------------
 !
@@ -8785,5 +8775,5 @@ SUBROUTINE LINTCO(V1,Z1,V2,Z2,VINT,ZINT,ZDEL)
 !
    RETURN
 !
-end subroutine LINTCO
+END SUBROUTINE LINTCO
 !     ----------------------------------------------------------------

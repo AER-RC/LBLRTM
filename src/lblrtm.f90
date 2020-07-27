@@ -4,7 +4,7 @@
 !     created:   $Date$
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015        |
+! |  Copyright ï¿½, Atmospheric and Environmental Research, Inc., 2015        |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -2770,8 +2770,6 @@ SUBROUTINE XLAYER (MPTS,NPTS,LFILE,MFILE,NFILE)
 
       nlayer = nlayd1
       dv_lbl = dv_lbl1
-      print *,'dv_lbl ',dv_lbl
-      print *,'dv_lbl1 ',dv_lbl1
 
       lh1 = nlayer
       lh2 = 1
@@ -6853,6 +6851,7 @@ subroutine sfcderiv(k_rddn_sfc,tbound)
 ! subroutine to compute surface derivatives
 !
    USE phys_consts, ONLY: radcn2
+   USE lblparams, ONLY : dbg
    IMPLICIT REAL*8 (V)
    character*8      XID,       HMOLID,      YID
    real*8               SECANT,       XALTZ
@@ -6947,6 +6946,10 @@ subroutine sfcderiv(k_rddn_sfc,tbound)
    NLIM2 = 0
    EMDUM = 0.
    BBDUM = 0.
+   if (dbg(25)) then
+      print *, 'sfcderiv:: :: NOT FIXED'
+      dbg(25) = .false.
+   endif
    EMISIV = EMISFN   (VI,DVP,VIDVEM,EMDEL,EMDUM)
    BB =     BBFN     (VI,DVP,V2P,XKTBND,VIDVBD,BBDEL,BBDUM)
    BBdT =   BBdTfn(BB,VI,DVP,V2P,XKTBND,VIDD,  BBdTd,BBdTdum)

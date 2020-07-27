@@ -38,6 +38,9 @@ MODULE lblparams   ! Parameters for array dimensions in lblrtm
    integer, parameter :: NN_TBL=10000, NDIM=2410, ND2=5000
    integer, parameter :: MAXSTATE=26
    integer, parameter :: NFLTPT=3001
+   
+   logical ::  dbg(100) = .true.
+
 
 ! HITRAN 2012 isotopologue information
    real :: isotpl_num(mxmol)   ! Number of isotopologues for each species
