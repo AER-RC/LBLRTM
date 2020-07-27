@@ -41,6 +41,10 @@ MODULE lblparams   ! Parameters for array dimensions in lblrtm
    
    logical ::  dbg(100) = .true.
 
+!    transfered from  create_fn_tbls of xmerge.f90
+!    data od_switch /0.06/
+  real, parameter      :: od_lo = 0.06
+
 
 ! HITRAN 2012 isotopologue information
    real :: isotpl_num(mxmol)   ! Number of isotopologues for each species

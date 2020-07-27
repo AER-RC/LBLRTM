@@ -1683,7 +1683,7 @@ END FUNCTION REFLFN
 !
 SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
-   USE lblparams, ONLY: NN_TBL, dbg
+   USE lblparams, ONLY: NN_TBL, dbg, od_lo
    IMPLICIT REAL*8           (V)
 !
 !     SUBROUTINE EMIN INPUTS OPTICAL DEPTH VALUES FROM KFILE AND
@@ -2437,7 +2437,7 @@ END SUBROUTINE EMIN
 SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
 !
    USE phys_consts, ONLY: radcn2
-   use lblparams, ONLY: dbg
+   use lblparams, ONLY: dbg, od_lo
    IMPLICIT REAL*8           (V)
 !
 !
@@ -4009,7 +4009,7 @@ END SUBROUTINE EMOUT
 !
 SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
-   USE lblparams, ONLY: NN_TBL, dbg
+   USE lblparams, ONLY: NN_TBL, dbg, od_lo
    IMPLICIT REAL*8           (V)
 !
 !     SUBROUTINE EMDM INPUTS OPTICAL DEPTH VALUES FROM KFILE AND
@@ -4822,7 +4822,7 @@ END SUBROUTINE EMDM
 !     ---------------------------------------------------------------
 SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
-   USE lblparams, ONLY: NN_TBL, dbg
+   USE lblparams, ONLY: NN_TBL, dbg, od_lo
    IMPLICIT REAL*8           (V)
 !
 !     SUBROUTINE EMDT inputs optical depth values from kfile and
@@ -5653,7 +5653,7 @@ END SUBROUTINE EMDT
 SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)
 !
    USE phys_consts, ONLY: radcn2
-   USE lblparams, ONLY : dbg
+   USE lblparams, ONLY : dbg, od_lo
    IMPLICIT REAL*8           (V)
 !
 !     Calculates radiance and radiance derivative for first layer
@@ -7139,7 +7139,7 @@ END SUBROUTINE TDERIVdn
 !
 SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
 !
-   USE lblparams, ONLY: NN_TBL, dbg
+   USE lblparams, ONLY: NN_TBL, dbg, od_lo
    IMPLICIT REAL*8           (V)
 !
 !     SUBROUTINE FLXIN INPUTS OPTICAL DEPTH VALUES FROM KFILE AND
@@ -7369,7 +7369,7 @@ END SUBROUTINE FLXIN
 SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND,refl_flg)
 !
    USE phys_consts, ONLY: radcn2
-   USE lblparams, ONLY : dbg
+   USE lblparams, ONLY : dbg, od_lo
    IMPLICIT REAL*8           (V)
 !
 !
