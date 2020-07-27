@@ -1,3 +1,13 @@
+LBLRTM v12.10
+August 2020
+
+* The Planck function and its derivative are now calculated analytically rather than using look up tables (I. Polonsky, E.Mlawer)
+
+* The code has been reformatted with modern indentation and subroutine and function end statements, allowing for
+* greater readability (I.Polonsky)
+
+* Added six cross-section molecules: SF6, NF3, C2F6, HCHO,  HFC-245fa, and HFC-236fa. (I.Polonsky)
+
 LBLRTM v12.9
 August 2019
 
