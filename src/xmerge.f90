@@ -1070,9 +1070,9 @@ FUNCTION PLANCK_DT (VI,XKT, BBVAL)
       VIOKT = VI/VKT
       VTKELV  = VKT*real(RADCN2, kind=8)
       IF (VIOKT.LE.1d-2) THEN
-         PLANCK_DT = 1d0/(-VTKELV*(1d0+5d-1*VIOKT))
+         VPLANCK_DT = 1d0/(-VTKELV*(1d0+5d-1*VIOKT))
       ELSEIF (VIOKT.LE.80.0) THEN
-         PLANCK_DT = VIOKT/(VTKELV*(1d0-EXP(-VIOKT)))
+         VPLANCK_DT = VIOKT/(VTKELV*(1d0-EXP(-VIOKT)))
       ENDIF
    ENDIF
    PLANCK_DT = VPLANCK_DT*BBVAL
@@ -1738,7 +1738,6 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
    character*1 surf_refl
    character*3 pad_3
-   LOGICAL :: AerosolIncluded
 !
    DIMENSION PNLHDR(2),EM(*),EMB(*),TR(*)
 !
@@ -1799,16 +1798,16 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 ! **********************************************************************
 !
-   AerosolIncluded = .NOT. (IAERSL.EQ.0 .or. iaersl.eq.5)
    IF (IAERSL.EQ.0 .or. iaersl.eq.5) THEN
       IAFBB = -1
    ELSE
-      BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)
       RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDDUM)
       EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-      IAFBB = 0
-      IF (VITST.LT.VAER.AND.VITST.LT.VIBB) IAFBB = 1
-      IF (VAER.LT.VITST.AND.VAER.LT.VIBB) IAFBB = 2
+      IF (VITST.LT.VAER) then
+         IAFBB = 1
+      ELSE
+         IAFBB = 2
+      ENDIF   
    ENDIF
 !
 !     - THIS SECTION TREATS THE CASE WHERE THE LAYER CONTRIBUTES
@@ -1824,68 +1823,35 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
       IF (IHIRAC.NE.4) THEN
          if (dbg(1)) then
-            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE:  NOT FIXED'
+            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE:  CHECKED'
             dbg(1) = .false.
          END IF
 !
+         VI = V1P
+         bb_dif = 0.
 10       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ENDIF
 !
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
 !
-         bb_dif = bba-bb
-         bb_dif_del = bbdla-bbdel
-!
-         DO 20 I = NLIM1, NLIM2
+         DO I = NLIM1, NLIM2
+            BB = PLANCK(VI,XKT)
+            IF (XKTA.GT.0.) THEN
+               bb_dif = PLANCK(VI,XKTA)-BB
+            ENDIF            
 !
             ODVI = TR(I)+EXT*RADFN0
 !
@@ -1908,10 +1874,9 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
             EXT = EXT+ADEL
             RADFN0 = RADFN0+RDEL
-            BB = BB + BBDEL
-            bb_dif = bb_dif + bb_dif_del
 !
-20       CONTINUE
+            VI = VI+ DVP
+         END DO
 !
          IF (NLIM2.LT.NLIM) GO TO 10
       ELSE
@@ -1919,68 +1884,32 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     - THIS SECTION TREATS THE NLTE CASE
 !
          if (dbg(2)) then
-            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: NOT FIXED'
+            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: NOT CHECKED'
             dbg(2) = .false.
          ENDIF
+         VI = V1P
 30       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ENDIF
 !
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif = bba-bb
-         bb_dif_del = bbdla-bbdel
-!
-         DO 40 I = NLIM1, NLIM2
-
+         DO I = NLIM1, NLIM2
+            BB = PLANCK(VI,XKT)
+            IF (XKTA.GT.0.) THEN
+               bb_dif = PLANCK(VI,XKTA)-BB
+            ENDIF            
 !              tr(i) contains the layer optical depths at this stage
 
             ODVI = TR(I)+EXT*RADFN0
@@ -2009,11 +1938,10 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
             EXT = EXT+ADEL
             RADFN0 = RADFN0+RDEL
-            BB = BB + BBDEL
-            bb_dif = bb_dif + bb_dif_del
 !
-40       CONTINUE
-!
+            VI = VI + DVP
+         END DO
+         !
          IF (NLIM2.LT.NLIM) GO TO 30
 !
       ENDIF
@@ -2030,92 +1958,25 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE LTE CASE
 !
+         bb_dif_a = 0.
+         bb_dif_b = 0.
+         VI = V1P
 50       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ENDIF
-!
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif_a = bba-bb
-         bb_dif_b = bbb-bb
-         bb_dif_a_del = bbdla-bbdel
-         bb_dif_b_del = bbdlb-bbdel
 !ccc
 !     This calculation  is for specular reflection for the downwelling
 !ccc
@@ -2123,10 +1984,17 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
          if (surf_refl .eq. 's') then
 !
             if (dbg(3)) then
-               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE: specular:  NOT FIXED'
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE: specular:  CHECKED'
                dbg(3) = .false.
             ENDIF
-            DO 60 I = NLIM1, NLIM2
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 !
                ODVI = TR(I)+EXT*RADFN0
 !
@@ -2150,12 +2018,9 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-60          CONTINUE
-!
+               VI = VI + DVP
+            END DO
+   !
          elseif (surf_refl .eq. 'l') then
             if (dbg(4)) then
                print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE: Lambertian:  NOT FIXED'
@@ -2171,7 +2036,14 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     diffuse_fac is the factor that is used to scale the optical depth
 !     on the 'observer side' of the path to that required for the 'back
 !ccc
-            DO 62 I = NLIM1, NLIM2
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 !
                ODVI = TR(I)+EXT*RADFN0
                odvi_d = diffuse_fac * odvi
@@ -2199,12 +2071,9 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-62          CONTINUE
-!
+               VI = VI + DVP
+            END DO
+   !
          else
             WRITE (IPR,906) surf_refl
             STOP 'INVALID SURFACE REFLECTIVITY FLAG'
@@ -2216,92 +2085,25 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE CASE OF NLTE
 !
+         bb_dif_a = 0.
+         bb_dif_b = 0.
+         VI = V1P
 70       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ENDIF
-!
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif_a = bba-bb
-         bb_dif_b = bbb-bb
-         bb_dif_a_del = bbdla-bbdel
-         bb_dif_b_del = bbdlb-bbdel
 !
 !ccc
 !     This calculation  is for specular reflection for the downwelling
@@ -2309,12 +2111,18 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 
          if (surf_refl .eq. 's') then
             if (dbg(5)) then
-               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: specular: NOT FIXED'
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: specular: CHECKED'
                dbg(5) = .false.
             ENDIF
 
-            DO 80 I = NLIM1, NLIM2
-
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 !     tr(i) contains the layer optical depths at this stage
 
                ODVI = TR(I)+EXT*RADFN0
@@ -2345,15 +2153,12 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-80          CONTINUE
-
+               VI = VI + DVP
+            END DO
+   
          elseif (surf_refl .eq. 'l') then
             if (dbg(6)) then
-               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: Lambertian: NOT FIXED'
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: Lambertian: NOT CHECKED'
                dbg(6) = .false.
             endif
 
@@ -2367,8 +2172,14 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     diffuse_fac is the factor that is used to scale the optical depth
 !     on the 'observer side' of the path to that required for the 'back
 !ccc
-            DO 82 I = NLIM1, NLIM2
-
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 !     tr(i) contains the layer optical depths at this stage
 
                ODVI = TR(I)+EXT*RADFN0
@@ -2403,12 +2214,9 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-82          CONTINUE
-
+               VI = VI + DVP
+            END DO
+   
          else
 
             WRITE (IPR,906) surf_refl
@@ -2640,7 +2448,7 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
    ELSEIF ((IPATHL.EQ.1).AND.(TBND.GT.0.)) THEN
 !
       if (dbg(7)) then
-         print *,'EMINIT (IPATHL.EQ.1).AND.(TBND.GT.0.): : NOT FIXED', IPATHL, TBND
+         print *,'EMINIT (IPATHL.EQ.1).AND.(TBND.GT.0.)::  CHECKED'
          dbg(7) = .false.
       endif
       NLIM1 = 0
@@ -2648,22 +2456,12 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
       EMDUM = 0.
       BBDUM = 0.
       EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)
-      BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)
-      IEMBB = 0
-      IF (VIDVBD.GT.VIDVEM) IEMBB = 1
+      IEMBB = 1
 !
+      VI = V1PO
 40    NLIM1 = NLIM2+1
 !
-      VI = V1PO+ REAL(NLIM1-1)*DVPO
-      IF (IEMBB.EQ.0) THEN
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)
-         VIDVEM = -VIDV
-         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)
-      ELSE
-         EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
-         VIDVBD = -VIDV
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)
-      ENDIF
+      EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
 !
       IF (VIDV.GE.9.E+4) THEN
          NLIM2 = NLIMO+1
@@ -2672,22 +2470,23 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
       ENDIF
       NLIM2 = MIN(NLIM2,NLIMO)
 !
-      DO 50 J = NLIM1, NLIM2
+      DO J = NLIM1, NLIM2
          V=V1PO+ REAL(J-1)*DVPO
+         BB = PLANCK(VI,XKTBND)
          NEWEM(J) = EMLAYR(J)+TRALYR(J)*BB*EMISIV
 !
 !           Increment interpolation value
 !
          EMISIV = EMISIV+EMDEL
-         BB = BB+BBDEL
-50    CONTINUE
+         VI = VI+ DVPO
+      END DO
 !
       IF (NLIM2.LT.NLIMO) GO TO 40
 !
    ELSEIF (IPATHL.EQ.-1 .or. imrg_sfc.gt.0) then
 !
       if (dbg(8)) then
-         print *,'EMINIT (IPATHL.EQ.1) .or. imrg_sfc.gt.0:: NOT FIXED', IPATHL, imrg_sfc
+         print *,'EMINIT (IPATHL.EQ.1) .or. imrg_sfc.gt.0:: NOT CHECKED', IPATHL, imrg_sfc
          dbg(8) = .false.
       endif
       NLIM1 = 0
@@ -2697,30 +2496,21 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
       BBDUM = 0.
       EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)
       REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFDUM)
-      BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)
-      IEMBB = 0
-      IF (VIDVEM.LE.VIDVRF.AND.VIDVEM.LE.VIDVBD) IEMBB = 1
-      IF (VIDVRF.LE.VIDVEM.AND.VIDVRF.LE.VIDVBD) IEMBB = 2
-!
+      IF (VIDVEM.LE.VIDVRF) THEN
+         IEMBB = 1
+      ELSE
+         IEMBB = 2
+      ENDIF
+      !
+      VI = V1PO
 60    NLIM1 = NLIM2+1
 !
-      VI = V1PO+ REAL(NLIM1-1)*DVPO
-      IF (IEMBB.EQ.0) THEN
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)
-         VIDVEM = -VIDV
-         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)
-         VIDVRF = -VIDV
-         REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)
-      ELSEIF (IEMBB.EQ.1) THEN
+      IF (IEMBB.EQ.1) THEN
          EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
-         VIDVBD = -VIDV
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)
          VIDVRF = -VIDV
          REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)
       ELSE
          REFLCT = REFLFN(VI,DVPO,VIDV,RFDEL,RFLAST)
-         VIDVBD = -VIDV
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)
          VIDVEM = -VIDV
          EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)
       ENDIF
@@ -2737,8 +2527,9 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
 
       if (imrg_sfc .eq. 0 ) then
 
-         DO 70 J = NLIM1, NLIM2
+         DO J = NLIM1, NLIM2
             V=V1PO+ REAL(J-1)*DVPO
+            BB = PLANCK(VI,XKTBND)
             NEWEM(J) = EMLAYR(J)+EMLAYB(J)*REFLCT*TRALYR(J)+ TRALYR( &
                J)*BB*EMISIV
 !
@@ -2746,17 +2537,18 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
 !
             EMISIV = EMISIV+EMDEL
             REFLCT = REFLCT+RFDEL
-            BB = BB+BBDEL
-70       CONTINUE
-!
+            VI = VI+ DVPO
+         END DO
+         !
       else
 
          call bufin(k_rddn,keof,xdn_dum(1),nphdrf)
          call bufin(k_rddn,keof,rddn_sfc(1),nlimdn)
          call bufin(k_rddn,keof,tr_dum(1),1)
 
-         DO 72 J = NLIM1, NLIM2
+         DO J = NLIM1, NLIM2
             V=V1PO+ REAL(J-1)*DVPO
+            BB = PLANCK(VI,XKTBND)
             NEWEM(J) = EMLAYR(J)+rddn_sfc(j)*REFLCT*TRALYR(J)+       &
                TRALYR(J)*BB*EMISIV
 !
@@ -2764,8 +2556,8 @@ SUBROUTINE EMINIT (NPTS,MFILE,JPATHL,TBND)
 !
             EMISIV = EMISIV+EMDEL
             REFLCT = REFLCT+RFDEL
-            BB = BB+BBDEL
-72       CONTINUE
+            VI = VI+ DVPO
+         END DO
 
       endif
 !
@@ -3860,7 +3652,7 @@ END SUBROUTINE RADINT
 SUBROUTINE EMBND (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,TBND)
 !
    USE phys_consts, ONLY: radcn2
-   USE lblparams, ONLY: dbg
+   USE lblparams, ONLY: dbg, od_lo
    IMPLICIT REAL*8           (V)
 !
 !
@@ -3907,26 +3699,15 @@ SUBROUTINE EMBND (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,TBND)
    EMDUM = 0.
    BBDUM = 0.
    EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)
-   BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)
-   IEMBB = 0
-   IF (VIDVBD.GT.VIDVEM) IEMBB = 1
 !
    if (dbg(9)) then
       print *, 'EMBND :: NOT FIXED'
       dbg(9) = .false.
    endif
+   VI = V1PO
 10 NLIM1 = NLIM2+1
 !
-   VI = V1PO+ REAL(NLIM1-1)*DVPO
-   IF (IEMBB.EQ.0) THEN
-      BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)
-      VIDVEM = -VIDV
-      EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)
-   ELSE
-      EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
-      VIDVBD = -VIDV
-      BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)
-   ENDIF
+   EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
 !
    IF (VIDV.GE.9.E+4) THEN
       NLIM2 = NLIMO+1
@@ -3935,14 +3716,15 @@ SUBROUTINE EMBND (V1PO,V2PO,DVPO,NLIMO,NEWEM,NEWTR,TBND)
    ENDIF
    NLIM2 = MIN(NLIM2,NLIMO)
 !
-   DO 20 J = NLIM1, NLIM2
+   DO J = NLIM1, NLIM2
+      BB = PLANCK(VI,XKTBND)
       NEWEM(J) = NEWEM(J)+NEWTR(J)*EMISIV*BB
 !
 !        Increment interpolation values
 !
-      BB = BB+BBDEL
       EMISIV = EMISIV+EMDEL
-20 END DO
+      VI = VI + DVPO
+   END DO
 !
    IF (NLIM2.LT.NLIMO) GO TO 10
 !
@@ -4065,7 +3847,6 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
    character*1 surf_refl
    character*3 pad_3
-   logical :: AerosolIncluded
 !
    DIMENSION PNLHDR(2),EM(*),EMB(*),TR(*)
 !
@@ -4125,16 +3906,16 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    rec_6 = 1./6.
 ! **********************************************************************
 !
-   AerosolIncluded = .not. (IAERSL.EQ.0 .or. iaersl.eq.5)
    IF (IAERSL.EQ.0 .or. iaersl.eq.5) THEN
       IAFBB = -1
    ELSE
-      BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)
       RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDDUM)
       EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-      IAFBB = 0
-      IF (VITST.LT.VAER.AND.VITST.LT.VIBB) IAFBB = 1
-      IF (VAER.LT.VITST.AND.VAER.LT.VIBB) IAFBB = 2
+      IF (VITST.LT.VAER) then
+         IAFBB = 1
+      ELSE
+         IAFBB = 2
+      ENDIF   
    ENDIF
 !
 !     - THIS SECTION TREATS THE CASE WHERE THE LAYER CONTRIBUTES
@@ -4151,69 +3932,33 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
       IF (IHIRAC.NE.4) THEN
 !
          if (dbg(10)) then
-            print *, 'EMDM::IHIRAC.NE.4 XKTB.LE.0. ::LTE: : NOT FIXED'
+            print *, 'EMDM::IHIRAC.NE.4 XKTB.LE.0. ::LTE:: CHECKED'
             dbg(10) = .false.
          ENDIF
+         VI = V1P
+         bb_dif=0.
 10       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-!**%%$$ sub emin               VAER = -VIDV
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-!**%%$$ sub emin               VAER = -VIDV
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
          ENDIF
 !
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif = bba-bb
-         bb_dif_del = bbdla-bbdel
-!
-         DO 20 I = NLIM1, NLIM2
+         DO I = NLIM1, NLIM2
+            BB = PLANCK(VI,XKT)
+            IF (XKTA.GT.0.) THEN
+               bb_dif = PLANCK(VI,XKTA)-BB
+            ENDIF            
 !
             ODVI = TR(I)+EXT*RADFN0
 !
@@ -4247,77 +3992,39 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
             EXT = EXT+ADEL
             RADFN0 = RADFN0+RDEL
-            BB = BB+BBDEL
-            bb_dif = bb_dif + bb_dif_del
-!
-20       CONTINUE
+            VI = VI + DVP
+         END DO
 !
          IF (NLIM2.LT.NLIM) GO TO 10
       ELSE
 !
 !     - THIS SECTION TREATS THE NLTE CASE
 !
+         bb_dif=0.
+         VI = V1P
 30       NLIM1 = NLIM2+1
 !
          VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-!**%%$$ sub emin               VAER = -VIDV
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-!**%%$$ sub emin               VAER = -VIDV
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
          ENDIF
 !
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif = bba-bb
-         bb_dif_del = bbdla-bbdel
-!
-         DO 40 I = NLIM1, NLIM2
-
+         DO I = NLIM1, NLIM2
+            BB = PLANCK(VI,XKT)
+            IF (XKTA.GT.0.) THEN
+               bb_dif = PLANCK(VI,XKTA)-BB
+            ENDIF            
 !              tr(i) contains the layer optical depths at this stage
 
             ODVI = TR(I)+EXT*RADFN0
@@ -4354,10 +4061,8 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
             EXT = EXT+ADEL
             RADFN0 = RADFN0+RDEL
-            BB = BB + BBDEL
-            bb_dif = bb_dif + bb_dif_del
-!
-40       CONTINUE
+            VI = VI + DVP
+         END DO
 !
          IF (NLIM2.LT.NLIM) GO TO 30
 !
@@ -4375,106 +4080,44 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE LTE CASE
 !
+         bb_dif_a = 0.
+         bb_dif_b = 0.
+         VI = V1P
 50       NLIM1 = NLIM2+1
 !
          VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-!**%%$$ sub emin               VAER = -VIDV
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-!**%%$$ sub emin               VAER = -VIDV
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
          ENDIF
-!
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif_a = bba-bb
-         bb_dif_b = bbb-bb
-         bb_dif_a_del = bbdla-bbdel
-         bb_dif_b_del = bbdlb-bbdel
 !ccc
 !     This calculation  is for specular reflection for the downwelling
 !ccc
 
          if (surf_refl .eq. 's') then
             if (dbg(12)) then
-               print *, 'EMDM::IHIRAC!=4 XKTB>0. ::LTE:: specular :: NOT FIXED'
+               print *, 'EMDM::IHIRAC!=4 XKTB>0. ::LTE:: specular :: NOT CHECKED'
                dbg(12) = .false.
             ENDIF
 !
-            DO 60 I = NLIM1, NLIM2
-!
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
                ODVI = TR(I)+EXT*RADFN0
 !
 !       for odvi ouside the range of the table,  set optical depth to bo
@@ -4507,15 +4150,12 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-60          CONTINUE
-!
+               VI = VI + DVP
+            END DO
+   !
          elseif (surf_refl .eq. 'l') then
             if (dbg(13)) then
-               print *, 'EMDM::IHIRAC!=4 XKTB>0. ::LTE:: Lambertian :: NOT FIXED'
+               print *, 'EMDM::IHIRAC!=4 XKTB>0. ::LTE:: Lambertian :: NOT CHECKED'
                dbg(13) = .false.
             endif
 !ccc
@@ -4528,7 +4168,14 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     diffuse_fac is the factor that is used to scale the optical depth
 !     on the 'observer side' of the path to that required for the 'back
 !ccc
-            DO 62 I = NLIM1, NLIM2
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 !
                ODVI = TR(I)+EXT*RADFN0
                odvi_d = diffuse_fac * odvi
@@ -4566,15 +4213,12 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-62          CONTINUE
-!
+               VI = VI + DVP
+            END DO
+   !
          else
             WRITE (IPR,906) surf_refl
-            STOP 'INVALID SURFACE REFLECTIVITY FLAG'
+            STOP 'EMDM:INVALID SURFACE REFLECTIVITY FLAG'
          endif
 !
          IF (NLIM2.LT.NLIM) GO TO 50
@@ -4583,94 +4227,25 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE CASE OF NLTE
 !
+         bb_dif_a = 0.
+         bb_dif_b = 0.
+         VI = V1P
 70       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-!**%%$$ sub emin               VAER = -VIDV
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-!**%%$$ sub emin               VAER = -VIDV
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
          ENDIF
-!
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif_a = bba-bb
-         bb_dif_b = bbb-bb
-         bb_dif_a_del = bbdla-bbdel
-         bb_dif_b_del = bbdlb-bbdel
 !
 !ccc
 !     This calculation  is for specular reflection for the downwelling
@@ -4678,10 +4253,17 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 
          if (surf_refl .eq. 's') then
             if (dbg(14)) then
-               print *, 'EMDM::IHIRAC==4 XKTB>0. ::NLTE:: specular :: NOT FIXED'
+               print *, 'EMDM::IHIRAC==4 XKTB>0. ::NLTE:: specular :: NOT CHECKED'
                dbg(14) = .false.
             END IF   
-            DO 80 I = NLIM1, NLIM2
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 
 !     tr(i) contains the layer optical depths at this stage
 
@@ -4723,15 +4305,12 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB+BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-80          CONTINUE
-
+               VI = VI + DVP
+            END DO
+   
          elseif (surf_refl .eq. 'l') then
             if (dbg(14)) then
-               print *, 'EMDM::IHIRAC==4 XKTB>0. ::NLTE:: Lambertian :: NOT FIXED'
+               print *, 'EMDM::IHIRAC==4 XKTB>0. ::NLTE:: Lambertian :: NOT CHECKED'
                dbg(14) = .false.
             endif
 !ccc
@@ -4744,7 +4323,14 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     diffuse_fac is the factor that is used to scale the optical depth
 !     on the 'observer side' of the path to that required for the 'back
 !ccc
-            DO 82 I = NLIM1, NLIM2
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 
 !     tr(i) contains the layer optical depths at this stage
 
@@ -4792,16 +4378,13 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-82          CONTINUE
-
+               VI = VI + DVP
+            END DO
+   
          else
 
             WRITE (IPR,906) surf_refl
-            STOP 'INVALID SURFACE REFLECTIVITY FLAG'
+            STOP 'EMDM::INVALID SURFACE REFLECTIVITY FLAG'
 
          endif
 !
@@ -4861,7 +4444,6 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
    character*1 surf_refl
    character*3 pad_3
-   logical ::    AerosolIncluded
 
    data itbl_calc/-99/, aa /0.278/
 !
@@ -4934,16 +4516,17 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    rec_6 = 1./6.
 ! **********************************************************************
 !
-   AerosolIncluded = .not. (IAERSL.EQ.0 .or.iaersl.eq.5) 
    IF (IAERSL.EQ.0 .or.iaersl.eq.5) THEN
       IAFBB = -1
    ELSE
-      BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)
       RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDDUM)
       EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-      IAFBB = 0
-      IF (VITST.LT.VAER.AND.VITST.LT.VIBB) IAFBB = 1
-      IF (VAER.LT.VITST.AND.VAER.LT.VIBB) IAFBB = 2
+      IF (VITST.LT.VAER) then
+         IAFBB = 1
+      ELSE
+         IAFBB = 2
+      ENDIF   
+
    ENDIF
 !
 !     - THIS SECTION TREATS THE CASE WHERE THE LAYER CONTRIBUTES
@@ -4959,78 +4542,36 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
       IF (IHIRAC.NE.4) THEN
          if (dbg(15)) then
-            print *, 'EMDT::IHIRAC!=4 XKTB<=0. :: LTE: NOT FIXED'
+            print *, 'EMDT::IHIRAC!=4 XKTB<=0. :: LTE: CHECKED'
             dbg(15) = .false.
          endif
 !
+         bb_dif=0.
+         VI = V1P
 10       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            bbd = BBdTfn(BB,VI,DVP,V2P,XKT,VIDD,BBdTdel,BBdTlast)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-               bbdT = BBdTfn(BB,VI,DVP,V2P,XKTA,vbbdT,bbdT1,bbdT2)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            BBD = BBdTfn(BB,VI,DVP,V2P,XKT,VIDD,BBdTdel,BBdTlast)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-               bbdT = BBdTfn(BB,VI,DVP,V2P,XKTA,vbbdT,bbdT1,bbdT2)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-            VAER = -VIDV
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            BBD = BBdTfn(BB,VI,DVP,V2P,XKT,VIDD,BBdTdel,BBdTlast)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-               bbdT = BBdTfn(BB,VI,DVP,V2P,XKTA,vbbdT,bbdT1,bbdT2)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-!**%%$$ sub emin               VAER = -VIDV
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            BBD = BBdTfn(BB,VI,DVP,V2P,XKT,VIDD,BBdTdel,BBdTlast)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-               bbdT = BBdTfn(BB,VI,DVP,V2P,XKTA,vbbdT,bbdT1,bbdT2)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
          ENDIF
 !
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif = bba-bb
-         bb_dif_del = bbdla-bbdel
-!
-         DO 20 I = NLIM1, NLIM2
+         DO I = NLIM1, NLIM2
+            BB = PLANCK(VI,XKT)
+            BBD = PLANCK_DT(VI,XKT,BB)
+            IF (XKTA.GT.0.) THEN
+               bb_dif = PLANCK(VI,XKTA)-BB
+               bbdT = PLANCK_DT(VI,XKTA,BB)
+            ENDIF            
 !
             ODVI = TR(I)+EXT*RADFN0
 !
@@ -5063,12 +4604,8 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
             EXT = EXT+ADEL
             RADFN0 = RADFN0+RDEL
-            BB = BB + BBDEL
-            bb_dif = bb_dif + bb_dif_del
-            bbd = bbd+bbdTdel
-            bbdT=bbdT+bbdT1
-!
-20       CONTINUE
+            VI = VI + DVP
+         END DO
 !
          IF (NLIM2.LT.NLIM) GO TO 10
       ELSE
@@ -5076,69 +4613,33 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     - THIS SECTION TREATS THE NLTE CASE
 !
          if (dbg(16)) then
-            print *, 'EMDT::IHIRAC==4 XKTB<=0. :: NLTE:: NOT FIXED'
+            print *, 'EMDT::IHIRAC==4 XKTB<=0. :: NLTE:: NOT CHECKED'
             dbg(16) = .false.
          endif
+         bb_dif = 0.
+         VI = V1P
 30       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-!**%%$$ chk emin               VAER = -VIDV
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-!**%%$$ chk emin               VAER = -VIDV
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
          ENDIF
 !
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif = bba-bb
-         bb_dif_del = bbdla-bbdel
-!
-         DO 40 I = NLIM1, NLIM2
+         DO I = NLIM1, NLIM2
+            BB = PLANCK(VI,XKT)
+            IF (XKTA.GT.0.) THEN
+               bb_dif = PLANCK(VI,XKTA)-BB
+            ENDIF            
 
 !              tr(i) contains the layer optical depths at this stage
 
@@ -5179,10 +4680,9 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
             EXT = EXT+ADEL
             RADFN0 = RADFN0+RDEL
-            BB = BB + BBDEL
-            bb_dif = bb_dif + bb_dif_del
-!
-40       CONTINUE
+            VI = VI + DVP
+         END DO
+
 !
          IF (NLIM2.LT.NLIM) GO TO 30
 !
@@ -5200,105 +4700,43 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE LTE CASE
 !
+         bb_dif_a = 0.
+         bb_dif_b = 0.
+         VI = V1P
 50       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-!**%%$$ sub emin               VAER = -VIDV
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-!**%%## sub emin               VAER = -VIDV
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
          ENDIF
-!
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif_a = bba-bb
-         bb_dif_b = bbb-bb
-         bb_dif_a_del = bbdla-bbdel
-         bb_dif_b_del = bbdlb-bbdel
 !ccc
 !     This calculation  is for specular reflection for the downwelling
 !ccc
 
          if (surf_refl .eq. 's') then
             if (dbg(17)) then
-               print *, 'EMDT::IHIRAC!=4 XKTB>0. :: LTE:: specular :: NOT FIXED'
+               print *, 'EMDT::IHIRAC!=4 XKTB>0. :: LTE:: specular :: NOT CHECKED'
                dbg(17) = .false.
             endif
 !
-            DO 60 I = NLIM1, NLIM2
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 !
                ODVI = TR(I)+EXT*RADFN0
 !
@@ -5331,15 +4769,12 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-60          CONTINUE
-!
+               VI = VI + DVP
+            END DO
+   !
          elseif (surf_refl .eq. 'l') then
             if (dbg(18)) then
-               print *, 'EMDT::IHIRAC!=4 XKTB>0. :: LTE:: Lambertian :: NOT FIXED'
+               print *, 'EMDT::IHIRAC!=4 XKTB>0. :: LTE:: Lambertian :: NOT CHECKED'
                dbg(18) = .false.
             endif
 !ccc
@@ -5352,7 +4787,14 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     diffuse_fac is the factor that is used to scale the optical depth
 !     on the 'observer side' of the path to that required for the 'back
 !ccc
-            DO 62 I = NLIM1, NLIM2
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 !
                ODVI = TR(I)+EXT*RADFN0
                odvi_d = diffuse_fac * odvi
@@ -5391,15 +4833,12 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-62          CONTINUE
-!
+               VI = VI + DVP
+            END DO
+   !
          else
             WRITE (IPR,906) surf_refl
-            STOP 'INVALID SURFACE REFLECTIVITY FLAG'
+            STOP 'EMDT::INVALID SURFACE REFLECTIVITY FLAG'
          endif
 !
          IF (NLIM2.LT.NLIM) GO TO 50
@@ -5408,94 +4847,25 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE CASE OF NLTE
 !
+         bb_dif_a = 0.
+         bb_dif_b = 0.
+         VI = V1P
 70       NLIM1 = NLIM2+1
 !
-         VI = V1P+ REAL(NLIM1-1)*DVP
          IF (IAFBB.EQ.-1) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-         ELSEIF (IAFBB.EQ.0) THEN
-            BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-            VITST = -VIDV
-            RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-!**%%$$ sub emin               VAER = -VIDV
-            EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+            NLIM2 = NLIM
          ELSEIF (IAFBB.EQ.1) THEN
             RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
-!**%%$$ sub emin               VAER = -VIDV
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
          ELSEIF (IAFBB.EQ.2) THEN
             EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-            VIBB = -VIDV
-            BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-            IF (XKTA.GT.0.) THEN
-               VIBB = -VIDV
-               BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-            ELSE
-               BBA = BB
-               BBDLA = BBDEL
-            ENDIF
-            IF (XKTB.GT.0.) THEN
-               VIBB = -VIDV
-               BBB = BBFN(VI,DVP,V2P,XKTB,VIBB,BBDLB,BBLXTB)
-            ELSE
-               BBB = BB
-               BBDLB = BBDEL
-            ENDIF
+            NLIM2 = (VIDV-V1P)/DVP+1.001
+            NLIM2 = MIN(NLIM2,NLIM)
             VITST = -VIDV
             RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
          ENDIF
-!
-         NLIM2 = (VIDV-V1P)/DVP+1.001
-         NLIM2 = MIN(NLIM2,NLIM)
-!
-         bb_dif_a = bba-bb
-         bb_dif_b = bbb-bb
-         bb_dif_a_del = bbdla-bbdel
-         bb_dif_b_del = bbdlb-bbdel
 !
 !ccc
 !     This calculation  is for specular reflection for the downwelling
@@ -5506,7 +4876,14 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
                print *, 'EMDT::IHIRAC==4 XKTB>0. :: NLTE:: specular :: NOT FIXED'
                dbg(19) = .false.
             endif
-            DO 80 I = NLIM1, NLIM2
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 
 !     tr(i) contains the layer optical depths at this stage
 
@@ -5549,12 +4926,9 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-80          CONTINUE
-
+               VI = VI + DVP
+            END DO
+   
          elseif (surf_refl .eq. 'l') then
             if (dbg(20)) then
                print *, 'EMDT::IHIRAC==4 XKTB>0. :: NLTE:: Lambertian :: NOT FIXED'
@@ -5571,7 +4945,14 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     diffuse_fac is the factor that is used to scale the optical depth
 !     on the 'observer side' of the path to that required for the 'back
 !ccc
-            DO 82 I = NLIM1, NLIM2
+            DO I = NLIM1, NLIM2
+               BB = PLANCK(VI,XKT)
+               IF (XKTA.GT.0.) THEN
+                  bb_dif_a = PLANCK(VI,XKTA)-BB
+               ENDIF            
+               IF (XKTB.GT.0.) THEN
+                  bb_dif_b = PLANCK(VI,XKTB)-BB
+               ENDIF            
 
 !     tr(i) contains the layer optical depths at this stage
 
@@ -5621,16 +5002,13 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
                EXT = EXT+ADEL
                RADFN0 = RADFN0+RDEL
-               BB = BB + BBDEL
-               bb_dif_a = bb_dif_a + bb_dif_a_del
-               bb_dif_b = bb_dif_b + bb_dif_b_del
-
-82          CONTINUE
-
+               VI = VI + DVP
+            END DO
+   
          else
 
             WRITE (IPR,906) surf_refl
-            STOP 'INVALID SURFACE REFLECTIVITY FLAG'
+            STOP 'EMDT::INVALID SURFACE REFLECTIVITY FLAG'
 
          endif
 !
@@ -5859,28 +5237,17 @@ SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)
       NLIM1 = 0
       NLIM2 = 0
       if (dbg(21)) then
-         print *, 'EMADL1::(IPATHL.EQ.3): NOT FIXED'
+         print *, 'EMADL1::(IPATHL.EQ.3): NOT CHECKED'
          dbg(21) = .false.
       endif
       EMDUM = 0.
       BBDUM = 0.
       EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)
-      BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)
-      IEMBB = 0
-      IF (VIDVBD.GT.VIDVEM) IEMBB = 1
 !
+      VI = V1PO
 40    NLIM1 = NLIM2+1
 !
-      VI = V1PO+ REAL(NLIM1-1)*DVPO
-      IF (IEMBB.EQ.0) THEN
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)
-         VIDVEM = -VIDV
-         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)
-      ELSE
-         EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
-         VIDVBD = -VIDV
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)
-      ENDIF
+      EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
 !
       IF (VIDV.GE.9.E+4) THEN
          NLIM2 = NLIMO+1
@@ -5889,24 +5256,25 @@ SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)
       ENDIF
       NLIM2 = MIN(NLIM2,NLIMO)
 !
-      data jloop/0/, jprnt/0/, n_prnt/1/
-
       DO 50 J = NLIM1, NLIM2
+         BB = PLANCK(VI,XKTBND)
          OLDEM(J) = BB*EMISIV
          NEWEM(J) = EMLAYR(J)+TRALYR(J)*OLDEM(J)
 !
 !           Increment interpolation values
 !
          EMISIV = EMISIV+EMDEL
-         BB = BB + BBDEL
-
+         VI = VI+ DVPO
 50    CONTINUE
-
 !
       IF (NLIM2.LT.NLIMO) GO TO 40
 !
    ELSEIF (IPATHL.EQ.-1 .or. ipathl.eq.1) THEN
 !
+      if (dbg(31)) then
+         print *, 'EMADL1::(IPATHL.EQ.-1 .or. ipathl.eq.1): CHECKED'
+         dbg(31) = .false.
+      endif
       NLIM1 = 0
       NLIM2 = 0
       EMDUM = 0.
@@ -5914,30 +5282,21 @@ SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)
       BBDUM = 0.
       EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)
       REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFDUM)
-      BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)
-      IEMBB = 0
-      IF (VIDVEM.LE.VIDVRF.AND.VIDVEM.LE.VIDVBD) IEMBB = 1
-      IF (VIDVRF.LE.VIDVEM.AND.VIDVRF.LE.VIDVBD) IEMBB = 2
+      IF (VIDVEM.LE.VIDVRF) then
+         IEMBB = 1
+      ELSE
+         IEMBB = 2
+      ENDIF   
 !
+      VI = V1PO
 60    NLIM1 = NLIM2+1
 !
-      VI = V1PO+ REAL(NLIM1-1)*DVPO
-      IF (IEMBB.EQ.0) THEN
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)
-         VIDVEM = -VIDV
-         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)
-         VIDVRF = -VIDV
-         REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)
-      ELSEIF (IEMBB.EQ.1) THEN
+      IF (IEMBB.EQ.1) THEN
          EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
-         VIDVBD = -VIDV
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)
          VIDVRF = -VIDV
          REFLCT = REFLFN(VI,DVPO,VIDVRF,RFDEL,RFLAST)
       ELSE
          REFLCT = REFLFN(VI,DVPO,VIDV,RFDEL,RFLAST)
-         VIDVBD = -VIDV
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)
          VIDVEM = -VIDV
          EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)
       ENDIF
@@ -5950,6 +5309,7 @@ SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)
       NLIM2 = MIN(NLIM2,NLIMO)
 !
       DO 70 J = NLIM1, NLIM2
+         BB = PLANCK(VI,XKTBND)
          trao (j) = 1.
          oldem(j) = BB*EMISIV+reflct*raddwn(j)
          NEWEM(J) = EMLAYR(J)+TRALYR(J)*oldem(j)
@@ -5960,6 +5320,7 @@ SUBROUTINE EMADL1 (NPTS,MFILE,JPATHL,TBND)
          BB = BB + BBDEL
          EMISIV = EMISIV+EMDEL
          REFLCT = REFLCT+RFDEL
+         VI = VI + DVPO
 70    CONTINUE
 !
 !     write out reflectance * total atmospheric transmittance for AJs
@@ -7241,13 +6602,14 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
 !
    rec_6 = 1./6.
 !
-   BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)
    IF (iaersl.ge.1 .and. iaersl.ne.5) THEN
       RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDDUM)
       EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-      IAFBB = 0
-      IF (VITST.LT.VAER.AND.VITST.LT.VIBB) IAFBB = 1
-      IF (VAER.LT.VITST.AND.VAER.LT.VIBB) IAFBB = 2
+      IF (VITST.LT.VAER) then
+         IAFBB = 1
+      ELSE
+         IAFBB = 2
+      ENDIF   
    ELSE
       IAFBB = -1
    ENDIF
@@ -7259,84 +6621,47 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
 !
    IF (XKTB.GT.0.) STOP ' XKTB GT 0.   FLXIN '
    if (dbg(23)) then
-      print *, 'FLXIN:: NOT FIXED'
+      print *, 'FLXIN:: NOT CHECKED'
       dbg(23) = .false.
    endif
 !
+   bb_dif = 0.
+   VI = V1P
 10 NLIM1 = NLIM2+1
 !
    VI = V1P+ REAL(NLIM1-1)*DVP
    IF (IAFBB.EQ.-1) THEN
-      BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-      IF (XKTA.GT.0.) THEN
-         VIBB = -VIDV
-         BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-      ELSE
-         BBA = BB
-         BBDLA = BBDEL
-      ENDIF
-   ELSEIF (IAFBB.EQ.0) THEN
-      BB = BBFN(VI,DVP,V2P,XKT,VIDV,BBDEL,BBLAST)
-      IF (XKTA.GT.0.) THEN
-         VIBB = -VIDV
-         BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-      ELSE
-         BBA = BB
-         BBDLA = BBDEL
-      ENDIF
-      VITST = -VIDV
-      RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
-      VAER = -VIDV
-      EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
+      NLIM2 = NLIM
    ELSEIF (IAFBB.EQ.1) THEN
       RADFN0 = RADFNI(VI,DVP,XKT,VIDV,RDEL,RDLAST)
-      VIBB = -VIDV
-      BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-      IF (XKTA.GT.0.) THEN
-         VIBB = -VIDV
-         BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-      ELSE
-         BBA = BB
-         BBDLA = BBDEL
-      ENDIF
+      NLIM2 = (VIDV-V1P)/DVP+1.001
+      NLIM2 = MIN(NLIM2,NLIM)
       VAER = -VIDV
       EXT = AERF(VI,DVP,VAER,ADEL,TAUSCT,TDEL,GFACT,GDEL)
    ELSEIF (IAFBB.EQ.2) THEN
       EXT = AERF(VI,DVP,VIDV,ADEL,TAUSCT,TDEL,GFACT,GDEL)
-      VIBB = -VIDV
-      BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBLAST)
-      IF (XKTA.GT.0.) THEN
-         VIBB = -VIDV
-         BBA = BBFN(VI,DVP,V2P,XKTA,VIBB,BBDLA,BBLXTA)
-      ELSE
-         BBA = BB
-         BBDLA = BBDEL
-      ENDIF
+      NLIM2 = (VIDV-V1P)/DVP+1.001
+      NLIM2 = MIN(NLIM2,NLIM)
       VITST = -VIDV
       RADFN0 = RADFNI(VI,DVP,XKT,VITST,RDEL,RDLAST)
    ENDIF
 !
-   NLIM2 = (VIDV-V1P)/DVP+1.001
-   NLIM2 = MIN(NLIM2,NLIM)
-!
-   bb_dif = bba-bb
-   bb_dif_del = bbdla-bbdel
-!
    if (dbg(26)) then
-      print *, 'FLXIN:: NOT FIXED'
+      print *, 'FLXIN:: NOT CHECKED'
       dbg(26) = .false.
    endif
 
    DO 20 I = NLIM1, NLIM2
+      BB = PLANCK(VI,XKT)
+      IF (XKTA.GT.0.) THEN
+         bb_dif = PLANCK(VI,XKTA)-BB
+      ENDIF            
 
       ODVI = SECNT*TR(I)+EXT*RADFN0
 !
 !       for odvi ouside the range of the table,  set optical depth to bound
 !
       if (odvi .lt. -od_lo)  odvi = -od_lo
-!
-!       otherwise:
-!
       tr_i   = exp(-odvi)
       if (odvi .le. od_lo) then                                     ! analytic regime
          f_i        = rec_6*odvi
@@ -7345,14 +6670,13 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
       end if
       em(i) = (1.-tr_i) * (bb + bb_dif*f_i)
       TR(i)   = tr_i
-      !
+!
 !              Increment interpolation values
 !
       EXT = EXT+ADEL
       RADFN0 = RADFN0+RDEL
-      BB = BB + BBDEL
-      bb_dif = bb_dif + bb_dif_del
-!
+      VI = VI+ DVP
+      !
 20 CONTINUE
 !
    IF (NLIM2.LT.NLIM) GO TO 10
@@ -7540,30 +6864,19 @@ SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND,refl_flg)
       EMDUM = 0.
       BBDUM = 0.
       EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMDUM)
-      BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBDUM)
-      IEMBB = 0
-      IF (VIDVBD.GT.VIDVEM) IEMBB = 1
 
       if (dbg(24)) then
-         print *, 'FLINIT:: ((IPATHL.EQ.3).AND.(TBND.GT.0.)):: NOT FIXED'
+         print *, 'FLINIT:: ((IPATHL.EQ.3).AND.(TBND.GT.0.)):: NOT CHECKED'
          dbg(24) = .false.
       endif
       if (refl_flg .eq. 1) then
          call bufin (ifiledown, keof, emdown, nlimo)
       endif
 !
+      VI = V1PO
 30    NLIM1 = NLIM2+1
 !
-      VI = V1PO+ REAL(NLIM1-1)*DVPO
-      IF (IEMBB.EQ.0) THEN
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDV,BBDEL,BBLAST)
-         VIDVEM = -VIDV
-         EMISIV = EMISFN(VI,DVPO,VIDVEM,EMDEL,EMLAST)
-      ELSE
-         EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
-         VIDVBD = -VIDV
-         BB = BBFN(VI,DVPO,V2PO,XKTBND,VIDVBD,BBDEL,BBLAST)
-      ENDIF
+      EMISIV = EMISFN(VI,DVPO,VIDV,EMDEL,EMLAST)
 !
       IF (VIDV.GE.9.E+4) THEN
          NLIM2 = NLIMO+1
@@ -7574,13 +6887,14 @@ SUBROUTINE FLINIT (NPTS,MFILE,JPATHL,TBND,refl_flg)
 !
 !    Modified (2017) to properly handle downwelling reflected off surface
       DO 40 J = NLIM1, NLIM2
+         BB = PLANCK(VI,XKTBND)
          NEWEM(J) = EMLAYR(J) + TRALYR(J) *                            &
          &             (BB*EMISIV + emdown(j)*(1.-emisiv))
 !
 !           Increment interpolation values
 !
-         BB = BB + BBDEL
          EMISIV = EMISIV+EMDEL
+         VI = VI + DVPO
 40    CONTINUE
 !
       IF (NLIM2.LT.NLIMO) GO TO 30

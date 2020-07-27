@@ -39,7 +39,8 @@ MODULE lblparams   ! Parameters for array dimensions in lblrtm
    integer, parameter :: MAXSTATE=26
    integer, parameter :: NFLTPT=3001
    
-   logical ::  dbg(100) = .true.
+!    parameter that control usage output 
+   logical ::  dbg(100) = .FALSE.
 
 !    transfered from  create_fn_tbls of xmerge.f90
 !    data od_switch /0.06/
