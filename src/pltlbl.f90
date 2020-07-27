@@ -4,7 +4,7 @@
 !     created:   $Date$
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
+! |  Copyright ï¿½, Atmospheric and Environmental Research, Inc., 2015         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -490,7 +490,7 @@ SUBROUTINE PLTLBL (IENDPL)
    SFY = 1.
    IF (JPLOT.EQ.0.AND.JEMIT.EQ.1.AND.IFUNCT.NE.2) THEN
 !
-!     BBFN BLACK BODY (INPUT TEMPERATURE - PLOT RADIANCE)
+!     PLANCK BLACK BODY (INPUT TEMPERATURE - PLOT RADIANCE)
 !
       IF (YMAX.GE.2.0) THEN
          CALL BBSCLE
@@ -1440,20 +1440,16 @@ SUBROUTINE BBSCLE
    &                JOUT,JPLTFL,JHDR,IFUNCT,NOAXES
 !
 !
-!     BBFN  BLACK BODY
+!     PLANCK  BLACK BODY
 !
    XKTMX = YMAX/RADCN2
-   XKTMN = YMIN/RADCN2
-   DVDUM = 1.
-   VIDUM = V2
-   BBLST1 = -1.
-   BBLST2 = -1.
-   YMAX1 = BBFN(V2,DVDUM,XKTMX,VIDUM,BBDEL,BBLST2)
-   YMIN1 = 0.
+   YMAX1 = PLANCK(V2, XKTMX)
    IF (YMIN.GT.0.) THEN
-      YMIN1 = BBFN(V1,DVDUM,XKTMN,VIDUM,BBDEL,BBLST1)
+      XKTMN = YMIN/RADCN2
+      YMIN1 = PLANCK(V1, XKTMN)
       RATYF = 0.
    ELSE
+      YMIN1 = 0.
       RATYF = YMIN/YMAX
    ENDIF
    NS =  LOG10(YMAX1)

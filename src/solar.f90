@@ -3,7 +3,7 @@
 !     presently: %H%  %T%
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
+! |  Copyright ï¿½, Atmospheric and Environmental Research, Inc., 2015         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -535,7 +535,7 @@ SUBROUTINE SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG,JULDAT,ISOLVAR,  &
                BBDUM = -1.
                VBND = V1PO+(I-1)*DVPO
                ZEMSV = EMISFN(VBND,DVPO,VINEM,EMDEL,EMDUM)
-               BBND = BBFN(VBND,DVPO,VBND,XKTBND,VINEW,BBDEL,BBDUM)
+               BBND = PLANCK(VBND, XKTBND)
                SOLRAD(I) = (SOLAR(I)*SCAL_FAC*TRAN2(I)*XRFLT(I)      &
                   +ZEMSV*BBND)*TRAN(I)+RADN(I)
 43          CONTINUE
@@ -861,10 +861,9 @@ SUBROUTINE SOLINT(IFILE,LFILE,NPTS,INFLAG,IOTFLG,JULDAT,ISOLVAR,  &
             ZRFL = (A1RF(JPRF)*XRFLT(JJRF-1)+ A2RF(JPRF)*XRFLT(JJRF)+&
                A3RF(JPRF)*XRFLT(JJRF+1)+ A4RF(JPRF)*XRFLT(JJRF+2))
             EMDUM = -1.
-            BBDUM = -1.
             VBND = V1PO+(II-1)*DVPO
             ZEMSV = EMISFN(VBND,DVPO,VINEM,EMDEL,EMDUM)
-            BBND = BBFN(VBND,DVPO,VBND,XKTBND,VINEW,BBDEL,BBDUM)
+            BBND = PLANCK(VBND, XKTBND)
             SOLRAD(II) = (ZSOL*ZTR2*ZRFL+ZEMSV*BBND)* TRAN(II)+RADN( &
                II)
 93       CONTINUE

@@ -6930,47 +6930,22 @@ subroutine sfcderiv(k_rddn_sfc,tbound)
 
    XKTBND = TBOUND/RADCN2
    VI = V1P-DVP
-   VIDVEM   = VI
-   VIDVRF   = VI
-   VIDVBD   = VI
-   BBdum    = 0.
-   BBlast   = -1.
-   VIDD     = VI
-   BBdTdum  = 0.
-   BBdTlast = -1.
-
-   vidd = vi
-   VDdel  = VI
+   EMLAST = -1.
+   VIDVEM = VI
 
    NLIM1 = 0
    NLIM2 = 0
    EMDUM = 0.
-   BBDUM = 0.
    if (dbg(25)) then
-      print *, 'sfcderiv:: :: NOT FIXED'
+      print *, 'sfcderiv:: :: NOT CHECKED'
       dbg(25) = .false.
    endif
-   EMISIV = EMISFN   (VI,DVP,VIDVEM,EMDEL,EMDUM)
-   BB =     BBFN     (VI,DVP,V2P,XKTBND,VIDVBD,BBDEL,BBDUM)
-   BBdT =   BBdTfn(BB,VI,DVP,V2P,XKTBND,VIDD,  BBdTd,BBdTdum)
-   IEMBB = 0
-   IF (VIDVBD.GT.VIDVEM) IEMBB = 1
+   EMISIV = EMISFN (VI,DVP,VIDVEM,EMDEL,EMDUM)
 !
+   VI = V1P
 40 NLIM1 = NLIM2+1
 !
-   VI = V1P+ REAL(NLIM1-1)*DVP
-   IF (IEMBB.EQ.0) THEN
-      BB = BBFN (VI,DVP,V2P,XKTBND,VIDV, BBDEL, BBlast)
-      BBdT = BBdTfn(BB,VI,DVP,V2P,XKTBND,VDdel,BBdTdel,BBdTlast)
-      VIDVEM = -VIDV
-      EMISIV = EMISFN (VI,DVP,VIDVEM,EMDEL,EMLAST)
-   ELSE
-      EMISIV = EMISFN (VI,DVP,VIDV, EMDEL,EMLAST)
-      VIDVBD = -VIDV
-      VIDD = -VIDV
-      BB = BBFN (VI,DVP,V2P,XKTBND,VIDVBD,BBDEL, BBlast)
-      BBdT = BBdTfn(BB,VI,DVP,V2P,XKTBND,VDdel, BBdTdel,BBdTlast)
-   ENDIF
+   EMISIV = EMISFN (VI,DVP,VIDV, EMDEL,EMLAST)
 !
    IF (VIDV.GE.9.E+4) THEN
       NLIM2 = NLIM+1
@@ -6979,7 +6954,9 @@ subroutine sfcderiv(k_rddn_sfc,tbound)
    ENDIF
    NLIM2 = MIN(NLIM2,NLIM)
 !
-   DO 50 J = NLIM1, NLIM2
+   DO J = NLIM1, NLIM2
+      BB   = PLANCK   (VI,XKTBND)
+      BBdT = PLANCK_DT(VI,XKTBND, BB)
       DERVOUTt(J) = EMISIV*TRADWN(J)*BBdT
       DERVOUTe(J) = BB*TRADWN(J)
       dervoutr(j) = raddwn(j)*tradwn(j)
@@ -6988,10 +6965,8 @@ subroutine sfcderiv(k_rddn_sfc,tbound)
 !     Increment interpolation values
 !
       EMISIV = EMISIV+EMDEL
-      BB = BB+BBDEL
-      BBdT = BBdT+BBdTdel
-
-50 END DO
+      VI = VI+ DVP
+   END DO
 !
    IF (NLIM2.LT.NLIM) GO TO 40
 

@@ -999,7 +999,7 @@ FUNCTION PLANCK (VI,XKT)
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !
 !  if xkt small, e.g. xkt = 0., trap and return
-! to ensure smoothenss in single pressicion make all calculation in double precision   
+! to ensure smoothnenss in single precision make all calculation in double precision   
    VPLANCK  = 0d0
    if (XKT > 0.0) then
       VKT = real(XKT, kind=8)
@@ -1062,7 +1062,8 @@ FUNCTION PLANCK_DT (VI,XKT, BBVAL)
 !     and we can solve easily for t:
 !                                     t = XKT*RADCN2.
 !
-   
+! to ensure smoothnenss in single precision make all calculation in double precision   
+  
    VPLANCK_DT = 0d0
    IF (XKT.GT.0.0) THEN
       VKT = real(XKT, kind=8)
@@ -1739,11 +1740,6 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    character*3 pad_3
    LOGICAL :: AerosolIncluded
 !
-!      parameter (nn_tbl=10000)
-!
-   common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                &
-   &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)
-!
    DIMENSION PNLHDR(2),EM(*),EMB(*),TR(*)
 !
    EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4)
@@ -1801,12 +1797,6 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
    rec_6 = 1./6.
 !
-! **********************************************************************
-!
-!     if the the exponential table and the 'linear-in-tau' table
-!     have not been created, then call create_fn_tbls
-!
-   if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 ! **********************************************************************
 !
    AerosolIncluded = .NOT. (IAERSL.EQ.0 .or. iaersl.eq.5)
@@ -2441,80 +2431,6 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 907 FORMAT (' THE SURFACE REFLECTIVITY FLAG OF: ', A1)
 !
 END SUBROUTINE EMIN
-!
-!     ----------------------------------------------------------------
-!
-Subroutine create_fn_tbls(itbl_calc)
-!
-   USE lblparams, ONLY: NN_TBL
-   data aa/0.278/
-!
-!      parameter (nn_tbl=10000)
-!
-   common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                &
-   &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)
-!
-   dimension tau_sav(0:nn_tbl)
-
-   data od_switch /0.06/
-!
-!     create table of exponential fn and correct 'linear-in-tau' fn
-!     with tau_fn as argument
-!
-!     tau_fn is the Pade approximate for the 'linear-in-tau' fn
-!
-!     derivative of tau_tbl contained in dtau_tbl
-!
-   itbl_calc = 111
-   jtbl_calc = 111
-   aa_inv    = 1./aa
-   xnn       = nn_tbl
-   od_lo     = od_switch
-
-   tau_fn_max =  REAL(nn_tbl-1)/xnn
-!
-   od_hi = ( tau_fn_max * aa_inv / (1.-tau_fn_max) ) - 1.
-!
-   do 15 i=1,nn_tbl-1
-
-!     table is equally spaced in tau_fn
-
-      tau_fn     =  REAL(i)/xnn
-      tau        = tau_fn * aa_inv / (1.-tau_fn)
-      trans      = exp(-tau)
-      exp_tbl(i) = trans
-      if (tau .lt. od_lo) then
-         tau_tbl(i) = tau/6.
-      else
-         tau_tbl(i) = 1. - 2.*(trans/(trans-1.) + 1./tau)
-      endif
-
-      tau_sav(i) = tau
-
-15 continue
-
-!------
-! coding for analytic derivative
-   tau_sav(0)      = 0.0
-   tau_sav(nn_tbl) = od_hi+1.0
-
-   tau_tbl(0)      = 0.0
-   tau_tbl(nn_tbl) = 1.00
-   exp_tbl(0)      = 1.0
-   exp_tbl(nn_tbl) = 0.0
-
-   dtau_tbl(0)     = 0.0
-   dtau_tbl(nn_tbl)= 0.0
-
-   do 20 i=1,nn_tbl-1
-      dtau_tbl(i)=(tau_tbl(i+1)-tau_tbl(i-1))/                      &
-      &        (tau_sav(i+1)-tau_sav(i-1))
-20 continue
-!------
-
-   return
-
-END SUBROUTINE create_fn_tbls
 !
 !     ----------------------------------------------------------------
 !
@@ -4151,11 +4067,6 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    character*3 pad_3
    logical :: AerosolIncluded
 !
-!      parameter (nn_tbl=10000)
-!
-   common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                &
-   &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)
-!
    DIMENSION PNLHDR(2),EM(*),EMB(*),TR(*)
 !
    EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4)
@@ -4212,13 +4123,6 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    NLIM2 = 0
 !
    rec_6 = 1./6.
-!
-! **********************************************************************
-!
-!     if the the exponential table and the 'linear-in-tau' table
-!     have not been created, then call create_fn_tbls
-!
-   if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 ! **********************************************************************
 !
    AerosolIncluded = .not. (IAERSL.EQ.0 .or. iaersl.eq.5)
@@ -4958,11 +4862,6 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    character*1 surf_refl
    character*3 pad_3
    logical ::    AerosolIncluded
-!
-!      parameter (nn_tbl=10000)
-!
-   common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                &
-   &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)
 
    data itbl_calc/-99/, aa /0.278/
 !
@@ -5033,13 +4932,6 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    vidd = v1p-dvp
 
    rec_6 = 1./6.
-!
-! **********************************************************************
-!
-!     if the the exponential table and the 'linear-in-tau' table
-!     have not been created, then call create_fn_tbls
-!
-   if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 ! **********************************************************************
 !
    AerosolIncluded = .not. (IAERSL.EQ.0 .or.iaersl.eq.5) 
@@ -7295,11 +7187,6 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
    COMMON /BUFPNL/ V1PBF,V2PBF,DVPBF,NLIMBF
    COMMON /RMRG/ XKT,XKTA,XKTB,SECNT
 !
-!      parameter (nn_tbl=10000)
-!
-   common /fn_tbls/ jtbl_calc,aa_inv,xnn,od_lo,od_hi,                  &
-   &     exp_tbl(0:nn_tbl), tau_tbl(0:nn_tbl), dtau_tbl(0:nn_tbl)
-!
    DIMENSION PNLHDR(2),EM(*),TR(*)
 !
    EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4)
@@ -7353,13 +7240,6 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
    NLIM2 = 0
 !
    rec_6 = 1./6.
-!
-!     **********************************************************
-!
-!     if the the exponential table and the 'linear-in-tau' table
-!     have not been created, then call create_fn_tbls
-!
-   if (itbl_calc .eq. -99) call create_fn_tbls(itbl_calc)
 !
    BB = BBFN(VI,DVP,V2P,XKT,VIBB,BBDEL,BBDUM)
    IF (iaersl.ge.1 .and. iaersl.ne.5) THEN
