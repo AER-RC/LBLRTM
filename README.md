@@ -30,9 +30,11 @@ LBLRTM (Line-By-Line Radiative Transfer Model) is an accurate and efficient line
 
 The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for the line parameters used in LBLRTM. These line parameters, as well as additional line parameters from other sources, are extracted for use in LBLRTM by a line file creation program called LNFL. A line parameter database built from HITRAN and suitable for use with LNFL is available on the [AER RT web site](http://rtweb.aer.com).
 
+If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
+
 [Add plantUML diagram]
 
-For more, please see the [Description Wiki page](https://github.com/AER-RC/LBLRTM/wiki/Description)
+For more, please see the [Wiki page](https://github.com/AER-RC/LBLRTM/wiki/)
 
 # Cloning the Latest Release <a name="cloning"></a>
 
@@ -58,6 +60,15 @@ git checkout tags/v12.9
 ```
 
 No releases before v12.9 are available via GitHub, but they can be requested by emailing <aer_lblrtm@aer.com>. For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
+
+Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/releases/tag/v12.9) and unpack it:
+
+```
+tar xvf lblrtm_v12.9.tar.gz
+mv LBLRTM-12.9/ lblrtm
+```
+
+Though not necessary, the move to `lblrtm` is for consistency with previous release packages and the associated documentation.
 
 # LBLRTM and Docker <a name="docker"></a>
 
