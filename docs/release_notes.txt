@@ -8,6 +8,8 @@ August 2020
 
 * Added six cross-section molecules: SF6, NF3, C2F6, HCHO,  HFC-245fa, and HFC-236fa. (I.Polonsky)
 
+* Introduced MT_CKD_3.4: Collision-induced absorption in the oxygen A-band was modified to be consistent with OCO-2 ABSCO 5.1  (E.J. Mlawer, J. Mascio, V.H. Payne, B. Drouin, F. Oyafuso).
+
 LBLRTM v12.9
 August 2019
 
