@@ -4,7 +4,7 @@
 !     presently: %H%  %T%
 !
 !  --------------------------------------------------------------------------
-! |  Copyright ©, Atmospheric and Environmental Research, Inc., 2015         |
+! |  Copyright ï¿½, Atmospheric and Environmental Research, Inc., 2015         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -7303,7 +7303,8 @@ BLOCK DATA XMLATM
    &                AMOL28(MXZMD), AMOL29(MXZMD), AMOL30(MXZMD),      &
    &                AMOL31(MXZMD), AMOL32(MXZMD), AMOL33(MXZMD),      &
    &                AMOL34(MXZMD), AMOL35(MXZMD), AMOL36(MXZMD),      &
-   &                AMOL37(MXZMD), AMOL38(MXZMD), AMOL39(MXZMD)
+   &                AMOL37(MXZMD), AMOL38(MXZMD), AMOL39(MXZMD),      &
+   &                AMOL40(MXZMD) 
 !
    DATA LAYXMX / 6000 /
 !
@@ -7808,6 +7809,12 @@ BLOCK DATA XMLATM
    &  50*-99.                                              ,          &
    &  MXZ50*0.0/
 !
+!     DATA AMOL39 / ?????? /
+!
+   DATA AMOL40 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
 end block data XMLATM
 !
 ! -------------------------------------------------------------------
