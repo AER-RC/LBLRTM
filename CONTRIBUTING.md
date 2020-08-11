@@ -4,7 +4,7 @@ The `master` branch of hosted in GitHub *is* the local version of LBLRTM. Releas
 
 # Development <a href="Dev"></a>
 
-"Incoming" is no more. If you have contrbutions to make, branch off of master, make your edits, push to your branch, then create a merge request as soon as your commit has been pushed. Owners and/or maintainers will then execute the merge if it is acceptable. The development steps are:
+"Incoming" is no more. If you have contrbutions to make, branch off of master, make your edits, push to your branch, then create a merge request as soon as your commit has been pushed. Owners and/or maintainers will then execute the merge if it is acceptable. The development steps are (new users must generate an [SSH Key](https://docs.github.com/en/github/authenticating-to-github/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent#generating-a-new-ssh-key) and [add it to their GitHub account](https://docs.github.com/en/github/authenticating-to-github/adding-a-new-ssh-key-to-your-github-account)):
 
 ```
 git clone --recursive git@github.com:AER-RC/LBLRTM.git
