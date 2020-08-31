@@ -4272,7 +4272,7 @@ BLOCK DATA BXSECT
    DATA (ALIAS(1,I),I=1,mx_xs)/                                      &
    &    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',       &
    &    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',       &
-   &    'N2O5      ', 'HNO3      ', 'CF4       ', 'CHCLF2    ',       &
+   &    'N2O5      ', 'HNO3      ', 'CF4       ', 'ZZZZZZ    ',       &
    &    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ',       &
    &    'ACET      ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &
    &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &
@@ -4283,7 +4283,7 @@ BLOCK DATA BXSECT
    DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
    &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
    &    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',       &
-   &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CHF2CL    ',       &
+   &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'ZZZZZZ    ',       &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
    &    'CH3COCH3  ', ' ZZZZZZZZ ', 'HFC-125   ', 'HFC-134a  ',       &
    &    'HFC-143a  ', 'HFC-152a  ', 'HFC-32    ', 'HCFC-141b ',       &
@@ -4294,7 +4294,7 @@ BLOCK DATA BXSECT
    DATA (ALIAS(3,I),I=1,mx_xs)/                                      &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
    &    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',       &
-   &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'CFC22     ',       &
+   &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC14     ', 'ZZZZZZ    ',       &
    &    'CFC13     ', 'CFC115    ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
    &    'ACETONE   ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
@@ -4305,7 +4305,7 @@ BLOCK DATA BXSECT
    DATA (ALIAS(4,I),I=1,mx_xs)/                                      &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',       &
    &    'F11       ', 'F12       ', 'F114      ', 'F113      ',       &
-   &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F14       ', 'F22       ',       &
+   &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F14       ', 'ZZZZZZ    ',       &
    &    'F13       ', 'F115      ',  ' ZZZZZZZZ ', ' ZZZZZZZZ ',      &
    &    'CH3C(O)CH3', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
