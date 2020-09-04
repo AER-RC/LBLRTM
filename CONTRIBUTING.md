@@ -21,3 +21,17 @@ Merging and pulling should be done in the [web interface](https://github.com/AER
 # Documentation
 
 Document this model at will. `FAQ_LBLRTM.doc` has been removed from version control (and its PDF cousin will be gone, too) and converted to Markdown format and is now the top-level `README.md`. This README is the first place we should consider placing general information. Things for specific projects or special cases should have their own page in the [Wiki](https://github.com/AER-RC/LBLRTM/wiki).
+
+# Release Procedure
+
+A few of our repositories are dependent on each other. Contributors are encouraged to peruse the Wiki pages of [LBLRTM](https://github.com/AER-RC/LBLRTM/wiki/LBLRTM-New-Release-Procedure), [aer_rt_utils](https://github.com/AER-RC/aer_rt_utils/wiki/New-Release-Procedure), and [cross-section](https://github.com/AER-RC/cross-sections/wiki/New-Release-Procedure) for guidance on new releases of each repository and its associated submodules. Essentially, **each release of code base should be linked to specific releases of its submodules, and not the `master` branches** (assuming we know the submodule releases work with the given repository).
+
+Releases should be done in the following order (submodules in parentheses):
+
+1. [aer_rt_utils](https://github.com/AER-RC/aer_rt_utils)
+2. [cross-sections](https://github.com/AER-RC/cross-sections)
+3. [LNFL](https://github.com/AER-RC/LNFL) (aer_rt_utils)
+4. [LBLRTM](https://github.com/AER-RC/LBLRTM) (aer_rt_utils, cross-sections)
+5. [MT_CKD](https://github.com/AER-RC/mt-ckd) (aer_rt_utils, LBLRTM)
+
+Since LNFL and LBLRTM are not dependent on each other, the order of these two releases does not matter.
