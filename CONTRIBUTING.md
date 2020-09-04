@@ -28,10 +28,10 @@ A few of our repositories are dependent on each other. Contributors are encourag
 
 Releases should be done in the following order (submodules in parentheses):
 
-1. [aer_rt_utils](https://github.com/AER-RC/aer_rt_utils)
-2. [cross-sections](https://github.com/AER-RC/cross-sections)
-3. [LNFL](https://github.com/AER-RC/LNFL) (aer_rt_utils)
-4. [LBLRTM](https://github.com/AER-RC/LBLRTM) (aer_rt_utils, cross-sections)
-5. [MT_CKD](https://github.com/AER-RC/mt-ckd) (aer_rt_utils, LBLRTM)
+1. [aer_rt_utils](https://github.com/AER-RC/aer_rt_utils/wiki/New-Release-Procedure)
+2. [cross-sections](https://github.com/AER-RC/cross-sections/wiki/New-Release-Procedure)
+3. [LNFL](https://github.com/AER-RC/LNFL/wiki/LNFL-New-Release-Procedure) (aer_rt_utils)
+4. [LBLRTM](https://github.com/AER-RC/LBLRTM/wiki/LBLRTM-New-Release-Procedure) (aer_rt_utils, cross-sections)
+5. [MT_CKD](https://github.com/AER-RC/mt-ckd/wiki/MT_CKD-New-Release-Procedure) (aer_rt_utils, LBLRTM)
 
 Since LNFL and LBLRTM are not dependent on each other, the order of these two releases does not matter.
