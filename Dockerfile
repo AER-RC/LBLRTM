@@ -13,6 +13,8 @@ WORKDIR /LBLRTM
 ADD aer_rt_utils /LBLRTM/aer_rt_utils
 ADD build /LBLRTM/build
 ADD src /LBLRTM/src
+ADD cross-sections/xs /LBLRTM/xs
+ADD cross-sections/FSCDXS /LBLRTM/FSCDXS
 
 # build the model and clean up after the build
 RUN cd /LBLRTM/build; \
