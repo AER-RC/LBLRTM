@@ -65,13 +65,13 @@ Currently, the latest release is LBLRTM v12.10, and it is recommended that this 
 git checkout tags/v12.10
 ```
 
-No releases before v12.10 are available via GitHub, but they can be requested by emailing <aer_lblrtm@aer.com>. For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
+No releases before v12.9 are available via GitHub, but they can be requested by contacting the [AER-RC Group](https://github.com/AER-RC). For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
 
 Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/releases/tag/v12.10) and unpack it:
 
 ```
 tar xvf lblrtm_v12.10.tar.gz
-mv LBLRTM-12.9/ lblrtm
+mv LBLRTM-12.10/ lblrtm
 ```
 
 Though not necessary, the move to `lblrtm` is for consistency with previous release packages and the associated documentation.
