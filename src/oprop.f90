@@ -465,6 +465,7 @@ SUBROUTINE HIRAC1 (MPTS)
    CALL CPUTIM(TPAT1)
    TLNCOR = TLNCOR+TPAT1-TPAT0
 !
+
 70 CONTINUE
 !
    CALL CNVFNV (VNU,SP,SPPSP,RECALF,R1,R2,R3,F1,F2,F3,FG,XVER,ZETAI, &
@@ -513,6 +514,7 @@ SUBROUTINE HIRAC1 (MPTS)
    CALL CPUTIM(TPAT0)
    IF (ILBLF4.GE.1)                                                  &
    &    CALL XINT (V1R4,V2R4,DVR4,R4,1.0,VFT,DVR3,R3,N1R3,N2R3)
+
    IF (ICNTNM.GE.1)                                                  &
    &    CALL XINT (V1ABS,V2ABS,DVABS,ABSRB,1.,VFT,DVR3,R3,N1R3,N2R3)
    CALL CPUTIM(TPAT1)
@@ -1090,9 +1092,9 @@ SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)
 
 ! mji - Revise code to skip broadening for incoming lines with flag = -1
       if(brd_mol_flg(m,i).eq.-1.and.ibrd.gt.0) then
-         alfl = hwhmsi
-      end if
-!
+            alfl = hwhmsi
+         end if
+      !
       IF (IFLAG.EQ.3) ALFL = ALFL*(1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)
 !
       ALFAD = VNU(I)*ALFD1(m,iso)
@@ -1464,6 +1466,15 @@ SUBROUTINE PANEL (R1,R2,R3,KFILE,JRAD,IENTER)
       R2(J+3) = R2(J+3)+X03*R3(J3-1)+X02*R3(J3)+X01*R3(J3+1)+        &
          X00*R3(J3+2)
 10 END DO
+   !    !--- If the last panel, interpolate the first point of the next 4-DV2 segment
+   !    ! The first point is exactly aligned, so interpolation is simply taking the 
+   !    ! corresponding R3 value.
+   if (ISTOP==1) then
+      J3 = J3 + 1
+      R2(J) = R2(J)+R3(J3)
+      R2(J+1) = R2(J+1)+X00*R3(J3-1)+X01*R3(J3)+X02*R3(J3+1)+X03*R3(J3+2)
+   endif
+
    DO 20 J = NLO, NHI, 4
       J2 = (J-1)/4+1
       R1(J) = R1(J)+R2(J2)
@@ -1629,7 +1640,7 @@ SUBROUTINE PNLINT (R1,IENTER)
    IF (DVOUT.GT.DVP) ATYPE = DVP/(DVOUT-DVP)+0.5
    IF (DVOUT.LT.DVP) ATYPE = -DVOUT/(DVP-DVOUT)-0.5
    IF (ABS(DVOUT-DVP).LT.1.E-8) ATYPE = 0.
-!
+   !
 !
 !     1/1 ratio only
 !
@@ -1707,8 +1718,9 @@ SUBROUTINE PNLINT (R1,IENTER)
          NLIM2 = NLIM2+1
       ENDIF
       ILAST = 1
-      IF (V2PO.GT.V2P-DVP) THEN
-         NLIM2 = ((V2P-DVP-V1PO)/DVOUT) + 1.
+      IF (ISTOP.NE.1 .and. V2PO.GT.V2P-DVP) THEN
+      ! IF (V2PO.GT.V2P-DVP) THEN
+            NLIM2 = ((V2P-DVP-V1PO)/DVOUT) + 1.
          V2PO = V1PO+ REAL(NLIM2-1)*DVOUT
          IF (V2PO+DVOUT.LT.V2P-DVP) THEN
             NLIM2 = NLIM2+1
@@ -1754,6 +1766,7 @@ SUBROUTINE PNLINT (R1,IENTER)
 !           outgoing panel
 !
    IF (NLIM2.EQ.LIMOUT.OR.ILAST.EQ.1) THEN
+
       CALL PMNMX (R1OUT,NLIM2,RMINO,RMAXO)
 !
       CALL BUFOUT (KFILE,PNLHDO(1),NPHDRF)
@@ -3201,10 +3214,12 @@ SUBROUTINE LINF4 (V1L4,V2L4)
       end if
 
 ! mji - Revise code to skip broadening for incoming lines with flag = -1
-      if(bufr%brd_mol_flg(m,i).eq.-1.and.ibrd.gt.0) then
-         shrunk%alfa(ij) = hwhmsi
+      if(ibrd.gt.0) then
+         if (bufr%brd_mol_flg(m,i).eq.-1) then
+            shrunk%alfa(ij) = hwhmsi
+         end if
       end if
-!
+   !
       IF (IFLAG.EQ.3) SHRUNK%ALFA(IJ) = SHRUNK%ALFA(IJ)* &
          (1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)
 !

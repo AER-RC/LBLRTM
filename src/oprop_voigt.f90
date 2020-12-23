@@ -1489,6 +1489,15 @@ SUBROUTINE PANEL (R1,R2,R3,KFILE,JRAD,IENTER)
       R2(J+3) = R2(J+3)+X03*R3(J3-1)+X02*R3(J3)+X01*R3(J3+1)+        &
          X00*R3(J3+2)
 10 END DO
+   !    !--- If the last panel, interpolate the first point of the next 4-DV2 segment
+   !    ! The first point is exactly aligned, so interpolation is simply taking the 
+   !    ! corresponding R3 value.
+   if (ISTOP==1) then
+      J3 = J3 + 1
+      R2(J) = R2(J)+R3(J3)
+      R2(J+1) = R2(J+1)+X00*R3(J3-1)+X01*R3(J3)+X02*R3(J3+1)+X03*R3(J3+2)
+   endif
+
    DO 20 J = NLO, NHI, 4
       J2 = (J-1)/4+1
       R1(J) = R1(J)+R2(J2)
@@ -1732,7 +1741,8 @@ SUBROUTINE PNLINT (R1,IENTER)
          NLIM2 = NLIM2+1
       ENDIF
       ILAST = 1
-      IF (V2PO.GT.V2P-DVP) THEN
+      IF (ISTOP.NE.1 .and. V2PO.GT.V2P-DVP) THEN
+      ! IF (V2PO.GT.V2P-DVP) THEN
          NLIM2 = ((V2P-DVP-V1PO)/DVOUT) + 1.
          V2PO = V1PO+ REAL(NLIM2-1)*DVOUT
          IF (V2PO+DVOUT.LT.V2P-DVP) THEN
