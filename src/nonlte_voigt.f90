@@ -2057,7 +2057,7 @@ SUBROUTINE PANELQ (R1,R2,R3,RR1,RR2,RR3,KFILE,JRAD,IENTER)
    !    !--- If the last panel, interpolate the first point of the next 4-DV2 segment
    !    ! The first point is exactly aligned, so interpolation is simply taking the 
    !    ! corresponding R3 value.
-   if (ISTOP==1) then
+   if (LIMLO<=LIMHI .and. ISTOP==1) then
       J3 = J3 + 1
       R2(J) = R2(J)+R3(J3)
       R2(J+1) = R2(J+1)+X00*R3(J3-1)+X01*R3(J3)+X02*R3(J3+1)+X03*R3(J3+2)
