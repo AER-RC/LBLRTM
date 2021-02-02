@@ -768,9 +768,9 @@ SUBROUTINE CONTNM(JRAD)
 ! *******
 !        O2 A-band continuum formulated by Mlawer based on solar FTS measurements.
 !
-!        Only calculate if V2 > 12959.5 cm-1 and V1 < 13224.5 cm-1
+!        Only calculate if V2 > 12961.5 cm-1 and V1 < 13221.5 cm-1
 !
-   if ((V2.gt.12959.5).and.(V1.lt.13224.5).and. xo2cn.gt.0.) then
+   if ((V2.gt.12961.5).and.(V1.lt.13221.5).and. xo2cn.gt.0.) then
       c0(:) = 0.
 !
       tau_fac = xo2cn * (Wk(7)/xlosmt) * amagat
