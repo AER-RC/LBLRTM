@@ -34,7 +34,7 @@ LBLRTM uses the line parameters and [MT_CKD continuum](https://github.com/AER-RC
 
 | LBLRTM Release | MT_CKD Release | Line File |
 | :---: | :---: | :---: |
-| [v12.11](https://github.com/AER-RC/LBLRTM/releases/tag/v12.10) | [v3.5](https://github.com/AER-RC/MT_CKD/releases/tag/v3.4) | [v3.8](https://zenodo.org/record/4019086/files/aer_v_3.8.tar.gz?download=1) |
+| [v12.11](https://github.com/AER-RC/LBLRTM/releases/tag/v12.11) | [v3.5](https://github.com/AER-RC/MT_CKD/releases/tag/v3.4) | [v3.8](https://zenodo.org/record/4019086/files/aer_v_3.8.tar.gz?download=1) |
 
 If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
 
@@ -67,7 +67,7 @@ git checkout tags/v12.11
 
 No releases before v12.9 are available via GitHub, but they can be requested by contacting the [AER-RC Group](https://github.com/AER-RC). For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
 
-Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/releases/tag/v12.11) and unpack it:
+Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11.examples.tar) and unpack it:
 
 ```
 tar xvf lblrtm_v12.11.tar.gz
@@ -240,7 +240,7 @@ Unformatted optical depth files can be requested in the LBLRTM using options spe
 
 # Tests <a name="tests"></a>
 
-As of LBLRTM v12.10, a [run example package](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11_examples.tar) is provided separately from the code repository. It can be used to validate building and running of the model for select atmospheric specifications and model configurations. See `README.setup` in top level of the package for further direction.
+As of LBLRTM v12.10, a [run example package](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11.examples.tar) is provided separately from the code repository. It can be used to validate building and running of the model for select atmospheric specifications and model configurations. See `README.setup` in top level of the package for further direction.
 
 # Frequently Asked Questions <a name="faq"></a>
 
@@ -285,11 +285,11 @@ Yes. The instructions for using this capability are provided in the lblrtm instr
 
 5. **Does LBLRTM include heavy molecule parameters (cross-sectional species)?**
 
-Heavy molecules (such as CCL4, F11, and others listed in Table II of the lblrtm_instruction manual) can be included in LBLRTM calculations by setting the `IXSECT` input variable to 1 and adding Record 2.2 or Record 3.7 to the LBLRTM `TAPE5`  An additional file (`FSCDXS`) and directory (`xs`) are required for these calculations and can be obtained from the [cross sections repository](https://github.com/AER-RC/cross-sections) (which is cloned with LBLRTM if the directions in the [Cloning][#cloning] section are followed) or from the LBLRTM example tar file (available in the [LBLRTM v12.11 Release](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11_examples.tar)).
+Heavy molecules (such as CCL4, F11, and others listed in Table II of the lblrtm_instruction manual) can be included in LBLRTM calculations by setting the `IXSECT` input variable to 1 and adding Record 2.2 or Record 3.7 to the LBLRTM `TAPE5`  An additional file (`FSCDXS`) and directory (`xs`) are required for these calculations and can be obtained from the [cross sections repository](https://github.com/AER-RC/cross-sections) (which is cloned with LBLRTM if the directions in the [Cloning][#cloning] section are followed) or from the LBLRTM example tar file (available in the [LBLRTM v12.11 Release](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11.examples.tar)).
 
 6. **Format of external surface emissivity/reflectivity files**
 
-Sea surface spectral emissivity and reflectivity files are provided with the example (available in the [LBLRTM v12.11 Release](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11_examples.tar)). The files must have the file names of `EMISSIVITY` and `REFLECTIVITY`. The format is as follows:
+Sea surface spectral emissivity and reflectivity files are provided with the example (available in the [LBLRTM v12.11 Release](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11.examples.tar)). The files must have the file names of `EMISSIVITY` and `REFLECTIVITY`. The format is as follows:
 
 | Parameter | Format | Description |
 | :--- | :---: | :--- |
