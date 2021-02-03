@@ -32,6 +32,6 @@ Releases should be done in the following order (submodules in parentheses):
 2. [cross-sections](https://github.com/AER-RC/cross-sections/wiki/New-Release-Procedure)
 3. [LNFL](https://github.com/AER-RC/LNFL/wiki/LNFL-New-Release-Procedure) (aer_rt_utils)
 4. [LBLRTM](https://github.com/AER-RC/LBLRTM/wiki/LBLRTM-New-Release-Procedure) (aer_rt_utils, cross-sections)
-5. [MT_CKD](https://github.com/AER-RC/mt-ckd/wiki/MT_CKD-New-Release-Procedure) (aer_rt_utils, LBLRTM)
+5. [MT_CKD](https://github.com/AER-RC/MT_CKD/wiki/MT_CKD-New-Release-Procedure) (aer_rt_utils, LBLRTM)
 
 Since LNFL and LBLRTM are not dependent on each other, the order of these two releases does not matter.

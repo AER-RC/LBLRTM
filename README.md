@@ -30,11 +30,11 @@ LBLRTM (Line-By-Line Radiative Transfer Model) is an accurate and efficient line
 
 The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for the line parameters used in LBLRTM. These line parameters, as well as additional line parameters from other sources, are extracted for use in LBLRTM by a line file creation program called LNFL. A line parameter database built from HITRAN and suitable for use with LNFL can be downloaded with the [AER Line File retrieval code](https://github.com/AER-RC/AER_Line_File) or directory from the [Zenodo repository](https://zenodo.org/record/4019086).
 
-LBLRTM uses the line parameters and [MT-CKD continuum](https://github.com/AER-RC/mt-ckd) in its calculations. The models and data are thus linked. For the latest release, the relationships are:
+LBLRTM uses the line parameters and [MT_CKD continuum](https://github.com/AER-RC/MT_CKD) in its calculations. The models and data are thus linked. For the latest release, the relationships are:
 
 | LBLRTM Release | MT_CKD Release | Line File |
 | :---: | :---: | :---: |
-| [v12.10](https://github.com/AER-RC/LBLRTM/releases/tag/v12.10) | [v3.4](https://github.com/AER-RC/mt-ckd/releases/tag/v3.4) | [v3.8](https://zenodo.org/record/4019086/files/aer_v_3.8.tar.gz?download=1) |
+| [v12.10](https://github.com/AER-RC/LBLRTM/releases/tag/v12.10) | [v3.4](https://github.com/AER-RC/MT_CKD/releases/tag/v3.4) | [v3.8](https://zenodo.org/record/4019086/files/aer_v_3.8.tar.gz?download=1) |
 
 If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
 
@@ -70,8 +70,8 @@ No releases before v12.9 are available via GitHub, but they can be requested by 
 Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/releases/tag/v12.10) and unpack it:
 
 ```
-tar xvf lblrtm_v12.10.tar.gz
-mv LBLRTM-12.10/ lblrtm
+tar xvf lblrtm_v12.11.tar.gz
+mv LBLRTM-12.11/ lblrtm
 ```
 
 Though not necessary, the move to `lblrtm` is for consistency with previous release packages and the associated documentation.
