@@ -67,10 +67,10 @@ git checkout tags/v12.11
 
 No releases before v12.9 are available via GitHub, but they can be requested by contacting the [AER-RC Group](https://github.com/AER-RC). For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
 
-Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11.examples.tar) and unpack it:
+Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/archive/v12.11.zip) and unpack it:
 
 ```
-tar xvf lblrtm_v12.11.tar.gz
+tar xvf v12.11.tar.gz
 mv LBLRTM-12.11/ lblrtm
 ```
 
