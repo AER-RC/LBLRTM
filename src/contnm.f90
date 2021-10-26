@@ -26,7 +26,12 @@ SUBROUTINE CONTNM(JRAD)
 !
    Use lblparams, ONLY: n_absrb, ipts, ipts2
    USE phys_consts, ONLY: radcn2
-   IMPLICIT REAL*8           (V)
+   USE h2oCont
+
+!                                                                       
+      IMPLICIT REAL*8           (V)  
+!              
+
 !
 !     SUBROUTINE CONTNM CONTAINS THE CONTINUUM DATA
 !     WHICH IS INTERPOLATED INTO THE ARRAY ABSRB
@@ -36,7 +41,7 @@ SUBROUTINE CONTNM(JRAD)
    &                Ch(n_absrb),csh2o(n_absrb),cfh2o(n_absrb)
 !********************************************
    COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)
-   COMMON /XCONT/ V1C,V2C,DVC,NPTC,C(6000)
+   COMMON /XCONT/ V1C,V2C,DVC,NPTC,C(n_absrb)
 !
    CHARACTER*8      XID,       HMOLID,      YID
    REAL*8               SECANT,       XALTZ
@@ -50,6 +55,9 @@ SUBROUTINE CONTNM(JRAD)
    &              NLTEFL,LNFIL4,LNGTH4
 
    common /cntscl/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
+
+   real wv_self_abs(n_absrb),wv_for_abs(n_absrb)
+   logical radflag
 !
 !------------------------------------
 ! for analytic derivative calculation
@@ -58,7 +66,7 @@ SUBROUTINE CONTNM(JRAD)
    common /CDERIV/ icflg,iuf,v1absc,v2absc,dvabsc,nptabsc,delT_pert, &
    &    dqh2oC(ipts),dTh2oC(ipts),dUh2o
 
-   real cself(ipts),cfrgn_aj(ipts)
+   real cself(ipts),cfor(ipts),cfrgn_aj(ipts)
 !------------------------------------
 !
 ! for cloud calculation
@@ -171,35 +179,6 @@ SUBROUTINE CONTNM(JRAD)
    &    1.0006,1.0005,1.0004,1.0003,1.0002,1.0001,1.0000,1.0000,      &
    &    1.0000/
 
-   DIMENSION XFACREV(0:14),XFAC_RHU(-1:61)
-
-!     Self correction factors for 820-960 cm-1.
-   DATA (XFACREV(I),I=0,14)/                                         &
-   &     1.003,1.009,1.015,1.023,1.029,1.033,                         &
-   &     1.037,1.039,1.040,1.046,1.036,1.027,                         &
-   &     1.01,1.002,1.00/
-!
-!     Foreign correction factors from joint RHUBC-II/RHUBC-I
-!     analysis (mt_ckd_3.0).
-!     Modified from new MWR analysis (Payne et al., 2021).
-!     (mt_ckd_3.5)
-   DATA (XFAC_RHU(I),I=-1,61)/                                       &
-   &     0.7620,0.7840,                                               &
-   &     0.7820,0.7840,0.7620,0.7410,0.7970,                          &
-!   &     0.7810,0.8330,                                               &
-!   &     0.8500,0.8330,0.7810,0.7540,0.8180,                          &
-   &     0.9140,0.9980,0.9830,0.9330,0.8850,                          &
-   &     0.8420,0.8070,0.8000,0.8010,0.8100,                          &
-   &     0.8090,0.8320,0.8180,0.7970,0.8240,                          &
-   &     0.8640,0.8830,0.8830,0.8470,0.8380,                          &
-   &     0.8660,0.9410,1.0400,1.0680,1.1410,                          &
-   &     1.0800,1.0340,1.1550,1.0990,1.0270,                          &
-   &     0.9500,0.8950,0.8150,0.7830,0.7700,                          &
-   &     0.7000,0.7650,0.7750,0.8500,0.9000,                          &
-   &     0.9050,0.9540,1.0200,1.0200,1.0250,                          &
-   &     1.0200,1.1000,1.1250,1.1200,1.1110,                          &
-   &     1.1370,1.1600,1.1490,1.1070,1.0640,                          &
-   &     1.0450/
 !
 !     ASSIGN SCCS VERSION NUMBER TO MODULE
 !
@@ -293,187 +272,58 @@ SUBROUTINE CONTNM(JRAD)
 !=======================================================================
 
 !               ********    WATER VAPOR   ********
+
+!     Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
+!        and (xself>0 or xfrgn>0)
 !
 !=======================================================================
 !
    h2o_fac  = WK(1)/Wtot
-   Rself    =     h2o_fac  * RHOave * 1.e-20 * xself
-   Rfrgn    = (1.-h2o_fac) * RHOave * 1.e-20 * xfrgn
-   Rfrgn_aj =     h2o_fac  * RHOave * 1.e-20 * xfrgn
-!
+   Rself    =     h2o_fac  * RHOave 
+   Rfrgn    = (1.-h2o_fac) * RHOave 
+   Rfrgn_aj =     h2o_fac  * RHOave * xfrgn 
+
 !=======================================================================
 !
-!     CORRECTION TO THE WATER VAPOR CONTINUUM    mt_ckd_2.4   Nov 2008
-!
-!     The following modifications to the water vapor continuum arise
-!     from new analyses of ARM measurements in the microwave and far-IR
-!     regions. Analyses of measurements in the microwave are based
-!     primarily on the two-channel MWR (23.8 and 31.4 GHz) at SGP,
-!     with supporting evidence from 150 GHz MWRHF measurements during
-!     the COPS campaign and from 170 GHz GVRP measurements at SGP (V. H.
-!     Payne, E. J. Mlawer and S. A. Clough). Measurements in the far-IR
-!     were from the AERO_ext at the NSA site, in the time surrounding
-!     and including the RHUBC-I campaign (J. Delamere and S. A. Clough).
-!
-!=======================================================================
-!
-!                             SELF
+   if ((V2.gt.-20.0).and.(V1.lt.20000.) .and. ((xself.gt.0.).or.(xfrgn.gt.0))) then
 
-!     Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
-!
-   if ((V2.gt.-20.0).and.(V1.lt.20000.) .and. xself.gt.0.) then
-      sh2ot0 = 0.
-      sh2ot1 = 0.
-!
-      CALL SL296 (V1C,V2C,DVC,NPTC,SH2OT0,v1ss,v2ss)
-      CALL SL260 (V1C,V2C,DVC,NPTC,SH2OT1,v1ss,v2ss)
-!
-!           Loop calculating self continuum optical depth
-!
-      TFAC = (TAVE-T0)/(260.-T0)
+      rv1abs=v1abs
+      rv2abs=v2abs
+      wv_self_abs(:) = 0.0
+      wv_for_abs(:) = 0.0
+      if (jrad.eq.0) then 
+          radflag=.FALSE. 
+      else 
+          radflag=.TRUE.
+      endif
+      call h2oAbsrb(pave,tave,xself,xfrgn,rv1abs,rv2abs,dvabs,&
+                      wv_self_abs,wv_for_abs,radcn2=radcn2,radflag=radflag)
 
-!  MT_CKD_3.5  All previous IR corrections now included in stored coefficients
-!  rather than correction functions.
 
-      DO 20 J = 1, NPTC
-         VJ = V1C+DVC* REAL(J-1)
-         SH2O = 0.
-         IF (SH2OT0(J).GT.0.) THEN
-            SH2O = SH2OT0(J)*(SH2OT1(J)/SH2OT0(J))**TFAC
-         ENDIF
-!              ---------------------------------------------------------
-!
-         cself(j) = WK(1)*(SH2O*Rself)
-!
-!********************************************
-         v1h=V1C
-         dvh=DVC
-         npth=NPTC
-!
-         csh2o(j)=1.e-20 * sh2o * xself
-!********************************************
-!
-!              ---------------------------------------------------------
-!              Radiation field
-!
-         IF (JRAD.EQ.1) cself(j) = cself(j)*RADFN(VJ,XKT)
-!              ---------------------------------------------------------
+! Convert absorption coefficients to OD
 
-20    CONTINUE
-!
-!           Interpolate to total optical depth grid
+      cself = wk(1)*wv_self_abs*rself
+      cfor = wk(1)*wv_for_abs*rfrgn
+      cfrgn_aj = wk(1)*wv_for_abs*rfrgn_aj
 
-      call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
-
-      CALL XINT (V1C,V2C,DVC,cself,1.0,V1ABS,DVABS,ABSRB,ist,last)
-
-   endif
-!
-!=======================================================================
-!                             FOREIGN
-!
-!--------------------------------------------------------------------
-!
-!        Only calculate if V2 > -20. cm-1 and V1 <  20000. cm-1
-!
-   if ((V2.gt.-20.0).and.(V1.lt.20000.) .and. xfrgn.gt.0.) then
-      fh2o = 0.
-!-----------------------------------------------------------------------
-!           CORRECTION TO FOREIGN CONTINUUM   mt_ckd_2.4  Nov 2008   sac
-!-----------------------------------------------------------------------
-
-      f0     = 0.06
-      V0F1   = 255.67
-      HWSQ1  = 240.**2
-      BETA1  = 57.83
-      C_1    = -0.42
-      N_1    = 8
-
-      C_2    = 0.3
-      BETA2  = 630.
-      N_2    = 8
-!-----------------------------------------------------------------------
-!           mt_ckd_2.8    March 2016     Mlawer and Alvarado
-!-----------------------------------------------------------------------
-!     Extensive changes to the foreign continuum were made for
-!     mt_ckd_2.8.  Based on measurements by Baranov and Lafferty
-!     (2012) from 850-1160 cm-1 and Mondelain et al.(2014) at
-!     4255 cm-1, a revised MT_CKD foreign continuum formulation
-!     was derived and has been implemented in window regions >
-!     4000 cm-1 (blended with previous coefficients in transition
-!     regions between windows and bands). For 1800-3000 cm-1,
-!     this formulation guided the spectral shape of the foreign
-!     coefficients, but the values were reduced to obtain
-!     agreement with measurements in this window by Baranov and
-!     Lafferty (2012) and IASI measurements from 1900-2150 cm-1.
-!     Coefficients in this region were derived simultaneously
-!     with N2-H2O CIA coefficients and water vapor self continuum
-!     coefficents.
-
-!
-      CALL FRN296 (V1C,V2C,DVC,NPTC,FH2O,v1ss,v2ss)
-!
-      DO 24 J = 1, NPTC
-         VJ = V1C+DVC* REAL(J-1)
-         IF (VJ .LE. 600.) THEN
-            JFAC = (VJ +10.)/10. + 0.00001
-            FSCAL = XFAC_RHU(JFAC)
-         ELSE
-!
-            vdelsq1  = (VJ-V0F1)**2
-            vdelmsq1 = (VJ+V0F1)**2
-            VF1  = ((VJ-V0F1)/beta1)**N_1
-            VmF1 = ((VJ+V0F1)/beta1)**N_1
-            VF2  = ((VJ     )/beta2)**N_2
-
-            FSCAL = 1. +                                          &
-            &                (f0 + C_1*( (HWSQ1/(VDELSQ1 +HWSQ1+VF1))  +       &
-            &                            (HWSQ1/(VDELmSQ1+HWSQ1+VmF1)) ) ) /   &
-            &                                                 (1.+C_2*VF2)
-         ENDIF
-
-         FH2O(J)=FH2O(J)*FSCAL
-!
-         c_f = WK(1) * FH2O(J)
-!
-!********************************************
-         cfh2o(j)=1.e-20 * fh2o(j) * xfrgn
-!********************************************
-!              ---------------------------------------------------------
-!              Radiation field
-!
-         IF (JRAD.EQ.1) c_f = c_f * RADFN(VJ,XKT)
-!              ---------------------------------------------------------
-
-         C(J)        = c_f * RFRGN
-         cfrgn_aj(j) = c_f * rfrgn_aj
-!
-24    CONTINUE
-!
-      call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
-
-      CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)
-!
-!           ------------------------------------------------------------
-!
+! Add to absorption array
+      absrb = absrb+cself+cfor
+      
+! Add OD for  AJs
       if  (icflg.eq.1) then
 
-         do j=1,nptc
-            c(j) =  cself(j)-cfrgn_aj(j)
-         enddo
 
-         call pre_xint(v1ss,v2ss,v1abs,dvabs,nptabs,ist,last)
 
-         CALL XINT (V1C,V2C,DVC,C,1.0,V1ABS,DVABS,ABSRB,ist,last)
+         c(ilo:ihi) = cself(ilo:ihi)-cfrgn_aj(ilo:ihi)
+         absrb(ilo:ihi) = absrb(ilo:ihi)+c(ilo:ihi)
 
       endif
 
-!           ------------------------------------------------------------
-!
    endif
 
-!=======================================================================
 
+
+!=======================================================================
 
 !     ********    CARBON DIOXIDE   ********
 !
