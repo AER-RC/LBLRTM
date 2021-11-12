@@ -44,9 +44,9 @@ MODULE read_file
     type(data2read),  intent(inout)  :: dat
     logical                          :: isError
 
-    integer      :: ncid
-    integer      :: nWavenumbers
-    integer      :: stat
+    integer(kind=4)   :: ncid
+    integer(kind=4)   :: nWavenumbers
+    integer(kind=4)   :: stat
 
     ! check on the file
     inquire(file = fname, EXIST=isError) 
@@ -115,11 +115,11 @@ MODULE read_file
    end subroutine check
 
    function inqDim(id, dimName, dimLen)
-      integer,                intent(in)   :: id
-      character(len=*),       intent(in)   :: dimName
-      integer, optional,      intent(inout):: dimLen
-      integer                              :: dimId
-      logical                              :: inqDim
+      integer(kind=4),          intent(in)    :: id
+      character(len=*),         intent(in)    :: dimName
+      integer(kind=4), optional, intent(inout):: dimLen
+      integer(kind=4)                         :: dimId
+      logical                                 :: inqDim
 
       if (dbg) print*, ' ncdfUtil::inqDim '
       inqDim = (nf_noerr == nf_inq_dimid(id, dimName, dimId))
@@ -133,10 +133,10 @@ MODULE read_file
    end function inqDim  
 
    subroutine readReal1D(id, varName, val, fatal)
-      integer,                intent(in)   :: id
+      integer(kind=4),        intent(in)   :: id
       character(len=*),       intent(in)   :: varName
       real*4, dimension(:),   intent(inout):: val
-      integer                              :: varId
+      integer(kind=4)                      :: varId
       logical,        optional, intent(in) :: fatal
       if (dbg) print*, ' ncdfUtil::readReal1D '
       call check(nf_inq_varid(id, varName, varId), varName, fatal)
@@ -144,10 +144,10 @@ MODULE read_file
    end subroutine readReal1D
 
    subroutine readDouble1D(id, varName, val, fatal)
-      integer,                intent(in)   :: id
+      integer(kind=4),        intent(in)   :: id
       character(len=*),       intent(in)   :: varName
       real*8, dimension(:),   intent(inout):: val
-      integer                              :: varId
+      integer(kind=4)                      :: varId
       logical,        optional, intent(in) :: fatal
       if (dbg) print*, ' ncdfUtil::readDouble1D '
       call check(nf_inq_varid(id, varName, varId), varName, fatal)

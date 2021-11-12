@@ -4283,18 +4283,20 @@ BLOCK DATA BXSECT
 !
    DATA NMODES / 1 /,NPANEL / 0 /,V1XS / 0.0 /,V2XS / 0.0 /,         &
    &     DVXS / 0.0 /,NPTSXS / 0 /
-   DATA XSMAX / 1200*0.0 /
+   DATA XSMAX / 1500*0.0 /
    DATA (ALIAS(1,I),I=1,mx_xs)/                                      &
    &    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',       &
    &    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',       &
    &    'N2O5      ', 'HNO3      ', 'CF4       ', 'ZZZZZZ    ',       &
    &    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ',       &
-   &    'ACET      ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &
+   &    'ACETONE   ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &
    &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &
    &    'CH3CClF2  ', 'CHClF2    ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &
    &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ', 'ISOP      ',       &
    &    'CHF3      ', 'BRO       ', 'HCHO      ', 'CF3CH2CF3 ',       &
-   &    'CHF2CH2CF3', 'NF3       ', 'C2F6      ', 'SF6       ' /
+   &    'CHF2CH2CF3', 'NF3       ', 'C2F6      ', 'SF6       ',       &
+   &    'FURAN     ', 'ACETICACID', 'GLYCOLALDE', 'PROPENE   ',       &
+   &    6*' ZZZZZZZZ '/
    DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
    &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
    &    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',       &
@@ -4305,7 +4307,8 @@ BLOCK DATA BXSECT
    &    'HCFC-142b ', 'HCFC-22   ', 'HCFC-123  ', 'HCFC-124  ',       &
    &    'HCFC-225ca', 'HCFC-225cb', ' ZZZZZZZZ ', 'C5H8      ',       &
    &    'HFC-23    ', 'BRO       ', ' ZZZZZZZZ ', 'HFC-236fa ',       &
-   &    'HFC-245fa ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ' /
+   &    'HFC-245fa ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+   &     10*' ZZZZZZZZ '/
    DATA (ALIAS(3,I),I=1,mx_xs)/                                      &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
    &    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',       &
@@ -4316,7 +4319,7 @@ BLOCK DATA BXSECT
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
    &    ' ZZZZZZZZ ', 'BRO       ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
-   &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ' /
+   &     14*' ZZZZZZZZ '/
    DATA (ALIAS(4,I),I=1,mx_xs)/                                      &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'F21       ', ' ZZZZZZZZ ',       &
    &    'F11       ', 'F12       ', 'F114      ', 'F113      ',       &
@@ -4327,7 +4330,8 @@ BLOCK DATA BXSECT
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
    &    ' ZZZZZZZZ ', 'BRO       ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
-   &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ' /
+   &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+   &     10*' ZZZZZZZZ '/
 !
 !     XSMASS IS MASS OF EACH CROSS-SECTION
 !
@@ -4343,12 +4347,13 @@ BLOCK DATA BXSECT
    &     100.50     ,   86.47     ,  152.93     ,  136.48     ,       &
    &     202.94     ,  202.94     ,   64.06     ,   68.12     ,       &
    &      70.01     ,  95.903     ,   30.026    ,  152.039    ,       &
-   &     134.05     ,  71.00      ,  138.01     ,  146.06/
+   &     134.05     ,  71.00      ,  138.01     ,  146.06     ,       &
+   &      68.075    , 9*0.                                    / 
 !
-!  ATTENTION if mx_xs is changed then 200 has to be replaced with mx_xs*5
-   DATA V1FX / 200*0.0 /,V2FX / 200*0.0 /,DVFX / 200*0.0 /,          &
+!  ATTENTION if mx_xs is changed then 250 has to be replaced with mx_xs*5
+   DATA V1FX / 250*0.0 /,V2FX / 250*0.0 /,DVFX / 250*0.0 /,          &
    &     WXM / mx_xs*0.0 /
-   DATA NTEMPF / 200*0 /,NSPECR / mx_xs*0 /,IXFORM / 200*0 /,        &
+   DATA NTEMPF / 250*0 /,NSPECR / mx_xs*0 /,IXFORM / 250*0 /,        &
    &     NUMXS / 0 /
 !
 end block data BXSECT
