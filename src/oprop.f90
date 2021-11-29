@@ -4285,18 +4285,18 @@ BLOCK DATA BXSECT
    &     DVXS / 0.0 /,NPTSXS / 0 /
    DATA XSMAX / 1500*0.0 /
    DATA (ALIAS(1,I),I=1,mx_xs)/                                      &
-   &    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',       &
-   &    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',       &
-   &    'N2O5      ', 'HNO3      ', 'CF4       ', 'ZZZZZZ    ',       &
-   &    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ',       &
-   &    'ACETONE   ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &
-   &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &
-   &    'CH3CClF2  ', 'CHClF2    ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &
-   &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ', 'ISOP      ',       &
-   &    'CHF3      ', 'BRO       ', 'HCHO      ', 'CF3CH2CF3 ',       &
-   &    'CHF2CH2CF3', 'NF3       ', 'C2F6      ', 'SF6       ',       &
-   &    'FURAN     ', 'ACETICACID', 'GLYCOLALDE', 'PROPENE   ',       &
-   &    6*' ZZZZZZZZ '/
+   &    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',       &  !  1 -  4
+   &    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',       &  !  5 -  8
+   &    'N2O5      ', 'HNO3      ', 'CF4       ', 'ZZZZZZ    ',       &  !  9 - 12
+   &    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ',       &  ! 13 - 16
+   &    'ACETONE   ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &  ! 17 - 20
+   &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &  ! 21 - 24
+   &    'CH3CClF2  ', 'CHClF2    ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &  ! 25 - 28
+   &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ', 'ISOP      ',       &  ! 29 - 32
+   &    'CHF3      ', 'BRO       ', 'HCHO      ', 'CF3CH2CF3 ',       &  ! 33 - 36
+   &    'CHF2CH2CF3', 'NF3       ', 'C2F6      ', 'SF6       ',       &  ! 37 - 40
+   &    'FURAN     ', 'ACETICACID', 'GLYCOLALDE', 'PROPENE   ',       &  ! 41 - 44
+   &    'OCLO      ', 5*' ZZZZZZZZ '/                                    ! 45 - 50
    DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
    &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
    &    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',       &
@@ -4337,19 +4337,26 @@ BLOCK DATA BXSECT
 !
 !     note 23 =  mx_xs - 15 = 38 - 15
 
-   DATA XSMASS/                                                      &
-   &      97.46     ,   79.01     ,  102.92     ,  153.82     ,       &
-   &     137.37     ,  120.91     ,  170.92     ,  187.38     ,       &
-   &     108.01     ,   63.01     ,   88.00     ,   86.47     ,       &
-   &     104.46     ,  154.47     ,   45.99     ,  121.05     ,       &
-   &      58.08     ,   41.05     ,  120.02     ,  102.03     ,       &
-   &      84.04     ,   66.05     ,   52.02     ,  116.95     ,       &
-   &     100.50     ,   86.47     ,  152.93     ,  136.48     ,       &
-   &     202.94     ,  202.94     ,   64.06     ,   68.12     ,       &
-   &      70.01     ,  95.903     ,   30.026    ,  152.039    ,       &
-   &     134.05     ,  71.00      ,  138.01     ,  146.06     ,       &
-   &      68.075    , 9*0.                                    / 
-!
+   DATA XSMASS/                                                       & 
+   &      97.46     ,   79.01     ,  102.92     ,  153.82     ,       &  !  1 -  4
+   &     137.37     ,  120.91     ,  170.92     ,  187.38     ,       &  !  5 -  8
+   &     108.01     ,   63.01     ,   88.00     ,   86.47     ,       &  !  9 - 12
+   &     104.46     ,  154.47     ,   45.99     ,  121.05     ,       &  ! 13 - 16
+   &      58.08     ,   41.05     ,  120.02     ,  102.03     ,       &  ! 17 - 20
+   &      84.04     ,   66.05     ,   52.02     ,  116.95     ,       &  ! 21 - 24
+   &     100.50     ,   86.47     ,  152.93     ,  136.48     ,       &  ! 25 - 28
+   &     202.94     ,  202.94     ,   64.06     ,   68.12     ,       &  ! 29 - 32
+   &      70.01     ,  95.903     ,   30.026    ,  152.039    ,       &  ! 33 - 36
+   &     134.05     ,  71.00      ,  138.01     ,  146.06     ,       &  ! 37 - 40
+   &      68.075    ,  60.052     ,   60.052    ,   42.081    ,       &  ! 37 - 40
+   &      67.45     , 5*0.                                    /          ! 41 - 44 
+!                                                                        ! 45 - 50
+!  OClO, ACETICACID, GLYCOLALDE, PROPENE  weights are from 
+!  https://en.wikipedia.org/wiki/Chlorine_dioxide
+!  https://en.wikipedia.org/wiki/Acetic_acid
+!  https://en.wikipedia.org/wiki/Glycolaldehyde
+!  https://en.wikipedia.org/wiki/Propene
+! 
 !  ATTENTION if mx_xs is changed then 250 has to be replaced with mx_xs*5
    DATA V1FX / 250*0.0 /,V2FX / 250*0.0 /,DVFX / 250*0.0 /,          &
    &     WXM / mx_xs*0.0 /
@@ -11705,8 +11712,8 @@ SUBROUTINE AtoB(aa,bb,A,B,npt)
 !
 !...input:  aa
 !...output: bb
-   USE lblparams, ONLY: Nmax => MXFSC
-   dimension A(Nmax),B(Nmax)
+   USE lblparams, ONLY: Nmax => MXFSC, NT
+   dimension A(NT),B(NT)
 !
 !
 !

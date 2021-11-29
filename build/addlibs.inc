@@ -6,9 +6,10 @@ ADDLIB =
 NETCDF = no
 
 ifeq ($(FC),gfortran)
-	NCL = /usr/lib
-	NCI = /usr/include
+	NCL = /home/ipolonsk/libs/lib
+	NCI = /home/ipolonsk/libs/include
 	INCLUDES:= -I. -I$(NCI) 
 	NETCDF = yes
+	ADDLIB = -L/home/ipolonsk/libs/hdf5/lib -lhdf5_hl -lhdf5 -ldl -lz
 endif
 
