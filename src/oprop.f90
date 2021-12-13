@@ -4295,7 +4295,7 @@ BLOCK DATA BXSECT
    &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ', 'ISOP      ',       &  ! 29 - 32
    &    'CHF3      ', 'BRO       ', 'HCHO      ', 'CF3CH2CF3 ',       &  ! 33 - 36
    &    'CHF2CH2CF3', 'NF3       ', 'C2F6      ', 'SF6       ',       &  ! 37 - 40
-   &    'FURAN     ', 'ACETICACID', 'GLYCOLALDE', 'PROPENE   ',       &  ! 41 - 44
+   &    'FURAN     ', 'ACETICACI ', 'GLYCOLALD ', 'PROPENE   ',       &  ! 41 - 44
    &    'OCLO      ', 5*' ZZZZZZZZ '/                                    ! 45 - 50
    DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
    &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &

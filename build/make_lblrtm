@@ -92,7 +92,7 @@ read_file.mod:  $(SRCPATH)/read_module.f90
 
 
 $(OBJPATH)/h2oCont_module.o:	$(SRCPATH)/h2oCont_module.f90 read_file.mod 
-	$(FC) -c $(FCDF) -cpp $(FCFLAG) -I$(SRCPATH) $< -o $@
+	$(FC) -c $(FCDF)  $(FCFLAG) -I$(SRCPATH) $< -o $@
 
 h2oCont.mod:	$(SRCPATH)/h2oCont_module.f90
 	$(FC) -c $(FCFLAG)  $< -o $(OBJPATH)/h2oCont_module.o
