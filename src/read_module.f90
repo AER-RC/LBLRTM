@@ -26,9 +26,9 @@ MODULE read_file
   public data2read
   type data2read
      real(kind=8), allocatable, dimension(:) :: wavenumber
-     real(kind=8), allocatable, dimension(:) :: wvforeign
-     real(kind=8), allocatable, dimension(:) :: wvself_260
-     real(kind=8), allocatable, dimension(:) :: wvself_296
+     real(kind=8), allocatable, dimension(:) :: for_absco_ref
+     real(kind=8), allocatable, dimension(:) :: self_absco_ref
+     real(kind=8), allocatable, dimension(:) :: self_texp
   end type data2read
 
   logical, parameter                      :: dbg = .FALSE.
@@ -59,21 +59,22 @@ MODULE read_file
     if (dbg) print *, 'reading: ', trim(fname)
     call check( nf_open(fname, nf_nowrite, ncid) )
 
-    if (.not. inqDim(ncid, "wavenumbers",  dimLen=nWavenumbers)) then
+    if (.not. inqDim(ncid, "nwvn",  dimLen=nWavenumbers)) then
       call check( nf_close(ncid) )
       isError = .false.
       return
     end if
     ! allocate structure
+     print *,'nWavenumbers ',nwavenumbers
     if (allocated(dat%wavenumber))   deallocate(dat%wavenumber)
-    if (allocated(dat%wvforeign))    deallocate(dat%wvforeign)
-    if (allocated(dat%wvself_260))   deallocate(dat%wvself_260)
-    if (allocated(dat%wvself_296))   deallocate(dat%wvself_296)
+    if (allocated(dat%for_absco_ref))    deallocate(dat%for_absco_ref)
+    if (allocated(dat%self_absco_ref))   deallocate(dat%self_absco_ref)
+    if (allocated(dat%self_texp))   deallocate(dat%self_texp)
 
     allocate(dat%wavenumber(nWavenumbers), &
-             dat%wvforeign(nWavenumbers), &
-             dat%wvself_260(nWavenumbers),   &
-             dat%wvself_296(nWavenumbers), STAT= stat)
+             dat%for_absco_ref(nWavenumbers), &
+             dat%self_absco_ref(nWavenumbers),   &
+             dat%self_texp(nWavenumbers), STAT= stat)
     isError = stat /= 0
     if (isError) then
        print '("ERROR::read_file:: memory allocation ")'
@@ -81,10 +82,10 @@ MODULE read_file
     endif
 
     ! read variables
-    call readVarNC(ncid,"wavenumber",   dat%wavenumber)
-    call readVarNC(ncid,"wvforeign",    dat%wvforeign)
-    call readVarNC(ncid,"wvself_260",   dat%wvself_260)
-    call readVarNC(ncid,"wvself_296",   dat%wvself_296)
+    call readVarNC(ncid,"wavenumbers",   dat%wavenumber)
+    call readVarNC(ncid,"for_absco_ref",    dat%for_absco_ref)
+    call readVarNC(ncid,"self_absco_ref",   dat%self_absco_ref)
+    call readVarNC(ncid,"self_texp",   dat%self_texp)
     call check( nf_close(ncid) )
 
   end function getData
