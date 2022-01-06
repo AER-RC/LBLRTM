@@ -64,7 +64,7 @@ phys_consts.f90 planet_earth.f90 lblparams.f90 struct_types.f90 \
 solar_cycle.f90 
 ifeq ($(NETCDF),yes)
    SRCS +=  read_module.f90
-   SRCS +=  h2oCont_module.f90
+   SRCS +=  mt_ckd_h2o_module.f90
    LIB_NETCDF = $(NCL)
    INC_NETCDF = $(NCI)
    LDFLAG = -L$(LIB_NETCDF) -lnetcdff -lnetcdf $(ADDLIB)
@@ -91,16 +91,16 @@ read_file.mod:  $(SRCPATH)/read_module.f90
 	$(FC) -c $(FCFLAG) -I$(INC_NETCDF) $< -o $(OBJPATH)/read_module.o
 
 
-$(OBJPATH)/h2oCont_module.o:	$(SRCPATH)/h2oCont_module.f90 read_file.mod 
+$(OBJPATH)/mt_ckd_h2o_module.o:	$(SRCPATH)/mt_ckd_h2o_module.f90 read_file.mod 
 	$(FC) -c $(FCDF)  $(FCFLAG) -I$(SRCPATH) $< -o $@
 
-h2oCont.mod:	$(SRCPATH)/h2oCont_module.f90
-	$(FC) -c $(FCFLAG)  $< -o $(OBJPATH)/h2oCont_module.o
+mt_ckd_h2o.mod:	$(SRCPATH)/mt_ckd_h2o_module.f90
+	$(FC) -c $(FCFLAG)  $< -o $(OBJPATH)/mt_ckd_h2o_module.o
 $(OBJPATH)/lblrtm.o:	$(SRCPATH)/lblrtm.f90 lblparams.mod phys_consts.mod 
 	$(FC) -c $(FCDF) -cpp $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/oprop.o:	$(SRCPATH)/oprop.f90 lblparams.mod phys_consts.mod struct_types.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
-$(OBJPATH)/contnm.o:	$(SRCPATH)/contnm.f90 lblparams.mod phys_consts.mod read_file.mod h2oCont.mod
+$(OBJPATH)/contnm.o:	$(SRCPATH)/contnm.f90 lblparams.mod phys_consts.mod read_file.mod mt_ckd_h2o.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/xmerge.o:	$(SRCPATH)/xmerge.f90 lblparams.mod phys_consts.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
@@ -148,7 +148,7 @@ $(OBJPATH)/solar_cycle.o:	$(SRCPATH)/solar_cycle.f90
 	$(FC) -c $(FCFLAG) -I. $< -o $@
 
 ifeq ($(NETCDF),yes)
-build : $(OBJPATH)/lblrtm.o $(OBJPATH)/oprop.o $(OBJPATH)/contnm.o $(OBJPATH)/xmerge.o $(OBJPATH)/testmm.o $(OBJPATH)/lblatm.o $(OBJPATH)/lbllow.o $(OBJPATH)/postsub.o  $(OBJPATH)/pltlbl.o $(OBJPATH)/lbldum.o $(OBJPATH)/solar.o $(OBJPATH)/nonlte.o $(OBJPATH)/fftscn$(FFTEXT).o  $(OBJPATH)/$(UTIL_OBJ) $(OBJPATH)/phys_consts.o $(OBJPATH)/planet_earth.o $(OBJPATH)/lblparams.o $(OBJPATH)/struct_types.o $(OBJPATH)/solar_cycle.o  $(OBJPATH)/read_module.o $(OBJPATH)/h2oCont_module.o
+build : $(OBJPATH)/lblrtm.o $(OBJPATH)/oprop.o $(OBJPATH)/contnm.o $(OBJPATH)/xmerge.o $(OBJPATH)/testmm.o $(OBJPATH)/lblatm.o $(OBJPATH)/lbllow.o $(OBJPATH)/postsub.o  $(OBJPATH)/pltlbl.o $(OBJPATH)/lbldum.o $(OBJPATH)/solar.o $(OBJPATH)/nonlte.o $(OBJPATH)/fftscn$(FFTEXT).o  $(OBJPATH)/$(UTIL_OBJ) $(OBJPATH)/phys_consts.o $(OBJPATH)/planet_earth.o $(OBJPATH)/lblparams.o $(OBJPATH)/struct_types.o $(OBJPATH)/solar_cycle.o  $(OBJPATH)/read_module.o $(OBJPATH)/mt_ckd_h2o_module.o
 	$(FC) $(FCFLAG) -o ../$(OUTPUT) $^  $(LDFLAG)
 else
 build : $(OBJPATH)/lblrtm.o $(OBJPATH)/oprop.o $(OBJPATH)/contnm.o $(OBJPATH)/xmerge.o $(OBJPATH)/testmm.o $(OBJPATH)/lblatm.o $(OBJPATH)/lbllow.o $(OBJPATH)/postsub.o  $(OBJPATH)/pltlbl.o $(OBJPATH)/lbldum.o $(OBJPATH)/solar.o $(OBJPATH)/nonlte.o $(OBJPATH)/fftscn$(FFTEXT).o  $(OBJPATH)/$(UTIL_OBJ) $(OBJPATH)/phys_consts.o $(OBJPATH)/planet_earth.o $(OBJPATH)/lblparams.o $(OBJPATH)/struct_types.o $(OBJPATH)/solar_cycle.o
