@@ -3,12 +3,9 @@
 # NCI netCDF include location
 # ADDLIB any additional libs required by netCDF lib to compile
 ADDLIB = 
-NETCDF = no
 
-ifeq ($(FC),gfortran)
-	NCL = /usr/lib
-	NCI = /usr/include
-	INCLUDES:= -I. -I$(NCI) 
-	NETCDF = yes
-endif
+NETCDF = yes
+NCL = /usr/lib
+NCI = /usr/include
+INCLUDES:= -I. -I$(NCI) 
 

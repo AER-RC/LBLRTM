@@ -97,7 +97,7 @@ $(OBJPATH)/mt_ckd_h2o_module.o:	$(SRCPATH)/mt_ckd_h2o_module.f90 read_file.mod
 mt_ckd_h2o.mod:	$(SRCPATH)/mt_ckd_h2o_module.f90
 	$(FC) -c $(FCFLAG)  $< -o $(OBJPATH)/mt_ckd_h2o_module.o
 $(OBJPATH)/lblrtm.o:	$(SRCPATH)/lblrtm.f90 lblparams.mod phys_consts.mod 
-	$(FC) -c $(FCDF) -cpp $(FCFLAG) -I$(SRCPATH) $< -o $@
+	$(FC) -c $(FCDF)  $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/oprop.o:	$(SRCPATH)/oprop.f90 lblparams.mod phys_consts.mod struct_types.mod
 	$(FC) -c $(FCFLAG) -I$(SRCPATH) $< -o $@
 $(OBJPATH)/contnm.o:	$(SRCPATH)/contnm.f90 lblparams.mod phys_consts.mod read_file.mod mt_ckd_h2o.mod
