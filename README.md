@@ -59,7 +59,7 @@ git submodule update
 
 in the `LBLRTM` directory.
 
-Currently, the latest release is LBLRTM v12.11, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.11` tag:
+Currently, the latest official release is LBLRTM v12.11, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.11` tag:
 
 ```
 git checkout tags/v12.11
