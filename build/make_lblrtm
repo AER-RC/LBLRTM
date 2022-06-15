@@ -1,8 +1,3 @@
-#     path:      $HeadURL$
-#     author:    $Author$
-#     revision:  $Revision$
-#     created:   $Date$
-#
 # Makefile for lblrtm
 # From lblrtm/build directory, type: gmake -f make_lblrtm <TARGET>
 
@@ -17,7 +12,7 @@ include makefile.common
 # change those two variables from what is provided here, no need to set this variable.
 
 PRODUCT = lblrtm
-VERSION = v12.11
+VERSION = v12.13
 
 # Define makefile name
 MAKEFILE=make_$(PRODUCT)
