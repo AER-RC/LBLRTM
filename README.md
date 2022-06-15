@@ -34,7 +34,7 @@ LBLRTM uses the line parameters and [MT_CKD continuum](https://github.com/AER-RC
 
 | LBLRTM Release | MT_CKD Release | Line File |
 | :---: | :---: | :---: |
-| [v12.11](https://github.com/AER-RC/LBLRTM/releases/tag/v12.10) | [v3.5](https://github.com/AER-RC/MT_CKD/releases/tag/v3.4) | [v3.8](https://zenodo.org/record/4019086/files/aer_v_3.8.tar.gz?download=1) |
+| [v12.13](https://github.com/AER-RC/LBLRTM/releases/tag/v12.13) | [v3.6](https://github.com/AER-RC/MT_CKD/releases/tag/v3.6) | [v3.8](https://zenodo.org/record/4019086/files/aer_v_3.8.tar.gz?download=1) |
 
 If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
 
@@ -59,10 +59,10 @@ git submodule update
 
 in the `LBLRTM` directory.
 
-Currently, the latest release is LBLRTM v12.11, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.11` tag:
+Currently, the latest release is LBLRTM v12.11, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.13` tag:
 
 ```
-git checkout tags/v12.11
+git checkout tags/v12.13
 ```
 
 No releases before v12.9 are available via GitHub, but they can be requested by contacting the [AER-RC Group](https://github.com/AER-RC). For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
@@ -70,8 +70,8 @@ No releases before v12.9 are available via GitHub, but they can be requested by 
 Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/releases/tag/v12.11) and unpack it:
 
 ```
-tar xvf lblrtm_v12.11.tar.gz
-mv LBLRTM-12.11/ lblrtm
+tar xvf lblrtm_v12.13.tar.gz
+mv LBLRTM-12.13/ lblrtm
 ```
 
 Though not necessary, the move to `lblrtm` is for consistency with previous release packages and the associated documentation.
