@@ -59,7 +59,7 @@ git submodule update
 
 in the `LBLRTM` directory.
 
-Currently, the latest official release is LBLRTM v12.11, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.11` tag:
+Currently, the latest release is LBLRTM v12.11, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.13` tag:
 
 ```
 git checkout tags/v12.13
@@ -70,7 +70,7 @@ No releases before v12.9 are available via GitHub, but they can be requested by 
 Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/archive/v12.13.zip) and unpack it:
 
 ```
-tar xvf v12.13.tar.gz
+tar xvf lblrtm_v12.13.tar.gz
 mv LBLRTM-12.13/ lblrtm
 ```
 
