@@ -28,13 +28,13 @@
 
 LBLRTM (Line-By-Line Radiative Transfer Model) is an accurate and efficient line-by-line radiative transfer model derived from the Fast Atmospheric Signature Code (FASCODE). LBLRTM has been, and continues to be, extensively validated against atmospheric radiance spectra from the ultraviolet to the sub-millimeter.
 
-The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for the line parameters used in LBLRTM. These line parameters, as well as additional line parameters from other sources, are extracted for use in LBLRTM by a line file creation program called LNFL. A line parameter database built from HITRAN and suitable for use with LNFL can be downloaded with the [AER Line File retrieval code](https://github.com/AER-RC/AER_Line_File) or directory from the [Zenodo repository](https://zenodo.org/record/4019086).
+The [HITRAN database](http://cfa-www.harvard.edu/hitran) provides the basis for the line parameters used in LBLRTM. These line parameters, as well as additional line parameters from other sources, are extracted for use in LBLRTM by a line file creation program called LNFL. A line parameter database built from HITRAN and suitable for use with LNFL can be downloaded with the [AER Line File retrieval code](https://github.com/AER-RC/AER_Line_File) or directory from the [Zenodo repository](https://zenodo.org/record/4019178).
 
 LBLRTM uses the line parameters and [MT_CKD continuum](https://github.com/AER-RC/MT_CKD) in its calculations. The models and data are thus linked. For the latest release, the relationships are:
 
 | LBLRTM Release | MT_CKD Release | Line File |
 | :---: | :---: | :---: |
-| [v12.13](https://github.com/AER-RC/LBLRTM/releases/tag/v12.13) | [v3.6](https://github.com/AER-RC/MT_CKD/releases/tag/v3.6) | [v3.8](https://zenodo.org/record/4019086/files/aer_v_3.8.tar.gz?download=1) |
+| [v12.13](https://github.com/AER-RC/LBLRTM/releases/tag/v12.13) | [v3.6](https://github.com/AER-RC/MT_CKD/releases/tag/v3.6) | [v3.8.1](https://zenodo.org/record/4019178/files/aer_v_3.8.1.tar.gz?download=1) |
 
 If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
 
@@ -67,7 +67,7 @@ git checkout tags/v12.13
 
 No releases before v12.9 are available via GitHub, but they can be requested by contacting the [AER-RC Group](https://github.com/AER-RC). For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
 
-Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/releases/tag/v12.11) and unpack it:
+Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/archive/v12.13.zip) and unpack it:
 
 ```
 tar xvf lblrtm_v12.13.tar.gz
@@ -187,7 +187,7 @@ LNFL is used to generate a unformatted file (`TAPE3`) of all the line parameters
 
 ## Input files for LNFL <a name="lnflin"></a>
 
-1. `TAPE1`: The line parameter database in ASCII format (downloaded with the [AER Line File repository](https://github.com/AER-RC/AER_Line_File) or from [Zenodo](https://zenodo.org/record/4019086)).
+1. `TAPE1`: The line parameter database in ASCII format (downloaded with the [AER Line File repository](https://github.com/AER-RC/AER_Line_File) or from [Zenodo](https://zenodo.org/record/4019178)).
 
 2. `TAPE5`: LNFL input file.
 
@@ -199,7 +199,7 @@ LNFL is used to generate a unformatted file (`TAPE3`) of all the line parameters
 
 ## Sequence for running LNFL <a name="lnflseq"></a>
 
-*	[Clone the latest LNFL code](https://github.com/AER-RC/LNFL#cloning-)  and download the latest line parameter database with the [AER Line File repository](https://github.com/AER-RC/AER_Line_File) or from [Zenodo](https://zenodo.org/record/4019086).
+*	[Clone the latest LNFL code](https://github.com/AER-RC/LNFL#cloning-)  and download the latest line parameter database with the [AER Line File repository](https://github.com/AER-RC/AER_Line_File) or from [Zenodo](https://zenodo.org/record/4019178).
 *	Compile LNFL using the makefiles found in the LNFL tar file.  Note: one needs to compile in the `build` directory.
 *	Link the line parameter database to `TAPE1` in the LNFL working directory.
 *	Remove `TAPE3` file from the LNFL working directory.
@@ -232,7 +232,7 @@ ASCII file of unformatted unformatted files can be requested in the LBLRTM TAPE5
 Unformatted optical depth files can be requested in the LBLRTM using options specified in `TAPE5`.
 
 ## Sequence for running LBLRTM <a name="lblseq"></a>
-* [Clone the latest LBLRTM code](https://github.com/AER-RC/LBLRTM#cloning-the-latest-release-) and download the latest line parameter database with the [AER Line File repository](https://github.com/AER-RC/AER_Line_File) or from [Zenodo](https://zenodo.org/record/4019086).
+* [Clone the latest LBLRTM code](https://github.com/AER-RC/LBLRTM#cloning-the-latest-release-) and download the latest line parameter database with the [AER Line File repository](https://github.com/AER-RC/AER_Line_File) or from [Zenodo](https://zenodo.org/record/4019178).
 * Compile LBLRTM following makefiles in the LBLRTM tar file. Note, one needs to compile in the `build` directory
 * Link the line parameter database (`TAPE3` from LNFL) to the LBLRTM working directory.
 * Edit any parameters necessary in the input file `TAPE5`.
@@ -240,7 +240,7 @@ Unformatted optical depth files can be requested in the LBLRTM using options spe
 
 # Tests <a name="tests"></a>
 
-As of LBLRTM v12.10, a [run example package](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11_examples.tar) is provided separately from the code repository. It can be used to validate building and running of the model for select atmospheric specifications and model configurations. See `README.setup` in top level of the package for further direction.
+As of LBLRTM v12.10, a [run example package](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11.examples.tar) is provided separately from the code repository. It can be used to validate building and running of the model for select atmospheric specifications and model configurations. See `README.setup` in top level of the package for further direction.
 
 # Frequently Asked Questions <a name="faq"></a>
 
@@ -285,11 +285,11 @@ Yes. The instructions for using this capability are provided in the lblrtm instr
 
 5. **Does LBLRTM include heavy molecule parameters (cross-sectional species)?**
 
-Heavy molecules (such as CCL4, F11, and others listed in Table II of the lblrtm_instruction manual) can be included in LBLRTM calculations by setting the `IXSECT` input variable to 1 and adding Record 2.2 or Record 3.7 to the LBLRTM `TAPE5`  An additional file (`FSCDXS`) and directory (`xs`) are required for these calculations and can be obtained from the [cross sections repository](https://github.com/AER-RC/cross-sections) (which is cloned with LBLRTM if the directions in the [Cloning][#cloning] section are followed) or from the LBLRTM example tar file (available in the [LBLRTM v12.11 Release](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11_examples.tar)).
+Heavy molecules (such as CCL4, F11, and others listed in Table II of the lblrtm_instruction manual) can be included in LBLRTM calculations by setting the `IXSECT` input variable to 1 and adding Record 2.2 or Record 3.7 to the LBLRTM `TAPE5`  An additional file (`FSCDXS`) and directory (`xs`) are required for these calculations and can be obtained from the [cross sections repository](https://github.com/AER-RC/cross-sections) (which is cloned with LBLRTM if the directions in the [Cloning][#cloning] section are followed) or from the LBLRTM example tar file (available in the [LBLRTM v12.11 Release](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11.examples.tar)).
 
 6. **Format of external surface emissivity/reflectivity files**
 
-Sea surface spectral emissivity and reflectivity files are provided with the example (available in the [LBLRTM v12.11 Release](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11_examples.tar)). The files must have the file names of `EMISSIVITY` and `REFLECTIVITY`. The format is as follows:
+Sea surface spectral emissivity and reflectivity files are provided with the example (available in the [LBLRTM v12.11 Release](https://github.com/AER-RC/LBLRTM/releases/download/v12.11/lblrtm_v12.11.examples.tar)). The files must have the file names of `EMISSIVITY` and `REFLECTIVITY`. The format is as follows:
 
 | Parameter | Format | Description |
 | :--- | :---: | :--- |
@@ -311,7 +311,7 @@ Solar radiance calculations can be performed by utilizing LBLRTM input options s
 
 9. **Line coupling/mixing**
 
-Line coupling parameters are utilized in LBLRTM for O<sub>2</sub>, CO<sub>2</sub> and CH<sub>4</sub>. The line coupling parameters are provided in the AER line parameter database (available in the [AER Line File repository](https://github.com/AER-RC/AER_Line_File) or on [Zenodo](https://zenodo.org/record/4019086)) and are written to the line parameter input file (`TAPE3`) by LNFL.
+Line coupling parameters are utilized in LBLRTM for O<sub>2</sub>, CO<sub>2</sub> and CH<sub>4</sub>. The line coupling parameters are provided in the AER line parameter database (available in the [AER Line File repository](https://github.com/AER-RC/AER_Line_File) or on [Zenodo](https://zenodo.org/record/4019178)) and are written to the line parameter input file (`TAPE3`) by LNFL.
 
 10. **What is the appropriate reference for LBLRTM calculations in journal articles and presentations?**
 

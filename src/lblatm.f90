@@ -7304,7 +7304,10 @@ BLOCK DATA XMLATM
    &                AMOL31(MXZMD), AMOL32(MXZMD), AMOL33(MXZMD),      &
    &                AMOL34(MXZMD), AMOL35(MXZMD), AMOL36(MXZMD),      &
    &                AMOL37(MXZMD), AMOL38(MXZMD), AMOL39(MXZMD),      &
-   &                AMOL40(MXZMD) 
+   &                AMOL40(MXZMD), AMOL41(MXZMD), AMOL42(MXZMD),      &
+   &                AMOL43(MXZMD), AMOL44(MXZMD), AMOL45(MXZMD),      &
+   &                AMOL46(MXZMD), AMOL47(MXZMD), AMOL48(MXZMD),      &
+   &                AMOL49(MXZMD), AMOL50(MXZMD)
 !
    DATA LAYXMX / 6000 /
 !
@@ -7812,6 +7815,46 @@ BLOCK DATA XMLATM
 !     DATA AMOL39 / ?????? /
 !
    DATA AMOL40 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL41 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL42 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL43 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL44 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL45 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL46 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL47 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL48 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL49 /                                                     &
+   &  50*-99.                                              ,          &
+   &  MXZ50*0.0/
+   !
+   DATA AMOL50 /                                                     &
    &  50*-99.                                              ,          &
    &  MXZ50*0.0/
    !
