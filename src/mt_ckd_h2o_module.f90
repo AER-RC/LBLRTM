@@ -104,10 +104,11 @@ Module mt_ckd_h2o
 ! Find coeff wavenumber range that brackets [wv1abs,wv2abs].
    dvc = dat%wavenumber(2)-dat%wavenumber(1)
    i=1
-   do while (wvn(i) < (wv1abs-2*dvc))
+   do while (wvn(i) <= (wv1abs-2*dvc))
       i = i+1
    enddo
    i1=i-1 
+   if(i1.eq.0) i1=1
    do while (wvn(i) < (wv2abs+2*dvc))
       i = i+1
    enddo

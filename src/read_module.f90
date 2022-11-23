@@ -1,18 +1,23 @@
 !<f90File>**************************************************************
-!
-! CONTACT:
-!
-!   Atmospheric & Environmental Research, Inc
-!   131 Hartwell Ave
-!   Lexington ,MA 02421-3126 USA
-!   Phone: 781.761.2288
-!   E-mail: ipolonsk@aer.com
-!
-! COPYRIGHT NOTICE:
-!
-!   Copyright AER, Inc 2001-2019, All Right Reserved
-!   See the file README-DATARIGHTS.txt included with this release
-!   for additional details.
+!  --------------------------------------------------------------------------
+! |  Copyright �, Atmospheric and Environmental Research, Inc., 2022         |
+! |                                                                          |
+! |  All rights reserved. This source code was developed as part of the      |
+! |  LBLRTM software and is designed for scientific and research purposes.   |
+! |  Atmospheric and Environmental Research Inc. (AER) grants USER the right |
+! |  to download, install, use and copy this software for scientific and     |
+! |  research purposes only. This software may be redistributed as long as   |
+! |  this copyright notice is reproduced on any copy made and appropriate    |
+! |  acknowledgment is given to AER. This software or any modified version   |
+! |  of this software may not be incorporated into proprietary software or   |
+! |  commercial software offered for sale without the express written        |
+! |  consent of AER.                                                         |
+! |                                                                          |
+! |  This software is provided as is without any express or implied          |
+! |  warranties.                                                             |
+!  --------------------------------------------------------------------------
+!    Address questions to: aer_contnm@aer.com
+!    General reference: Mlawer et al. (2012), doi:10.1098/rsta.2011.0295
 !
 !*************************************************************</f90File>
 
@@ -59,13 +64,12 @@ MODULE read_file
     if (dbg) print *, 'reading: ', trim(fname)
     call check( nf_open(fname, nf_nowrite, ncid) )
 
-    if (.not. inqDim(ncid, "nwvn",  dimLen=nWavenumbers)) then
+    if (.not. inqDim(ncid, "wavenumbers",  dimLen=nWavenumbers)) then
       call check( nf_close(ncid) )
       isError = .false.
       return
     end if
     ! allocate structure
-     print *,'nWavenumbers ',nwavenumbers
     if (allocated(dat%wavenumber))   deallocate(dat%wavenumber)
     if (allocated(dat%for_absco_ref))    deallocate(dat%for_absco_ref)
     if (allocated(dat%self_absco_ref))   deallocate(dat%self_absco_ref)

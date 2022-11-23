@@ -3110,7 +3110,7 @@ SUBROUTINE LINF4 (V1L4,V2L4)
       if (m.gt.mxmol .or. m.lt. 1) then
          call line_exception (1,ipr,h_linf4,m,nmol,iso,iso_max)
          go to 50
-      else if (iso .gt. iso_max(m)) then
+      else if (iso .gt. iso_max(m) .or. iso.lt.1) then
          call line_exception (2,ipr,h_linf4,m,nmol,iso,iso_max)
          go to 50
       endif
