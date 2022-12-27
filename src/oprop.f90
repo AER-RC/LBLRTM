@@ -4296,7 +4296,7 @@ BLOCK DATA BXSECT
    &    'CHF3      ', 'BRO       ', 'HCHO      ', 'CF3CH2CF3 ',       &  ! 33 - 36
    &    'CHF2CH2CF3', 'NF3       ', 'C2F6      ', 'SF6       ',       &  ! 37 - 40
    &    'FURAN     ', 'ACETICACI ', 'GLYCOLALD ', 'PROPENE   ',       &  ! 41 - 44
-   &    'OCLO      ', 5*' ZZZZZZZZ '/                                    ! 45 - 50
+   &    'OCLO      ', 'NO3       ', 4*' ZZZZZZZZ '/                                    ! 45 - 50
    DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
    &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
    &    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',       &
@@ -4348,14 +4348,15 @@ BLOCK DATA BXSECT
    &     202.94     ,  202.94     ,   64.06     ,   68.12     ,       &  ! 29 - 32
    &      70.01     ,  95.903     ,   30.026    ,  152.039    ,       &  ! 33 - 36
    &     134.05     ,  71.00      ,  138.01     ,  146.06     ,       &  ! 37 - 40
-   &      68.075    ,  60.052     ,   60.052    ,   42.081    ,       &  ! 37 - 40
-   &      67.45     , 5*0.                                    /          ! 41 - 44 
-!                                                                        ! 45 - 50
+   &      68.075    ,  60.052     ,   60.052    ,   42.081    ,       &  ! 41 - 44
+   &      67.45     ,  62.004     ,   4*0.                                    /          ! 45 - 50 
+
 !  OClO, ACETICACID, GLYCOLALDE, PROPENE  weights are from 
 !  https://en.wikipedia.org/wiki/Chlorine_dioxide
 !  https://en.wikipedia.org/wiki/Acetic_acid
 !  https://en.wikipedia.org/wiki/Glycolaldehyde
 !  https://en.wikipedia.org/wiki/Propene
+!  https://en.wikipedia.org/wiki/Nitrate
 ! 
 !  ATTENTION if mx_xs is changed then 250 has to be replaced with mx_xs*5
    DATA V1FX / 250*0.0 /,V2FX / 250*0.0 /,DVFX / 250*0.0 /,          &
