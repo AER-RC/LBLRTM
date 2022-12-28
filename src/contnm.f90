@@ -1,10 +1,5 @@
-!     path:      $HeadURL: https://svn.aer.com/svn/aer/project/RD/LBLRTM/trunk/src/contnm.f90 $
-!     author:    $Author: jmascio $
-!     revision:  $Revision: 32919 $
-!     created:   $Date: 2019-08-23 09:54:07 -0400 (Fri, 23 Aug 2019) $
-!
 !  --------------------------------------------------------------------------
-! |  Copyright �, Atmospheric and Environmental Research, Inc., 2017         |
+! |  Copyright �, Atmospheric and Environmental Research, Inc., 2022         |
 ! |                                                                          |
 ! |  All rights reserved. This source code is part of the LBLRTM software    |
 ! |  and is designed for scientific and research purposes. Atmospheric and   |
@@ -19,7 +14,7 @@
 ! |                                                                          |
 ! |  This software is provided as is without any express or implied          |
 ! |  warranties.                                                             |
-! |                       (http://www.rtweb.aer.com/)                        |
+! |                       (http://github.com/AER-RC)                        |
 !  --------------------------------------------------------------------------
 !
 SUBROUTINE CONTNM(JRAD)
@@ -1029,15 +1024,15 @@ SUBROUTINE PRCNTM
    COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4,CHEADING
 !
 !
-   CHARACTER*18 cnam3(9),cnam4(42)
-   CHARACTER*51 CINFO1(2,13),CINFO2(2,14),CINFO3(2,9),CINFO4(2,42)
+   CHARACTER*18 cnam3(9),cnam4(44)
+   CHARACTER*51 CINFO1(2,12),CINFO2(2,14),CINFO3(2,9),CINFO4(2,44)
    CHARACTER*40 CHEADING(3,2)
 !
-   WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,13)
+   WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,12)
    WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,14)
    WRITE (IPR,918) ((CHEADING(I,J),I=1,3),J=1,2)
    WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
-   WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,42)
+   WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,44)
 
 !
 910 FORMAT (18x,2A51)
@@ -1053,8 +1048,8 @@ BLOCK DATA CNTINF
 !     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 !
    COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4,CHEADING
-   CHARACTER*18 cnam3(9),cnam4(42)
-   CHARACTER*51 CINFO1(2,13),CINFO2(2,14),CINFO3(2,9),CINFO4(2,42)
+   CHARACTER*18 cnam3(9),cnam4(44)
+   CHARACTER*51 CINFO1(2,12),CINFO2(2,14),CINFO3(2,9),CINFO4(2,44)
    CHARACTER*40 CHEADING(3,2)
 !
    DATA cnam3/                                                       &
@@ -1111,24 +1106,24 @@ BLOCK DATA CNTINF
    &     '     "            ',                                        &
    &     '     "            ',                                        &
    &     ' mt_ckd_3.6  12.13',                                        &
-   &     ' mt_ckd_4.0       '/
+   &     ' mt_ckd_4.0  12.14',                                        &
+   &     ' mt_ckd_4.0.1     ',                                        &
+   &     ' mt_ckd_4.1  12.15'/
 !           123456789-123456789-123456789-123456789-123456789-1
 !
    DATA CINFO1/                                                      &
    &     '                                                   ',       &
    &     '                                                   ',       &
-   &     '*** CONTINUA mt_ckd_4.0                            ',       &
+   &     '*** CONTINUA mt_ckd_4.1                            ',       &
    &     '                                                   ',       &
    &     '                                                   ',       &
    &     '            Most recent significant change         ',       &
-&     '       H2O SELF AND FOREIGN  0 - 20000 CM-1        ',       &
-   &     '   mt_ckd_4.0 - code/data are external (Sep 2022)  ',       &
-   &     '       H2O  SELF  (T)     0 - 20000 CM-1           ',       &
-   &     '   mt_ckd_3.6 - power law T dependence   (Jan 2022)',       &
-   &     '       H2O  SELF  (T)     0 - 20000 CM-1           ',       &
-   &     '   mt_ckd_3.5 - modify Cs,Tdep < 800 cm-1(Oct 2020)',       &
-   &     '            AIR           0 - 20000 CM-1           ',       &
-   &     '   mt_ckd_3.5 - modify 0-40 cm-1         (Oct 2020)',       &
+   &     '       H2O  AIR         200 -   700 CM-1           ',       &
+   &     '   mt_ckd_4.1 - adjust for self FIR mod  (Dec 2022)',       &
+   &     '            SELF          0 - 20000 CM-1           ',       &
+   &     '   mt_ckd_4.0 - revise code/data external(Sep 2022)',       &
+   &     '            SELF  (T)     0 - 20000 CM-1           ',       &     
+   &     '   mt_ckd_3.6 - power law T dependence   (Jan 2022)',       & 
    &     '       CO2  AIR           0 - 10000 CM-1           ',       &
    &     '   mt_ckd_2.5 - modify 2000-3000 cm-1    (Jan 2010)',       &
    &     '            AIR   (T)  2386 -  2434 CM-1           ',       &
@@ -1273,11 +1268,15 @@ BLOCK DATA CNTINF
    &     '  Payne et al., Katkov et al. 1995, and Tretyakov e',       &
    &     't al. 2016, FIR - Odintsova et al. and             ',       &
    &     '  Burch/Grynvak 1979, IR - Burch/Alt 1984 and Burch',       &
-   &     '/Grynvak; H2O foreign: MW - Payne et al.           ',       &     
-   &     '  Water vapor self continuum temperature dependence  ',       &     
-   &     'computed as a power law (Mlawer,Mascio)  (June 2022)',       &     
-   &     '  Water vapor continuum code/data now external ',       &     
-   &     ' (Cady-Pereira/Mlawer)                   (Sep 2022)'/
+   &     '/Grynvak; H2O foreign: MW - Payne et al.           ',       &
+   &     '  Water vapor self continuum temperature dependence',       &
+   &     'computed as a power law (Mlawer, Mascio) (Jun 2022)',       & 
+   &     '  Water vapor continuum code/data now external (Cad',       &
+   &     'y-Pereira/Mlawer)                        (Sep 2022)',       &
+   &     '  Added changes to handle negative frequencies for ',       &
+   &     'water vapor continuum                    (Nov 2022)',       &
+   &     '  Revised foreign H2O continuum in far-IR to adjust',       &
+   &     'for v3.5 changes to self (Mlawer, Mascio)(Dec 2022)'/
 !
 end block data CNTINF
 !
