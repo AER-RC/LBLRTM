@@ -60,7 +60,7 @@ Module mt_ckd_h2o
       type(data2read),save  :: dat
       character(len=*), parameter :: fDataname = "absco-ref_wv-mt-ckd.nc"
 
-      real,parameter :: p0=1013.,t0 =296.,xlosmt=2.68675E+19
+      real,parameter :: xlosmt=2.68675E+19
       real ::onepl = 1.001,onemi = 0.999 
 
    contains
@@ -127,14 +127,15 @@ Module mt_ckd_h2o
    xkt = t_atm/radcn2 
 ! The continuum coefficients stored in the netCDF are valid for a reference density and must be 
 ! be scaled by this factor to accout for the given atmospheric density.
-   rho_rat = (p_atm/p0)*(t0/t_atm)
+! ref_press (1013 mb) and ref_temp (296K) are read in from absco-ref_wv-mt-ckd.nc
+   rho_rat = (p_atm/dat%ref_press)*(dat%ref_temp/t_atm)
 
 ! *****************
 ! Compute water vapor self continuum absorption coefficient.
 
 ! Apply temperature dependence to reference water vapor self continuum coefficients
 ! and scale to given density.
-    sh2o_coeff = dat%self_absco_ref(i1:i2) * (t0/t_atm)**dat%self_texp(i1:i2)
+    sh2o_coeff = dat%self_absco_ref(i1:i2) * (dat%ref_temp/t_atm)**dat%self_texp(i1:i2)
     sh2o_coeff = sh2o_coeff * h2o_vmr * rho_rat
 
 ! Multiply by radiation term if requested

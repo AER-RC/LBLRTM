@@ -34,12 +34,15 @@ MODULE read_file
      real(kind=8), allocatable, dimension(:) :: for_absco_ref
      real(kind=8), allocatable, dimension(:) :: self_absco_ref
      real(kind=8), allocatable, dimension(:) :: self_texp
+     real(kind=8) :: ref_temp
+     real(kind=8) :: ref_press
   end type data2read
 
   logical, parameter                      :: dbg = .FALSE.
   interface readVarNC
      module procedure readReal1D
      module procedure readDouble1D
+     module procedure readDouble
   end interface
 
   contains
@@ -90,6 +93,8 @@ MODULE read_file
     call readVarNC(ncid,"for_absco_ref",    dat%for_absco_ref)
     call readVarNC(ncid,"self_absco_ref",   dat%self_absco_ref)
     call readVarNC(ncid,"self_texp",   dat%self_texp)
+    call readVarNC(ncid,"ref_temp",   dat%ref_temp)
+    call readVarNC(ncid,"ref_press",   dat%ref_press)
     call check( nf_close(ncid) )
 
   end function getData
@@ -158,5 +163,16 @@ MODULE read_file
       call check(nf_inq_varid(id, varName, varId), varName, fatal)
       call check(nf_get_var(id, varId, val), varName, fatal)
    end subroutine readDouble1D
+
+   subroutine readDouble(id, varName, val, fatal)
+    integer(kind=4),        intent(in)   :: id
+    character(len=*),       intent(in)   :: varName
+    real*8,                 intent(inout):: val
+    integer(kind=4)                      :: varId
+    logical,        optional, intent(in) :: fatal
+    if (dbg) print*, ' ncdfUtil::readDouble1D '
+    call check(nf_inq_varid(id, varName, varId), varName, fatal)
+    call check(nf_get_var(id, varId, val), varName, fatal)
+ end subroutine readDouble
 
 end module read_file
