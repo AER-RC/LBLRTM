@@ -71,7 +71,7 @@ Instead of cloning, users can also download an LBLRTM [tarball](https://github.c
 
 ```
 tar xvf lblrtm_v12.15.1.tar.gz
-mv LBLRTM-12.15/ lblrtm
+mv LBLRTM-12.15.1/ lblrtm
 ```
 
 Though not necessary, the move to `lblrtm` is for consistency with previous release packages and the associated documentation.
