@@ -44,10 +44,16 @@ For more, please see the [Wiki page](https://github.com/AER-RC/LBLRTM/wiki/)
 
 # Cloning the Latest Release <a name="cloning"></a>
 
-Assuming the output directory should be `LBLRTM`:
+Assuming the output directory should be `LBLRTM` and that the user has [created an SSH key](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) (we use RSA):
 
 ```
-% git clone --recursive git@github.com:AER-RC/LBLRTM.git
+git clone --recursive git@github.com:AER-RC/LBLRTM.git
+```
+
+Alternatively, users that have not setup an SSH key but have [created a personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token#creating-a-fine-grained-personal-access-token) can use the HTTPS protocol:
+
+```
+git clone --recursive https://github.com/AER-RC/LBLRTM.git
 ```
 
 `--recursive` is important, because this repository is linked with our [common FORTRAN modules repository](https://github.com/AER-RC/aer_rt_utils) that are required in the model builds. The [cross section database](https://github.com/AER-RC/cross-sections) is also added as a submodule (it is not required for all model runs). If this keyword is forgotten, one can do:
