@@ -1024,15 +1024,15 @@ SUBROUTINE PRCNTM
    COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4,CHEADING
 !
 !
-   CHARACTER*18 cnam3(9),cnam4(44)
-   CHARACTER*51 CINFO1(2,12),CINFO2(2,14),CINFO3(2,9),CINFO4(2,44)
+   CHARACTER*18 cnam3(9),cnam4(45)
+   CHARACTER*51 CINFO1(2,12),CINFO2(2,14),CINFO3(2,9),CINFO4(2,45)
    CHARACTER*40 CHEADING(3,2)
 !
    WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,12)
    WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,14)
    WRITE (IPR,918) ((CHEADING(I,J),I=1,3),J=1,2)
    WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
-   WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,44)
+   WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,45)
 
 !
 910 FORMAT (18x,2A51)
@@ -1048,8 +1048,8 @@ BLOCK DATA CNTINF
 !     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 !
    COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4,CHEADING
-   CHARACTER*18 cnam3(9),cnam4(44)
-   CHARACTER*51 CINFO1(2,12),CINFO2(2,14),CINFO3(2,9),CINFO4(2,44)
+   CHARACTER*18 cnam3(9),cnam4(45)
+   CHARACTER*51 CINFO1(2,12),CINFO2(2,14),CINFO3(2,9),CINFO4(2,45)
    CHARACTER*40 CHEADING(3,2)
 !
    DATA cnam3/                                                       &
@@ -1108,18 +1108,19 @@ BLOCK DATA CNTINF
    &     ' mt_ckd_3.6  12.13',                                        &
    &     ' mt_ckd_4.0  12.14',                                        &
    &     ' mt_ckd_4.0.1     ',                                        &
-   &     ' mt_ckd_4.1  12.15'/
+   &     ' mt_ckd_4.1  12.15',                                        &
+   &     ' mt_ckd_4.1.1     '/
 !           123456789-123456789-123456789-123456789-123456789-1
 !
    DATA CINFO1/                                                      &
    &     '                                                   ',       &
    &     '                                                   ',       &
-   &     '*** CONTINUA mt_ckd_4.1                            ',       &
+   &     '*** CONTINUA mt_ckd_4.1.1                          ',       &
    &     '                                                   ',       &
    &     '                                                   ',       &
    &     '            Most recent significant change         ',       &
    &     '       H2O  AIR         200 -   700 CM-1           ',       &
-   &     '   mt_ckd_4.1 - adjust for self FIR mod  (Dec 2022)',       &
+   &     '   mt_ckd_4.1.1 - adjust for self FIR mod(Jan 2023)',       &
    &     '            SELF          0 - 20000 CM-1           ',       &
    &     '   mt_ckd_4.0 - revise code/data external(Sep 2022)',       &
    &     '            SELF  (T)     0 - 20000 CM-1           ',       &     
@@ -1276,7 +1277,9 @@ BLOCK DATA CNTINF
    &     '  Added changes to handle negative frequencies for ',       &
    &     'water vapor continuum                    (Nov 2022)',       &
    &     '  Revised foreign H2O continuum in far-IR to adjust',       &
-   &     'for v3.5 changes to self (Mlawer, Mascio)(Dec 2022)'/
+   &     'for v3.5 changes to self (Mlawer, Mascio)(Dec 2022)',       &
+   &     '  Minor changes to MT_CKD_4.1 and MT_CKD_H2O_4.1   ',       &
+   &     '                                         (Jan 2023)'/
 !
 end block data CNTINF
 !

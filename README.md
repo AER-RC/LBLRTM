@@ -34,7 +34,7 @@ LBLRTM uses the line parameters and [MT_CKD continuum](https://github.com/AER-RC
 
 | LBLRTM Release | MT_CKD Release | Line File |
 | :---: | :---: | :---: |
-| [v12.15](https://github.com/AER-RC/LBLRTM/releases/tag/v12.15) | [4.1](https://github.com/AER-RC/MT_CKD/releases/tag/4.1) | [v3.8.1](https://zenodo.org/record/4019178/files/aer_v_3.8.1.tar.gz?download=1) |
+| [v12.15.1](https://github.com/AER-RC/LBLRTM/releases/tag/v12.15.1) | [4.1.1](https://github.com/AER-RC/MT_CKD/releases/tag/4.1.1) | [v3.8.1](https://zenodo.org/record/4019178/files/aer_v_3.8.1.tar.gz?download=1) |
 
 If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
 
@@ -59,19 +59,19 @@ git submodule update
 
 in the `LBLRTM` directory.
 
-Currently, the latest release is LBLRTM v12.15, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.15` tag:
+Currently, the latest release is LBLRTM v12.15.1, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.15.1` tag:
 
 ```
-git checkout tags/v12.15
+git checkout tags/v12.15.1
 ```
 
 No releases before v12.9 are available via GitHub, but they can be requested by contacting the [AER-RC Group](https://github.com/AER-RC). For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
 
-Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/archive/v12.14.zip) and unpack it:
+Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/archive/v12.15.1.zip) and unpack it:
 
 ```
-tar xvf lblrtm_v12.15.tar.gz
-mv LBLRTM-12.15/ lblrtm
+tar xvf lblrtm_v12.15.1.tar.gz
+mv LBLRTM-12.15.1/ lblrtm
 ```
 
 Though not necessary, the move to `lblrtm` is for consistency with previous release packages and the associated documentation.
