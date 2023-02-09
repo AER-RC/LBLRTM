@@ -4,6 +4,9 @@
 #     created:   $Date$
 
 * Makefiles are designed for use with gmake. 
+* If netCDF4 will be used (e.g., for reading the continuum in LBLRTM v12.15.1) and is not in a standard 
+* location (/usr on Unix systems) users can designate these paths in the NCL (lib) and NCI (include) 
+* variables in addlibs.inc
 * From lblrtm/build directory, type: gmake -f make_lblrtm <TARGET>
 
 OPTION            DESCRIPTION                                                       COMPILE EXECUTABLE NAME
