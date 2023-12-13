@@ -34,7 +34,7 @@ LBLRTM uses the line parameters and [MT_CKD continuum](https://github.com/AER-RC
 
 | LBLRTM Release | MT_CKD Release | Line File |
 | :---: | :---: | :---: |
-| [v12.15.1](https://github.com/AER-RC/LBLRTM/releases/tag/v12.15.1) | [4.1.1](https://github.com/AER-RC/MT_CKD/releases/tag/4.1.1) | [v3.8.1](https://zenodo.org/record/4019178/files/aer_v_3.8.1.tar.gz?download=1) |
+| [v12.16](https://github.com/AER-RC/LBLRTM/releases/tag/v12.16) | [4.2](https://github.com/AER-RC/MT_CKD/releases/tag/4.2) | [v3.8.1](https://zenodo.org/record/4019178/files/aer_v_3.8.1.tar.gz?download=1) |
 
 If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
 
@@ -65,19 +65,19 @@ git submodule update
 
 in the `LBLRTM` directory.
 
-Currently, the latest release is LBLRTM v12.15.1, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.15.1` tag:
+Currently, the latest release is LBLRTM v12.16, and it is recommended that this be the version that users clone and checkout (rather than the `master` branch). To do this, one needs to simply checkout the `v12.16` tag:
 
 ```
-git checkout tags/v12.15.1
+git checkout tags/v12.16
 ```
 
 No releases before v12.9 are available via GitHub, but they can be requested by contacting the [AER-RC Group](https://github.com/AER-RC). For information on previous releases, please visit the [What's New Wiki page](https://github.com/AER-RC/LBLRTM/wiki/What's-New).
 
-Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/archive/v12.15.1.zip) and unpack it:
+Instead of cloning, users can also download an LBLRTM [tarball](https://github.com/AER-RC/LBLRTM/archive/v12.16.zip) and unpack it:
 
 ```
-tar xvf lblrtm_v12.15.1.tar.gz
-mv LBLRTM-12.15.1/ lblrtm
+tar xvf lblrtm_v12.16.tar.gz
+mv LBLRTM-12.16/ lblrtm
 ```
 
 Though not necessary, the move to `lblrtm` is for consistency with previous release packages and the associated documentation.
@@ -246,7 +246,7 @@ Unformatted optical depth files can be requested in the LBLRTM using options spe
 
 # Tests <a name="tests"></a>
 
-As of LBLRTM v12.10, a [run example package](https://github.com/AER-RC/LBLRTM/releases/tag/v12.15/lblrtm_v12.15.examples.tar) is provided separately from the code repository. It can be used to validate building and running of the model for select atmospheric specifications and model configurations. See `README.setup` in top level of the package for further direction.
+As of LBLRTM v12.10, a [run example package](https://github.com/AER-RC/LBLRTM/releases/tag/v12.16/lblrtm_v12.16.examples.tar) is provided separately from the code repository. It can be used to validate building and running of the model for select atmospheric specifications and model configurations. See `README.setup` in top level of the package for further direction.
 
 
 # Frequently Asked Questions <a name="faq"></a>

@@ -22,6 +22,7 @@ SUBROUTINE CONTNM(JRAD)
    Use lblparams, ONLY: n_absrb, ipts, ipts2
    USE phys_consts, ONLY: radcn2
    USE mt_ckd_h2o
+   USE read_file
 
 !                                                                       
       IMPLICIT REAL*8           (V)  
@@ -49,10 +50,13 @@ SUBROUTINE CONTNM(JRAD)
    &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
    &              NLTEFL,LNFIL4,LNGTH4
 
+   COMMON /CLOSURE/ FRGNX,mt_version
    common /cntscl/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL
 
    real sh2o(n_absrb),fh2o(n_absrb)
    logical radflag
+   character FRGNX
+   character*45 mt_version
 !
 !------------------------------------
 ! for analytic derivative calculation
@@ -284,8 +288,8 @@ SUBROUTINE CONTNM(JRAD)
           radflag=.TRUE.
       endif
       call mt_ckd_h2o_absco(pave,tave,h2o_fac,v1abs,v2abs,dvabs,&
-                      sh2o,fh2o,radflag=radflag)
-      
+                      sh2o,fh2o,FRGNX,radflag=radflag,mt_version=mt_version)
+
 ! Special code just for stand alone continuum
 
       v1h = v1abs
@@ -318,8 +322,6 @@ SUBROUTINE CONTNM(JRAD)
       endif
 
    endif
-
-
 
 !=======================================================================
 
@@ -1024,15 +1026,15 @@ SUBROUTINE PRCNTM
    COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4,CHEADING
 !
 !
-   CHARACTER*18 cnam3(9),cnam4(45)
-   CHARACTER*51 CINFO1(2,12),CINFO2(2,14),CINFO3(2,9),CINFO4(2,45)
+   CHARACTER*18 cnam3(9),cnam4(46)
+   CHARACTER*51 CINFO1(2,11),CINFO2(2,14),CINFO3(2,9),CINFO4(2,46)
    CHARACTER*40 CHEADING(3,2)
 !
-   WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,12)
+   WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,11)
    WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,14)
    WRITE (IPR,918) ((CHEADING(I,J),I=1,3),J=1,2)
    WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
-   WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,45)
+   WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,46)
 
 !
 910 FORMAT (18x,2A51)
@@ -1048,8 +1050,8 @@ BLOCK DATA CNTINF
 !     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 !
    COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4,CHEADING
-   CHARACTER*18 cnam3(9),cnam4(45)
-   CHARACTER*51 CINFO1(2,12),CINFO2(2,14),CINFO3(2,9),CINFO4(2,45)
+   CHARACTER*18 cnam3(9),cnam4(46)
+   CHARACTER*51 CINFO1(2,11),CINFO2(2,14),CINFO3(2,9),CINFO4(2,46)
    CHARACTER*40 CHEADING(3,2)
 !
    DATA cnam3/                                                       &
@@ -1107,24 +1109,23 @@ BLOCK DATA CNTINF
    &     '     "            ',                                        &
    &     ' mt_ckd_3.6  12.13',                                        &
    &     ' mt_ckd_4.0  12.14',                                        &
-   &     ' mt_ckd_4.0.1     ',                                        &
+   &     ' mt_ckd_4.0.1  -  ',                                        &
    &     ' mt_ckd_4.1  12.15',                                        &
-   &     ' mt_ckd_4.1.1     '/
+   &     ' mt_ckd_4.1.1  -  ',                                        &
+   &     ' mt_ckd_4.2  12.16'/
 !           123456789-123456789-123456789-123456789-123456789-1
 !
    DATA CINFO1/                                                      &
    &     '                                                   ',       &
    &     '                                                   ',       &
-   &     '*** CONTINUA mt_ckd_4.1.1                          ',       &
-   &     '                                                   ',       &
    &     '                                                   ',       &
    &     '            Most recent significant change         ',       &
-   &     '       H2O  AIR         200 -   700 CM-1           ',       &
-   &     '   mt_ckd_4.1.1 - adjust for self FIR mod(Jan 2023)',       &
-   &     '            SELF          0 - 20000 CM-1           ',       &
-   &     '   mt_ckd_4.0 - revise code/data external(Sep 2022)',       &
-   &     '            SELF  (T)     0 - 20000 CM-1           ',       &     
-   &     '   mt_ckd_3.6 - power law T dependence   (Jan 2022)',       & 
+   &     '       H2O  AIR         600 -  1400 CM-1           ',       &
+   &     '   mt_ckd_4.2 - adjustment & alt. frgn   (Nov 2023)',       &
+   &     '            SELF        600 -  1400 CM-1           ',       &
+   &     '   mt_ckd_4.2 - adjustment in IR window  (Nov 2023)',       &
+   &     '            SELF  (T)   600 -  1400 CM-1           ',       &     
+   &     '   mt_ckd_4.2 - adjustment in IR window  (Nov 2023)',       & 
    &     '       CO2  AIR           0 - 10000 CM-1           ',       &
    &     '   mt_ckd_2.5 - modify 2000-3000 cm-1    (Jan 2010)',       &
    &     '            AIR   (T)  2386 -  2434 CM-1           ',       &
@@ -1236,7 +1237,7 @@ BLOCK DATA CNTINF
    &     'ive result depends on starting wavenumber(Aug 2008)',       &
    &     '  H2O: modification to self and foreign continuum (',       &
    &     'microwave and IR ARM data 0-600 cm-1)    (Nov 2008)',       &
-   &     '  CO2: modification from 2000-3200 cm-1 (AERI(ARM), ',      &
+   &     '  CO2: modification from 2000-3200 cm-1 (AERI(ARM),',       &
    &     'IASI AIRS measurements); Temp. dep. added(Jan 2010)',       &
    &     '  H2O: modification to self cont. 2000-3000 cm-1   ',       &
    &     '(IASI data, fit to near-IR results of              ',       &
@@ -1271,7 +1272,7 @@ BLOCK DATA CNTINF
    &     '  Burch/Grynvak 1979, IR - Burch/Alt 1984 and Burch',       &
    &     '/Grynvak; H2O foreign: MW - Payne et al.           ',       &
    &     '  Water vapor self continuum temperature dependence',       &
-   &     'computed as a power law (Mlawer, Mascio) (Jun 2022)',       & 
+   &     ' computed as a power law (Mlawer, Mascio)(Jun 2022)',       & 
    &     '  Water vapor continuum code/data now external (Cad',       &
    &     'y-Pereira/Mlawer)                        (Sep 2022)',       &
    &     '  Added changes to handle negative frequencies for ',       &
@@ -1279,7 +1280,9 @@ BLOCK DATA CNTINF
    &     '  Revised foreign H2O continuum in far-IR to adjust',       &
    &     'for v3.5 changes to self (Mlawer, Mascio)(Dec 2022)',       &
    &     '  Minor changes to MT_CKD_4.1 and MT_CKD_H2O_4.1   ',       &
-   &     '                                         (Jan 2023)'/
+   &     '                                         (Jan 2023)',       &
+   &     '  IR window: Derived from AERI - Self, frgn, self T',       &
+   &     '-dep; alt. frgn; Mlawer/Mascio/Turner    (Dec 2023)'/
 !
 end block data CNTINF
 !
