@@ -398,7 +398,7 @@
       CHARACTER*18 HVRSOL 
 !                                                                       
       CHARACTER*1 CONE,CTWO,CTHREE,CFOUR,CA,CB,CC,CDOL,CPRCNT,CBLNK 
-      CHARACTER*1 CMRG(2),CXIDA(80) 
+      CHARACTER*1 IFRGNX,CMRG(2),CXIDA(80) 
 !                                                                       
 
 !      PARAMETER (MXFSC=600, MXLAY=MXFSC+3,MXZMD=6000,                   &
@@ -449,7 +449,7 @@
                                                                         
 !     -------------------------                                         
 !                                                                       
-      DIMENSION IDCNTL(16),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2) 
+      DIMENSION IDCNTL(17),IFSDID(17),IWD(2),IWD2(2),IWD3(2),IWD4(2) 
 !                                                                       
       COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
      &                AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,   &
@@ -500,6 +500,10 @@
       COMMON /RCNTRL/ ILNFLG 
       COMMON /FLFORM/ CFORM 
       COMMON /IODFLG/ DVOUT 
+
+      COMMON /CLOSURE/ FRGNX
+      character*1 FRGNX
+
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL 
       common /profil_scal/ nmol_scal,hmol_scal(64),xmol_scal(64),       &
      &                     n_xs_scal,h_xs_scal(64),x_xs_scal(64)        
@@ -535,10 +539,10 @@
      &            (IWD4(1),V1LD)                                        
       EQUIVALENCE (CXID,CXIDA(1)) 
 !                                                                       
-      DATA IDCNTL / ' HIRAC',' LBLF4',' CNTNM',' AERSL',' EMISS',       &
-     &              ' SCNFN',' FILTR','  PLOT','  TEST','  IATM',       &
-     &              '  IMRG','  ILAS',' OPDEP',' XSECT','ISOTPL' ,      &
-     &              '  IBRD'/
+      DATA IDCNTL / ' HIRAC',' LBLF4',' FRGNX',' CNTNM',' AERSL',       &
+     &              ' EMISS',' SCNFN',' FILTR','  PLOT','  TEST',       &
+     &              '  IATM','  IMRG','  ILAS',' OPDEP',' XSECT',      &
+     &              'ISOTPL','  IBRD'/
 !                                                                       
       DATA CONE / '1'/,CTWO / '2'/,CTHREE / '3'/,CFOUR / '4'/,          &
      &     CA / 'A'/,CB / 'B'/,CC / 'C'/                                
@@ -667,11 +671,20 @@
       CALL CPUTIM (TIME0) 
       WRITE (IPR,920) TIME0 
 !                                                                       
-      READ(IRD,925,END=80) IHIRAC,ILBLF4,ICNTNM,IAERSL,IEMIT,           &
+      READ(IRD,924,END=80) IHIRAC,ILBLF4,IFRGNX,ICNTNM,IAERSL,IEMIT,    &
      &                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,    &
      &                      IOD,IXSECT,IRAD,MPTS,NPTS,ISOTPL,IBRD            
 !                                                                       
-                                                                        
+        
+     !     Set flag for choosing foreign continuum:
+!     ----------------------------------------
+!     IFRGNX Value      Continuum type
+!           0              no closure
+!           1              closure
+
+     FRGNX = IFRGNX
+
+                        
       ICNTNM_sav = ICNTNM 
                                                                         
 !     Set continuum flags as needed                                     
@@ -818,8 +831,8 @@
 !                                                                       
       JRAD = 1 
       IF (IRAD.NE.0) JRAD = -1 
-      WRITE (IPR,935) (IDCNTL(I),I=1,16) 
-      WRITE (IPR,940) IHIRAC,ILBLF4,ICNTNM_sav,IAERSL,IEMIT,ISCAN,      &
+      WRITE (IPR,935) (IDCNTL(I),I=1,17) 
+      WRITE (IPR,939) IHIRAC,ILBLF4,FRGNX,ICNTNM_sav,IAERSL,IEMIT,ISCAN, &
      &    IFILTR,IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT,ISOTPL,IBRD           
 !                                                                       
       IF (IHIRAC.EQ.4) THEN 
@@ -1159,11 +1172,14 @@
   910 FORMAT (10A8) 
   915 FORMAT ('0',10A8,2X,2(1X,A8,1X)) 
   920 FORMAT ('0  TIME ENTERING LBLRTM  ',F15.4) 
+  924 FORMAT (2(4X,I1),1X,A1,2X,I1,7(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,   &
+      &        I4,4X,I1,4x,I1,4x,I1)
   925 FORMAT (10(4X,I1),3X,2A1,3(4X,I1),I1,I4,1X,I4,4X,I1,4x,I1,4x,I1) 
 !                                                                       
   930 FORMAT (I1) 
-  935 FORMAT (16(A6,3X)) 
-  940 FORMAT (1X,I4,15I9) 
+  935 FORMAT (17(A6,3X)) 
+  939 FORMAT (1X,I4,I9,8X,A1,14I9) 
+  940 FORMAT (1X,I4,16I9) 
 !                                                                       
   950 FORMAT ('0 IEMIT=0 IS NOT IMPLEMENTED FOR NLTE ',/,               &
      &        '  CHANGE IEMIT TO 1 OR IHIRAC TO 1 ')                    
@@ -6152,6 +6168,9 @@ end block data BOPDPT
       COMMON /CONVF/ CHI(251),RDVCHI,RECPI,ZSQBND,A3,B3,JCNVF4 
 !                                                                       
       COMMON /CNTSCL/ XSELF,XFRGN,XCO2C,XO3CN,XO2CN,XN2CN,XRAYL 
+
+      COMMON /CLOSURE/ FRGNX,mt_version
+      character*45 mt_version
 !                                                                       
       EQUIVALENCE (FSCDID(1),IHIRAC) , (FSCDID(2),ILBLF4),              &
      &            (FSCDID(3),IXSCNT) , (FSCDID(4),IAERSL),              &
@@ -6207,6 +6226,7 @@ end block data BOPDPT
    10    CONTINUE 
          CALL CONTNM (JRAD) 
       ENDIF 
+      WRITE (IPR,917) mt_version
       DVR4 = 0. 
 !                                                                       
       IF (ILBLF4.GE.1) THEN 
@@ -6257,7 +6277,8 @@ end block data BOPDPT
   910 FORMAT ('0 VLAS  ',F20.8,8X,'V1 RESET ',F12.5,8X,'V2 RESET ',     &
      &        F12.5)                                                    
   915 FORMAT ('0',10A8,2X,2(1X,A8,1X),/,'0 TIME ENTERING OPDPTH ',      &
-     &        F15.3)                                                    
+     &        F15.3)   
+  917 FORMAT ('Using MT_CKD',A38)                                             
   920 FORMAT ('0  IPTS4 FOR LINF4 = ',I5,3X,' DV FOR LINF4 = ',F10.5,   &
      &        5X,'BOUND FOR LINF4 =',F10.4)                             
   925 FORMAT ('0 TIME LEAVING OPDPTH ',F15.3,'  TOTAL FOR LAYER ',      &

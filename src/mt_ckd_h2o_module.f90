@@ -47,6 +47,7 @@
 !    Description of output variables.
 !    self_absco - computed water vapor self continuum absorption coefficients  (cm2/molec)
 !    for_absco - computed water vapor foreign continuum absorption coefficients (cm2/molec)
+!    for_closure_absco - same as above, but allows for closure (cm2/molec)
  
 Module mt_ckd_h2o
    
@@ -65,14 +66,16 @@ Module mt_ckd_h2o
 
    contains
    subroutine mt_ckd_h2o_absco(p_atm,t_atm,h2o_vmr,wv1abs,wv2abs,dvabs,self_absco,for_absco, &
-                    radflag) 
+      FRGNX,radflag,mt_version) 
 
 ! Inputs
    real,dimension(:),intent(inout)  :: self_absco,for_absco 
    real, intent(in) :: p_atm,t_atm,h2o_vmr
    double precision, intent(in):: wv1abs,wv2abs
    real, intent(in):: dvabs
+   character, intent(in):: FRGNX
    logical,optional :: radflag
+   character(len=*),optional :: mt_version 
 
 ! Local variables
    integer :: ncoeff,nptabs,i1,i2,ist,lst,i
@@ -83,8 +86,9 @@ Module mt_ckd_h2o
    !real,dimension(:,:), allocatable,save :: coeff
 
    real,dimension(:), allocatable :: sh2o_coeff,fh2o_coeff,rad
-   integer :: iret
+   integer :: iret,vlen
    logical,save :: lread=.False.
+   character(len=85) :: version
    
    if (.not. present(radflag)) then
       radflag = .TRUE.
@@ -93,7 +97,11 @@ Module mt_ckd_h2o
 ! Read in spectral range and coefficients 
    if (.not. lread) then
       lread = .True.
-      if (getData(fDataname,dat)) STOP   
+      if (getData(fDataname,FRGNX,dat,version)) STOP   
+   if ( present(mt_version)) then
+      vlen = len(version)
+      mt_version=version(4:50)
+   endif
 
       ncoeffin = size(dat%wavenumber)
       if (allocated(wvn)) deallocate(wvn)
