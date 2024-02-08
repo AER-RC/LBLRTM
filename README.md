@@ -36,6 +36,8 @@ LBLRTM uses the line parameters and [MT_CKD continuum](https://github.com/AER-RC
 | :---: | :---: | :---: |
 | [v12.16](https://github.com/AER-RC/LBLRTM/releases/tag/v12.16) | [4.2](https://github.com/AER-RC/MT_CKD/releases/tag/4.2) | [v3.8.1](https://zenodo.org/record/4019178/files/aer_v_3.8.1.tar.gz?download=1) |
 
+Note that building LBLRTM_v12.14 and later requires using the netCDF libraries and setting the path to their location in the file addlibs.inc in the /build directory.
+
 If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
 
 [Add plantUML diagram]
@@ -239,6 +241,7 @@ Unformatted optical depth files can be requested in the LBLRTM using options spe
 
 ## Sequence for running LBLRTM <a name="lblseq"></a>
 * [Clone the latest LBLRTM code](https://github.com/AER-RC/LBLRTM#cloning-the-latest-release-) and download the latest line parameter database with the [AER Line File repository](https://github.com/AER-RC/AER_Line_File) or from [Zenodo](https://zenodo.org/record/4019178).
+* For LBLRTM_v12.14 and later, install the netCDF libraries and set the path to their location in the addlibs.inc file in the /build directory.
 * Compile LBLRTM following makefiles in the LBLRTM tar file. Note, one needs to compile in the `build` directory
 * Link the line parameter database (`TAPE3` from LNFL) to the LBLRTM working directory.
 * Edit any parameters necessary in the input file `TAPE5`.
