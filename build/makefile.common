@@ -329,7 +329,7 @@ osxGNUdbl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=dbl FC_TYPE=gnu \
 	PLTFRM=OS_X  \
 	FC=gfortran \
-	FCFLAG=" -fdefault-integer-8 -fdefault-real-8 -frecord-marker=4" \
+	FCFLAG=" -fdefault-integer-8 -fdefault-real-8 -frecord-marker=4 -std=legacy" \
 	UTIL_FILE=util_gfortran.f90
 
 ##############################################################
@@ -340,7 +340,7 @@ osxGNUsgl:
 	${MAKE} -f ${MAKEFILE} all P_TYPE=sgl FC_TYPE=gnu \
 	PLTFRM=OS_X \
 	FC=gfortran \
-	FCFLAG="-frecord-marker=4" \
+	FCFLAG="-frecord-marker=4 -std=legacy" \
 	UTIL_FILE=util_gfortran.f90
 
 ##############################################################

@@ -1753,7 +1753,8 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     TR contains the optical depths at this stage
 !
-   IF (IHIRAC.EQ.4) CALL BUFIN (KFILE,KEOF,EM(1),NLIMBF)
+   IF ((IHIRAC==4).OR.&
+       (IHIRAC==6)) CALL BUFIN (KFILE,KEOF,EM(1),NLIMBF)
 !
 !     EM contains the optical depth corrections for nlte at this stage
 !
@@ -1821,9 +1822,9 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE LTE CASE
 !
-      IF (IHIRAC.NE.4) THEN
+      IF ((IHIRAC/=4).or.(IHIRAC/=6)) THEN
          if (dbg(1)) then
-            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE:  CHECKED'
+            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= (4,6): LTE CASE:  CHECKED'
             dbg(1) = .false.
          END IF
 !
@@ -1884,7 +1885,7 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !     - THIS SECTION TREATS THE NLTE CASE
 !
          if (dbg(2)) then
-            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: NOT CHECKED'
+            print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == (4,6): NLTE CASE: NOT CHECKED'
             dbg(2) = .false.
          ENDIF
          VI = V1P
@@ -1954,7 +1955,7 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - FOR TANGENT PATHS AND FOR THE CASE OF THE REFLECTED ATMOSPHERE
 !
-      IF (IHIRAC.NE.4) THEN
+      IF ((IHIRAC/=4).or.(IHIRAC/=6)) THEN
 !
 !     - THIS SECTION TREATS THE LTE CASE
 !
@@ -1984,7 +1985,7 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
          if (surf_refl .eq. 's') then
 !
             if (dbg(3)) then
-               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE: specular:  CHECKED'
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= (4,6): LTE CASE: specular:  CHECKED'
                dbg(3) = .false.
             ENDIF
             DO I = NLIM1, NLIM2
@@ -2023,7 +2024,7 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    !
          elseif (surf_refl .eq. 'l') then
             if (dbg(4)) then
-               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= 4: LTE CASE: Lambertian:  NOT FIXED'
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC /= (4,6): LTE CASE: Lambertian:  NOT FIXED'
                dbg(4) = .false.
             endif
 !ccc
@@ -2111,7 +2112,7 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 
          if (surf_refl .eq. 's') then
             if (dbg(5)) then
-               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: specular: CHECKED'
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == (4,6): NLTE CASE: specular: CHECKED'
                dbg(5) = .false.
             ENDIF
 
@@ -2158,7 +2159,7 @@ SUBROUTINE EMIN (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    
          elseif (surf_refl .eq. 'l') then
             if (dbg(6)) then
-               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == 4: NLTE CASE: Lambertian: NOT CHECKED'
+               print *,'EMIN::XKTB.LE.0. .AND. IHIRAC == (4,6): NLTE CASE: Lambertian: NOT CHECKED'
                dbg(6) = .false.
             endif
 
@@ -3862,8 +3863,9 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     TR contains the optical depths at this stage
 !
-   IF (IHIRAC.EQ.4) CALL BUFIN (KFILE,KEOF,EM(1),NLIMBF)
-!
+   IF ((IHIRAC==4).or.&
+       (IHIRAC==6)) CALL BUFIN (KFILE,KEOF,EM(1),NLIMBF)
+!!
 !     EM contains the optical depth corrections for nlte at this stage
 !
    IF (NPANLS.LT.1) then
@@ -3929,10 +3931,10 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE LTE CASE
 !
-      IF (IHIRAC.NE.4) THEN
+      IF ((IHIRAC/=4).and.(IHIRAC/=6)) THEN
 !
          if (dbg(10)) then
-            print *, 'EMDM::IHIRAC.NE.4 XKTB.LE.0. ::LTE:: CHECKED'
+            print *, 'EMDM::IHIRAC.NE.(4,6) XKTB.LE.0. ::LTE:: CHECKED'
             dbg(10) = .false.
          ENDIF
          VI = V1P
@@ -4076,7 +4078,7 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - FOR TANGENT PATHS AND FOR THE CASE OF THE REFLECTED ATMOSPHERE
 !
-      IF (IHIRAC.NE.4) THEN
+      IF ((IHIRAC/=4).and.(IHIRAC/=6)) THEN
 !
 !     - THIS SECTION TREATS THE LTE CASE
 !
@@ -4106,7 +4108,7 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 
          if (surf_refl .eq. 's') then
             if (dbg(12)) then
-               print *, 'EMDM::IHIRAC!=4 XKTB>0. ::LTE:: specular :: NOT CHECKED'
+               print *, 'EMDM::IHIRAC!=(4,6) XKTB>0. ::LTE:: specular :: NOT CHECKED'
                dbg(12) = .false.
             ENDIF
 !
@@ -4155,7 +4157,7 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    !
          elseif (surf_refl .eq. 'l') then
             if (dbg(13)) then
-               print *, 'EMDM::IHIRAC!=4 XKTB>0. ::LTE:: Lambertian :: NOT CHECKED'
+               print *, 'EMDM::IHIRAC!=(4,6) XKTB>0. ::LTE:: Lambertian :: NOT CHECKED'
                dbg(13) = .false.
             endif
 !ccc
@@ -4253,7 +4255,7 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 
          if (surf_refl .eq. 's') then
             if (dbg(14)) then
-               print *, 'EMDM::IHIRAC==4 XKTB>0. ::NLTE:: specular :: NOT CHECKED'
+               print *, 'EMDM::IHIRAC==(4,6) XKTB>0. ::NLTE:: specular :: NOT CHECKED'
                dbg(14) = .false.
             END IF   
             DO I = NLIM1, NLIM2
@@ -4310,7 +4312,7 @@ SUBROUTINE EMDM (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    
          elseif (surf_refl .eq. 'l') then
             if (dbg(14)) then
-               print *, 'EMDM::IHIRAC==4 XKTB>0. ::NLTE:: Lambertian :: NOT CHECKED'
+               print *, 'EMDM::IHIRAC==(4,6) XKTB>0. ::NLTE:: Lambertian :: NOT CHECKED'
                dbg(14) = .false.
             endif
 !ccc
@@ -4459,7 +4461,8 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     TR contains the optical depths at this stage
 !
-   IF (IHIRAC.EQ.4) CALL BUFIN (KFILE,KEOF,EM(1),NLIMBF)
+   IF ((IHIRAC==4).or.&
+       (IHIRAC==6)) CALL BUFIN (KFILE,KEOF,EM(1),NLIMBF)
 !
 !     EM contains the optical depth corrections for nlte at this stage
 !
@@ -4540,9 +4543,9 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - THIS SECTION TREATS THE LTE CASE
 !
-      IF (IHIRAC.NE.4) THEN
+      IF ((IHIRAC/=4).and.(IHIRAC/=6)) THEN
          if (dbg(15)) then
-            print *, 'EMDT::IHIRAC!=4 XKTB<=0. :: LTE: CHECKED'
+            print *, 'EMDT::IHIRAC!=(4,6) XKTB<=0. :: LTE: CHECKED'
             dbg(15) = .false.
          endif
 !
@@ -4696,7 +4699,7 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 !
 !     - FOR TANGENT PATHS AND FOR THE CASE OF THE REFLECTED ATMOSPHERE
 !
-      IF (IHIRAC.NE.4) THEN
+      IF ((IHIRAC/=4).and.(IHIRAC/=6)) THEN
 !
 !     - THIS SECTION TREATS THE LTE CASE
 !
@@ -4725,7 +4728,7 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 
          if (surf_refl .eq. 's') then
             if (dbg(17)) then
-               print *, 'EMDT::IHIRAC!=4 XKTB>0. :: LTE:: specular :: NOT CHECKED'
+               print *, 'EMDT::IHIRAC!=(4,6) XKTB>0. :: LTE:: specular :: NOT CHECKED'
                dbg(17) = .false.
             endif
 !
@@ -4774,7 +4777,7 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    !
          elseif (surf_refl .eq. 'l') then
             if (dbg(18)) then
-               print *, 'EMDT::IHIRAC!=4 XKTB>0. :: LTE:: Lambertian :: NOT CHECKED'
+               print *, 'EMDT::IHIRAC!=(4,6) XKTB>0. :: LTE:: Lambertian :: NOT CHECKED'
                dbg(18) = .false.
             endif
 !ccc
@@ -4873,7 +4876,7 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
 
          if (surf_refl .eq. 's') then
             if (dbg(19)) then
-               print *, 'EMDT::IHIRAC==4 XKTB>0. :: NLTE:: specular :: NOT FIXED'
+               print *, 'EMDT::IHIRAC==(4,6) XKTB>0. :: NLTE:: specular :: NOT FIXED'
                dbg(19) = .false.
             endif
             DO I = NLIM1, NLIM2
@@ -4931,7 +4934,7 @@ SUBROUTINE EMDT (V1P,V2P,DVP,NLIM,KFILE,EM,EMB,TR,KEOF,NPANLS)
    
          elseif (surf_refl .eq. 'l') then
             if (dbg(20)) then
-               print *, 'EMDT::IHIRAC==4 XKTB>0. :: NLTE:: Lambertian :: NOT FIXED'
+               print *, 'EMDT::IHIRAC==(4,6) XKTB>0. :: NLTE:: Lambertian :: NOT FIXED'
                dbg(20) = .false.
             endif
 
@@ -6562,7 +6565,8 @@ SUBROUTINE FLXIN (V1P,V2P,DVP,NLIM,KFILE,EM,TR,KEOF,NPANLS)
 !
 !     TR CONTAINS THE OPTICAL DEPTHS AT THIS STAGE
 !
-   IF (IHIRAC.EQ.4) STOP ' IHIRAC=4  FLXIN '
+   IF ((IHIRAC==4).or.&
+       (IHIRAC==6)) STOP ' IHIRAC=(4,6)  FLXIN '
 !
 !     EM CONTAINS THE OPTICAL DEPTH CORRECTIONS FOR NLTE AT THIS STAGE
 !

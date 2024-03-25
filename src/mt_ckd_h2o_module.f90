@@ -71,7 +71,7 @@ Module mt_ckd_h2o
 ! Inputs
    real,dimension(:),intent(inout)  :: self_absco,for_absco 
    real, intent(in) :: p_atm,t_atm,h2o_vmr
-   double precision, intent(in):: wv1abs,wv2abs
+   REAL*8, intent(in):: wv1abs,wv2abs
    real, intent(in):: dvabs
    character, intent(in):: FRGNX
    logical,optional :: radflag
@@ -225,7 +225,7 @@ Module mt_ckd_h2o
 !
 ! Input variables
    real,dimension(:),intent(in) :: a
-   double precision,intent(in) :: vft
+   REAL*8,intent(in) :: vft
    real, intent(in) :: v1a,v2a,dva,afact,dvr3
    integer, intent(in) :: n1r3,n2r3
  
@@ -268,7 +268,7 @@ Module mt_ckd_h2o
 !   Sets up needed variables for call to XINT.
 !
 ! Input variables
-   double precision,intent(in) :: v1abs
+   REAL*8,intent(in) :: v1abs
    real, intent(in) :: v1ss,v2ss
    integer, intent(in) :: nptabs
    real, intent(in) :: dvabs

@@ -675,7 +675,7 @@
      &                      ISCAN,IFILTR,IPLOT,ITEST,IATM,CMRG,ILAS,    &
      &                      IOD,IXSECT,IRAD,MPTS,NPTS,ISOTPL,IBRD            
 !                                                                       
-        
+                                                                        
      !     Set flag for choosing foreign continuum:
 !     ----------------------------------------
 !     IFRGNX Value      Continuum type
@@ -835,7 +835,7 @@
       WRITE (IPR,939) IHIRAC,ILBLF4,FRGNX,ICNTNM_sav,IAERSL,IEMIT,ISCAN, &
      &    IFILTR,IPLOT,ITEST,IATM,IMRG,ILAS,IOD,IXSECT,ISOTPL,IBRD           
 !                                                                       
-      IF (IHIRAC.EQ.4) THEN 
+      IF ((IHIRAC==4) .OR. (IHIRAC==6)) THEN 
          IF (IEMIT.NE.1) THEN 
             WRITE (IPR,950) 
             STOP ' IEMIT NE 1 FOR NLTE ' 
@@ -867,7 +867,7 @@
       ENDIF 
                                                                         
       NLTEFL = 4 
-      IF (IHIRAC.EQ.4) THEN 
+      IF ((IHIRAC==4) .OR. (IHIRAC==6)) THEN 
          OPEN (NLTEFL,FILE='TAPE4',STATUS='OLD') 
       ENDIF 
 !                                                                       
@@ -888,7 +888,11 @@
 !                                                                       
 !     PRINT LINE FILE HEADER                                            
 !                                                                       
-      IF (IHIRAC.EQ.1.OR.IHIRAC.EQ.4.OR.ILBLF4.GE.1) CALL PRLNHD 
+      IF (IHIRAC.EQ.1.OR.&
+          IHIRAC.EQ.4.OR.&
+          IHIRAC.EQ.5.OR.&
+          IHIRAC.EQ.6.OR.&
+          ILBLF4.GE.1) CALL PRLNHD 
 !                                                                       
 !     PRINT CONTINUUM INFORMATION                                       
 !                                                                       
@@ -2414,7 +2418,7 @@ end subroutine EXPINT
          PTHRAD = 'RDDNlayer_' 
          CALL QNTIFY(PTHRAD,HFMRAD) 
                                                                         
-         kfile = kodfil 
+         kfile = kodfil
                                                                         
          IF (2*(NLAYER/2).eq.NLAYER) then 
             MSTOR = MFILE 
@@ -4285,7 +4289,11 @@ end subroutine XLAYER
                STOP 'OPPATH; V2-V1 GT 2020' 
             ENDIF 
 !                                                                       
-            IF ((IHIRAC.EQ.1.OR.IHIRAC.EQ.4.OR.ILBLF4.GE.1).AND.        &
+            IF ((IHIRAC.EQ.1.OR.&
+                 IHIRAC.EQ.4.OR.&
+                 IHIRAC.EQ.5.OR.&
+                 IHIRAC.EQ.6.OR.&
+                 ILBLF4.GE.1).AND.        &
             (IATM.EQ.1)) THEN                                           
                IF (NMOL.LT.LINMOL) WRITE (IPR,920) (LINMOL-NMOL) 
                IF (NMOL.GT.LINMOL) WRITE (IPR,925) NMOL,LINMOL 
@@ -6252,7 +6260,9 @@ end block data BOPDPT
          V2R4 = V2+2.*DVR4 
          V1L4 = V1R4-BOUND4-DVR4 
          V2L4 = V2R4+BOUND4+2*DVR4 
-         IF ((IHIRAC.EQ.1).OR.(IHIRAC.EQ.9)) CALL LINF4 (V1L4,V2L4) 
+         IF ((IHIRAC.EQ.1).OR.&
+             (IHIRAC.EQ.5).OR.&
+             (IHIRAC.EQ.9)) CALL LINF4 (V1L4,V2L4) 
       ENDIF 
 !                                                                       
 !    Write out DV to REJ1 file                                          
@@ -6260,9 +6270,14 @@ end block data BOPDPT
 !    Read in DV from  REJ1 file                                         
       IF (ILNFLG.EQ.2) READ(15) LAYRS,DV 
 !                                                                       
-      IF (IHIRAC.EQ.1) CALL HIRAC1 (MPTS) 
-      IF (IHIRAC.EQ.4) CALL NONLTE (MPTS) 
-      IF (IHIRAC.EQ.9) CALL HIRAC1 (MPTS) 
+      SELECT CASE(IHIRAC)
+          CASE (1,5)
+            CALL HIRAC1 (MPTS) 
+          CASE (4,6)
+            CALL NONLTE (MPTS) 
+          CASE (9)
+            CALL HIRAC1 (MPTS) 
+      END SELECT
 !                                                                       
       IEMIT = IEMST 
       DPTMIN = DPTMST 
@@ -6277,7 +6292,7 @@ end block data BOPDPT
   910 FORMAT ('0 VLAS  ',F20.8,8X,'V1 RESET ',F12.5,8X,'V2 RESET ',     &
      &        F12.5)                                                    
   915 FORMAT ('0',10A8,2X,2(1X,A8,1X),/,'0 TIME ENTERING OPDPTH ',      &
-     &        F15.3)   
+     &        F15.3)                                                    
   917 FORMAT ('Using MT_CKD',A38)                                             
   920 FORMAT ('0  IPTS4 FOR LINF4 = ',I5,3X,' DV FOR LINF4 = ',F10.5,   &
      &        5X,'BOUND FOR LINF4 =',F10.4)                             

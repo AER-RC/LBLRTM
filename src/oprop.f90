@@ -26,7 +26,22 @@ SUBROUTINE HIRAC1 (MPTS)
 !
    USE lblparams, ONLY: n_absrb, NFPTS, NFMX, MXMOL
    USE phys_consts, ONLY: radcn2
+   use voigt_module, only: LSF_VOIGT
+   USE struct_types, ONLY: mxbrdmol, nlinerec
+
    IMPLICIT REAL*8           (V)
+
+   interface 
+      SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP, ALPHAD, ALPHAL)
+      !
+         integer,        intent(in)    ::  NLNCR
+         integer,        intent(in)    ::  IHI
+         integer,        intent(in)    ::  ILO
+         integer,        intent(in)    ::  MEFDP(64)
+         REAL, optional, intent(inout) ::  ALPHAD(250)
+         REAL, optional, intent(inout) ::  ALPHAL(250)
+       END SUBROUTINE LNCOR1  
+   end  interface
 !
 !
 !**********************************************************************
@@ -88,6 +103,13 @@ SUBROUTINE HIRAC1 (MPTS)
 !     DIMENSION RR3 =  NBOUND/4 + 1 + DIM(R3)
 !
    COMMON RR1(-8704:11169),RR2(-2560:3177),RR3(-1024:1179)
+
+  common /brdmoldat/ brd_mol_flg(mxbrdmol,NLINEREC),               &
+   &     brd_mol_hw(mxbrdmol,NLINEREC),brd_mol_tmp(mxbrdmol,NLINEREC),               &
+   &     brd_mol_shft(mxbrdmol,NLINEREC),sdep(nlinerec)
+
+   integer*4 brd_mol_flg
+
    COMMON /IOU/ IOUT(250)
    COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)
    COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NP,H1F,H2F,       &
@@ -148,6 +170,10 @@ SUBROUTINE HIRAC1 (MPTS)
    CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55
    CHARACTER*18 HNAMOPR,HVROPR
    LOGICAL OP
+   LOGICAL      :: speed_dep_flag
+
+   REAL :: ALPHAD(250)
+   REAL :: ALPHAL(250)
 !
    DIMENSION MEFDP(64),FILHDR(2),IWD(2)
    DIMENSION R1(4050),R2(1050),R3(300)
@@ -421,6 +447,8 @@ SUBROUTINE HIRAC1 (MPTS)
          WK(M) = 0.
 50    CONTINUE
    ENDIF
+
+   speed_dep_flag = IHIRAC == 5
 !
 !     ---------------------------------------------------------------
 !
@@ -461,15 +489,22 @@ SUBROUTINE HIRAC1 (MPTS)
 !     MODIFY LINE DATA FOR TEMPERATURE, PRESSURE, AND COLUMN DENSITY
 !
    CALL CPUTIM(TPAT0)
-   CALL LNCOR1 (NLNCR,IHI,ILO,MEFDP)
+   CALL LNCOR1 (NLNCR,IHI,ILO,MEFDP, ALPHAD, ALPHAL)
    CALL CPUTIM(TPAT1)
    TLNCOR = TLNCOR+TPAT1-TPAT0
 !
 
 70 CONTINUE
 !
+! Fill out arrays R1, R2, R3 based on F1, F2, F3, FG, XVER
+   if (speed_dep_flag) then
+      call LSF_VOIGT(DV, VNU, SP, SPPSP, RECALF, ALPHAD, ALPHAL, VFT, &
+                     R1, R2, R3, ILO, IHI, IOUT, MAX1, &
+                     IPANEL, IDATA, ILAST, SDEP)   
+   else
    CALL CNVFNV (VNU,SP,SPPSP,RECALF,R1,R2,R3,F1,F2,F3,FG,XVER,ZETAI, &
-   &             IZETA)
+                   IZETA)
+   endif
 !
    IF (IPANEL.EQ.0) GO TO 60
 !
@@ -883,12 +918,15 @@ SUBROUTINE RDLIN
 950 FORMAT (8a1)
 !
 end subroutine RDLIN
-SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)
+SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP, ALPHAD, ALPHAL)
 !
    USE lblparams, ONLY: MXMOL, MXISOTPL
    USE phys_consts, ONLY: radcn2
    USE struct_types, ONLY: mxbrdmol, nlinerec
    IMPLICIT REAL*8           (V)
+!
+   REAL, optional, intent(inout) ::  ALPHAD(250)
+   REAL, optional, intent(inout) ::  ALPHAL(250)
 !
    CHARACTER*1 FREJ(nlinerec),HREJ,HNOREJ
    COMMON /RCNTRL/ ILNFLG
@@ -1098,6 +1136,10 @@ SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)
       IF (IFLAG.EQ.3) ALFL = ALFL*(1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)
 !
       ALFAD = VNU(I)*ALFD1(m,iso)
+
+      if (present(ALPHAD)) ALPHAD(I) = ALFAD
+      if (present(ALPHAL)) ALPHAL(I) = ALFL
+
       ZETA = ALFL/(ALFL+ALFAD)
       ZETAI(I) = ZETA
       FZETA = 100.*ZETA
@@ -1291,8 +1333,11 @@ SUBROUTINE CNVFNV (VNU,SP,SPPSP,RECALF,R1,R2,R3,F1,F2,F3,FG,      &
                GO TO 40
             ENDIF
             JMIN1 = ZINT-BHWDXF+1.5
+            IF (ZINT < 0.0) then
+               RSHFT = -0.5
+            else
             RSHFT = 0.5
-            IF (ZINT.LT.0.0) RSHFT = -RSHFT
+            endif
             J2SHFT = ZINT*(1.-CONF2)+RSHFT
             J3SHFT = ZINT*(1.-CONF3)+RSHFT
             JMIN2 = JMIN1-J2SHFT
