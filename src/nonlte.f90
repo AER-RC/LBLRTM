@@ -439,8 +439,8 @@ SUBROUTINE VIBPOP(XKT,HT,NLTEFLAG,NUM,IDX,NDEG,EH,RAT,            &
    RETURN
 !
 902 FORMAT(4x,A6)
-904 FORMAT (F7.0,1P,7E11.4,     /(18X, 6E11.4))
-906 FORMAT(//,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))
+904 FORMAT (F7.0,1P,7E11.4,(18X, 6E11.4))
+906 FORMAT(//,A10,'  ENERGY LEVELS',10( /,20X,1PE11.4))
 920 FORMAT(I7,2X,A10,4G15.5,F10.2,G15.5)
 935 FORMAT ('ISOTOPE',2X,'VIB',10X,'E(CM-1)',11X,'POP LTE',7X,        &
    & 'POP NLTE',6X,'NLTE/LTE',7X,'NLTE TMP',7X,'NLTE POP ORIG')
@@ -635,7 +635,7 @@ SUBROUTINE VIBTMP(XKT,HT,NLTEFLAG,NUM,IDX,NDEG,EH,RAT,            &
 !
 902 FORMAT(4x,A6)
 904 FORMAT(F7.0,7F11.3/(18X,6F11.3))
-906 FORMAT(//,5X,A10,'  ENERGY LEVELS',10(/,20X,1PE11.4))
+906 FORMAT(//,5X,A10,'  ENERGY LEVELS',10( /,20X,1PE11.4))
 920 FORMAT(I7,2X,A10,4G12.5,2F9.3)
 935 FORMAT ('ISOTOPE',9X,'VIB E(CM-1)',9X,'POP LTE    POP NLTE ',     &
    &     'NLTE/LTE    NLTE TMP 2-STATE NLTE TMP')
@@ -714,7 +714,21 @@ SUBROUTINE HIRACQ (MPTS)
 !
    USE phys_consts, ONLY: radcn2
    USE lblparams
+   use voigt_module, only: LSF_VOIGTQ
+   USE struct_types, ONLY: mxbrdmol, nlinerec
+
    IMPLICIT REAL*8           (V)
+   interface 
+      SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP, ALPHAD, ALPHAL)
+      !
+         integer,        intent(in)    ::  NLNCR
+         integer,        intent(in)    ::  IHI
+         integer,        intent(in)    ::  ILO
+         integer,        intent(in)    ::  MEFDP(64)
+         REAL, optional, intent(inout) ::  ALPHAD(250)
+         REAL, optional, intent(inout) ::  ALPHAL(250)
+       END SUBROUTINE LNCORQ  
+   end  interface
 !
 !
 !**********************************************************************
@@ -774,7 +788,13 @@ SUBROUTINE HIRACQ (MPTS)
 !     DIMENSION RR3 =  NBOUND/4 + 1 + DIM(R3)
 !
    COMMON RR1(-8704:11169),RR2(-2560:3177),RR3(-1024:1179)
+   integer, parameter :: lbR1=-8704, lbR2=-2560, lbR3=1024
    COMMON /XRNLTE/ RR1s(-8704:11169),RR2s(-2560:3177),RR3s(-1024:1179)
+
+   common /brdmoldat/ brd_mol_flg(mxbrdmol,NLINEREC),               &
+   &     brd_mol_hw(mxbrdmol,NLINEREC),brd_mol_tmp(mxbrdmol,NLINEREC),               &
+   &     brd_mol_shft(mxbrdmol,NLINEREC),sdep(nlinerec)
+   
    COMMON /IOU/ IOUT(250)
    COMMON /ABSORB/ V1ABS,V2ABS,DVABS,NPTABS,ABSRB(n_absrb)
    COMMON /ADRIVE/ LOWFLG,IREAD,MODEL,ITYPE,n_zero,NP,H1F,H2F,       &
@@ -834,6 +854,10 @@ SUBROUTINE HIRACQ (MPTS)
    CHARACTER CFORM*11,KODLYR*57,PTHODE*55,PTHODD*55
    CHARACTER*18 HNMNLTE,HVNLTE
    LOGICAL OP
+   LOGICAL  :: speed_dep_flag
+
+   REAL :: ALPHAD(250)
+   REAL :: ALPHAL(250)
 !
    DIMENSION MEFDP(64),FILHDR(2),IWD(2)
    DIMENSION R1(4050),R2(1050),R3(300)
@@ -1115,6 +1139,8 @@ SUBROUTINE HIRACQ (MPTS)
 !
 !     ---------------------------------------------------------------
 !
+   speed_dep_flag = IHIRAC == 5
+   
    VFT = V1- REAL(NSHIFT)*DV
    VBOT = V1-BOUND
    VTOP = V2+BOUND
@@ -1152,14 +1178,28 @@ SUBROUTINE HIRACQ (MPTS)
 !     MODIFY LINE DATA FOR TEMPERATURE, PRESSURE, AND COLUMN DENSITY
 !
    CALL CPUTIM(TPAT0)
-   CALL LNCORQ (NLNCR,IHI,ILO,MEFDP)
+   CALL LNCORQ (NLNCR,IHI,ILO,MEFDP, ALPHAD, ALPHAL)
    CALL CPUTIM(TPAT1)
    TLNCOR = TLNCOR+TPAT1-TPAT0
 !
 70 CONTINUE
 !
+if (speed_dep_flag) then
+   call LSF_VOIGTQ( VNU,SP,SRAD,SPPSP,RECALF,&
+                    R1,R2,R3,RR1s,RR2s,RR3s,lbR1,lbR2,lbR3, &
+                    DV,DVR2,DVR3,HWF1,HWF2,HWF3,DXF1,NX1,NX2,NX3,&
+                    VFT,ILO,IHI,MAX1,IOUT,IPANEL,IDATA, &
+                    ALPHAL, ALPHAD, SDEP )
+   continue
+else
+! SUBROUTINE CNVFNQ (VNU,SP,SRAD,SPPSP,RECALF,R1,R2,R3,RR1,         &
+! &    RR2,RR3,F1,F2,F3,FG,XVER,ZETAI,IZETA)
+
    CALL CNVFNQ (VNU,SP,SRAD,SPPSP,RECALF,R1,R2,R3,RR1s,RR2s,RR3s,    &
-   &    F1,F2,F3,FG,XVER,ZETAI,IZETA)
+            &    F1,F2,F3,FG,XVER,ZETAI,IZETA)
+   ! CALL CNVFNV (VNU,SP,SPPSP,RECALF,R1,R2,R3,F1,F2,F3,FG,XVER,ZETAI,&
+   !              IZETA)
+endif
 !
    IF (IPANEL.EQ.0) GO TO 60
 !
@@ -1360,7 +1400,7 @@ SUBROUTINE HIRACQ (MPTS)
    &          'file maintenance within HIRAC',/)
 !
 end subroutine HIRACQ
-SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)
+SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP,ALPHAD,ALPHAL)
 !
    USE phys_consts, ONLY: radcn2
    USE lblparams
@@ -1368,6 +1408,10 @@ SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)
    USE struct_types, ONLY: mxbrdmol, nlinerec
    IMPLICIT REAL*8           (V)
 !
+   REAL, optional, intent(inout) ::  ALPHAD(250)
+   REAL, optional, intent(inout) ::  ALPHAL(250)
+!
+
    CHARACTER*1 FREJ(nlinerec),HREJ,HNOREJ
    COMMON /RCNTRL/ ILNFLG
    COMMON VNU(nlinerec),S(nlinerec),ALFA0(nlinerec),EPP(nlinerec),MOL(nlinerec),HWHMS(nlinerec),   &
@@ -1577,6 +1621,10 @@ SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)
       IF (IFLAG.EQ.3) ALFL = ALFL*(1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)
 !
       ALFAD = VNU(I)*ALFD1(m,iso)
+
+      if (present(ALPHAD)) ALPHAD(I) = ALFAD
+      if (present(ALPHAL)) ALPHAL(I) = ALFL
+
       ZETA = ALFL/(ALFL+ALFAD)
       ZETAI(I) = ZETA
       FZETA = 100.*ZETA
