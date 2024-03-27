@@ -571,7 +571,7 @@ end function get_region
       real,      intent(in)    :: SRAD(:)
       real,      intent(in)    :: SPPSP(:)
       real,      intent(in)    :: RECALF(:)
-      real      ,intent(inout) :: R1(lbR1:), R2(lbR2:), R3(lbR3:)
+      real      ,intent(inout) :: R1(:), R2(:), R3(:)
       real      ,intent(inout) :: RR1(lbR1:), RR2(lbR2:), RR3(lbR3:)
       integer   ,intent(in)    :: lbR1,lbR2,lbR3
       !
@@ -732,6 +732,7 @@ end function get_region
             ENDIF
 
          END DO
+
          ILAST = IHI
 
 !        IDATA=0 FOR MORE DATA REQUIRED

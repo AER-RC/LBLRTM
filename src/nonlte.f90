@@ -1139,7 +1139,7 @@ SUBROUTINE HIRACQ (MPTS)
 !
 !     ---------------------------------------------------------------
 !
-   speed_dep_flag = IHIRAC == 5
+   speed_dep_flag = IHIRAC == 6
    
    VFT = V1- REAL(NSHIFT)*DV
    VBOT = V1-BOUND
@@ -1964,7 +1964,8 @@ SUBROUTINE CNVFNQ (VNU,SP,SRAD,SPPSP,RECALF,R1,R2,R3,RR1,         &
          ENDIF
 !
 30    CONTINUE
-      ILAST = IHI
+
+    ILAST = IHI
 !
 !        IDATA=0 FOR MORE DATA REQUIRED
 !        IDATA=1 IF NO MORE DATA REQUIRED
