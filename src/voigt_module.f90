@@ -9,10 +9,9 @@ private
 
 public LSF_VOIGT  ! compute Voigt using the Humlicek approximation
 public LSF_VOIGTQ ! compute Voigt using the Humlicek approximation for Non-LTE case
-public VOIGT_FLAG ! flag to use either Voigt shape (true) or LBL approximation (false)
+public SDVOIGT
 
 logical :: dbg = .false.
-logical :: VOIGT_FLAG = .true.
 
 REAL, PARAMETER  :: PI = ACOS(-1.)
 REAL, PARAMETER  :: SQRTLOG2   = sqrt(log(2.))
@@ -280,27 +279,21 @@ FUNCTION SDVOIGT(DELTNU,ALPHAL,ALPHAD,SDEP)
 
          !SDEP is Benner's speed dependence definition
          !Therefore Boone's gamma2 = alphal*SDEP and his alfa = (1/SDEP) - 1.5
-         gamma2    = 2.0*alphal*SDEP
-         alfa      = 1./SDEP - 1.5                       !Boone et al., 2011 Eq 13
-         beta      = deltnu/gamma2                       !Boone et al., 2011 Eq 13
-         delta     = alphad/gamma2/SQRTLOG2              !Boone et al., 2011 Eq 13
-         delta2    = delta**2                            !Boone et al., 2011 Eq 13
-         alfadelta = (alfa + delta**2)/2.0
+         gamma2 = alphal*SDEP
+         alfa  = alphal/gamma2 - 1.5                 !Boone et al., 2011 Eq 13
+         beta  = deltnu/gamma2                        !Boone et al., 2011 Eq 13
+         delta = (1.0/4.0/log(2.))*(alphad/gamma2)**2 !Boone et al., 2011 Eq 13
+         alfadelta = alfa+delta
 
          !Boone et al., 2011, Eq. 12
          temp = sqrt(alfadelta**2 + beta**2) !"temp" means temporary, used below
          !Real part of z1, z2, Boone et al., 2011, Eq. 12
-         x2 = sqrt(temp + alfadelta)
-         x1 = x2 - delta
-         x2 = x2 + delta
+         x1 = (1.0/sqrt(2.0))*sqrt(temp+alfadelta)-sqrt(delta)
+         x2 = x1+2.0*sqrt(delta)
+
          !Imag part of z1, z2, Boone et al., 2011, Eq. 12
-         if (beta > 0.0) then
-            y1 =  sqrt(temp-alfadelta)
-         else if (beta < 0.0) then
-            y1 = -sqrt(temp-alfadelta)
-         else
-            y1 = 0.0
-         endif
+         y1 = sign(sqrt((temp-delta-alfa)/2.0), beta)
+         ! y2 = y1
 
          !---CALL the modified Humlicek subroutine to calc speed dependent Voigt
          v=SD_Humlicek(y1,x1,y1,x2)
@@ -571,7 +564,11 @@ end function get_region
       real,      intent(in)    :: SRAD(:)
       real,      intent(in)    :: SPPSP(:)
       real,      intent(in)    :: RECALF(:)
+      ! LBLRTM
       real      ,intent(inout) :: R1(:), R2(:), R3(:)
+      ! CLBLM
+      ! real      ,intent(inout) :: R1(lbR1:), R2(lbR2:), R3(lbR3:)
+
       real      ,intent(inout) :: RR1(lbR1:), RR2(lbR2:), RR3(lbR3:)
       integer   ,intent(in)    :: lbR1,lbR2,lbR3
       !
@@ -731,8 +728,17 @@ end function get_region
                END DO
             ENDIF
 
+            write(1001, '(1000E12.4)') R1(JMIN1:JMAX1)
+            write(1002, '(1000E12.4)') R2(JMIN1-J2SHFT:JMAX1-J2SHFT)
+            write(1003, '(1000E12.4)') R3(JMIN1-J3SHFT:JMAX1-J3SHFT)
+            
+            IF (nlteFlag) THEN
+               write(1011, '(1000E12.4)') RR1(JMIN1:JMAX1)
+               write(1012, '(1000E12.4)') RR2(JMIN1-J2SHFT:JMAX1-J2SHFT)
+               write(1013, '(1000E12.4)') RR3(JMIN1-J3SHFT:JMAX1-J3SHFT)
+            ENDIF
+   
          END DO
-
          ILAST = IHI
 
 !        IDATA=0 FOR MORE DATA REQUIRED
