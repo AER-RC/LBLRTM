@@ -452,7 +452,7 @@ SUBROUTINE HIRAC1 (MPTS)
 !
 !     ---------------------------------------------------------------
 !
-   VFT = V1- REAL(NSHIFT)*DV
+   VFT  = V1-REAL(NSHIFT)*DV
    VBOT = V1-BOUND
    VTOP = V2+BOUND
 !
@@ -1336,7 +1336,7 @@ SUBROUTINE CNVFNV (VNU,SP,SPPSP,RECALF,R1,R2,R3,F1,F2,F3,FG,      &
             IF (ZINT < 0.0) then
                RSHFT = -0.5
             else
-            RSHFT = 0.5
+               RSHFT = 0.5
             endif
             J2SHFT = ZINT*(1.-CONF2)+RSHFT
             J3SHFT = ZINT*(1.-CONF3)+RSHFT
