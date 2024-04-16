@@ -1026,15 +1026,15 @@ SUBROUTINE PRCNTM
    COMMON /CNTPR/ CINFO1,CINFO2,cnam3,CINFO3,cnam4,CINFO4,CHEADING
 !
 !
-   CHARACTER*18 cnam3(9),cnam4(46)
-   CHARACTER*51 CINFO1(2,11),CINFO2(2,14),CINFO3(2,9),CINFO4(2,46)
+   CHARACTER*18 cnam3(9),cnam4(47)
+   CHARACTER*51 CINFO1(2,11),CINFO2(2,14),CINFO3(2,9),CINFO4(2,47)
    CHARACTER*40 CHEADING(3,2)
 !
    WRITE (IPR,910) ((CINFO1(I,J),I=1,2),J=1,11)
    WRITE (IPR,910) ((CINFO2(I,J),I=1,2),J=1,14)
    WRITE (IPR,918) ((CHEADING(I,J),I=1,3),J=1,2)
    WRITE (IPR,915) (cnam3(j),(CINFO3(I,J),I=1,2),J=1,9)
-   WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,46)
+   WRITE (IPR,915) (cnam4(j),(CINFO4(I,J),I=1,2),J=1,47)
 
 !
 910 FORMAT (18x,2A51)
@@ -1050,8 +1050,8 @@ BLOCK DATA CNTINF
 !     Continuum information for output to TAPE6 in SUBROUTINE PRCNTM
 !
    COMMON /CNTPR/ CINFO1,CINFO2,CNAM3,CINFO3,CNAM4,CINFO4,CHEADING
-   CHARACTER*18 cnam3(9),cnam4(46)
-   CHARACTER*51 CINFO1(2,11),CINFO2(2,14),CINFO3(2,9),CINFO4(2,46)
+   CHARACTER*18 cnam3(9),cnam4(47)
+   CHARACTER*51 CINFO1(2,11),CINFO2(2,14),CINFO3(2,9),CINFO4(2,47)
    CHARACTER*40 CHEADING(3,2)
 !
    DATA cnam3/                                                       &
@@ -1112,7 +1112,8 @@ BLOCK DATA CNTINF
    &     ' mt_ckd_4.0.1  -  ',                                        &
    &     ' mt_ckd_4.1  12.15',                                        &
    &     ' mt_ckd_4.1.1  -  ',                                        &
-   &     ' mt_ckd_4.2  12.16'/
+   &     ' mt_ckd_4.2  12.16',                                        &
+   &     ' mt_ckd_4.3  12.17'/
 !           123456789-123456789-123456789-123456789-123456789-1
 !
    DATA CINFO1/                                                      &
@@ -1120,12 +1121,12 @@ BLOCK DATA CNTINF
    &     '                                                   ',       &
    &     '                                                   ',       &
    &     '            Most recent significant change         ',       &
-   &     '       H2O  AIR         600 -  1400 CM-1           ',       &
-   &     '   mt_ckd_4.2 - adjustment & alt. frgn   (Nov 2023)',       &
+   &     '       H2O  AIR        4000 - 20000 CM-1           ',       &
+   &     '   mt_ckd_4.3 - adjustments in windows   (Feb 2024)',       &
    &     '            SELF        600 -  1400 CM-1           ',       &
-   &     '   mt_ckd_4.2 - adjustment in IR window  (Nov 2023)',       &
+   &     '   mt_ckd_4.2 - adjustment in IR window  (Dec 2023)',       &
    &     '            SELF  (T)   600 -  1400 CM-1           ',       &     
-   &     '   mt_ckd_4.2 - adjustment in IR window  (Nov 2023)',       & 
+   &     '   mt_ckd_4.2 - adjustment in IR window  (Dec 2023)',       & 
    &     '       CO2  AIR           0 - 10000 CM-1           ',       &
    &     '   mt_ckd_2.5 - modify 2000-3000 cm-1    (Jan 2010)',       &
    &     '            AIR   (T)  2386 -  2434 CM-1           ',       &
@@ -1282,10 +1283,12 @@ BLOCK DATA CNTINF
    &     '  Minor changes to MT_CKD_4.1 and MT_CKD_H2O_4.1   ',       &
    &     '                                         (Jan 2023)',       &
    &     '  IR window: Derived from AERI - Self, frgn, self T',       &
-   &     '-dep; alt. frgn; Mlawer/Mascio/Turner    (Dec 2023)'/
+   &     '-dep; alt. frgn; Mlawer/Mascio/Turner    (Dec 2023)',       &
+   &     '  New foreign coefficients in window regions > 4000',       &
+   &     ' cm-1 based on U. Grenoble lab studies   (Feb 2024)'/
 !
 end block data CNTINF
-!
+! New foreign coefficients in window regions > 4000 cm-1 based on U. Grenoble lab studies
 
 !     --------------------------------------------------------------
 !

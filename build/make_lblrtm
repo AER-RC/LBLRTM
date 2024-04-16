@@ -12,7 +12,7 @@ include makefile.common
 # change those two variables from what is provided here, no need to set this variable.
 
 PRODUCT = lblrtm
-VERSION = v12.16
+VERSION = v12.17
 
 # Define makefile name
 MAKEFILE=make_$(PRODUCT)
