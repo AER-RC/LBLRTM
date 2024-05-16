@@ -224,7 +224,7 @@ LBLRTM is used to generate line-by-line upwelling and downwelling transmittances
 
 The spectral interval (_v<sub>1</sub>_, _v<sub>2</sub>_) for any LBLRTM run must not exceed 2000 cm<sup>-1</sup> (see instruction manual).
 
-Other input files are required if you are using the solar source function, cross sections, surface emissivity, etc. See the LBLRTM instruction manual and provide example.
+Other input files are required if you are using the solar source function, cross sections or surface emissivity. See the LBLRTM instruction manual and provided examples.
 
 ## Layer numbering scheme <a name="laynum"></a>
 
