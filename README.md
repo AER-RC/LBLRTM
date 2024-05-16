@@ -21,7 +21,7 @@
 	2. [Layer numbering scheme](#laynum)
 	3. [Output files for LBLRTM](#lblout)
 	4. [Sequence for running LBLRTM](#lblseq)
-7. [Tests](#tests)
+7. [Examples](#examples)
 8. [Frequently Asked Questions](#faq)
 
 # Introduction <a name="intro"></a>
@@ -247,7 +247,7 @@ Unformatted optical depth files can be requested in the LBLRTM using options spe
 * Edit any parameters necessary in the input file `TAPE5`.
 * Run the LBLRTM executable.
 
-# Tests <a name="tests"></a>
+# Examples <a name="examples"></a>
 
 As of LBLRTM v12.10, a [run example package](https://github.com/AER-RC/LBLRTM/releases/tag/v12.17/lblrtm_v12.17.examples.tar) is provided separately from the code repository. It can be used to validate building and running of the model for select atmospheric specifications and model configurations. See `README.setup` in top level of the package for further direction.
 
