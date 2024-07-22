@@ -191,7 +191,7 @@ Note that a limited amount of spectral output information may also be put in the
 
 # Instructions and Tips for Running LNFL <a name="runlnfl"></a>
 
-LNFL is used to generate a unformatted file (`TAPE3`) of all the line parameters required by LBLRTM.
+LNFL is used to generate a unformatted file (`TAPE3`) of all the line parameters required by LBLRTM. While LNFL can provide the parameters for speed dependence calculations, these will be ignored by LBLRTM, as it cannot model speed dependence effects.
 
 ## Input files for LNFL <a name="lnflin"></a>
 
