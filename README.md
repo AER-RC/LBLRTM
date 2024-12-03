@@ -40,8 +40,6 @@ Note that building LBLRTM_v12.14 and later requires using the netCDF libraries a
 
 If any build or run issues occur, please [create an issue](https://github.com/AER-RC/LBLRTM/issues) or contact the [AER-RC Group](https://github.com/AER-RC).
 
-[Add plantUML diagram]
-
 For more, please see the [Wiki page](https://github.com/AER-RC/LBLRTM/wiki/)
 
 # Cloning the Latest Release <a name="cloning"></a>
@@ -325,10 +323,12 @@ Line coupling parameters are utilized in LBLRTM for O<sub>2</sub>, CO<sub>2</sub
 
 10. **What is the appropriate reference for LBLRTM calculations in journal articles and presentations?**
 
-Clough SA, Shephard MW, Mlawer EJ, Delamere JS, Iacono MJ, Cady-Pereira K, Boukabara S, Brown PD.Atmospheric radiative transfer modeling: a summary of the AER codes • SHORT COMMUNICATION• _J Quant. Spectrosc. and Radiat Transfer_, **91**, 233-244 (2005).
+Refer to the [References Wiki Page](https://github.com/AER-RC/LBLRTM/wiki/References-and-Publications) for the complete list of references.
 
-Also, please refer to the [References Wiki Page](https://github.com/AER-RC/LBLRTM/wiki/References-and-Publications) for the complete list of references.
+11. **What is the appropriate reference for the LBLRTM software?**
 
-11. **How do you calculate fluxes?**
+Refer to the [References Wiki Page](https://github.com/AER-RC/LBLRTM/wiki/References-and-Publications) for the complete software reference.
+
+13. **How do you calculate fluxes?**
 
 Source code and instructions available: [RADSUM](http://rtweb.aer.com/radsum_frame.html)
