@@ -24,7 +24,7 @@
 !
 SUBROUTINE HIRAC1 (MPTS)
 !
-   USE lblparams, ONLY: n_absrb, NFPTS, NFMX, MXMOL
+   USE lblparams, ONLY: n_absrb, NFPTS, NFMX, MXMOL, MXISOTPL
    USE phys_consts, ONLY: radcn2
    IMPLICIT REAL*8           (V)
 !
@@ -127,9 +127,9 @@ SUBROUTINE HIRAC1 (MPTS)
    &              NLTEFL,LNFIL4,LNGTH4
 !
 !
-   COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)
+   COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,MXISOTPL)
 !
-   COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,10),SCOR(42,10),ALFMAX,      &
+   COMMON /LNC1/ RHOSLF(mxmol),ALFD1(mxmol,MXISOTPL),SCOR(mxmol,MXISOTPL),ALFMAX,      &
    &              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,    &
    &              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,     &
    &              PAVP2,RECTLC,TMPDIF,ILC
@@ -885,7 +885,7 @@ SUBROUTINE RDLIN
 end subroutine RDLIN
 SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)
 !
-   USE lblparams, ONLY: MXMOL, MXISOTPL
+   USE lblparams, ONLY: MXMOL, MXISOTPL,decode_mol_id
    USE phys_consts, ONLY: radcn2
    USE struct_types, ONLY: mxbrdmol, nlinerec
    IMPLICIT REAL*8           (V)
@@ -929,9 +929,9 @@ SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)
    COMMON /VOICOM/ AVRAT(102),CGAUSS(102),CF1(102),CF2(102),         &
    &                CF3(102),CER(102)
 !
-   COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)
+   COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,MXISOTPL)
 !
-   COMMON /LNC1/ RHOSLF(mxmol),ALFD1(42,10),SCOR(42,10),ALFMAX,      &
+   COMMON /LNC1/ RHOSLF(mxmol),ALFD1(mxmol,MXISOTPL),SCOR(mxmol,MXISOTPL),ALFMAX,      &
    &              BETACR,DELTMP,DPTFC,DPTMN,XKT,NMINUS,NPLUS,NLIN,    &
    &              LINCNT,NCHNG,SUMALF,SUMZET,TRATIO,RHORAT,PAVP0,     &
    &              PAVP2,RECTLC,TMPDIF,ILC
@@ -999,11 +999,12 @@ SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)
       GAMMA2 = 0.
       I = IOUT(J)
       IFLAG = IFLG(I)
-      M = MOD(MOL(I),I_100)
+      call decode_mol_id(MOL(I), M, ISO)
+!      M = MOD(MOL(I),I_100)
 !
 !     ISO=(MOD(MOL(I),1000)-M)/100   IS PROGRAMMED AS:
 !
-      ISO = MOD(MOL(I),I_1000)/100
+!      ISO = MOD(MOL(I),I_1000)/100
 !
 !     check if lines are within allowed molecular and isotopic limits
 !
@@ -2475,14 +2476,14 @@ FUNCTION RADFNI (VI,DVI,XKT,VINEW,RDEL,RDLAST)
 end function RADFNI
 SUBROUTINE MOLEC (IND,SCOR,RHOSLF,ALFD1)
 !
-   USE lblparams, ONLY: MXMOL
+   USE lblparams, ONLY: MXMOL,MXISOTPL
    USE phys_consts, ONLY: boltz, avogad, clight, radcn2
    IMPLICIT REAL*8           (V)
 !
    COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
    &              NLNGTH,KFILE,KPANEL,LINFIL,NFILE,IAFIL,IEXFIL,      &
    &              NLTEFL,LNFIL4,LNGTH4
-   COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)
+   COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,MXISOTPL)
 !
    COMMON /MANE/ P0,TEMP0,NLAYRS,DVXM,H2OSLF,WTOT,ALBAR,ADBAR,AVBAR, &
    &              AVFIX,LAYRFX,SECNT0,SAMPLE,DVSET,ALFAL0,AVMASS,     &
@@ -2497,7 +2498,7 @@ SUBROUTINE MOLEC (IND,SCOR,RHOSLF,ALFD1)
    COMMON /FILHDR/ XID(10),SECANT,P   ,TEMP,HMOLID(60),XALTZ(4),     &
    &                WK(60),PZL,PZU,TZL,TZU,WBROAD,DV ,V1 ,V2 ,TBOUND, &
    &                EMISIV,FSCDID(17),NMOL,LAYER ,YI1,YID(10),LSTWDF
-   DIMENSION SCOR(42,10),RHOSLF(*),ALFD1(42,10)
+   DIMENSION SCOR(mxmol,MXISOTPL),RHOSLF(*),ALFD1(mxmol,MXISOTPL)
 !
    COMMON /SMOLEC/ W(42,9),ND(42,9),FAD
    COMMON /XMOLEC/ NV(42),IVIB(42,2,9),XR(42),ROTFAC(42),QV0(42)
@@ -2697,14 +2698,14 @@ end subroutine MOLEC
 BLOCK DATA Isotop
 !  ****************************************
 !
-   USE lblparams, ONLY: NMOL => MXMOL
+   USE lblparams, ONLY: NMOL => MXMOL, MXISOTPL
 
-   COMMON /ISVECT/ ISO_MAX(NMOL),SMASS(nmol,10)
-   common /iso_id/ iso_82(124)
+   COMMON /ISVECT/ ISO_MAX(NMOL),SMASS(nmol, MXISOTPL)
+   common /iso_id/ iso_82(126)
 !
 !    The number of isotopes for a particular molecule:
    DATA (ISO_MAX(I),I=1,NMOL)/                                       &
-   &   6,  10,    9,    5,    6,   4,     3,                          &
+   &   6,  12,    9,    5,    6,   4,     3,                          &
    &   3,   2,    1,    2,    2,   3,     2,    4,    4,    2,        &
    &   2,   5,    3,    2,    2,   3,     2,    1,    3,    2,    1,  &
    &   2,   1,    3,    1,    1,   1,     2,    1,    2,    2,    1,  &
@@ -2715,9 +2716,9 @@ BLOCK DATA Isotop
 !     COF2, SF6,  H2S,HCOOH,  HO2,   O,ClONO2, NO+, HOBr,  C2H4,CH3OH,
 !     CH3Br,CH3CN,CF4, C4H2, HC3N,  H2,    CS, SO3/
 !
-   DATA ISO_82/                                                      &
+   DATA ISO_82/                                                       &
    &  161,181,171,162,182,172,                                        &
-   &  626,636,628,627,638,637,828,827,727,838,                        &
+   &  626,636,628,627,638,637,828,827,727,838,837,737,                &
    &  666,668,686,667,676,886,868,678,768,                            &
    &  446,456,546,448,447,                                            &
    &  26,36,28,27,38,37,  211,311,212,312,                            &
@@ -2753,9 +2754,9 @@ BLOCK DATA Isotop
    & /  18.01, 20.01, 19.01, 19.01, 21.02, 20.02/
 !  CO2:   626,   636,   628,   627,   638,   637,   828,   827,    727,
 !         838
-   data (smass(2,i),i=1,10)                                          &
+   data (smass(2,i),i=1,12)                                           &
    & /  43.99, 44.99, 45.99, 44.99, 47.00, 46.00, 48.00, 47.00, 46.00,&
-   &    49.00/
+   &    49.00, 48.00, 47.00/
 !   O3:   666,   668,   686    667    676    886    868    678    768
    data (smass(3,i),i=1,9)                                           &
    & /  47.98, 49.99, 49.99, 48.99, 48.99, 51.99, 51.99, 50.99, 50.99/
@@ -2933,14 +2934,14 @@ SUBROUTINE R1PRNT (V1P,DVP,NLIM,R1,JLO,NPTS,MFILE,IENTER)
 end subroutine R1PRNT
 SUBROUTINE LINF4 (V1L4,V2L4)
 !
-   USE lblparams, ONLY: MXMOL, MXISOTPL
+   USE lblparams, ONLY: MXMOL, MXISOTPL, decode_mol_id
    USE phys_consts, ONLY: radcn2
    USE struct_types
    IMPLICIT REAL*8           (V)
 !
 !     SUBROUTINE LINF4 READS THE LINES AND SHRINKS THE LINES FOR LBLF4
 !
-   COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,10)
+   COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,MXISOTPL)
 !
    COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
 !
@@ -2981,7 +2982,7 @@ SUBROUTINE LINF4 (V1L4,V2L4)
 !
    REAL L4TIM,L4TMR,L4TMS,LOTHER
    DIMENSION MEFDP(64)
-   DIMENSION SCOR(42,10),RHOSLF(mxmol),ALFD1(42,10)
+   DIMENSION SCOR(mxmol,MXISOTPL),RHOSLF(mxmol),ALFD1(mxmol,MXISOTPL)
 !
    DIMENSION A(4),B(4),TEMPLC(4)
    DIMENSION IWD(2),IWD3(2),HLINHD(2)
@@ -3099,11 +3100,12 @@ SUBROUTINE LINF4 (V1L4,V2L4)
       IFLAG = BUFR%IFLG(I)
       IF (I.LE.0) GO TO 50
 !
-      M = MOD(BUFR%MOL(I),I_100)
+      call decode_mol_id(BUFR%MOL(I), M, ISO)
+!      M = MOD(BUFR%MOL(I),I_100)
 !
 !     ISO=(MOD(BUFR%MOL(I),I_1000)-M)/100   IS PROGRAMMED AS:
 !
-      ISO = MOD(BUFR%MOL(I),I_1000)/100
+!      ISO = MOD(BUFR%MOL(I),I_1000)/100
 !
 !     check if lines are within allowed molecular and isotopic limits
 !
@@ -4265,7 +4267,7 @@ BLOCK DATA BXSECT
 !     PAN added 08/25/2010, malvarad@aer.com
 !
 !     HCHO, CF3CH2CF3, CHF2CH2CF3, NF3, C2F6, SF6 added 05/2020 ipolonsk@aer.com
-   USE lblparams, ONLY: MX_XS
+   USE lblparams, ONLY: MX_XS, XS_SIZE
    IMPLICIT REAL*8           (V)
 !
 !**   XSNAME=NAMES, ALIAS=ALIASES OF THE CROSS-SECTION MOLECULES
@@ -4283,7 +4285,7 @@ BLOCK DATA BXSECT
 !
    DATA NMODES / 1 /,NPANEL / 0 /,V1XS / 0.0 /,V2XS / 0.0 /,         &
    &     DVXS / 0.0 /,NPTSXS / 0 /
-   DATA XSMAX / 1500*0.0 /
+   DATA XSMAX / XS_SIZE*0.0 /
    DATA (ALIAS(1,I),I=1,mx_xs)/                                      &
    &    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',       &  !  1 -  4
    &    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',       &  !  5 -  8
@@ -5961,7 +5963,7 @@ Subroutine TIPS_2003 (mol_max,iso_max,temp_lbl,scor)
 !
 !...This program calculates the TIPS by 4-point LaGrange interpolation
 !
-   USE lblparams, ONLY: NMOL => MXMOL, Max_ISO, NT
+   USE lblparams, ONLY: NMOL => MXMOL, Max_ISO, NT,MXISOTPL
 !++
 !     Max_ISO here is the number that TIPS treats: LBLRTM is limited to
 !++
@@ -5973,7 +5975,7 @@ Subroutine TIPS_2003 (mol_max,iso_max,temp_lbl,scor)
 !++:  bd-QT
    COMMON/Temperatures/tdat !mja, 10-27-2011
 
-   dimension iso_max(nmol),scor(42,10)
+   dimension iso_max(nmol),SCOR(NMOL,MXISOTPL)
 
    character*30 stopNgo
 !
@@ -6793,8 +6795,9 @@ Subroutine QT_CO2   (                                             &
    USE lblparams, ONLY: NT
    COMMON/Temperatures/tdat(NT)
 
-   dimension xgj(11), QofT( 11,119),Q(NT)
-   data xgj/ 1.,2.,1.,6.,2.,12.,1.,6.,1.,2.,12./
+   dimension xgj(12), QofT(12,NT),Q(NT)
+   data xgj/ 1.,2.,1.,6.,2.,12.,1.,6.,1.,2.,12.,2./
+
 !...      CO2
 !...        --       626
    data (QofT( 1,J),J=1,119)/ 0.53642E+02, 0.75947E+02, 0.98292E+02, &
@@ -7083,6 +7086,34 @@ Subroutine QT_CO2   (                                             &
    & 0.23765E+07, 0.24624E+07, 0.25507E+07, 0.26416E+07, 0.27351E+07, &
    & 0.28312E+07, 0.29301E+07, 0.30317E+07, 0.31361E+07, 0.32434E+07, &
    & 0.33537E+07/
+! CO2 local isotope 12: 737 (17O-13C-17O); HITRAN global ID 122, gi=2.
+! Total partition sums sampled from https://hitran.org/data/Q/q122.txt
+! Tdat: 60, 85, ..., 3010 K. Values already include nuclear spin statistics.
+   data (QofT(12,J),J=1,NT) / &
+      & 4100.69000, 5804.68000, 7511.67000, 9231.72000, 10983.80000, &
+      & 12792.00000, 14681.70000, 16677.00000, 18799.80000, 21070.00000, &
+      & 23506.30000, 26126.10000, 28946.30000, 31983.60000, 35254.70000, &
+      & 38776.20000, 42565.40000, 46639.90000, 51017.80000, 55717.80000, &
+      & 60759.30000, 66162.40000, 71947.90000, 78137.40000, 84753.20000, &
+      & 91818.70000, 99357.90000, 107396.00000, 115958.00000, 125071.00000, &
+      & 134763.00000, 145062.00000, 155998.00000, 167602.00000, 179905.00000, &
+      & 192939.00000, 206737.00000, 221336.00000, 236770.00000, 253075.00000, &
+      & 270291.00000, 288455.00000, 307609.00000, 327792.00000, 349048.00000, &
+      & 371419.00000, 394951.00000, 419690.00000, 445683.00000, 472978.00000, &
+      & 501625.00000, 531674.00000, 563178.00000, 596190.00000, 630765.00000, &
+      & 666959.00000, 704830.00000, 744435.00000, 785836.00000, 829093.00000, &
+      & 874269.00000, 921429.00000, 970637.00000, 1021960.00000, 1075470.00000, &
+      & 1131230.00000, 1189320.00000, 1249810.00000, 1312760.00000, 1378270.00000, &
+      & 1446400.00000, 1517230.00000, 1590850.00000, 1667330.00000, 1746760.00000, &
+      & 1829220.00000, 1914800.00000, 2003580.00000, 2095660.00000, 2191130.00000, &
+      & 2290080.00000, 2392590.00000, 2498770.00000, 2608720.00000, 2722530.00000, &
+      & 2840310.00000, 2962140.00000, 3088150.00000, 3218430.00000, 3353080.00000, &
+      & 3492230.00000, 3635970.00000, 3784420.00000, 3937690.00000, 4095890.00000, &
+      & 4259150.00000, 4427580.00000, 4601290.00000, 4780420.00000, 4965070.00000, &
+      & 5155390.00000, 5351480.00000, 5553490.00000, 5761530.00000, 5975740.00000, &
+      & 6196250.00000, 6423190.00000, 6656710.00000, 6896920.00000, 7143980.00000, &
+      & 7398030.00000, 7659200.00000, 7927630.00000, 8203470.00000, 8486870.00000, &
+      & 8777980.00000, 9076930.00000, 9383880.00000, 9698990.00000 /   
    eps=0.01
 !
    gsi = xgj(iso)
