@@ -888,7 +888,7 @@
 !                                                                       
 !     PRINT LINE FILE HEADER                                            
 !                                                                       
-      IF (IHIRAC.EQ.1.OR.IHIRAC.EQ.4.OR.ILBLF4.GE.1) CALL PRLNHD 
+      IF (IHIRAC.EQ.1.OR.IHIRAC.EQ.4.OR.IHIRAC.EQ.9.OR.ILBLF4.GE.1) CALL PRLNHD
 !                                                                       
 !     PRINT CONTINUUM INFORMATION                                       
 !                                                                       
@@ -1777,7 +1777,7 @@ end subroutine OPNDRV
 !                                                                       
       SUBROUTINE PRLNHD 
 !                                                                       
-      USE lblparams, ONLY: MXMOL
+      USE lblparams, ONLY: MXMOL, configure_line_ids
       IMPLICIT REAL*8           (V) 
 !                                                                       
 !     PRLNHD PRINTS OUT LINE FILE HEADER                                
@@ -1883,12 +1883,7 @@ end subroutine OPNDRV
 !                                                                       
 !     CHECK HEADER FOR FLAG INDICATING COMPATIBILITY WITH ISOTOPES      
 !                                                                       
-   30    WRITE (CHID10,925) HLINID(10) 
-         READ (CHID10,930) CHARID,CHARDT,CHTST 
-         IF (CHTST.NE.CHARI) THEN 
-            WRITE (IPR,935) CHARID,CHARDT,CHTST 
-            STOP ' PRLNHD - NO ISOTOPE INFO ON LINFIL ' 
-         ENDIF 
+   30    CALL configure_line_ids(HLINID(10),IPR,HLINID(9))
 !                                                                       
          RETURN 
 !                                                                       

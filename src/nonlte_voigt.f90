@@ -1478,24 +1478,17 @@ SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)
       GAMMA1 = 0.
       GAMMA2 = 0.
       I = IOUT(J)
+      IF (I.LE.0) GO TO 30
       IFLAG = IFLG(I)
-      MFULL=MOL(I)
-      call decode_mol_id(MFULL, M, ISO)
-
-!           Molecule number for this line, last 2 digits of MFULL
-    !   M = MOD(MOL(I),I_100)
-!
-!     ISO=(MOD(MOL(I),1000)-M)/100   IS PROGRAMMED AS:
-!
-!           Isotope number for this line, 3rd digit from right of MFULL
-    !   ISO = MOD(MOL(I),I_1000)/100
+      IF (IFLAG.LT.0) GO TO 30  ! coefficient companion, not an ID
+      call decode_mol_id(MOL(I), M, ISO, NLOW, NUPP)
 !
 !     check if lines are within allowed molecular and isotopic limits
 !
       if (m.gt.mxmol .or. m.lt. 1) then
          call line_exception (1,ipr,h_lncor1,m,nmol,iso,iso_max)
          go to 25
-      else if (iso .gt. iso_max(m)) then
+      else if (iso.lt.1 .or. iso.gt.min(iso_max(m),MXISOTPL)) then
          call line_exception (2,ipr,h_lncor1,m,nmol,iso,iso_max)
          go to 25
       endif
@@ -1630,12 +1623,9 @@ SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)
       SRAD(I)=0.0
 !
 ! ---from nlte:
-      IF (MFULL.GE.1000) THEN
+      IF (NLOW.NE.0 .OR. NUPP.NE.0) THEN
          FREQ=VNU(I)
-!              NLOW is 4th and 5th digit from right of MFULL
-         NLOW=MOD(MFULL/1000,100)
-!              NUPP is 6th and 7th digit from right of MFULL
-         NUPP=MFULL/100000
+         IF (ISO.GT.Max_ISO .OR. MAX(NLOW,NUPP).GT.MAXSTATE) ERROR STOP 'NLTE state index exceeds capacity'
          RLOW=1.0
          RUPP=1.0
          DELTA=EXP(-FREQ/XKT)
@@ -2348,23 +2338,17 @@ SUBROUTINE LINF4Q (V1L4,V2L4)
       GAMMA1 = 0.
       GAMMA2 = 0.
       I = IOUT(J)
-      IFLAG = BUFR%IFLG(I)
       IF (I.LE.0) GO TO 50
-!
-      MFULL = BUFR%MOL(I)
-      call decode_mol_id(MFULL, M, ISO)
-    !   M = MOD(BUFR%MOL(I),I_100)
-!
-!     ISO=(MOD(BUFR%MOL(I),I_1000)-M)/100   IS PROGRAMMED AS:
-!
-    !   ISO = MOD(BUFR%MOL(I),I_1000)/100
+      IFLAG = BUFR%IFLG(I)
+      IF (IFLAG.LT.0) GO TO 50  ! coefficient companion, not an ID
+      call decode_mol_id(BUFR%MOL(I), M, ISO, NLOW, NUPP)
 !
 !     check if lines are within allowed molecular and isotopic limits
 !
       if (m.gt.mxmol .or. m.lt. 1) then
          call line_exception (1,ipr,h_linf4,m,nmol,iso,iso_max)
          go to 50
-      else if (iso .gt. iso_max(m)) then
+      else if (iso.lt.1 .or. iso.gt.min(iso_max(m),MXISOTPL)) then
          call line_exception (2,ipr,h_linf4,m,nmol,iso,iso_max)
          go to 50
       endif
@@ -2484,9 +2468,8 @@ SUBROUTINE LINF4Q (V1L4,V2L4)
 !
 !     PICK OUT MOLECULAR TYPES WITH VIBRATIONAL STATES
 !
-      IF(NUMSTATE(M).GT.0) THEN
-         NLOW=MOD(MFULL/1000,100)
-         NUPP=MFULL/100000
+      IF (NUMSTATE(M).GT.0 .AND. (NLOW.NE.0 .OR. NUPP.NE.0)) THEN
+         IF (ISO.GT.Max_ISO .OR. MAX(NLOW,NUPP).GT.MAXSTATE) ERROR STOP 'NLTE state index exceeds capacity'
 !             DELTA=EXP(-FREQ/XKT)
 !     xkt=tave/radcn2=1/beta
          DELTA=EXP(-FREQ*BETA)

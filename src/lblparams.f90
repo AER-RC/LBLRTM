@@ -25,7 +25,10 @@ MODULE lblparams   ! Parameters for array dimensions in lblrtm
 
    implicit none
 
-   public :: decode_mol_id
+   public :: decode_mol_id, configure_line_ids, select_line_id_format, unpack_line_id
+   integer, parameter :: id_legacy=1, id_v2=2, id_legacy_lte=3
+   character(8), parameter :: line_id_v2_tag='LID2VIB2'
+   integer, private, save :: active_line_id_format=id_legacy_lte
    ! 
    integer, parameter :: MXMOL=47     ! max number of molecules
    ! MXISOTPL	sets the isotope dimension of ISOTPL_ABD, ISOTPL_CODE, ISOTPL_FLAG, WKI, and WKL_ISOTPL. 
@@ -75,7 +78,6 @@ MODULE lblparams   ! Parameters for array dimensions in lblrtm
 
 ! Molecule names
 !      DATA CMOL   /                                                     &
-!     &     '  H2O ','  CO2 ','   O3 ','  N2O ','   CO ','  CH4 ',       &
 !     &     '   H2O','   CO2','    O3','   N2O','    CO','   CH4',       &
 !     &     '    O2','    NO','   SO2','   NO2','   NH3','  HNO3',       &
 !     &     '    OH','    HF','   HCl','   HBr','    HI','   ClO',       &
@@ -385,14 +387,93 @@ data (isotpl_abd(47,i),i=1,isotpl_num(47)) /                        &
      &     9.4343e-1/
      !
 contains
-    subroutine decode_mol_id(molid, mol, iso)
-        implicit none
-        integer, intent(in) :: molid
-        integer, intent(out):: mol
-        integer, intent(out):: iso
-        ! LNFL encodes molid as 
-        ! MOLID = 100*isotope + molecule
-        mol = MOD(molid, 100)
-        iso = molid/100
-    end subroutine decode_mol_id
+   ! HID(10) selects V2. For unversioned files, the existing HID(9)
+   ! NLTE flag distinguishes state-packed records from old LTE records.
+   pure subroutine select_line_id_format(h10,fmt,ierr,h9)
+      character(*), intent(in) :: h10
+      character(*), intent(in), optional :: h9
+      integer, intent(out) :: fmt,ierr
+      fmt=id_legacy_lte; ierr=0
+      if (len(h10)/=8) then
+         ierr=1
+      else if (h10==line_id_v2_tag) then
+         fmt=id_v2
+      else if (h10(1:3)=='LID') then
+         ierr=2                 ! Reserved marker, unsupported version.
+      else if (h10(8:8)/='I') then
+         ierr=1                 ! Preserve the legacy isotope-header check.
+      else if (present(h9)) then
+         if (trim(adjustl(h9))=='NLTE' .or. h9=='NLTE REJ') fmt=id_legacy
+      endif
+   end subroutine select_line_id_format
+
+   subroutine configure_line_ids(h10,ipr,h9)
+      character(*), intent(in) :: h10
+      character(*), intent(in), optional :: h9
+      integer, intent(in) :: ipr
+      integer :: fmt,ierr
+      active_line_id_format=id_legacy_lte
+      call select_line_id_format(h10,fmt,ierr,h9)
+      if (ierr/=0) then
+         write(ipr,*) 'Unsupported TAPE3 identifier header: [',h10,']'
+         error stop 'Unsupported TAPE3 identifier header'
+      endif
+      active_line_id_format=fmt
+      if (fmt==id_v2) then
+         write(ipr,*) 'TAPE3 identifiers: V2 (LID2VIB2)'
+      else if (fmt==id_legacy) then
+         write(ipr,*) 'TAPE3 identifiers: legacy NLTE (unversioned)'
+      else
+         write(ipr,*) 'TAPE3 identifiers: legacy LTE (unversioned)'
+      endif
+   end subroutine configure_line_ids
+
+   ! Decode PRIMARY records only; negative-flag companions contain real bits.
+   ! This checks representation limits. Callers check installed molecule,
+   ! isotope and state data before indexing physical-data arrays.
+   pure subroutine unpack_line_id(fmt,word,mol,iso,nlow,nupp,ierr)
+      integer, intent(in) :: fmt,word
+      integer, intent(out) :: mol,iso,nlow,nupp,ierr
+      mol=0; iso=0; nlow=0; nupp=0; ierr=1
+      if (word<=0) return
+      mol=mod(word,100)
+      if (mol<1) return
+      select case(fmt)
+      case(id_legacy_lte)
+         ! Original supplied LTE decoder: preserve the entire quotient.
+         ! In particular 1002,1102,1202 mean CO2 isotopes 10,11,12.
+         iso=word/100
+         ! Older LNFL read the HITRAN digit 0 literally (isotopologue 10).
+         if (iso==0) iso=10
+      case(id_legacy)
+         iso=mod(word/100,10)
+         if (iso==0) iso=10
+         nlow=mod(word/1000,100)
+         nupp=word/100000
+      case(id_v2)
+         iso=mod(word/100,100)
+         nlow=mod(word/10000,100)
+         nupp=word/1000000
+      case default
+         return
+      end select
+      if (iso<1 .or. iso>36 .or. nupp>99) return
+      ierr=0
+   end subroutine unpack_line_id
+
+   subroutine decode_mol_id(molid,mol,iso,nlow,nupp)
+      use, intrinsic :: iso_fortran_env, only: error_unit
+      integer, intent(in) :: molid
+      integer, intent(out) :: mol,iso
+      integer, intent(out), optional :: nlow,nupp
+      integer :: lo,up,ierr
+      call unpack_line_id(active_line_id_format,molid,mol,iso,lo,up,ierr)
+      if (ierr/=0) then
+         write(error_unit,*) 'Invalid primary TAPE3 identifier:',molid, &
+                            ' encoding:',active_line_id_format
+         error stop 'Invalid primary TAPE3 identifier'
+      endif
+      if (present(nlow)) nlow=lo
+      if (present(nupp)) nupp=up
+   end subroutine decode_mol_id
 end module lblparams

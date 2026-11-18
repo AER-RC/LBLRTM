@@ -678,6 +678,7 @@ end block data BHIRAC
 SUBROUTINE RDLIN
 !
    USE struct_types
+   USE lblparams, ONLY: configure_line_ids
 
    IMPLICIT REAL*8           (V)
 !
@@ -744,6 +745,7 @@ SUBROUTINE RDLIN
    IF (ILO.LE.0) THEN
       REWIND LNFL
       read (lnfl) HLINID
+      CALL configure_line_ids(HLINID(10),IPR,HLINID(9))
       READ (HLINID(7),950) CNEGEPP
       IF (CNEGEPP(8).eq.'^') THEN
          read (lnfl) n_negepp,n_resetepp,xspace
@@ -998,20 +1000,17 @@ SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)
       GAMMA1 = 0.
       GAMMA2 = 0.
       I = IOUT(J)
+      IF (I.LE.0) GO TO 30
       IFLAG = IFLG(I)
+      IF (IFLAG.LT.0) GO TO 30  ! coefficient companion, not an ID
       call decode_mol_id(MOL(I), M, ISO)
-!      M = MOD(MOL(I),I_100)
-!
-!     ISO=(MOD(MOL(I),1000)-M)/100   IS PROGRAMMED AS:
-!
-!      ISO = MOD(MOL(I),I_1000)/100
 !
 !     check if lines are within allowed molecular and isotopic limits
 !
       if (m.gt.mxmol .or. m.lt. 1) then
          call line_exception (1,ipr,h_lncor1,m,nmol,iso,iso_max)
          go to 25
-      else if (iso .gt. iso_max(m)) then
+      else if (iso.lt.1 .or. iso.gt.min(iso_max(m),MXISOTPL)) then
          call line_exception (2,ipr,h_lncor1,m,nmol,iso,iso_max)
          go to 25
       endif
@@ -3097,22 +3096,17 @@ SUBROUTINE LINF4 (V1L4,V2L4)
       GAMMA1 = 0.
       GAMMA2 = 0.
       I = IOUT(J)
-      IFLAG = BUFR%IFLG(I)
       IF (I.LE.0) GO TO 50
-!
+      IFLAG = BUFR%IFLG(I)
+      IF (IFLAG.LT.0) GO TO 50  ! coefficient companion, not an ID
       call decode_mol_id(BUFR%MOL(I), M, ISO)
-!      M = MOD(BUFR%MOL(I),I_100)
-!
-!     ISO=(MOD(BUFR%MOL(I),I_1000)-M)/100   IS PROGRAMMED AS:
-!
-!      ISO = MOD(BUFR%MOL(I),I_1000)/100
 !
 !     check if lines are within allowed molecular and isotopic limits
 !
       if (m.gt.mxmol .or. m.lt. 1) then
          call line_exception (1,ipr,h_linf4,m,nmol,iso,iso_max)
          go to 50
-      else if (iso .gt. iso_max(m) .or. iso.lt.1) then
+      else if (iso.lt.1 .or. iso.gt.min(iso_max(m),MXISOTPL)) then
          call line_exception (2,ipr,h_linf4,m,nmol,iso,iso_max)
          go to 50
       endif
@@ -3298,6 +3292,7 @@ subroutine lnfilhd_4(linfil,linfil4,v1,v2)
 !
 !     this subroutine buffers past the file header for LINF4
 !
+   USE lblparams, ONLY: configure_line_ids
    IMPLICIT REAL*8           (V)
 !
    CHARACTER*8      HLINID,BMOLID,HID1
@@ -3334,6 +3329,7 @@ subroutine lnfilhd_4(linfil,linfil4,v1,v2)
    &                MCNTNL,SUMSTR,LINMOL,FLINLO,FLINHI,               &
    &                LINCNT,ILINLC,ILINNL,IREC,IRECTL,HID1
 !
+   CALL configure_line_ids(HLINID(10),IPR,HLINID(9))
    READ (HLINID(7),950) CNEGEPP
    IF (CNEGEPP(8).eq.'^') THEN
       read (lnfil) n_negepp,n_resetepp,xspace
