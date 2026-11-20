@@ -26,7 +26,6 @@ SUBROUTINE NONLTE(MPTS)
 !
    USE lblparams
 !      include 'lblparams.inc'
-
    IMPLICIT REAL*8           (V)
 !
 !**********************************************************************
@@ -76,7 +75,6 @@ SUBROUTINE NONLTE(MPTS)
    COMMON /R4SUB/ VLOF4,VHIF4,ILOF4,IST,IHIF4,LIMIN4,LIMOUT,ILAST,   &
    &               DPTMN4,DPTFC4,ILIN4,ILIN4T
    COMMON /ISVECT/ ISO_MAX(MXMOL),SMASSI(mxmol,MXISOTPL)
-
    common /cmol_nam/ cmol(mxmol),cspc(mxspc)
    CHARACTER*6  CMOL,CSPC
 !
@@ -350,7 +348,7 @@ SUBROUTINE VIBPOP(XKT,HT,NLTEFLAG,NUM,IDX,NDEG,EH,RAT,            &
 !      write(ipr,*) 'called vibpop with txtmol=',titmol,'  alt=',ht
 !      write(ipr,*) 'num=',num,'  numin=',numin
 !      write(ipr,*) (isorder(i),i=1,numin)
-
+!
    I1=0
    I2=0
    DO I=1,80
@@ -461,7 +459,6 @@ SUBROUTINE VIBTMP(XKT,HT,NLTEFLAG,NUM,IDX,NDEG,EH,RAT,            &
 !
    USE phys_consts, ONLY: radcn2
    USE lblparams
-!      include 'lblparams.inc'
    IMPLICIT REAL*8           (V)
 
    COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
@@ -1366,6 +1363,7 @@ SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)
    USE lblparams
 !      include 'lblparams.inc'
    USE struct_types, ONLY: mxbrdmol, nlinerec
+   use lblparams, only: decode_mol_id
    IMPLICIT REAL*8           (V)
 !
    CHARACTER*1 FREJ(nlinerec),HREJ,HNOREJ
@@ -1548,7 +1546,6 @@ SUBROUTINE LNCORQ (NLNCR,IHI,ILO,MEFDP)
          vnu(i) = vnu(i)+sum(rhoslf(1:mxbrdmol)*brd_mol_flg(:,i)* &
          &           (brd_mol_shft(:,i)-pshift(i)))
       endif
-
 !
 !     TEMPERATURE CORRECTION OF THE HALFWIDTH
 !     SELF TEMP DEPENDENCE TAKEN THE SAME AS FOREIGN
@@ -2042,7 +2039,6 @@ SUBROUTINE PANELQ (R1,R2,R3,RR1,RR2,RR3,KFILE,JRAD,IENTER)
       RR2(J) = RR2(J)+RR3(J3)
       RR2(J+1) = RR2(J+1)+X00*RR3(J3-1)+X01*RR3(J3)+X02*RR3(J3+1)+X03*RR3(J3+2)
    endif
-
    DO 20 J = NLO, NHI, 4
       J2 = (J-1)/4+1
       R1(J) = R1(J)+R2(J2)
@@ -2152,6 +2148,7 @@ SUBROUTINE LINF4Q (V1L4,V2L4)
    USE phys_consts, ONLY: radcn2
    USE lblparams
    USE struct_types
+   USE lblparams, only: decode_mol_id
 !
    IMPLICIT REAL*8           (V)
 !
@@ -2434,7 +2431,6 @@ SUBROUTINE LINF4Q (V1L4,V2L4)
          if(bufr%brd_mol_flg(m,i).eq.0)   &
          &           shrunk%alfa(ij) = shrunk%alfa(ij) + rhoslf(m)*(hwhmsi-alfa0i)
       end if
-
 !
       IF (IFLAG.EQ.3) SHRUNK%ALFA(IJ) = SHRUNK%ALFA(IJ)* &
       &      (1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)

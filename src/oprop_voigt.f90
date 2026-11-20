@@ -710,8 +710,6 @@ SUBROUTINE RDLIN
 
    dimension    amol(NLINEREC)
 
-!      equivalence (mol(1),amol(1))
-
    integer *4 nrec,nwds,lnfl,leof,npnlhd
 
 
@@ -776,25 +774,14 @@ SUBROUTINE RDLIN
 !     precision conversion occurs here:
 !     incoming on right: vlin is real*8, others real*4 and integer*4
 !
-   do 15 i=1,nrec
+   do 15 i=1,rdlnpnl%nrec
 
-!
-!         IFLG(i) = jflg(i)
-!         VNU(i) = vlin(i)
-!         SP(i) = str(i)
-!         ALFA0(i) = hw_f(i)
-!         EPP(i) = e_low(i)
       IFLG(i) = rdlnbuf%iflg(i)
       VNU(i) = rdlnbuf%vnu(i)
       SP(i) = rdlnbuf%sp(i)
       ALFA0(i) = rdlnbuf%alfa(i)
       EPP(i) = rdlnbuf%epp(i)
 
-!         if (iflg(i) .ge. 0) then
-!         MOL(i) = mol_id(i)
-!         else
-!         amol(i) = xmol(i)
-!         endif
       if (iflg(i) .ge. 0) then
          MOL(i) = rdlnbuf%mol(i) ! int*4 to int*8 (if compiled as r8)
       else
@@ -803,9 +790,6 @@ SUBROUTINE RDLIN
          mol(i) = transfer (amol(i), mol(i))  ! real*8 to int*8  (if compiled as r8)
       endif
 
-!         HWHMS(i) = hw_s(i)
-!         TMPALF(i)= hw_T(i)
-!         PSHIFT(i)= shft(i)
       HWHMS(i) = rdlnbuf%hwhm(i)
       TMPALF(i)= rdlnbuf%tmpalf(i)
       PSHIFT(i)= rdlnbuf%pshift(i)
@@ -1101,6 +1085,10 @@ SUBROUTINE LNCOR1 (NLNCR,IHI,ILO,MEFDP)
          &           alfl = alfl + rhoslf(m)*(hwhmsi-alfa0i)
       end if
 
+! mji - Revise code to skip broadening for incoming lines with flag = -1
+      if(brd_mol_flg(m,i).eq.-1.and.ibrd.gt.0) then
+            alfl = hwhmsi
+         end if
 !
       IF (IFLAG.EQ.3) ALFL = ALFL*(1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)
 !
@@ -2321,6 +2309,25 @@ FUNCTION RADFNI (VI,DVI,XKT,VINEW,RDEL,RDLAST)
 !
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !
+! INPUTS:
+!         VI: Starting Wavenumber in cm-1
+!        DVI: Wavenumber step in cm-1
+!        XKT: Tave/RADCN2 = kb*Tave/(h*c)
+!
+! INPUT/OUTPUT:
+!     RDLAST: If negative, this is the first call
+!             If positive, used as input, should be the radiation term (in cm-1) at VI
+!             In either case, returned value is the radiation term at VINEW
+!      VINEW: If negative, this is used as input to determine location of VINEW,
+!                  but is adjusted to ensure that VINEW-VI is an integer number of DVI's
+!             If positive, VINEW is initally estimates as 1.003*VI, then adjusted
+!                  to ensure that VINEW-VI is an integer number of DVI's
+!             Adjusted value is returned
+!
+! OUTPUT:
+!     RADFNI: Radiation term (in cm-1) at VI
+!       RDEL: Linear change for each DVI for a straight line connecting R(VI) and R(VINEW)
+
    COMMON /LAMCHN/ ONEPL,ONEMI,EXPMIN,ARGMIN
    DATA FACT1 / 3.0E-03 /
 !
@@ -2381,7 +2388,6 @@ FUNCTION RADFNI (VI,DVI,XKT,VINEW,RDEL,RDLAST)
 !MJA 20150821, fixing bug in RDLAST reported by Yingtao Ma
          XVINEWOKT = XVINEW/XKT
          RDNEXT = 0.5*XVINEWOKT*XVINEW
-!            RDNEXT = 0.5*XVIOKT*XVINEW
 !
       ELSEIF (XVIOKT.LE.10.0) THEN
          EXPVKT = EXP(-XVIOKT)
@@ -2405,7 +2411,6 @@ FUNCTION RADFNI (VI,DVI,XKT,VINEW,RDEL,RDLAST)
          XMINUSNEW = 1.-EXPVNEWKT
          XPLUSNEW = 1.+EXPVNEWKT
          RDNEXT = XVINEW*XMINUSNEW/XPLUSNEW
-!            RDNEXT = XVINEW*XMINUS/XPLUS
 !
       ELSE !XVIOKT > 10.0, assume radiation term is just wavenumber
          IF (VINEW.GE.0.0) THEN
@@ -2438,7 +2443,6 @@ FUNCTION RADFNI (VI,DVI,XKT,VINEW,RDEL,RDLAST)
 ! MJA, 20150821 - fixed bug that used beginning frequency to calculate
 ! Radiation term at VINEW
       RDNEXT = XVINEW
-!         RDNEXT = XVI
    ENDIF
 !
    RDEL = (RDNEXT-RADFNI)/ REAL(INTVLS)
@@ -2675,198 +2679,269 @@ BLOCK DATA Isotop
    USE lblparams, ONLY: MXISOTPL, NMOL => MXMOL
 
    COMMON /ISVECT/ ISO_MAX(NMOL),SMASS(NMOL, MXISOTPL)
-   common /iso_id/ iso_82(126)
+   common /iso_id/ iso_82(129)
 !
 !    The number of isotopes for a particular molecule:
    DATA (ISO_MAX(I),I=1,NMOL)/                                        &
-   &   6,  12,    9,    5,    6,   4,     3,                          &
-   &   3,   2,    1,    2,    2,   3,     2,    4,    4,    2,        &
-   &   2,   5,    3,    2,    2,   3,     2,    1,    3,    2,    1,  &
-   &   2,   1,    3,    1,    1,   1,     2,    1,    2,    2,    1,  &
-   &   2,   1,    1,    1,    1,   2,     4,    1/
-!      H2O, CO2,   O3,  N2O,   CO, CH4,    O2,
-!       NO, SO2,  NO2,  NH3, HNO3,  OH,    HF,  HCl,  HBr,   HI,
-!      ClO, OCS, H2CO, HOCl,   N2, HCN, CH3Cl, H2O2, C2H2, C2H6,  PH3,
-!     COF2, SF6,  H2S,HCOOH,  HO2,   O,ClONO2, NO+, HOBr,  C2H4,CH3OH,
-!     CH3Br,CH3CN,CF4, C4H2, HC3N,  H2,    CS, SO3/
-!
+!  &     H2O,     CO2,      O3,     N2O,      CO,     CH4,            &
+   &       7,      12,       5,       5,       6,       4,            &
+!  &      O2,      NO,     SO2,     NO2,     NH3,    HNO3,            &
+   &       3,       3,       4,       3,       2,       2,            &
+!  &      OH,      HF,     HCl,     HBr,      HI,     ClO,            &
+   &       3,       2,       4,       4,       2,       2,            &
+!  &     OCS,    H2CO,    HOCl,      N2,     HCN,   CH3Cl,            &
+   &       6,       3,       2,       2,       3,       2,            &
+!  &    H2O2,    C2H2,    C2H6,     PH3,    COF2,     SF6,            &
+   &       1,       3,       2,       1,       2,       1,            &
+!  &     H2S,   HCOOH,     HO2,       O,  ClONO2,     NO+,            &
+   &       3,       2,       1,       1,       2,       1,            &
+!  &    HOBr,    C2H4,   CH3OH,   CH3Br,   CH3CN,     CF4,            &
+   &       2,       2,       1,       2,       1,       1,            &
+!  &    C4H2,    HC3N,      H2,      CS,     SO3/
+   &       1,       1,       2,       4,       1/
    DATA ISO_82/                                                       &
-   &  161,181,171,162,182,172,                                        &
-   &  626,636,628,627,638,637,828,827,727,838,837,737,                &
-   &  666,668,686,667,676,886,868,678,768,                            &
-   &  446,456,546,448,447,                                            &
-   &  26,36,28,27,38,37,  211,311,212,312,                            &
-   &  66,68,67,  46,56,48  ,626,646,                                  &
-   &  646,   4111,5111,  146,156,                                     &
-   &  61,81,62,  19,29,  15,17,25,27,  19,11,29,21,     17,27,        &
-   &  56,76,  622,624,632,623,822,  126,136,128,                      &
-   &  165,167,  44,45,  124,134,125,                                  &
-   &  215,217,  1661,  1221,1231,1222,  1221,1231,  1111,             &
-   &  269,369,  29,  121,141,131,   126,    166, 6,   5646,7646,  46, &
-   &  169,161,   221,231,  2161,   219, 211,     2124,   29,  2211,   &
-   &  1224,      11, 12,    22, 24, 32, 23,        26/
-!       H2O
-!       CO2
-!       O3
-!       N2O
-!       CO,                 CH4
-!       O2,        NO,        SO2
-!       NO2,   NH3,        HNO3
-!       OH,        HF,          HCl,    HBr,             HI
-!       ClO,    OCS,                 H2CO
-!       HOCl,     N2,     HCN
-!      CH3Cl,    H2O2,  C2H2,            C2H6,        PH3
-!       COF2,    SF6, H2S,           HCOOH,  HO2, O,   ClONO2      NO+
-!       HOBr,      C2H4      CH3OH       CH3Br,     CH3CN,  CF4,   C4H2,
-!       HC3N,           H2,               CS,       SO3
-!
-!
-!     MOLECULAR MASSES FOR EACH ISOTOPE
-!
-!  H2O:   161,   181,   171,   162,   182,   172
-   data (smass(1,i),i=1,6)                                           &
-   & /  18.01, 20.01, 19.01, 19.01, 21.02, 20.02/
-!  CO2:   626,   636,   628,   627,   638,   637,   828,   827,    727,
-!         838, 837, 737
-   data (smass(2,i),i=1,12)                                          &
-   & /  43.99, 44.99, 45.99, 44.99, 47.00, 46.00, 48.00, 47.00, 46.00,&
-   &    49.00, 48.00, 47.00/
-!   O3:   666,   668,   686    667    676    886    868    678    768
-   data (smass(3,i),i=1,9)                                           &
-   & /  47.98, 49.99, 49.99, 48.99, 48.99, 51.99, 51.99, 50.99, 50.99/
-!  N2O:   446,   456,   546,   448,   447
-   data (smass(4,i),i=1,5)                                           &
-   & /  44.00, 45.00, 45.00, 46.00, 45.00/
-!   CO:   26,    36,    28,    27,    38     37
-   data (smass(5,i),i=1,6)                                           &
-   & /  27.99, 28.99, 29.99, 29.00, 31.00, 30.00/
-!  CH4:   211,   311,   212,    312
-   data (smass(6,i),i=1,4)                                           &
-   & /  16.03, 17.03, 17.03, 18.03/
-!   O2:    66,    68,    67
-   data (smass(7,i),i=1,3)                                           &
-   & /  31.99, 33.99, 32.99/
-!   NO:    46,    56,    48,
-   data (smass(8,i),i=1,3)                                           &
-   & /  30.00, 31.00, 32.00/
-!  SO2:   626,   646
-   data (smass(9,i),i=1,2)                                           &
-   & /  63.96, 65.96/
-!  NO2:   646
-   data (smass(10,i),i=1,1)                                          &
-   & /  45.99/
-!  NH3:  4111,  5111;
-   data (smass(11,i),i=1,2)                                          &
-   & /  17.03, 18.02/
-! HNO3:
-   data (smass(12,i),i=1,2)                                          &
-   & /  62.99, 63.99/
-!   OH:    61,    81,    62
-   data (smass(13,i),i=1,3)                                          &
-   & /   17.00, 19.01, 18.01/
-!   HF:    19       29
-   data (smass(14,i),i=1,2)                                          &
-   & /   20.01, 21.01/
-!  HCL:   15,    17;       25,    27,
-   data (smass(15,i),i=1,4)                                          &
-   & /  35.98, 37.97, 36.98, 38.97/
-!  HBr:   19,    11;     29,     21
-   data (smass(16,i),i=1,4)                                          &
-   & /  79.92, 81.92,80.92, 82.92 /
-!   HI:   17, 27
-   data (smass(17,i),i=1,2)                                          &
-   & /  127.91, 128.91/
-!  ClO:   56,    76;
-   data (smass(18,i),i=1,2)                                          &
-   & /  50.96, 52.96/
-!  OCS:   622,   624,   632,   623,   822
-   data (smass(19,i),i=1,5)                                          &
-   & /  59.97, 61.96, 60.97, 60.97, 61.97/
-! H2CO:  126,   136,   128;
-   data (smass(20,i),i=1,3)                                          &
-   & /  30.01, 31.01, 32.01/
-! HOCl:  165,   167
-   data (smass(21,i),i=1,2)                                          &
-   & /  51.97, 53.97/
-!   N2:   44,      45;
-   data (smass(22,i),i=1,2)                                          &
-   & /  28.01, 29.01/
-!  HCN:   124,   134,   125,
-   data (smass(23,i),i=1,3)                                          &
-   & /  27.01, 28.01, 28.01/
-! CH3CL:  215,   217;
-   data (smass(24,i),i=1,2)                                          &
-   & /  49.99, 51.99/
-!  H2O2:  1661;
-   data (smass(25,i),i=1,1)                                          &
-   & /  34.01/
-!  C2H2: 1221,  1231 , 1222
-   data (smass(26,i),i=1,3)                                          &
-   & /  26.01, 27.02, 27.01/
-!  C2H6: 1221, , 1231;
-   data (smass(27,i),i=1,2)                                          &
-   & /  30.05, 31.05/
-!   PH3:   1111;
-   data (smass(28,i),i=1,1)                                          &
-   & /  34.00/
-!  COF2:  269, 369;
-   data (smass(29,i),i=1,2)                                          &
-   & /  65.99, 66.99/
-!   SF6:   29
-   data (smass(30,i),i=1,1)                                          &
-   & /  145.96/
-!   H2S:  121    141    131;
-   data (smass(31,i),i=1,3)                                          &
-   & /  33.99, 35.98, 34.99/
-! HCOOH: 126;
-   data (smass(32,i),i=1,1)                                          &
-   & /  46.01/
-!   HO2:   166
-   data (smass(33,i),i=1,1)                                          &
+!   H2O
+  &  161, 181, 171, 162, 182, 172, 262,                               &
+!   CO2
+  &  626, 636, 628, 627, 638, 637, 828, 827, 727, 838, 837, 737,      &
+!   O3
+  &  666, 668, 686, 667, 676,                                         &
+!   N2O
+  &  446, 456, 546, 448, 447,                                         &
+!   CO
+  &   26,  36,  28,  27,  38,  37,                                    &
+!   CH4
+  &  211, 311, 212, 312,                                              &
+!   O2
+  &   66,  68,  67,                                                   &
+!   NO
+  &   46,  56,  48,                                                   &
+!   SO2
+  &  626, 646, 636, 628,                                              &
+!   NO2
+  &  646, 656, 648,                                                   &
+!   NH3
+  & 4111,5111,                                                        &
+!   HNO3
+  &  146, 156,                                                        &
+!   OH
+  &   61,  81,  62,                                                   &
+!   HF
+  &   19,  29,                                                        &
+!   HCl
+  &   15,  17,  25,  27,                                              &
+!   HBr
+  &   19,  11,  29,  21,                                              &
+!   HI
+  &   17,  27,                                                        &
+!   ClO
+  &   56,  76,                                                        &
+!   OCS
+  &  622, 624, 632, 623, 822, 634,                                    &
+!   H2CO
+  &  126, 136, 128,                                                   &
+!   HOCl
+  &  165, 167,                                                        &
+!   N2
+  &   44,  45,                                                        &
+!   HCN
+  &  124, 134, 125,                                                   &
+!   CH3Cl
+  &  215, 217,                                                        &
+!   H2O2
+  & 1661,                                                             &
+!   C2H2
+  & 1221,1231,1222,                                                   &
+!   C2H6
+  & 1221,1231,                                                        &
+!   PH3
+  & 1111,                                                             &
+!   COF2
+  &  269, 369,                                                        &
+!   SF6
+  &   29,                                                             &
+!   H2S
+  &  121, 141, 131,                                                   &
+!   HCOOH
+  &  126, 136,                                                        &
+!   HO2
+  &  166,                                                             &
+!   O
+  &    6,                                                             &
+!   ClONO2
+  & 5646,7646,                                                        &
+!   NO+
+  &   46,                                                             &
+!   HOBr
+  &  169, 161,                                                        &
+!   C2H4
+  &  221, 231,                                                        &
+!   CH3OH
+  & 2161,                                                             &
+!   CH3Br
+  &  219, 211,                                                        &
+!   CH3CN
+  & 2124,                                                             &
+!   CF4
+  &   29,                                                             &
+!   C4H2
+  & 2211,                                                             &
+!   HC3N
+  & 1224,                                                             &
+!   H2
+  &   11,  12,                                                        &
+!   CS
+  &   22,  24,  32,  23,                                              &
+!   SO3
+  &   26/
+!    !
+!    !
+!    !     MOLECULAR MASSES FOR EACH ISOTOPE
+!    !
+data (smass(1,i),i=1,7),                                                &
+!   H2O:    161,   181,   171,   162,   182,   172,   262
+      & / 18.01, 20.01, 19.01, 19.02, 21.02, 20.02, 20.02/
+data (smass(2,i),i=1,12),                                               &
+!   CO2:    626,   636,   628,   627,   638,   637,   828,   827,   727
+      & / 43.99, 44.99, 45.99, 44.99, 47.00, 46.00, 48.00, 47.00, 46.00,&
+!   CO2:    838,   837,   737
+      &  49.00, 48.00, 47.00/
+data (smass(3,i),i=1,5),                                                &
+!   O3:    666,   668,   686,   667,   676
+      & / 47.98, 49.99, 49.99, 48.99, 48.99/
+data (smass(4,i),i=1,5),                                                &
+!   N2O:    446,   456,   546,   448,   447
+      & / 44.00, 45.00, 45.00, 46.01, 45.01/
+data (smass(5,i),i=1,6),                                                &
+!   CO:     26,    36,    28,    27,    38,    37
+      & / 27.99, 29.00, 30.00, 29.00, 31.00, 30.00/
+data (smass(6,i),i=1,4),                                                &
+!   CH4:    211,   311,   212,   312
+      & / 16.03, 17.03, 17.04, 18.04/
+data (smass(7,i),i=1,3),                                                &
+!   O2:     66,    68,    67
+      & / 31.99, 33.99, 32.99/
+data (smass(8,i),i=1,3),                                                &
+!   NO:     46,    56,    48
+      & / 30.00, 31.00, 32.00/
+data (smass(9,i),i=1,4),                                                &
+!   SO2:    626,   646,   636,   628
+      & / 63.96, 65.96, 64.96, 65.97/
+data (smass(10,i),i=1,3),                                               &
+!   NO2:    646,   656,   648
+      & / 45.99, 46.99, 48.00/
+data (smass(11,i),i=1,2),                                               &
+!   NH3:   4111,  5111
+      & / 17.03, 18.02/
+data (smass(12,i),i=1,2),                                               &
+!   HNO3:    146,   156
+      & / 63.00, 63.99/
+data (smass(13,i),i=1,3),                                               &
+!   OH:     61,    81,    62
+      & / 17.00, 19.01, 18.01/
+data (smass(14,i),i=1,2),                                               &
+!   HF:     19,    29
+      & / 20.01, 21.01/
+data (smass(15,i),i=1,4),                                               &
+!   HCl:     15,    17,    25,    27
+      & / 35.98, 37.97, 36.98, 38.98/
+data (smass(16,i),i=1,4),                                               &
+!   HBr:     19,    11,    29,    21
+      & / 79.93, 81.92, 80.93, 82.93/
+data (smass(17,i),i=1,2),                                               &
+!   HI:     17,    27
+      & /127.91,128.92/
+data (smass(18,i),i=1,2),                                               &
+!   ClO:     56,    76
+      & / 50.96, 52.96/
+data (smass(19,i),i=1,6),                                               &
+!   OCS:    622,   624,   632,   623,   822,   634
+      & / 59.97, 61.96, 60.97, 60.97, 61.97, 62.97/
+data (smass(20,i),i=1,3),                                               &
+!   H2CO:    126,   136,   128
+      & / 30.01, 31.01, 32.01/
+data (smass(21,i),i=1,2),                                               &
+!   HOCl:    165,   167
+      & / 51.97, 53.97/
+data (smass(22,i),i=1,2),                                               &
+!   N2:     44,    45
+      & / 28.01, 29.00/
+data (smass(23,i),i=1,3),                                               &
+!   HCN:    124,   134,   125
+      & / 27.01, 28.01, 28.01/
+data (smass(24,i),i=1,2),                                               &
+!   CH3Cl:    215,   217
+      & / 49.99, 51.99/
+data (smass(25,i),i=1,1),                                               &
+!   H2O2:   1661
+      & / 34.01/
+data (smass(26,i),i=1,3),                                               &
+!   C2H2:   1221,  1231,  1222
+      & / 26.02, 27.02, 27.02/
+data (smass(27,i),i=1,2),                                               &
+!   C2H6:   1221,  1231
+      & / 30.05, 31.05/
+data (smass(28,i),i=1,1),                                               &
+!   PH3:   1111
+      & / 34.00/
+data (smass(29,i),i=1,2),                                               &
+!   COF2:    269,   369
+      & / 65.99, 67.00/
+data (smass(30,i),i=1,1),                                               &
+!   SF6:     29
+      & /145.96/
+data (smass(31,i),i=1,3),                                               &
+!   H2S:    121,   141,   131
+      & / 33.99, 35.98, 34.99/
+data (smass(32,i),i=1,2),                                               &
+!   HCOOH:    126,   136
+      & / 46.01, 47.01/
+data (smass(33,i),i=1,1),                                               &
+!   HO2:    166
    & / 33.00/
-!     O:   6
-   data (smass(34,i),i=1,1)                                          &
-   & /  15.99/
-! ClONO2: 5646   7646;
-   data (smass(35,i),i=1,2)                                          &
-   & /  96.96, 98.95/
-!   NO+:   46
-   data (smass(36,i),i=1,1)                                          &
-   & /  30.00 /
-!  HOBr:  169,    161
-   data (smass(37,i),i=1,2)                                          &
-   & /  95.92,  97.92/
-!   C2H4: 221,   231;
-   data (smass(38,i),i=1,2)                                          &
-   & /  28.05, 29.05/
-!   CH3OH: 2161
-   data (smass(39,i),i=1,1)                                          &
-   & /  32.04/
-!   CH3Br: 219, 211
-   data (smass(40,i),i=1,2)                                          &
-   & /  93.94, 95.94/
-!   CH3CN: 2124
-   data (smass(41,i),i=1,1)                                          &
-   & /  41.05/
-!   CF4: 29
-   data (smass(42,i),i=1,1)                                          &
-   & /  88.0043/
-!   C4H2: 2211
-   data (smass(43,i),i=1,1)                                          &
-   & /  50.06/
-!   HC3N: 1224
-   data (smass(44,i),i=1,1)                                          &
-   & /  51.05/
-!   H2: 11, 12
-   data (smass(45,i),i=1,2)                                          &
-   & /  2.016, 3.022/
-!   CS: 22, 24, 32, 23
-   data (smass(46,i),i=1,4)                                          &
-   & /  44.08, 46.08, 45.08, 45.08/
-!   SO3: 26
-   data (smass(47,i),i=1,1)                                          &
-   & /  80.066/
-!
+data (smass(34,i),i=1,1),                                               &
+!   O:      6
+      & / 15.99/
+data (smass(35,i),i=1,2),                                               &
+!   ClONO2:   5646,  7646
+      & / 96.96, 98.95/
+data (smass(36,i),i=1,1),                                               &
+!   NO+:     46
+      & / 30.00/
+data (smass(37,i),i=1,2),                                               &
+!   HOBr:    169,   161
+      & / 95.92, 97.92/
+data (smass(38,i),i=1,2),                                               &
+!   C2H4:    221,   231
+      & / 28.03, 29.03/
+data (smass(39,i),i=1,1),                                               &
+!   CH3OH:   2161
+      & / 32.03/
+data (smass(40,i),i=1,2),                                               &
+!   CH3Br:    219,   211
+      & / 93.94, 95.94/
+data (smass(41,i),i=1,1),                                               &
+!   CH3CN:   2124
+      & / 41.03/
+data (smass(42,i),i=1,1),                                               &
+!   CF4:     29
+      & / 87.99/
+data (smass(43,i),i=1,1),                                               &
+!   C4H2:   2211
+      & / 50.02/
+data (smass(44,i),i=1,1),                                               &
+!   HC3N:   1224
+      & / 51.01/
+data (smass(45,i),i=1,2),                                               &
+!   H2:     11,    12
+      & /  2.02,  3.02/
+data (smass(46,i),i=1,4),                                               &
+!   CS:     22,    24,    32,    23
+      & / 43.97, 45.97, 44.98, 44.97/
+data (smass(47,i),i=1,1),                                               &
+!   SO3:     26
+      & / 79.96/
+
 end block data Isotop
 !**************************************
 SUBROUTINE R1PRNT (V1P,DVP,NLIM,R1,JLO,NPTS,MFILE,IENTER)
@@ -3184,6 +3259,12 @@ SUBROUTINE LINF4 (V1L4,V2L4)
          &           shrunk%alfa(ij) = shrunk%alfa(ij) + rhoslf(m)*(hwhmsi-alfa0i)
       end if
 
+! mji - Revise code to skip broadening for incoming lines with flag = -1
+      if(ibrd.gt.0) then
+         if (bufr%brd_mol_flg(m,i).eq.-1) then
+            shrunk%alfa(ij) = hwhmsi
+         end if
+      end if
 !
       IF (IFLAG.EQ.3) SHRUNK%ALFA(IJ) = SHRUNK%ALFA(IJ)* &
          (1.0-GAMMA1*PAVP0-GAMMA2*PAVP2)
@@ -3749,9 +3830,6 @@ SUBROUTINE RDLIN4 (LINE,IEOF)
    COMMON /R4SUB/ VLO,VHI,ILO,IST,IHI,LIMIN,LIMOUT,ILAST,DPTMN,      &
    &               DPTFC,ILIN4,ILIN4T
    type(LINE_SHRINK)  ::  LINE
-!      COMMON /BUF/ VNU(1250),S(1250),ALFAL(1250),ALFAD(1250),MOL(1250), &
-!     &             SPP(1250)
-!      COMMON /BUF2/ VMIN,VMAX,NREC,NWDS
    COMMON /IFIL/ IRD,IPR,IPU,NOPR,NFHDRF,NPHDRF,NFHDRL,NPHDRL,       &
    &              NLNGTH,KFILE,KPANEL,LINDUM,NFILE,IAFIL,IEXFIL,      &
    &              NLTEFL,LNFIL4,LNGTH4
@@ -3807,7 +3885,6 @@ SUBROUTINE CONVF4 (SHRUNK)  ! VNU,S,ALFAL,ALFAD,MOL,SPP)
    USE struct_types
    IMPLICIT REAL*8           (V)
    type(LINE_SHRINK)  :: SHRUNK
-!      DIMENSION VNU(*),SP(*),ALFAL(*),ALFAD(*),MOL(*),SPP(*)
 !
 !     SUBROUTINE CONVF4 CONVOLVES THE LINE DATA WITH FUNCTION F4
 !
@@ -3896,7 +3973,7 @@ SUBROUTINE CONVF4 (SHRUNK)  ! VNU,S,ALFAL,ALFAD,MOL,SPP)
 !     SPEAK is used for line rejection
       IF (ILNFLG.LE.1) THEN
          FREJ(I) = HNOREJ
-!     No rejection for line-coupled lines (SPP ne. 0)
+!     No rejection for line-coupled lines (SHRUNK%SPP ne. 0)
          IF (SPEAK.LE.(DPTMN+DPTFC*R4(JJ)) .and. shrunk%spp(i).eq.0.)    &
             THEN
             FREJ(I) = HREJ
@@ -4221,6 +4298,7 @@ end subroutine XSREAD
 BLOCK DATA BXSECT
 !     PAN added 08/25/2010, malvarad@aer.com
 !
+!     HCHO, CF3CH2CF3, CHF2CH2CF3, NF3, C2F6, SF6 added 05/2020 ipolonsk@aer.com
    USE lblparams, ONLY: MX_XS, XS_SIZE
    IMPLICIT REAL*8           (V)
 !
@@ -4241,16 +4319,18 @@ BLOCK DATA BXSECT
    &     DVXS / 0.0 /,NPTSXS / 0 /
    DATA XSMAX / XS_SIZE*0.0 /
    DATA (ALIAS(1,I),I=1,mx_xs)/                                      &
-   &    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',       &
-   &    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',       &
-   &    'N2O5      ', 'HNO3      ', 'CF4       ', 'CHCLF2    ',       &
-   &    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ',       &
-   &    'ACET      ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &
-   &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &
-   &    'CH3CClF2  ', 'CHClF2    ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &
-   &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ', 'ISOP      ',       &
-   &    'CHF3      ', 'BRO       ', 'HCHO      ', 'CF3CH2CF3 ',       &
-   &    'CHF2CH2CF3', 'NF3       ', 'NF3       ', 'SF6       ' /
+   &    'CLONO2    ', 'HNO4      ', 'CHCL2F    ', 'CCL4      ',       &  !  1 -  4
+   &    'CCL3F     ', 'CCL2F2    ', 'C2CL2F4   ', 'C2CL3F3   ',       &  !  5 -  8
+   &    'N2O5      ', 'HNO3      ', 'CF4       ', 'CHCLF2    ',       &  !  9 - 12
+   &    'CCLF3     ', 'C2CLF5    ', 'NO2       ', 'PAN       ',       &  ! 13 - 16
+   &    'ACET      ', 'CH3CN     ', 'CHF2CF3   ', 'CFH2CF3   ',       &  ! 17 - 20
+   &    'CF3CH3    ', 'CH3CHF2   ', 'CH2F2     ', 'CCl2FCH3  ',       &  ! 21 - 24
+   &    'CH3CClF2  ', 'CHClF2    ', 'CHCl2CF3  ', 'CHCl2C2F5 ',       &  ! 25 - 28
+   &    'C3HCl2F5  ', 'C3HCl2F5  ', 'SO2       ', 'ISOP      ',       &  ! 29 - 32
+   &    'CHF3      ', 'BRO       ', 'HCHO      ', 'CF3CH2CF3 ',       &  ! 33 - 36
+   &    'CHF2CH2CF3', 'NF3       ', 'C2F6      ', 'SF6       ',       &  ! 37 - 40
+   &    'FURAN     ', 'ACETICACI ', 'GLYCOLALD ', 'PROPENE   ',       &  ! 41 - 44
+   &    'OCLO      ', 'NO3       ', 4*' ZZZZZZZZ '/                      ! 45 - 50
    DATA (ALIAS(2,I),I=1,mx_xs)/                                      &
    &    'CLNO3     ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
    &    'CFCL3     ', 'CF2CL2    ', 'C2F4CL2   ', 'C2F3CL3   ',       &
@@ -4261,7 +4341,8 @@ BLOCK DATA BXSECT
    &    'HCFC-142b ', 'HCFC-22   ', 'HCFC-123  ', 'HCFC-124  ',       &
    &    'HCFC-225ca', 'HCFC-225cb', ' ZZZZZZZZ ', 'C5H8      ',       &
    &    'HFC-23    ', 'BRO       ', ' ZZZZZZZZ ', 'HFC-236fa ',       &
-   &    'HFC-245fa ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ' /
+   &    'HFC-245fa ', ' ZZZZZZZZ ', ' ZZZZZZZZ ', ' ZZZZZZZZ ',       &
+   &     10*' ZZZZZZZZ '/
    DATA (ALIAS(3,I),I=1,mx_xs)/                                      &
    &    ' ZZZZZZZZ ', ' ZZZZZZZZ ', 'CFC21     ', ' ZZZZZZZZ ',       &
    &    'CFC11     ', 'CFC12     ', 'CFC114    ', 'CFC113    ',       &
@@ -4279,21 +4360,31 @@ BLOCK DATA BXSECT
 !
 !     note 23 =  mx_xs - 15 = 38 - 15
 
-   DATA XSMASS/                                                      &
-   &      97.46     ,   79.01     ,  102.92     ,  153.82     ,       &
-   &     137.37     ,  120.91     ,  170.92     ,  187.38     ,       &
-   &     108.01     ,   63.01     ,   88.00     ,   86.47     ,       &
-   &     104.46     ,  154.47     ,   45.99     ,  121.05     ,       &
-   &      58.08     ,   41.05     ,  120.02     ,  102.03     ,       &
-   &      84.04     ,   66.05     ,   52.02     ,  116.95     ,       &
-   &     100.50     ,   86.47     ,  152.93     ,  136.48     ,       &
-   &     202.94     ,  202.94     ,   64.06     ,   68.12     ,       &
-   &      70.01     ,  95.903     ,   30.026    ,  152.039    ,       &
-   &     134.05     ,  71.00      ,  138.01     ,  146.06/
-!
-   DATA V1FX / 200*0.0 /,V2FX / 200*0.0 /,DVFX / 200*0.0 /,          &
+   DATA XSMASS/                                                       & 
+   &      97.46     ,   79.01     ,  102.92     ,  153.82     ,       &  !  1 -  4
+   &     137.37     ,  120.91     ,  170.92     ,  187.38     ,       &  !  5 -  8
+   &     108.01     ,   63.01     ,   88.00     ,   86.47     ,       &  !  9 - 12
+   &     104.46     ,  154.47     ,   45.99     ,  121.05     ,       &  ! 13 - 16
+   &      58.08     ,   41.05     ,  120.02     ,  102.03     ,       &  ! 17 - 20
+   &      84.04     ,   66.05     ,   52.02     ,  116.95     ,       &  ! 21 - 24
+   &     100.50     ,   86.47     ,  152.93     ,  136.48     ,       &  ! 25 - 28
+   &     202.94     ,  202.94     ,   64.06     ,   68.12     ,       &  ! 29 - 32
+   &      70.01     ,  95.903     ,   30.026    ,  152.039    ,       &  ! 33 - 36
+   &     134.05     ,  71.00      ,  138.01     ,  146.06     ,       &  ! 37 - 40
+   &      68.075    ,  60.052     ,   60.052    ,   42.081    ,       &  ! 41 - 44
+   &      67.45     ,  62.004     ,   4*0. /                             ! 45 - 50 
+
+!  OClO, ACETICACID, GLYCOLALDE, PROPENE  weights are from 
+!  https://en.wikipedia.org/wiki/Chlorine_dioxide
+!  https://en.wikipedia.org/wiki/Acetic_acid
+!  https://en.wikipedia.org/wiki/Glycolaldehyde
+!  https://en.wikipedia.org/wiki/Propene
+!  https://en.wikipedia.org/wiki/Nitrate
+! 
+!  ATTENTION if mx_xs is changed then 250 has to be replaced with mx_xs*5
+   DATA V1FX / 250*0.0 /,V2FX / 250*0.0 /,DVFX / 250*0.0 /,          &
    &     WXM / mx_xs*0.0 /
-   DATA NTEMPF / 200*0 /,NSPECR / mx_xs*0 /,IXFORM / 200*0 /,        &
+   DATA NTEMPF / 250*0 /,NSPECR / mx_xs*0 /,IXFORM / 250*0 /,        &
    &     NUMXS / 0 /
 !
 end block data BXSECT
@@ -4620,6 +4711,7 @@ SUBROUTINE XSECTM (IFST,IR4)
          ENDIF
          V2X = V1X+ REAL(LIMOUT-1)*DVX
          IF (V2X.GT.V2) V2X = V1X+ REAL(INT((V2-V1X)/DVX)+3)*DVX
+!Matt Alvarado 20150819 Added Yingtao Ma's fix for NPTSX
          NPTSX = ceiling((V2X-V1X)/DVX)+1
       ENDIF
       IFL = 0
